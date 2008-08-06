@@ -241,12 +241,13 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private FormattingCustomizerPanel(Lookup context) {
         this.pf = new ProjectPreferencesFactory(context.lookup(Project.class));
         this.selector = new CustomizerSelector(pf);
-        this.panel = new FormattingPanel(selector);
+        this.panel = new FormattingPanel();
+        this.panel.setSelector(selector);
 
         initComponents();
         customizerPanel.add(panel, BorderLayout.CENTER);
         
-        Preferences prefs = pf.getPreferences("").node(CODE_STYLE_PROFILE); //NOI18N
+        Preferences prefs = pf.getPreferences(""); //NOI18N
         String profile = prefs.get(USED_PROFILE, DEFAULT_PROFILE);
         if (DEFAULT_PROFILE.equals(profile)) {
             globalButton.doClick();

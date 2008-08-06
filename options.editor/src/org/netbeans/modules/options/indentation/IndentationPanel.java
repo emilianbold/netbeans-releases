@@ -94,7 +94,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         this.prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
 
         if (preview == null) {
-            this.preview = new IndentationPreview();
+            this.preview = new IndentationPreview(prefs);
             this.showOverrideGlobalOptions = false;
         } else {
             this.preview = preview;
@@ -220,7 +220,6 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 sTabSize.setEnabled(nue);
                 lRightMargin.setEnabled(nue);
                 sRightMargin.setEnabled(nue);
-                System.out.println("~~~ basicOptionsPanel.setEnabled(" + nue + ")");
             }
         }
         
@@ -372,8 +371,13 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
     private static class IndentationPreview implements PreviewProvider {
 
+        private final Preferences prefs;
         private JEditorPane jep;
         private String previewText;
+
+        public IndentationPreview(Preferences prefs) {
+            this.prefs = prefs;
+        }
 
         public JComponent getPreviewComponent() {
             if (jep == null) {
@@ -381,7 +385,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 jep.getAccessibleContext().setAccessibleName(NbBundle.getMessage(IndentationPanel.class, "AN_Preview")); //NOI18N
                 jep.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IndentationPanel.class, "AD_Preview")); //NOI18N
                 jep.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
-                jep.setEditorKit(CloneableEditorSupport.getEditorKit("text/xml"));
+                jep.setEditorKit(CloneableEditorSupport.getEditorKit("text/xml")); //NOI18N
                 jep.setEditable(false);
             }
             return jep;
@@ -409,7 +413,13 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
             JEditorPane pane = (JEditorPane) getPreviewComponent();
             pane.setText(previewText);
+            
             BaseDocument doc = (BaseDocument) pane.getDocument();
+            // This is here solely for the purpose of previewing changes in formatting settings
+            // in Tools-Options. This is NOT, repeat NOT, to be used by anybody else!
+            // The name of this property is also hardcoded in editor.indent/.../CodeStylePreferences.java
+            doc.putProperty("Tools-Options->Editor->Formatting->Preview - Preferences", prefs); //NOI18N
+            
             Reformat reformat = Reformat.get(doc);
             reformat.lock();
             try {

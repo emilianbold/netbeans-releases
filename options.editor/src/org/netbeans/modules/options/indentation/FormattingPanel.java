@@ -74,26 +74,12 @@ import org.openide.util.WeakListeners;
 public final class FormattingPanel extends JPanel implements PropertyChangeListener {
     
     /** Creates new form FormattingPanel */
-    public FormattingPanel(CustomizerSelector selector) {
-        this.selector = selector;
-        this.selector.addPropertyChangeListener(WeakListeners.propertyChange(this, selector));
-        
+    public FormattingPanel() {
         initComponents();
         
         if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
             setOpaque(false);
         }
-
-        // Languages combobox model
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        ArrayList<String> mimeTypes = new ArrayList<String>();
-        mimeTypes.addAll(selector.getMimeTypes());
-        Collections.sort(mimeTypes, new LanguagesComparator());
-        
-        for (String mimeType : mimeTypes) {
-            model.addElement(mimeType);
-        }
-        languageCombo.setModel(model);
 
         // Languages combobox renderer
         languageCombo.setRenderer(new DefaultListCellRenderer() {
@@ -119,12 +105,39 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
             }            
         });
 
-        // Pre-select a language
-        JTextComponent pane = EditorRegistry.lastFocusedComponent();
-        String preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
-        languageCombo.setSelectedItem(preSelectMimeType);
-        if (preSelectMimeType != languageCombo.getSelectedItem()) {
-            languageCombo.setSelectedIndex(0);
+    }
+
+    public void setSelector(CustomizerSelector selector) {
+        if (this.selector != null) {
+            this.selector.removePropertyChangeListener(weakListener);
+        }
+
+        this.selector = selector;
+
+        if (this.selector != null) {
+            this.weakListener = WeakListeners.propertyChange(this, this.selector);
+            this.selector.addPropertyChangeListener(weakListener);
+        
+            // Languages combobox model
+            DefaultComboBoxModel model = new DefaultComboBoxModel();
+            ArrayList<String> mimeTypes = new ArrayList<String>();
+            mimeTypes.addAll(selector.getMimeTypes());
+            Collections.sort(mimeTypes, new LanguagesComparator());
+
+            for (String mimeType : mimeTypes) {
+                model.addElement(mimeType);
+            }
+            languageCombo.setModel(model);
+
+            // Pre-select a language
+            JTextComponent pane = EditorRegistry.lastFocusedComponent();
+            String preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
+            languageCombo.setSelectedItem(preSelectMimeType);
+            if (preSelectMimeType != languageCombo.getSelectedItem()) {
+                languageCombo.setSelectedIndex(0);
+            }
+        } else {
+            languageCombo.setModel(new DefaultComboBoxModel());
         }
     }
 
@@ -317,6 +330,7 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
     // End of variables declaration//GEN-END:variables
  
     private CustomizerSelector selector;
+    private PropertyChangeListener weakListener;
 
     private static final class LanguagesComparator implements Comparator<String> {
         public int compare(String mimeType1, String mimeType2) {

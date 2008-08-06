@@ -72,17 +72,22 @@ public final class FormattingPanelController extends OptionsPanelController impl
     // ------------------------------------------------------------------------
 
     public FormattingPanelController() {
-        this.selector = new CustomizerSelector(this);
     }
 
     public void update() {
-        cancel();
+        LOG.fine("update"); //NOI18N
+        destroyPreferences();
+        selector = new CustomizerSelector(this);
+        panel.setSelector(selector);
+        notifyChanged(false);
     }
     
     public synchronized void applyChanges() {
+        LOG.fine("applyChanges"); //NOI18N
         for(String mimeType : mimeTypePreferences.keySet()) {
             ProxyPreferences pp = mimeTypePreferences.get(mimeType);
             try {
+                LOG.fine("    flushing pp for '" + mimeType + "'"); //NOI18N
                 pp.flush();
             } catch (BackingStoreException ex) {
                 LOG.log(Level.WARNING, "Can't flush preferences for '" + mimeType + "'", ex); //NOI18N
@@ -93,17 +98,9 @@ public final class FormattingPanelController extends OptionsPanelController impl
     }
     
     public synchronized void cancel() {
-        // destroy all proxy preferences
-        for(String mimeType : mimeTypePreferences.keySet()) {
-            ProxyPreferences pp = mimeTypePreferences.get(mimeType);
-            pp.removeNodeChangeListener(weakNodeL);
-            pp.removePreferenceChangeListener(weakPrefL);
-            pp.destroy();
-        }
-
-        // reset the cache
-        mimeTypePreferences.clear();
-        
+        LOG.fine("cancel"); //NOI18N
+        destroyPreferences();
+        panel.setSelector(null);
         notifyChanged(false);
     }
     
@@ -116,14 +113,14 @@ public final class FormattingPanelController extends OptionsPanelController impl
     }
     
     public HelpCtx getHelpCtx() {
-        PreferencesCustomizer c = selector.getSelectedCustomizer();
+        PreferencesCustomizer c = selector == null ? null : selector.getSelectedCustomizer();
         HelpCtx ctx = c == null ? null : c.getHelpCtx();
 	return ctx != null ? ctx : new HelpCtx("netbeans.optionsDialog.editor.formatting"); //NOI18N
     }
     
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if (panel == null) {
-            panel = new FormattingPanel(selector);
+            panel = new FormattingPanel();
         }
         return panel;
     }
@@ -148,6 +145,7 @@ public final class FormattingPanelController extends OptionsPanelController impl
             pp.addPreferenceChangeListener(weakPrefL);
             pp.addNodeChangeListener(weakNodeL);
             mimeTypePreferences.put(mimeType, pp);
+            LOG.fine("getPreferences(" + mimeType + ")"); //NOI18N
         }
         return pp;
     }
@@ -178,12 +176,12 @@ public final class FormattingPanelController extends OptionsPanelController impl
 
     private static final Logger LOG = Logger.getLogger(FormattingPanelController.class.getName());
     
-    private final CustomizerSelector selector;
     private final Map<String, ProxyPreferences> mimeTypePreferences = new HashMap<String, ProxyPreferences>();
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final PreferenceChangeListener weakPrefL = WeakListeners.create(PreferenceChangeListener.class, this, null);
     private final NodeChangeListener weakNodeL = WeakListeners.create(NodeChangeListener.class, this, null);
 
+    private CustomizerSelector selector;
     private FormattingPanel panel;
     private boolean changed = false;
 
@@ -192,5 +190,19 @@ public final class FormattingPanelController extends OptionsPanelController impl
             this.changed = changed;
             pcs.firePropertyChange(PROP_CHANGED, !changed, changed);
         }
+    }
+
+    private void destroyPreferences() {
+        // destroy all proxy preferences
+        for(String mimeType : mimeTypePreferences.keySet()) {
+            ProxyPreferences pp = mimeTypePreferences.get(mimeType);
+            pp.removeNodeChangeListener(weakNodeL);
+            pp.removePreferenceChangeListener(weakPrefL);
+            pp.destroy();
+            LOG.fine("destroying pp for '" + mimeType + "'"); //NOI18N
+        }
+
+        // reset the cache
+        mimeTypePreferences.clear();
     }
 }

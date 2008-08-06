@@ -84,9 +84,11 @@ public final class CustomizerSelector {
     }
 
     public synchronized PreferencesCustomizer getSelectedCustomizer() {
-        for(PreferencesCustomizer c : getCustomizersFor(selectedMimeType)) {
-            if (selectedCustomizerId.equals(c.getId())) {
-                return c;
+        if (selectedCustomizerId != null) {
+            for(PreferencesCustomizer c : getCustomizersFor(selectedMimeType)) {
+                if (selectedCustomizerId.equals(c.getId())) {
+                    return c;
+                }
             }
         }
         return null;

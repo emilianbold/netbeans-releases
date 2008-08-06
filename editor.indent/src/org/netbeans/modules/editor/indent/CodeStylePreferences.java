@@ -72,9 +72,17 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
     
     public Preferences getPreferences() {
         synchronized (this) {
-            Preferences prefs = useProject ? projectPrefs : globalPrefs;
-            // to support tests that don't use editor.mimelookup.impl
-            return prefs == null ? AbstractPreferences.systemRoot() : prefs;
+            // This is here solely for the purpose of previewing changes in formatting settings
+            // in Tools-Options. This is NOT, repeat NOT, to be used by anybody else!
+            // The name of this property is also hardcoded in options.editor/.../IndentationPanel.java
+            Object o = doc.getProperty("Tools-Options->Editor->Formatting->Preview - Preferences"); //NOI18N
+            if (o instanceof Preferences) {
+                return (Preferences) o;
+            } else {
+                Preferences prefs = useProject ? projectPrefs : globalPrefs;
+                // to support tests that don't use editor.mimelookup.impl
+                return prefs == null ? AbstractPreferences.systemRoot() : prefs;
+            }
         }
     }
     
@@ -101,7 +109,8 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
     private static final String PROP_USED_PROFILE = "usedProfile"; // NOI18N
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     private static final String PROJECT_PROFILE = "project"; // NOI18N
-    
+
+    private final Document doc;
     private final Preferences projectRoot;
     private final Preferences projectPrefs;
     private final Preferences globalPrefs;
@@ -111,6 +120,7 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
     private final String mimeType;
     
     private CodeStylePreferences(Document doc) {
+        this.doc = doc;
         this.mimeType = (String) doc.getProperty("mimeType"); //NOI18N
     
         this.projectRoot = findProjectPreferences(doc);
