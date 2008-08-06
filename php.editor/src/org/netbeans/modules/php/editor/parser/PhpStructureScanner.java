@@ -197,15 +197,17 @@ public class PhpStructureScanner implements StructureScanner {
         @Override
         public void visit(FieldsDeclaration fields) {
             Variable[] variables = fields.getVariableNames();
-            for (Variable variable : variables) {
-                String name = Utils.resolveVariableName(variable);
-                if (name != null) {
-                    String text = name;
-                    if (variable.isDollared()) {
-                        text = "$"+name; //NOI18N
+            if (variables != null) {
+                for (Variable variable : variables) {
+                    String name = Utils.resolveVariableName(variable);
+                    if (name != null) {
+                        String text = name;
+                        if (variable.isDollared()) {
+                            text = "$"+name; //NOI18N
+                        }
+                        PHPStructureItem item = new PHPSimpleStructureItem(new GSFPHPElementHandle.FieldsDeclarationHandle(info, fields), text, "0"); //NOI18N
+                        children.add(item);
                     }
-                    PHPStructureItem item = new PHPSimpleStructureItem(new GSFPHPElementHandle.FieldsDeclarationHandle(info, fields), text, "0"); //NOI18N
-                    children.add(item);
                 }
             }
         }
