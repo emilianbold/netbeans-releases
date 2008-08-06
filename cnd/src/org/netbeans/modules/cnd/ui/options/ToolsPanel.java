@@ -122,7 +122,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private HashMap<String, CompilerSetManager> copiedManagers = new HashMap<String, CompilerSetManager>();
     private CompilerSet currentCompilerSet;
     private ServerList serverList;
-    private ServerRecord serverRecord;
     private ServerUpdateCache serverUpdateCache;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
@@ -140,11 +139,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         serverUpdateCache = null;
         serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         if (serverList != null) {
-            serverRecord = serverList.getDefaultRecord();
-            hkey = serverRecord.getName();
+            hkey = serverList.getDefaultRecord().getName();
             btEditDevHost.setEnabled(true);
+            cbDevHost.setEnabled(true);
         } else {
-            serverRecord = null;
             hkey = CompilerSetManager.LOCALHOST;
         }
 
@@ -206,8 +204,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btMakeBrowse.setEnabled(false);
         btDebuggerBrowse.setEnabled(false);
         btVersions.setEnabled(false);
-        tfMakePath.setEnabled(false);
-        tfGdbPath.setEnabled(false);
+        tfMakePath.setEditable(false);
+        tfGdbPath.setEditable(false);
         btVersions.setEnabled(false);
 
         if (model.enableRequiredCompilerCB()) {
@@ -519,7 +517,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
 
     private boolean isRemoteHostSelected() {
-        return serverList.get((String)cbDevHost.getSelectedItem()).isRemote();
+        return serverList == null ? false : serverList.get((String)cbDevHost.getSelectedItem()).isRemote();
     }
 
     private void changeCompilerSet(CompilerSet cs) {
@@ -757,12 +755,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btMakeBrowse.setEnabled(enable);
         btDebuggerBrowse.setEnabled(enable);
         btVersions.setEnabled(versionEnabled);
-        tfMakePath.setEnabled(enable);
-        tfGdbPath.setEnabled(enable);
-        tfBaseDirectory.setEnabled(enable);
-        tfCPath.setEnabled(enable);
-        tfCppPath.setEnabled(enable);
-        tfFortranPath.setEnabled(enable);        
+        tfMakePath.setEditable(enable);
+        tfGdbPath.setEditable(enable);
+        tfBaseDirectory.setEditable(enable);
+        tfCPath.setEditable(enable);
+        tfCppPath.setEditable(enable);
+        tfFortranPath.setEditable(enable);        
     }
     /**
      * Lets caller know if any data has been changed.
@@ -942,6 +940,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      * button should <b>never</b> be enabled if its null.
      */
     private void editDevHosts() {
+        assert serverList != null;
         // Show the Dev Host Manager dialog
         ServerUpdateCache newServerUpdateCache = serverList.show(serverUpdateCache);
 
@@ -1572,6 +1571,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 0);
         add(lbDevHost, gridBagConstraints);
+
+        cbDevHost.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;

@@ -210,11 +210,11 @@ public class GsfFoldManager implements FoldManager {
 
     public synchronized void initFolds(FoldHierarchyTransaction transaction) {
         Document doc = operation.getHierarchy().getComponent().getDocument();
-        FileObject od = DataLoadersBridge.getDefault().getFileObject(doc);
+        file = DataLoadersBridge.getDefault().getFileObject(doc);
         
-        if (od != null) {
+        if (file != null) {
             currentFolds = new HashMap<FoldInfo, Fold>();
-            task = JavaElementFoldTask.getTask(od);
+            task = JavaElementFoldTask.getTask(file);
             task.setGsfFoldManager(GsfFoldManager.this);
         }
     }

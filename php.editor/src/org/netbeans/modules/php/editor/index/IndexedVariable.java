@@ -37,32 +37,18 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.junit.testcase.ts;
+package org.netbeans.modules.php.editor.index;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.junit.pkgtestcreation.PkgCreateTestTest;
 
 /**
  *
- * @author peter
+ * @author Petr Pisl
  */
-public class PkgTestCreationTestSuite extends JellyTestCase {
-    
-    public PkgTestCreationTestSuite(String name) {
-        super(name);
-    }
-    
-    @Override
-    protected void setUp() throws Exception {
-        System.out.println("### " + getName() + " ###");
+public class IndexedVariable extends IndexedConstant {
+        
+    public IndexedVariable(String name, String in, PHPIndex index, String fileUrl,
+            int offset, int flags, String typeName){
+        super(name, in, index, fileUrl, offset, flags, typeName);
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(PkgCreateTestTest.class, 
-                        "testCreateTestForPackage")
-                .enableModules(".*").clusters(".*"));
-    } 
 }

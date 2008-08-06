@@ -505,7 +505,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     1.0, 1.0, // weight-x, weight-y
                     GridBagConstraints.PAGE_START, // anchor
                     GridBagConstraints.HORIZONTAL, // fill
-                    new Insets(0, 11, 0, 11), // padding
+                    new Insets(4, 11, 0, 11), // padding
                     0, 0));                           // padx, pady - ???
 
             // spacer

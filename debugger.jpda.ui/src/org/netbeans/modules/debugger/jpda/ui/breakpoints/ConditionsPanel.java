@@ -184,7 +184,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
         return sb.toString();
     }
     
-    private String[] getFilter(String filterStr) {
+    static String[] getFilter(String filterStr) {
         if (filterStr == null || filterStr.length() == 0) {
             return new String[] {};
         }
@@ -277,6 +277,19 @@ public class ConditionsPanel extends javax.swing.JPanel {
         return null;
     }
     
+    static String createClassPatternTip(String filterInfo) {
+        StringBuffer buf = new StringBuffer();
+        buf.append("<html>"); // NOI18N
+        buf.append(filterInfo);
+        buf.append("<br>"); // NOI18N
+        buf.append(NbBundle.getMessage(ConditionsPanel.class, "TTT_Class_Pattern_Help_1"));
+        buf.append("<br>"); // NOI18N
+        buf.append(NbBundle.getMessage(ConditionsPanel.class, "TTT_Class_Pattern_Help_2"));
+        buf.append("<br>"); // NOI18N
+        buf.append(NbBundle.getMessage(ConditionsPanel.class, "TTT_Class_Pattern_Help_3"));
+        return buf.toString();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -327,7 +340,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
         add(classIncludeFilterLabel, gridBagConstraints);
         classIncludeFilterLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "ACSD_IncludeClasses_LBL")); // NOI18N
 
-        classIncludeFilterTextField.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "TTT_CB_Classes_Matched")); // NOI18N
+        classIncludeFilterTextField.setToolTipText(createClassPatternTip(NbBundle.getMessage(ConditionsPanel.class, "TTT_CB_Classes_Matched")));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -359,7 +372,7 @@ public class ConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(classExcludeFilterCheckBox, gridBagConstraints);
 
-        classExcludeFilterTextField.setToolTipText(org.openide.util.NbBundle.getMessage(ConditionsPanel.class, "TTT_CB_Classes_Excluded")); // NOI18N
+        classExcludeFilterTextField.setToolTipText(createClassPatternTip(NbBundle.getMessage(ConditionsPanel.class, "TTT_CB_Classes_Excluded")));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;

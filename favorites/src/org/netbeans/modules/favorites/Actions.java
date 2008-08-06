@@ -154,14 +154,12 @@ public final class Actions extends Object {
             if (activatedNodes.length != 1) {
                 return false;
             }
-            return true;
-            /*
             DataObject dobj = (DataObject)activatedNodes[0].getCookie(DataObject.class);
             if (dobj == null) {
                 return false;
             }
-            return Tab.findDefault().containsNode(dobj);
-             */
+            return true;
+            /*return Tab.findDefault().containsNode(dobj);*/
           }
 
         public String getName() {
