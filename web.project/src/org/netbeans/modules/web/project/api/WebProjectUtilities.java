@@ -738,7 +738,7 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
 
         // deploy on save since nb 6.5
-        ep.setProperty(WebProjectProperties.DEPLOY_ON_SAVE, "true"); // NOI18N
+        ep.setProperty(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE, "false"); // NOI18N
         
         ep.setProperty(WebProjectProperties.J2EE_SERVER_TYPE, serverType);
         
