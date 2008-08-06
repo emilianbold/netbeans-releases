@@ -107,6 +107,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.lib2</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.jellytools.platform</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -285,15 +294,12 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.jellytools.modules.j2ee</package>
                 <package>org.netbeans.jellytools.modules.j2ee.actions</package>
                 <package>org.netbeans.jellytools.modules.j2ee.nodes</package>
+                <package>org.netbeans.jellytools.modules.java.editor</package>
                 <package>org.netbeans.jellytools.modules.javacvs</package>
                 <package>org.netbeans.jellytools.modules.javacvs.actions</package>
                 <package>org.netbeans.jellytools.modules.web</package>
                 <package>org.netbeans.jellytools.modules.web.nodes</package>
                 <package>org.netbeans.jellytools.nodes</package>
-                <package>org.netbeans.jellytools.properties</package>
-                <package>org.netbeans.jellytools.properties.editors</package>
-                <package>org.netbeans.jellytools.util</package>
-                <package>org.netbeans.jellytools.widgets</package>
             </public-packages>
         </data>
     </configuration>
