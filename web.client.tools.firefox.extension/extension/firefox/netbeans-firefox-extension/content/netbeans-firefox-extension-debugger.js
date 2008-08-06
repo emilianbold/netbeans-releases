@@ -454,15 +454,6 @@
             }
         }
 
-        function unwrapBrowserDestroy()
-        {
-            if (browser && browser._destroy)
-            {
-                browser.destroy = browser._destroy;
-                delete browser._destroy;
-            }
-        }
-
         Firebug.registerExtension(NetBeansDebuggerExtension);
         
         Firebug.Debugger.isHostEnabled = function(context) {
@@ -471,6 +462,16 @@
         
     }
 
+
+    function unwrapBrowserDestroy()
+    {
+        if (browser && browser._destroy)
+        {
+            browser.destroy = browser._destroy;
+            delete browser._destroy;
+        }
+    }
+    
     function disableFirebugDebugger()
     {
         Firebug.Debugger.removeListener(DebuggerListener);
