@@ -204,8 +204,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btMakeBrowse.setEnabled(false);
         btDebuggerBrowse.setEnabled(false);
         btVersions.setEnabled(false);
-        tfMakePath.setEnabled(false);
-        tfGdbPath.setEnabled(false);
+        tfMakePath.setEditable(false);
+        tfGdbPath.setEditable(false);
         btVersions.setEnabled(false);
 
         if (model.enableRequiredCompilerCB()) {
@@ -755,12 +755,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btMakeBrowse.setEnabled(enable);
         btDebuggerBrowse.setEnabled(enable);
         btVersions.setEnabled(versionEnabled);
-        tfMakePath.setEnabled(enable);
-        tfGdbPath.setEnabled(enable);
-        tfBaseDirectory.setEnabled(enable);
-        tfCPath.setEnabled(enable);
-        tfCppPath.setEnabled(enable);
-        tfFortranPath.setEnabled(enable);        
+        tfMakePath.setEditable(enable);
+        tfGdbPath.setEditable(enable);
+        tfBaseDirectory.setEditable(enable);
+        tfCPath.setEditable(enable);
+        tfCppPath.setEditable(enable);
+        tfFortranPath.setEditable(enable);        
     }
     /**
      * Lets caller know if any data has been changed.
