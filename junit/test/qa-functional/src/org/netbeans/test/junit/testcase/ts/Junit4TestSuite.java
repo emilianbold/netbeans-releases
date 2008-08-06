@@ -64,7 +64,6 @@ public class Junit4TestSuite extends JellyTestCase {
                 .addTest(CreateProjectTest.class, 
                         "testCreateJUnit4Project",
                         "testAddLibrary",
-                        "testGeneratedRootSuiteFile",
                         "testGeneratedProjectSuiteFile",
                         "testGeneratedMainTestFile")
                 .enableModules(".*").clusters(".*"));

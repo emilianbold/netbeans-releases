@@ -26,7 +26,7 @@
 <%--CC
 <bod|
 ...
-<body>
+<body></body>
 --%>
 
 <%-- completion for body HTML endtag --%>

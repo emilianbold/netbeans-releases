@@ -16,6 +16,7 @@ com.sun.java.swing.plaf.windows.WindowsRadioButtonMenuItemUI
 com.sun.java.swing.plaf.windows.WindowsRootPaneUI
 com.sun.java.swing.plaf.windows.WindowsScrollBarUI
 com.sun.java.swing.plaf.windows.WindowsSeparatorUI
+com.sun.java.swing.plaf.windows.WindowsTextAreaUI
 com.sun.java.swing.plaf.windows.WindowsTextFieldUI
 com.sun.java.swing.plaf.windows.WindowsToolBarSeparatorUI
 com.sun.java.swing.plaf.windows.WindowsToolBarUI
@@ -68,6 +69,8 @@ com.sun.jna.ptr.ByReference
 com.sun.jna.ptr.IntByReference
 com.sun.jna.ptr.NativeLongByReference
 com.sun.jna.ptr.PointerByReference
+com.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager
+com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
 com.sun.org.apache.xerces.internal.impl.dv.dtd.DTDDVFactoryImpl
 com.sun.org.apache.xerces.internal.impl.dv.xs.SchemaDVFactoryImpl
 com.sun.org.apache.xerces.internal.jaxp.validation.xs.SchemaFactoryImpl
@@ -621,6 +624,7 @@ javax.sql.rowset.BaseRowSet
 javax.sql.rowset.CachedRowSet
 javax.swing.AbstractAction
 javax.swing.AbstractButton
+javax.swing.AbstractListModel
 javax.swing.Action
 javax.swing.ActionMap
 javax.swing.BorderFactory
@@ -647,6 +651,7 @@ javax.swing.JCheckBoxMenuItem
 javax.swing.JComboBox
 javax.swing.JComponent
 javax.swing.JComponent$AccessibleJComponent
+javax.swing.JComponentBeanInfo
 javax.swing.JDialog
 javax.swing.JDialog$AccessibleJDialog
 javax.swing.JEditorPane
@@ -833,6 +838,7 @@ javax.xml.parsers.SAXParser
 javax.xml.parsers.SAXParserFactory
 javax.xml.transform.Result
 javax.xml.transform.Source
+javax.xml.transform.stream.StreamSource
 javax.xml.validation.SchemaFactory
 junit.extensions.TestDecorator
 junit.framework.AssertionFailedError
@@ -1294,10 +1300,14 @@ org.netbeans.core.startup.layers.ArchiveURLMapper$JFSReference$1
 org.netbeans.core.startup.layers.BinaryCacheManager
 org.netbeans.core.startup.layers.BinaryCacheManager$BinaryWriter
 org.netbeans.core.startup.layers.BinaryFS
+org.netbeans.core.startup.layers.BinaryFS$AttrFileSet
+org.netbeans.core.startup.layers.BinaryFS$AttrFileSet$1Iter
 org.netbeans.core.startup.layers.BinaryFS$AttrImpl
 org.netbeans.core.startup.layers.BinaryFS$BFSBase
 org.netbeans.core.startup.layers.BinaryFS$BFSFile
 org.netbeans.core.startup.layers.BinaryFS$BFSFolder
+org.netbeans.core.startup.layers.BinaryFS$FOEntry
+org.netbeans.core.startup.layers.BinaryFS$FileMap
 org.netbeans.core.startup.layers.FixedFileSystem
 org.netbeans.core.startup.layers.FixedFileSystem$Instance
 org.netbeans.core.startup.layers.LayerCacheManager
@@ -1358,6 +1368,7 @@ org.netbeans.core.windows.RegistryImpl
 org.netbeans.core.windows.RegistryImpl$1
 org.netbeans.core.windows.ShortcutAndMenuKeyEventProcessor
 org.netbeans.core.windows.SplitConstraint
+org.netbeans.core.windows.Switches
 org.netbeans.core.windows.TopComponentGroupImpl
 org.netbeans.core.windows.ViewRequest
 org.netbeans.core.windows.ViewRequestor
@@ -1402,6 +1413,8 @@ org.netbeans.core.windows.model.SplitSubModel
 org.netbeans.core.windows.model.SplitSubModel$ModeNode
 org.netbeans.core.windows.model.SplitSubModel$Node
 org.netbeans.core.windows.model.SplitSubModel$SplitNode
+org.netbeans.core.windows.model.TopComponentContextSubModel
+org.netbeans.core.windows.model.TopComponentContextSubModel$Context
 org.netbeans.core.windows.model.TopComponentGroupModel
 org.netbeans.core.windows.model.TopComponentSubModel
 org.netbeans.core.windows.nativeaccess.NativeWindowSystem
@@ -1788,6 +1801,7 @@ org.netbeans.editor.Settings$Filter
 org.netbeans.editor.Settings$Initializer
 org.netbeans.editor.Settings$KitAndValue
 org.netbeans.editor.Settings$LoggingMap
+org.netbeans.editor.Settings$PackageAccessor
 org.netbeans.editor.Settings$PreferenceChangesTracker
 org.netbeans.editor.SettingsChangeEvent
 org.netbeans.editor.SettingsChangeListener
@@ -2605,6 +2619,7 @@ org.netbeans.modules.bpel.palette.SoaPaletteMenu
 org.netbeans.modules.bpel.project.BpelproProjectType
 org.netbeans.modules.bpel.validation.action.FixImportAction
 org.netbeans.modules.cnd.CndModule
+org.netbeans.modules.cnd.api.model.CsmChangeEvent
 org.netbeans.modules.cnd.api.model.CsmClassifier
 org.netbeans.modules.cnd.api.model.CsmDeclaration
 org.netbeans.modules.cnd.api.model.CsmFile
@@ -3034,6 +3049,8 @@ org.netbeans.modules.editor.completion.CompletionProviderClass2LayerFolder
 org.netbeans.modules.editor.completion.CompletionScrollPane
 org.netbeans.modules.editor.completion.DocumentationScrollPane
 org.netbeans.modules.editor.completion.LazyListModel$Filter
+org.netbeans.modules.editor.deprecated.pre61settings.Installer
+org.netbeans.modules.editor.deprecated.pre61settings.OrgNbEditorAccessor
 org.netbeans.modules.editor.errorstripe.AnnotationView
 org.netbeans.modules.editor.errorstripe.AnnotationView$1
 org.netbeans.modules.editor.errorstripe.AnnotationView$RepaintTask
@@ -3916,6 +3933,20 @@ org.netbeans.modules.openfile.RecentFiles$1
 org.netbeans.modules.openfile.RecentFiles$WindowRegistryL
 org.netbeans.modules.openide.awt.DefaultAWTBridge
 org.netbeans.modules.openide.filesystems.DefaultURLMapperProxy
+org.netbeans.modules.openide.filesystems.RecognizeInstanceFiles
+org.netbeans.modules.openide.filesystems.declmime.DefaultParser
+org.netbeans.modules.openide.filesystems.declmime.FileObjectFilter
+org.netbeans.modules.openide.filesystems.declmime.MIMEComponent
+org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl
+org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$DescParser
+org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$FileElement
+org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Impl
+org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl$Type
+org.netbeans.modules.openide.filesystems.declmime.Util
+org.netbeans.modules.openide.filesystems.declmime.XMLMIMEComponent
+org.netbeans.modules.openide.filesystems.declmime.XMLMIMEComponent$LocalSniffingParser
+org.netbeans.modules.openide.filesystems.declmime.XMLMIMEComponent$Smell
+org.netbeans.modules.openide.filesystems.declmime.XMLMIMEComponent$SniffingParser
 org.netbeans.modules.openide.loaders.DataObjectAccessor
 org.netbeans.modules.openide.loaders.RuntimeCatalog
 org.netbeans.modules.openide.util.AWTBridge
@@ -4382,6 +4413,7 @@ org.netbeans.modules.startup.layers.RecognizeInstanceFiles
 org.netbeans.modules.subversion.FileStatusProvider
 org.netbeans.modules.subversion.ModuleLifecycleManager
 org.netbeans.modules.subversion.ModuleLifecycleManager$1
+org.netbeans.modules.subversion.Subversion
 org.netbeans.modules.subversion.SubversionVCS
 org.netbeans.modules.subversion.SubversionVCS$1
 org.netbeans.modules.subversion.SubversionVisibilityQuery
@@ -4418,9 +4450,12 @@ org.netbeans.modules.turbo.TurboProvider$MemoryCache
 org.netbeans.modules.uihandler.EarlyHandler
 org.netbeans.modules.uihandler.Installer
 org.netbeans.modules.uihandler.Installer$1H
+org.netbeans.modules.uihandler.Installer$DataType
+org.netbeans.modules.uihandler.Installer$PrefChangeListener
 org.netbeans.modules.uihandler.Installer$Submit
 org.netbeans.modules.uihandler.Installer$SubmitAutomatic
 org.netbeans.modules.uihandler.Installer$SubmitInteractive
+org.netbeans.modules.uihandler.MetricsHandler
 org.netbeans.modules.uihandler.ScreenSize
 org.netbeans.modules.uihandler.TimeToFailure
 org.netbeans.modules.uihandler.UIHandler
@@ -4900,6 +4935,8 @@ org.netbeans.modules.xml.XMLDataObject
 org.netbeans.modules.xml.XMLDataObjectLook
 org.netbeans.modules.xml.actions.CollectXMLAction$XMLAction
 org.netbeans.modules.xml.catalog.CatalogAction
+org.netbeans.modules.xml.catalog.spi.CatalogDescriptor
+org.netbeans.modules.xml.catalog.spi.CatalogReader
 org.netbeans.modules.xml.multiview.XmlMultiViewDataObject
 org.netbeans.modules.xml.refactoring.XMLRefactoringActionsProvider
 org.netbeans.modules.xml.refactoring.ui.FileRenameRefactoringUI
@@ -5331,11 +5368,14 @@ org.netbeans.swing.tabcontrol.plaf.WinXPEditorTabDisplayerUI
 org.netbeans.swing.tabcontrol.plaf.WinXPViewTabDisplayerUI
 org.netbeans.swing.tabcontrol.plaf.WinXPViewTabDisplayerUI$OwnController
 org.netbeans.test.editor.MultiviewEditorReflectionTest
+org.netbeans.test.ide.BlacklistedClassesHandler
+org.netbeans.test.ide.BlacklistedClassesHandlerSingleton
 org.netbeans.test.ide.IDECommitValidation
 org.netbeans.test.ide.IDEValidation
 org.netbeans.test.ide.IDEValidation$5
 org.netbeans.test.ide.IDEValidation$5$1
 org.netbeans.test.ide.IDEWhitelistGeneration
+org.netbeans.test.ide.PassThroughProxyHandler
 org.netbeans.test.ide.WhitelistTest
 org.netbeans.xtest.pe.xmlbeans.Data
 org.netbeans.xtest.pe.xmlbeans.PerformanceData
@@ -5423,6 +5463,7 @@ org.openide.awt.Actions$SubMenuBridge
 org.openide.awt.Actions$SubMenuModel
 org.openide.awt.Actions$ToolbarButton
 org.openide.awt.Actions$ToolbarToggleButton
+org.openide.awt.AlwaysEnabledAction
 org.openide.awt.DropDownButton
 org.openide.awt.DropDownButton$1
 org.openide.awt.DropDownButton$2
@@ -5839,13 +5880,19 @@ org.openide.nodes.EntrySupport$Default
 org.openide.nodes.EntrySupport$Default$1
 org.openide.nodes.EntrySupport$Default$1SetAndNotify
 org.openide.nodes.EntrySupport$Default$ChArrRef
+org.openide.nodes.EntrySupport$Default$DefaultSnapshot
+org.openide.nodes.EntrySupport$Default$Info
 org.openide.nodes.EntrySupport$Default$Infoorg.openide.nodes.AbstractNode
+org.openide.nodes.EntrySupport$Lazy
 org.openide.nodes.EntrySupport$Lazy$1Notify
 org.openide.nodes.EntrySupport$Lazy$DelayedLazySnapshot
 org.openide.nodes.EntrySupport$Lazy$LazySnapshot
 org.openide.nodes.EntrySupport$Lazy$NonexistingNode
 org.openide.nodes.FilterNode
 org.openide.nodes.FilterNode$Children
+org.openide.nodes.FilterNode$Children$ChildrenSupport
+org.openide.nodes.FilterNode$Children$DefaultSupport
+org.openide.nodes.FilterNode$Children$LazySupport
 org.openide.nodes.FilterNode$ChildrenAdapter
 org.openide.nodes.FilterNode$FilterLookup
 org.openide.nodes.FilterNode$FilterLookup$FilterItem
@@ -5942,6 +5989,7 @@ org.openide.util.NbCollections
 org.openide.util.NbPreferences
 org.openide.util.Parameters
 org.openide.util.RequestProcessor
+org.openide.util.RequestProcessor$Processor
 org.openide.util.RequestProcessor$Task
 org.openide.util.SharedClassObject
 org.openide.util.SharedClassObject$WriteReplace
@@ -6001,6 +6049,7 @@ org.openide.windows.DefaultTopComponentLookup$NoNodesPair
 org.openide.windows.DelegateActionMap
 org.openide.windows.DummyWindowManager
 org.openide.windows.Mode
+org.openide.windows.OpenComponentAction
 org.openide.windows.OutputListener
 org.openide.windows.OutputWriter
 org.openide.windows.TopComponent

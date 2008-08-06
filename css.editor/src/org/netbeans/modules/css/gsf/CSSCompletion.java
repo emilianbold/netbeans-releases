@@ -541,7 +541,7 @@ public class CSSCompletion implements CodeCompletionHandler {
                 //artificial origin, get real origin from the first ancestor element with an origin
                 Element parent = value;
                 while((parent = parent.parent()) != null) {
-                    if(parent.origin() != null) {
+                    if(parent.origin() != null && !parent.origin().startsWith("-")) {
                         origin = parent.origin();
                         break;
                     }

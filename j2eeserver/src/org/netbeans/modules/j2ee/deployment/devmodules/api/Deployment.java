@@ -177,7 +177,8 @@ public final class Deployment {
             targetserver.notifyIncrementalDeployment(modules);
             if (targetserver.supportsDeployOnSave(modules)) {
                 DeployOnSaveManager.getDefault().notifyInitialDeployment(jmp);
-                startListening(jmp);
+                //startListening(jmp);
+                checkListening(jmp);
             }
 
             if (modules != null && modules.length > 0) {
@@ -521,6 +522,19 @@ public final class Deployment {
     
     public static interface Logger {
         public void log(String message);
+    }
+
+    // TODO move to DeployOnSaveManager
+
+    private static void checkListening(J2eeModuleProvider j2eeProvider) {
+        synchronized (COMPILE_LISTENERS) {
+            if (COMPILE_LISTENERS.containsKey(j2eeProvider)) {
+                // this is due to EAR childs :(
+                if (j2eeProvider instanceof J2eeApplicationProvider) {
+                    startListening(j2eeProvider);
+                }
+            }
+        }
     }
 
     private static void startListening(J2eeModuleProvider j2eeProvider) {

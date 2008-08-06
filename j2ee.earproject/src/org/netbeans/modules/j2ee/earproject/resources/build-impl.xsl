@@ -213,8 +213,8 @@ is divided into following sections:
             <target name="-init-cos">
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <condition>
-                    <xsl:attribute name="property">build.deploy.on.save</xsl:attribute>
-                    <istrue value="${{deploy.on.save}}"/>
+                    <xsl:attribute name="property">build.disable.deploy.on.save</xsl:attribute>
+                    <istrue value="${{disable.deploy.on.save}}"/>
                 </condition>         
             </target>
             
@@ -606,7 +606,7 @@ to simulate
                 <xsl:variable name="script" select="projdeps:script"/>
                 <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
                     <property name="dist.ear.dir" location="${{build.dir}}"/>
-                    <property name="deploy.on.save" value="${{build.deploy.on.save}}"/>
+                    <property name="disable.deploy.on.save" value="${{build.disable.deploy.on.save}}"/>
                 </ant>
             </xsl:for-each>
             <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>

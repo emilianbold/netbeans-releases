@@ -45,6 +45,7 @@ import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
@@ -120,7 +121,7 @@ public class UninitializedVariableRule  extends PHPRule implements VarStackReadi
             
             if (varName != null && !context.variableStack.isVariableDefined(varName)) {
                 // check the globals from included files
-                Collection<IndexedConstant> topLevelVars = context.index.getTopLevelVariables((PHPParseResult) context.parserResult,
+                Collection<IndexedVariable> topLevelVars = context.index.getTopLevelVariables((PHPParseResult) context.parserResult,
                         "$" + varName, NameKind.EXACT_NAME); //NOI18N
                 
                 for (IndexedConstant topLevelVar : topLevelVars) {

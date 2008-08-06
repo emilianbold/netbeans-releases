@@ -602,7 +602,7 @@ public class AstRenderer {
         return results.toArray(new CsmTypedef[results.size()]);
     }
     
-    protected CsmTypedef[] renderTypedef(AST ast, FileImpl file, CsmObject container) {
+    protected CsmTypedef[] renderTypedef(AST ast, FileImpl file, CsmScope container) {
         List<CsmTypedef> results = new ArrayList<CsmTypedef>();
         if( ast != null ) {
             AST firstChild = ast.getFirstChild();
@@ -662,7 +662,7 @@ public class AstRenderer {
                             case CPPTokenTypes.SEMICOLON:
                                 TypeImpl typeImpl = null;
                                 if (classifier != null) {
-                                    typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth);
+                                    typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, container);
                                 } else if (ei != null) {
                                     typeImpl = TypeFactory.createType(ei, ptrOperator, arrayDepth, ast, file);
                                 }

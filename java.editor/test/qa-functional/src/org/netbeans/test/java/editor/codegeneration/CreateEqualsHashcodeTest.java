@@ -41,9 +41,9 @@ package org.netbeans.test.java.editor.codegeneration;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.java.editor.jelly.GenerateCodeOperator;
 import org.netbeans.test.java.editor.jelly.GenerateEqualsAndHashCodeOperator;
 
 /**
