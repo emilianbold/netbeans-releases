@@ -59,14 +59,18 @@ public class NbMenuItem implements Comparable {
     private boolean checked = false;
     ArrayList<NbMenuItem> submenu = null;
 
-    public NbMenuItem() {
+    public NbMenuItem() {        
+    }
+    
+    public NbMenuItem(String name) {
+        this.name = name;
     }
 
     /**
      * @param it
      * @return instance of NbMenuItem constructed from parameter it */
     public NbMenuItem(JMenuItem it) {
-        this.name = it.getText();//getLabel();
+        setName(it.getText());//getLabel();
         this.accelerator = (it.getAccelerator() == null) ? null : it.getAccelerator().toString();
         this.mnemo = (char) it.getMnemonic();
 //        System.out.println("NbMenuItem ["+name+"] - mnemo: ["+it.getMnemonic()+"]"); why are the mnemonic always in capital?
