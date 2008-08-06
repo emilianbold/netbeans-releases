@@ -40,10 +40,12 @@ made subject to such option by the copyright holder.
 -->
 
 <filesystem>
+    <!--
    <folder name="UML">
       <folder name="requirements">
          <file name="org.netbeans.modules.uml.requirements.doorsprovider.DoorsReqProvider.instance">
          </file>
       </folder>
+      -->
   </folder>
 </filesystem>  
