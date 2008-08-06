@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.glassfish.spi.ProfilerCookie;
 import org.netbeans.modules.glassfish.spi.RemoveCookie;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
+import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
 import org.openide.util.Lookup;
 
 
@@ -48,7 +52,7 @@ import org.openide.util.Lookup;
  *
  * @author Peter Williams
  */
-public class JavaEEServerModule implements RemoveCookie {
+public class JavaEEServerModule implements RemoveCookie, ProfilerCookie {
 
     private final Lookup lookup;
     private final InstanceProperties instanceProperties;
@@ -66,6 +70,23 @@ public class JavaEEServerModule implements RemoveCookie {
     // ------------------------------------------------------------------------
     public void removeInstance(String serverUri) {
         InstanceProperties.removeInstance(serverUri);
+    }
+
+    public Object[] getData() {
+        Profiler profiler = (Profiler) Lookup.getDefault().lookup(Profiler.class);
+        Object[] retVal = new Object[2];
+        retVal[0] = JavaPlatform.getDefault().getInstallFolders().iterator().next();
+        retVal[1] = new String[0];
+        if (profiler == null) {
+            return retVal;
+        }
+        final ProfilerServerSettings settings = profiler.getSettings(instanceProperties.getProperty(InstanceProperties.URL_ATTR));
+        if (settings == null) {
+            return retVal;
+        }
+        retVal[0] = settings.getJavaPlatform().getInstallFolders().iterator().next();
+        retVal[1] = settings.getJvmArgs();
+        return retVal;
     }
 
     // ------------------------------------------------------------------------

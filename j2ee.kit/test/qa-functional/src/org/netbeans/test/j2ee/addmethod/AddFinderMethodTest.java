@@ -51,7 +51,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
 import javax.swing.JTextField;
 import org.netbeans.test.j2ee.EJBValidation;
-import org.netbeans.test.java.editor.jelly.GenerateCodeOperator;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 
 /**
  *

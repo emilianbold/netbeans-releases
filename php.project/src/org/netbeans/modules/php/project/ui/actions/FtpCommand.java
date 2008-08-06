@@ -186,7 +186,27 @@ public abstract class FtpCommand extends Command {
             }
         }
 
-        out.println(NbBundle.getMessage(FtpCommand.class, "MSG_FtpRuntimeAndSize", transferInfo.getRuntime(), files, size / 1024.0));
+        // summary
+        long runtime = transferInfo.getRuntime();
+        String timeUnit = NbBundle.getMessage(FtpCommand.class, "LBL_TimeUnitMilisecond");
+        if (runtime > 1000) {
+            runtime /= 1000;
+            timeUnit = NbBundle.getMessage(FtpCommand.class, "LBL_TimeUnitSecond");
+        }
+        double s = size / 1024.0;
+        String sizeUnit = NbBundle.getMessage(FtpCommand.class, "LBL_SizeUnitKilobyte");
+        if (s > 1024) {
+            s /= 1024.0;
+            sizeUnit = NbBundle.getMessage(FtpCommand.class, "LBL_SizeUnitMegabyte");
+        }
+        Object[] params = new Object[] {
+            runtime,
+            timeUnit,
+            files,
+            s,
+            sizeUnit,
+        };
+        out.println(NbBundle.getMessage(FtpCommand.class, "MSG_FtpRuntimeAndSize", params));
     }
 
     private void printSuccess(OutputWriter writer, int maxRelativePath, TransferFile file) {
