@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.IOException;
@@ -81,5 +80,21 @@ public class GemListParserTest extends RubyTestBase {
         List<String> outputL = Arrays.asList(output.split("\\n"));
         List<Gem> gems = GemListParser.parseLocal(outputL);
         assertSame("local parsed", 5, gems.size());
+    }
+
+    public void testParseDescription() throws IOException {
+        String output = slurp(getGoldenFile());
+        List<String> outputL = Arrays.asList(output.split("\\n"));
+        List<Gem> gems = GemListParser.parseLocal(outputL);
+        assertSame("local parsed", 1, gems.size());
+        String expected = "Author: Ryan Davis\n" +
+                "Rubyforge: http://rubyforge.org/projects/parsetree\n" +
+                "Homepage: http://rubyforge.org/projects/parsetree/\n" +
+                "\n" +
+                "ParseTree is a C extension (using RubyInline) that extracts the\n" +
+                "parse tree for an entire class or a specific method and returns it\n" +
+                "as a s-expression (aka sexp) using ruby's arrays, strings, symbols,\n" +
+                "and integers";
+        assertEquals("right desctiption", expected, gems.get(0).getDescription());
     }
 }

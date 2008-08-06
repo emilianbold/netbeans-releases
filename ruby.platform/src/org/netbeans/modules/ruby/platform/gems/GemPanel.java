@@ -249,7 +249,7 @@ public final class GemPanel extends JPanel {
             sb.append("<h3>"); // NOI18N
             sb.append(getMessage("Description"));
             sb.append("</h3>"); // NOI18N
-            sb.append(gem.getDescription());
+            sb.append(gem.getHTMLDescription());
         }
 
         sb.append("</html>"); // NOI18N

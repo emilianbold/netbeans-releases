@@ -617,6 +617,7 @@ private void verifySQLLimit() {
         }
 
         public void actionPerformed(ActionEvent evt) {
+            searchTextField.setText(""); // NOI18N
             refreshTable(evt);
         }
         
@@ -674,8 +675,12 @@ private void verifySQLLimit() {
                 data[row++][1] = date;
             }
             // Refresh table
-            if (data.length >= 0) {
-                sqlHistoryTable.repaint();
+            if (data.length > 0) {
+                sqlHistoryTable.revalidate();
+                insertSQLButton.setEnabled(true);
+            } else {
+                sqlHistoryTable.revalidate();
+                insertSQLButton.setEnabled(false);
             }
         }
 
@@ -705,11 +710,13 @@ private void verifySQLLimit() {
                         data[i][0] = localData[i][0];
                         data[i][1] = localData[i][1];
                     }
+                    insertSQLButton.setEnabled(true);
                 } else {
                     data = new Object[0][0];
+                    insertSQLButton.setEnabled(false);
                 }
                 // Refresh the table
-                sqlHistoryTable.repaint();
+                sqlHistoryTable.revalidate();
             } catch (InterruptedException e) {
                 Exceptions.printStackTrace(e);
             } catch (Exception e) {
@@ -745,12 +752,14 @@ private void verifySQLLimit() {
                     for (int i = 0; i < row; i++) {
                         data[i][0] = localData[i][0];
                         data[i][1] = localData[i][1];
-                    }
+                    }                    
+                    insertSQLButton.setEnabled(true);
                 } else {
-                    data = new Object[0][0];
+                    data = new Object[0][0];                                        
+                    insertSQLButton.setEnabled(false);
                 }
-                // Refresh the table                     
-                sqlHistoryTable.repaint();
+                // Refresh the table
+                sqlHistoryTable.revalidate();
             } catch (InterruptedException e) {
                 Exceptions.printStackTrace(e);
             } catch (Exception e) {

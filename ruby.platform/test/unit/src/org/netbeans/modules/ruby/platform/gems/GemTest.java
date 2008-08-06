@@ -79,6 +79,12 @@ public final class GemTest extends NbTestCase {
         assertEquals("no version", 0, versions.size());
     }
 
+    public void testHTMLDescription() {
+        Gem gem = new Gem("abc", null, null);
+        gem.setDescription("first\nsecond\nthird");
+        assertEquals("correct html description", "first<br>\nsecond<br>\nthird", gem.getHTMLDescription());
+    }
+
     private void assertLatestInstalled(String versions, String latestExpected) {
         Gem gem = new Gem("ruby-debug-ide", versions, null);
         assertEquals("latest version", latestExpected, gem.getLatestInstalled());
@@ -88,4 +94,5 @@ public final class GemTest extends NbTestCase {
         Gem gem = new Gem("ruby-debug-ide", null, versions);
         assertEquals("latest version", latestExpected, gem.getLatestAvailable());
     }
+    
 }

@@ -518,6 +518,8 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
      * Declare prefix for given namespace (without any refactoring action).
      */
     public void addPrefix(String prefix, String namespace) {
+        if(namespace == null)
+            return;
         Attribute a = createPrefixAttribute(prefix);
         setAttribute(a.getName(), a, namespace);
     }
@@ -607,7 +609,6 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
     
     protected void ensureValueNamespaceDeclared(String newNamespace, String oldNamespace, 
             String preferredPrefix) {
-        if (newNamespace == null) return;
         String prefix = null;
         if (oldNamespace != null) {
             prefix = lookupPrefix(oldNamespace);

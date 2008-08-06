@@ -373,6 +373,7 @@ public class CompilerSetManager {
         ServerRecord record = registry.get(key);
         assert record != null;
 
+        log.warning("CSM.initRemoteCompilerSets for " + key + " [" + state + "]");
         record.validate();
         if (record.isOnline()) {
             RequestProcessor.getDefault().post(new Runnable() {
