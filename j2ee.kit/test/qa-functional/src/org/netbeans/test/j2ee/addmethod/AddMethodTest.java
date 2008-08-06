@@ -50,7 +50,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.test.java.editor.jelly.GenerateCodeOperator;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 
 /**
  *
