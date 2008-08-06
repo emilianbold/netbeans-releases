@@ -252,6 +252,7 @@ public final class GemPanel extends JPanel {
         sb.append("</html>"); // NOI18N
 
         pane.setText(sb.toString());
+        pane.setCaretPosition(0);
     }
 
     private void setEnabledGUI(boolean enabled) {
