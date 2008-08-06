@@ -45,7 +45,7 @@ import java.io.IOException;
 import javax.swing.JTextField;
 import org.netbeans.jellytools.*;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.test.java.editor.jelly.GenerateCodeOperator;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 
 /**
  *
