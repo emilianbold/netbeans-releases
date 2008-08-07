@@ -73,20 +73,6 @@ public class CommitUiTest extends JellyTestCase {
      }
 
     public void testInvokeCloseCommit() throws Exception {
-        long timeout_c = JemmyProperties.getCurrentTimeout("ComponentOperator.WaitComponentTimeout");
-        try {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        } catch (TimeoutExpiredException e) {
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout_c);
-        }
-
-        long timeout_d = JemmyProperties.getCurrentTimeout("DialogWaiter.WaitDialogTimeout");
-        try {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
-        } catch (TimeoutExpiredException e) {
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout_d);
-        }
-
         try {
             TestKit.closeProject(PROJECT_NAME);
 
@@ -136,13 +122,8 @@ public class CommitUiTest extends JellyTestCase {
 
             co.verify();
             co.cancel();
-            //TestKit.removeAllData(PROJECT_NAME);
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
-            JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", timeout_c);
-            JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", timeout_d);
         }
     }
 }

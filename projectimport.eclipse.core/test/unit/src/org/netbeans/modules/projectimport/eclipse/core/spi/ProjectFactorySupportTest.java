@@ -379,7 +379,6 @@ public class ProjectFactorySupportTest extends NbTestCase {
         repo.mkdir();
         File w = new File(getWorkDir(), "workspace");
         w.mkdir();
-        System.err.println("repo="+repo.getPath());
         Workspace workspace = EclipseProjectTestUtils.createWorkspace(w, new Workspace.Variable("REPO", repo.getPath()));
         File f = new File(getWorkDir(), "a-project");
         f.mkdir();
@@ -390,7 +389,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
         DotClassPathEntry e = eclipse.getClassPathEntries().get(0);
         assertEquals(f.getAbsolutePath()+"/lib/bsh.jar", e.getAbsolutePath());
         assertEquals(f.getAbsolutePath()+"/lib/bsh-sources.zip", e.getProperty("sourcepath"));
-        assertEquals(f.getAbsolutePath()+"/lib/bsh-javadoc.jar", e.getProperty("javadoc_location"));
+        assertEquals(f.getAbsolutePath()+"/lib/bsh-javadoc.jar!/doc/api/", e.getProperty("javadoc_location"));
         
         e = eclipse.getClassPathEntries().get(1);
         assertEquals(repo.getAbsolutePath()+"/lib/bsh.jar", e.getAbsolutePath());

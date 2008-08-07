@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.projectimport.eclipse.core.wizard;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -66,8 +65,10 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import org.netbeans.modules.projectimport.eclipse.core.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.core.ProjectImporterException;
 import org.netbeans.modules.projectimport.eclipse.core.Workspace;
@@ -90,69 +91,80 @@ public final class ProjectSelectionPanel extends JPanel {
     private static final Logger logger = Logger.getLogger(ProjectSelectionPanel.class.getName());
 
     private ProjectWizardPanel wizard;
-    /** Renderer for projects */
-    private class ProjectCellRenderer extends AbstractCellEditor
+    
+    private class ProjectCheckboxEditorAndRenderer extends AbstractCellEditor
             implements TableCellEditor, TableCellRenderer {
-        
+
         private JCheckBox checkbox;
         
-        private Component createComponent(JTable table, Object value,
+        public Object getCellEditorValue() {
+            return Boolean.valueOf(checkbox.isSelected());
+        }
+
+        private JCheckBox createComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
             EclipseProject project = projects[row];
-            JLabel label = new JLabel();
-            label.setOpaque(false);
-            checkbox = new JCheckBox();
-            checkbox.setOpaque(false);
-            JPanel p = new JPanel();
-            p.setOpaque(false);
-            p.setLayout(new BorderLayout());
-            p.add(checkbox, BorderLayout.WEST);
-            p.add(label, BorderLayout.CENTER);
-            if (project.isImportSupported()) {
-                label.setText(project.getName() + " ("+project.getProjectTypeFactory().getProjectTypeName()+")"); // NOI18N
-                label.setIcon(project.getProjectTypeFactory().getProjectTypeIcon());
-            } else {
-                label.setText(project.getName() + " (unknown project type)"); // NOI18N
-            }
-            checkbox.setSelected(selectedProjects.contains(project) ||
+            JCheckBox chb = new JCheckBox();
+            chb.setSelected(selectedProjects.contains(project) ||
                     requiredProjects.contains(project));
-            checkbox.setToolTipText(null);
-            label.setToolTipText(null);
+            chb.setToolTipText(null);
             if (project.isImportSupported() && !requiredProjects.contains(project)) {
-                checkbox.setEnabled(true);
-                label.setEnabled(true);
+                chb.setEnabled(true);
             } else {
                 // required and non-java project are disabled
-                checkbox.setEnabled(false);
-                //label.setEnabled(false);
+                chb.setEnabled(false);
                 if (!project.isImportSupported()) {
-                    checkbox.setToolTipText(ProjectImporterWizard.getMessage(
-                            "MSG_NonJavaProject", project.getName())); // NOI18N
-                    label.setToolTipText(ProjectImporterWizard.getMessage(
+                    chb.setToolTipText(ProjectImporterWizard.getMessage(
                             "MSG_NonJavaProject", project.getName())); // NOI18N
                 }
             }
-            return p;
+            if (isSelected) {
+                chb.setOpaque(true);
+                chb.setForeground(table.getSelectionForeground());
+                chb.setBackground(table.getSelectionBackground());
+            } else {
+                chb.setOpaque(false);
+                chb.setForeground(table.getForeground());
+                chb.setBackground(table.getBackground());
+            }
+            return chb;
         }
         
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                boolean isSelected, boolean hasFocus, int row, int column) {
-            return createComponent(table, value, isSelected, hasFocus, row, column);
-        
-        }
-        public Component getTableCellEditorComponent(JTable table, Object value,
-                boolean isSelected, int row, int column) {
-            Component c = createComponent(table, value, isSelected, isSelected, row, column);
+        public Component getTableCellEditorComponent(final JTable table, Object value, boolean isSelected, int row, int column) {
+            checkbox = createComponent(table, value, isSelected, isSelected, row, column);
             checkbox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent ev) {
                     fireEditingStopped();
                 }
             });
-            return c;
+            return checkbox;
         }
 
-        public Object getCellEditorValue() {
-            return Boolean.valueOf(checkbox.isSelected());
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            checkbox = createComponent(table, value, isSelected, isSelected, row, column);
+            return checkbox;
+        }
+        
+    }
+    
+    /** Renderer for projects */
+    private class ProjectNameRenderer extends DefaultTableCellRenderer implements TableCellRenderer {
+        
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (c instanceof JLabel) {
+                JLabel label = (JLabel)c;
+                label.setOpaque(isSelected);
+                EclipseProject project = projects[row];
+                if (project.isImportSupported()) {
+                    label.setIcon(project.getProjectTypeFactory().getProjectTypeIcon());
+                } else {
+                    label.setIcon(null);
+                }
+            }
+            return c;
         }
         
     }
@@ -176,10 +188,19 @@ public final class ProjectSelectionPanel extends JPanel {
     private Set<EclipseProject> requiredProjects;
     
     private class ProjectTableModel extends AbstractTableModel {
+        
         public Object getValueAt(int rowIndex, int columnIndex) {
             EclipseProject project = projects[rowIndex];
-            return Boolean.valueOf(selectedProjects.contains(project) ||
+            if (columnIndex == 0) {
+                return Boolean.valueOf(selectedProjects.contains(project) ||
                     requiredProjects.contains(project));
+            } else {
+                if (project.isImportSupported()) {
+                    return project.getName() + " ("+project.getProjectTypeFactory().getProjectTypeName()+")"; // NOI18N
+                } else {
+                    return project.getName() + " (unknown project type)"; // NOI18N
+                }
+            }
         }
         
         public int getRowCount() {
@@ -187,17 +208,21 @@ public final class ProjectSelectionPanel extends JPanel {
         }
         
         public int getColumnCount() {
-            return 1;
+            return 2;
         }
         
         @Override
         public Class getColumnClass(int columnIndex) {
-            return Boolean.class;
+            if (columnIndex == 0) {
+                return Boolean.class;
+            } else {
+                return String.class;
+            }
         }
         
         @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return (projects[rowIndex].isImportSupported() &&
+            return (columnIndex == 0 && projects[rowIndex].isImportSupported() &&
                     !requiredProjects.contains(projects[rowIndex]));
         }
         
@@ -211,11 +236,17 @@ public final class ProjectSelectionPanel extends JPanel {
                 selectedProjects.remove(project);
             }
             solveDependencies();
-            fireTableDataChanged();
-            projectTable.getSelectionModel().setLeadSelectionIndex(rowIndex);
+            fireColumnDataChanged();
             updateValidity();
             wizard.fireProjectListChanged();
         }
+        
+        private void fireColumnDataChanged() {
+            for (int i=0; i<getRowCount(); i++) {
+                fireTableCellUpdated(i, 0);
+            }
+        }
+    
     }
     
     /** Updates panel validity. */
@@ -329,7 +360,7 @@ public final class ProjectSelectionPanel extends JPanel {
     }
     
     /** Creates new form ProjectSelectionPanel */
-    public ProjectSelectionPanel(ProjectWizardPanel wizard) {
+    ProjectSelectionPanel(ProjectWizardPanel wizard) {
         this.wizard = wizard;
         initComponents();
         init();
@@ -341,14 +372,18 @@ public final class ProjectSelectionPanel extends JPanel {
         updateValidity();
         jRadioInsideEclipse.setSelected(true);
         enableLocation(false);
+        TableColumn column = projectTable.getColumnModel().getColumn(0);
+        column.setMaxWidth(25);
+        column.setMinWidth(25);
     }
     
     private void init() {
         projectTable.setModel(new ProjectTableModel());
         projectTable.setTableHeader(null);
         projectTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        projectTable.setDefaultRenderer(Boolean.class, new ProjectCellRenderer());
-        projectTable.setDefaultEditor(Boolean.class, new ProjectCellRenderer());
+        projectTable.getColumnModel().getColumn(0).setCellRenderer(new ProjectCheckboxEditorAndRenderer());
+        projectTable.getColumnModel().getColumn(1).setCellRenderer(new ProjectNameRenderer());
+        projectTable.setDefaultEditor(Boolean.class, new ProjectCheckboxEditorAndRenderer());
         projectTableSP.getViewport().setBackground(projectTable.getBackground());
         destination.setText(ProjectChooser.getProjectsFolder().getPath()); // NOI18N
     }

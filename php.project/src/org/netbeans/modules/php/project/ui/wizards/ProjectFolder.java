@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -123,13 +126,15 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
         projectFolderCheckBox = new JCheckBox();
         projectFolderLabel = new JLabel();
         projectFolderTextField = new JTextField();
         projectFolderBrowseButton = new JButton();
         projectFolderScrollPane = new JScrollPane();
         projectFolderTextArea = new JTextArea();
+
+        setFocusTraversalPolicy(null);
+
 
         Mnemonics.setLocalizedText(projectFolderCheckBox, NbBundle.getMessage(ProjectFolder.class, "LBL_SeparateProjectFolder")); // NOI18N
         projectFolderLabel.setLabelFor(projectFolderTextField);
@@ -158,8 +163,11 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         projectFolderTextArea.setEnabled(false);
         projectFolderScrollPane.setViewportView(projectFolderTextArea);
 
+        projectFolderTextArea.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextArea.AccessibleContext.accessibleName")); // NOI18N
+        projectFolderTextArea.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextArea.AccessibleContext.accessibleDescription")); // NOI18N
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(GroupLayout.TRAILING, layout.createSequentialGroup()
@@ -190,6 +198,19 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
                 .add(projectFolderScrollPane, GroupLayout.DEFAULT_SIZE, 60, Short.MAX_VALUE))
         
         );
+
+        projectFolderCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        projectFolderCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        projectFolderLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderLabel.AccessibleContext.accessibleName")); // NOI18N
+        projectFolderLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectFolderTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextField.AccessibleContext.accessibleName")); // NOI18N
+        projectFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        projectFolderBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        projectFolderBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        projectFolderScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderScrollPane.AccessibleContext.accessibleName")); // NOI18N
+        projectFolderScrollPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderScrollPane.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void projectFolderBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_projectFolderBrowseButtonActionPerformed

@@ -53,6 +53,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.OptionsViewAction;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -148,7 +149,7 @@ public class ProfilerValidation extends JellyTestCase {
     
     /** Test Profiler Properties. */
     public void testProfilerProperties(){
-        new ActionNoBlock("Tools|Options", null).perform();
+        new OptionsViewAction().performMenu();
         
         OptionsOperator options = new OptionsOperator();
         options.selectCategory("Miscellaneous");        

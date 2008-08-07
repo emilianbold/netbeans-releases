@@ -388,7 +388,7 @@ class EjbJarActionProvider implements ActionProvider {
         if (buildXml == null || !buildXml.isValid()) {
             return false;
         }
-        boolean cos = Boolean.parseBoolean(project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EjbJarProjectProperties.DEPLOY_ON_SAVE));
+        boolean cos = !Boolean.parseBoolean(project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE));
         if (cos && actionsDisabledForCoS.contains(command)) {
             return false;
         }

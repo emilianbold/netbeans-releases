@@ -250,7 +250,7 @@ is divided into following sections:
                             <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
                         </xsl:call-template>
                     </xsl:attribute>
-                    <istrue value="${{deploy.on.save}}"/>
+                    <isfalse value="${{disable.deploy.on.save}}"/>
                 </condition>         
             </target>
             

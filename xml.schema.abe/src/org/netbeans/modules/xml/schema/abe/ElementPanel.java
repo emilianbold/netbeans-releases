@@ -54,11 +54,7 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Box;
@@ -75,7 +71,6 @@ import org.netbeans.modules.xml.axi.Compositor;
 import org.netbeans.modules.xml.schema.abe.nodes.ABEAbstractNode;
 import org.netbeans.modules.xml.schema.abe.nodes.AnyElementNode;
 import org.netbeans.modules.xml.schema.abe.nodes.ElementNode;
-import org.openide.nodes.Node;
 
 public class ElementPanel extends ABEBaseDropPanel{
     private static final long serialVersionUID = 7526472295622776147L;
@@ -162,7 +157,7 @@ public class ElementPanel extends ABEBaseDropPanel{
                         fadeinPanel.setVisible(true);
                     }else{
                         //children not added create them and then show
-                        createChild();
+                        createChild(null);
                         setExpanded(true);
                     }
                 }finally{
@@ -184,10 +179,17 @@ public class ElementPanel extends ABEBaseDropPanel{
         }
     }
     
-    private void createChild(){
-        for(AXIComponent axiComp: axiContainer.getChildren()){
+    private void createChild(Compositor compositor) {
+        if(compositor != null) {
+            CompositorPanel child = new CompositorPanel(getUIContext(),
+                    compositor, this);
+            append(child);
+            return;
+        }
+        //if no compositor specified, add all from children list
+        for(AXIComponent axiComp: axiContainer.getChildren()) {
             if(axiComp instanceof Compositor){
-                Compositor compositor = (Compositor) axiComp;
+                compositor = (Compositor) axiComp;
                 CompositorPanel child = new CompositorPanel(getUIContext(),
                         compositor, this);
                 append(child);
@@ -234,10 +236,12 @@ public class ElementPanel extends ABEBaseDropPanel{
     private void removeChild(CompositorPanel component){
         if(childCompositorPanel != null){
             childCompositorPanel.remove(component);
-            if(childCompositorPanel.getComponents().length <= 0){
+            if(childCompositorPanel.getComponents().length == 0) {
+                fadeinPanel.removeAll();
                 remove(fadeinPanel);
-                expandButton.setVisible(false);
+                fadeinPanel = null;
                 childCompositorPanel = null;
+                expandButton.setVisible(false);
             }
             revalidate();
             repaint();
@@ -246,18 +250,19 @@ public class ElementPanel extends ABEBaseDropPanel{
     
     
     
-    private void addCompositor(Compositor compositor){
-        createChild();
+    private void addCompositor(Compositor compositor) {
+        createChild(compositor);
         expandButton.setVisible(true);
         setExpanded(false);
     }
     
-    private void removeCompositor(Compositor compositor){
+    private void removeCompositor(Compositor compositor) {
         if(childCompositorPanel == null)
             return;
         for(Component comp: childCompositorPanel.getComponents()){
             CompositorPanel cp = (CompositorPanel) comp;
-            if(cp.getAXIParent().getPeer() == compositor.getPeer()){
+            if(!cp.getAXIParent().getPeer().isInDocumentModel() ||
+                cp.getAXIParent().getPeer() == compositor.getPeer()){
                 removeChild(cp);
             }
         }

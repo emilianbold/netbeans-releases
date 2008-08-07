@@ -322,9 +322,17 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                     for (IndexedClass indexedClass : classes) {
                         ASTNode node = AstUtilities.getForeignNode(indexedClass);
                         if (node != null) {
-                            OffsetRange defRange = AstUtilities.getRange(node, doc);
+                            OffsetRange defRange = null;
+                            try {
+                                defRange = AstUtilities.getRange(node, (BaseDocument) indexedClass.getDocument());
+                            } catch (IOException ex) {
+                                LOG.log(Level.FINEST, "IOException while getting destination range : {0}", ex.getMessage()); // NOI18N
+                            }
                             if (defRange != null) {
-                                LOG.log(Level.FINEST, "Found declaration of class : {0}", text);
+                                LOG.log(Level.FINEST, "Found decl. for : {0}", text); // NOI18N
+                                LOG.log(Level.FINEST, "Foreign Node    : {0}", node); // NOI18N
+                                LOG.log(Level.FINEST, "Range start     : {0}", defRange.getStart()); // NOI18N
+                                
                                 return new DeclarationLocation(indexedClass.getFileObject(), defRange.getStart());
                             }
                         }
@@ -560,6 +568,11 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         BaseDocument doc, int astOffset, int lexOffset, AstPath path, ASTNode callNode, GroovyIndex index) {
 
         Set<IndexedMethod> candidates = new HashSet<IndexedMethod>();
+
+        if(path == null) {
+            return null;
+        }
+
         ASTNode parent = path.leafParent();
 
         if (callNode instanceof ConstantExpression && parent instanceof MethodCallExpression) {
