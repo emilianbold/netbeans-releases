@@ -141,10 +141,8 @@ public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
     }
     
     private ClassPath getBootClassPath() {
-        System.out.println("getBoothCP "+project.getProjectDirectory());
         Set<URL> cp = new HashSet<URL>();
         J2eeModuleProvider javaeeModule = project.getLookup().lookup(J2eeModuleProvider.class);
-        System.out.println("javaeeModule = "+javaeeModule);
         if (javaeeModule != null) {
             //javaee project type (web, ejb, appclient)
             //=> get required JAX-WS jars form the server
