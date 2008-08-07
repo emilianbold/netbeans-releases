@@ -26,7 +26,7 @@ import org.netbeans.modules.xslt.tmap.model.impl.TMapComponents;
  * @version 1.0
  */
 public interface Invoke extends TMapComponent, VariableDeclarator,
-        PortTypeReference, OperationReference, TransformerDescriptor, Nameable 
+        PartnerLinkTypeReference /* 142908 PortTypeReference*/, OperationReference, TransformerDescriptor, Nameable
 {
     TMapComponents TYPE = TMapComponents.INVOKE;
 }

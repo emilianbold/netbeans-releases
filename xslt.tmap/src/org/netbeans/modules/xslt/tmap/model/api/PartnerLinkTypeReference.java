@@ -18,25 +18,46 @@
  */
 package org.netbeans.modules.xslt.tmap.model.api;
 
-import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public interface TMapComponent extends DocumentComponent<TMapComponent> {
-
-    String TRANSFORM_MAP_NS_URI = "http://xml.netbeans.org/schema/transformmap"/* 142908 "http://www.sun.com/jbi/xsltse/transformmap"*/; // NOI18N
-    
-    TMapModel getModel();
-    
-    ExNamespaceContext getNamespaceContext();
-
-    void accept(TMapVisitor visitor);
+public interface PartnerLinkTypeReference extends ReferenceCollection {
+    /**
+     * Partner Link Type attribute name
+     */
+    String PARTNER_LINK_TYPE = "partnerLinkType"; // NOI18N
     
     /**
-     * @return interface in OM that represented by this entity.
+     * Role Name attribute name 
      */
-    Class<? extends TMapComponent> getComponentType();    
+    String ROLE_NAME = "roleName"; // NOI18N
+    
+    /**
+     * 
+     * @return 
+     */
+    WSDLReference<PartnerLinkType> getPartnerLinkType();
+    /**
+     * 
+     * @param pltRef - reference to the partner link type
+     */
+    void setPartnerLinkType(WSDLReference<PartnerLinkType> pltRef);
+    
+     /**
+      * 
+      * @return 
+      */
+     WSDLReference<Role> getRole();
+
+     /**
+      * 
+      * @param roleRef - reference to the role wsdl component
+      */
+     void setRole(WSDLReference<Role> roleRef);
+    
 }
