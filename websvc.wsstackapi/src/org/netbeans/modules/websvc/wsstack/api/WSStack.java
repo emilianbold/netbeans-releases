@@ -76,10 +76,8 @@ public final class WSStack<T> {
      */
     @SuppressWarnings("unchecked")
     public static <T> WSStack<T> findWSStack(Lookup lookupContext, Class<T> stackDescriptor) {
-        System.out.println("findWSStack()");
         Collection<? extends WSStack> wsStacks = lookupContext.lookupAll(WSStack.class);
         for (WSStack wsStack: wsStacks) {
-            System.out.println("wsStack = "+wsStack+":"+wsStack.get()+":"+wsStack.getVersion());
             if (wsStack.stackDescriptor == stackDescriptor) return wsStack;
         }
         return null;
