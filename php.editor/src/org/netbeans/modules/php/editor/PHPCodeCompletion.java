@@ -109,12 +109,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
     private static final List<String> INVALID_PROPOSALS_FOR_CLS_MEMBERS =
             Arrays.asList(new String[] {"__construct","__destruct"});//NOI18N
-    //TODO: complete list that should be offered
-    private static final List<String> METHOD_NAME_PROPOSALS =
-            Arrays.asList(new String[] {/*"__call()", "__clone()", */"__construct()",//NOI18N
-            "__destruct()"/*,  "__get()", "__set()", "__set_state()",//NOI18N
-            "__sleep()", "__toString()", "__unset()", "__wakeup()"*/
-    });
+    
     private static final List<String> CLASS_CONTEXT_KEYWORD_PROPOSAL =
             Arrays.asList(new String[] {"abstract","const","function", "private",
             "protected", "public", "static", "var"});//NOI18N
@@ -499,7 +494,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteMethodName(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
-        for (String keyword : METHOD_NAME_PROPOSALS) {
+        for (String keyword : PredefinedSymbols.MAGIC_METHODS) {
             if (keyword.startsWith(request.prefix)) {
                 proposals.add(new PHPCompletionItem.SpecialFunctionItem(keyword, request));
             }
@@ -1091,6 +1086,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     || t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$'
                     || t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$'
                     || t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
+                return QueryType.ALL_COMPLETION;
+                // magic methods
+            } else if (lastChar == '_' && acceptTokenChains(ts, FUNCTION_TOKENCHAINS)) {
                 return QueryType.ALL_COMPLETION;
             }
 
