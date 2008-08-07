@@ -464,16 +464,13 @@ public final class NbModuleProject implements Project {
     }
     
     private File getNbroot() {
-        return getNbroot(null);
-    }
-    private File getNbroot(PropertyEvaluator eval) {
         File dir = getProjectDirectoryFile();
         File nbroot = ModuleList.findNetBeansOrg(dir);
         if (nbroot != null) {
             return nbroot;
         } else {
             // OK, not it.
-            NbPlatform platform = getPlatform(eval);
+            NbPlatform platform = getPlatform();
             if (platform != null) {
                 URL[] roots = platform.getSourceRoots();
                 for (int i = 0; i < roots.length; i++) {
@@ -491,10 +488,7 @@ public final class NbModuleProject implements Project {
     }
     
     public File getNbrootFile(String path) {
-        return getNbrootFile(path, null);
-    }
-    File getNbrootFile(String path, PropertyEvaluator eval) {
-        File nbroot = getNbroot(eval);
+        File nbroot = getNbroot();
         if (nbroot != null) {
             return new File(nbroot, path.replace('/', File.separatorChar));
         } else {
@@ -588,26 +582,23 @@ public final class NbModuleProject implements Project {
      *         fallback is true but even the default platform is not available
      */
     public NbPlatform getPlatform(boolean fallback) {
-        NbPlatform p = getPlatform(null);
+        NbPlatform p = getPlatform();
         if (fallback && (p == null || !p.isValid())) {
             p = NbPlatform.getDefaultPlatform();
         }
         return p;
     }
     
-    private NbPlatform getPlatform(PropertyEvaluator eval) {
-        File file = getPlatformFile(eval);
+    private NbPlatform getPlatform() {
+        File file = getPlatformFile();
         if (file == null) {
             return null;
         }
         return NbPlatform.getPlatformByDestDir(file);
     }
     
-    private File getPlatformFile(PropertyEvaluator eval) {
-        if (eval == null) {
-            eval = evaluator();
-        }
-        String prop = eval.getProperty("netbeans.dest.dir"); // NOI18N
+    private File getPlatformFile() {
+        String prop = evaluator().getProperty("netbeans.dest.dir"); // NOI18N
         if (prop == null) {
             return null;
         }
@@ -923,7 +914,7 @@ public final class NbModuleProject implements Project {
         }
         
         public File getActivePlatformLocation() {
-            return NbModuleProject.this.getPlatformFile(null);
+            return NbModuleProject.this.getPlatformFile();
         }
 
         
