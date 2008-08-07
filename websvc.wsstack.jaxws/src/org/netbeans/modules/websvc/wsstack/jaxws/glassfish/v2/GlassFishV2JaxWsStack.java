@@ -37,27 +37,32 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.sun.ide.ws;
+package org.netbeans.modules.websvc.wsstack.jaxws.glassfish.v2;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashSet;
-import java.util.Set;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
-import org.netbeans.modules.websvc.serverapi.api.WSStack;
-import org.netbeans.modules.websvc.serverapi.api.WSUriDescriptor;
-import org.netbeans.modules.websvc.serverapi.spi.WSStackSPI;
+import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
+import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
+import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
+import org.netbeans.modules.websvc.wsstack.api.WSTool;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
+import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
+
 
 /**
  *
  * @author mkuchtiak
  */
-public class GlassfishJaxWsStack implements WSStackSPI {
+public class GlassFishV2JaxWsStack implements WSStackImplementation<JaxWs> {
     private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
     private static final String WEBSERVICES_RT_JAR = "lib/webservices-rt.jar"; //NOI18N
     
@@ -70,7 +75,9 @@ public class GlassfishJaxWsStack implements WSStackSPI {
     
     private File root;
     private String version;
-    public GlassfishJaxWsStack(File root) {
+    private JaxWs jaxWs;
+    
+    public GlassFishV2JaxWsStack(File root) {
         this.root = root;
         try {
             version = resolveImplementationVersion();
@@ -82,53 +89,29 @@ public class GlassfishJaxWsStack implements WSStackSPI {
             // Default Version
             version = "2.1.3"; // NOI18N
         };
-    }
-    
-    public String getName() {
-        return WSStack.STACK_JAX_WS;
-    }
-    
-    public String getVersion() {
-        return version;
+        jaxWs = new JaxWs(getUriDescriptor());
     }
 
-    public Set<String> getSupportedTools() {
-        Set<String> supportedTools = new HashSet<String>();
-        supportedTools.add(WSStack.TOOL_WSGEN);
-        supportedTools.add(WSStack.TOOL_WSIMPORT);
-        return supportedTools;
+    public JaxWs get() {
+        return jaxWs;
     }
 
-    public File[] getToolClassPathEntries(String toolName) {
-        if (WSStack.TOOL_WSGEN.equals(toolName) || WSStack.TOOL_WSIMPORT.equals(toolName)) {
-            File wsToolsJar = new File(root, WEBSERVICES_TOOLS_JAR);  //NOI18N
-            if (wsToolsJar.exists()) { // WSIT installed on top
-                return new File[] {
-                    new File(root, WEBSERVICES_TOOLS_JAR),     // NOI18N
-                    new File(root, WEBSERVICES_RT_JAR),           // NOI18N
-                    new File(root, TOOLS_JAR),      //NOI18N
-                    new File(root, JSTL_JAR),       //NOI18N
-                    new File(root, JAVA_EE_JAR),    //NOI18N
-                    new File(root, APPSERV_WS_JAR), //NOI18N
-                    new File(root, MAIL_JAR),       //NOI18N
-                    new File(root, ACTIVATION_JAR)  //NOI18N
-                };
-            } else {                                                // regular appserver
-                return new File[] {
-                    new File(root, TOOLS_JAR),        //NOI18N
-                    new File(root, JSTL_JAR),         //NOI18N
-                    new File(root, JAVA_EE_JAR),      //NOI18N
-                    new File(root, APPSERV_WS_JAR),   //NOI18N
-                    new File(root, MAIL_JAR),         //NOI18N
-                    new File(root, ACTIVATION_JAR)    //NOI18N
-                };
-            }
+    public WSStackVersion getVersion() {
+        return WSStackFactory.createWSStackVersion(version);
+    }
+
+    public WSTool getWSTool(Tool toolId) {
+        if (toolId == JaxWs.Tool.WSIMPORT) {
+            return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSIMPORT));
+        } else if (toolId == JaxWs.Tool.WSGEN) {
+            return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSGEN));
+        } else {
+            return null;
         }
-        return new File[]{};
     }
 
-    public WSUriDescriptor getServiceUriDescriptor() {
-        return new WSUriDescriptor() {
+    private JaxWs.UriDescriptor getUriDescriptor() {
+        return new JaxWs.UriDescriptor() {
 
             public String getServiceUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
                 if (isEjb) {
@@ -149,13 +132,12 @@ public class GlassfishJaxWsStack implements WSStackSPI {
         };
     }
 
-    public Set<WSStackFeature> getServiceFeatures() {
-        Set<WSStackFeature> wsFeatures = new HashSet<WSStackFeature>();
-        wsFeatures.add(WSStackFeature.JSR_109);
-        wsFeatures.add(WSStackFeature.SERVICE_REF_INJECTION);
-        wsFeatures.add(WSStackFeature.TESTER_PAGE);
-        wsFeatures.add(WSStackFeature.WSIT);
-        return wsFeatures;
+    public boolean isFeatureSupported(Feature feature) {
+        if (feature == JaxWs.Feature.JSR109 || feature == JaxWs.Feature.SERVICE_REF_INJECTION || feature == JaxWs.Feature.TESTER_PAGE || feature == JaxWs.Feature.WSIT) {
+            return true;
+        } else {
+            return false;
+        }    
     }
     
     private String resolveImplementationVersion() throws IOException {
@@ -183,6 +165,47 @@ public class GlassfishJaxWsStack implements WSStackSPI {
             }           
         }
         return null;
+    }
+    
+    private class JaxWsTool implements WSToolImplementation {
+        JaxWs.Tool tool;
+        JaxWsTool(JaxWs.Tool tool) {
+            this.tool = tool;
+        }
+
+        public String getName() {
+            return tool.getName();
+        }
+
+        public URL[] getLibraries() {
+            File wsToolsJar = new File(root, WEBSERVICES_TOOLS_JAR);  //NOI18N
+            try {
+                if (wsToolsJar.exists()) { // WSIT installed on top
+                    return new URL[] {
+                        wsToolsJar.toURL(),     // NOI18N
+                        new File(root, WEBSERVICES_RT_JAR).toURL(),           // NOI18N
+                        new File(root, TOOLS_JAR).toURL(),      //NOI18N
+                        new File(root, JSTL_JAR).toURL(),       //NOI18N
+                        new File(root, JAVA_EE_JAR).toURL(),    //NOI18N
+                        new File(root, APPSERV_WS_JAR).toURL(), //NOI18N
+                        new File(root, MAIL_JAR).toURL(),       //NOI18N
+                        new File(root, ACTIVATION_JAR).toURL()  //NOI18N
+                    };
+                } else {                                                // regular appserver
+                    return new URL[] {
+                        new File(root, TOOLS_JAR).toURL(),        //NOI18N
+                        new File(root, JSTL_JAR).toURL(),         //NOI18N
+                        new File(root, JAVA_EE_JAR).toURL(),      //NOI18N
+                        new File(root, APPSERV_WS_JAR).toURL(),   //NOI18N
+                        new File(root, MAIL_JAR).toURL(),         //NOI18N
+                        new File(root, ACTIVATION_JAR).toURL()    //NOI18N
+                    };
+                }
+            } catch (MalformedURLException ex) {
+                return new URL[0];
+            } 
+        }
+        
     }
 
 }

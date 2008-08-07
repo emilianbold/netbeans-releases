@@ -37,83 +37,24 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.core.jaxwsstack;
+package org.netbeans.modules.websvc.wsstack.jaxws.glassfish.v3;
 
-import java.io.File;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.LookupProvider;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author mkuchtiak
  */
-public class JaxWs {
-    
-    private WSUriDescriptor wsUriDescriptor;
-    private File keystore, keystoreClient, trustStore, trustStoreClient;
+public class GlassFishV3LookupProvider implements LookupProvider {
 
-    public void setWSUriDescriptor(WSUriDescriptor wsUriDescriptor) {
-        this. wsUriDescriptor = wsUriDescriptor;
-    }
-    
-    public void setKeystore(File keystore) {
-        this.keystore = keystore;
-    }
-    public void setKeystoreClient(File keystoreClient) {
-        this.keystoreClient = keystoreClient;
+    public Lookup createAdditionalLookup(Lookup baseContext) {
+        String gfRootStr = baseContext.lookup(String.class);
+        return Lookups.fixed(WSStackFactory.createWSStack(JaxWs.class ,new GlassFishV3JaxWsStack(gfRootStr), WSStack.Source.SERVER));
     }
 
-    public void setTruststore(File trustStore) {
-        this.trustStore = trustStore;
-    }
-
-    public void setTruststoreClient(File trustStoreClient) {
-        this.trustStoreClient = trustStoreClient;
-    }
-
-    public void setWsUriDescriptor(WSUriDescriptor wsUriDescriptor) {
-        this.wsUriDescriptor = wsUriDescriptor;
-    }
-    
-    
-    public File getSecurityFileLocation(Security security) {
-        switch (security) {
-            case KEYSTORE : return keystore;
-            case KEYSTORE_CLIENT : return keystoreClient;
-            case TRUSTSTORE : return trustStore;
-            case TRUSTSTORE_CLIENT : return trustStoreClient;
-            default: return null;
-        }
-    }
-    
-    public WSUriDescriptor getWSUriDescriptor() {
-        return wsUriDescriptor;
-    }
-    
-    public static enum Tool implements WSStack.Tool {
-        WSGEN,
-        WSIMPORT;
-        
-        public String getName() {
-            return name();
-        }        
-    }
-    
-    public static enum Feature implements WSStack.Feature {
-        JSR_109,
-        SERVICE_REF_INJECTION,
-        SERVLET_MAPPING_REQUIRED,
-        TESTER_PAGE,
-        WSIT;
-        
-        public String getName() {
-            return name();
-        }
-    }
-    
-    public static enum Security {
-        KEYSTORE,
-        KEYSTORE_CLIENT,
-        TRUSTSTORE,
-        TRUSTSTORE_CLIENT;
-    }
 }
