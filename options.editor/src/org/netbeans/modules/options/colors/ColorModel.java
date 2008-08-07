@@ -46,6 +46,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -421,7 +422,14 @@ public final class ColorModel {
             
             editorPane.setEnabled(false);
             editorPane.setText(exampleText);
-            editorPane.setCaretPosition(0);
+
+            // scroll the view, but leave the caret where it is, otherwise it will
+            // change the selected category (#143058)
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    editorPane.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
+                }
+            });
         }
         
         private String [] loadPreviewExample(String mimeType) {
