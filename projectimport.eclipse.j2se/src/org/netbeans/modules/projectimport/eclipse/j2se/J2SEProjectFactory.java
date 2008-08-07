@@ -92,7 +92,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         
         // create basic NB project
         String buildScript = null;
-        if (nbProjectDir.exists() && new File(nbProjectDir, "build.xml").exists()) { //NOI18N
+        if (new File(nbProjectDir, "build.xml").exists()) { //NOI18N
             buildScript = "nb-build.xml"; //NOI18N
         }
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
