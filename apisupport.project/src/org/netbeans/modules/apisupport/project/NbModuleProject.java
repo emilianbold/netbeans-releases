@@ -530,48 +530,6 @@ public final class NbModuleProject implements Project {
             }
         }
         return ml;
-        /*
-        } catch (IOException e) {
-            // #60094: see if we can fix it quietly by resetting platform to default.
-            FileObject platformPropertiesFile = null;
-            if (typeProvider.getModuleType() == NbModuleProvider.STANDALONE) {
-                platformPropertiesFile = getProjectDirectory().getFileObject("nbproject/platform.properties"); // NOI18N
-            } else if (typeProvider.getModuleType() == NbModuleProvider.SUITE_COMPONENT) {
-                PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(
-                        getHelper().getStockPropertyPreprovider(),
-                        new PropertyProvider[] {
-                            getHelper().getPropertyProvider("nbproject/private/suite-private.properties"), // NOI18N
-                            getHelper().getPropertyProvider("nbproject/suite.properties"), // NOI18N
-                        });
-                String suiteDirS = baseEval.getProperty("suite.dir"); // NOI18N
-                if (suiteDirS != null) {
-                    FileObject suiteDir = getHelper().resolveFileObject(suiteDirS);
-                    if (suiteDir != null) {
-                        platformPropertiesFile = suiteDir.getFileObject("nbproject/platform.properties"); // NOI18N
-                    }
-                }
-            }
-            if (platformPropertiesFile != null) {
-                try {
-                    EditableProperties ep = Util.loadProperties(platformPropertiesFile);
-                    if (!NbPlatform.PLATFORM_ID_DEFAULT.equals(ep.getProperty("nbplatform.active"))) { // NOI18N
-                        ep.setProperty("nbplatform.active", NbPlatform.PLATFORM_ID_DEFAULT); // NOI18N
-                        Util.storeProperties(platformPropertiesFile, ep);
-                    } else {
-                        // That wasn't it, never mind.
-                        throw e;
-                    }
-                } catch (IOException e2) {
-                    Util.err.notify(ErrorManager.INFORMATIONAL, e2);
-                    // Well, throw original exception.
-                    throw e;
-                }
-                // Try again!
-                return ModuleList.getModuleList(getProjectDirectoryFile());
-            }
-            throw e;
-        }
-         */
     }
     
     /**
