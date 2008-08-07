@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
+import org.netbeans.modules.ruby.rubyproject.IrbAction;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
@@ -125,15 +126,15 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
     }
     
     public Node findPath(Node root, Object target) {
-        Project project = root.getLookup().lookup(Project.class);
-        if (project == null) {
+        Project _project = root.getLookup().lookup(Project.class);
+        if (_project == null) {
             return null;
         }
         
         if (target instanceof FileObject) {
             FileObject targetFO = (FileObject) target;
             Project owner = FileOwnerQuery.getOwner(targetFO);
-            if (!project.equals(owner)) {
+            if (!_project.equals(owner)) {
                 return null; // Don't waste time if project does not own the fo
             }
             
@@ -317,6 +318,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null)); // NOI18N
             actions.add(null);
             actions.add(SystemAction.get(RakeRunnerAction.class));
+            actions.add(SystemAction.get(IrbAction.class));
             actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_RDOC, bundle.getString("LBL_RDocAction_Name"), null)); // NOI18N
             actions.add(null);
             if (INCLUDE_IRB_CONSOLE) {
