@@ -58,6 +58,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
 import org.rubyforge.debugcommons.RubyDebugEventListener;
 import org.rubyforge.debugcommons.RubyDebuggerException;
+import org.rubyforge.debugcommons.model.RubyDebugTarget;
 import org.rubyforge.debugcommons.model.RubyThreadInfo;
 import org.rubyforge.debugcommons.RubyDebuggerProxy;
 import org.rubyforge.debugcommons.model.RubyFrame;
@@ -202,7 +203,15 @@ public final class RubySession {
     }
 
     String getName() {
-        return "localhost:" + proxy.getDebugTarged().getPort(); // NOI18N
+        RubyDebugTarget debugTarged = proxy.getDebugTarged();
+        File f = new File(debugTarged.getDebuggedFile());
+        String path;
+        if (f.isAbsolute()) {
+            path = f.getAbsolutePath();
+        } else {
+            path = new File(debugTarged.getBaseDir(), debugTarged.getDebuggedFile()).getAbsolutePath();
+        }
+        return path + " (localhost:" + proxy.getDebugTarged().getPort() + ')'; // NOI18N
     }
     
     /**
