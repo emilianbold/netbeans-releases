@@ -77,7 +77,6 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     private final String displayName;
     private final PropertyChangeListener phpInterpreterListener;
     final Category category;
-    private String originalPhpInterpreter;
 
     public RunAsScript(PhpProject project, ConfigManager manager, Category category) {
         this(project, manager, category, NbBundle.getMessage(RunAsScript.class, "LBL_ConfigScript"));
@@ -113,23 +112,27 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
         // php cli
         initPhpInterpreterFields();
-        originalPhpInterpreter = PhpOptions.getInstance().getPhpInterpreter();
         defaultInterpreterCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 boolean selected = defaultInterpreterCheckBox.isSelected();
                 interpreterBrowseButton.setEnabled(!selected);
+                String newValue = null;
                 if (selected) {
-                    interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
+                    newValue = PhpOptions.getInstance().getPhpInterpreter();
+                } else {
+                    newValue = interpreterTextField.getText();
                 }
+                // hack - fire event in _every_ case (need to update run configuration)
+                interpreterTextField.setText(newValue + " "); // NOI18N
             }
         });
         phpInterpreterListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
-                    if (updatePhpInterpreter()) {
+                    if (defaultInterpreterCheckBox.isSelected()) {
+                        interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
                         composeHint();
                     }
-                    originalPhpInterpreter = PhpOptions.getInstance().getPhpInterpreter();
                 }
             }
         };
@@ -140,18 +143,9 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
     private void initPhpInterpreterFields() {
         String phpInterpreter = getValue(PhpProjectProperties.INTERPRETER);
-        boolean def = phpInterpreter == null || phpInterpreter.length() == 0 || phpInterpreter.equals(PhpOptions.getInstance().getPhpInterpreter());
+        boolean def = phpInterpreter == null || phpInterpreter.length() == 0;
         defaultInterpreterCheckBox.setSelected(def);
         interpreterBrowseButton.setEnabled(!def);
-    }
-
-    boolean updatePhpInterpreter() {
-        if (!originalPhpInterpreter.equals(interpreterTextField.getText())) {
-            // project specific php interpreter
-            return false;
-        }
-        interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
-        return true;
     }
 
     @Override
@@ -178,7 +172,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         for (int i = 0; i < textFields.length; i++) {
             String val = getValue(propertyNames[i]);
             if (PhpProjectProperties.INTERPRETER.equals(propertyNames[i])) {
-                val = val != null && val.length() > 0 ? val : PhpOptions.getInstance().getPhpInterpreter();
+                val = project.getPhpInterpreter();
             }
             textFields[i].setText(val);
         }
@@ -217,15 +211,11 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
         @Override
         protected String getPropValue() {
-            if (!PhpProjectProperties.INTERPRETER.equals(getPropName())) {
-                return super.getPropValue();
-            }
-            // php interpreter
-            String interpreter = interpreterTextField.getText();
-            if (PhpOptions.getInstance().getPhpInterpreter().equals(interpreter)) {
+            if (PhpProjectProperties.INTERPRETER.equals(getPropName())
+                    && defaultInterpreterCheckBox.isSelected()) {
                 return ""; // NOI18N
             }
-            return interpreter;
+            return super.getPropValue().trim();
         }
     }
 
