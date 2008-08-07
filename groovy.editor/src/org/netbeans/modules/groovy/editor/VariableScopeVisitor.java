@@ -58,6 +58,7 @@ import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ClosureListExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
@@ -220,6 +221,32 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
     }
 
     @Override
+    public void visitConstructor(ConstructorNode constructor) {
+        VariableScope variableScope = constructor.getVariableScope();
+        if (leaf instanceof Variable) {
+            String name = ((Variable) leaf).getName();
+            if (variableScope.getDeclaredVariable(name) != null) {
+                return;
+            }
+        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+            String name = ((ConstantExpression) leaf).getText();
+            if (variableScope.getDeclaredVariable(name) != null) {
+                return;
+            }
+        } else if (leaf instanceof ConstructorCallExpression) {
+            ConstructorCallExpression methodCallExpression = (ConstructorCallExpression) leaf;
+            if (Methods.isSameConstructor(constructor, methodCallExpression)) {
+                occurrences.add(constructor);
+            }
+        } else if (leaf instanceof ConstructorNode) {
+            if (Methods.isSameConstructor(constructor, (ConstructorNode) leaf)) {
+                occurrences.add(constructor);
+            }
+        }
+        super.visitConstructor(constructor);
+    }
+
+    @Override
     public void visitMethodCallExpression(MethodCallExpression methodCall) {
 
         if (leaf instanceof MethodNode) {
@@ -233,6 +260,21 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
             }
         }
         super.visitMethodCallExpression(methodCall);
+    }
+
+    @Override
+    public void visitConstructorCallExpression(ConstructorCallExpression call) {
+        if (leaf instanceof ConstructorNode) {
+            ConstructorNode constructor = (ConstructorNode) leaf;
+            if (Methods.isSameConstructor(constructor, call)) {
+                occurrences.add(call);
+            }
+        } else if (leaf instanceof ConstructorCallExpression) {
+            if (Methods.isSameConstuctor(call, (ConstructorCallExpression) leaf)) {
+                occurrences.add(call);
+            }
+        }
+        super.visitConstructorCallExpression(call);
     }
 
     @Override

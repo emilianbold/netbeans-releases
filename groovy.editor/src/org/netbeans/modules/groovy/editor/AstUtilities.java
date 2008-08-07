@@ -63,6 +63,7 @@ import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ClosureListExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
@@ -260,7 +261,7 @@ public class AstUtilities {
         } else if (node instanceof ConstructorNode) {
             int start = getOffset(doc, lineNumber, columnNumber);
             ConstructorNode constructorNode = (ConstructorNode) node;
-            return new OffsetRange(start, start + constructorNode.getDeclaringClass().getNameWithoutPackage().length());
+            return getNextIdentifierByName(doc, constructorNode.getDeclaringClass().getNameWithoutPackage(), start);
         } else if (node instanceof MethodNode) {
             int start = getOffset(doc, lineNumber, columnNumber);
             MethodNode methodNode = (MethodNode) node;
@@ -288,6 +289,11 @@ public class AstUtilities {
             }
             int start = getOffset(doc, lineNumber, columnNumber);
             return new OffsetRange(start, start + methodCall.getMethodAsString().length());
+        } else if (node instanceof ConstructorCallExpression) {
+            ConstructorCallExpression methodCall = (ConstructorCallExpression) node;
+            String name = methodCall.getType().getNameWithoutPackage();
+            int start = getOffset(doc, lineNumber, columnNumber);
+            return getNextIdentifierByName(doc, name, start);
         } else if (node instanceof ClassExpression) {
             ClassExpression clazz = (ClassExpression) node;
             int start = getOffset(doc, lineNumber, columnNumber);
