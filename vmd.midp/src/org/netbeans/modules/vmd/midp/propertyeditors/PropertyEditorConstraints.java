@@ -90,6 +90,12 @@ public class PropertyEditorConstraints extends PropertyEditorUserCode implements
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorConstraints.class, "LBL_CONSTR_STR")); // NOI18N
+        
+        radioButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(PropertyEditorConstraints.class, "ACSN_CONSTR_STR")); // NOI18N
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(PropertyEditorConstraints.class, "ACSD_CONSTR_STR")); // NOI18N
+        
         customEditor = new CustomEditorConstraints(0);
     }
     

@@ -45,8 +45,8 @@ package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -60,6 +60,8 @@ import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -69,7 +71,9 @@ import org.xml.sax.SAXException;
  * @author Peter Williams
  */
 public class StartTask extends BasicTask<OperationState> {
-    
+
+    private FileObject jdkHome = null;
+    private List<String> jvmArgs = null;
 
     /**
      * 
@@ -78,6 +82,15 @@ public class StartTask extends BasicTask<OperationState> {
      */
     public StartTask(Map<String, String> properties, OperationStateListener... stateListener) {
         super(properties, stateListener);
+    }
+    
+    /**
+     * 
+     */
+    public StartTask(Map<String, String> properties, FileObject jdkRoot, String[] jvmArgs, OperationStateListener... stateListener) {
+        super(properties, stateListener);
+        this.jdkHome = jdkRoot;
+        this.jvmArgs = Arrays.asList(jvmArgs);
     }
     
     /**
@@ -146,6 +159,12 @@ public class StartTask extends BasicTask<OperationState> {
             } catch (InterruptedException e) {
                 // no op
             }
+            
+            // if we are profiling, we need to lie about the status?
+            if (null != jvmArgs) {
+                return fireOperationStateChanged(OperationState.COMPLETED, 
+                        "MSG_SERVER_STARTED", instanceName); // NOI18N
+            }
         }
         
         // If the server did not start in the designated time limits
@@ -160,9 +179,9 @@ public class StartTask extends BasicTask<OperationState> {
     
     private String[] createEnvironment() {
         List<String> envp = new ArrayList<String>();
-        String jdkHome = getJdkHome();
-        if(jdkHome != null) {
-            String javaEnv = "JAVA_HOME=" + jdkHome;
+        String localJdkHome = getJdkHome();
+        if(localJdkHome != null) {
+            String javaEnv = "JAVA_HOME=" + localJdkHome;
             envp.add(javaEnv); // NOI18N
             Logger.getLogger("glassfish").log(Level.FINE, "V3 Environment: " + javaEnv);
         } else {
@@ -173,21 +192,31 @@ public class StartTask extends BasicTask<OperationState> {
     
     private String getJdkHome() {
         String result = null;
-        String jdkHome = System.getProperty("jdk.home");
-        if(jdkHome == null || jdkHome.length() == 0) {
-            String javaHome = System.getProperty("java.home");
-            if(javaHome.endsWith(File.separatorChar + "jre")) {
-                result = javaHome.substring(javaHome.length() - 4);
-            }
+        if (null != jdkHome) {
+            result = FileUtil.toFile(jdkHome).getAbsolutePath();
         } else {
-            result = jdkHome;
+            String localJdkHome = System.getProperty("jdk.home");       // NOI18N
+            if (localJdkHome == null || localJdkHome.length() == 0) {
+                String javaHome = System.getProperty("java.home");      // NOI18N
+                if (javaHome.endsWith(File.separatorChar + "jre")) {    // NOI18N
+                    result = javaHome.substring(javaHome.length() - 4);
+                }
+            } else {
+                result = localJdkHome;
+            }
         }
         return result;
     }
     
     private NbProcessDescriptor createProcessDescriptor() {
-        String startScript = System.getProperty("java.home") + 
+        String startScript;
+        if (null == jdkHome) {
+           startScript = System.getProperty("java.home") +        
                 File.separatorChar + "bin" + File.separatorChar + "java";
+        } else {
+            startScript = FileUtil.toFile(jdkHome).getAbsolutePath() +
+                File.separatorChar + "bin" + File.separatorChar + "java";
+        }
         String serverHome = ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
         File jar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_PREFIX_JAR_NAME);
         if(jar == null) {
@@ -199,6 +228,10 @@ public class StartTask extends BasicTask<OperationState> {
         List<String> optList = new ArrayList<String>(10);
         Map<String, String> argMap = new HashMap<String, String>();
         readJvmArgs(getDomainFolder(), optList, argMap);
+        
+        if (null != jvmArgs) {
+            optList.addAll(jvmArgs);
+        }
         
         StringBuilder argumentBuf = new StringBuilder(1024);
         appendSystemVars(argMap, argumentBuf);

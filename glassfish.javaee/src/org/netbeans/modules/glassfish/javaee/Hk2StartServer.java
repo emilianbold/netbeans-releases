@@ -68,6 +68,9 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
+import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -113,6 +116,13 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     
     // start server
     public ProgressObject startDeploymentManager() {
+        if (ProfilerSupport.getState() == ProfilerSupport.STATE_BLOCKING) {
+                fireHandleProgressEvent(null,new Hk2DeploymentStatus(
+                CommandType.START, StateType.FAILED, ActionType.EXECUTE, 
+                NbBundle.getMessage(Hk2StartServer.class, "MSG_SERVER_PROFILING_IN_PROGRESS", serverName))); // NOI18N
+                return this; //we failed to start the server.
+        }
+
         fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                 CommandType.START, StateType.RUNNING, ActionType.EXECUTE, 
                 NbBundle.getMessage(Hk2StartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)
@@ -167,6 +177,13 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     
     public ProgressObject startDebugging(Target target) {
  //        RequestProcessor.getDefault().post(new Hk2StartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
+        if (ProfilerSupport.getState() == ProfilerSupport.STATE_BLOCKING) {
+                fireHandleProgressEvent(null,new Hk2DeploymentStatus(
+                CommandType.START, StateType.FAILED, ActionType.EXECUTE, 
+                NbBundle.getMessage(Hk2StartServer.class, "MSG_SERVER_PROFILING_IN_PROGRESS", serverName)));  // NOI18N
+                return this; //we failed to start the server.
+        }
+
         fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                 CommandType.START, StateType.RUNNING, ActionType.EXECUTE, 
                 NbBundle.getMessage(Hk2StartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName)
@@ -281,4 +298,47 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
             iter.next().handleProgressEvent(evt);
         }
     }
+    
+    @Override
+    public boolean supportsStartProfiling(Target target) {
+        return supportsStartDeploymentManager();
+    }
+
+    public boolean isProfiling(Target target) {
+        return isRunning();
+    }
+
+    @Override
+    public ProgressObject startProfiling(Target target, ProfilerServerSettings settings) {
+        if (ProfilerSupport.getState() == ProfilerSupport.STATE_BLOCKING) {
+            fireHandleProgressEvent(null, new Hk2DeploymentStatus(
+                    CommandType.START, StateType.RUNNING, ActionType.EXECUTE,
+                    NbBundle.getMessage(Hk2StartServer.class, "MSG_SERVER_PROFILING_IN_PROGRESS", serverName))); // NOI18N
+            return this; //we failed to start the server.
+        }
+        fireHandleProgressEvent(null, new Hk2DeploymentStatus(
+                CommandType.START, StateType.RUNNING, ActionType.EXECUTE,
+                NbBundle.getMessage(Hk2StartServer.class, "MSG_START_SERVER_IN_PROGRESS", serverName))); // NOI18N
+        GlassfishModule commonSupport = getCommonServerSupport();
+        if (commonSupport != null) {
+//            String domainLocation = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
+//            String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
+            commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.PROFILE_MODE, true);
+            Iterator<FileObject> iter = settings.getJavaPlatform().getInstallFolders().iterator();
+            FileObject jdkRoot = null;
+            if (iter.hasNext()) {
+                jdkRoot = iter.next();
+            }
+            commonSupport.startServer(new OperationStateListener() {
+
+                public void operationStateChanged(OperationState newState, String message) {
+                    fireHandleProgressEvent(null, new Hk2DeploymentStatus(
+                            CommandType.START, translateState(newState), ActionType.EXECUTE,
+                            message));
+                }
+            }, jdkRoot, settings.getJvmArgs());
+        }
+        return this;
+    }
+
 }

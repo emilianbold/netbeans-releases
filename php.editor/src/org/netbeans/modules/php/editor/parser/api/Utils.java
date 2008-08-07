@@ -70,10 +70,12 @@ public class Utils {
 
         if (node.getEndOffset() <= root.getEndOffset()) {
             for (Comment comm : comments) {
-                if (comm.getEndOffset() < node.getStartOffset()) {
-                    possible = comm;
-                } else {
-                    break;
+                if (comm != null) {
+                    if (comm.getEndOffset() < node.getStartOffset()) {
+                        possible = comm;
+                    } else {
+                        break;
+                    }
                 }
             }
             if (possible != null && (possible.getEndOffset() + 1 < node.getStartOffset())) {

@@ -108,11 +108,18 @@
             data: "",
 
             startInThread: function() {
-                var eqService = NetBeans.Utils.CCSV(
-                NetBeans.Constants.EventQueueServiceCID,
-                NetBeans.Constants.EventQueueServiceIF);
-                this.eventQueue = eqService.getSpecialEventQueue(
-                NetBeans.Constants.EventQueueServiceIF.CURRENT_THREAD_EVENT_QUEUE);
+                if (NetBeans.Utils.isFF2()) {
+                    var eqService = NetBeans.Utils.CCSV(
+                    NetBeans.Constants.EventQueueServiceCID,
+                    NetBeans.Constants.EventQueueServiceIF);
+                    this.eventQueue = eqService.getSpecialEventQueue(
+                    NetBeans.Constants.EventQueueServiceIF.CURRENT_THREAD_EVENT_QUEUE);
+                } else {
+                    this.eventQueue = NetBeans.Utils.CCSV(                
+                    NetBeans.Constants.ThreadManagerServiceCID,
+                    NetBeans.Constants.ThreadManagerService).currentThread;
+                }
+
                 this.astream.asyncWait(this, 0, 0, this.eventQueue);
             },
 
@@ -194,7 +201,7 @@
             try {
                 inputStreamPump.startInThread();
             } catch(exc) {
-                NetBeans.Logger.log('' + exc);
+                NetBeans.Logger.logException(exc);
             }
         };
 
@@ -203,7 +210,7 @@
             try {
                 inputStreamPump.stopInThread();
             } catch(exc) {
-                NetBeans.Logger.log('' + exc);
+                NetBeans.Logger.logException(exc);
             }
         };
 

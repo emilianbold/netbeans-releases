@@ -339,7 +339,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
             Lookup.Result res = watchedLkpResults.get(tc);
             if( null != res ) {
                 res.removeLookupListener(this);
-                watchedLkpResults.remove(res);
+                watchedLkpResults.remove(tc);
             }
         }
         

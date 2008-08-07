@@ -64,7 +64,7 @@ public class ScriptingMeasureActionsTest {
 
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
-        .addTest(CreatePHPProject.class)
+//        .addTest(CreatePHPProject.class)
         .addTest(CreateScriptingPackFiles.class)
         .addTest(ScriptingExpandFolder.class)           
         .addTest(EditorMenuPopup.class)  

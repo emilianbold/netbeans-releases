@@ -150,6 +150,8 @@ public class RubyValidation extends JellyTestCase {
      * - wait classpath scanning finished
      */
     public void testCreateRubyProject() {
+        //workaround for 142928
+        NewProjectWizardOperator.invoke().cancel();
         // create new web application project
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         // "Ruby"
@@ -163,8 +165,8 @@ public class RubyValidation extends JellyTestCase {
         npnlso.txtProjectName().setText(SAMPLE_RUBY_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
         npnlso.finish();
-        // wait project appear in projects view
-        // wait 30 second
+            // wait project appear in projects view
+            // wait 30 second
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_RUBY_PROJECT_NAME);
         // wait classpath scanning finished
