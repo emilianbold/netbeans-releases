@@ -186,6 +186,11 @@ public class AcceptanceTestCase extends JellyTestCase {
     public void createNewSchema() {
         startTest();
         
+        // Workaround for MacOS platform
+        // TODO : check platform
+        // TODO : remove after normal issue fix
+        NewFileWizardOperator.invoke().cancel( );
+
         // Calling new file wizard
         NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke();
         // Slecting XML category
