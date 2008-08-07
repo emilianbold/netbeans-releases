@@ -41,6 +41,7 @@ package org.netbeans.modules.html.editor.gsf;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,8 +78,12 @@ public class HtmlStructureScanner implements StructureScanner {
 
     public List<? extends StructureItem> scan(final CompilationInfo info) {
 
-        ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
-        final TranslatedSource source = presult.getTranslatedSource();
+        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator();
+        if (!presultIterator.hasNext()) {
+            return Collections.emptyList();
+        }
+
+        ParserResult presult = presultIterator.next();     final TranslatedSource source = presult.getTranslatedSource();
         AstNode root = ((HtmlParserResult) presult).root();
 
 
@@ -101,7 +106,12 @@ public class HtmlStructureScanner implements StructureScanner {
             return Collections.emptyMap();
         }
         //so far the css parser always parses the whole css content
-        ParserResult presult = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator().next();
+        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(HTMLKit.HTML_MIME_TYPE).iterator();
+        if (!presultIterator.hasNext()) {
+            return Collections.emptyMap();
+        }
+
+        ParserResult presult = presultIterator.next();
         final TranslatedSource source = presult.getTranslatedSource();
         AstNode root = ((HtmlParserResult) presult).root();
 
