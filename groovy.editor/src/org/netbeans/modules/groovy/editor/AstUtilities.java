@@ -209,8 +209,7 @@ public class AstUtilities {
         int lineNumber = node.getLineNumber();
         int columnNumber = node.getColumnNumber();
         if (lineNumber < 1 || columnNumber < 1) {
-            lineNumber = 1;
-            columnNumber = 1;
+            return OffsetRange.NONE;
         }
 
         if (node instanceof FieldNode) {

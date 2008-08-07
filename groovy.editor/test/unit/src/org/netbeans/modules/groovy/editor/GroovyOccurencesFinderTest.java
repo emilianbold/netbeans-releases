@@ -178,6 +178,10 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         doTest("        def localvar3 = membervar1 + par^am1 + localvar1 + localvar2");
     }
     
+    public void testPackageInScript() throws Exception {
+        doTest("pac^kage foo");
+    }
+
     private void doTest(String caretLine) throws Exception {
         checkOccurrences("testfiles/GroovyScopeTestcase.groovy", caretLine, true);
     }
