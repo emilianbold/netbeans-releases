@@ -1276,7 +1276,9 @@ abstract class EntrySupport {
 
             Set<Entry> entriesToRemove = new HashSet<Entry>(entries);
             entriesToRemove.removeAll(newEntries);
-            removeEntries(entriesToRemove, null, null, false, false);
+            if (!entriesToRemove.isEmpty()) {
+                removeEntries(entriesToRemove, null, null, false, false);
+            }
 
             // change the order of entries, notifies
             // it and again brings children to up-to-date state, recomputes indexes
