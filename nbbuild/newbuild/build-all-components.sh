@@ -189,7 +189,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Build JNLP
-ant -Djnlp.codebase=http://bits.netbeans.org/trunk/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp
+ant -Djnlp.codebase=http://bits.netbeans.org/6.5/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then

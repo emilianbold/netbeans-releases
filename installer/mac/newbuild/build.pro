@@ -7,13 +7,13 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="Dev"/>
-    <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
-    <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
+    <property name="baseide.version" value="6.5Beta"/>
+    <property name="appname" value="NetBeans 6.5 Beta"/> 
+    <property name="mpkg.name_nb" value="NetBeans 6.5 Beta"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb6.5"/>      
 
-    <property name="appversion" value="Development Version"/>
+    <property name="appversion" value="6.5 Beta"/>
     
     <!-- Tomcat properties   -->    
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-6.0.16"/>
@@ -43,7 +43,7 @@
     </loadresource>
 
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
-    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-${glassfish.v3.version}"/>    
+    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-prelude-${glassfish.v3.version}"/>    
     <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/bundles/multiplatform.zip"/>
     <!--<property name="glassfish_v3_location" value="file:${user.home}/releng/hudson/glassfish-v3-preview2-b10d.zip"/>-->
     <property name="glassfish_v3_location_ml"  value="${glassfish_v3_location}"/>
@@ -55,7 +55,7 @@
     <property name="openesb_location" value="${openesb_builds_host}/kits/ojc/openesb_as9_ur2/latest/installers/jbi_components_installer.jar"/>
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  
 
-    <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
+    <property name="dmg.prefix.name" value="${prefix}"/>                         
 
     <property name="mpkg.name_nb_mysql" value="NetBeans IDE with MySQL"/> 
     <property name="mysql_10.5.pkg.name" value="mysql-5.0.51a-osx10.5-x86"/>

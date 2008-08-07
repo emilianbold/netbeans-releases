@@ -463,9 +463,9 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
                 Exceptions.printStackTrace(e);
             }
             
-            String deployOnSave = EarProject.this.getUpdateHelper().
-                    getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.DEPLOY_ON_SAVE);
-            if (Boolean.parseBoolean(deployOnSave)) {
+            String disableDeployOnSave = EarProject.this.getUpdateHelper().
+                    getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.DISABLE_DEPLOY_ON_SAVE);
+            if (!Boolean.parseBoolean(disableDeployOnSave)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(appModule);
             }
             

@@ -52,7 +52,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Abort;
 import com.sun.tools.javac.util.CouplingAbort;
-import com.sun.tools.javac.util.FatalError;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -61,7 +60,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,6 +86,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
@@ -97,6 +96,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -210,6 +210,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private int compileScheduled;
     
     private int lockRU;
+
+    private final Map<URL, String> root2DebugData = new HashMap<URL, String>();
     
     /** Creates a new instance of RepositoryUpdater */
     private RepositoryUpdater() {        
@@ -1428,6 +1430,30 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                 }
                                 completed = true;
+
+                                //UI Gestures:
+                                Object[] data = new Object[2 * root2DebugData.size() + 1];
+                                int index = 0;
+
+                                data[index++] = Index.getCacheFolder().getName();
+                                
+                                for (Entry<URL, String> e : root2DebugData.entrySet()) {
+                                    File cacheFile = Index.getClassFolder(e.getKey(), true);
+
+                                    if (cacheFile != null) {
+                                        data[index] = cacheFile.getParentFile().getName();
+                                    }
+
+                                    index++;
+                                    data[index++] = e.getValue();
+                                }
+
+                                root2DebugData.clear();
+
+                                LogRecord rec = new LogRecord(Level.CONFIG, RepositoryUpdater.class.getName());
+                                rec.setParameters(data);
+
+                                Logger.getLogger("org.netbeans.ui.java.RepositoryUpdater").log(rec);
                             } finally {
                                 if (!completed && !continuation) {
                                     resetDirty (ticket);
@@ -2197,6 +2223,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 Map<String, List<File>> resources = Collections.<String, List<File>>emptyMap();
                 final FileList children = new FileList(folderFile);
                 Set<File> compiledFiles = new HashSet<File>();
+                if (isInitialCompilation) {
+                    root2DebugData.put(root, children.getJavaFiles().size() + ":" + children.getVirtualJavaFiles().size());
+                }
                 parseFiles(root, classCache, isInitialCompilation,
                         children.getJavaFiles(), children.getVirtualJavaFiles(),
                         clean, handle, filter, null, compiledFiles, null, misplacedSource2FQNs,
@@ -3127,19 +3156,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), types);
                             toRecompile.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, activeTuple.file.toURI().toURL(), cpInfo, members));
                         }
-
-                        Iterable<? extends JavaFileObject> generatedFiles;
-                        boolean clearJavac = false;
-
-                        if (activeTuple.file != null && "package-info.java".equals(activeTuple.file.getName())) {
-                            //XXX: "types" are empty for package-info. will generate everything and use new javac to process the rest of the files:
-                            generatedFiles = jt.generate();
-                            clearJavac = true;
-                        } else {
-                            generatedFiles = jt.generate(types);
-                        }
-
-                        for (JavaFileObject generated : generatedFiles) {   //Analyzing genlist may be a bit faster
+                        for (JavaFileObject generated : jt.generate(types)) {   //Analyzing genlist may be a bit faster
                             if (generated instanceof OutputFileObject) {
                                 if (addedFiles != null) {
                                     addedFiles.add(((OutputFileObject) generated).getFile());
@@ -3148,15 +3165,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 //XXX: log (presumably should not happen)
                             }
                         }
-
-                        if (clearJavac) {
-                            if (jt != null) {
-                                jt.finish();
-                            }
-                            jt = null;
-                            listener.cleanDiagnostics();
-                        }
-                        
                         activeTuple = null;
                         state  = 0;
                     } catch (CouplingAbort a) {

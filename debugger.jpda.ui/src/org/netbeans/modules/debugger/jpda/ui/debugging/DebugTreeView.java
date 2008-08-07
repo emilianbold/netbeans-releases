@@ -40,7 +40,6 @@
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -77,10 +76,10 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
     
     DebugTreeView() {
         super();
-        tree.setPreferredSize(new Dimension(5, 5)); // [TODO]
-        tree.setMinimumSize(new Dimension(5, 5));
-        setPreferredSize(new Dimension(5, 5));
-        setMinimumSize(new Dimension(5, 5));
+//        tree.setPreferredSize(new Dimension(5, 5)); // [TODO]
+//        tree.setMinimumSize(new Dimension(5, 5));
+//        setPreferredSize(new Dimension(5, 5));
+//        setMinimumSize(new Dimension(5, 5));
         setBackground(whiteColor);
         tree.setOpaque(false);
         ((JComponent)tree.getParent()).setOpaque(false);
