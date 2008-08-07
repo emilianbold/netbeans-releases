@@ -867,10 +867,6 @@ public class MakeActionProvider implements ActionProvider {
             if (!record.isOnline()) {
                 lastValidation = false;
                 runBTA = true;
-//            } else {
-//                // TODO: Do we want to do a real validation now? Is cnd.remote able to provide it?
-//                lastValidation = true;
-//                return true;
             }
             // TODO: all validation below works, but it may be more efficient to make a verifying script
         }
@@ -937,8 +933,12 @@ public class MakeActionProvider implements ActionProvider {
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
-        
-        if ( runBTA || Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
+
+        if (conf.getDevelopmentHost().isLocalhost() && Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
+            runBTA = true;
+        }
+
+        if (runBTA) { 
             if (conf.getDevelopmentHost().isLocalhost()) {
                 BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
                 bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N

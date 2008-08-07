@@ -50,6 +50,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.actions.DebugAction;
+import org.netbeans.modules.glassfish.common.actions.ProfileAction;
 import org.netbeans.modules.glassfish.common.actions.PropertiesAction;
 import org.netbeans.modules.glassfish.common.actions.RemoveServerAction;
 import org.netbeans.modules.glassfish.common.actions.RestartAction;
@@ -151,7 +152,7 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         return new Action[] {
             SystemAction.get(StartServerAction.class),
             SystemAction.get(DebugAction.class),
-//            SystemAction.get(ProfileAction.class),
+            SystemAction.get(ProfileAction.class),
             SystemAction.get(RestartAction.class),
             SystemAction.get(StopServerAction.class),
             SystemAction.get(RefreshModulesAction.class),
@@ -206,6 +207,8 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
             case RUNNING:
                 if(isDebug()) {
                     badge = ImageUtilities.loadImage(DEBUGGING_ICON);
+                } else if (isProfile()) {
+                    badge = ImageUtilities.loadImage(PROFILING_ICON);
                 } else {
                     badge = ImageUtilities.loadImage(RUNNING_ICON);
                 }
@@ -244,6 +247,11 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
                 serverInstance.getCommonSupport().getInstanceProperties().get(GlassfishModule.JVM_MODE));
     }
     
+    private boolean isProfile() {
+        return GlassfishModule.PROFILE_MODE.equals(
+                serverInstance.getCommonSupport().getInstanceProperties().get(GlassfishModule.JVM_MODE));
+    }
+
     private Map<String, String> getInstanceProperties() {
         Map<String, String> ip = null;
         GlassfishModule commonSupport = getLookup().lookup(GlassfishModule.class);

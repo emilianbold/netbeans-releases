@@ -83,7 +83,6 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         // bg color jdk bug fixup
         if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
             jScrollPane1.setOpaque(false);
-            jScrollPane2.setOpaque(false);
             jScrollPane3.setOpaque(false);
         }
 
@@ -155,9 +154,9 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         jScrollPane1 = new javax.swing.JScrollPane();
         tblPathMappings = new javax.swing.JTable();
         jScrollPane2 = new javax.swing.JScrollPane();
-        txtExplanation = new javax.swing.JTextPane();
+        txtExplanation = new javax.swing.JTextArea();
         jScrollPane3 = new javax.swing.JScrollPane();
-        txtErrors = new javax.swing.JTextPane();
+        txtError = new javax.swing.JTextArea();
 
         lblHostName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("EPMD_Hostname").charAt(0));
         lblHostName.setLabelFor(cbHostsList);
@@ -179,34 +178,42 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
 
         jScrollPane2.setBorder(null);
 
-        txtExplanation.setBackground(new java.awt.Color(240, 240, 240));
-        txtExplanation.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        txtExplanation.setEditable(false);
+        txtExplanation.setBackground(getBackground());
+        txtExplanation.setColumns(20);
+        txtExplanation.setLineWrap(true);
+        txtExplanation.setRows(4);
         txtExplanation.setText(org.openide.util.NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialog.txtExplanation.text")); // NOI18N
+        txtExplanation.setWrapStyleWord(true);
+        txtExplanation.setAutoscrolls(false);
+        txtExplanation.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         txtExplanation.setFocusable(false);
+        txtExplanation.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jScrollPane2.setViewportView(txtExplanation);
 
         jScrollPane3.setBorder(null);
 
-        txtErrors.setBackground(new java.awt.Color(240, 240, 240));
-        txtErrors.setBorder(null);
-        txtErrors.setFocusable(false);
-        jScrollPane3.setViewportView(txtErrors);
+        txtError.setBackground(getBackground());
+        txtError.setColumns(20);
+        txtError.setLineWrap(true);
+        txtError.setRows(4);
+        txtError.setWrapStyleWord(true);
+        txtError.setFocusable(false);
+        jScrollPane3.setViewportView(txtError);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(lblHostName)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(cbHostsList, 0, 307, Short.MAX_VALUE)))
+                        .add(cbHostsList, 0, 423, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -217,11 +224,11 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                     .add(lblHostName)
                     .add(cbHostsList, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 58, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 64, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 91, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -243,8 +250,8 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JLabel lblHostName;
     private javax.swing.JTable tblPathMappings;
-    private javax.swing.JTextPane txtErrors;
-    private javax.swing.JTextPane txtExplanation;
+    private javax.swing.JTextArea txtError;
+    private javax.swing.JTextArea txtExplanation;
     // End of variables declaration//GEN-END:variables
     public void actionPerformed(ActionEvent e) {
         if (validateMaps()) {
@@ -290,7 +297,7 @@ private void cbHostsListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FI
             isValid = false;
             sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_PathNotResolved", pathToValidate));
         }
-        txtErrors.setText(sb.toString());
+        txtError.setText(sb.toString());
         return isValid;
     }
 }
