@@ -81,7 +81,7 @@ public abstract class BaseFileObj extends FileObject {
     private static final char EXT_SEP = '.';//NOI18N
     private FileChangeListener versioningWeakListener;    
     private final FileChangeListener versioningListener = new FileChangeListenerForVersioning();
-
+    
     //static fields 
     static final long serialVersionUID = -1244650210876356809L;
     static final Attributes attribs;
@@ -93,7 +93,6 @@ public abstract class BaseFileObj extends FileObject {
     //private fields
     private EventListenerList eventSupport;
     private final FileNaming fileName;
-    private FileObjectFactory cachedFactory;
 
 
     protected BaseFileObj(final File file) {
@@ -135,9 +134,9 @@ public abstract class BaseFileObj extends FileObject {
     }
     
     static String getNameExt(final File file) {
-        String retVal = (file.getParent() == null || isUncRoot(file)) ? file.getAbsolutePath() : file.getName();
+        String retVal = (file.getParentFile() == null || isUncRoot(file)) ? file.getAbsolutePath() : file.getName();
         if (retVal.endsWith(PATH_SEPARATOR)) {//NOI18N
-            final boolean isPermittedToStripSlash = !(file.getParent() == null && new FileInfo(file).isUNCFolder());
+            final boolean isPermittedToStripSlash = !(file.getParentFile() == null && new FileInfo(file).isUNCFolder());
             if (isPermittedToStripSlash) {
                 retVal = retVal.substring(0, retVal.length() - 1);
             }
@@ -172,18 +171,16 @@ public abstract class BaseFileObj extends FileObject {
 
     @Override
     public final String getPath() {
-        File rootFile = getFactory().getRoot().getFileName().getFile();
         String prefix = "";
         if (Utilities.isWindows()) {
-            prefix = rootFile.getPath().replace(File.separatorChar, '/');
+            prefix = getFactory().getRoot().getFileName().getFile().getPath().replace(File.separatorChar, '/');
             if(prefix.startsWith("//")) {
                 // UNC root like //computer/sharedFolder
                 prefix += "/";
             }
         }
-        return prefix+getRelativePath(rootFile, this.getFileName().getFile());//NOI18N
+        return prefix+getRelativePath(getFactory().getRoot().getFileName().getFile(), this.getFileName().getFile());//NOI18N
     }
-
     private static String getRelativePath(final File dir, final File file) {
         Stack<String> stack = new Stack<String>();
         File tempFile = file;
@@ -442,10 +439,7 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     public final FileObjectFactory getFactory() {
-        if(cachedFactory == null) {
-            cachedFactory = FileObjectFactory.getInstance(getFileName().getFile());
-        }
-        return cachedFactory;
+        return FileObjectFactory.getInstance(getFileName().getFile());
     }
 
     final void fireFileDataCreatedEvent(final boolean expected) {
