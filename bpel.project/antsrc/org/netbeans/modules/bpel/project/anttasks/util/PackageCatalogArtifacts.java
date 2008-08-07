@@ -40,19 +40,17 @@
  */
 package org.netbeans.modules.bpel.project.anttasks.util;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.util.ArrayList;
+import java.net.URISyntaxException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -68,12 +66,13 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class PackageCatalogArtifacts {
     
-    private Logger logger = Logger.getLogger(
-            PackageCatalogArtifacts.class.getName());    
+    final private Logger logger = 
+            Logger.getLogger(PackageCatalogArtifacts.class.getName());
     
-    public PackageCatalogArtifacts() {
-        // Does nothing
-    }
+    final private String retrieverPathPrefix = 
+            "nbproject/private/cache/retriever/"; // NOI18N
+    final private String retrieverPathPrefix2 = 
+            "retrieved/"; // NOI18N
     
     public void doCopy(
             final File sourceDirectory,
@@ -82,194 +81,409 @@ public class PackageCatalogArtifacts {
         CommandlineBpelProjectXmlCatalogProvider.getInstance().
                 setSourceDirectory(sourceDirectory.getAbsolutePath());
         
-        final File projectCatalogFile = new File(
+        final File catalogFile = new File(
                 CommandlineBpelProjectXmlCatalogProvider.getInstance().
                 getProjectCatalogUri());
         
-        final boolean projectCatalogExists = projectCatalogFile.exists() && 
-                (projectCatalogFile.length() > 0);
-        
-        if (!projectCatalogExists) {
-            return;
-        }
-        
-        final CatalogReader projectCatalogReader;
+        if (!catalogFile.exists() || (catalogFile.length() == 0)) return;
         
         try {
-            projectCatalogReader = projectCatalogExists ? 
-                new CatalogReader(
-                projectCatalogFile.getCanonicalPath()) : null;
+            final CatalogReader catalogReader = 
+                    new CatalogReader(catalogFile.getCanonicalPath());
             
-            doCopy(sourceDirectory, 
-                    buildDirectory,
-                    projectCatalogReader);
-        } catch (Throwable ex) {
-            logger.log(Level.WARNING, ex.getMessage(), ex);
+            doCopy(sourceDirectory, buildDirectory, catalogReader);
+        } catch (CatalogPackagingException e) {
+            logger.log(Level.SEVERE, e.getMessage(), e);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, e.getMessage(), e);
+        } catch (SAXException e) {
+            logger.log(Level.SEVERE, e.getMessage(), e);
         }
     }
     
     private void doCopy(
             final File sourceDirectory,
             final File buildDirectory,
-            final CatalogReader projectCatalog) throws Exception {
+            final CatalogReader catalogReader) throws CatalogPackagingException {
         
-        final List<String> listOfProjectNSs = projectCatalog == null ? 
-            new ArrayList<String>() : projectCatalog.getNamespaces();
-        final List<String> listOfProjectURIs = projectCatalog == null ? 
-            new ArrayList<String>() : projectCatalog.getLocations();
-        
-        final File metaInfDirectory = new File(buildDirectory, "META-INF");
-        metaInfDirectory.mkdirs();
-        
-        final File projectDirectory = buildDirectory.getParentFile();
-        final File catalogFile = new File(metaInfDirectory, "catalog.xml");
-        
-        final String retrieverPathPrefix = "nbproject/private/cache/";
-        final String retrieverPathPrefix2 = "retrieved/";
-        
-        final PrintWriter catalogWriter = 
-                new PrintWriter(new FileWriter(catalogFile));
-        
-        catalogWriter.println("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
-        catalogWriter.println("<catalog xmlns=\"urn:oasis:names:tc:entity:xmlns:xml:catalog\" prefer=\"system\">");
-        
-        for (int i = 0; i < listOfProjectNSs.size(); i++) {
-            final String ns = listOfProjectNSs.get(i);
-            String localUri = listOfProjectURIs.get(i);
-            
-            final URI realUri = new URI(localUri);
-            
-            if (realUri.getScheme() == null) {
-                // The URI leads us to the sources directory -- just correct 
-                // it and proceed
-                if (localUri.startsWith(sourceDirectory.getName() + "/")) {
-                    localUri = "../" + localUri.substring(
-                            sourceDirectory.getName().length() + 1);
-                } 
-                
-                // The URI leads to the nbproject directory -- it is a
-                // resource fetched by the retriever -- copy it
-                if (localUri.startsWith(retrieverPathPrefix)) {
-                    localUri = localUri.substring(retrieverPathPrefix.length());
-                    
-                    Util.copyFile(
-                            new File(projectDirectory, retrieverPathPrefix + localUri), 
-                            new File(buildDirectory, "_" + localUri));
-                    
-                    localUri = "../_" + localUri;
-                }
-                
-                // The URI leads to the retrieved directory -- it is a
-                // resource fetched by the retriever -- copy it
-                if (localUri.startsWith(retrieverPathPrefix2)) {
-                    Util.copyFile(
-                            new File(projectDirectory, localUri), 
-                            new File(buildDirectory, "_" + localUri));
-                    
-                    localUri = "../_" + localUri;
-                }
-            } else if (realUri.getScheme().equals("nb-uri")) {
-                try {
-                    Project project = FileOwnerQuery.getOwner(
-                            FileUtil.toFileObject(sourceDirectory));
+        try {
+            final List<String> systemIds = catalogReader.getSystemIds();
+            final List<String> locations = catalogReader.getLocations();
 
-                    final AntProjectHelper antHelper = project.getLookup().
-                            lookup(AntProjectHelper.class);
-                    final ReferenceHelper referenceHelper = project.getLookup().
-                            lookup(ReferenceHelper.class);
-                            
-                    final DefaultProjectCatalogSupport catalogSupport = 
-                            new DefaultProjectCatalogSupport(
-                                    project, antHelper, referenceHelper);
-                                    
-                    final FileObject fo = catalogSupport.resolveProjectProtocol(
-                            new URI(localUri));
-                    final File file = FileUtil.toFile(fo);
-                    
-                    final Project referencedProject = FileOwnerQuery.getOwner(fo);
-                    
-                    final String uri = 
-                            "_dependent/" + 
-                            referencedProject.getProjectDirectory().getName() + 
-                            "/" + Util.getRelativePath(FileUtil.toFile(
-                            referencedProject.getProjectDirectory()), file);
-                    final File target = new File(buildDirectory, uri);
-                    
-                    Util.copyFile(file, target);
-                    
-                    processImports(file, target);
-                    
-                    localUri = "../" + uri;
-                } catch (Exception e) {
-                    File[] resolved = resolveProjectUri(projectDirectory, localUri);
-                    
-                    if ((resolved != null) && resolved[0].exists()) {
-                        final String uri = 
-                                "_dependent/" + 
-                                resolved[1] + 
-                                "/" + Util.getRelativePath(resolved[1], resolved[0]);
-                        final File target = new File(buildDirectory, uri);
-                        
-                        Util.copyFile(resolved[0], target);
-                        
-                        processImports(resolved[0], target);
-                        
-                        localUri = "../" + uri;
-                    } else {
-                        localUri = null;
-                    }
-                }
+            final File metaInfDirectory = new File(buildDirectory, "META-INF"); // NOI18N
+            metaInfDirectory.mkdirs();
+
+            final PrintWriter writer = new PrintWriter(
+                    new FileWriter(new File(metaInfDirectory, "catalog.xml")));
+
+            writer.println("<?xml " + // NOI18N
+                    "version=\"1.0\" " + // NOI18N
+                    "encoding=\"UTF-8\" " + // NOI18N
+                    "standalone=\"no\"?>"); // NOI18N
+            writer.println("<catalog " + // NOI18N
+                    "xmlns=\"urn:oasis:names:tc:entity:xmlns:xml:catalog\" " + // NOI18N
+                    "prefer=\"system\">"); // NOI18N
+
+            for (int i = 0; i < systemIds.size(); i++) {
+                final String systemId = systemIds.get(i);
+                String location = locations.get(i);
+
+                handleEntry(
+                        systemId,
+                        location, 
+                        sourceDirectory, 
+                        buildDirectory, 
+                        writer);
             }
-            if (localUri != null) {
-                // # 130092
-                localUri = localUri.replace("\\", "/"); // NOI18N
-                catalogWriter.println("    <system systemId=\"" + ns + "\" uri=\"" + localUri + "\"/>");
-            }
+
+            writer.println("</catalog>");
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            throw new CatalogPackagingException(e);
         }
-        catalogWriter.println("</catalog>");
-        catalogWriter.flush();
-        catalogWriter.close();
     }
     
-    private File[] resolveProjectUri(
-            final File projectDirectory, 
-            final String uri) throws IOException {
-        //nb-uri:IZ107908_Module2#src/DummySchema.xsd
-        String corrected = uri.substring("nb-uri:".length());
+    private void handleEntry(
+            final String systemId,
+            final String location,
+            final File sourceDirectory,
+            final File buildDirectory,
+            final PrintWriter catalogWriter) throws CatalogPackagingException {
         
-        String projectName = corrected.substring(0, corrected.indexOf("#"));
-        String path = corrected.substring(corrected.indexOf("#") + 1);
-        String projectLocation = null;
+        final File projectDirectory = sourceDirectory.getParentFile();
         
-        File properties = new File(projectDirectory, "nbproject/project.properties");
-        BufferedReader reader = new BufferedReader(new FileReader(properties));
-        
-        String key = "project." + projectName + "=";
-        
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            if (line.startsWith(key)) {
-                projectLocation = line.substring(key.length());
-                break;
+        try {
+            final URI uri = new URI(location);
+            // The location is a relative path, i.e. the URI scheme is null
+            if (uri.getScheme() == null) {
+                // The URI leads us to the sources directory -- just correct 
+                // it and proceed
+                if (location.startsWith("src/")) {
+                    printToCatalog(
+                            catalogWriter, 
+                            systemId, 
+                            "../" + location.substring("src/".length()));
+                } else 
+
+                // The URI leads to the nbproject directory -- it is a
+                // resource fetched by the retriever -- copy it
+                if (location.startsWith(retrieverPathPrefix)) {
+                    String localUri = "_references/_cache/" + 
+                            location.substring(retrieverPathPrefix.length());
+
+                    localUri = localUri.replace("../", "__/").replace("//", "/");
+
+                    Util.copyFile(
+                            new File(projectDirectory, location), 
+                            new File(buildDirectory,  localUri));
+
+                    printToCatalog(
+                            catalogWriter, 
+                            systemId, 
+                            "../" + localUri);
+                } else 
+
+                // The URI leads to the retrieved directory -- it is a
+                // resource fetched by the retriever -- copy it
+                if (location.startsWith(retrieverPathPrefix2)) {
+                    String localUri = "_references/_retrieved/" + 
+                            location.substring(retrieverPathPrefix2.length());
+
+                    localUri = localUri.replace("../", "__/").replace("//", "/");
+
+                    Util.copyFile(
+                            new File(projectDirectory, location), 
+                            new File(buildDirectory, localUri));
+
+                    printToCatalog(
+                            catalogWriter, 
+                            systemId, 
+                            "../" + localUri);
+                } else
+
+                // We cannot hanle any other relative paths, throw an exception
+                {
+                    String localUri = "_references/_relative/" + location;
+
+                    localUri = localUri.replace("../", "__/").replace("//", "/");
+
+                    Util.copyFile(
+                            new File(projectDirectory, location), 
+                            new File(buildDirectory, localUri));
+
+                    printToCatalog(
+                            catalogWriter, 
+                            systemId, 
+                            "../" + localUri);
+                }
+            } else 
+
+            // If the location is a NetBeans URI (URI scheme is 'nb-uri')
+            if (uri.getScheme().equals("nb-uri")) {
+                final Project project = FileOwnerQuery.getOwner(
+                        FileUtil.toFileObject(sourceDirectory));
+
+                processNbUriLocation(
+                        project, systemId, location, buildDirectory, catalogWriter);
             }
+
+            // Otherwise we do not know how to handle this location -- fail the build
+            else {
+                throw new CatalogPackagingException(
+                        "This URI is not supported: " + location);
+            }
+        } catch (IOException e) {
+            throw new CatalogPackagingException(e);
+        } catch (URISyntaxException e) {
+            throw new CatalogPackagingException(e);
         }
+    }
+    
+    private void processNbUriLocation(
+            final Project project, 
+            final String namespace,
+            final String location, 
+            final File buildDirectory,
+            final PrintWriter catalogWriter) throws CatalogPackagingException {
         
-        reader.close();
+        /* 'refd' stands for 'referenced' */
         
-        if (projectLocation == null) {
-            return null;
-        } else {
-            return new File[] {
-                new File(projectDirectory, projectLocation + "/" + path),
-                new File(projectDirectory, projectLocation)
-            };
+        try {
+            final FileObject refdFileObject = 
+                    getCatalogSupport(project).resolveProjectProtocol(new URI(location));
+            final File refdFile = 
+                    FileUtil.toFile(refdFileObject);
+            final Project refdProject = 
+                    FileOwnerQuery.getOwner(refdFileObject);
+
+            final String refdProjectDirName = 
+                    refdProject.getProjectDirectory().getName();
+            final String refdFilePath = Util.getRelativePath(
+                    FileUtil.toFile(refdProject.getProjectDirectory()), refdFile);
+
+            String localUri = 
+                    "_references/_projects/" + refdProjectDirName + "/" + refdFilePath;
+
+            localUri = localUri.replace("../", "__/").replace("//", "/");
+
+            Util.copyFile(
+                    refdFile, 
+                    new File(buildDirectory, localUri));
+
+            printToCatalog(
+                    catalogWriter, 
+                    namespace, 
+                    "../" + localUri);
+
+            processImports(refdFile, refdProject, buildDirectory, catalogWriter);
+        } catch (IOException e) {
+            throw new CatalogPackagingException(e);
+        } catch (URISyntaxException e) {
+            throw new CatalogPackagingException(e);
         }
     }
     
     private void processImports(
-            final File source,
-            final File target) {
+            final File file, 
+            final Project project, 
+            final File buildDirectory, 
+            final PrintWriter catalogWriter) throws CatalogPackagingException {
         
+        try {
+            final File projectDirectory = FileUtil.toFile(project.getProjectDirectory());
+            final String projectDirname = projectDirectory.getName();
+            
+            final String catalogPath = new File(FileUtil.toFile(
+                    project.getProjectDirectory()), "catalog.xml").getAbsolutePath();
+            final CatalogReader catalogReader = new CatalogReader(catalogPath);
+            
+            final List<String> systemIds = catalogReader.getSystemIds();
+            final List<String> locations = catalogReader.getLocations();
+            
+            final List<String> imports = parseImports(file);
+            
+            for (String key: imports) {
+                final int index = systemIds.indexOf(key);
+                
+                if (index != -1) {
+                    final String systemId = systemIds.get(index);
+                    final String location = locations.get(index);
+                    
+                    final URI uri = new URI(location);
+                    // The location is a relative path, i.e. the URI scheme is null
+                    if (uri.getScheme() == null) {
+                        // The URI leads us to the sources directory -- just correct 
+                        // it and proceed
+                        if (location.startsWith("src/")) {
+                            String localUri = 
+                                    "_references/_projects/" + projectDirname + 
+                                    "/" + location;
+                                    
+                            localUri = localUri.replace("../", "__/").replace("//", "/");
+                            
+                            final File refdFile = new File(projectDirectory, location);
+                            
+                            Util.copyFile(
+                                    refdFile, 
+                                    new File(buildDirectory,  localUri));
+                                    
+                            printToCatalog(
+                                    catalogWriter, 
+                                    systemId, 
+                                    "../" + localUri);
+                            
+                            processImports(
+                                    refdFile, project, buildDirectory, catalogWriter);
+                        } else 
+                        
+                        // The URI leads to the nbproject directory -- it is a
+                        // resource fetched by the retriever -- copy it
+                        if (location.startsWith(retrieverPathPrefix)) {
+                            String localUri = 
+                                    "_references/_projects/" + projectDirname + 
+                                    "/_references/_cache/" + 
+                                    location.substring(retrieverPathPrefix.length());
+                                    
+                            localUri = localUri.replace("../", "__/").replace("//", "/");
+                            
+                            final File refdFile = new File(projectDirectory, location);
+                            
+                            Util.copyFile(
+                                    refdFile, 
+                                    new File(buildDirectory,  localUri));
+                                    
+                            printToCatalog(
+                                    catalogWriter, 
+                                    systemId, 
+                                    "../" + localUri);
+                            
+                            processImports(
+                                    refdFile, project, buildDirectory, catalogWriter);
+                        } else 
+                        
+                        // The URI leads to the retrieved directory -- it is a
+                        // resource fetched by the retriever -- copy it
+                        if (location.startsWith(retrieverPathPrefix2)) {
+                            String localUri = 
+                                    "_references/_projects/" + projectDirname + 
+                                    "/_references/_retrieved/" + 
+                                    location.substring(retrieverPathPrefix2.length());
+                                    
+                            localUri = localUri.replace("../", "__/").replace("//", "/");
+                            
+                            final File refdFile = new File(projectDirectory, location);
+                            
+                            Util.copyFile(
+                                    refdFile, 
+                                    new File(buildDirectory, localUri));
+                                    
+                            printToCatalog(
+                                    catalogWriter, 
+                                    systemId, 
+                                    "../" + localUri);
+                            
+                            processImports(
+                                    refdFile, project, buildDirectory, catalogWriter);
+                        } else
+                        
+                        // Any other relative path
+                        {
+                            String localUri = 
+                                    "_references/_projects/" + projectDirname + 
+                                    "/_references/_relative/" + location;
+                                    
+                            localUri = localUri.replace("../", "__/").replace("//", "/");
+                            
+                            final File refdFile = new File(projectDirectory, location);
+                            
+                            Util.copyFile(
+                                    refdFile, 
+                                    new File(buildDirectory, localUri));
+                                    
+                            printToCatalog(
+                                    catalogWriter, 
+                                    systemId, 
+                                    "../" + localUri);
+                            
+                            processImports(
+                                    refdFile, project, buildDirectory, catalogWriter);
+                        }
+                    } else 
+
+                    // If the location is a NetBeans URI (URI scheme is 'nb-uri')
+                    if (uri.getScheme().equals("nb-uri")) {
+                        processNbUriLocation(
+                                project, systemId, location, buildDirectory, catalogWriter);
+                    }
+                    
+                    // Otherwise we do not know how to handle this location -- fail the 
+                    // build
+                    else {
+                        throw new CatalogPackagingException(
+                                "This URI is not supported: " + location);
+                    }
+                } else {
+                    final String systemId = key;
+                    final String location = key;
+                    
+                    final URI uri = new URI(location);
+                    
+                    // We know how to handle relative URIs, but nothign else, if it's not 
+                    // in the project catalog
+                    if (uri.getScheme() == null) {
+                        final File refdFile = new File(file.getParentFile(), location);
+                        
+                        // If this file is part of the project's file structure, we 
+                        // should simply copy it to the corresponding location, without
+                        // any additional handling
+                        final String refdFileRelativePath = 
+                                Util.getRelativePath(projectDirectory, refdFile);
+                        if (!refdFileRelativePath.startsWith("..")) {
+                            String localUri = 
+                                    "_references/_projects/" + projectDirname + "/" +
+                                    refdFileRelativePath;
+                            
+                            Util.copyFile(
+                                    refdFile, 
+                                    new File(buildDirectory, localUri));
+                        } else {
+                            String localUri = 
+                                    "_references/_projects/" + projectDirname + 
+                                    "/_references/_relative/" + location;
+                                    
+                            localUri = localUri.replace("../", "__/").replace("//", "/");
+                            
+                            Util.copyFile(
+                                    refdFile, 
+                                    new File(buildDirectory, localUri));
+                                    
+                            printToCatalog(
+                                    catalogWriter, 
+                                    systemId, 
+                                    "../" + localUri);
+                        }
+                        
+                        processImports(refdFile, project, buildDirectory, catalogWriter);
+                    } else {
+                        throw new CatalogPackagingException(
+                                "This URI is not supported: " + location);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new CatalogPackagingException(e);
+        } catch (URISyntaxException e) {
+            throw new CatalogPackagingException(e);
+        } catch (SAXException e) {
+            throw new CatalogPackagingException(e);
+        }
+    }
+    
+    private List<String> parseImports(
+            final File file) throws CatalogPackagingException {
+        
+        final MyHandler handler = new MyHandler();
         final SAXParserFactory factory = SAXParserFactory.newInstance();
         factory.setValidating(false);
         factory.setNamespaceAware(false);
@@ -278,29 +492,48 @@ public class PackageCatalogArtifacts {
             SAXParserFactory.
                     newInstance().
                     newSAXParser().
-                    parse(source, new MyHandler(source, target));
+                    parse(file, handler);
         } catch (IOException e) {
-            // just ignore, as we cannot handle it in any way
-        } catch (ParserConfigurationException e) {
-            // just ignore, as we cannot handle it in any way
+            throw new CatalogPackagingException(e);
         } catch (SAXException e) {
-            // just ignore, as we cannot handle it in any way
+            throw new CatalogPackagingException(e);
+        } catch (ParserConfigurationException e) {
+            throw new CatalogPackagingException(e);
         }
+        
+        return handler.getLocations();
     }
     
-    private class MyHandler extends DefaultHandler {
+    private void printToCatalog(
+            final PrintWriter writer, 
+            final String systemId, 
+            final String uri) {
+        writer.println("    <system " +
+                "systemId=\"" + systemId + "\" " +
+                "uri=\"" + uri.replace("\\", "/") + "\"/>");
+    }
+    
+    private DefaultProjectCatalogSupport getCatalogSupport(
+            final Project project) {
+        final AntProjectHelper antHelper = 
+                project.getLookup().lookup(AntProjectHelper.class);
+        final ReferenceHelper referenceHelper = 
+                project.getLookup().lookup(ReferenceHelper.class);
+                
+        return new DefaultProjectCatalogSupport(
+                project, antHelper, referenceHelper);
+    }
+    
+    //////////////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    private static class MyHandler extends DefaultHandler {
         
-        private File source;
-        private File target;
+        private List<String> locations = new LinkedList<String>();
         
-        public MyHandler(
-                final File source,
-                final File target) {
-            
-            this.source = source;
-            this.target = target;
+        public List<String> getLocations() {
+            return locations;
         }
-
+        
         @Override
         public void startElement(
                 final String uri, 
@@ -308,27 +541,28 @@ public class PackageCatalogArtifacts {
                 final String qName, 
                 final Attributes attributes) throws SAXException {
             
-            if ("import".equals(qName) || "xsd:import".equals(qName)) {
+            if (qName.endsWith("import")) {
                 final String wsdlLocation = attributes.getValue("location");
                 final String schemaLocation = attributes.getValue("schemaLocation");
                 
                 final String location = 
                         wsdlLocation == null ? schemaLocation : wsdlLocation;
                 
-                final File referenced = new File(source.getParentFile(), location);
-                final File dereferenced = new File(target.getParentFile(), location);
-                
-                if ((location != null) && 
-                        referenced.exists() && !referenced.isDirectory()) {
-                    try {
-                        Util.copyFile(referenced, dereferenced);
-                    } catch (IOException e) {
-                        throw new SAXException(e);
-                    }
-                    
-                    processImports(referenced, dereferenced);
-                }
+                locations.add(location);
             }
         }
     }
+    
+    public static class CatalogPackagingException extends Exception {
+        
+        public CatalogPackagingException(final String message) {
+            super(message);
+        }
+        
+        public CatalogPackagingException(final Throwable cause) {
+            super(cause);
+        }
+        
+    }
+    
 }
