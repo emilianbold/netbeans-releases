@@ -9,22 +9,20 @@
 	<mapID target="nbruby_editor_shortcuts_codetemplates" url="editor_shortcuts_codetemplates.html"/>
 	<mapID target="nbruby_ruby_quickref" url="ruby_quickref.html"/>
 	<mapID target="nbruby_ruby_quickref_toclink" url="ruby_quickref.html#toclink"/>
-	<mapID target="nbruby_rubyoptions" url="rubyoptions.html"/>
-	<mapID target="nbruby_usedatabase" url="usedatabase.html"/>
 	<mapID target="nbruby_usingirb" url="usingirb.html"/>
 	<mapID target="org.netbeans.modules.ruby.javaint.CustomizerLibraries" url="rubyprojprops-javaoptions.html"/>
 	<mapID target="org.netbeans.modules.ruby.platform.RubyPlatformCustomizer" url="platformmanager.html"/>
 	<mapID target="org.netbeans.modules.ruby.railsprojects.plugins.InstallationSettingsPanel" url="plugininstallsettingsdialog.html"/>
 	<mapID target="org.netbeans.modules.ruby.railsprojects.plugins.PluginProgressPanel" url="railsplugininstallationdialog.html"/>
-	<mapID target="org.netbeans.modules.ruby.railsprojects.plugins.PluginsPanel" url="railspluginmanager.html"/>
+	<mapID target="org.netbeans.modules.ruby.railsprojects.plugins.PluginPanel" url="railspluginmanager.html"/>
 	<mapID target="org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerRun" url="railsprojprops-railsoptions.html"/>
 	<mapID target="org.netbeans.modules.ruby.railsprojects.ui.RailsLogicalViewProvider$RailsLogicalViewRootNode" url="rubyprojectnode.html"/>
 	<mapID target="org.netbeans.modules.ruby.railsprojects.ui.wizards.PanelConfigureProject_APP" url="newrailsappwiz-nameandloc.html"/>
 	<mapID target="org.netbeans.modules.ruby.railsprojects.ui.wizards.PanelConfigureProject_EXT" url="newrailsappwsourcewiz-nameandloc.html"/>
 	<mapID target="org.netbeans.modules.ruby.railsprojects.ui.wizards.RailsInstallationPanel" url="newrailsappwiz-installrails.html"/>
-	<mapID target="org.netbeans.modules.ruby.rubyproject.gems.GemAction" url="gemmanager.html"/>
-	<mapID target="org.netbeans.modules.ruby.rubyproject.gems.GemManager" url="geminstallationdialog.html"/>
-	<mapID target="org.netbeans.modules.ruby.rubyproject.gems.GemPanel" url="geminstallsettingsdialog.html"/>
+	<mapID target="org.netbeans.modules.ruby.platform.gems.GemAction" url="gemmanager.html"/>
+	<mapID target="org.netbeans.modules.ruby.platform.gems.GemRunner" url="geminstallationdialog.html"/>
+	<mapID target="org.netbeans.modules.ruby.platform.gems.GemPanel" url="geminstallsettingsdialog.html"/>
 	<mapID target="org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerRun" url="rubyprojprops-runoptions.html"/>
 	<mapID target="org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerSources" url="rubyprojprops-sourcesoptions.html"/>
 	<mapID target="org.netbeans.modules.ruby.rubyproject.ui.wizards.PanelConfigureProject_APP" url="newrubyappwiz-nameandloc.html"/>
