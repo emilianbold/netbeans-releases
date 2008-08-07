@@ -44,7 +44,6 @@ import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Paint;
-import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
@@ -59,7 +58,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.PresentationEleme
 import org.netbeans.modules.uml.core.metamodel.structure.Comment;
 import org.netbeans.modules.uml.core.metamodel.structure.IComment;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
-import org.netbeans.modules.uml.diagrams.border.NoteBorder;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -81,7 +79,7 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
         super(scene);
         addToLookup(initializeContextPalette());
         addToLookup(new DefaultWidgetContext("Comment"));
-        setPreferredBounds(new Rectangle(new Point(0, 0), new Dimension(100, 60)));
+        setMinimumSize(new Dimension(100, 60));
     }
 
     public CommentWidget(Scene scene, IPresentationElement element)
@@ -112,7 +110,7 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
             bodyLabel.setLabel(((IComment) elt).getBody());
         }
     }
-
+    
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
