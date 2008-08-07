@@ -121,7 +121,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         // create nb project location
         File nbProjectDir = model.getNetBeansProjectLocation();
         
-        if (ProjectFactorySupport.areSourceRootsOwned(model, importProblems)) {
+        if (ProjectFactorySupport.areSourceRootsOwned(model, nbProjectDir, importProblems)) {
             return null;
         }
         
