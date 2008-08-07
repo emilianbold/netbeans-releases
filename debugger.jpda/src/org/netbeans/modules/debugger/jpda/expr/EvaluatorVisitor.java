@@ -1427,6 +1427,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (outerRef == null) return null;
         object = (ObjectReference) object.getValue(outerRef);
+        if (object == null) return null;
         return findEnclosingObject(arg0, object, type, fieldName, methodName);
     }
 
