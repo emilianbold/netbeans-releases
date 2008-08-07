@@ -127,7 +127,7 @@ public class XMLGeneration_0003 extends XMLGeneration {
       // Workaround for MacOS platform
       // TODO : check platform
       // TODO : remove after normal issue fix
-      NewFileWizardOperator.invoke().cancel( );
+      NewFileWizardOperator.invoke( ).cancel( );
 
       NewFileWizardOperator fwNew = new NewFileWizardOperator( "New File" );
       fwNew.selectCategory( "XML" );
