@@ -74,7 +74,7 @@ public class RubyValidation extends JellyTestCase {
                 "testRunRubyFile",
                 "testCreateRailsProject",
                 "testRailsGenerate",
-//                "testIrbShell", // TODO: does not work due to issue 137398
+                "testIrbShell", // TODO: does not work due to issue 137398
     };
 
     /** Need to be defined because of JUnit */
@@ -135,7 +135,8 @@ public class RubyValidation extends JellyTestCase {
     public void testIrbShell() {
         String irbItem = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.Bundle", "CTL_IrbAction");
         String irbTitle = Bundle.getString("org.netbeans.modules.ruby.rubyproject.Bundle", "CTL_IrbTopComponent");
-        new Action("Window|Other|" + irbItem, null).perform();
+        ProjectRootNode projectRootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_RAILS_PROJECT_NAME);
+        new ActionNoBlock(null, irbItem).perform(projectRootNode);
         new OutputTabOperator(irbTitle).close();
     }   
 
