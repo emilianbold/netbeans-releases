@@ -373,12 +373,12 @@
 	        	        
 	<if property="gf.build.type" value="">
         	<set property="glassfish.build.number" value="20080411"/>
-		<set property="sjsas.build.number" value="20080411"/>
+		<set property="sjsas.build.number"     value="20080411"/>
 	</if>
 
 	<if property="gf.build.type" value="ml">
 	        <set property="glassfish.build.number" value="20080515"/>
-	        <set property="sjsas.build.number" value="20080515"/>
+	        <set property="sjsas.build.number"     value="20080515"/>
 	</if>
 
         <!--
@@ -2467,40 +2467,40 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- JavaSE + JDK6 bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${jdk.output.dir}/jdk-6u7-${jdk.bundle.files.suffix}-windows${nb.build.suffix}.exe">
+                       target="${jdk.output.dir}/jdk-6u10-${jdk.bundle.files.suffix}-windows${nb.build.suffix}.exe">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.7.6"/>
+	    <component uid="jdk" version="1.6.0.10.29"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-6u7-windows-i586.exe"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${jdk.output.dir}/jdk-6u7-${jdk.bundle.files.suffix}-linux${nb.build.suffix}.sh">
+                       target="${jdk.output.dir}/jdk-6u10-${jdk.bundle.files.suffix}-linux${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.7.6"/>
+	    <component uid="jdk" version="1.6.0.10.29"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-6u7-linux-i586.bin"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${jdk.output.dir}/jdk-6u7-${jdk.bundle.files.suffix}-solaris-x86${nb.build.suffix}.sh">
+                       target="${jdk.output.dir}/jdk-6u10-${jdk.bundle.files.suffix}-solaris-x86${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.7.6"/>
+	    <component uid="jdk" version="1.6.0.10.29"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-6u7-solaris-i586.sh"/>
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${jdk.output.dir}/jdk-6u7-${jdk.bundle.files.suffix}-solaris-sparc${nb.build.suffix}.sh">
+                       target="${jdk.output.dir}/jdk-6u10-${jdk.bundle.files.suffix}-solaris-sparc${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
-	    <component uid="jdk" version="1.6.0.7.6"/>
+	    <component uid="jdk" version="1.6.0.10.29"/>
 	    <bundleProperty name="${welcome.type}" value="javase.jdk"/>
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jdk6.resource}"/>
 	    <property name="nbi.bundled.jvm.file" value="${jvm.cache.dir}/jre-6u7-solaris-sparc.sh"/>
