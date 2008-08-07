@@ -44,12 +44,13 @@ import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author uadmin
+ * @author Lukas Hasik
  */
 public class PermanentUITest {
     public static Test suite() {
     return NbModuleSuite.create(
       NbModuleSuite.emptyConfiguration()
+        .clusters(".*").enableModules(".*")
         .addTest(MainMenuTest.class, 
                   "testFileMenu", //stable
                   "testEditMenu", //stable
@@ -90,6 +91,7 @@ public class PermanentUITest {
                   "testWindow_ProfilingSubMenu",
                   "testWindow_VersioningSubMenu")
         .addTest(NewProjectTest.class)
+        .addTest(OptionsTest.class)
     );
   }
 

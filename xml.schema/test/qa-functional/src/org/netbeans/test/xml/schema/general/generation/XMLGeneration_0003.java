@@ -123,6 +123,12 @@ public class XMLGeneration_0003 extends XMLGeneration {
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock("File|New File...");
 
       // JDialogOperator jdNew = new JDialogOperator( "New File" );
+
+      // Workaround for MacOS platform
+      // TODO : check platform
+      // TODO : remove after normal issue fix
+      NewFileWizardOperator.invoke( ).cancel( );
+
       NewFileWizardOperator fwNew = new NewFileWizardOperator( "New File" );
       fwNew.selectCategory( "XML" );
       fwNew.selectFileType( "XML Document" );

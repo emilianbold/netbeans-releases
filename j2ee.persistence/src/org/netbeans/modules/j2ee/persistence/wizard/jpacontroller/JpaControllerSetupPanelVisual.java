@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.j2ee.persistence.wizard.jpacontroller;
 
-import java.io.File;
 import java.io.IOException;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ChangeListener;
@@ -56,6 +55,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -243,19 +243,21 @@ public class JpaControllerSetupPanelVisual extends javax.swing.JPanel implements
 //        }
 //        wizard.putProperty("WizardPanel_errorMessage", null); // NOI18N
         
-            ClassPath cp = ClassPath.getClassPath(getLocationValue().getRootFolder(), ClassPath.COMPILE);
-            ClassLoader cl = cp.getClassLoader(true);
-            try {
-                Class.forName("javax.transaction.UserTransaction", false, cl);
-            }
-            catch (ClassNotFoundException cnfe) {
-                wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "ERR_UserTransactionUnavailable"));
-                return false;
+            if (Util.isContainerManaged(project)) {
+                ClassPath cp = ClassPath.getClassPath(getLocationValue().getRootFolder(), ClassPath.COMPILE);
+                ClassLoader cl = cp.getClassLoader(true);
+                try {
+                    Class.forName("javax.transaction.UserTransaction", false, cl);
+                }
+                catch (ClassNotFoundException cnfe) {
+                    wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JpaControllerSetupPanelVisual.class, "ERR_UserTransactionUnavailable"));
+                    return false;
+                }
             }
         
-            Sources srcs = (Sources) project.getLookup().lookup(Sources.class);
-            SourceGroup sgWeb[] = srcs.getSourceGroups("doc_root"); //NOI18N fixme(mbohm): move into constant
-            FileObject pagesRootFolder = sgWeb[0].getRootFolder();
+//            Sources srcs = (Sources) project.getLookup().lookup(Sources.class);
+//            SourceGroup sgWeb[] = srcs.getSourceGroups("doc_root"); //NOI18N fixme(mbohm): move into constant
+//            FileObject pagesRootFolder = sgWeb[0].getRootFolder();
 //            File pagesRootFolderAsFile = FileUtil.toFile(pagesRootFolder);
 //            String jsfFolderText = jsfFolder.getText();
 //            try {

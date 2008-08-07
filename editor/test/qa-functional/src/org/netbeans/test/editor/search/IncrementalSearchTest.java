@@ -86,18 +86,18 @@ public class IncrementalSearchTest extends EditorTestCase{
         new EventTool().waitNoEvent(100);
         t.typeText("p");
         t.pushKey(KeyEvent.VK_ENTER);
-        assertSelection(editor, 97, 98);
+        assertSelection(editor, 114, 115);
         t.typeText("u");
         t.pushKey(KeyEvent.VK_ENTER);
-        assertSelection(editor, 113, 115);
+        assertSelection(editor, 130, 132);
         t.typeText("b");
         t.pushKey(KeyEvent.VK_ENTER);
-        assertSelection(editor, 126, 129);
+        assertSelection(editor, 143, 146);
         t.pushKey(KeyEvent.VK_ENTER);
-        assertSelection(editor, 170, 173);
+        assertSelection(editor, 187, 190);
         JLabelOperator status = new JLabelOperator(editor,3);
         t.pushKey(KeyEvent.VK_ENTER);
-        assertSelection(editor, 47, 50);
+        assertSelection(editor, 64, 67);
         assertEquals("'pub' found at 3:1; End of the document reached. Continuing search from beginning.",status.getText());
         t.pushKey(KeyEvent.VK_ESCAPE);
         new EventTool().waitNoEvent(100);
@@ -117,11 +117,11 @@ public class IncrementalSearchTest extends EditorTestCase{
         new EventTool().waitNoEvent(100);
         t.typeText("pub");
         t.pushKey(KeyEvent.VK_ENTER,KeyEvent.SHIFT_DOWN_MASK);
-        assertSelection(editor, 126, 129);
+        assertSelection(editor, 143, 146);
         t.pushKey(KeyEvent.VK_ENTER,KeyEvent.SHIFT_DOWN_MASK);
-        assertSelection(editor, 47, 50);
+        assertSelection(editor, 64, 67);
         t.pushKey(KeyEvent.VK_ENTER,KeyEvent.SHIFT_DOWN_MASK);
-        assertSelection(editor, 170, 173);
+        assertSelection(editor, 187, 190);
         JLabelOperator status = new JLabelOperator(editor,3);        
         assertEquals("'pub' found at 12:5; Beginning of the document reached. Continuing search from end.",status.getText());
         t.pushKey(KeyEvent.VK_ESCAPE);
@@ -298,7 +298,7 @@ public class IncrementalSearchTest extends EditorTestCase{
     
     public void testWholeWords() {
         openDefaultProject();        
-        openFile("Source Packages|sorg.netbeans.test.editor.search.IncrementalSearchTest", "match2.txt");
+        openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match2.txt");
         EditorOperator editor = new EditorOperator("match2.txt");        
         editor.setCaretPosition(1, 1);
         openSearchBar(editor);        
@@ -395,15 +395,14 @@ public class IncrementalSearchTest extends EditorTestCase{
     public void assertSelection(EditorOperator editor,int start, int end) {
         JEditorPaneOperator txtEditorPane = editor.txtEditorPane();
         int actStart = txtEditorPane.getSelectionStart();
-        int actEnd = txtEditorPane.getSelectionEnd();        
+        int actEnd = txtEditorPane.getSelectionEnd();
+//        System.out.println("-----------------------------------------------------");
+//        System.out.println("Expected:"+start+" "+end+" Actual:"+actStart+" "+actEnd);
+//        System.out.println("-----------------------------------------------------");
         if(actStart!=start || actEnd!=end) fail("Wrong text selected in editor, actual selection <"+actStart+","+actEnd+">, expected <"+start+","+end+">");
     }
     
-    public static void main(String[] args) {
-        
-        //testNotFound
-        //TestRunner.run(new IncrementalSearchTest("testNotFound"));
-        
+    public static void main(String[] args) {        
         TestRunner.run(IncrementalSearchTest.class);        
     }
 

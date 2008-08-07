@@ -311,7 +311,7 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.soa.libs.httpunit</code-name-base>
+                    <code-name-base>org.netbeans.libs.httpunit</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

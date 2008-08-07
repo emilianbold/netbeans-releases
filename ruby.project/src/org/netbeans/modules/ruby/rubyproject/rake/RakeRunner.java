@@ -57,7 +57,6 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedO
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
-import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -83,7 +82,6 @@ public final class RakeRunner {
     private FileObject rakeFile;
     private RubyFileLocator fileLocator;
     private File pwd;
-    private boolean test;
     private String displayName;
     private final List<String> parameters = new ArrayList<String>();
     /**
@@ -146,10 +144,6 @@ public final class RakeRunner {
         this.pwd = pwd;
     }
 
-    private void setTest(final boolean test) {
-        this.test = test;
-    }
-
     /**
      * Sets the task parameters for <strong>all</strong> the tasks that will
      * be run. These will be added after the task name but before any parameters
@@ -170,7 +164,10 @@ public final class RakeRunner {
      *
      * @param taskNames the names of the tasks to run.
      */
-    public void run(final String... taskNames) {
+    public void run(String... taskNames) {
+        if (taskNames.length == 0) {
+            taskNames = new String[] {"default"}; // NOI18N
+        }
         if (!RubyPlatform.hasValidRake(project, showWarnings)) {
             return;
         }
@@ -199,15 +196,6 @@ public final class RakeRunner {
         // Save all files first
         LifecycleManager.getDefault().saveAll();
 
-        final TestTaskRunner testTaskRunner = new TestTaskRunner(project, debug);
-        final List<RakeTask> tasksToRun = testTaskRunner.filter(Arrays.asList(tasks));
-
-        // check whether there was only one task that got already
-        // handled by the test handler hook
-        if (tasksToRun.isEmpty()) {
-            testTaskRunner.postRun();
-            return;
-        }
 
         // EMPTY CONTEXT??
         if (fileLocator == null) {
@@ -225,6 +213,7 @@ public final class RakeRunner {
             pwd = FileUtil.toFile(rakeFile.getParent());
         }
 
+        final List<RakeTask> tasksToRun = new ArrayList(Arrays.asList(tasks));
         computeAndSetDisplayName(tasksToRun);
 
         String charsetName = null;
@@ -248,9 +237,6 @@ public final class RakeRunner {
                         Exceptions.printStackTrace(ex);
                     }
                 }
-              if (testTaskRunner.needsPostRun()) {
-                  testTaskRunner.postRun();
-              }
             }
         });
     }

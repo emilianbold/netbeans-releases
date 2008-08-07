@@ -69,7 +69,7 @@ public class CompilerSetScriptManager implements ScriptManager {
     }
 
     public void runScript() {
-        if (!support.isFailed() && !support.isCancelled()) {
+        if (!support.isFailedOrCancelled()) {
             ChannelExec channel = (ChannelExec) support.getChannel();
             channel.setInputStream(null);
             channel.setErrStream(System.err);
@@ -93,7 +93,7 @@ public class CompilerSetScriptManager implements ScriptManager {
                 is.close();
                 st = new StringTokenizer(out.toString());
             } catch (IOException ex) {
-                log.warning("CSSM.runScript: IOException"); // NOI18N
+                log.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]") ; // NOI18N
                 support.setFailed(ex.getMessage());
             } catch (JSchException ex) {
                 log.warning("CSSM.runScript: JSchException"); // NOI18N

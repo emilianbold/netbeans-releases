@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.websvc.core;
 
-import java.util.Collection;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -53,9 +51,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.websvc.serverapi.api.WSStack;
-import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 
 /**
  *
@@ -87,12 +84,12 @@ public class ProjectInfo {
             if (serverInstanceId != null) {
                 try {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();               
-                    WSStack wsStack = JaxWsStackProvider.getJaxWsStackForTool(j2eePlatform, WSStack.TOOL_WSIMPORT);
+                    WSStack wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
                     if (wsStack != null) {
-                        jsr109Supported = wsStack.getServiceFeatures().contains(WSStackFeature.JSR_109);
+                        jsr109Supported = wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
                         //jsr109oldSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE);
                         //wsgenSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN);
-                        wsgenSupported = wsStack.getServiceFeatures().contains(WSStack.TOOL_WSGEN);
+                        wsgenSupported = true;
                         wsimportSupported = true;
                         serverType = getServerType(project);
                     }

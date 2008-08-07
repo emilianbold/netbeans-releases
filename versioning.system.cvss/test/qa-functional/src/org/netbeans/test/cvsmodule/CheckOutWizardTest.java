@@ -513,10 +513,10 @@ public class CheckOutWizardTest extends JellyTestCase {
         EditCVSRootOperator ecro = crso.edit();
         try {
             JComboBoxOperator combo = new JComboBoxOperator(ecro);
-            combo.selectItem("pserver");
             combo.selectItem("local");
             combo.selectItem("fork");
             combo.selectItem("ext");
+            combo.selectItem("pserver");
         } catch (TimeoutExpiredException e) {
             throw e;
         }

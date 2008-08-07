@@ -231,11 +231,11 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         
     public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {
         synchronized (ConnectionList.getDefault()) {
+
             if (ConnectionList.getDefault().contains(dbconn)) {
                 return;
             }
 
-            ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
             ConnectionList.getDefault().add(dbconn);
         }
         notifyChange();

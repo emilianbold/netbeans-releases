@@ -72,4 +72,10 @@ public class NoViableAltException extends RecognitionException {
         }
         return "unexpected AST node: " + node.toString();
     }
+
+    @Override
+    public String getTokenText() {
+        return token.getText();
+    }
+
 }

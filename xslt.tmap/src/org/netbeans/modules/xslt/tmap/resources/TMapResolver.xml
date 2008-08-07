@@ -5,8 +5,8 @@
         <ext name="xml"/>
         <resolver mime="text/x-tmap+xml">
             <xml-rule>
-                <!--element name="transformmap" ns="http://xml.netbeans.org/schema/transformmap"/-->
-                <element name="transformmap" ns="http://www.sun.com/jbi/xsltse/transformmap"/>
+                <element name="transformmap" ns="http://xml.netbeans.org/schema/transformmap"/>
+                <!-- 142908 element name="transformmap" ns="http://www.sun.com/jbi/xsltse/transformmap"/-->
             </xml-rule>
         </resolver>
     </file>

@@ -75,7 +75,6 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
     @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### " + getName() + " ###");
     }
 
@@ -99,15 +98,13 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
 
     public void testFilesViewDoubleRefactoring() throws Exception {
         try {
-            TestKit.closeProject(PROJECT_NAME);
             OutputOperator.invoke();
-            JTableOperator table;
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator vo = VersioningOperator.invoke();
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
             Operator.setDefaultStringComparator(comOperator);
-            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            CheckoutWizardOperator.invoke();
             Operator.setDefaultStringComparator(oldOperator);
             RepositoryStepOperator rso = new RepositoryStepOperator();
 
@@ -116,7 +113,6 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
             new File(TMP_PATH).mkdirs();
             work.mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -130,12 +126,10 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
             //open project
             OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-//            oto.clear();
             oto.waitText("Checking out... finished.");
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-
             TestKit.waitForScanFinishedAndQueueEmpty();
 
             oto = new OutputTabOperator("file:///tmp/repo");
@@ -191,10 +185,8 @@ public class FilesViewDoubleRefTest extends JellyTestCase {
             txt.setText("AClass");
             refBut = new JButtonOperator(nbdialog, "Refactor");
             refBut.push();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
         } finally {
-//            TestKit.closeProject(PROJECT_NAME);
+            TestKit.closeProject(PROJECT_NAME);
         }
     }
 }

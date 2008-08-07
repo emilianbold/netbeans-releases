@@ -179,13 +179,18 @@ public class AcceptanceTestCase extends JellyTestCase {
 
     // Creating schema for testing.
     // 1. Call new file wizard
-    // 2. Selext XML / XML schema category
+    // 2. Select XML / XML schema category
     // 3. Press Next
     // 4. Set name for schema
     // 5. Finish wizard
     public void createNewSchema() {
         startTest();
         
+        // Workaround for MacOS platform
+        // TODO : check platform
+        // TODO : remove after normal issue fix
+        NewFileWizardOperator.invoke().cancel( );
+
         // Calling new file wizard
         NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke();
         // Slecting XML category
@@ -203,13 +208,15 @@ public class AcceptanceTestCase extends JellyTestCase {
         opNewFileWizard.finish();
 
         // Checking is schema opened for editing or no
-        TopComponentOperator opTopComponent = new TopComponentOperator(TEST_SCHEMA_NAME + SCHEMA_EXTENSION);
+        TopComponentOperator opTopComponent = new TopComponentOperator(
+            TEST_SCHEMA_NAME + SCHEMA_EXTENSION
+          );
         
         endTest();
     }
     
     // Creating set of components inside schema
-    // 1. Adding Comlex type named CT
+    // 1. Adding Complex type named CT
     // 2. Adding Simple type names ST
     // 3. Adding Element named E
     // 4. Adding Attribute named A

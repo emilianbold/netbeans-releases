@@ -1148,13 +1148,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Image getIcon( int type ) {
-            return getProjectNode().getIcon(type);
+            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/importantFolder.gif"); // NOI18N
         }
 
+        @Override
         public Image getOpenedIcon( int type ) {
-            return getProjectNode().getOpenedIcon(type);
+            return Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/importantFolderOpened.gif"); // NOI18N
         }
 
+        @Override
         public Action[] getActions( boolean context ) {
             return new Action[] {
                 new AddExternalItemAction(project),
@@ -1163,6 +1165,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             };
         }
 
+        @Override
         public boolean canRename() {
             return false;
         }
@@ -1191,8 +1194,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     folder.addChangeListener( this );
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
+                            // between posting this task and running it can be become deleted (see iz #142240)
+                            // TODO: fix workflow instead?
+                            if (project.getProjectDirectory()!=null && project.getProjectDirectory().isValid()) {
                             //System.err.println("ExternalFilesChildren: setting real nodes");
-                            setKeys( getKeys() );
+                                setKeys( getKeys() );
+                            }
                         }
                     }, WAIT_DELAY);
                 }  else {

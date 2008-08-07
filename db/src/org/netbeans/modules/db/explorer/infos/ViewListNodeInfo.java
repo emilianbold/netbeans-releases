@@ -52,6 +52,9 @@ public class ViewListNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =2854540580610981370L;
 
     public void initChildren(Vector children) throws DatabaseException {
+        if (!isConnected()) {
+            return;
+        }
         try {
             String[] types = new String[] {"VIEW"}; // NOI18N
 

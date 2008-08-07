@@ -251,8 +251,9 @@ public class DataView {
                 }
             }
             errMessages.add(ex);
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DataView.class, "MSG_error") + ex.getMessage());
-            //Exceptions.printStackTrace(ex);
+
+            String title = NbBundle.getMessage(DataView.class, "MSG_error");
+            StatusDisplayer.getDefault().setStatusText(title + ex.getMessage());
         }
     }
 

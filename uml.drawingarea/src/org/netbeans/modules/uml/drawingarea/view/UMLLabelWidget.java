@@ -87,8 +87,6 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
     
      private void init(String propertyID, String displayName)
      {
-        setForeground((Color)null); 
-        setBackground((Paint)null);
         id = propertyID;
         ResourceValue.initResources(propertyID, this);
         this.displayName = displayName;

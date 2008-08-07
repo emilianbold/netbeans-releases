@@ -186,9 +186,12 @@ public class JavaResourceHolder extends ResourceHolder {
      * Removes property of given key from all locale files of the bundle.
      */
     public void removeProperty(Object key) {
-        BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
-        if (bundleStructure != null)
-            bundleStructure.removeItem(key.toString());
+        if (resource != null) {
+            BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
+            if (bundleStructure != null) {
+                bundleStructure.removeItem(key.toString());
+            }
+        }
     }
 
     /** Implements superclass abstract method. Creates template of type clazz 

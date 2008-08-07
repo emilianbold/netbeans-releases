@@ -50,6 +50,7 @@
  * 	schemas <schemas> : Schemas
  * 		[attr: destdir CDATA #IMPLIED  : java.lang.String]
  * 		[attr: projectName CDATA #IMPLIED  : java.lang.String]
+ * 		[attr: version CDATA #IMPLIED  : java.math.BigDecimal]
  * 		schema <schema> : Schema[0,n]
  * 			[attr: type CDATA #IMPLIED  : java.lang.String]
  * 			[attr: package CDATA #IMPLIED  : java.lang.String]
@@ -79,10 +80,12 @@ package org.netbeans.modules.xml.jaxb.cfg.schema;
 public class Schemas {
 	public static final String DESTDIR = "Destdir";	// NOI18N
 	public static final String PROJECTNAME = "ProjectName";	// NOI18N
+	public static final String VERSION = "Version";	// NOI18N
 	public static final String SCHEMA = "Schema";	// NOI18N
 
 	private java.lang.String _Destdir;
 	private java.lang.String _ProjectName;
+	private java.math.BigDecimal _Version;
 	private java.util.List _Schema = new java.util.ArrayList();	// List<Schema>
 	private java.lang.String schemaLocation;
 
@@ -106,6 +109,7 @@ public class Schemas {
 	public Schemas(org.netbeans.modules.xml.jaxb.cfg.schema.Schemas source, boolean justData) {
 		_Destdir = source._Destdir;
 		_ProjectName = source._ProjectName;
+		_Version = source._Version;
 		for (java.util.Iterator it = source._Schema.iterator(); 
 			it.hasNext(); ) {
 			org.netbeans.modules.xml.jaxb.cfg.schema.Schema srcElement = (org.netbeans.modules.xml.jaxb.cfg.schema.Schema)it.next();
@@ -130,6 +134,15 @@ public class Schemas {
 
 	public java.lang.String getProjectName() {
 		return _ProjectName;
+	}
+
+	// This attribute is optional
+	public void setVersion(java.math.BigDecimal value) {
+		_Version = value;
+	}
+
+	public java.math.BigDecimal getVersion() {
+		return _Version;
 	}
 
 	// This attribute is an array, possibly empty
@@ -316,6 +329,12 @@ public class Schemas {
 			org.netbeans.modules.xml.jaxb.cfg.schema.Schemas.writeXML(out, _ProjectName, true);
 			out.write("'");	// NOI18N
 		}
+		// version is an attribute with namespace http://xml.netbeans.org/schema/JAXBWizConfig
+		if (_Version != null) {
+			out.write(" version='");
+			out.write(_Version.toString());
+			out.write("'");	// NOI18N
+		}
 	}
 
 	protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
@@ -444,6 +463,11 @@ public class Schemas {
 			attrValue = attr.getValue();
 			_ProjectName = attrValue;
 		}
+		attr = (org.w3c.dom.Attr) attrs.getNamedItem("version");
+		if (attr != null) {
+			attrValue = attr.getValue();
+			_Version = new java.math.BigDecimal(attrValue);
+		}
 	}
 
 	protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
@@ -514,6 +538,8 @@ public class Schemas {
 			setDestdir((java.lang.String)value);
 		else if (name == "projectName")
 			setProjectName((java.lang.String)value);
+		else if (name == "version")
+			setVersion((java.math.BigDecimal)value);
 		else if (name == "schema")
 			addSchema((Schema)value);
 		else if (name == "schema[]")
@@ -527,6 +553,8 @@ public class Schemas {
 			return getDestdir();
 		if (name == "projectName")
 			return getProjectName();
+		if (name == "version")
+			return getVersion();
 		if (name == "schema[]")
 			return getSchema();
 		throw new IllegalArgumentException(name+" is not a valid property name for Schemas");
@@ -600,6 +628,20 @@ public class Schemas {
 				}
 			}
 		}
+		if (childObj instanceof java.math.BigDecimal) {
+			java.math.BigDecimal child = (java.math.BigDecimal) childObj;
+			if (child == _Version) {
+				if (returnConstName) {
+					return VERSION;
+				} else if (returnSchemaName) {
+					return "version";
+				} else if (returnXPathName) {
+					return "@version";
+				} else {
+					return "Version";
+				}
+			}
+		}
 		return null;
 	}
 
@@ -645,6 +687,9 @@ public class Schemas {
 		if (!(_ProjectName == null ? inst._ProjectName == null : _ProjectName.equals(inst._ProjectName))) {
 			return false;
 		}
+		if (!(_Version == null ? inst._Version == null : _Version.equals(inst._Version))) {
+			return false;
+		}
 		if (sizeSchema() != inst.sizeSchema())
 			return false;
 		// Compare every element.
@@ -663,6 +708,7 @@ public class Schemas {
 		int result = 17;
 		result = 37*result + (_Destdir == null ? 0 : _Destdir.hashCode());
 		result = 37*result + (_ProjectName == null ? 0 : _ProjectName.hashCode());
+		result = 37*result + (_Version == null ? 0 : _Version.hashCode());
 		result = 37*result + (_Schema == null ? 0 : _Schema.hashCode());
 		return result;
 	}
@@ -686,6 +732,7 @@ public class Schemas {
             </xsd:sequence>
             <xsd:attribute name="destdir" type="xsd:string"/>
             <xsd:attribute name="projectName" type="xsd:string"/>
+            <xsd:attribute name="version" type="xsd:decimal"/>
         </xsd:complexType>
     </xsd:element>
     

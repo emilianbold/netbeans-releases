@@ -43,6 +43,8 @@ package org.netbeans.modules.form.j2ee.wizard;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileLock;
@@ -210,8 +212,9 @@ public class MasterDetailGenerator {
         for (String column : masterColumns) {
             String binding = template.replace("_index_", ""+i++); // NOI18N
             binding = binding.replace("_fieldName_", column); // NOI18N
-            String type = iter.next();
+            String type = iter.hasNext() ? iter.next() : null;
             if (type == null) { // fallback - shouldn't happen - means corrupted entity
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "Cannot determine type of " + column + " property!"); // NOI18N
                 type = "Object.class"; // NOI18N
             }
             binding = binding.replace("_fieldType_", type); // NOI18N

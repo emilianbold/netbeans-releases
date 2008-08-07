@@ -536,11 +536,11 @@ public final class RubyPlatformManager {
             }
             if (exitValue == 0) {
                 Properties props = new Properties();
-                if (LOGGER.isLoggable(Level.FINEST)) {
+                if (LOGGER.isLoggable(Level.FINER)) {
                     String stdout = Util.readAsString(proc.getInputStream());
                     String stderr = Util.readAsString(proc.getErrorStream());
-                    LOGGER.finest("stdout:\n" + stdout);
-                    LOGGER.finest("stderr:\n " + stderr);
+                    LOGGER.finer("stdout:\n" + stdout);
+                    LOGGER.finer("stderr:\n " + stderr);
                     props.load(new ReaderInputStream(new StringReader(stdout)));
                 } else {
                     props.load(proc.getInputStream());

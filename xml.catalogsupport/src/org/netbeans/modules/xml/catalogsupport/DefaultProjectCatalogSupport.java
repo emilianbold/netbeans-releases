@@ -141,6 +141,10 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
                 File myPrjRoot = FileUtil.toFile(project.getProjectDirectory());
                 File tgtPrjRoot = new File(myPrjRoot.toURI().resolve(targetPrjRelativeRoot));
                 FileObject tgtPrjFobj = FileUtil.toFileObject(FileUtil.normalizeFile(tgtPrjRoot));
+
+                if (tgtPrjFobj == null) {
+                  return null;
+                }
                 return tgtPrjFobj.getFileObject(uriToBeResolved.getFragment());
             }
         }
@@ -196,8 +200,9 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
     public URI getReferenceURI(FileObject source, FileObject target) throws URISyntaxException {
         Project targetProject = FileOwnerQuery.getOwner(target);
         FileObject sourceFolder = getSourceFolder(source);
+
         if (sourceFolder == null) {
-            throw new IllegalArgumentException(source.getPath()+" is not in project source"); //NOI18N
+            sourceFolder = source;
         }
         String relPathToSrcGroup = getRelativePath(source.getParent(), sourceFolder);
         String relPathToSrcGroupWithSlash = relPathToSrcGroup.trim().equals("")? "" : 
@@ -336,5 +341,4 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
         }
         return false;
     }
-    
 }

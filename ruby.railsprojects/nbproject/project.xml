@@ -145,7 +145,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.86</specification-version>
+                        <specification-version>0.87</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

@@ -60,7 +60,7 @@ public class DiagramContextMenus_DPD extends UMLTestCase {
     private static String prName = "UMLProjectDCntMn";
     private static String dpdName = "DDeployment";
     
-    private static final String workDir = System.getProperty("xtest.workdir");
+    private static final String workDir = System.getProperty("nbjunit.workdir");
     private static String OUT_LOG_FILE = "";
     private static String ERR_LOG_FILE = "";
     private static PrintStream myOut = null;

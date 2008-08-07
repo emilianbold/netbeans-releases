@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,12 +46,11 @@ import java.io.IOException;
 import javax.swing.JTextField;
 import junit.framework.Test;
 import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.test.j2ee.*;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 
 /**
  *
@@ -87,14 +86,13 @@ public class AddMethodTest extends AddMethodBase {
     }
     
     @Override
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         System.out.println("########  "+getName()+"  #######");
     }
 
     public void testAddBusinessMethod1InSB()  throws IOException{
         beanName = "TestingSession";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup")
-                               +"|"+Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddBusinessMethodAction");
         dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddBusinessMethodAction");
         methodName = "testBusinessMethod1";
         returnType = "String";
@@ -108,8 +106,6 @@ public class AddMethodTest extends AddMethodBase {
 
     public void testAddBusinessMethod2InSB()  throws IOException{
         beanName = "TestingSession";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup")
-                               +"|"+Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddBusinessMethodAction");
         dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddBusinessMethodAction");
         methodName = "testBusinessMethod2";
         returnType = "String";
@@ -123,8 +119,6 @@ public class AddMethodTest extends AddMethodBase {
     
     public void testAddBusinessMethod1InEB()  throws IOException{
         beanName = "TestingEntity";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup")
-                               +"|"+Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddBusinessMethodAction");
         dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddBusinessMethodAction");
         methodName = "testBusinessMethod1";
         returnType = "String";
@@ -138,8 +132,6 @@ public class AddMethodTest extends AddMethodBase {
 
     public void testAddBusinessMethod2InEB()  throws IOException{
         beanName = "TestingEntity";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup")
-                               +"|"+Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddBusinessMethodAction");
         dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddBusinessMethodAction");
         methodName = "testBusinessMethod2";
         returnType = "String";
@@ -153,8 +145,6 @@ public class AddMethodTest extends AddMethodBase {
   
    public void testAddCreateMethod1InEB() throws IOException {
         beanName = "TestingEntity";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup")
-                               +"|"+Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddCreateMethodAction");
         dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddCreateMethodAction");
         methodName = "createTest1";
         // Create Method has no return type!!!
@@ -170,8 +160,6 @@ public class AddMethodTest extends AddMethodBase {
    
     public void testAddCreateMethod2InEB() throws IOException {
         beanName = "TestingEntity";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup")
-                               +"|"+Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddCreateMethodAction");
         dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddCreateMethodAction");
         methodName = "createTest2";
         // Create Method has no return type!!!
@@ -187,8 +175,6 @@ public class AddMethodTest extends AddMethodBase {
     
     public void testAddHomeMethod1InEB()  throws IOException{
         beanName = "TestingEntity";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup")
-                               +"|"+Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddHomeMethodAction");
         dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddHomeMethodAction");
         methodName = "homeTestMethod1";
         returnType = "String";
@@ -203,8 +189,6 @@ public class AddMethodTest extends AddMethodBase {
 
     public void testAddHomeMethod2InEB()  throws IOException{
         beanName = "TestingEntity";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup")
-                               +"|"+Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddHomeMethodAction");
         dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddHomeMethodAction");
         methodName = "homeTestMethod2";
         returnType = "String";
@@ -227,13 +211,13 @@ public class AddMethodTest extends AddMethodBase {
         NbDialogOperator dialog = null;
         try {
             ProjectSupport.waitScanFinished();
-            new ActionNoBlock(null, editorPopup).perform(editor);
+            GenerateCodeOperator.openDialog(dialogTitle, editor);
             dialog = new NbDialogOperator(dialogTitle);
         } catch (TimeoutExpiredException e) {
             // push Escape key to ensure there is no open menu
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
             ProjectSupport.waitScanFinished();
-            new ActionNoBlock(null, editorPopup).perform(editor);
+            GenerateCodeOperator.openDialog(dialogTitle, editor);
             dialog = new NbDialogOperator(dialogTitle);
         }
 

@@ -894,8 +894,8 @@ public final class WebProject implements Project, AntProjectListener {
                 webModule.setContextPath (sysName);
             }
 
-            if (Boolean.parseBoolean((String) getWebProjectProperties().get(
-                    WebProjectProperties.DEPLOY_ON_SAVE))) {
+            if (!Boolean.parseBoolean((String) getWebProjectProperties().get(
+                    WebProjectProperties.DISABLE_DEPLOY_ON_SAVE))) {
                 Deployment.getDefault().enableCompileOnSaveSupport(webModule);
             }
             

@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.PrintStream;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
@@ -48,7 +47,6 @@ public class SearchRevisionsTest extends JellyTestCase {
     @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
         
     }
@@ -72,16 +70,12 @@ public class SearchRevisionsTest extends JellyTestCase {
      }
     
     public void testSearchRevisionsTest() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);    
         try {
-            TestKit.closeProject(PROJECT_NAME);
-
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
             Operator.setDefaultStringComparator(comOperator);
-            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            CheckoutWizardOperator.invoke();
             Operator.setDefaultStringComparator(oldOperator);
             RepositoryStepOperator rso = new RepositoryStepOperator();        
 
@@ -93,7 +87,6 @@ public class SearchRevisionsTest extends JellyTestCase {
             Thread.sleep(1000);
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             Thread.sleep(500);
-            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);   
             Thread.sleep(500);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");      
@@ -108,11 +101,8 @@ public class SearchRevisionsTest extends JellyTestCase {
             wdso.checkCheckoutContentOnly(false);
 
             SearchRevisionsOperator sro = wdso.search();
-//            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-//            oto.clear();            
             sro.setFrom("");
             sro.list();
-//            oto.waitText("Searching revisions finished.");
             sro.verify();
             sro.selectListItem(0);
             sro.ok();
@@ -121,8 +111,6 @@ public class SearchRevisionsTest extends JellyTestCase {
 
             stream.flush();
             stream.close();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e); 
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }   

@@ -81,7 +81,7 @@ public class CreateCollaborationDiagramTests extends UMLTestCase {
     private String PROJECT_NAME = "CDFS_uml_Collab";
     private String EXCEPTION_DLG = "Exception";
     private String JAVA_PROJECT_NAME = "CDFS_java";
-    private final String PROJECT_PATH = System.getProperty("xtest.workdir");
+    private final String PROJECT_PATH = System.getProperty("nbjunit.workdir");
     /********************************************************/
     
     private static boolean isNotInitialized = true;

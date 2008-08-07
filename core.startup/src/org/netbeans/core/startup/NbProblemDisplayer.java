@@ -51,9 +51,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
-import org.netbeans.Util;
 import org.openide.modules.Dependency;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 // XXX public for reflection from contrib/modulemanager; should be changed to friend dep!
@@ -88,7 +88,8 @@ public final class NbProblemDisplayer {
      */
     static String messageForProblem(Module m, Object problem, boolean localized) {
         if (problem instanceof InvalidException) {
-            return Util.findLocalizedMessage((InvalidException)problem, true);
+            String loc = Exceptions.findLocalizedMessage((InvalidException) problem);
+            return loc != null ? loc : problem.toString();
         } else {
             Dependency dep = (Dependency)problem;
             switch (dep.getType()) {

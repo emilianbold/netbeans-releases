@@ -182,6 +182,7 @@ public class components extends GeneralXMLTest {
           }
           if( null != jdInfo )
           {
+            Sleep( 1000 );
             JLabelOperator jlLabel = new JLabelOperator( jdInfo, 0 );
             String sText = jlLabel.getText( );
             if(
