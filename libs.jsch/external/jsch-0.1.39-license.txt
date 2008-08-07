@@ -1,7 +1,10 @@
-JSch 0.0.* was released under the GNU LGPL license.  Later, we have switched 
-over to a BSD-style license. 
+Name: JSch
+Version: 0.1.39
+License: BSD-jsch-variant
+OSR: 3548
+Origin: http://www.jcraft.com/jsch/
+Description: Java implementation of SSH2
 
-------------------------------------------------------------------------------
 Copyright (c) 2002,2003,2004,2005,2006,2007,2008 Atsuhiko Yamanaka, JCraft,Inc. 
 All rights reserved.
 
