@@ -295,6 +295,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 return CompletionContext.METHOD_NAME;
             }
             return CompletionContext.NONE;
+        } else if (acceptTokenChains(tokenSequence, FUNCTION_TOKENCHAINS)
+                || acceptTokenChains(tokenSequence, FUNCTION_TOKENCHAINS_CONDITIONAL)){
+            // ordinary (non-method) function name
+            return CompletionContext.NONE;
         }
         return CompletionContext.EXPRESSION;
     }
