@@ -38,7 +38,7 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-VERSION=0.5
+VERSION=0.6
 
 # Prepend /usr/bin and /bin so we're ensured that standard Unix commands
 # don't get replaced by a non-standard version
@@ -129,7 +129,7 @@ do
         then
             line="$line;gdb=$gdb"
         fi
-    elif [ -x "$f/gcc" -o -x "$f/g++" -o -x "$f/cc" -o -x "$f/CC" ]
+    elif [ -x "$f/gcc" -o -x "$f/g++" ]
     then
 	line="GNU;$f"
 	flavor="GNU;"
