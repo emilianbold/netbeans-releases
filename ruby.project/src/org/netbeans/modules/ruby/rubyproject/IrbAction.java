@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
@@ -65,6 +64,7 @@ import org.openide.windows.TopComponent;
  * Action which shows Irb component.
  */
 public class IrbAction extends AbstractAction {
+    
     private static final boolean USE_JRUBY_CONSOLE = Boolean.getBoolean("irb.jruby"); // NOI18N
     
     public IrbAction() {
@@ -127,7 +127,7 @@ public class IrbAction extends AbstractAction {
         if (project != null) {
             runIrbConsole(project);
         } else {
-            Toolkit.getDefaultToolkit().beep();
+            org.netbeans.modules.ruby.platform.Util.notifyLocalized(IrbAction.class, "IrbAction.not.project.in.context"); // NOI18N
         }
         
     }
