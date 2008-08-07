@@ -75,11 +75,6 @@ public final List<VisualizerNode> list = new ArrayList<VisualizerNode>();
     * and fires info to all listeners.
     */
     public void added(VisualizerEvent.Added ev) {
-        if (this != parent.getChildren()) {
-            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
-            return;
-        }
-
         ListIterator<VisualizerNode> it = list.listIterator();
         boolean empty = !it.hasNext();
 
@@ -130,11 +125,6 @@ public final List<VisualizerNode> list = new ArrayList<VisualizerNode>();
     * and fires info to all listeners.
     */
     public void removed(VisualizerEvent.Removed ev) {
-        if (this != parent.getChildren()) {
-            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
-            return;
-        }
-
         List remList = Arrays.asList(ev.getRemovedNodes());
 
         Iterator it = list.iterator();
@@ -209,11 +199,6 @@ public final List<VisualizerNode> list = new ArrayList<VisualizerNode>();
     * and fires info to all listeners.
     */
     public void reordered(VisualizerEvent.Reordered ev) {
-        if (this != parent.getChildren()) {
-            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
-            return;
-        }
-
         if (ev.getComparator() != null) {
             //#37802
             ev.array = reorderByComparator(ev.getComparator());
