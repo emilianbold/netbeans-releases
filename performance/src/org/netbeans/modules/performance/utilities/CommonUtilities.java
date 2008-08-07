@@ -55,6 +55,8 @@ import java.util.Locale;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.OutputOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -85,6 +87,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.junit.NbTestCase;
 
@@ -221,6 +224,12 @@ public class CommonUtilities {
         closeToolbar(Bundle.getStringTrimmed("org.openide.actions.Bundle","View") + "|" +
                 Bundle.getStringTrimmed("org.netbeans.core.windows.actions.Bundle", "CTL_ToolbarsListAction") + "|" +
                 "Memory");
+    }
+    
+    public static void closeTaskWindow() {
+        OutputOperator oo=new OutputOperator();
+        OutputTabOperator oto=oo.getOutputTab("Tasks");
+        oto.close();
     }
     
     private static void closeToolbar(String menu){

@@ -34,45 +34,57 @@
  *
  * Contributor(s):
  *
- * Sandip V. Chitale (sandipchitale@netbeans.org)
- *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-NetBeans.Logger = {};
+package org.netbeans.modules.java.hints;
 
-(function() {
-    var consoleService;
+import com.sun.source.util.TreePath;
+import java.util.List;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
-    this.logMessage = function(message)
-    {
-        if ( !consoleService ) {
-            consoleService = NetBeans.Utils.CCSV(
-            NetBeans.Constants.ConsoleServiceCID,
-            NetBeans.Constants.ConsoleServiceIF);
-        }
-        consoleService.logStringMessage("NETBEANS-LOGGER-MSG: " + message);
+/**
+ *
+ * @author Jan Lahoda
+ */
+public class WrongStringComparisonTest extends TreeRuleTestBase {
+
+    public WrongStringComparisonTest(String name) {
+        super(name);
+    }
+
+    public void testSimple() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private String s;" +
+                            "    private void test() {" +
+                            "        String t = null;" +
+                            "        if (s =|= t);" +
+                            "    }" +
+                            "}",
+                            "0:114-0:120:verifier:Comparing Strings using == or !=");
     }
     
-    this.log = function( message, level ){
-        if ( typeof(message) == 'object' && "fileName" in message && "lineNumber" in message ) {
-            message = ""+message+" at "+message.fileName+":"+message.lineNumber;
-        }
-        if ( level == 'err' ) {
-            this.logMessage(message);
-            return;
-        }
-        if (typeof(NetBeans.Debugger) != "undefined" && NetBeans.Debugger.DEBUG ) {
-            this.logMessage(message);
-        }
-    }
-    
-    this.logException = function(exception) {
-        if (typeof exception == 'string') {
-            exception = new Error(exception);
-        }
+    public void testDisableWhenCorrectlyCheckedAsIn111441() throws Exception {
+        String code = "package test;" +
+                      "public class Test {" +
+                      "    private String s;" +
+                      "    private void test() {" +
+                      "        Test t = null;" +
+                      "        boolean b = this.s !";
         
-        this.logMessage(exception.toString());
-        this.logMessage(exception.stack);
-    }    
-}).apply(NetBeans.Logger);
+        String codeAfter = "= t.s && (this.s == null || !this.s.equals(t.s));" +
+                           "    }" +
+                           "}";
+        performAnalysisTest("test/Test.java", code + codeAfter, code.length());
+    }
+
+    @Override
+    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
+        return new WrongStringComparison().run(info, path);
+    }
+
+}
