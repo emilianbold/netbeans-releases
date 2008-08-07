@@ -241,7 +241,9 @@ public class DefaultProjectCatalogSupport extends ProjectCatalogSupport {
         ProjectConstants.SOURCES_TYPE_XML,
         ProjectConstants.SOURCES_TYPE_JAVA,
         ProjectConstants.TYPE_DOC_ROOT,
-        ProjectConstants.TYPE_WEB_INF
+        ProjectConstants.TYPE_WEB_INF,
+        ProjectConstants.SOURCES_TYPE_PHP,
+        ProjectConstants.SOURCES_TYPE_RUBY
     };
     
     private static FileObject getSourceFolder(Project project, FileObject source) {
