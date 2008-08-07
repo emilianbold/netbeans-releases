@@ -130,7 +130,11 @@ final class WorkspaceParser {
                 workspace.addVariable(var);
             } else if (key.startsWith(USER_LIBRARY_PREFIX) && !value.startsWith(IGNORED_CP_ENTRY)) { // #73542
                 String libName = key.substring(USER_LIBRARY_PREFIX_LENGTH);
-                workspace.addUserLibrary(libName, UserLibraryParser.getJars(value));
+                List<String> jars = new ArrayList<String>();
+                List<String> javadocs = new ArrayList<String>();
+                List<String> sources = new ArrayList<String>();
+                UserLibraryParser.getJars(libName, value, jars, javadocs, sources);
+                workspace.addUserLibrary(libName, jars, javadocs, sources);
             } // else we don't use other properties in the meantime
         }
     }
@@ -162,7 +166,8 @@ final class WorkspaceParser {
                 }
                 jars.add(path);
             }
-            workspace.addUserLibrary(libraryName, jars);
+            // TODO: in Ganymede Javadoc/sources customization does not seem to be persisted. eclipse defect??
+            workspace.addUserLibrary(libraryName, jars, null, null);
         }
     }
     

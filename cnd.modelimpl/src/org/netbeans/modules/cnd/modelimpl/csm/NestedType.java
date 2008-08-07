@@ -106,24 +106,15 @@ public class NestedType extends TypeImpl {
         List res = new ArrayList();
         if (parentType instanceof NestedType) {
             res.addAll(((NestedType)parentType).getFullQName());
-        } else if (parentType != null) {
-            res.add(getOwnText((TypeImpl)parentType));
+        } else if (parentType instanceof TypeImpl) {
+            res.add(((TypeImpl)parentType).getOwnText());
+        } else if (parentType instanceof TemplateParameterTypeImpl) {
+            res.add(((TemplateParameterTypeImpl)parentType).getOwnText());
         }
         res.add(getOwnText());
         return res;
     }
 
-    private CharSequence getOwnText() {
-        return getOwnText(this);
-    }
-
-    private static CharSequence getOwnText(TypeImpl type) {
-        if (type.qname != null && type.qname.length>0) {
-            return type.qname[type.qname.length-1];
-        } else {
-            return "";
-        }
-    }
 
     /*
      * Classifier text should contain specialization of the parent classifier

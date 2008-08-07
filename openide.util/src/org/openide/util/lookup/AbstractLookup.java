@@ -637,6 +637,11 @@ public class AbstractLookup extends Lookup implements Serializable {
         }
     }
 
+    /** Storage check for tests. */
+    static boolean isSimple(AbstractLookup l) {
+        return DelegatingStorage.isSimple((Storage)l.tree);
+    }
+
     /** Generic support for listeners, so it can be used in other results
      * as well.
      * @param add true to add it, false to modify

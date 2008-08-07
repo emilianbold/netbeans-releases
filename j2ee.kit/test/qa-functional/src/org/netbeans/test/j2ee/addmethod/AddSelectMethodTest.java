@@ -49,7 +49,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextAreaOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.test.java.editor.jelly.GenerateCodeOperator;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 
 /**
  *

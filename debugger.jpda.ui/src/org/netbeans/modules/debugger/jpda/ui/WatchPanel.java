@@ -150,9 +150,13 @@ public class WatchPanel {
     }
     
     private static void setupUI(final JEditorPane editorPane) {
-        SwingUtilities.invokeLater(new Runnable() {
+        Runnable runnable = new Runnable() {
             public void run() {
-                // do not highlight current row
+                // disable current row when it is defined by new Highlighting SPI
+                editorPane.putClientProperty("HighlightsLayerExcludes", 
+                    "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$"
+                );
+                // disable it also in the old fashion way
                 EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
                 eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
                 // Do not draw text limit line
@@ -162,7 +166,12 @@ public class WatchPanel {
                     textLimitLineField.set(eui, false);
                 } catch (Exception ex) {}
             }
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
+        }
     }
 
     public JComponent getPanel() {

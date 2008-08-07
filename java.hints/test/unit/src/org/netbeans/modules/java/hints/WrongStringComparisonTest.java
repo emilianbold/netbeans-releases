@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,38 +31,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.junit.testcase.ts;
+package org.netbeans.modules.java.hints;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.junit.pkgtestcreation.PkgCreateTestTest;
+import com.sun.source.util.TreePath;
+import java.util.List;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
  *
- * @author peter
+ * @author Jan Lahoda
  */
-public class PkgTestCreationTestSuite extends JellyTestCase {
-    
-    public PkgTestCreationTestSuite(String name) {
+public class WrongStringComparisonTest extends TreeRuleTestBase {
+
+    public WrongStringComparisonTest(String name) {
         super(name);
     }
+
+    public void testSimple() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private String s;" +
+                            "    private void test() {" +
+                            "        String t = null;" +
+                            "        if (s =|= t);" +
+                            "    }" +
+                            "}",
+                            "0:114-0:120:verifier:Comparing Strings using == or !=");
+    }
     
-    @Override
-    protected void setUp() throws Exception {
-        System.out.println("### " + getName() + " ###");
+    public void testDisableWhenCorrectlyCheckedAsIn111441() throws Exception {
+        String code = "package test;" +
+                      "public class Test {" +
+                      "    private String s;" +
+                      "    private void test() {" +
+                      "        Test t = null;" +
+                      "        boolean b = this.s !";
+        
+        String codeAfter = "= t.s && (this.s == null || !this.s.equals(t.s));" +
+                           "    }" +
+                           "}";
+        performAnalysisTest("test/Test.java", code + codeAfter, code.length());
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(PkgCreateTestTest.class, 
-                        "testCreateTestForPackage")
-                .enableModules(".*").clusters(".*"));
-    } 
+    @Override
+    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
+        return new WrongStringComparison().run(info, path);
+    }
+
 }

@@ -48,7 +48,10 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.beans.PatternAnalyser;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -128,6 +131,9 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
         performer.analyzePatterns();
 
         performer.waitFinished();
+        if (performer.error != null) {
+            DialogDisplayer.getDefault().notify(performer.error);
+        }
         if (performer.bia != null) {
             performer.bia.openSource();
         }
@@ -160,6 +166,7 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
         private BiAnalyser bia;
         private Task task;
         private int state = 0;
+        private NotifyDescriptor error;
 
         public BeanInfoWorker(FileObject javaFile, BiPanel biPanel) {
             this.javaFile = javaFile;
@@ -246,6 +253,18 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
                 }
             }
             
+            if (clselm == null) {
+                isCancelled = true;
+                error = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(
+                                GenerateBeanInfoAction.class,
+                                "MSG_FileWitoutTopLevelClass",
+                                clsname, FileUtil.getFileDisplayName(javaFile)
+                                ),
+                        NotifyDescriptor.ERROR_MESSAGE);
+                return;
+            }
+            
             PatternAnalyser pa = new PatternAnalyser(javaFile, null);
             pa.analyzeAll(javac, clselm);
             // XXX analyze also superclasses here
@@ -275,7 +294,7 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
         }
         
         private void fillBiPanel() {
-            biNode = BiNode.createBiNode( bia );
+            biNode = BiNode.createBiNode(bia, error);
             biPanel.setContext( biNode );
             biPanel.expandAll();
         }

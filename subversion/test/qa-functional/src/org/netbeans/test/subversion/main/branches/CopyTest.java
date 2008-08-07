@@ -56,7 +56,6 @@ public class CopyTest extends JellyTestCase {
     @Override
     protected void setUp() throws Exception {
         os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
         
     }
@@ -81,10 +80,7 @@ public class CopyTest extends JellyTestCase {
      }
     
     public void testCreateNewCopySwitch() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 30000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 30000);
         try {
-            TestKit.closeProject(PROJECT_NAME);
             OutputOperator.invoke();
             TestKit.showStatusLabels();
             
@@ -101,7 +97,6 @@ public class CopyTest extends JellyTestCase {
             new File(TMP_PATH).mkdirs();
             work.mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
-            //RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + WORK_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -114,13 +109,11 @@ public class CopyTest extends JellyTestCase {
             wdso.finish();
             OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
             oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            //            oto.clear();
             //open project
             oto.waitText("Checking out... finished.");
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
-            
             TestKit.waitForScanFinishedAndQueueEmpty();
             
             oto = new OutputTabOperator("file:///tmp/repo");
@@ -138,20 +131,15 @@ public class CopyTest extends JellyTestCase {
             
             Node nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp" + "|Main.java");
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
             String status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
             assertEquals("Wrong annotation of node!!!", "[ release01]", status);
             
             nodeFile = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             nodeIDE = (org.openide.nodes.Node) nodeFile.getOpenideNode();
-            //String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());
             status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
             assertEquals("Wrong annotation of node!!!", "[ release01]", status);
-            //to do
             stream.flush();
             stream.close();
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }

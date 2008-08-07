@@ -46,6 +46,8 @@ import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -137,6 +139,9 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
             reinstateToolbar();
             errorMsg = cmdName + NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failed") + errorMsg;
             dataView.setErrorStatusText(new DBException(errorMsg, ex));
+            
+            NotifyDescriptor nd = new NotifyDescriptor.Exception(ex); 
+            DialogDisplayer.getDefault().notify(nd);
         }
     }
 
@@ -167,7 +172,8 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
             }
         } catch (SQLException e) {
             String msg = NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failure_to_commit");
-            dataView.setErrorStatusText(new DBException(msg, e));
+            ex = new DBException(msg, e);
+            dataView.setErrorStatusText(ex);
             return false;
         }
         return true;

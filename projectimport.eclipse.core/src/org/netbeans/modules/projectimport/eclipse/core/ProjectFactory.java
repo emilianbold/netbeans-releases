@@ -103,6 +103,12 @@ public final class ProjectFactory {
     private EclipseProject load(File projectDir, Workspace workspace) throws
             ProjectImporterException {
         
+        if (workspace != null) {
+            EclipseProject project = workspace.getProjectByProjectDir(projectDir);
+            if (project != null) {
+                return project;
+            }
+        }
         EclipseProject project = EclipseProject.createProject(projectDir);
         if (project != null) {
             project.setWorkspace(workspace);
@@ -130,6 +136,7 @@ public final class ProjectFactory {
             project.setNatures(natures);
             project.setName(projName);
             project.setFacets(ProjectParser.readProjectFacets(project.getDirectory(), natures));
+            project.setLinks(links);
 
             DotClassPath dotClassPath;
             if (project.getClassPathFile() != null) {

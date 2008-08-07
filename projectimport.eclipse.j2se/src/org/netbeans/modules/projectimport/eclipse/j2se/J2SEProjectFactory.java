@@ -99,6 +99,20 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
                 nbProjectDir, model.getProjectName(), model.getEclipseSourceRootsAsFileArray(), 
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, buildScript);
         
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        boolean changed = false;
+        if (new File(nbProjectDir, "dist").exists()) { //NOI18N
+            ep.setProperty("dist.dir", "nbdist"); //NOI18N
+            changed = true;
+        }
+        if (new File(nbProjectDir, "build").exists()) { //NOI18N
+            ep.setProperty("build.dir", "nbbuild"); //NOI18N
+            changed = true;
+        }
+        if (changed) {
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        }
+        
         // get NB project
         J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().
                 findProject(FileUtil.toFileObject(
