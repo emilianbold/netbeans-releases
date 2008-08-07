@@ -702,6 +702,16 @@ public class CompilerSetManager {
         return null;
     }
 
+    public static String getDefaultDevelopmentHost() {
+        ServerList registry = Lookup.getDefault().lookup(ServerList.class);
+        String host;
+        if (registry == null) {
+            host = CompilerSetManager.LOCALHOST;
+        } else {
+            host = registry.getDefaultRecord().getName();
+        }
+        return host;
+    }
     /**
      * Check if the gdb module is enabled. Don't show the gdb line if it isn't.
      *
