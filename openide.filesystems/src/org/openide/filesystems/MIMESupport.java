@@ -113,7 +113,7 @@ final class MIMESupport extends Object {
             synchronized (lock) {
                 CachedFileObject lcfo = (CachedFileObject)lastCfo.get();
                 if (lcfo == null || fo != lastFo.get()) {
-                    cfo = new CachedFileObject(fo);
+                        cfo = new CachedFileObject(fo);
                 } else {
                     cfo = lcfo;
                 }
@@ -146,6 +146,7 @@ final class MIMESupport extends Object {
         java.util.Date lastModified;
         Long size;
         CachedInputStream fixIt;
+        String ext;
 
         /*All calls delegated to this object.
          Except few methods, that returns cached values*/
@@ -153,7 +154,6 @@ final class MIMESupport extends Object {
 
         CachedFileObject(FileObject fo) {
             fileObj = fo;
-            lastModified = fileObj.lastModified();
             fileObj.addFileChangeListener(FileUtil.weakFileChangeListener(this, fileObj));
         }
 
@@ -267,6 +267,7 @@ final class MIMESupport extends Object {
             fixIt = null;
             mimeType = null;
             lastModified = null;
+            ext = null;
         }
 
         public String getMIMEType() {
@@ -309,11 +310,10 @@ final class MIMESupport extends Object {
         }
 
         public java.util.Date lastModified() {
-            if (lastModified != null) {
-                return lastModified;
+            if (lastModified == null) {
+                lastModified = fileObj.lastModified();
             }
-
-            return lastModified = fileObj.lastModified();
+            return lastModified;
         }
 
         public InputStream getInputStream() throws java.io.FileNotFoundException {
@@ -426,7 +426,10 @@ final class MIMESupport extends Object {
         }
 
         public String getExt() {
-            return fileObj.getExt();
+            if(ext == null) {
+                ext = fileObj.getExt();
+            }
+            return ext;
         }
 
         public String getName() {
@@ -561,6 +564,11 @@ final class MIMESupport extends Object {
             }
 
             return super.equals(obj);
+        }
+
+        @Override
+        public String getPath() {
+            return fileObj.getPath();
         }
     }
 
