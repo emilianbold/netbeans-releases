@@ -68,14 +68,21 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
             channel.connect();
 
-            int read;
-            while ((read = in.read()) != -1) {
-                if (read == 10) { // from LocalNativeExecution (MAC conversion?)
-                    out.append('\n');
-                } else {
-                    out.append((char) read);
+            do {
+                int read;
+                while ((read = in.read()) != -1) {
+                    if (read == 10) { // from LocalNativeExecution (MAC conversion?)
+                        out.append('\n');
+                    } else {
+                        out.append((char) read);
+                    }
                 }
-            }
+                try {
+                    Thread.sleep(100); // according to jsch samples
+                } catch (Exception ee) {
+                }
+            } while (!channel.isClosed());
+
             out.flush();
             is.close();
             in.close();
@@ -101,7 +108,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             dircmd = "";
         }
 
-        String cmdline = dircmd + exe + " " + args + " 2>&1"; // NOI18N
+        StringBuilder command = new StringBuilder(exe + " " + args + " 2>&1"); // NOI18N
 
         for (String ev : envp) {
             int pos = ev.indexOf('=');
@@ -112,11 +119,13 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             //echannel.setEnv(var, val); // not in 0.1.24
 
             //as a workaround
-            cmdline = var + "=\"" + val + "\" " + cmdline; // NOI18N
+            command.insert(0, var + "=\"" + val + "\" "); // NOI18N
         }
 
+        command.insert(0, dircmd);
+
         channel = createChannel();
-        ((ChannelExec) channel).setCommand(cmdline.replace('\\', '/'));
+        ((ChannelExec) channel).setCommand(command.toString().replace('\\', '/'));
     }
 
     private final static class ReaderInputStream extends InputStream {
