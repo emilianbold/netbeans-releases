@@ -37,27 +37,38 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.tomcat5.ws;
+package org.netbeans.modules.websvc.wsstack.jaxws.tomcat;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
-import org.netbeans.modules.websvc.serverapi.api.WSStack;
-import org.netbeans.modules.websvc.serverapi.api.WSUriDescriptor;
-import org.netbeans.modules.websvc.serverapi.spi.WSStackSPI;
+//import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
+import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
+import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
+import org.netbeans.modules.websvc.wsstack.api.WSTool;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
+//import org.netbeans.modules.websvc.serverapi.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
+//import org.netbeans.modules.websvc.serverapi.api.WSUriDescriptor;
+//import org.netbeans.modules.websvc.serverapi.spi.WSStackSPI;
 
 /**
  *
  * @author mkuchtiak
  */
-public class TomcatJaxWsStack implements WSStackSPI {
+public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
     
     private static final String WSIT_LIBS[] = new String[] {
         "shared/lib/webservices-rt.jar",   // NOI18N
@@ -71,6 +82,7 @@ public class TomcatJaxWsStack implements WSStackSPI {
     
     private File catalinaHome;
     private String version;
+    private JaxWs jaxWs;
     
     public TomcatJaxWsStack(File catalinaHome) {
         this.catalinaHome = catalinaHome;
@@ -84,78 +96,72 @@ public class TomcatJaxWsStack implements WSStackSPI {
             // Default Version
             version = "2.1.4"; // NOI18N
         };
+        jaxWs = new JaxWs(getUriDescriptor());
+    }
+
+    public JaxWs get() {
+        return jaxWs;
+    }
+
+    public WSStackVersion getVersion() {
+        return WSStackFactory.createWSStackVersion(version);
+    }
+
+//    public Set<String> getSupportedTools() {
+//        Set<String> supportedTools = new HashSet<String>();
+//        if (isWsit()) {
+//            supportedTools.add(WSStack.TOOL_WSGEN);
+//            supportedTools.add(WSStack.TOOL_WSIMPORT);
+//        }
+//        if (isKeystore()) supportedTools.add(WSStack.TOOL_KEYSTORE);
+//        if (isTruststore()) supportedTools.add(WSStack.TOOL_TRUSTSTORE);
+//        if (isKeystoreClient()) supportedTools.add(WSStack.TOOL_KEYSTORE_CLIENT);
+//        if (isTruststoreClient()) supportedTools.add(WSStack.TOOL_TRUSTSTORE_CLIENT);
+//        return supportedTools;
+//    }
+//
+//    public File[] getToolClassPathEntries(String toolName) {
+//        if (WSStack.TOOL_WSGEN.equals(toolName) || WSStack.TOOL_WSIMPORT.equals(toolName)) {
+//            if (isWsit()) {
+//                File[] retValue = new File[WSIT_LIBS.length];
+//                for (int i = 0; i < WSIT_LIBS.length; i++) {
+//                    retValue[i] = new File(catalinaHome, WSIT_LIBS[i]);
+//                }
+//                return retValue; 
+//            }                     
+//        } else if (WSStack.TOOL_KEYSTORE.equals(toolName) && isKeystore()) {
+//            return new File[]{new File(catalinaHome, KEYSTORE_LOCATION)};
+//        } else if (WSStack.TOOL_TRUSTSTORE.equals(toolName) && isTruststore()) {
+//            return new File[]{new File(catalinaHome, TRUSTSTORE_LOCATION)};
+//        } else if (WSStack.TOOL_KEYSTORE_CLIENT.equals(toolName) && isKeystoreClient()) {
+//            return new File[]{new File(catalinaHome, KEYSTORE_CLIENT_LOCATION)};
+//        } else if (WSStack.TOOL_TRUSTSTORE_CLIENT.equals(toolName) && isTruststoreClient()) {
+//            return new File[]{new File(catalinaHome, TRUSTSTORE_CLIENT_LOCATION)};
+//        }
+//        
+//        return new File[]{};
+//    }
+
+    public WSTool getWSTool(Tool toolId) {
+        if (toolId == JaxWs.Tool.WSIMPORT && isWsit()) {
+            return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSIMPORT));
+        } else if (toolId == JaxWs.Tool.WSGEN && isWsit()) {
+            return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSGEN));
+        } else {
+            return null;
+        }
+    }
+
+    public boolean isFeatureSupported(Feature feature) {
+        if (feature == JaxWs.Feature.TESTER_PAGE) {
+            return true;
+        } else if (feature == JaxWs.Feature.WSIT) {
+            return isWsit();
+        } else {
+            return false;
+        }
     }
     
-    public String getName() {
-        return WSStack.STACK_JAX_WS;
-    }
-    
-    public String getVersion() {
-        return version;
-    }
-
-    public Set<String> getSupportedTools() {
-        Set<String> supportedTools = new HashSet<String>();
-        if (isWsit()) {
-            supportedTools.add(WSStack.TOOL_WSGEN);
-            supportedTools.add(WSStack.TOOL_WSIMPORT);
-        }
-        if (isKeystore()) supportedTools.add(WSStack.TOOL_KEYSTORE);
-        if (isTruststore()) supportedTools.add(WSStack.TOOL_TRUSTSTORE);
-        if (isKeystoreClient()) supportedTools.add(WSStack.TOOL_KEYSTORE_CLIENT);
-        if (isTruststoreClient()) supportedTools.add(WSStack.TOOL_TRUSTSTORE_CLIENT);
-        return supportedTools;
-    }
-
-    public File[] getToolClassPathEntries(String toolName) {
-        if (WSStack.TOOL_WSGEN.equals(toolName) || WSStack.TOOL_WSIMPORT.equals(toolName)) {
-            if (isWsit()) {
-                File[] retValue = new File[WSIT_LIBS.length];
-                for (int i = 0; i < WSIT_LIBS.length; i++) {
-                    retValue[i] = new File(catalinaHome, WSIT_LIBS[i]);
-                }
-                return retValue; 
-            }                     
-        } else if (WSStack.TOOL_KEYSTORE.equals(toolName) && isKeystore()) {
-            return new File[]{new File(catalinaHome, KEYSTORE_LOCATION)};
-        } else if (WSStack.TOOL_TRUSTSTORE.equals(toolName) && isTruststore()) {
-            return new File[]{new File(catalinaHome, TRUSTSTORE_LOCATION)};
-        } else if (WSStack.TOOL_KEYSTORE_CLIENT.equals(toolName) && isKeystoreClient()) {
-            return new File[]{new File(catalinaHome, KEYSTORE_CLIENT_LOCATION)};
-        } else if (WSStack.TOOL_TRUSTSTORE_CLIENT.equals(toolName) && isTruststoreClient()) {
-            return new File[]{new File(catalinaHome, TRUSTSTORE_CLIENT_LOCATION)};
-        }
-        
-        return new File[]{};
-    }
-    
-    public WSUriDescriptor getServiceUriDescriptor() {
-        return new WSUriDescriptor() {
-
-            public String getServiceUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return applicationRoot+"/"+serviceName; //NOI18N
-            }
-
-            public String getDescriptorUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl"; //NOI18N
-            }
-            
-            public String getTesterPageUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return applicationRoot+"/"+serviceName; //NOI18N
-            }
-            
-        };
-    }
-
-    public Set<WSStackFeature> getServiceFeatures() {
-        Set<WSStackFeature> wsFeatures = new HashSet<WSStackFeature>();
-        wsFeatures.add(WSStackFeature.TESTER_PAGE);
-        if (isWsit()) {
-            wsFeatures.add(WSStackFeature.WSIT);
-        }
-        return wsFeatures;
-    }
-
     private boolean isWsit() {
         boolean wsit = true;
         for (int i = 0; i < WSIT_LIBS.length; i++) {
@@ -205,6 +211,49 @@ public class TomcatJaxWsStack implements WSStackSPI {
             }           
         }
         return null;
+    }
+    
+    private JaxWs.UriDescriptor getUriDescriptor() {
+        return new JaxWs.UriDescriptor() {
+
+            public String getServiceUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
+                return applicationRoot+"/"+serviceName; //NOI18N
+            }
+
+            public String getDescriptorUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
+                return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl"; //NOI18N
+            }
+            
+            public String getTesterPageUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
+                return applicationRoot+"/"+serviceName; //NOI18N
+            }
+            
+        };
+    }
+    
+    private class JaxWsTool implements WSToolImplementation {
+        JaxWs.Tool tool;
+        JaxWsTool(JaxWs.Tool tool) {
+            this.tool = tool;
+        }
+
+        public String getName() {
+            return tool.getName();
+        }
+
+        public URL[] getLibraries() {
+            
+            URL[] retValue = new URL[WSIT_LIBS.length];
+            try {
+                for (int i = 0; i < WSIT_LIBS.length; i++) {
+                    retValue[i] = new File(catalinaHome, WSIT_LIBS[i]).toURL();
+                }
+                return retValue;
+            } catch (MalformedURLException ex) {
+                return new URL[0];
+            }
+        }
+        
     }
     
 }

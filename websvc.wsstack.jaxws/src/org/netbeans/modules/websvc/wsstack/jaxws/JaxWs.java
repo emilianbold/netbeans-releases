@@ -37,14 +37,52 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.core.jaxwsstack;
+package org.netbeans.modules.websvc.wsstack.jaxws;
+
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
 
 /**
  *
  * @author mkuchtiak
  */
-public interface WSUriDescriptor {
-    String getServiceUri(String applicationRoot, String serviceName, String portName, boolean isEjb);
-    String getDescriptorUri(String applicationRoot, String serviceName, String portName, boolean isEjb);
-    String getTesterPageUri(String applicationRoot, String serviceName, String portName, boolean isEjb);
+public class JaxWs {
+    private UriDescriptor uriDescriptor;
+    
+    public JaxWs(UriDescriptor uriDescriptor) {
+        this.uriDescriptor = uriDescriptor;
+    }
+    
+    public UriDescriptor getWsUriDescriptor() {
+        return uriDescriptor;
+    }
+            
+    public static enum Tool implements WSStack.Tool {
+        WSIMPORT,
+        WSGEN;
+
+        public String getName() {
+            return name();
+        }
+    }
+    
+    public static enum Feature implements WSStack.Feature {
+        JSR109,
+        SERVICE_REF_INJECTION,
+        TESTER_PAGE,
+        WSIT;
+
+        public String getName() {
+            return name();
+        }
+    }
+    
+    public static interface UriDescriptor {
+        /** Pattern for WSDL descriptor URI */
+        public String getDescriptorUri (String applicationRoot, String serviceName, String portName, boolean isEjb);
+        /** Pattern for Web Service URI */
+        public String getServiceUri (String applicationRoot, String serviceName, String portName, boolean isEjb);
+        /** Pattern for Tester Page URI */
+        public String getTesterPageUri (String applicationRoot, String serviceName, String portName, boolean isEjb);
+    }
+    
 }

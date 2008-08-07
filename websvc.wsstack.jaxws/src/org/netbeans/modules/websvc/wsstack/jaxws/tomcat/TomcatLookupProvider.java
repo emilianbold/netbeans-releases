@@ -37,32 +37,25 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.core.jaxwsstack.tomcat;
+package org.netbeans.modules.websvc.wsstack.jaxws.tomcat;
 
-import java.net.URL;
+import java.io.File;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.LookupProvider;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author mkuchtiak
  */
-public class TomcatJaxWsTool implements WSToolImplementation {
+public class TomcatLookupProvider implements LookupProvider {
 
-    private WSStack.Tool tool;
-    private URL[] libraries;
-    
-    public TomcatJaxWsTool(WSStack.Tool tool, URL[] libraries) {
-        this.tool = tool;
-        this.libraries = libraries;
-    }
-    
-    public String getName() {
-        return tool.getName();
-    }
-
-    public URL[] getLibraries() {
-        return libraries;
+    public Lookup createAdditionalLookup(Lookup baseContext) {
+        File catalinaHome = baseContext.lookup(File.class);
+        return Lookups.fixed(WSStackFactory.createWSStack(JaxWs.class ,new TomcatJaxWsStack(catalinaHome), WSStack.Source.SERVER));
     }
 
 }
