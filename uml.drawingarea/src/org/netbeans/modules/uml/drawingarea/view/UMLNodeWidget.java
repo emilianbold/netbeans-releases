@@ -53,6 +53,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -143,7 +144,7 @@ public abstract class UMLNodeWidget extends Widget
     public static final String LOCATION = "LOCATION";
     public static final String  GRANDPARENTLOCATION = "GRANDPARENTLOCATION"; // needed for combined fragments
     public static final String SIZE = "SIZE";
-
+    public static final String LAYER_INDEX = "LAYER_INDEX";
 
     
     public UMLNodeWidget(Scene scene)
@@ -419,6 +420,17 @@ public abstract class UMLNodeWidget extends Widget
     public void save(NodeWriter nodeWriter) {
         nodeWriter.getProperties().put(RESIZEMODEPROPERTY, getResizeMode().toString());
         setNodeWriterValues(nodeWriter, this);
+        //save the widet index for layering
+        int index = -1;
+        Widget parent = this.getParentWidget();
+        if (parent != null)
+        {
+            index = parent.getChildren().indexOf(this);
+        }
+        HashMap map = nodeWriter.getProperties();
+        map.put(LAYER_INDEX, index);
+        nodeWriter.setProperties(map);
+        
         nodeWriter.beginGraphNodeWithModelBridge();
         nodeWriter.beginContained();
         //write contained
