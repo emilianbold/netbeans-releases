@@ -144,7 +144,7 @@ public abstract class UMLNodeWidget extends Widget
     public static final String LOCATION = "LOCATION";
     public static final String  GRANDPARENTLOCATION = "GRANDPARENTLOCATION"; // needed for combined fragments
     public static final String SIZE = "SIZE";
-    public static final String LAYER_INDEX = "LAYER_INDEX";
+    public static final String WIDGET_INDEX = "WIDGET_INDEX";
 
     
     public UMLNodeWidget(Scene scene)
@@ -428,7 +428,7 @@ public abstract class UMLNodeWidget extends Widget
             index = parent.getChildren().indexOf(this);
         }
         HashMap map = nodeWriter.getProperties();
-        map.put(LAYER_INDEX, index);
+        map.put(WIDGET_INDEX, index);
         nodeWriter.setProperties(map);
         
         nodeWriter.beginGraphNodeWithModelBridge();
@@ -558,7 +558,7 @@ public abstract class UMLNodeWidget extends Widget
                 manager.switchViewTo(viewName);
             }
         }
-        //now process color/font properties
+        //now process color/font and other properties
         for (Enumeration<String> e = props.keys(); e.hasMoreElements(); ) {
             String key = e.nextElement();
             
@@ -572,7 +572,23 @@ public abstract class UMLNodeWidget extends Widget
                 Font font = parseFont(props.get(key));
                 this.getResourceTable().addProperty(key, font);
                 continue;
-            }           
+            }  
+            if (key.equalsIgnoreCase(WIDGET_INDEX))
+            {
+                String val = props.get(key);
+                int widgetIndex = Integer.parseInt(val);
+                if (widgetIndex >= 0) 
+                {
+                    Widget parent = this.getParentWidget();
+                    List<Widget> children = parent.getChildren();
+                    if (children != null && children.size() > 1  
+                            && children.indexOf(this) > widgetIndex) {
+                        this.removeFromParent();
+                        parent.addChild(widgetIndex, this);
+//                    scene.validate();
+                    }
+                }
+            }
         }
     }
     
