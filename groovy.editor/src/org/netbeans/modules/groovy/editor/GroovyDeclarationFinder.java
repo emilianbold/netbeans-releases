@@ -568,6 +568,11 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         BaseDocument doc, int astOffset, int lexOffset, AstPath path, ASTNode callNode, GroovyIndex index) {
 
         Set<IndexedMethod> candidates = new HashSet<IndexedMethod>();
+
+        if(path == null) {
+            return null;
+        }
+
         ASTNode parent = path.leafParent();
 
         if (callNode instanceof ConstantExpression && parent instanceof MethodCallExpression) {
