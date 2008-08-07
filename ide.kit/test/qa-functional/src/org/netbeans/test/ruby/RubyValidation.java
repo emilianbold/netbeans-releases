@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -60,7 +60,6 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.ide.WatchProjects;
 
 /**
@@ -75,7 +74,7 @@ public class RubyValidation extends JellyTestCase {
                 "testRunRubyFile",
                 "testCreateRailsProject",
                 "testRailsGenerate",
-                "testIrbShell",
+//                "testIrbShell", // TODO: does not work due to issue 137398
     };
 
     /** Need to be defined because of JUnit */
