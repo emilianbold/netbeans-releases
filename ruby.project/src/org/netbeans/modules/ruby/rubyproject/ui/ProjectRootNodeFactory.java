@@ -143,7 +143,7 @@ public class ProjectRootNodeFactory implements NodeFactory {
             };
             Arrays.sort(children, c);
             for (FileObject rootChild : children) {
-                if (rootChild.isFolder() || RakeSupport.isRakeFile(rootChild)) {
+                if (rootChild.isFolder() || RakeSupport.isMainRakeFile(rootChild)) {
                     continue;
                 }
                 rootFiles.add(new RootChildNode(rootChild));
