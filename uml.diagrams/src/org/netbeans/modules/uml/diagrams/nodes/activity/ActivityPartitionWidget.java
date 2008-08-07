@@ -107,7 +107,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
 
     public ActivityPartitionWidget(Scene scene)
     {
-        super(scene,true);
+        super(scene, false);
         this.scene = scene;
         
         // initialize context palette
@@ -142,7 +142,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         mainView.setBorder(BorderFactory.createLineBorder(2));
         mainView.setUseGradient(useGradient);
         mainView.setCustomizableResourceTypes(
-                new ResourceType[]{ResourceType.BACKGROUND});
+                new ResourceType[]{ResourceType.BACKGROUND, ResourceType.FONT});
         mainView.setOpaque(true);
         mainView.setCheckClipping(true);
 
