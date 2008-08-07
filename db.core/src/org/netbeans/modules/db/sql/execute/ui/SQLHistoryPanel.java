@@ -51,7 +51,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -334,11 +333,11 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 private void verifySQLLimit() {
     String limit = sqlLimitTextField.getText();
     int iLimit = 0;
+    SQLHistoryPersistenceManager sqlPersistanceManager = SQLHistoryPersistenceManager.getInstance();
     inputWarningLabel.setVisible(false);
-
     if (limit.equals(SAVE_STATEMENTS_CLEARED)) { // NOI18N
         iLimit = SAVE_STATEMENTS_MAX_LIMIT;
-        SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER));
+        view.setSQLHistoryList(sqlPersistanceManager.updateSQLSaved(iLimit, Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER)));
         ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null);
         NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
         sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED);
@@ -401,6 +400,10 @@ private void verifySQLLimit() {
 
         public List<SQLHistory> getSQLHistoryList() {
             return sqlHistoryList;
+        }
+        
+        public void setSQLHistoryList(List<SQLHistory> sqlHistoryList) {
+             this.sqlHistoryList = sqlHistoryList;
         }
         
         /**

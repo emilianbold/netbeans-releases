@@ -448,18 +448,22 @@ public class FFExtensionManager {
         StringTokenizer tokens = new StringTokenizer(version, ".");
         while (tokens.hasMoreTokens()) {
             String nextToken = tokens.nextToken();
-            if (nextToken.contains("b")) {
-                int index = nextToken.indexOf("b");
-                
-                String first = nextToken.substring(0, index);
-                String second = nextToken.substring(index+1, nextToken.length());
-                
-                // version xxbyy is greater than any version xx-1 without a beta
-                // but less than version xx without a beta
-                result.add(new Integer(Integer.valueOf(first).intValue() - 1));
-                result.add(Integer.valueOf(second));
-            }else {
-                result.add(Integer.valueOf(nextToken));
+            try {
+                if (nextToken.contains("b")) {
+                    int index = nextToken.indexOf("b");
+
+                    String first = nextToken.substring(0, index);
+                    String second = nextToken.substring(index + 1, nextToken.length());
+
+                    // version xxbyy is greater than any version xx-1 without a beta
+                    // but less than version xx without a beta
+                    result.add(new Integer(Integer.valueOf(first).intValue() - 1));
+                    result.add(Integer.valueOf(second));
+                } else {
+                    result.add(Integer.valueOf(nextToken));
+                }
+            } catch (NumberFormatException ex) {
+                // skip values that are not numbers
             }
         }
         

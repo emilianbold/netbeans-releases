@@ -132,7 +132,12 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         //so far the css parser always parses the whole css content
-        ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
+        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
+        if (!presultIterator.hasNext()) {
+            return Collections.emptyMap();
+        }
+
+        ParserResult presult = presultIterator.next();
         final TranslatedSource source = presult.getTranslatedSource();
         SimpleNode root = ((CSSParserResult) presult).root();
 

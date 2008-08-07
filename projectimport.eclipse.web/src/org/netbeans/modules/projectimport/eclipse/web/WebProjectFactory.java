@@ -198,6 +198,20 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         AntProjectHelper helper = WebProjectUtilities.importProject(createData);
         WebProject nbProject = (WebProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        boolean changed = false;
+        if (new File(nbProjectDir, "dist").exists()) { //NOI18N
+            ep.setProperty("dist.dir", "nbdist"); //NOI18N
+            changed = true;
+        }
+        if (new File(nbProjectDir, "build").exists()) { //NOI18N
+            ep.setProperty("build.dir", "nbbuild"); //NOI18N
+            changed = true;
+        }
+        if (changed) {
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        }
+        
         // set labels for source roots
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseSourceRoots(), nbProject.getSourceRoots());
         ProjectFactorySupport.updateSourceRootLabels(model.getEclipseTestSourceRoots(), nbProject.getTestSourceRoots());

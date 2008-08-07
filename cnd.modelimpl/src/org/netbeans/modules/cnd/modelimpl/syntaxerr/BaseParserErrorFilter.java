@@ -56,10 +56,23 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
 
     protected Collection<CsmErrorInfo> toErrorInfo(Collection<RecognitionException> exceptions, CsmFile file) {
         Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
+        RecognitionException prev = null;
         for (RecognitionException e : exceptions) {
-            result.add(toErrorInfo(e, file));
+            // Fix for IZ#143082: some syntax errors are reported twice.
+            // We assume that equal recognition exceptions are next to each other.
+            if (!equal(prev, e)) {
+                result.add(toErrorInfo(e, file));
+            }
+            prev = e;
         }
         return result;
+    }
+
+    protected boolean equal(RecognitionException e1, RecognitionException e2) {
+        if ((e1 == null) != (e2 == null)) {
+            return false;
+        }
+        return e1.getLine() == e2.getLine() && e1.getColumn() == e2.getColumn();
     }
 
     protected CsmErrorInfo toErrorInfo(RecognitionException e, CsmFile file) {
