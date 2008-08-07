@@ -82,6 +82,7 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.InvalidStackFrameException;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -1368,6 +1369,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         }
                     } catch (NativeMethodException nmex) {
                         // ignore - no arguments available
+                    } catch (InvalidStackFrameException ex) {
                     }
                     return (Value) Assert2.error(arg0, "unknownVariable", paramName);
                 }
