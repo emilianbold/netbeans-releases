@@ -43,6 +43,7 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -694,6 +695,8 @@ class J2SEActionProvider implements ActionProvider {
     }
     private void prepareDirtyList(Properties p, boolean isExplicitBuildTarget) {
         String doDepend = project.evaluator().getProperty(J2SEProjectProperties.DO_DEPEND);
+        String buildClassesDirValue = project.evaluator().getProperty(J2SEProjectProperties.BUILD_CLASSES_DIR);
+        File buildClassesDir = project.getAntProjectHelper().resolveFile(buildClassesDirValue);
         synchronized (this) {
             if (dirty == null) {
                 // #119777: the first time, build everything.
@@ -705,7 +708,8 @@ class J2SEActionProvider implements ActionProvider {
                 // (If you make an edit and press F11, the save event happens *after* Ant is launched.)
                 modification(d.getPrimaryFile());
             }
-            if (!"true".equalsIgnoreCase(doDepend) && !(isExplicitBuildTarget && dirty.isEmpty())) { // NOI18N
+            boolean wasBuiltAutomatically = new File(buildClassesDir, ".netbeans_automatic_build").canRead();
+            if (!"true".equalsIgnoreCase(doDepend) && !(isExplicitBuildTarget && dirty.isEmpty()) && !wasBuiltAutomatically) { // NOI18N
                 // #104508: if not using <depend>, try to compile just those files known to have been touched since the last build.
                 // (In case there are none such, yet the user invoked build anyway, probably they know what they are doing.)
                 if (dirty.isEmpty()) {
