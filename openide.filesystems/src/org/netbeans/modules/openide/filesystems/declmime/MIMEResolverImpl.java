@@ -141,7 +141,7 @@ public final class MIMEResolverImpl {
          * @return  recognized MIME type or null if not recognized
          */
         public String findMIMEType(FileObject fo) {
-            if (fo.hasExt("xml") && fo.getPath().startsWith("Services/MIMEResolver")) { // NOI18N
+            if (fo.getPath().startsWith("Services/MIMEResolver") && fo.hasExt("xml")) { // NOI18N
                 // do not try to check ourselves!
                 return null;
             }
