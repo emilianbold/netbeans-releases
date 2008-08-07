@@ -136,6 +136,7 @@ public final class ProjectFactory {
             project.setNatures(natures);
             project.setName(projName);
             project.setFacets(ProjectParser.readProjectFacets(project.getDirectory(), natures));
+            project.setLinks(links);
 
             DotClassPath dotClassPath;
             if (project.getClassPathFile() != null) {
