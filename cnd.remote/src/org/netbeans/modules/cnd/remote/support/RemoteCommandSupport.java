@@ -125,6 +125,8 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
     protected Channel createChannel() throws JSchException {
         ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
         StringBuilder cmdline = new StringBuilder();
+        
+        String prefix = cmd.indexOf(';') > -1 ? "export " : "";
 
         if (env != null) {
             for (String ev : env.keySet()) {
@@ -133,7 +135,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                 //echannel.setEnv(var, val); // not in 0.1.24
 
                 //as a workaround
-                cmdline.append( ev + "=\"" + env.get(ev) + "\";" ); // NOI18N
+                cmdline.append( prefix + ev + "=\"" + env.get(ev) + "\" " ); // NOI18N
             }
 
         }

@@ -56,6 +56,16 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         super(testName, true);
     }
 
+    public void test142903_1() throws Exception {
+        // IZ#142903: Code completion does not work immediately after "{" or "}"
+        super.performTest("file.cc", 44, 35);
+    }
+    
+    public void test142903_2() throws Exception {
+        // IZ#142903: Code completion does not work immediately after "{" or "}"
+        super.performTest("file.cc", 46, 6);
+    }
+
     public void testIZ109010() throws Exception {
         // IZ#109010: Code completion listbox doesn't appear after "flag ? static_cast<int>(remainder) :" expression
         super.performTest("file.cc", 45, 54);

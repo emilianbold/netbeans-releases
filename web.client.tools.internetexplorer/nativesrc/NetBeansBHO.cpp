@@ -175,7 +175,9 @@ DWORD WINAPI CNetBeansBHO::DebuggerProc(LPVOID param) {
             HANDLE hThread = CreateThread(NULL, 0, DbgpConnection::commandHandler, 
                                 pNetbeansBHO->m_pDbgpConnection, 0, &threadID);
             AtlWaitWithMessageLoop(hThread);
+
             //cleanup
+            pScriptDebugger->endSession();
             delete pDbgpConnection;
             pNetbeansBHO->setDebuggerStopped();
         }else {
