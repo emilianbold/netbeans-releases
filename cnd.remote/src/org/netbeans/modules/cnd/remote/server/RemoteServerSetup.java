@@ -77,7 +77,7 @@ public class RemoteServerSetup {
         
         // Script setup map
         scriptSetupMap = new HashMap<String, Double>();
-        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.5)); // NOI18N
+        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.6)); // NOI18N
         
         // Binary setup map
         binarySetupMap = new HashMap<String, String>();
