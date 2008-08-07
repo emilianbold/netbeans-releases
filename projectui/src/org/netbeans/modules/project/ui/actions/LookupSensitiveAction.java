@@ -249,7 +249,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
      * #120721: do not want to use Utilities.actionsGlobalContext since that does not survive focus change,
      * and we would like to mimic the selection tracking behavior of Hacks.keepCurrentProjectNameUpdated.
      */
-    private static final class LastActivatedWindowLookup extends ProxyLookup implements PropertyChangeListener {
+    static final class LastActivatedWindowLookup extends ProxyLookup implements PropertyChangeListener {
 
         static final Lookup INSTANCE = new LastActivatedWindowLookup();
 
