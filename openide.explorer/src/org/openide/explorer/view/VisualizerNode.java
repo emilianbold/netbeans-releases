@@ -236,6 +236,11 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * @return list of VisualizerNode objects
     */
     public List<VisualizerNode> getChildren() {
+        VisualizerChildren ch = getVisChildren();
+        return (ch == null) ? Collections.<VisualizerNode>emptyList() : ch.list;
+    }
+
+    VisualizerChildren getVisChildren() {
         VisualizerChildren ch = children.get();
 
         if ((ch == null) && !node.isLeaf()) {
@@ -263,8 +268,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             // this assert is too expensive during the performance tests:
             assert (ch == null) || !ch.list.contains(null) : ch.list + " from " + node; 
         }
-
-        return (ch == null) ? Collections.<VisualizerNode>emptyList() : ch.list;
+        return ch;
     }
 
     //
