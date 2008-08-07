@@ -86,7 +86,7 @@ final class MIMESupport extends Object {
     private static final Reference<FileObject> EMPTY = new WeakReference<FileObject>(null);
     private static Reference<FileObject> lastFo = EMPTY;
     private static Reference<FileObject> lastCfo = EMPTY;
-    private static Object lock = new Object();
+    private static final Object lock = new Object();
     
     /** for logging and test interaction */
     private static Logger ERR = Logger.getLogger(MIMESupport.class.getName());
@@ -270,6 +270,7 @@ final class MIMESupport extends Object {
             ext = null;
         }
 
+        @Override
         public String getMIMEType() {
             return getMIMEType(null);
         }
@@ -352,19 +353,23 @@ final class MIMESupport extends Object {
         }
 
         @Deprecated // have to override for compat
+        @Override
         public String getPackageNameExt(char separatorChar, char extSepChar) {
             return fileObj.getPackageNameExt(separatorChar, extSepChar);
         }
 
+        @Override
         public FileObject copy(FileObject target, String name, String ext)
         throws IOException {
             return fileObj.copy(target, name, ext);
         }
 
+        @Override
         protected void fireFileDeletedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
             fileObj.fireFileDeletedEvent(en, fe);
         }
 
+        @Override
         protected void fireFileFolderCreatedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
             fileObj.fireFileFolderCreatedEvent(en, fe);
         }
@@ -382,6 +387,7 @@ final class MIMESupport extends Object {
             return fileObj.getAttribute(attrName);
         }
 
+        @Override
         public Enumeration<? extends FileObject> getFolders(boolean rec) {
             return fileObj.getFolders(rec);
         }
@@ -394,6 +400,7 @@ final class MIMESupport extends Object {
             return fileObj.isRoot();
         }
 
+        @Override
         public Enumeration<? extends FileObject> getData(boolean rec) {
             return fileObj.getData(rec);
         }
@@ -402,6 +409,7 @@ final class MIMESupport extends Object {
             return fileObj.getChildren();
         }
 
+        @Override
         public String getNameExt() {
             return fileObj.getNameExt();
         }
@@ -440,14 +448,17 @@ final class MIMESupport extends Object {
             fileObj.removeFileChangeListener(fcl);
         }
 
+        @Override
         protected void fireFileRenamedEvent(Enumeration<FileChangeListener> en, FileRenameEvent fe) {
             fileObj.fireFileRenamedEvent(en, fe);
         }
 
+        @Override
         public void refresh(boolean expected) {
             fileObj.refresh(expected);
         }
 
+        @Override
         protected void fireFileAttributeChangedEvent(Enumeration<FileChangeListener> en, FileAttributeEvent fe) {
             fileObj.fireFileAttributeChangedEvent(en, fe);
         }
@@ -469,6 +480,7 @@ final class MIMESupport extends Object {
             fileObj.rename(lock, name, ext);
         }
 
+        @Override
         protected void fireFileChangedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
             fileObj.fireFileChangedEvent(en, fe);
         }
@@ -477,6 +489,7 @@ final class MIMESupport extends Object {
             return fileObj.getFileObject(name, ext);
         }
 
+        @Override
         public void refresh() {
             fileObj.refresh();
         }
@@ -490,6 +503,7 @@ final class MIMESupport extends Object {
             fileObj.addFileChangeListener(fcl);
         }
 
+        @Override
         protected void fireFileDataCreatedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
             fileObj.fireFileDataCreatedEvent(en, fe);
         }
@@ -502,6 +516,7 @@ final class MIMESupport extends Object {
             return fileObj.createFolder(name);
         }
 
+        @Override
         public Enumeration<? extends FileObject> getChildren(boolean rec) {
             return fileObj.getChildren(rec);
         }
@@ -512,6 +527,7 @@ final class MIMESupport extends Object {
         }
 
         @Deprecated // have to override for compat
+        @Override
         public String getPackageName(char separatorChar) {
             return fileObj.getPackageName(separatorChar);
         }
@@ -525,10 +541,12 @@ final class MIMESupport extends Object {
             return fileObj.getOutputStream(lock);
         }
 
+        @Override
         public boolean existsExt(String ext) {
             return fileObj.existsExt(ext);
         }
 
+        @Override
         public FileObject move(FileLock lock, FileObject target, String name, String ext)
         throws IOException {
             return fileObj.move(lock, target, name, ext);
@@ -554,10 +572,12 @@ final class MIMESupport extends Object {
 
         /** MIMEResolvers should not cache this FileObject. But they can cache
          * resolved patterns in Map with this FileObject as key.*/
+        @Override
         public int hashCode() {
             return fileObj.hashCode();
         }
 
+        @Override
         public boolean equals(java.lang.Object obj) {
             if (obj instanceof CachedFileObject) {
                 return ((CachedFileObject) obj).fileObj.equals(fileObj);
@@ -585,6 +605,7 @@ final class MIMESupport extends Object {
 
         /** This stream can be closed only from MIMESupport. That`s why
          * internalClose was added*/
+        @Override
         public void close() throws java.io.IOException {
         }
 
@@ -595,6 +616,7 @@ final class MIMESupport extends Object {
             }
         }
 
+        @Override
         protected void finalize() {
             internalClose();
         }
@@ -645,6 +667,7 @@ final class MIMESupport extends Object {
         }
 
         /** for debug purposes. Returns buffered content. */
+        @Override
         public String toString() {
             String retVal = super.toString() + '[' + inputStream.toString() + ']' + '\n'; //NOI18N
             retVal += new String(buffer);
