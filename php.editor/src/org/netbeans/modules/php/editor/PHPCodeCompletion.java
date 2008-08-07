@@ -229,7 +229,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         "__LINE__", "array()", "class", "const", "continue", "die()", "echo()", "empty()", "endif",
         "eval()", "exit()", "for", "foreach", "function", "global", "if",
         "include()", "include_once()", "isset()", "list()", "new",
-        "print()", "require()", "require_once()", "return()", "static",
+        "print()", "require()", "require_once()", "return", "static",
         "switch", "unset()", "use", "var", "while",
         "__FUNCTION__", "__CLASS__", "__METHOD__", "final", "php_user_filter",
         "interface", "implements", "extends", "public", "private",
