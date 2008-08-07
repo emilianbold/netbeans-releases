@@ -42,13 +42,10 @@ package org.netbeans.modules.websvc.core;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.core.jaxwsstack.IdeJaxWsStack;
 import org.netbeans.modules.websvc.core.jaxwsstack.JdkJaxWsStack;
-//import org.netbeans.modules.websvc.serverapi.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
-//import org.netbeans.modules.websvc.serverapi.api.WSStackProvider;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
-//import org.netbeans.modules.websvc.serverapi.spi.WSStackFactory;
 
 /**
  *
@@ -57,16 +54,6 @@ import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 public class JaxWsStackProvider {
     
     private static WSStack jdkJaxWsStack, ideJaxWsStack;
-    
-//    public static WSStack getJaxWsStack(J2eePlatform j2eePlatform) {
-//        Collection<? extends WSStack> wsStacks = j2eePlatform.getLookup().lookupAll(WSStack.class);
-//        for (WSStack wsStack:wsStacks) {
-//            if (WSStack.STACK_JAX_WS.equals(wsStack.getName())) {
-//                return wsStack;
-//            }
-//        }
-//        return null;
-//    }
     
     public static WSTool getJaxWsStackTool(J2eePlatform j2eePlatform, WSStack.Tool toolId) {
         WSStack wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
