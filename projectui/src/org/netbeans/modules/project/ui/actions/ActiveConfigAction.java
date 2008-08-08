@@ -34,7 +34,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -74,6 +76,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.Presenter;
 
@@ -81,7 +84,7 @@ import org.openide.util.actions.Presenter;
  * Action permitting selection of a configuration for the main project.
  * @author Greg Crawley, Adam Sotona, Jesse Glick
  */
-public class ActiveConfigAction extends CallableSystemAction implements ContextAwareAction {
+public class ActiveConfigAction extends CallableSystemAction implements LookupListener, PropertyChangeListener, ContextAwareAction {
 
     private static final Logger LOGGER = Logger.getLogger(ActiveConfigAction.class.getName());
 
@@ -96,6 +99,8 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
     private Project currentProject;
     private ProjectConfigurationProvider pcp;
     private Lookup.Result<ProjectConfigurationProvider> currentResult;
+
+    private Lookup lookup;
 
     public ActiveConfigAction() {
         super();
@@ -140,6 +145,16 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
                 activeProjectProviderChanged();
             }
         };
+
+        OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
+
+        lookup = LookupSensitiveAction.LastActivatedWindowLookup.INSTANCE;
+        Lookup.Result result = lookup.lookupResult(Project.class);
+        result.addLookupListener(WeakListeners.create(LookupListener.class, this, result));
+
+        DynLayer.INSTANCE.setEnabled(true);
+        refreshView(lookup);
+
     }
 
 
@@ -147,7 +162,6 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         LOGGER.log(Level.FINER, "configurationsListChanged: {0}", configs);
         if (configs == null) {
             configListCombo.setModel(EMPTY_MODEL);
-            DynLayer.INSTANCE.setEnabled(false);
             configListCombo.setEnabled(false); // possibly redundant, but just in case
         } else {
             DefaultComboBoxModel model = new DefaultComboBoxModel(configs.toArray());
@@ -155,7 +169,6 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
                 model.addElement(CUSTOMIZE_ENTRY);
             }
             configListCombo.setModel(model);
-            DynLayer.INSTANCE.setEnabled(true);
             configListCombo.setEnabled(true);
         }
         if (pcp != null) {
@@ -477,6 +490,46 @@ public class ActiveConfigAction extends CallableSystemAction implements ContextA
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
+    }
+
+    private void refreshView(Lookup context) {
+
+        Project mainPrj = OpenProjectList.getDefault().getMainProject();
+
+        Project contextPrj = null;
+        if (mainPrj == null) {
+            contextPrj = getProjectFromLookup(context);
+        }
+
+        if (contextPrj != null) {
+            activeProjectChanged(contextPrj);
+        }
+
+    }
+
+    private Project getProjectFromLookup(Lookup context) {
+        Project toReturn = null;
+        List<Project> result = new ArrayList<Project>();
+        if (context != null) {
+            for (Project p : context.lookupAll(Project.class)) {
+                result.add(p);
+            }
+        }
+        if (result.size() > 0) {
+            toReturn = result.get(0);
+        }
+        return toReturn;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(OpenProjectList.PROPERTY_MAIN_PROJECT) ||
+            evt.getPropertyName().equals(OpenProjectList.PROPERTY_OPEN_PROJECTS) ) {
+            refreshView(lookup);
+        }
+    }
+
+    public void resultChanged(LookupEvent ev) {
+        refreshView(lookup);
     }
 
 }

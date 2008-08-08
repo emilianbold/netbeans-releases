@@ -70,7 +70,7 @@ public class RestSamplesTest extends RestTestBase {
 
     @Override
     protected String getSamplesCategoryName() {
-        return Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/REST");
+        return Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro");
     }
 
     /**

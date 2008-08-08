@@ -106,6 +106,7 @@ import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -500,7 +501,7 @@ public final class NbJSDebugger {
             }
             bpImpl.setCondition(condition);
             final JSBreakpointImpl tmpBreakpointImp = bpImpl;
-            EventQueue.invokeLater(new Runnable () {
+            RequestProcessor.getDefault().post(new Runnable () {
                 public void run() {
                     String bpId = debugger.setBreakpoint(tmpBreakpointImp);
                     if (bpId != null) {

@@ -27,7 +27,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
  */
 public interface TMapComponent extends DocumentComponent<TMapComponent> {
 
-    String TRANSFORM_MAP_NS_URI = "http://www.sun.com/jbi/xsltse/transformmap"; // NOI18N
+    String TRANSFORM_MAP_NS_URI = "http://xml.netbeans.org/schema/transformmap"/* 142908 "http://www.sun.com/jbi/xsltse/transformmap"*/; // NOI18N
     
     TMapModel getModel();
     
