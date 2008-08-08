@@ -96,6 +96,9 @@ public class SyncDiagramAction extends AbstractAction
                 }
             }
         }
+        
+        DiscoverRelationshipAction action = new DiscoverRelationshipAction(scene);
+        action.actionPerformed(e);
     }
     
 
