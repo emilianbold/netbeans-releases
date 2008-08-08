@@ -70,6 +70,7 @@ import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectPropert
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.plugins.PluginAction;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
+import org.netbeans.modules.ruby.rubyproject.IrbAction;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunnerAction;
@@ -147,15 +148,15 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
     }
     
     public Node findPath(Node root, Object target) {
-        Project project = root.getLookup().lookup(Project.class);
-        if (project == null) {
+        Project _project = root.getLookup().lookup(Project.class);
+        if (_project == null) {
             return null;
         }
         
         if (target instanceof FileObject) {
             FileObject targetFO = (FileObject) target;
             Project owner = FileOwnerQuery.getOwner(targetFO);
-            if (!project.equals(owner)) {
+            if (!_project.equals(owner)) {
                 return null; // Don't waste time if project does not own the fo
             }
             
@@ -489,6 +490,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             //actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null)); // NOI18N
             //actions.add(null);
             actions.add(SystemAction.get(RakeRunnerAction.class));
+            actions.add(SystemAction.get(IrbAction.class));
             actions.add(SystemAction.get(MigrateAction.class));
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(RailsActionProvider.COMMAND_RAILS_CONSOLE, bundle.getString("LBL_ConsoleAction_Name"), null)); // NOI18N

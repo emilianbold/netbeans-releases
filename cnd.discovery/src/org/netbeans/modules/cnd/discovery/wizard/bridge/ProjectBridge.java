@@ -95,7 +95,8 @@ public class ProjectBridge {
     
     public ProjectBridge(String baseFolder) throws IOException{
         this.baseFolder = baseFolder;
-        MakeConfiguration extConf = new MakeConfiguration(baseFolder, "Default", MakeConfiguration.TYPE_MAKEFILE); // NOI18N
+        // TODO: create localhost based project
+        MakeConfiguration extConf = new MakeConfiguration(baseFolder, "Default", MakeConfiguration.TYPE_MAKEFILE, CompilerSetManager.LOCALHOST); // NOI18N
         String workingDir = baseFolder;
         String workingDirRel = IpeUtils.toRelativePath(baseFolder, FilePathAdaptor.naturalize(workingDir));
         workingDirRel = FilePathAdaptor.normalize(workingDirRel);

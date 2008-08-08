@@ -261,7 +261,6 @@ public:
         return state;
     }
 private:
-    CComPtr<IRemoteDebugApplication> m_spRemoteDebugApplication;
     DWORD m_dwRemoteDebugAppCookie, m_dwRemoteDebugAppThreadCookie, m_dwDebugAppCookie;
     DWORD m_dwThreadID;
     static BOOL isCurrentprocessThread(DWORD threadId);
@@ -287,8 +286,6 @@ private:
     IDebugProperty *resolveProperty(IDebugProperty *pDebugProperty, tstring relativeName);
     Property *getProperty(IDebugProperty *pDebugProperty, tstring name, int stackDepth, BOOL recurse=FALSE);
     IDebugProperty *getChildDebugProperty(IDebugProperty *pDebugProperty, tstring name);
-    //Property locals;
-    //map<tstring, DebugPropertyInfo *> propertyMap;
     BOOL getStackFrameDescriptor(int stackDepth, DebugStackFrameDescriptor *pDescriptor);
     HANDLE m_hDebugExprCallBackEvent;
     IDebugProperty *evalToDebugProperty(tstring expression, int stackDepth);

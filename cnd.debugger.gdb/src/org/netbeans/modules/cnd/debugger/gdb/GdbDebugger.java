@@ -1055,21 +1055,24 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         if (cb != null) {
             cb.append(omsg);
-        } else if (msg.startsWith("GNU gdb ") && startupTimer != null) { // NOI18N
-            // Cancel the startup timer - we've got our first response from gdb
-            startupTimer.cancel();
-            startupTimer = null;
+        } else if (msg.startsWith("GNU gdb ")) { // NOI18N
+            if (startupTimer != null) {
+                // Cancel the startup timer - we've got our first response from gdb
+                startupTimer.cancel();
+                startupTimer = null;
+            }
 
             // Now process the version information
             int first = msg.indexOf('.');
-            int last = msg.lastIndexOf('.');
+            int next = msg.indexOf('.', first + 1);
             try {
-                if (first == last) {
+                if (next == -1) {
                     gdbVersion = Double.parseDouble(msg.substring(8));
                 } else {
-                    gdbVersion = Double.parseDouble(msg.substring(8, last));
+                    gdbVersion = Double.parseDouble(msg.substring(8, next));
                 }
             } catch (NumberFormatException ex) {
+                log.warning("GdbDebugger: Failed to parse version string");
             }
             if (msg.contains("cygwin")) { // NOI18N
                 cygwin = true;

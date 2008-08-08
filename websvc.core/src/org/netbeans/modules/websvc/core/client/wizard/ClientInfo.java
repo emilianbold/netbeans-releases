@@ -80,7 +80,6 @@ import org.netbeans.modules.websvc.core.WsdlRetriever;
 import org.netbeans.modules.websvc.core.jaxws.JaxWsExplorerPanel;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 
-import org.netbeans.modules.websvc.serverapi.api.WSStack;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -108,10 +107,8 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
-import org.netbeans.modules.websvc.core.JaxWsStackProvider;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
-import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;

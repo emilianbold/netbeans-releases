@@ -88,8 +88,8 @@
 
 
     <folder name="org-netbeans-xsltpro">
-        <file name="transformmap.xml" url="EmptyTMap.template"/>
-        <!--file name="transformmap.xml" url="TMapTemplate.xml"/-->
+        <!--142908 file name="transformmap.xml" url="EmptyTMap.template"/-->
+        <file name="transformmap.xml" url="TMapTemplate.xml"/>
         <file name="genPortmap.xsl" url="genPortmap.xsl"/>
         <file name="transformmap.xsd" url="transformmap.xsd"/>
     </folder>
