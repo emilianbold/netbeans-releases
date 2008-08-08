@@ -367,7 +367,7 @@ public class CompilerSetManager {
     /** Initialize remote CompilerSets */
     private void initRemoteCompilerSets(final String key) {
         final CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
-        ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        ServerList registry = Lookup.getDefault().lookup(ServerList.class);
         assert registry != null;
         assert provider != null;
         ServerRecord record = registry.get(key);

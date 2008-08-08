@@ -45,6 +45,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
@@ -158,6 +160,7 @@ public class RemoteServerRecord implements ServerRecord {
             } else {
                 state = STATE_ONLINE;
                 CompilerSetManager.getDefault(name); // Trigger creation of the CSM if it doesn't already exist...
+                HostInfoProvider.getDefault().getMapper(name).init();
             }
         }
         if (pcs != null) {

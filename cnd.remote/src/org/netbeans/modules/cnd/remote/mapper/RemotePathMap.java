@@ -53,10 +53,12 @@ import org.openide.util.NbPreferences;
  * 
  * @author gordonp
  */
-public class RemotePathMap extends HashMap<String, String> implements PathMap {
+public class RemotePathMap implements PathMap {
 
     private static Map<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
-    private String hkey;
+
+    private final HashMap<String, String> map = new HashMap<String, String>();
+    private final String hkey;
 
     public static RemotePathMap getMapper(String hkey) {
         RemotePathMap pathmap = pmtable.get(hkey);
@@ -74,50 +76,46 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
     }
 
     /** 
+     *
      * Initialization the path map here:
-     * Windows Algorythm:
-     *    1. Get the drive letter
-     *    2. See if there is an NFS mount point in the Windows registry
-     *    3. Run a RemotePathMapSupport(host, user, [mount point host], [mount point path])
-     * 
-     * Unix Algorythm:
-     *    1. TBD 
      */
-    private void init() {
-        String list = getPreferences(hkey);
-        
-        if (list == null) {
-            // 1. Developers entry point
-            String pmap = System.getProperty("cnd.remote.pmap");
-            if (pmap != null) {
-                String line;
-                File file = new File(pmap);
+    public void init() {
+        synchronized ( map ) {
+            String list = getPreferences(hkey);
 
-                if (file.exists() && file.canRead()) {
-                    try {
-                        BufferedReader in = new BufferedReader(new FileReader(file));
-                        while ((line = in.readLine()) != null) {
-                            int pos = line.indexOf(' ');
-                            if (pos > 0) {
-                                put(line.substring(0, pos), line.substring(pos + 1).trim());
+            if (list == null) {
+                // 1. Developers entry point
+                String pmap = System.getProperty("cnd.remote.pmap");
+                if (pmap != null) {
+                    String line;
+                    File file = new File(pmap);
+
+                    if (file.exists() && file.canRead()) {
+                        try {
+                            BufferedReader in = new BufferedReader(new FileReader(file));
+                            while ((line = in.readLine()) != null) {
+                                int pos = line.indexOf(' ');
+                                if (pos > 0) {
+                                    map.put(line.substring(0, pos), line.substring(pos + 1).trim());
+                                }
                             }
+                        } catch (IOException ioe) {
                         }
-                    } catch (IOException ioe) {
                     }
+                } else {
+                    // 2. Automated mappings gathering entry point
+                    HostMappingsAnalyzer ham = new HostMappingsAnalyzer(hkey);
+                    map.putAll(ham.getMappings());
                 }
             } else {
-                // 2. Automated mappings gathering entry point
-                HostMappingsAnalyzer ham = new HostMappingsAnalyzer(hkey);
-                putAll(ham.getMappings());
-            }
-        } else {
-            // 3. Deserialization
-            String[] paths = list.split(DELIMITER);
-            for (int i = 0; i < paths.length; i+=2) {
-                if (i+1 < paths.length) { //TODO: only during development
-                    put(paths[i], paths[i+1]);
-                } else {
-                    System.err.println("mapping serialization flaw. Was found: " + list);
+                // 3. Deserialization
+                String[] paths = list.split(DELIMITER);
+                for (int i = 0; i < paths.length; i+=2) {
+                    if (i+1 < paths.length) { //TODO: only during development
+                        map.put(paths[i], paths[i+1]);
+                    } else {
+                        System.err.println("mapping serialization flaw. Was found: " + list);
+                    }
                 }
             }
         }
@@ -125,7 +123,7 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
     // PathMap
     public String getRemotePath(String lpath) {
         String ulpath = unifySeparators(lpath);
-        for (Map.Entry<String, String> entry : entrySet()) {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
             String key = unifySeparators(entry.getKey());
             if (ulpath.startsWith(key)) {
                 String mpoint = entry.getValue();
@@ -137,7 +135,7 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
 
     public String getLocalPath(String rpath) {
         String urpath = unifySeparators(rpath);
-        for (Map.Entry<String, String> entry : entrySet()) {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
             String value = unifySeparators(entry.getValue());
             if (urpath.startsWith(value)) {
                 String mpoint = entry.getKey();
@@ -157,13 +155,13 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
      */
     public boolean isRemote(String lpath, boolean fixMissingPaths) {
         String ulpath = unifySeparators(lpath);
-        for (Map.Entry<String, String> entry : entrySet()) {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
             String mpoint = unifySeparators(entry.getValue());
             if (ulpath.startsWith(mpoint)) {
                 return true;
             }
         }
-        for (String mpoint : keySet()) {
+        for (String mpoint : map.keySet()) {
             if (ulpath.startsWith(unifySeparators(mpoint))) {
                 return true;
             }
@@ -183,18 +181,25 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
 
     // Utility
     public void updatePathMap(Map<String, String> newPathMap) {
-        clear();
-        StringBuilder sb = new StringBuilder();
-        for (String path : newPathMap.keySet()) {
-            String remotePath = fixEnding(newPathMap.get(path));
-            path = fixEnding(path);
-            put(path, remotePath);
-            sb.append( fixEnding(path) );
-            sb.append(DELIMITER);
-            sb.append( remotePath );
-            sb.append(DELIMITER);
+        synchronized( map ) {
+            map.clear();
+            StringBuilder sb = new StringBuilder();
+            for (String path : newPathMap.keySet()) {
+                String remotePath = fixEnding(newPathMap.get(path));
+                path = fixEnding(path);
+                map.put(path, remotePath);
+                sb.append( fixEnding(path) );
+                sb.append(DELIMITER);
+                sb.append( remotePath );
+                sb.append(DELIMITER);
+            }
+            setPreferences(hkey, sb.toString());
         }
-        setPreferences(hkey, sb.toString());
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, String> getMap() {
+        return (Map<String, String>)map.clone();
     }
 
     private static String fixEnding(String path) {

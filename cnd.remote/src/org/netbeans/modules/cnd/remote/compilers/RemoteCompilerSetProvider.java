@@ -62,6 +62,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
         this.hkey = hkey;
         manager = new CompilerSetScriptManager();
         new RemoteScriptSupport(hkey, manager);
+
     }
     
     public int getPlatform() {
