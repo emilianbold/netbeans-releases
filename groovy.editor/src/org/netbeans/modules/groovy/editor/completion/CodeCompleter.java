@@ -2210,8 +2210,13 @@ public class CodeCompleter implements CodeCompletionHandler {
             List<javax.lang.model.element.Element> methodlist = getMethodsForType(javaSource, className);
 
             for (Element element : methodlist) {
-                if (element.getSimpleName().toString().toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
-                    proposals.add(new JavaMethodItem(element, anchor, request));
+                
+                String simpleName = element.getSimpleName().toString();
+                String parameterString = getParameterListForMethod((ExecutableElement) element);
+                String returnType = ((ExecutableElement) element).getReturnType().getClass().toString();
+                
+                if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
+                    proposals.add(new JavaMethodItem(simpleName, parameterString, returnType, anchor, request));
                 }
             }
         }

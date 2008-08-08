@@ -178,16 +178,21 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
      */
     class JavaMethodItem extends GroovyCompletionItem {
 
-        private final javax.lang.model.element.Element javaElement;
+        private final String simpleName;
+        private final String parameterString;
+        private final String returnType;
+        
 
-        JavaMethodItem(javax.lang.model.element.Element element, int anchorOffset, CodeCompleter.CompletionRequest request) {
+        JavaMethodItem(String simpleName, String parameterString, String returnType, int anchorOffset, CodeCompleter.CompletionRequest request) {
             super(null, anchorOffset, request);
-            this.javaElement = element;
+            this.simpleName = simpleName;
+            this.parameterString = parameterString;
+            this.returnType = returnType;
         }
 
         @Override
         public String getName() {
-            return javaElement.getSimpleName().toString() + "()";
+            return simpleName + "()";
         }
 
         @Override
@@ -197,21 +202,13 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            
-            String params = "";
-            
-            if (javaElement instanceof ExecutableElement) {
-                params = CodeCompleter.getParameterListForMethod((ExecutableElement) javaElement);
-            }
-            
-            return javaElement.getSimpleName().toString() + "(" + params + ")";
+            return simpleName + "(" + parameterString + ")";
         }
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
             
-            String retType = ((ExecutableElement) javaElement).getReturnType().getClass().toString();
-            retType = NbUtilities.stripPackage(retType);
+            String retType = NbUtilities.stripPackage(returnType);
 
             formatter.appendHtml(retType);
 
