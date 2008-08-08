@@ -302,6 +302,10 @@ public class MarkOccDetTest extends TestBase {
         performTest("MarkConstructorOccurrence", 4, 25);
     }
     
+    public void testConstructorIsNotAClass() throws Exception {
+        performTest("MarkConstructorOccurrence", 2, 25);
+    }
+
     private void performTest(String name, final int line, final int column) throws Exception {
         performTest(name, line, column, false);
     }
