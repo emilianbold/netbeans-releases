@@ -65,9 +65,16 @@ public class DevelopmentHostConfiguration {
     
     private static ServerList serverList = null;
     
-    public DevelopmentHostConfiguration() {
+    public DevelopmentHostConfiguration(String host) {
         names = getServerNames();
-        def = value = getDefaultHostIndex();
+        value = 0;
+        for (int i = 0; i < names.length; i++) {
+            if (host.equals(names[i])) {
+                value = i;
+                break;
+            }
+        }        
+        def = value;
         pcs = new PropertyChangeSupport(this);
     }
     
@@ -155,7 +162,8 @@ public class DevelopmentHostConfiguration {
     
     @Override
     public Object clone() {
-        DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration();
+        DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration(getName());
+        // FIXUP: left setValue call to leave old logic
         clone.setValue(getName());
         return clone;
     }
@@ -187,10 +195,4 @@ public class DevelopmentHostConfiguration {
         return CompilerSetManager.LOCALHOST.equals(getName());
     }
 
-    private int getDefaultHostIndex() {
-        if (getServerList() != null) {
-            return getServerList().getDefaultIndex();
-        }
-        return 0; // localost is always defined and should be considered the default
-    }
 }

@@ -168,12 +168,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             else {
                 // FIXUP
             }
-            currentConf = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), getString(atts.getValue(0)), confType);
-            
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(0), confType);
         } else if (element.equals(NEO_CONF_ELEMENT)) {
-            currentConf = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), getString(atts.getValue(0)), MakeConfiguration.TYPE_APPLICATION);
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(0), MakeConfiguration.TYPE_APPLICATION); 
         } else if (element.equals(EXT_CONF_ELEMENT)) {
-            currentConf = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), getString(atts.getValue(0)), MakeConfiguration.TYPE_MAKEFILE);
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(0), MakeConfiguration.TYPE_MAKEFILE);
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP:  < version 5
             currentFolder = new Folder(projectDescriptor, ((MakeConfigurationDescriptor)projectDescriptor).getLogicalFolders(), "ExternalFiles", "Important Files", false); // NOI18N
             ((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentFolder);
@@ -334,9 +333,6 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
             ((MakeConfiguration) currentConf).getCompilerSet().setNameAndFlavor(currentText, descriptorVersion);
         } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
-	    if (descriptorVersion < 46) {
-		currentText = CompilerSetManager.LOCALHOST;
-            }
             ((MakeConfiguration) currentConf).getDevelopmentHost().setValue(currentText);
         } else if (element.equals(C_REQUIRED_ELEMENT)) {
             if (descriptorVersion <= 41) {
@@ -643,6 +639,19 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         if (relativeOffset != null && path.startsWith("..")) // NOI18N
             path = IpeUtils.trimDotDot(relativeOffset + path);
         return path;
+    }
+
+    private MakeConfiguration createNewConfiguration(FileObject projectDirectory, String value, int confType) {
+        String host;
+        // here we need to handle tags added between version.
+        // becase such tags will not be handled in "endElement" callbacks        
+        if (descriptorVersion < 46) {
+            host = CompilerSetManager.LOCALHOST;
+        } else {
+            host = CompilerSetManager.getDefaultDevelopmentHost();
+        }
+        MakeConfiguration makeConfiguration = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), getString(value), confType, host);
+        return makeConfiguration;
     }
     
     private String getString(String s){

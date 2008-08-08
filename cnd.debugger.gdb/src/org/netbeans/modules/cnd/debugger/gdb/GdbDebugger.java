@@ -244,7 +244,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (iotab != null) {
                 iotab.setErrSeparated(false);
             }
-            runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory() + "/");  // NOI18N
+            runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory().replace("\\", "/") + "/");  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = pae.getProfile().getConsoleType().getValue();
             platform = ((MakeConfiguration) pae.getConfiguration()).getPlatform().getValue();
@@ -375,11 +375,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     CommandBuffer cb = new CommandBuffer(gdb);
                     gdb.info_threads(cb); // we get the PID from this...
                     String msg = cb.waitForCompletion();
-                    if (msg.startsWith("* 1 thread ")) { // NOI18N
-                        int pos = msg.indexOf('.');
-                        if (pos > 0) {
+                    int pos1 = msg.indexOf("* 1 thread "); // NOI18N
+                    if (pos1 >= 0) {
+                        int pos2 = msg.indexOf('.', pos1);
+                        if (pos2 > 0) {
                             try {
-                                programPID = Long.valueOf(msg.substring(11, pos));
+                                programPID = Long.valueOf(msg.substring(pos1 + 11, pos2));
                             } catch (NumberFormatException ex) {
                                 log.warning("Failed to get PID from \"info threads\""); // NOI18N
                             }
