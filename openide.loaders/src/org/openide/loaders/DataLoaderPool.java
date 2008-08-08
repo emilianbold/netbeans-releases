@@ -406,20 +406,69 @@ implements java.io.Serializable {
         // Accepts only those loaders that produces superclass of clazz
         return Enumerations.filter (allLoaders (), new ProducerOf ());
     }
-    
+
+    private static class EmptyDataLoaderRecognized implements DataLoader.RecognizedFiles, Set<FileObject> {
+        public void markRecognized(FileObject fo) {
+        }
+
+        public int size() {
+            return 0;
+        }
+
+        public boolean isEmpty() {
+            return true;
+        }
+
+        public boolean contains(Object o) {
+            return false;
+        }
+
+        public Iterator<FileObject> iterator() {
+            return Collections.EMPTY_SET.iterator();
+        }
+
+        public Object[] toArray() {
+            return new Object[0];
+        }
+
+        public <T> T[] toArray(T[] a) {
+            return a;
+        }
+
+        public boolean add(FileObject e) {
+            return false;
+        }
+
+        public boolean remove(Object o) {
+            return false;
+        }
+
+        public boolean containsAll(Collection<?> c) {
+            return false;
+        }
+
+        public boolean addAll(Collection<? extends FileObject> c) {
+            return false;
+        }
+
+        public boolean retainAll(Collection<?> c) {
+            return false;
+        }
+
+        public boolean removeAll(Collection<?> c) {
+            return false;
+        }
+
+        public void clear() {
+        }
+    } // end of EmptyDataLoaderRecognized
+
+
     
     /** private class for next method. Empty implementation of
      * DataLoaderRecognized.
      */
-    private static final DataLoader.RecognizedFiles emptyDataLoaderRecognized =
-    new DataLoader.RecognizedFiles () {
-            /** No op. replacement.
-             *
-             * @param fo file object to exclude
-             */
-        public void markRecognized (FileObject fo) {
-        }
-    };
+    static final EmptyDataLoaderRecognized emptyDataLoaderRecognized = new EmptyDataLoaderRecognized();
     
     /** Find a data object for this file object (not for normal users of the APIs).
      * <strong>DO NOT USE THIS</strong> as a normal user of the APIs!
@@ -472,7 +521,7 @@ implements java.io.Serializable {
             }
         }
 
-        HashSet<FileObject> recognized = new HashSet<FileObject>();
+        Set<FileObject> recognized = r == emptyDataLoaderRecognized ? emptyDataLoaderRecognized : new HashSet<FileObject>();
         // scan through loaders
         Enumeration<? extends DataObject.Factory> en = allLoaders (fo);
         while (en.hasMoreElements ()) {

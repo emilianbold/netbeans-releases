@@ -122,7 +122,13 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
 	
 	return sb;
     }
-    
+
+    @Override
+    public boolean isPointer() {
+        // function pointer is always pointer
+        return true;
+    }
+
     public static boolean isFunctionPointerParamList(AST ast) {
 	return initFunctionPointerParamList(ast, null);
     }

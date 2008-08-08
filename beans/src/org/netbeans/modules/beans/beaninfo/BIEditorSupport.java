@@ -94,6 +94,7 @@ import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.windows.CloneableOpenSupport;
@@ -215,12 +216,16 @@ final class BIEditorSupport extends DataEditorSupport
 
     @Override
     protected Pane createPane() {
+        DataObject dobj = getDataObject();
+        if (dobj == null || !dobj.isValid()) {
+            return super.createPane();
+        }
         MultiViewDescription[] descs = {
-            new JavaView(getDataObject()),
-            new BeanInfoView(getDataObject()),
+            new JavaView(dobj),
+            new BeanInfoView(dobj),
         };
         return (Pane) MultiViewFactory.createCloneableMultiView(
-                descs, descs[0], new CloseHandler(getDataObject()));
+                descs, descs[0], new CloseHandler(dobj));
     }
     
     /** This is called by the multiview elements whenever they are created
@@ -323,7 +328,9 @@ final class BIEditorSupport extends DataEditorSupport
         }
 
         public Image getIcon() {
-            return dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
+            return dataObject.isValid()
+                    ? dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)
+                    : ImageUtilities.loadImage("org/netbeans/modules/beans/resources/warning.gif"); // NOI18N
         }
 
         public HelpCtx getHelpCtx() {

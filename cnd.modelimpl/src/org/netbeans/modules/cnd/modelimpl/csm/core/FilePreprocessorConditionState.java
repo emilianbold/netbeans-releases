@@ -168,7 +168,7 @@ public class FilePreprocessorConditionState
         }
 
         System.err.printf("compareTo (%s): %s %s %s \n", fileName, toStringBrief(this),
-                (result < 0) ? "<" : ((result > 0) ? ">" : "="),
+                (result < 0) ? "<" : ((result > 0) ? ">" : "="), // NOI18N
                 toStringBrief((FilePreprocessorConditionState) o)); //NOI18N
     }
 
@@ -210,10 +210,10 @@ public class FilePreprocessorConditionState
 
     private static String toStringBrief(FilePreprocessorConditionState state) {
         if (state == null) {
-            return "null";
+            return "null"; // NOI18N
         }
         StringBuilder sb = new StringBuilder();
-        sb.append("[");
+        sb.append("["); // NOI18N
         for (int i = 0; i < state.size; i++) {
             if (i > 0) {
                 sb.append(", "); //NOI18N

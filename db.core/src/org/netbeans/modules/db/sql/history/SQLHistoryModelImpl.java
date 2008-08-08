@@ -95,7 +95,7 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
                 isRewriteSQLRequired = true;
             }
             // Get saved limit
-            String savedLimit =NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
+            String savedLimit = NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
             if (savedLimit.equals(SAVE_STATEMENTS_CLEARED)) {
                 savedLimit = SAVE_STATEMENTS_MAX_LIMIT_ENTERED;
             }
@@ -108,8 +108,11 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
             if (isRewriteSQLRequired) {
                 // Remove all elements from sql_history.xml
                 SQLHistoryPersistenceManager.getInstance().updateSQLSaved(SAVE_STATEMENTS_EMPTY, root);
-                // Write new list
+                // Write new list;  reversing list is required for persisting the SQL
+                Collections.reverse(retrievedSQL);
                 SQLHistoryPersistenceManager.getInstance().create(root, retrievedSQL);
+                // return list to the expected order for viewing
+                Collections.reverse(retrievedSQL);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -153,7 +156,6 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
                     canAdd = true;
                 }
             }
-            Collections.reverse(revSqLHistoryList);
             return revSqLHistoryList;        
     }
     
@@ -167,7 +169,6 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
             }
             i++;
         }    
-        Collections.reverse(revSqLHistoryList);
         return revSqLHistoryList;
     }
 

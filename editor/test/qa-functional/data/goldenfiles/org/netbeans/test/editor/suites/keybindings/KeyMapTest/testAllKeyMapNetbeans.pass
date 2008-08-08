@@ -188,6 +188,14 @@ Other|Move Selection else Line up
   Alt+Shift+KP_UP
 Other|Navigate to Next Occurrence
   Alt+DOWN
+Other|Navigate to Next Occurrence
+  Alt+DOWN
+Other|Navigate to Next Occurrence
+  Alt+DOWN
+Other|Navigate to Previous Occurrence
+  Alt+UP
+Other|Navigate to Previous Occurrence
+  Alt+UP
 Other|Navigate to Previous Occurrence
   Alt+UP
 Other|Page Down
@@ -254,7 +262,7 @@ Other|Toggle Toolbar
 Other|Toggle Typing Mode
   INSERT
 Refactor|Change Method Parameters...
-Refactor|Convert Anonymous to Inner...
+Refactor|Convert Anonymous to Member...
 Refactor|Copy...
 Refactor|Encapsulate Fields...
 Refactor|Extract Interface...
@@ -282,6 +290,7 @@ Refactor|Undo
 Refactor|Use Supertype Where Possible...
 Source|Analyze Javadoc
 Source|Comment
+  Ctrl+Shift+T
 Source|Fix Code...
   Alt+ENTER
 Source|Fix Imports
@@ -300,6 +309,7 @@ Source|Shift Line Right
   Alt+Shift+RIGHT
   Alt+Shift+KP_RIGHT
 Source|Uncomment
+  Ctrl+Shift+D
 Tools|Go to File...
   Alt+Shift+O
 Tools|Javadoc Index Search

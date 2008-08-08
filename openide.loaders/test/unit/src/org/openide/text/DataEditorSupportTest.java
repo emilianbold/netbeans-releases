@@ -49,13 +49,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.text.StyledDocument;
 
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.openide.actions.*;
 import org.openide.cookies.EditCookie;
 
 import org.openide.cookies.OpenCookie;
@@ -70,7 +70,6 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.Lookup;
@@ -95,16 +94,23 @@ public class DataEditorSupportTest extends NbTestCase {
     public DataEditorSupportTest(String s) {
         super(s);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
     
+    @Override
     protected void setUp () throws Exception {
         RUNNING = this;
         
         fs = org.openide.filesystems.FileUtil.createMemoryFileSystem ();
         org.openide.filesystems.Repository.getDefault ().addFileSystem (fs);
         org.openide.filesystems.FileObject root = fs.getRoot ();
-        fileObject = new MyFileObject (org.openide.filesystems.FileUtil.createData (root, "my.obj"));
+        fileObject = new MyFileObject (org.openide.filesystems.FileUtil.createData (root, "my" + getName() + ".obj"));
     }
     
+    @Override
     protected void tearDown () throws Exception {
         waitEQ ();
         
@@ -112,6 +118,7 @@ public class DataEditorSupportTest extends NbTestCase {
         org.openide.filesystems.Repository.getDefault ().removeFileSystem (fs);
     }
     
+    @Override
     protected boolean runInEQ() {
         return false;
     }
@@ -189,7 +196,7 @@ public class DataEditorSupportTest extends NbTestCase {
         assertNotNull (panes);
         assertEquals ("One is there", 1, panes.length);
         
-        NbMarshalledObject obj = new NbMarshalledObject (ed);
+        NbMarshalledObject marshall = new NbMarshalledObject (ed);
         ed.close ();
         
         panes = getPanes();
@@ -200,7 +207,7 @@ public class DataEditorSupportTest extends NbTestCase {
         
         expectedSize = size;
         
-        ed = (CloneableEditor)obj.get ();
+        ed = (CloneableEditor)marshall.get ();
         
         DataObject newObj = DataObject.find (fileObject);
         

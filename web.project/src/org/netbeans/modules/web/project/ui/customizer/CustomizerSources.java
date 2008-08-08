@@ -414,7 +414,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             .add(jPanel1Layout.createSequentialGroup()
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabelSourceLevel)
-                    .add(jLabel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 131, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabel5))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(encoding, 0, 251, Short.MAX_VALUE)
@@ -458,7 +458,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             .add(org.jdesktop.layout.GroupLayout.TRAILING, testRootsPanelLayout.createSequentialGroup()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(18, 18, 18)
-                .add(includeExcludeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(includeExcludeButton))
         );
         testRootsPanelLayout.setVerticalGroup(
             testRootsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
