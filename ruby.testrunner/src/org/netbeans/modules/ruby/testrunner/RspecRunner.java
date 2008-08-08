@@ -219,6 +219,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         if (!task.getTask().equals("spec")) { //NOI18N
             return;
         }
+        TestExecutionManager.getInstance().reset();
         String path = getMediatorScript().getAbsolutePath();
         if (Utilities.isWindows()) {
             RubyPlatform platform = RubyPlatform.platformFor(project);

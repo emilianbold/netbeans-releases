@@ -169,6 +169,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         if (!(task.getTask().equals("test") || task.getTask().startsWith("test:"))) { //NOI18N
             return;
         }
+        TestExecutionManager.getInstance().reset();
         // this takes care of loading our custom TestTask, which in turn passes 
         // the custom test runner as an option for the task. This is needed since 
         // the test run is forked to a different process (by Rake::TestTask) than rake itself
