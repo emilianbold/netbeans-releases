@@ -392,7 +392,7 @@ public final class GemPanel extends JPanel {
             return;
         }
 
-        GemListModel model = new GemListModel(gems, getGemFilter(tab));
+        GemListModel model = new GemListModel(gems, getGemFilter());
         list.clearSelection();
         list.setModel(model);
         list.invalidate();
@@ -926,21 +926,32 @@ public final class GemPanel extends JPanel {
     }//GEN-LAST:event_proxyButtonActionPerformed
 
     private void searchNewTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNewTextActionPerformed
-        applyFilter(newList, TabIndex.NEW);
+        applyFilter(searchNewText.getText());
     }//GEN-LAST:event_searchNewTextActionPerformed
 
     private void searchUpdatedTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchUpdatedTextActionPerformed
-        applyFilter(updatedList, TabIndex.UPDATED);
+        applyFilter(searchUpdatedText.getText());
     }//GEN-LAST:event_searchUpdatedTextActionPerformed
 
     private void searchInstTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchInstTextActionPerformed
-        applyFilter(installedList, TabIndex.INSTALLED);
+        applyFilter(searchInstText.getText());
     }//GEN-LAST:event_searchInstTextActionPerformed
 
-    private void applyFilter(JList installedList, TabIndex tabIndex) {
-        GemListModel gemModel = (GemListModel) installedList.getModel();
-        gemModel.applyFilter(getGemFilter(tabIndex));
-        setTabTitle(tabIndex, gemModel);
+    private void applyFilter(final String filter) {
+        // keep search filter fields in sync
+        searchNewText.setText(filter);
+        searchUpdatedText.setText(filter);
+        searchInstText.setText(filter);
+        
+        applyFilter(TabIndex.INSTALLED, installedList);
+        applyFilter(TabIndex.UPDATED, updatedList);
+        applyFilter(TabIndex.NEW, newList);
+    }
+
+    private void applyFilter(final TabIndex tab, final JList list) {
+        GemListModel gemModel = (GemListModel) list.getModel();
+        gemModel.applyFilter(getGemFilter());
+        setTabTitle(tab, gemModel);
     }
 
     private void reloadReposButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadReposButtonActionPerformed
@@ -1181,25 +1192,11 @@ public final class GemPanel extends JPanel {
         updateTasksQueue.post(updateTask);
     }
 
-    private String getGemFilter(TabIndex tab) {
+    private String getGemFilter() {
         assert EventQueue.isDispatchThread();
-
-        String filter = null;
-        JTextField tf;
-        if (tab == TabIndex.INSTALLED) {
-            tf = searchInstText;
-        } else if (tab == TabIndex.UPDATED) {
-            tf = searchUpdatedText;
-        } else {
-            assert tab == TabIndex.NEW;
-            tf = searchNewText;
-        }
-        filter = tf.getText().trim();
-        if (filter.length() == 0) {
-            filter = null;
-        }
-
-        return filter;
+        // filter field are kept in sync, does not matter which one is used
+        String filter = searchInstText.getText().trim();
+        return filter.length() == 0 ? null : filter;
     }
 
     private RubyPlatform getSelectedPlatform() {
