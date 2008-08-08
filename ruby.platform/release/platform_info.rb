@@ -22,10 +22,12 @@ $stdout.printf "ruby_lib_dir=#{RbConfig::CONFIG['rubylibdir']}\n"
 # RubyGems info
 begin
   require 'rubygems'
-  $stdout.printf "gem_home=#{Gem.dir}\n" 
-  $stdout.printf "gem_path=#{Gem.path.join(":")}\n" 
-  $stdout.printf "gem_version=#{Gem::RubyGemsVersion} (#{Gem::RubyGemsPackageVersion})\n" 
-  $stdout.printf "\n" 
 rescue LoadError
   # no RubyGems installed
+  $stdout.printf "\n" 
+  exit 0
 end
+$stdout.printf "gem_home=#{Gem.dir}\n" 
+$stdout.printf "gem_path=#{Gem.path.join(":")}\n" 
+$stdout.printf "gem_version=#{Gem::RubyGemsVersion} (#{Gem::RubyGemsPackageVersion})\n" 
+$stdout.printf "\n" 
