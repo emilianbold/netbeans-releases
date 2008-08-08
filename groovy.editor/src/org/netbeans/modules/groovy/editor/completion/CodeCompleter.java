@@ -2196,6 +2196,44 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     /**
+     *
+     */
+    private class MethodCompletionHelper implements Task<CompilationController> {
+
+        CountDownLatch cnt;
+        JavaSource javaSource;
+        String className;
+        CompletionRequest request;
+        List<CompletionProposal> proposals;
+        
+        public MethodCompletionHelper(CountDownLatch cnt, JavaSource javaSource, String className, CompletionRequest request, List<CompletionProposal> proposals) {
+            this.cnt = cnt;
+            this.javaSource = javaSource;
+            this.className = className;
+            this.request = request;
+            this.proposals = proposals;
+        }
+
+        public void run(CompilationController info) throws Exception {
+            List<javax.lang.model.element.Element> methodlist = getMethodsForType(javaSource, className);
+
+            for (Element element : methodlist) {
+
+                String simpleName = element.getSimpleName().toString();
+                String parameterString = getParameterListForMethod((ExecutableElement) element);
+                String returnType = ((ExecutableElement) element).getReturnType().getClass().toString();
+
+                if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
+                    proposals.add(new JavaMethodItem(simpleName, parameterString, returnType, anchor, request));
+                }
+            }
+            
+            cnt.countDown();
+        }
+    }
+    
+    
+    /**
      * Populate the completion-proposal with all methods (groovy +  java)
      * on class named given in className
      */
@@ -2207,18 +2245,27 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         if (withJavaTypes) {
             JavaSource javaSource = getJavaSourceFromRequest(request);
-            List<javax.lang.model.element.Element> methodlist = getMethodsForType(javaSource, className);
+            
+            if(javaSource != null ){
+                
+                CountDownLatch cnt = new CountDownLatch(1);
 
-            for (Element element : methodlist) {
-                
-                String simpleName = element.getSimpleName().toString();
-                String parameterString = getParameterListForMethod((ExecutableElement) element);
-                String returnType = ((ExecutableElement) element).getReturnType().getClass().toString();
-                
-                if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
-                    proposals.add(new JavaMethodItem(simpleName, parameterString, returnType, anchor, request));
+                try {
+                    javaSource.runUserActionTask(new MethodCompletionHelper(cnt, javaSource, className, request, proposals), true);
+                } catch (IOException ex) {
+                    LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
+                    return;
                 }
+
+                try {
+                    cnt.await();
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.FINEST, "InterruptedException while waiting on latch :  {0}", ex.getMessage());
+                    return;
+                }
+                
             }
+
         }
 
         // getting the methods the groovy way
