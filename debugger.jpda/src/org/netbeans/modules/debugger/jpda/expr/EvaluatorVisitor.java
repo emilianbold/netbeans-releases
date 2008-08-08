@@ -308,13 +308,17 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
             } else {
                 objectReference = evaluationContext.getFrame().thisObject();
-                type = objectReference.referenceType();
-                if (enclosingClass != null) {
-                    ReferenceType enclType = findEnclosingType(type, enclosingClass);
-                    if (enclType != null) {
-                        ObjectReference enclObject = findEnclosingObject(arg0, objectReference, enclType, null, methodName);
-                        if (enclObject != null) type = enclObject.referenceType();
+                if (objectReference != null) {
+                    type = objectReference.referenceType();
+                    if (enclosingClass != null) {
+                        ReferenceType enclType = findEnclosingType(type, enclosingClass);
+                        if (enclType != null) {
+                            ObjectReference enclObject = findEnclosingObject(arg0, objectReference, enclType, null, methodName);
+                            if (enclObject != null) type = enclObject.referenceType();
+                        }
                     }
+                } else {
+                    type = null;
                 }
             }
             if (objectReference == null) {
