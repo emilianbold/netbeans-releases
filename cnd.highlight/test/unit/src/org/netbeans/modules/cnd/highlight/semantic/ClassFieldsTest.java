@@ -59,7 +59,8 @@ public class ClassFieldsTest extends SemanticHighlightingTestBase {
     }
     
     protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset) {
-        List<? extends CsmOffsetable> list = ModelUtils.getFieldsBlocks(testFile);
+        List<? extends CsmOffsetable> list = ModelUtils.collect(
+                testFile, new ModelUtils.FieldReferenceCollector());
         assert list != null && list.size() > 0;
         return list;
     }
