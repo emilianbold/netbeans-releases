@@ -132,11 +132,6 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
                 horizontal ? SeparatorWidget.Orientation.VERTICAL : SeparatorWidget.Orientation.HORIZONTAL, stroke, BORDER_THICKNESS);
         addChild(layer, 1);
         addChild(separatorWidget, 0);
-
-        if (!PersistenceUtil.isDiagramLoading())
-        {
-            initContainedElements();
-        }
         
         setFont(getFont());
 
@@ -299,10 +294,13 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
         setMinimumSize(null);
 
         if (compositeWidget instanceof UMLNodeWidget)
-        {      
-            ((UMLNodeWidget)compositeWidget).updateSizeWithOptions();
+        {         
+            UMLNodeWidget nodeWidget = (UMLNodeWidget)compositeWidget;
+            nodeWidget.setPreferredBounds(null);
+            nodeWidget.setPreferredSize(null);
+            nodeWidget.setMinimumSize(nodeWidget.getBounds().getSize()); 
+            nodeWidget.revalidate();
         }
-        revalidate();
     }
 
     private UMLNodeWidget getParentNodeWidget(Widget widget)
@@ -404,12 +402,20 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
 
         public void resizingFinished(Widget widget)
         {
-            UMLNodeWidget parent = getParentNodeWidget(CompartmentWidget.this);
-            if (parent != null)
+//            UMLNodeWidget parent = getParentNodeWidget(CompartmentWidget.this);
+//            if (parent != null)
+//            {
+//                ((UMLNodeWidget) parent).updateSizeWithOptions();
+//            }
+//            widget.revalidate();
+            if (compositeWidget instanceof UMLNodeWidget)
             {
-                ((UMLNodeWidget) parent).updateSizeWithOptions();
+                UMLNodeWidget nodeWidget = (UMLNodeWidget) compositeWidget;
+                nodeWidget.setPreferredBounds(null);
+                nodeWidget.setPreferredSize(null);
+                nodeWidget.setMinimumSize(nodeWidget.getBounds().getSize());
+                nodeWidget.revalidate();
             }
-            widget.revalidate();
         }
     };
 

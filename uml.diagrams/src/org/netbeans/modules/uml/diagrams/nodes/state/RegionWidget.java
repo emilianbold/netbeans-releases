@@ -39,6 +39,8 @@
 package org.netbeans.modules.uml.diagrams.nodes.state;
 
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -49,6 +51,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
 
@@ -84,16 +87,34 @@ public class RegionWidget extends CompartmentWidget
         {
             if (element instanceof ITransition)
                 continue;
-            IPresentationElement presentation = Util.createNodePresentationElement();
-            presentation.addSubject(element);
-
-            Widget w = ((DesignerScene) getScene()).addNode(presentation);
-            if (w != null)
+            
+            boolean found = false;
+            List<Widget> list = getContainerWidget().getChildren();
+            List<Widget> children = new ArrayList<Widget>(list);
+            for (Widget child: children)
             {
-                w.removeFromParent();
-                getContainerWidget().addChild(w);
-                w.setPreferredLocation(point);
-                point = new Point(point.x + 50, point.y + 50);
+                Object object = ((DesignerScene)getScene()).findObject(child);
+                assert object instanceof IPresentationElement;
+                if (((IPresentationElement)object).getFirstSubject() == element)
+                {
+                    ((UMLNodeWidget)child).initializeNode((IPresentationElement)object);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                IPresentationElement presentation = Util.createNodePresentationElement();
+                presentation.addSubject(element);
+
+                Widget w = ((DesignerScene) getScene()).addNode(presentation);
+                if (w != null)
+                {
+                    w.removeFromParent();
+                    getContainerWidget().addChild(w);
+                    w.setPreferredLocation(point);
+                    point = new Point(point.x + 50, point.y + 50);
+                }
             }
         }
     }
