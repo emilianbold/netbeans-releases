@@ -207,4 +207,8 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
     public JdbcInfo getJdbcInfo() {
         return delegate.getJdbcInfo();
     }
+
+    public String getDatabaseName(String projectName) {
+        return delegate.getDatabaseName(projectName);
+    }
 }
