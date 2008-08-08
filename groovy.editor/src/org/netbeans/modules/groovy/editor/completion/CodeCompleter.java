@@ -1708,12 +1708,10 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param pkg
      * @return
      */
-    List<? extends javax.lang.model.element.Element> getElementListForPackage(JavaSource javaSource, final String pkg) {
+    List<? extends javax.lang.model.element.Element> getElementListForPackage(Elements elements, JavaSource javaSource, final String pkg) {
         LOG.log(Level.FINEST, "getElementListForPackage(), Package :  {0}", pkg);
 
         List<? extends javax.lang.model.element.Element> typelist = null;
-
-        Elements elements = getElementsForJavaSource(javaSource);
 
         if (elements != null && pkg != null) {
             LOG.log(Level.FINEST, "TypeSearcherHelper.run(), elements retrieved");
@@ -1734,7 +1732,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     
     
     List<String> getElementListForPackageAsString(final JavaSource javaSource, final String pkg) {
-        LOG.log(Level.FINEST, "getElementListForPackage(), Package :  {0}", pkg);
+        LOG.log(Level.FINEST, "getElementListForPackageAsString(), Package :  {0}", pkg);
         
         final List<String> result = new ArrayList<String>();
 
@@ -1746,7 +1744,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                         
                         List<? extends javax.lang.model.element.Element> typelist = null;
 
-                        Elements elements = getElementsForJavaSource(javaSource);
+                        Elements elements = info.getElements();
 
                         if (elements != null && pkg != null) {
                             LOG.log(Level.FINEST, "TypeSearcherHelper.run(), elements retrieved");
@@ -1774,11 +1772,6 @@ public class CodeCompleter implements CodeCompletionHandler {
         return result;
 
     }
-    
-    
-    
-    
-    
     
 
     List<javax.lang.model.element.Element> getMethodsForType(Elements elements, JavaSource javaSource, final String typeName) {
@@ -1809,49 +1802,6 @@ public class CodeCompleter implements CodeCompletionHandler {
         return null;
     }
 
-    private Elements getElementsForJavaSource(JavaSource javaSource) {
-        CountDownLatch cnt = new CountDownLatch(1);
-
-        ElementsHelper helper = new ElementsHelper(cnt);
-
-        try {
-            javaSource.runUserActionTask(helper, true);
-        } catch (IOException ex) {
-            LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
-            return null;
-        }
-
-        try {
-            cnt.await();
-        } catch (InterruptedException ex) {
-            LOG.log(Level.FINEST, "InterruptedException while waiting on latch :  {0}", ex.getMessage());
-            return null;
-        }
-
-        return helper.getElements();
-    }
-
-    /**
-     *
-     */
-    private class ElementsHelper implements Task<CompilationController> {
-
-        CountDownLatch cnt;
-        Elements elements;
-
-        public ElementsHelper(CountDownLatch cnt) {
-            this.cnt = cnt;
-        }
-
-        public Elements getElements() {
-            return elements;
-        }
-
-        public void run(CompilationController info) throws Exception {
-            elements = info.getElements();
-            cnt.countDown();
-        }
-    }
 
     boolean isPackageAlreadyProposed(Set<String> pkgSet, String prefix) {
         for (String singlePackage : pkgSet) {
@@ -2083,7 +2033,7 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param request location information used as input
      * @return true if we found something usable
      */
-    private boolean completeMethods(List<CompletionProposal> proposals, CompletionRequest request) {
+    private boolean completeMethods(final List<CompletionProposal> proposals, final CompletionRequest request) {
         LOG.log(Level.FINEST, "-> completeMethods"); // NOI18N
 
         if (request.location == CaretLocation.INSIDE_PARAMETERS) {
@@ -2111,60 +2061,71 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         if (request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
             LOG.log(Level.FINEST, "This looks like a constructor ...");
-            boolean stuffAdded = false;
             // look for all imported types starting with prefix, which have public constructors
-            List<String> defaultImports = new ArrayList<String>();
+            final List<String> defaultImports = new ArrayList<String>();
 
             defaultImports.addAll(dfltImports);
 
-            JavaSource javaSource = getJavaSourceFromRequest(request);
+            final JavaSource javaSource = getJavaSourceFromRequest(request);
 
-            for (String singlePackage : defaultImports) {
-                List<? extends javax.lang.model.element.Element> typelist;
+            if (javaSource != null) {
 
-                typelist = getElementListForPackage(javaSource, singlePackage);
+                try {
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                        public void run(CompilationController info) {
+                            
+                            for (String singlePackage : defaultImports) {
+                                List<? extends javax.lang.model.element.Element> typelist;
 
-                if (typelist == null) {
-                    LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
-                    continue;
-                }
+                                typelist = getElementListForPackage(info.getElements(), javaSource, singlePackage);
 
-                LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
+                                if (typelist == null) {
+                                    LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
+                                    continue;
+                                }
 
-                for (Element element : typelist) {
-                    // only look for classes rather than enums or interfaces
-                    if (element.getKind() == javax.lang.model.element.ElementKind.CLASS) {
-                        javax.lang.model.element.TypeElement te = (javax.lang.model.element.TypeElement) element;
+                                LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
 
-                        List<? extends javax.lang.model.element.Element> enclosed = te.getEnclosedElements();
+                                for (Element element : typelist) {
+                                    // only look for classes rather than enums or interfaces
+                                    if (element.getKind() == javax.lang.model.element.ElementKind.CLASS) {
+                                        javax.lang.model.element.TypeElement te = (javax.lang.model.element.TypeElement) element;
 
-                        // we gotta get the constructors name from the type itself, since
-                        // all the constructors are named <init>.
+                                        List<? extends javax.lang.model.element.Element> enclosed = te.getEnclosedElements();
 
-                        String constructorName = te.getSimpleName().toString();
+                                        // we gotta get the constructors name from the type itself, since
+                                        // all the constructors are named <init>.
 
-                        for (Element encl : enclosed) {
-                            if (encl.getKind() == javax.lang.model.element.ElementKind.CONSTRUCTOR) {
+                                        String constructorName = te.getSimpleName().toString();
 
-                                if (constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
+                                        for (Element encl : enclosed) {
+                                            if (encl.getKind() == javax.lang.model.element.ElementKind.CONSTRUCTOR) {
 
-                                    LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
-                                    
-                                    String paramListString = getParameterListForMethod((ExecutableElement)encl);
-                                    List<CodeCompleter.ParamDesc> paramList = getParameterList((ExecutableElement)encl);
-                                    
-                                    proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, request, false));
-                                    stuffAdded = true;
+                                                if (constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
+
+                                                    LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
+
+                                                    String paramListString = getParameterListForMethod((ExecutableElement)encl);
+                                                    List<CodeCompleter.ParamDesc> paramList = getParameterList((ExecutableElement)encl);
+
+                                                    proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, request, false));
+                                                }
+                                            }
+                                        }
+
+                                    }
                                 }
                             }
+                            
                         }
-
-                    }
+                    }, true);
+                } catch (IOException ex) {
+                    LOG.log(Level.FINEST, "IOException : {0}", ex.getMessage());
                 }
+
             }
 
-
-            return stuffAdded;
+            return !proposals.isEmpty();
         }
 
         // 2.1 Behind a dot and sitting on a Map, List or Range?
