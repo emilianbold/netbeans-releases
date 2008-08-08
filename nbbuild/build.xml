@@ -602,12 +602,12 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
       <include name="${nb.cluster.platform.dir}/lib/nbexec" />      
     </fixcrlf>
 
-    <echo file="${netbeans.dest.dir}/${nb.cluster.nb.dir}/build_info">NetBeans dev build
+    <echo file="${netbeans.dest.dir}/${nb.cluster.nb.dir}/build_info">NetBeans 6.5 Beta build
 ------------------
 Number:   ${buildnumber}
 Date:     ${buildday}
 Branding:
-Branch:   trunk
+Branch:   release65_beta
 Tag:
 </echo>
     <taskdef name="hgexec" classname="org.netbeans.nbbuild.HgExec" classpath="nbantext.jar"/>
