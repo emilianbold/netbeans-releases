@@ -46,10 +46,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Logger;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebugger;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerConsoleEvent;
@@ -77,7 +77,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     private JSDebuggerState debuggerState = JSDebuggerState.NOT_CONNECTED;
 
     private JSWindow[] windows = JSWindow.EMPTY_ARRAY;
-    private JSSource[] sources = JSSource.EMPTY_ARRAY;
+    private HashMap<String, JSSource> sources = new HashMap<String, JSSource>();
 
     private JSCallStackFrame[] callStackFrames = JSCallStackFrame.EMPTY_ARRAY;
 
@@ -160,15 +160,17 @@ public abstract class JSAbstractDebugger implements JSDebugger {
 
     // Sources
     public JSSource[] getSources() {
-        return sources;
+        return sources.values().toArray(JSSource.EMPTY_ARRAY);
     }
 
     protected void setSources(JSSource[] jsSources) {
-        JSSource[] oldjsSources = this.sources;
-        this.sources = jsSources;
+        JSSource[] oldjsSources = getSources();
+        for(JSSource source : jsSources) {
+            sources.put(source.getLocation().getURI().toString(), source);
+        }
         propertyChangeSupport.firePropertyChange(PROPERTY_SOURCES,
                 oldjsSources,
-                this.sources);
+                getSources());
     }
 
     public InputStream getInputStreamForURL(URL url) {
@@ -298,6 +300,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     }
 
     public final void finish(boolean terminate) {
+        sources.clear();
         finishImpl(terminate);
 
         // Terminated by the user
