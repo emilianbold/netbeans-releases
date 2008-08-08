@@ -239,7 +239,7 @@ public class MakeActionProvider implements ActionProvider {
             assert registry != null;
             ServerRecord record = registry.get(hkey);
             assert record != null;
-            if (!record.isOnline()) {
+            if (!record.isOnline() || record.isDeleted()) {
                 initServerRecord(record);
                 return;
             }
@@ -268,11 +268,27 @@ public class MakeActionProvider implements ActionProvider {
     }
 
     private void initServerRecord(ServerRecord record) {
-        String message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
-        int res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
-        if (res == JOptionPane.YES_OPTION) {
-            // start validation phase
-            record.validate();
+        String message;
+        int res;
+        
+        if (record.isOffline()) {
+            message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
+            res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
+            if (res == JOptionPane.YES_OPTION) {
+                // start validation phase
+                record.validate();
+            }
+        } else if (record.isDeleted()) {
+            message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getName());
+            res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
+            if (res == JOptionPane.YES_OPTION) {
+                ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                assert registry != null;
+                registry.addServer(record.getName(), false);
+                // start validation phase
+                record.validate();
+            }
+            
         }
     }
     

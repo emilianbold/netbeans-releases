@@ -72,6 +72,7 @@ public class RemoteServerRecord implements ServerRecord {
     private final String server;
     private final String name;
     private final boolean editable;
+    private boolean deleted;
     private Object state;
     private final Object stateLock;
     private String reason;
@@ -97,6 +98,7 @@ public class RemoteServerRecord implements ServerRecord {
         }
         stateLock = new String("RemoteServerRecord state lock for " + name); // NOI18N
         reason = null;
+        deleted = false;
         
         if (name.equals(CompilerSetManager.LOCALHOST)) {
             editable = false;
@@ -190,6 +192,18 @@ public class RemoteServerRecord implements ServerRecord {
     
     public boolean isOnline() {
         return state == STATE_ONLINE;
+    }
+    
+    public boolean isOffline() {
+        return state == STATE_OFFLINE;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
     }
     
     public boolean isEditable() {
