@@ -464,16 +464,13 @@ public final class NbModuleProject implements Project {
     }
     
     private File getNbroot() {
-        return getNbroot(null);
-    }
-    private File getNbroot(PropertyEvaluator eval) {
         File dir = getProjectDirectoryFile();
         File nbroot = ModuleList.findNetBeansOrg(dir);
         if (nbroot != null) {
             return nbroot;
         } else {
             // OK, not it.
-            NbPlatform platform = getPlatform(eval);
+            NbPlatform platform = getPlatform();
             if (platform != null) {
                 URL[] roots = platform.getSourceRoots();
                 for (int i = 0; i < roots.length; i++) {
@@ -491,10 +488,7 @@ public final class NbModuleProject implements Project {
     }
     
     public File getNbrootFile(String path) {
-        return getNbrootFile(path, null);
-    }
-    File getNbrootFile(String path, PropertyEvaluator eval) {
-        File nbroot = getNbroot(eval);
+        File nbroot = getNbroot();
         if (nbroot != null) {
             return new File(nbroot, path.replace('/', File.separatorChar));
         } else {
@@ -536,48 +530,6 @@ public final class NbModuleProject implements Project {
             }
         }
         return ml;
-        /*
-        } catch (IOException e) {
-            // #60094: see if we can fix it quietly by resetting platform to default.
-            FileObject platformPropertiesFile = null;
-            if (typeProvider.getModuleType() == NbModuleProvider.STANDALONE) {
-                platformPropertiesFile = getProjectDirectory().getFileObject("nbproject/platform.properties"); // NOI18N
-            } else if (typeProvider.getModuleType() == NbModuleProvider.SUITE_COMPONENT) {
-                PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(
-                        getHelper().getStockPropertyPreprovider(),
-                        new PropertyProvider[] {
-                            getHelper().getPropertyProvider("nbproject/private/suite-private.properties"), // NOI18N
-                            getHelper().getPropertyProvider("nbproject/suite.properties"), // NOI18N
-                        });
-                String suiteDirS = baseEval.getProperty("suite.dir"); // NOI18N
-                if (suiteDirS != null) {
-                    FileObject suiteDir = getHelper().resolveFileObject(suiteDirS);
-                    if (suiteDir != null) {
-                        platformPropertiesFile = suiteDir.getFileObject("nbproject/platform.properties"); // NOI18N
-                    }
-                }
-            }
-            if (platformPropertiesFile != null) {
-                try {
-                    EditableProperties ep = Util.loadProperties(platformPropertiesFile);
-                    if (!NbPlatform.PLATFORM_ID_DEFAULT.equals(ep.getProperty("nbplatform.active"))) { // NOI18N
-                        ep.setProperty("nbplatform.active", NbPlatform.PLATFORM_ID_DEFAULT); // NOI18N
-                        Util.storeProperties(platformPropertiesFile, ep);
-                    } else {
-                        // That wasn't it, never mind.
-                        throw e;
-                    }
-                } catch (IOException e2) {
-                    Util.err.notify(ErrorManager.INFORMATIONAL, e2);
-                    // Well, throw original exception.
-                    throw e;
-                }
-                // Try again!
-                return ModuleList.getModuleList(getProjectDirectoryFile());
-            }
-            throw e;
-        }
-         */
     }
     
     /**
@@ -588,26 +540,23 @@ public final class NbModuleProject implements Project {
      *         fallback is true but even the default platform is not available
      */
     public NbPlatform getPlatform(boolean fallback) {
-        NbPlatform p = getPlatform(null);
+        NbPlatform p = getPlatform();
         if (fallback && (p == null || !p.isValid())) {
             p = NbPlatform.getDefaultPlatform();
         }
         return p;
     }
     
-    private NbPlatform getPlatform(PropertyEvaluator eval) {
-        File file = getPlatformFile(eval);
+    private NbPlatform getPlatform() {
+        File file = getPlatformFile();
         if (file == null) {
             return null;
         }
         return NbPlatform.getPlatformByDestDir(file);
     }
     
-    private File getPlatformFile(PropertyEvaluator eval) {
-        if (eval == null) {
-            eval = evaluator();
-        }
-        String prop = eval.getProperty("netbeans.dest.dir"); // NOI18N
+    private File getPlatformFile() {
+        String prop = evaluator().getProperty("netbeans.dest.dir"); // NOI18N
         if (prop == null) {
             return null;
         }
@@ -923,7 +872,7 @@ public final class NbModuleProject implements Project {
         }
         
         public File getActivePlatformLocation() {
-            return NbModuleProject.this.getPlatformFile(null);
+            return NbModuleProject.this.getPlatformFile();
         }
 
         
