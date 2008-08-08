@@ -639,6 +639,7 @@ private void verifySQLLimit() {
         public void actionPerformed(ActionEvent evt) {
             view.setSQLHistoryList(view.filterSQLHistoryList());
             sqlHistoryTable.repaint();
+            sqlHistoryTable.clearSelection();
             searchTextField.setText(""); // NOI18N
             refreshTable(evt);
         }
