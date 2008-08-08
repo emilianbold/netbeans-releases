@@ -90,6 +90,7 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
     private boolean grandParentLocationExists = false;
     private Point grandParentLoc = null;
     private UMLNodeWidget grandParent;
+    private Point origLoc;
 
     public MovableLabelWidget(Scene scene, Widget nodeWidget, IElement element, String widgetID, String displayName)
     {
@@ -382,12 +383,24 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             hide();
             updateDistance();
             updateDiff();
-            ((DesignerScene)nodeWidget.getScene()).getEngine().getTopComponent().setDiagramDirty(true);
+            
+            if (origLoc != null)
+            {
+                Point finalLoc = widget.getPreferredLocation();
+                if (finalLoc != null)
+                {
+                    if ( (Math.abs(finalLoc.x - origLoc.x) > 5) || (Math.abs(finalLoc.y - origLoc.y) > 5))
+                    {                        
+                        ((DesignerScene)nodeWidget.getScene()).getEngine().getTopComponent().setDiagramDirty(true);
+                    }
+                }
+            }
         }
 
         public Point getOriginalLocation(Widget widget)
         {
-            return widget.getPreferredLocation();
+            origLoc =  widget.getPreferredLocation();
+            return origLoc;
         }
 
         public void setNewLocation(Widget widget, Point location)
