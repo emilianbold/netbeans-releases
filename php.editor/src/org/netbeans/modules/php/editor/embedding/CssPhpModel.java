@@ -107,6 +107,10 @@ public class CssPhpModel extends CssModel {
         HashMap<String, Object> state = new HashMap<String, Object>(6);
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<PHPTokenId> ts = th.tokenSequence();
+        if(ts == null) {
+            //token hierarchy inactive???
+            return ;
+        }
         ts.moveStart();
         while (ts.moveNext()) {
             Token<PHPTokenId> token = ts.token();

@@ -52,17 +52,17 @@ import org.netbeans.spi.quicksearch.SearchResponse;
  *
  * @author Dafe Simonek
  */
-public class ProviderRegistryTest extends NbTestCase {
+public class ProviderModelTest extends NbTestCase {
     
     private static final String DISPLAY_NAME = "Test2 category";
     private static final String COMMAND_PREFIX = "t";
 
-    /** Creates a new instance of ProviderRegistryTest */
-    public ProviderRegistryTest() {
+    /** Creates a new instance of ProviderModelTest */
+    public ProviderModelTest() {
         super("");
     }
     
-    public ProviderRegistryTest(String testName) {
+    public ProviderModelTest(String testName) {
         super(testName);
     }
     
@@ -71,18 +71,18 @@ public class ProviderRegistryTest extends NbTestCase {
     }
     
     public static NbTest suite() {
-        NbTestSuite suite = new NbTestSuite(ProviderRegistryTest.class);
+        NbTestSuite suite = new NbTestSuite(ProviderModelTest.class);
         return suite;
     }
 
-    /** Tests ProviderRegistry functionality */
+    /** Tests ProviderModel functionality */
     public void testGetProviders () throws Exception {
         UnitTestUtils.prepareTest(new String [] { "/org/netbeans/modules/quicksearch/resources/testGetProviders.xml" });
         
-        ProviderRegistry registry = ProviderRegistry.getInstance();
+        ProviderModel model = ProviderModel.getInstance();
         
         System.out.println("Asking for test providers...");
-        List<ProviderModel.Category> categories = registry.getProviders().getCategories();
+        List<ProviderModel.Category> categories = model.getCategories();
         
         assertEquals(3, categories.size());
         

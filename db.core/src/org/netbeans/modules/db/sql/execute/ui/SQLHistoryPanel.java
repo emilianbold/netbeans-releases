@@ -208,6 +208,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         searchTextField.setMinimumSize(new java.awt.Dimension(20, 22));
 
         insertSQLButton.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Insert")); // NOI18N
+        insertSQLButton.setEnabled(false);
         insertSQLButton.setFocusTraversalPolicyProvider(true);
         insertSQLButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -558,6 +559,9 @@ private void verifySQLLimit() {
         List<String> dateList;
             
         public int getRowCount() {
+            if (sqlHistoryTable.getSelectedRow() == -1) {
+                insertSQLButton.setEnabled(false);
+            } 
             return data.length;
         }
 
@@ -579,6 +583,9 @@ private void verifySQLLimit() {
         }
 
         public Object getValueAt(int row, int col) {
+            if (sqlHistoryTable.isRowSelected(row)) {
+                insertSQLButton.setEnabled(true);
+            } 
             return data[row][col];
         }
 
@@ -680,7 +687,6 @@ private void verifySQLLimit() {
             // Refresh table
             if (data.length > 0) {
                 sqlHistoryTable.revalidate();
-                insertSQLButton.setEnabled(true);
             } else {
                 sqlHistoryTable.revalidate();
                 insertSQLButton.setEnabled(false);
@@ -713,7 +719,6 @@ private void verifySQLLimit() {
                         data[i][0] = localData[i][0];
                         data[i][1] = localData[i][1];
                     }
-                    insertSQLButton.setEnabled(true);
                 } else {
                     data = new Object[0][0];
                     insertSQLButton.setEnabled(false);
@@ -756,7 +761,6 @@ private void verifySQLLimit() {
                         data[i][0] = localData[i][0];
                         data[i][1] = localData[i][1];
                     }                    
-                    insertSQLButton.setEnabled(true);
                 } else {
                     data = new Object[0][0];                                        
                     insertSQLButton.setEnabled(false);
