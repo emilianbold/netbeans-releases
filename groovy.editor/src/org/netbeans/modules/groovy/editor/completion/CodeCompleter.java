@@ -1759,7 +1759,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         return null;
     }
 
-    private Elements getElementsForJavaSource(JavaSource javaSource) {
+    public static Elements getElementsForJavaSource(JavaSource javaSource) {
         CountDownLatch cnt = new CountDownLatch(1);
 
         ElementsHelper helper = new ElementsHelper(cnt);
@@ -1767,14 +1767,14 @@ public class CodeCompleter implements CodeCompletionHandler {
         try {
             javaSource.runUserActionTask(helper, true);
         } catch (IOException ex) {
-            LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
+            // LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
             return null;
         }
 
         try {
             cnt.await();
         } catch (InterruptedException ex) {
-            LOG.log(Level.FINEST, "InterruptedException while waiting on latch :  {0}", ex.getMessage());
+            // LOG.log(Level.FINEST, "InterruptedException while waiting on latch :  {0}", ex.getMessage());
             return null;
         }
 
@@ -1784,7 +1784,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     /**
      *
      */
-    private class ElementsHelper implements Task<CompilationController> {
+    private static class ElementsHelper implements Task<CompilationController> {
 
         CountDownLatch cnt;
         Elements elements;

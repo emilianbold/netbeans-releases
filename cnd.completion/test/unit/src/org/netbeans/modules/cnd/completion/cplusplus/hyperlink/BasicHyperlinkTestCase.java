@@ -51,6 +51,10 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ139600() throws Exception {
+        performTest("main.c", 35, 15, "main.c", 35, 5); // funPtr in int (*funPtr)();
+    }
+
     public void testVarInFunWithInitalization() throws Exception {
         performTest("main.c", 19, 10, "main.c", 19, 5); // iiii in int iiii = fun(null, null);
     }
@@ -120,9 +124,9 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.c", 34, 36, "main.c", 32, 5);
 
         // global variable
-        performTest("main.c", 33, 14, "main.c", 37, 1);
-        performTest("main.c", 34, 12, "main.c", 37, 1);
-        performTest("main.c", 34, 28, "main.c", 37, 1);
+        performTest("main.c", 33, 14, "main.c", 38, 1);
+        performTest("main.c", 34, 12, "main.c", 38, 1);
+        performTest("main.c", 34, 28, "main.c", 38, 1);
     }
 
     public void testConstParameter() throws Exception {

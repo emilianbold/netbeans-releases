@@ -92,15 +92,26 @@ public class ServiceNode extends TMapComponentNode<DecoratedService> {
                 getPropertySet(sheet);
         //
         Node.Property prop;
+// 142908
         prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.NAME,
-                "getName", "setName"); // NOI18N
+                PropertyType.PARTNER_LINK_TYPE,
+                "getPartnerLinkType", "setPartnerLinkType"); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
         prop = PropertyUtils.registerProperty(this, mainPropertySet,
-                PropertyType.PORT_TYPE,
-                "getPortType", "setPortType"); // NOI18N
+                PropertyType.ROLE,
+                "getRole", "setRole"); // NOI18N
         prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+        
+//142908        prop = PropertyUtils.registerProperty(this, mainPropertySet,
+//                PropertyType.NAME,
+//                "getName", "setName"); // NOI18N
+//        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
+//        //
+//        prop = PropertyUtils.registerProperty(this, mainPropertySet,
+//                PropertyType.PORT_TYPE,
+//                "getPortType", "setPortType"); // NOI18N
+//        prop.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
         //
         return sheet;

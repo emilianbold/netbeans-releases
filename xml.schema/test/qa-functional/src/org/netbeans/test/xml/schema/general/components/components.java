@@ -182,9 +182,17 @@ public class components extends GeneralXMLTest {
           }
           if( null != jdInfo )
           {
-            Sleep( 1000 );
             JLabelOperator jlLabel = new JLabelOperator( jdInfo, 0 );
             String sText = jlLabel.getText( );
+
+            // MacOS workaround
+            if( null == sText )
+            {
+              jlLabel = new JLabelOperator( jdInfo, 1 );
+              if( null == ( sText = jlLabel.getText( ) ) )
+                fail( "No label text even for MacOS." );
+            }
+
             if(
                 !sText.equals( "Not a legal value: " + sValue )
                 && !sText.equals( "Enter a positive integer, \"unbounded\", or *." )

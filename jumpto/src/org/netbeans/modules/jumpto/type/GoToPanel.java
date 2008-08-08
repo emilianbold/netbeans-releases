@@ -246,7 +246,7 @@ public class GoToPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
         add(nameField, gridBagConstraints);
 
-        jLabelList.setLabelFor(matchesScrollPane1);
+        jLabelList.setLabelFor(matchesList);
         jLabelList.setText(org.openide.util.NbBundle.getMessage(GoToPanel.class, "TXT_GoToType_MatchesList_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;

@@ -781,11 +781,11 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
             if(!match) {
                 resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
+                resolveTypes |= RESOLVE_LOCAL_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_VARIABLES;
                 resolveTypes |= RESOLVE_CLASS_FIELDS;
                 resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
             }
-            resolveTypes |= RESOLVE_LOCAL_VARIABLES;
         }
     }
 

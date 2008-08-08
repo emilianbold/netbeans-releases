@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby.testrunner;
@@ -79,6 +79,8 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
 
 
     static {
+        // this env variable is referenced from nb_test_runner.rb, where it
+        // gets appended to the rake require path
         System.setProperty(NB_TEST_RUNNER, getScript(RUNNER_SCRIPT_NAME).getAbsolutePath());
     }
 
@@ -113,7 +115,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         additionalArgs.add(testFilePath);
         return additionalArgs;
     }
-    
+
     private static File getScript(String name) {
         File script = InstalledFileLocator.getDefault().locate(
                 name, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
@@ -131,16 +133,16 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         additionalArgs.add("-d"); //NOI18N
         FileObject testFolder = project.getProjectDirectory().getFileObject("test/"); //NOI18N
         additionalArgs.add(FileUtil.toFile(testFolder).getAbsolutePath());
-        
+
         String name = ProjectUtils.getInformation(project).getDisplayName();
-        
+
         run(project, additionalArgs, name, debug);
     }
-    
+
     private void run(Project project, List<String> additionalArgs, String name, boolean debug) {
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
         RubyPlatform platform = RubyPlatform.platformFor(project);
-        
+
         String targetPath = getScript(MEDIATOR_SCRIPT_NAME).getAbsolutePath();
         ExecutionDescriptor desc = null;
         String charsetName = null;
@@ -152,8 +154,8 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(), 
-                locator, 
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+                locator,
                 TestUnitHandlerFactory.getHandlers(),
                 debug ? SessionType.DEBUG : SessionType.TEST);
         TestExecutionManager.getInstance().start(desc, recognizer);
@@ -167,6 +169,9 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         if (!(task.getTask().equals("test") || task.getTask().startsWith("test:"))) { //NOI18N
             return;
         }
+        // this takes care of loading our custom TestTask, which in turn passes 
+        // the custom test runner as an option for the task. This is needed since 
+        // the test run is forked to a different process (by Rake::TestTask) than rake itself
         task.addRakeParameters("-r " + getScript(RUNNER_SCRIPT_NAME).getAbsolutePath()); //NOI18N
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),

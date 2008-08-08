@@ -187,9 +187,11 @@ public class TransformerUtils {
         Project project = FileOwnerQuery.getOwner(projectDirectory);
         if(project != null){
             JAXWSVersionProvider jvp = project.getLookup().lookup(JAXWSVersionProvider.class);
-            if(jvp != null &&
-                    !isVersionOK(jvp.getJAXWSVersion(), "2.1")) { //NOI18N
-                return false;
+            if (jvp != null) {
+                String version = jvp.getJAXWSVersion();
+                if (version != null && !isVersionOK(version, "2.1")) { //NOI18N
+                    return false;
+                }
             }
         }
         // By default return true
@@ -200,9 +202,11 @@ public class TransformerUtils {
         Project project = FileOwnerQuery.getOwner(projectDirectory);
         if(project != null){
             JAXWSVersionProvider jvp = project.getLookup().lookup(JAXWSVersionProvider.class);
-            if(jvp != null &&
-                    isVersionOK(jvp.getJAXWSVersion(), "2.1.3")) { //NOI18N
-                return true;
+            if (jvp != null) {
+                String version = jvp.getJAXWSVersion();
+                if (version != null && isVersionOK(version, "2.1.3")) { //NOI18N
+                    return true;
+                }
             }
         }
         // Defaultly return true

@@ -80,6 +80,10 @@ public class PhpStructureScannerTest extends ParserTestBase{
     public void testClass() throws Exception {
         performTest("class005");
     }
+    
+    public void testIssue142644() throws Exception {
+        performTest("issue142644");
+    }
 
     @Override
     protected String getTestResult(String filename) throws Exception {
