@@ -360,7 +360,11 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         
         //variable declaration:
         if (!insideJavadoc) {
-            el = info.getTrees().getElement(tp);
+            if (tp.getParentPath() != null && tp.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
+                el = info.getTrees().getElement(tp.getParentPath());
+            } else {
+                el = info.getTrees().getElement(tp);
+            }
         }
         
         if (   el != null
