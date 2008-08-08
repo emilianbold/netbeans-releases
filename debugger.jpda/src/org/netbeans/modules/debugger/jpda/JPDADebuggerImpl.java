@@ -374,12 +374,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
             JPDAThread t = getCurrentThread ();
             if (t != null && t.isSuspended()) {
                 try {
-                    CallStackFrame frame = getCurrentCallStackFrame ();
-
-                    //PATCH #52209
-                    if (t.getStackDepth () < 2 && frame.isObsolete()) return;
+                    if (t.getStackDepth () < 2) return;
+                    CallStackFrame frame;
                     try {
-                        if (!frame.equals (t.getCallStack (0, 1) [0])) return;
+                        frame = t.getCallStack(0, 1)[0]; // Retrieve the new, possibly obsoleted frame and check it.
                     } catch (AbsentInformationException ex) {
                         return;
                     }
@@ -861,7 +859,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Value[] arguments
     ) throws InvalidExpressionException {
         synchronized (currentThreadAndFrameLock) {
-            if (currentThread == null)
+            if (thread == null && currentThread == null)
                 throw new InvalidExpressionException
                         (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
         }
