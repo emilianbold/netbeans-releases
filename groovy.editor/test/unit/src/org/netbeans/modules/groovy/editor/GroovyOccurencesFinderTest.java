@@ -152,14 +152,13 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         doTest("    TestCa^se() {");
     }
 
-    // not yet implemented
-//    public void testClass1() throws Exception {
-//        doTest("class TestC^ase {");
-//    }
-//
-//    public void testClass3() throws Exception {
-//        doTest("T^estCase.create().method1(1)");
-//    }
+    public void testClass1() throws Exception {
+        doTest("class TestC^ase {");
+    }
+
+    public void testClass2() throws Exception {
+        doTest("T^estCase.create().method1(1)");
+    }
 
     public void testLocalVar3() throws Exception {
         doTest("        int local^var1 = 3");
