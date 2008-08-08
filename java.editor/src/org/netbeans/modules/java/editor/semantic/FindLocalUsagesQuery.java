@@ -44,6 +44,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -142,4 +143,21 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
         super.visitClass(tree, d);
         return null;
     }
+
+    @Override
+    public Void visitNewClass(NewClassTree node, Stack<Tree> p) {
+        Element el = info.getTrees().getElement(getCurrentPath());
+
+        if (toFind.equals(el) && node.getIdentifier() != null) {
+            Token<JavaTokenId> t = Utilities.getToken(info, doc, new TreePath(getCurrentPath(), node.getIdentifier()));
+            
+            if (t != null)
+                usages.add(t);
+
+            return null;
+        }
+        
+        return super.visitNewClass(node, p);
+    }
+    
 }
