@@ -180,13 +180,6 @@ public class HQLEditorController {
                 logger.info("Adding annotated class to custom configuration " + annotatedPOJO.getName());
 
                 customConfiguration.addAnnotatedClass(annotatedPOJO);
-//                File mappingFile = getMappingFileForPOJO(annotatedPOJO, document);
-//                logger.info("Got mapping file " + mappingFile);
-//                if (mappingFile != null) {
-//                    org.dom4j.Element mappingElement = sessionFactoryElement.addElement("mapping"); //NOI18N
-//                    mappingElement.addAttribute("file", mappingFile.getAbsolutePath()); //NOI18N
-//                }
-
             }
 //        // configure 
             logger.info("configuring custom configuration..");
@@ -198,21 +191,7 @@ public class HQLEditorController {
         return null;
     }
 
-//    private void prepareOutputDir() throws IOException {
-//        try {
-//            if (outputDir != null && outputDir.isValid()) {
-//                outputDir.delete();
-//            }
-//                //outputDir = 
-//                FileObject parentFO = FileUtil.toFileObject(new File(System.getProperty("java.io.tmpdir"))); //NOI18N
-//                outputDir = FileUtil.createFolder(parentFO, "nb-hb"); //NOI18N
-//                logger.info("outputdir = " + outputDir);
-//            
-//        } catch (Exception e) {
-//            throw new IOException("Error in creating outputDir " + e.getMessage());
-//        }
-//    }
-//
+
     private org.w3c.dom.Document getW3CDocument(org.dom4j.Document document) {
         try {
             return new org.dom4j.io.DOMWriter().write(document);
@@ -221,96 +200,7 @@ public class HQLEditorController {
         }
         return null;
     }
-//
-//    private File getMappingFileFromOutputDir(String classname) {
-//        File mappingFile = null;
-//        try {
-//            Enumeration<? extends FileObject> fileObjects = outputDir.getChildren(true);
-//            while (fileObjects.hasMoreElements()) {
-//                FileObject file = fileObjects.nextElement();
-//                if (!file.isFolder() && HibernateMappingDataLoader.REQUIRED_MIME.equals(file.getMIMEType())) {
-//                    if (file.getName().equalsIgnoreCase(classname + ".hbm")) { //NOI18N
-//                        logger.info("found mapping filename match " + file + " for " + classname + " classname.");
-//                        return FileUtil.toFile(file);
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            Exceptions.printStackTrace(e);
-//        }
-//        return mappingFile;
-//    }
-//
-//    private File getMappingFileForPOJO(Class annotatedPOJO, org.dom4j.Document document) {
-//        try {
-//            if (!annotatedPOJO.isAnnotationPresent(javax.persistence.Entity.class)) {
-//                logger.info("Not an entity class " + annotatedPOJO);
-//                return null;
-//            }
-//            // Prepare output dir
-//            prepareOutputDir();
-//
-//            JDBCMetaDataConfiguration cfg = new JDBCMetaDataConfiguration();
-//            cfg.configure(getW3CDocument(document));
-//            OverrideRepository or = new OverrideRepository();
-//
-//            TableFilter tableFilter = new TableFilter();
-//            tableFilter.setMatchCatalog(getTableCatalogFromAnnotatedPOJO(annotatedPOJO));
-//            tableFilter.setMatchSchema(getTableSchemaFromAnnotatedPOJO(annotatedPOJO));
-//            tableFilter.setMatchName(getTableNameFromAnnotatedPOJO(annotatedPOJO));
-//            tableFilter.setExclude(new Boolean(false));
-//
-//            tableFilter.setPackage(
-//                    annotatedPOJO.getPackage() == null ? "" : annotatedPOJO.getPackage().getName());
-//            logger.info("Setup table filter :  " + tableFilter);
-//            or.addTableFilter(tableFilter);
-//            DefaultReverseEngineeringStrategy strategy = new DefaultReverseEngineeringStrategy();
-//            ReverseEngineeringSettings settings = new ReverseEngineeringSettings(strategy);
-//            settings.setDefaultPackageName(
-//                    annotatedPOJO.getPackage() == null ? "" : annotatedPOJO.getPackage().getName());
-//            strategy.setSettings(settings);
-//            cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(strategy));
-//            cfg.readFromJDBC();
-//
-//            HibernateMappingExporter exporter = new HibernateMappingExporter(cfg, FileUtil.toFile(outputDir));
-//            exporter.start();
-//        } catch (Exception e) {
-//            Exceptions.printStackTrace(e);
-//        }
-//        return getMappingFileFromOutputDir(getTableNameFromAnnotatedPOJO(annotatedPOJO));
-//    }
-//
-//    private String getTableNameFromAnnotatedPOJO(Class annotatedPOJO) {
-//        String tableName = "";
-//        if (annotatedPOJO.isAnnotationPresent(javax.persistence.Table.class)) {
-//            javax.persistence.Table table = (javax.persistence.Table) annotatedPOJO.getAnnotation(javax.persistence.Table.class);
-//            tableName = (table.name() == null) ? annotatedPOJO.getSimpleName().toUpperCase() : table.name();
-//        } else {
-//            tableName = annotatedPOJO.getSimpleName().toUpperCase();
-//        }
-//        logger.info("extracted table name " + tableName);
-//        return tableName;
-//    }
-//
-//    private String getTableSchemaFromAnnotatedPOJO(Class annotatedPOJO) {
-//        String tableSchemaName = ".*";
-//        if (annotatedPOJO.isAnnotationPresent(javax.persistence.Table.class)) {
-//            javax.persistence.Table table = (javax.persistence.Table) annotatedPOJO.getAnnotation(javax.persistence.Table.class);
-//            tableSchemaName = (table.schema() == null) ? ".*" : table.schema();
-//        }
-//        logger.info("extracted table schema " + tableSchemaName);
-//        return tableSchemaName;
-//    }
-//
-//    private String getTableCatalogFromAnnotatedPOJO(Class annotatedPOJO) {
-//        String tableCatalogName = ".*";
-//        if (annotatedPOJO.isAnnotationPresent(javax.persistence.Table.class)) {
-//            javax.persistence.Table table = (javax.persistence.Table) annotatedPOJO.getAnnotation(javax.persistence.Table.class);
-//            tableCatalogName = (table.catalog() == null) ? ".*" : table.catalog();
-//        }
-//        logger.info("extracted table catelog name " + tableCatalogName);
-//        return tableCatalogName;
-//    }
+
     public SessionFactory processAndConstructSessionFactory(String hql, FileObject configFileObject,
             CustomClassLoader customClassLoader, Project project) {
         HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
