@@ -18,7 +18,7 @@ then
     echo netbeans.conf found: `pwd`/netbeans.conf
     cp netbeans.conf netbeans.conf_orig_mysql
     admin_file=$mysql_dir/support-files/mysql-admin.server
-    cat netbeans.conf_orig_mysql  | sed -e 's|netbeans_default_options=\"|netbeans_default_options=\"-J-Dcom.sun.mysql.startcommand='$admin_file' -J-Dcom.sun.mysql.stopcommand='$admin_file' -J-Dcom.sun.mysql.startargs=start -J-Dcom.sun.mysql.stopargs=stop |' > netbeans.conf
+    cat netbeans.conf_orig_mysql  | sed -e 's|netbeans_default_options=\"|netbeans_default_options=\"-J-Dcom.sun.mysql.startcommand='$admin_file' -J-Dcom.sun.mysql.stopcommand='$admin_file' -J-Dcom.sun.mysql.startargs=start -J-Dcom.sun.mysql.stopargs=stop -J-Dcom.sun.mysql.port=3306 |' > netbeans.conf
   else
     echo No netbeans.conf in: `pwd`
   fi
