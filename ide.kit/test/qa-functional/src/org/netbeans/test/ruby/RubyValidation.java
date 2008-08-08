@@ -69,12 +69,12 @@ import org.netbeans.test.ide.WatchProjects;
  */
 public class RubyValidation extends JellyTestCase {
 
-     static final String [] tests = {
-                "testCreateRubyProject",
-                "testRunRubyFile",
-                "testCreateRailsProject",
-                "testRailsGenerate",
-                "testIrbShell", // TODO: does not work due to issue 137398
+    static final String[] tests = {
+        "testCreateRubyProject",
+        "testRunRubyFile",
+        "testCreateRailsProject",
+        "testRailsGenerate",
+        "testIrbShell",
     };
 
     /** Need to be defined because of JUnit */
@@ -102,8 +102,6 @@ public class RubyValidation extends JellyTestCase {
 //        return suite;
 //    }
 
-
-
     /** Use for execution inside IDE */
     public static void main(java.lang.String[] args) {
         // run whole suite
@@ -116,11 +114,6 @@ public class RubyValidation extends JellyTestCase {
     @Override
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
-    }
-    
-    /** Teardown after every test case. */
-    @Override
-    public void tearDown() {
     }
     
     // name of sample projects
@@ -186,7 +179,7 @@ public class RubyValidation extends JellyTestCase {
         String runFileItem = Bundle.getStringTrimmed(
                 "org.netbeans.modules.project.ui.actions.Bundle",
                 "LBL_RunSingleAction_Name",
-                new Object[]{new Integer(1), "main.rb"});
+                new Object[]{1, "main.rb"});
         // call "Run "main.rb"" in editor
         new Action(null, runFileItem).perform(editor);
         // check message in output tab
@@ -231,19 +224,20 @@ public class RubyValidation extends JellyTestCase {
      */
     public void testRailsGenerate() {
         ProjectRootNode projectRootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_RAILS_PROJECT_NAME);
+        final String railsProjectBundle = "org.netbeans.modules.ruby.railsprojects.Bundle";
 
         // "Generate..."
-        String generateItem = Bundle.getStringTrimmed("org.netbeans.modules.ruby.railsprojects.Bundle", "rails-generator");
+        String generateItem = Bundle.getStringTrimmed(railsProjectBundle,"rails-generator");
         new ActionNoBlock(null, generateItem).perform(projectRootNode);
         // "Rails Generator"
-        String generatorTitle = Bundle.getStringTrimmed("org.netbeans.modules.ruby.railsprojects.Bundle", "RailsGenerator");
+        String generatorTitle = Bundle.getStringTrimmed(railsProjectBundle,"RailsGenerator");
         NbDialogOperator generatorOper = new NbDialogOperator(generatorTitle);
         // "Name:"
-        String nameLabel = Bundle.getStringTrimmed("org.netbeans.modules.ruby.railsprojects.Bundle", "Name");
+        String nameLabel = Bundle.getStringTrimmed(railsProjectBundle,"Name");
         JTextFieldOperator nameOper = new JTextFieldOperator((JTextField)new JLabelOperator(generatorOper, nameLabel).getLabelFor());
         nameOper.setText("myapp");  // NOI18N
         // "Views:"
-        String viewsTextFieldLabel = Bundle.getStringTrimmed("org.netbeans.modules.ruby.railsprojects.Bundle", "Views");
+        String viewsTextFieldLabel = Bundle.getStringTrimmed(railsProjectBundle,"Views");
         JTextFieldOperator viewsOper = new JTextFieldOperator((JTextField)new JLabelOperator(generatorOper, viewsTextFieldLabel).getLabelFor());
         viewsOper.setText("myview");
         generatorOper.ok();
@@ -254,25 +248,25 @@ public class RubyValidation extends JellyTestCase {
         String filename = "myapp_controller.rb"; // NOI18N
         new EditorOperator(filename);
         // "Controllers"
-        String controllersLabel = Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "app_controllers");
+        String controllersLabel = Bundle.getString(railsProjectBundle,"app_controllers");
         new Node(projectRootNode, controllersLabel+"|"+filename);
         
         filename = "myapp_helper.rb"; // NOI18N
         new EditorOperator(filename);
         // "Helpers"
-        String helpersLabel = Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "app_helpers");
+        String helpersLabel = Bundle.getString(railsProjectBundle,"app_helpers");
         new Node(projectRootNode, helpersLabel+"|"+filename);
         
         filename = "myview.html.erb"; // NOI18N
         new EditorOperator(filename);
         // "Views"
-        String viewsLabel = Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "app_views");
+        String viewsLabel = Bundle.getString(railsProjectBundle,"app_views");
         new Node(projectRootNode, viewsLabel+"|myapp|"+filename);
         
         filename = "myapp_controller_test.rb"; // NOI18N
         new EditorOperator(filename);
         // "Functional Tests"
-        String functionalTestsLabel = Bundle.getString("org.netbeans.modules.ruby.railsprojects.Bundle", "test_functional");
+        String functionalTestsLabel = Bundle.getString(railsProjectBundle,"test_functional");
         new Node(projectRootNode, functionalTestsLabel+"|"+filename);
     }
 }
