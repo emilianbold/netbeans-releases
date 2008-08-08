@@ -510,8 +510,18 @@ private void verifySQLLimit() {
             List<SQLHistory> filteredSqlHistoryList = new ArrayList<SQLHistory>();
             String match = searchTextField.getText();
             String url = (String)connectionComboBox.getSelectedItem();
+            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
+            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
+            List<SQLHistory> persistedSQLHistoryList = null;
+            try {
+                persistedSQLHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             // modify list of SQL to reflect a selection from the Connection dropdown or if a match text entered
-            for (SQLHistory sqlHistory : sqlHistoryList) {
+            for (SQLHistory sqlHistory : persistedSQLHistoryList) {
                 if (sqlHistory.getUrl().equals(url) || url.equals(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ConnectionCombo"))) {
                     if (!match.equals(MATCH_EMPTY)) {
                         if (sqlHistory.getSql().toLowerCase().indexOf(match.toLowerCase()) != -1) {
@@ -526,33 +536,33 @@ private void verifySQLLimit() {
         }
     }
 
-    private final class UrlComboBoxModel implements ComboBoxModel, ActionListener {
-
-        public void setSelectedItem(Object item) {
-            connectionComboBox.setSelectedItem(item);
-        }
-
-        public Object getSelectedItem() {
-            return (String) connectionComboBox.getSelectedItem();
-        }
-
-        public int getSize() {
-            return comboData.length;
-        }
-
-        public Object getElementAt(int index) {
-            return comboData[index];
-        }
-
-        public void addListDataListener(ListDataListener arg0) {
-        }
-
-        public void removeListDataListener(ListDataListener arg0) {
-        }
-
-        public void actionPerformed(ActionEvent arg0) {
-        }
-    }
+//    private final class UrlComboBoxModel implements ComboBoxModel, ActionListener {
+//
+//        public void setSelectedItem(Object item) {
+//            connectionComboBox.setSelectedItem(item);
+//        }
+//
+//        public Object getSelectedItem() {
+//            return (String) connectionComboBox.getSelectedItem();
+//        }
+//
+//        public int getSize() {
+//            return comboData.length;
+//        }
+//
+//        public Object getElementAt(int index) {
+//            return comboData[index];
+//        }
+//
+//        public void addListDataListener(ListDataListener arg0) {
+//        }
+//
+//        public void removeListDataListener(ListDataListener arg0) {
+//        }
+//
+//        public void actionPerformed(ActionEvent arg0) {
+//        }
+//    }
 
     private final class HistoryTableModel extends DefaultTableModel implements ActionListener, DocumentListener {
         List<String> sqlList;
@@ -627,6 +637,8 @@ private void verifySQLLimit() {
         }
 
         public void actionPerformed(ActionEvent evt) {
+            view.setSQLHistoryList(view.filterSQLHistoryList());
+            sqlHistoryTable.repaint();
             searchTextField.setText(""); // NOI18N
             refreshTable(evt);
         }
