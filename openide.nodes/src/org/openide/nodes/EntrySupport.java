@@ -1221,31 +1221,27 @@ abstract class EntrySupport {
             }
 
             boolean oldIsDummy = info.isHidden() || (oldNode != null && isDummyNode(oldNode));
-            if (oldNode != null && !oldIsDummy) {
+            if ((oldNode != null && !oldIsDummy) || newIsDummy) {
                 removeEntries(null, entry, oldNode, true, false);
-            }
-
-            if ((!newIsDummy && !oldIsDummy)
-                    || (newIsDummy && !oldIsDummy && oldNode == null)
-                    || (!newIsDummy && oldIsDummy)) {
-                // recompute indexes
-                int index = 0;
-                info.setIndex(newIsDummy ? -2 : -1);
-                List<Entry> arr = new ArrayList<Entry>();
-                for (Entry tmpEntry : entries) {
-                    EntryInfo tmpInfo = entryToInfo.get(tmpEntry);
-                    if (tmpInfo.isHidden()) {
-                        continue;
-                    }
-                    tmpInfo.setIndex(index++);
-                    arr.add(tmpEntry);
+                if (newIsDummy) {
+                    return;
                 }
-                visibleEntries = arr;
             }
 
-            if (!newIsDummy) {
-                fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, entry, createSnapshot(false), null);
+            // recompute indexes
+            int index = 0;
+            info.setIndex(-1);
+            List<Entry> arr = new ArrayList<Entry>();
+            for (Entry tmpEntry : entries) {
+                EntryInfo tmpInfo = entryToInfo.get(tmpEntry);
+                if (tmpInfo.isHidden()) {
+                    continue;
+                }
+                tmpInfo.setIndex(index++);
+                arr.add(tmpEntry);
             }
+            visibleEntries = arr;
+            fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, entry, createSnapshot(false), null);
         }
 
         private boolean mustNotifySetEnties = false;
@@ -1400,13 +1396,7 @@ abstract class EntrySupport {
                     return null;
                 }
                 Node node = info.getNode();
-                if (isDummyNode(node)) {
-                    if (!info.isHidden()) {
-                        hideEmpty(null, entry, null);
-                    }
-                    return null;
-                }
-                return node;
+                return isDummyNode(node) ? null : node;
             } finally {
                 Children.PR.exitReadAccess();
             }

@@ -1352,9 +1352,16 @@ public class ChildrenKeysTest extends NbTestCase {
         lch.keys("A", "B");
     }
     
-
     
-    public void testRefreshKey() {
+    public void testRefreshKey1() {
+        doTestRefreshKey(true);
+    }
+    
+    public void testRefreshKey2() {
+        doTestRefreshKey(false);
+    }
+
+    public void doTestRefreshKey(boolean initViaGetNodes) {
         class MyNode extends AbstractNode {
             MyNode() {
                 super(Children.LEAF);
@@ -1400,11 +1407,20 @@ public class ChildrenKeysTest extends NbTestCase {
 
         Listener l = new Listener();
         l.disableConsistencyCheck = true;
+
         root.addNodeListener(l);
-        Node[] nodes = root.getChildren().getNodes();
-        assertEquals("Two nodes created", 2, nodes.length);
-        assertEquals("1st is a", "a", nodes[0].getName());
-        assertEquals("2nd is c", "c", nodes[1].getName());
+        if (initViaGetNodes) {
+            Node[] nodes = root.getChildren().getNodes();
+            assertEquals("Two nodes created", 2, nodes.length);
+            assertEquals("1st is a", "a", nodes[0].getName());
+            assertEquals("2nd is c", "c", nodes[1].getName());
+        } else {
+            root.getChildren().getNodesCount();
+            Node node = ch.getNodeAt(1);
+            assertEquals("1st is a", "a", ch.getNodeAt(0).getName());
+            assertEquals("2nd is c", "c", ch.getNodeAt(1).getName());
+        }
+
         if (lazy()) {
             l.assertRemoveEvent("Empty should be removed", new int[] {1});
         } else {
