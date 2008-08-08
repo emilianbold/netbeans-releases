@@ -1,6 +1,7 @@
 package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
@@ -181,7 +182,7 @@ public class MethodChooser implements KeyListener, MouseListener,
         annotateLines();
         requestRepaint();
         Coloring coloring = new Coloring(null, 0, null, Color.CYAN);
-        Utilities.setStatusText(editorPane, NbBundle.getMessage(
+        Utilities.setStatusText(editorPane, " " + NbBundle.getMessage(
                 MethodChooser.class, "MSG_RunIntoMethod_Status_Line_Help"), coloring);
         return true;
     }
@@ -437,7 +438,12 @@ public class MethodChooser implements KeyListener, MouseListener,
         if (vm == null) return ;
         final int line = bpLocation.lineNumber("Java");
         CallStackFrameImpl csf = (CallStackFrameImpl) debugger.getCurrentCallStackFrame();
-        if (csf != null && csf.getStackFrame().location().equals(bpLocation)) {
+        boolean condition = false;
+        try {
+            condition = csf != null && csf.getStackFrame().location().equals(bpLocation);
+        } catch (InvalidStackFrameException e) {
+        }
+        if (condition) {
             // We're on the line from which the method is called
             traceLineForMethod(methodName, line);
         } else {
@@ -537,11 +543,16 @@ public class MethodChooser implements KeyListener, MouseListener,
             case KeyEvent.VK_ENTER:
             case KeyEvent.VK_SPACE:
             case KeyEvent.VK_F7: // [TODO]
-                // selection confirmed
-                performAction = true;
-                release();
+                if (e.isControlDown() || e.isShiftDown()) {
+                    release();
+                    consumeEvent = false;
+                } else {
+                    // selection confirmed
+                    performAction = true;
+                    release();
+                }
                 break;
-            case KeyEvent.VK_F8:
+            case KeyEvent.VK_F8: // [TODO]
                 // step over
                 release();
                 consumeEvent = false;

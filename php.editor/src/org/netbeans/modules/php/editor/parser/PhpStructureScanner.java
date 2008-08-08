@@ -74,7 +74,7 @@ public class PhpStructureScanner implements StructureScanner {
 
     private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
 
-    private static final String FOLD_CLASS = "classblocks"; //NOI18N
+    private static final String FOLD_CLASS = "codeblocks"; //NOI18N
 
     private static final String FOLD_PHPDOC = "comments"; //NOI18N
 
@@ -100,7 +100,6 @@ public class PhpStructureScanner implements StructureScanner {
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         if (program != null) {
             program.accept(new FoldVisitor(folds));
-//<editor-fold>
             List<Comment> comments = program.getComments();
             if (comments != null) {
                 List<Comment> customeFoldStarts = new ArrayList<Comment>();
@@ -115,7 +114,6 @@ public class PhpStructureScanner implements StructureScanner {
                     }
                 }
             }
-//</editor-fold>
             return folds;
         }
         return Collections.emptyMap();
@@ -199,15 +197,17 @@ public class PhpStructureScanner implements StructureScanner {
         @Override
         public void visit(FieldsDeclaration fields) {
             Variable[] variables = fields.getVariableNames();
-            for (Variable variable : variables) {
-                String name = Utils.resolveVariableName(variable);
-                if (name != null) {
-                    String text = name;
-                    if (variable.isDollared()) {
-                        text = "$"+name; //NOI18N
+            if (variables != null) {
+                for (Variable variable : variables) {
+                    String name = Utils.resolveVariableName(variable);
+                    if (name != null) {
+                        String text = name;
+                        if (variable.isDollared()) {
+                            text = "$"+name; //NOI18N
+                        }
+                        PHPStructureItem item = new PHPSimpleStructureItem(new GSFPHPElementHandle.FieldsDeclarationHandle(info, fields), text, "0"); //NOI18N
+                        children.add(item);
                     }
-                    PHPStructureItem item = new PHPSimpleStructureItem(new GSFPHPElementHandle.FieldsDeclarationHandle(info, fields), text, "0"); //NOI18N
-                    children.add(item);
                 }
             }
         }
@@ -323,6 +323,9 @@ public class PhpStructureScanner implements StructureScanner {
 
         protected void appendFunctionDescription(FunctionDeclaration function, HtmlFormatter formatter) {
             formatter.reset();
+            if (function == null || function.getFunctionName() == null) {
+                return;
+            }
             formatter.appendText(function.getFunctionName().getName());
             formatter.appendText("(");   //NOI18N
 
@@ -529,6 +532,14 @@ public class PhpStructureScanner implements StructureScanner {
             foldType = FOLD_CLASS;
             if (cldec.getBody() != null) {
                 cldec.getBody().accept(this);
+            }
+        }
+
+        @Override
+        public void visit(InterfaceDeclaration node) {
+            foldType = FOLD_CLASS;
+            if (node.getBody() != null) {
+                node.getBody().accept(this);
             }
         }
 

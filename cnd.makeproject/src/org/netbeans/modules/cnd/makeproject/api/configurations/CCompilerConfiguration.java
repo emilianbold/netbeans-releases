@@ -182,7 +182,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         if (false) {
             return getCompilerDescription().getUserIncludeFlag();
         }
-        return "-I";
+        return "-I"; // NOI18N
     }
 
     protected String getUserMacroFlag(){
@@ -190,7 +190,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         if (false) {
             return getCompilerDescription().getUserMacroFlag();
         }
-        return "-D";
+        return "-D"; // NOI18N
     }
 
     // Sheet

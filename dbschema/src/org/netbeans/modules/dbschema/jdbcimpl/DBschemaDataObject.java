@@ -138,9 +138,11 @@ public class DBschemaDataObject extends MultiDataObject {
   
       public void setSchema(SchemaElement schema) {
         schemaElement = schema;
-        Node n = getNodeDelegate();
-        Children ch = n.getChildren();
-        ((SchemaRootChildren) ch).setElement(schemaElement);
+        if (isValid()) {
+            Node n = getNodeDelegate();
+            Children ch = n.getChildren();
+            ((SchemaRootChildren) ch).setElement(schemaElement);
+        }
       }
 
     public SchemaElementImpl getSchemaElementImpl() {

@@ -38,17 +38,17 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-VERSION=0.3
+VERSION=0.7
 
 # Prepend /usr/bin and /bin so we're ensured that standard Unix commands
 # don't get replaced by a non-standard version
 OPATH=$PATH
 PATH=/usr/bin:/bin:$PATH
 
-declare -a csets=
+declare -a csets=('')
 declare i=0
 
-uname=$(type -P uname)
+uname=$(type -p uname)
 OS=$($uname -s)
 ARCH=$($uname -m)
 
@@ -75,7 +75,13 @@ do
 	continue	# skip relative directories
     fi
 
-    if [ "$OS" == "SunOS" -a \( -x "$f/cc" -o -x "$f/CC" \) ]
+    if [ "${f:0:8}" = "/usr/ucb" ]
+    then
+	continue	# skip /usr/ucb (IZ #142780)
+    fi
+
+    if [ \( "$OS" == "SunOS" -a \( -x "$f/cc" -o -x "$f/CC" \) \) -o \
+	 \( "$OS" == "Linux" -a -x "$f/CC" -a ! -x "$f/gcc" \) ]
     then
 	inv=${f/prod//}/../inventory
 	if [ -d "$inv/v17n1" ]
@@ -124,7 +130,7 @@ do
         then
             line="$line;gdb=$gdb"
         fi
-    elif [ -x "$f/gcc" -o -x "$f/g++" -o -x "$f/cc" -o -x "$f/CC" ]
+    elif [ -x "$f/gcc" -o -x "$f/g++" ]
     then
 	line="GNU;$f"
 	flavor="GNU;"

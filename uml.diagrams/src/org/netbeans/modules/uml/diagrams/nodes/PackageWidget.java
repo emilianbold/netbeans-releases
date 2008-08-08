@@ -188,8 +188,8 @@ public class PackageWidget extends ContainerNode
         nameWidget.setLabel(data.getNameWithAlias());
         setFont(getCurrentView().getFont());
         
-        String id = getWidgetID() + "." + BodyNameContainerID; // NOI18N
-        Widget bodyNameContainer = new CustomizableWidget(scene, id, 
+//        String id = getResourcePath();//getWidgetID() + "." + BodyNameContainerID; // NOI18N
+        Widget bodyNameContainer = new CustomizableWidget(scene, getResourcePath(), 
                 NbBundle.getMessage(PackageWidget.class, "LBL_BodyNameContainer"))
         {
             @Override

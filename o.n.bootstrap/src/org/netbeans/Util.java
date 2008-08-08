@@ -479,23 +479,6 @@ public abstract class Util {
         }
     }
     
-    /** Find the most human-presentable message present in an exception.
-     * At worst, the detail message, but preferably a localized message
-     * if different, or the first localized annotation found.
-     * If returning the detail message is not OK, returns null instead.
-     * @since JST-PENDING: used from NbProblemDisplayer
-     */
-    public static String findLocalizedMessage(Throwable t, boolean detailOK) {
-        String locmsg = t.getLocalizedMessage();
-        if (Utilities.compareObjects(locmsg, t.getMessage())) {
-            locmsg = Exceptions.findLocalizedMessage(t);
-            if (! detailOK) {
-                return null;
-            }
-        }
-        return locmsg;
-    }
-    
     /** Get a filter for JAR files. */
     static FilenameFilter jarFilter() {
         return new JarFilter();

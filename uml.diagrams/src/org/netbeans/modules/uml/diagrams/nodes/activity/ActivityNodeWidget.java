@@ -103,7 +103,7 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
         if (stereotypeWidget == null)
         {
             stereotypeWidget = new UMLLabelWidget(getScene(),
-                                                  getWidgetID() + ".stereorype",  //NO I18N
+                                                  getResourcePath() + ".stereorype",  //NO I18N
                                                   bundle.getString("LBL_stereotype"));
             stereotypeWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
         }

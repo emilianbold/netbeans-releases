@@ -88,13 +88,13 @@ import org.openide.util.Parameters;
 public final class Deployment {
 
     private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(Deployment.class.getName());
-            
+
+    private static final WeakHashMap<J2eeModuleProvider, CompileOnSaveListener> COMPILE_LISTENERS = new WeakHashMap<J2eeModuleProvider, CompileOnSaveListener>();
+    
     private static boolean alsoStartTargets = true;    //TODO - make it a property? is it really needed?
     
     private static Deployment instance = null;
     
-    private static WeakHashMap<J2eeModuleProvider, CompileOnSaveListener> compileListeners = new WeakHashMap<J2eeModuleProvider, CompileOnSaveListener>();
-
     public static synchronized Deployment getDefault () {
         if (instance == null) {
             instance = new Deployment ();
@@ -177,7 +177,8 @@ public final class Deployment {
             targetserver.notifyIncrementalDeployment(modules);
             if (targetserver.supportsDeployOnSave(modules)) {
                 DeployOnSaveManager.getDefault().notifyInitialDeployment(jmp);
-                startListening(jmp);
+                //startListening(jmp);
+                checkListening(jmp);
             }
 
             if (modules != null && modules.length > 0) {
@@ -523,11 +524,29 @@ public final class Deployment {
         public void log(String message);
     }
 
+    // TODO move to DeployOnSaveManager
+
+    private static void checkListening(J2eeModuleProvider j2eeProvider) {
+        synchronized (COMPILE_LISTENERS) {
+            if (COMPILE_LISTENERS.containsKey(j2eeProvider)) {
+                // this is due to EAR childs :(
+                if (j2eeProvider instanceof J2eeApplicationProvider) {
+                    startListening(j2eeProvider);
+                }
+            }
+        }
+    }
+
     private static void startListening(J2eeModuleProvider j2eeProvider) {
-        synchronized (compileListeners) {
-            if (compileListeners.containsKey(j2eeProvider)) {
-                LOGGER.log(Level.FINE, "Already listening on {0}", j2eeProvider);
-                return;
+        synchronized (COMPILE_LISTENERS) {
+            if (COMPILE_LISTENERS.containsKey(j2eeProvider)) {
+                // this is due to EAR childs :(
+                if (j2eeProvider instanceof J2eeApplicationProvider) {
+                    stopListening(j2eeProvider);
+                } else {
+                    LOGGER.log(Level.FINE, "Already listening on {0}", j2eeProvider);
+                    return;
+                }
             }
 
             List<J2eeModuleProvider> providers = new ArrayList<J2eeModuleProvider>(4);
@@ -561,13 +580,13 @@ public final class Deployment {
                 support.addArtifactListener(listener);
             }
 
-            compileListeners.put(j2eeProvider, listener);
+            COMPILE_LISTENERS.put(j2eeProvider, listener);
         }
     }
 
     private static void stopListening(J2eeModuleProvider j2eeProvider) {
-        synchronized (compileListeners) {
-            CompileOnSaveListener removed = compileListeners.remove(j2eeProvider);
+        synchronized (COMPILE_LISTENERS) {
+            CompileOnSaveListener removed = COMPILE_LISTENERS.remove(j2eeProvider);
             if (removed == null) {
                 LOGGER.log(Level.FINE, "Not listening on {0}", j2eeProvider);
             } else {
@@ -600,29 +619,6 @@ public final class Deployment {
 
         public void artifactsUpdated(Iterable<File> artifacts) {
             DeployOnSaveManager.getDefault().submitChangedArtifacts(provider, artifacts);
-//            if (LOGGER.isLoggable(Level.FINEST)) {
-//                StringBuilder builder = new StringBuilder("Artifacts updated: [");
-//                for (File file : artifacts) {
-//                    builder.append(file.getAbsolutePath()).append(",");
-//                }
-//                builder.setLength(builder.length() - 1);
-//                builder.append("]");
-//                LOGGER.log(Level.FINEST, builder.toString());
-//            }
-//
-//            DeploymentTargetImpl deploymentTarget = new DeploymentTargetImpl(provider, null);
-//            TargetServer server = new TargetServer(deploymentTarget);
-//            boolean keep = server.notifyArtifactsUpdated(artifacts);
-////            if (!keep) {
-////                for (URL url : registered) {
-////                    BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
-////                }
-////
-////                J2eeModuleProvider.DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
-////                if (support != null) {
-////                    support.removeArtifactListener(this);
-////                }
-////            }
         }
     }
 }

@@ -1,0 +1,4 @@
+form_tag:OTHER:[]:ESCAPED{form_tag}:
+render:OTHER:[]:ESCAPED{render}:
+submit_tag:OTHER:[]:ESCAPED{submit_tag}:
+end:OTHER:[]:ESCAPED{end}:

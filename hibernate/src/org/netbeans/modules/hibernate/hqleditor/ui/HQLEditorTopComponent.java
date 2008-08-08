@@ -56,7 +56,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import org.hibernate.QueryException;
-import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.SessionFactory;
 import org.hibernate.engine.query.HQLQueryPlan;
 import org.hibernate.hql.QueryTranslator;
 import org.hibernate.hql.ast.QuerySyntaxException;
@@ -140,14 +140,17 @@ public final class HQLEditorTopComponent extends TopComponent {
                 if (hqlEditor.getText().trim().equals("")) {
                     return;
                 }
+                if(hibernateConfigurationComboBox.getSelectedItem() == null ) {
+                    logger.info("hibernate configuration combo box is empty.");
+                    return;
+                }
                 FileObject selectedConfigObject = hibernateConfigMap.get(
                         hibernateConfigurationComboBox.getSelectedItem().toString());
 
                 if (Thread.interrupted() || isSqlTranslationProcessDone) {
                     return;    // Cancel the task
                 }
-                if (hibernateConfigurationComboBox.getSelectedItem() != null ||
-                        selectedConfigObject != null) {
+                if (selectedConfigObject != null) {
                     Project enclosingProject = FileOwnerQuery.getOwner(selectedConfigObject);
                     env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
                     if (env == null) {
@@ -164,13 +167,13 @@ public final class HQLEditorTopComponent extends TopComponent {
                                 getClass().getClassLoader());
 
                         Thread.currentThread().setContextClassLoader(ccl);
-                        AnnotationConfiguration hibernateConfiguration =
-                                controller.processAndConstructCustomConfiguration(
-                                hqlEditor.getText(), selectedConfigObject, enclosingProject);
+                        SessionFactory sessionFactory =
+                                controller.processAndConstructSessionFactory(
+                                hqlEditor.getText(), selectedConfigObject, ccl, enclosingProject);
                         if (Thread.interrupted() || isSqlTranslationProcessDone) {
                             return;    // Cancel the task
                         }
-                        SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) hibernateConfiguration.buildSessionFactory();
+                        SessionFactoryImpl sessionFactoryImpl = (SessionFactoryImpl) sessionFactory;
 
                         if (Thread.interrupted() || isSqlTranslationProcessDone) {
                             return;    // Cancel the task
@@ -297,7 +300,8 @@ public final class HQLEditorTopComponent extends TopComponent {
 
     }
 
-    public void setResult(HQLResult result) {
+    public void setResult(HQLResult result, CustomClassLoader ccl) {
+        Thread.currentThread().setContextClassLoader(ccl);
         if (result.getExceptions().size() == 0) {
             // logger.info(r.getQueryResults().toString());
             switchToResultView();
@@ -392,7 +396,10 @@ public final class HQLEditorTopComponent extends TopComponent {
                             oneRow.add("NULL"); //NOI18N
                             continue;
                         }
-                        oneRow.add(methodReturnValue);
+                        if(methodReturnValue instanceof java.util.Collection) {
+                            continue;
+                        }
+                        oneRow.add(methodReturnValue.toString());
                     } catch (IllegalAccessException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (IllegalArgumentException ex) {

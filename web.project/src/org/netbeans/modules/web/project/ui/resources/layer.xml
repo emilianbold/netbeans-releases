@@ -72,12 +72,6 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    <folder name="org-netbeans-modules-web-project">
-        <file name="web-2.3.xml" url="web-2.3.xml"/>
-        <file name="web-2.4.xml" url="web-2.4.xml"/>
-        <file name="web-2.5.xml" url="web-2.5.xml"/>
-        <file name="MANIFEST.MF" url="MANIFEST.MF"/>
-    </folder>
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-jsp">

@@ -80,10 +80,10 @@ public class ChildrenKeysTest extends NbTestCase {
         return false;
     }
     
-//    public static Test suite() {
-//        return new ChildrenKeysTest("testGCKeys");
+//    public static ChildrenKeysTest suite() {
+//        return new ChildrenKeysTest("testChildrensAreNotCreatedOnNodeRemoval");
 //    }
-//
+
     @Override
     protected Level logLevel() {
         return Level.WARNING;
@@ -1311,6 +1311,47 @@ public class ChildrenKeysTest extends NbTestCase {
 
         l.assertNoEvents("All events delivered");
     }
+    
+    public void testChildrensAreNotCreatedOnNodeRemoval() {
+        final Integer cnt = new Integer(0);
+        class K extends Keys {
+
+            K() {
+                super(lazy());
+            }
+
+            @Override
+            protected void addNotify() {
+                fail("Nothing should be created on node removal.");
+            }
+        }
+        
+        class PK extends Keys {
+
+            PK() {
+                super(lazy());
+            }
+
+            @Override
+            protected void addNotify() {
+                keys("A", "B", "C");
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                AbstractNode an = new AbstractNode(new K());
+                an.setName(key.toString());
+                return new Node[]{an};
+            }
+        }
+
+        Listener l = new Listener();
+        PK lch = new PK();
+        Node ta = createNode(lch);
+        Node[] nodes = lch.getNodes();
+        nodes[2].addNodeListener(l);
+        lch.keys("A", "B");
+    }
 
     public void testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces() throws Exception {
         final Ticker tick = new Ticker();
@@ -1493,7 +1534,7 @@ public class ChildrenKeysTest extends NbTestCase {
         @Override
         public void childrenRemoved (NodeMemberEvent ev) {
             if (!disableConsistencyCheck) {
-                ChildFactoryTest.assertNodeAndEvent(ev);
+                ChildFactoryTest.assertNodeAndEvent(ev, ev.getSnapshot());
             }
             events.add (ev);
             when = new Exception("childrenRemoved");
@@ -1502,7 +1543,7 @@ public class ChildrenKeysTest extends NbTestCase {
         @Override
         public void childrenAdded (NodeMemberEvent ev) {
             if (!disableConsistencyCheck) {
-                ChildFactoryTest.assertNodeAndEvent(ev);
+                ChildFactoryTest.assertNodeAndEvent(ev, ev.getSnapshot());
             }
             events.add (ev);
             when = new Exception("childrenAdded");
@@ -1510,7 +1551,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
         @Override
         public void childrenReordered (NodeReorderEvent ev) {
-            ChildFactoryTest.assertNodeAndEvent(ev);
+            ChildFactoryTest.assertNodeAndEvent(ev, ev.getSnapshot());
             events.add (ev);
             when = new Exception("childrenReordered");
         }

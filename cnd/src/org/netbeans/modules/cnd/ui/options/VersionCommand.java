@@ -109,7 +109,10 @@ public class VersionCommand {
     }
 
     private String getVersionFlags() {
-        String flags = tool.getDescriptor().getVersionFlags();
+        String flags = null;
+        if (tool.getDescriptor() != null) {
+            flags = tool.getDescriptor().getVersionFlags();
+        }
         if (flags == null) {
             return "--version"; // NOI18N
         } else {

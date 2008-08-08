@@ -100,5 +100,6 @@ public class StringNodeProp extends PropertySupport {
     
     public void setDefaultValue(String def) {
         this.def = def;
+        stringConfiguration.setDefaultValue(def);
     }
 }

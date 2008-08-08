@@ -45,7 +45,11 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -64,15 +68,16 @@ public class RemoteServerRecord implements ServerRecord {
     
     public static final String PROP_STATE_CHANGED = "stateChanged"; // NOI18N
     
-    private String user;
-    private String server;
+    private final String user;
+    private final String server;
     private final String name;
-    private boolean editable;
+    private final boolean editable;
+    private boolean deleted;
     private Object state;
     private final Object stateLock;
     private String reason;
     
-    private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -83,8 +88,17 @@ public class RemoteServerRecord implements ServerRecord {
      */
     protected RemoteServerRecord(final String name) {
         this.name = name;
+        int pos = name.indexOf('@');
+        if (pos != -1) {
+            user = name.substring(0, pos);
+            server = name.substring(pos + 1);
+        } else {
+            user="";
+            server = name;
+        }
         stateLock = new String("RemoteServerRecord state lock for " + name); // NOI18N
         reason = null;
+        deleted = false;
         
         if (name.equals(CompilerSetManager.LOCALHOST)) {
             editable = false;
@@ -100,21 +114,28 @@ public class RemoteServerRecord implements ServerRecord {
             if (SwingUtilities.isEventDispatchThread()) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        validate2();
+                        validateOutOfEDT();
                     }
                 });
             } else  {
-                validate2();
+                validateOutOfEDT();
             }
         }
     }
     
-    private void validate2() {
+    private void validateOutOfEDT() {
         log.fine("RSR.validate2: Validating " + name);
-        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name));
+        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name)); // NOI18N
         ph.start();
         init(null);
         ph.finish();
+        String msg;
+        if (isOnline()) {
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_OK", name);// NOI18N
+        } else {
+            msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_ERR", name, getStateAsText(), getReason());// NOI18N
+        }
+        StatusDisplayer.getDefault().setStatusText(msg);        
     }
     
     /**
@@ -142,6 +163,12 @@ public class RemoteServerRecord implements ServerRecord {
             } else {
                 state = STATE_ONLINE;
                 CompilerSetManager.getDefault(name); // Trigger creation of the CSM if it doesn't already exist...
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    public void run() {
+                        RemotePathMap.getMapper(name).init();
+                    }
+                });
             }
         }
         if (pcs != null) {
@@ -149,16 +176,14 @@ public class RemoteServerRecord implements ServerRecord {
         }
     }
     
-    public Object getState() {
+    public boolean resetOfflineState() {
         synchronized (stateLock) {
-            return state;
+            if (this.state != STATE_INITIALIZING && state != STATE_ONLINE) {
+                state = STATE_UNINITIALIZED;
+                return true;
+            }
         }
-    }
-    
-    public void setState(Object state) {
-        synchronized (stateLock) {
-            this.state = state;
-        }
+        return false;
     }
     
     public String getStateAsText() {
@@ -169,10 +194,20 @@ public class RemoteServerRecord implements ServerRecord {
         return state == STATE_ONLINE;
     }
     
+    public boolean isOffline() {
+        return state == STATE_OFFLINE;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+    
     public boolean isEditable() {
-        synchronized (stateLock) {
-            return editable;
-        }
+        return editable;
     }
 
     public boolean isRemote() {

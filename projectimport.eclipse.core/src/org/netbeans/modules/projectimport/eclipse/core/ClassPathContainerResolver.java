@@ -116,7 +116,9 @@ public class ClassPathContainerResolver {
         
         if (container.startsWith(MYECLIPSE_CONTAINERS)) {
             if (importInProgress) {
-                workspace.loadMyEclipseLibraries(importProblems);
+                if (workspace != null) {
+                    workspace.loadMyEclipseLibraries(importProblems);
+                }
                 createLibrary(workspace, container, importProblems);
             }
             entry.setContainerMapping("libs."+getNetBeansLibraryName(container)+".classpath"); //NOI18N
@@ -235,6 +237,14 @@ public class ClassPathContainerResolver {
             return;
         }
         content.put("classpath", workspace.getJarsForUserLibrary(getEclipseLibraryName(container))); //NOI18N
+        List<URL> urls = workspace.getJavadocForUserLibrary(getEclipseLibraryName(container), importProblems);
+        if (urls != null) {
+            content.put("javadoc", urls);
+        }
+        urls = workspace.getSourcesForUserLibrary(getEclipseLibraryName(container), importProblems);
+        if (urls != null) {
+            content.put("src", urls);
+        }
         lm.createLibrary("j2se", library, content); //NOI18N
     }
     

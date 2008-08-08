@@ -142,6 +142,10 @@ public class WebSetupTest extends JellyTestCase  {
         CommonUtilities.waitProjectTasksFinished();        
     }
     
+    public void testCloseTaskWindow() {
+        CommonUtilities.closeTaskWindow();
+    }
+    
     public void setupAppServer() {
         rto = RuntimeTabOperator.invoke();
         try {

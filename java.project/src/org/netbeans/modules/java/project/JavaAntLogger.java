@@ -126,6 +126,7 @@ public final class JavaAntLogger extends AntLogger {
         "java", // NOI18N
         // #44328: unit tests run a different task:
         "junit", // NOI18N
+        "testng", // NOI18N
         // Nice to handle stack traces from e.g. NB's own build system too!
         "exec", // NOI18N
         // #63065: Mobility execution

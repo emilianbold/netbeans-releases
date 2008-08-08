@@ -53,7 +53,6 @@ import javax.swing.tree.TreePath;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
@@ -98,6 +97,7 @@ import org.netbeans.junit.ide.ProjectSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  */
@@ -108,13 +108,11 @@ public class WebProjectValidation extends J2eeTestCase {
         }
     };
     // location of sample project (parent of PROJECT_FOLDER)
-    protected static final String PROJECT_LOCATION =
-            getProjectFolder().getAbsolutePath();
+    protected static String PROJECT_LOCATION;
     // name of sample project
     protected static String PROJECT_NAME = "SampleProject"; // NOI18N
     // foloder of sample project
-    protected static String PROJECT_FOLDER =
-            PROJECT_LOCATION+File.separator+PROJECT_NAME;
+    protected static String PROJECT_FOLDER;
     protected TestURLDisplayer urlDisplayer;
     private static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
     private ServerInstance server;
@@ -123,11 +121,13 @@ public class WebProjectValidation extends J2eeTestCase {
     /** Need to be defined because of JUnit */
     public WebProjectValidation(String name) {
         super(name);
+        PROJECT_LOCATION = getProjectFolder().getAbsolutePath();
+        PROJECT_FOLDER = PROJECT_LOCATION+File.separator+PROJECT_NAME;        
     }
 
     /** Need to be defined because of JUnit */
     public WebProjectValidation() {
-        super(null);
+        super("WebProjectValidation");
     }
     
     public static Test suite() {
@@ -137,7 +137,7 @@ public class WebProjectValidation extends J2eeTestCase {
               "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
               "testCompileAllJSP", "testCompileJSP",
               "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
-              "testCleanAndBuildProject", "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
                /*"testJSPNavigator", "testHTMLNavigator" */);
@@ -145,8 +145,13 @@ public class WebProjectValidation extends J2eeTestCase {
         return NbModuleSuite.create(conf);
     }
 
-    protected static File getProjectFolder() {
-        File dataDir = new WebProjectValidation().getDataDir();
+    protected  File getProjectFolder() {
+        File dataDir = null;
+        try {
+            dataDir = new WebProjectValidation().getWorkDir();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         return Manager.normalizeFile(dataDir);
     }
 
@@ -270,8 +275,6 @@ public class WebProjectValidation extends J2eeTestCase {
      * - check file is open in editor and close all opened documents
      */
     public void testNewJSP() throws IOException {
-        // XXX workaround due to issue #46073
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
         NewJspFileNameStepOperator nameStep = NewJspFileNameStepOperator.invoke();
         nameStep.setJSPFileName("page1");
         nameStep.finish();
@@ -556,12 +559,6 @@ public class WebProjectValidation extends J2eeTestCase {
     }
     
     public void testCreateTLD() {
-        //HACK
-        new Node(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME), "Web Pages|WEB-INF").expand();
-        
-        // workaround due to issue #46073
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
-        
         new ActionNoBlock("File|New File", null).perform();
         // WORKAROUND
         new EventTool().waitNoEvent(1000);
@@ -585,9 +582,6 @@ public class WebProjectValidation extends J2eeTestCase {
     }
     
     public void testCreateTagHandler() {
-        // workaround due to issue #46073
-        new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME).select();
-        
         new ActionNoBlock("File|New File", null).perform();
         // WORKAROUND
         new EventTool().waitNoEvent(1000);

@@ -52,6 +52,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -84,6 +85,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.nodes.FilterNode;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -140,26 +142,51 @@ public final class RakeSupport {
 
         return null;
     }
+    
+    /**
+     * Checks whether the give file is a main Rake file.
+     */
+    public static boolean isMainRakeFile(FileObject fo) {
+        for (String s : RakeSupport.RAKEFILE_NAMES) {
+            if (s.equals(fo.getNameExt())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
+    /**
+     * Checks whether the give file is a Rake file. Might be either {@link
+     * #isMainRakeFile main Rake file} or file with <tt>.rake</tt> extension.
+     */
     public static boolean isRakeFile(FileObject fo) {
         if (!fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
             return false;
         }
 
-        String name = fo.getName().toLowerCase();
-
-        if (name.equals("rakefile")) { // NOI18N
-
+        if (isMainRakeFile(fo)) {
             return true;
         }
 
-        String ext = fo.getExt().toLowerCase();
-
-        if (ext.equals("rake")) { // NOI18N
-
+        if (fo.getExt().equalsIgnoreCase("rake")) { // NOI18N
             return true;
         }
 
+        return false;
+    }
+
+    /**
+     * Checks whether the exactly one {@link #isRakeFile Rake file} is selected
+     * in the given context.
+     */
+    public static boolean isRakeFileSelected(final Lookup context) {
+        Collection<? extends DataObject> lookupAll = context.lookupAll(DataObject.class);
+        if (lookupAll.size() == 1) {
+            FileObject f = lookupAll.iterator().next().getPrimaryFile();
+            if (RakeSupport.isRakeFile(f)) {
+                return true;
+            }
+        }
         return false;
     }
 

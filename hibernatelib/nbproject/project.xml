@@ -30,6 +30,7 @@
                 <subpackages>org.apache</subpackages>
                 <subpackages>javax.sql</subpackages>
                 <subpackages>javax.transaction</subpackages>
+                <subpackages>javax.persistence</subpackages>
                 <subpackages>net.sf</subpackages>
                 <subpackages>antlr</subpackages>
                 <subpackages>org.objectweb</subpackages>

@@ -187,7 +187,8 @@ public class ProjectCreator {
         }
         String target = "Default"; // NOI18N
 
-        MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), target, MakeConfiguration.TYPE_MAKEFILE);
+        // TODO: create localhost based project
+        MakeConfiguration extConf = new MakeConfiguration(dirF.getPath(), target, MakeConfiguration.TYPE_MAKEFILE, CompilerSetManager.LOCALHOST);
         String workingDirRel = IpeUtils.toRelativePath(dirF.getPath(), FilePathAdaptor.naturalize(workingDir));
         workingDirRel = FilePathAdaptor.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);

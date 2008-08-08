@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.EventQueue;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -159,16 +161,21 @@ public final class TestSupport {
         
     }
         
-    public static class ChangeableLookup extends ProxyLookup {
+    public static class ChangeableLookup extends ProxyLookup implements Runnable {
         
         public ChangeableLookup(Object... objects) {
             super( new Lookup[] { Lookups.fixed( objects ) } );
         }
         
-        public void change(Object... objects) {
+        public void change(Object... objects) throws InterruptedException, InvocationTargetException {
             setLookups( new Lookup[] { Lookups.fixed( objects ) } );                       
+            if (!EventQueue.isDispatchThread()) {
+                EventQueue.invokeAndWait(this);
+            }
         }
-                
+
+        public void run() {
+        }
     }
     
     public static AuxiliaryConfiguration createAuxiliaryConfiguration () {

@@ -46,6 +46,6 @@ made subject to such option by the copyright holder.
   <display-name value='MySQL (Connector/J driver)'/>
   <class value='com.mysql.jdbc.Driver'/>
   <urls>
-  	<url value="nbinst:///modules/ext/mysql-connector-java-5.1.5-bin.jar"/>
+  	<url value="nbinst:///modules/ext/mysql-connector-java-5.1.6-bin.jar"/>
   </urls>
 </driver>

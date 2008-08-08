@@ -270,7 +270,7 @@ public class EarActionProvider implements ActionProvider {
         if ( findBuildXml() == null ) {
             return false;
         }
-        boolean cos = Boolean.parseBoolean(project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.DEPLOY_ON_SAVE));
+        boolean cos = !Boolean.parseBoolean(project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.DISABLE_DEPLOY_ON_SAVE));
         if (cos && actionsDisabledForCoS.contains(command)) {
             return false;
         }

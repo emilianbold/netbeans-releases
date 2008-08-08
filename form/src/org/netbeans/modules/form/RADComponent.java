@@ -1371,6 +1371,54 @@ public class RADComponent {
 
 	// prop.addPropertyChangeListener(getPropertyListener());
 	nameToProperty.put(desc.getName(), prop);
+        
+        // setting javax.swing.Action property should not overwrite
+        // manually entered prop values (text, tooltip, etc.)
+        if ("action".equals(prop.getName()) && // NOI18N 
+                AbstractButton.class.isAssignableFrom(beanClass)) {
+            prop.addPropertyChangeListener(new PropertyChangeListener() {
+
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (FormProperty.CURRENT_EDITOR.equals(evt.getPropertyName())) {
+                        // Another event will come later, now it is too soon
+                        // to re-set the properties. The change in action property
+                        // will be fired later and would clear the re-set properties.
+                        return;
+                    }
+                    try {
+                        // prop names copied from AbstractButton.configurePropertiesFromAction()
+                        // method from JDK5
+                        String[] propNames = {"mnemonic", "text", "toolTipText", // NOI18N
+                            "icon", "actionCommand", "enabled"}; // NOI18N
+                        for (String propName : propNames) {
+                            FormProperty property = (FormProperty) getPropertyByName(propName);
+
+                            if (property != null) {
+                                boolean exChangeMonitoring = property.isExternalChangeMonitoring();
+                                property.setExternalChangeMonitoring(false);
+
+                                if (property.isChanged()) {
+                                    Object origValue = property.getValue();
+
+                                    if (!propName.equals("text") || // NOI18N
+                                            !getName().equals(property.getRealValue())) {
+                                        property.setExternalChangeMonitoring(exChangeMonitoring);
+                                        property.setValue(origValue);
+                                    } else {
+                                        property.setExternalChangeMonitoring(exChangeMonitoring);
+                                    }
+                                } else {
+                                    // no changes, just set monitor back
+                                    property.setExternalChangeMonitoring(exChangeMonitoring);
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+        }
 
         return prop;
     }

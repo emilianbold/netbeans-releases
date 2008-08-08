@@ -174,9 +174,14 @@ public final class Utilities {
      * @since 4.50
      */
     public static final int OS_FREEBSD = OS_OTHER << 1;
+    
+    /** Operating system is Windows Vista.
+     * @since 7.17
+     */
+    public static final int OS_WINVISTA = OS_FREEBSD << 1;
 
     /** A mask for Windows platforms. */
-    public static final int OS_WINDOWS_MASK = OS_WINNT | OS_WIN95 | OS_WIN98 | OS_WIN2000 | OS_WIN_OTHER;
+    public static final int OS_WINDOWS_MASK = OS_WINNT | OS_WIN95 | OS_WIN98 | OS_WIN2000 | OS_WINVISTA | OS_WIN_OTHER;
 
     /** A mask for Unix platforms. */
     public static final int OS_UNIX_MASK = OS_SOLARIS | OS_LINUX | OS_HP | OS_AIX | OS_IRIX | OS_SUNOS | OS_TRU64 |
@@ -302,6 +307,8 @@ public final class Utilities {
                 operatingSystem = OS_WIN98;
             } else if ("Windows 2000".equals(osName)) { // NOI18N
                 operatingSystem = OS_WIN2000;
+            } else if ("Windows Vista".equals(osName)) { // NOI18N
+                operatingSystem = OS_WINVISTA;
             } else if (osName.startsWith("Windows ")) { // NOI18N
                 operatingSystem = OS_WIN_OTHER;
             } else if ("Solaris".equals(osName)) { // NOI18N

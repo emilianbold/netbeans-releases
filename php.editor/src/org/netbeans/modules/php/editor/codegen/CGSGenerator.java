@@ -121,17 +121,19 @@ public class CGSGenerator implements CodeGenerator {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             CGSInfo info = CGSInfo.getCGSInfo(textComp);
 
-            if (!info.hasConstructor()) {
-                ret.add(new CGSGenerator(textComp, info, GenType.CONSTRUCTOR));
-            }
-            if (info.getPossibleGetters().size() > 0) {
-                ret.add(new CGSGenerator(textComp, info, GenType.GETTER));
-            }
-            if (info.getPossibleSetters().size() > 0) {
-                ret.add(new CGSGenerator(textComp, info, GenType.SETTER));
-            }
-            if (info.getPossibleGettersSetters().size() > 0) {
-                ret.add(new CGSGenerator(textComp, info, GenType.GETTER_AND_SETTER));
+            if (info.getClassName() != null) { // is the cursor in a class?
+                if (!info.hasConstructor()) {
+                    ret.add(new CGSGenerator(textComp, info, GenType.CONSTRUCTOR));
+                }
+                if (info.getPossibleGetters().size() > 0) {
+                    ret.add(new CGSGenerator(textComp, info, GenType.GETTER));
+                }
+                if (info.getPossibleSetters().size() > 0) {
+                    ret.add(new CGSGenerator(textComp, info, GenType.SETTER));
+                }
+                if (info.getPossibleGettersSetters().size() > 0) {
+                    ret.add(new CGSGenerator(textComp, info, GenType.GETTER_AND_SETTER));
+                }
             }
             return ret;
         }

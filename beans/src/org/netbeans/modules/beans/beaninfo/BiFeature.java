@@ -813,29 +813,31 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
             super( me.getSimpleName().toString(), "\"\"", bia ); //NOI18N
             element = ElementHandle.create(me);
             toolTip = initToolTip(me, javac);
-            creationString = initCreationString(me);
+            creationString = initCreationString(me, javac);
         }
         
         String getBracketedName() {
             return "[METHOD_" + getName() + "]"; // NOI18N
         }
         
-        private static String getTypeClass(TypeMirror type) {
+        private static String getTypeClass(TypeMirror type, CompilationInfo javac) {
             TypeKind kind = type.getKind();
             if (kind.isPrimitive()) {
                 return type.toString();
             } else if (kind == TypeKind.ARRAY) {
-                return resolveArrayClass((ArrayType) type);
+                return resolveArrayClass((ArrayType) type, javac);
             } else if (kind == TypeKind.DECLARED) {
                 return ((TypeElement) ((DeclaredType) type).asElement()).getQualifiedName().toString();
             } else if (kind == TypeKind.ERROR) {
                 return type.toString();
+            } else if (kind == TypeKind.TYPEVAR) {
+                return javac.getTypes().erasure(type).toString();
             } else {
                 throw new IllegalStateException("Unknown type: " + type + ", " + type.getKind()); // NOI18N
             }
         }
 
-        private static String resolveArrayClass(ArrayType array) {
+        private static String resolveArrayClass(ArrayType array, CompilationInfo javac) {
             TypeMirror type = array;
             StringBuilder dim = new StringBuilder();
             for (int i = 0; type.getKind() == TypeKind.ARRAY; i++) {
@@ -843,7 +845,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
                 dim.append("[]"); // NOI18N
             }
             
-            return getTypeClass(type) + dim;
+            return getTypeClass(type, javac) + dim;
         }
 
         @Override
@@ -865,13 +867,13 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
             return creationString;
         }
         
-        private static String initCreationString (ExecutableElement element) {
+        private static String initCreationString (ExecutableElement element, CompilationInfo javac) {
             TypeElement enclClass = (TypeElement) element.getEnclosingElement();
             String code = "new MethodDescriptor(%1$s.class.getMethod(\"%2$s\", new Class[] {%3$s}))"; // NOI18N
             String paramdelim = ", "; //NOI18N
             StringBuilder sb = new StringBuilder();
             for (VariableElement param : element.getParameters()) {
-                sb.append(paramdelim).append(getTypeClass(param.asType())).append(".class"); // NOI18N
+                sb.append(paramdelim).append(getTypeClass(param.asType(), javac)).append(".class"); // NOI18N
             }
 
             return String.format(

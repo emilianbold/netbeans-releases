@@ -488,6 +488,10 @@ implements Runnable, ExplorerManager.Provider {
     }
 
     protected void doSelectNode (DataObject obj) {
+        //#142155: For some selected nodes there is no corresponding dataobject
+        if (obj == null) {
+            return;
+        }
         Node root = getExplorerManager ().getRootContext ();
         if (selectNode (obj, root)) {
             requestActive();

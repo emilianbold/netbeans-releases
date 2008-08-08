@@ -634,7 +634,8 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                         Iterator it = info.roots.iterator();
                         String[] rootElements = new String[(info.roots.size())];
                         info.roots.toArray(rootElements);
-                        obj.setRootElements(rootElements);                
+                        obj.setRootElements(rootElements);  
+                        rowVector.set(ROOT_COL, rootElements[0]);
                     }
                     obj.setSchemaFileName((String)value);
                     rowVector.set(col, obj);

@@ -187,6 +187,15 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
 	return decorateText(getClassifierText(), this, true, null).toString();
     }
 
+    // package
+    CharSequence getOwnText() {
+        if (qname != null && qname.length>0) {
+            return qname[qname.length-1];
+        } else {
+            return "";
+        }
+    }
+
     @Override
     public CharSequence getText() {
 	// TODO: resolve typedefs

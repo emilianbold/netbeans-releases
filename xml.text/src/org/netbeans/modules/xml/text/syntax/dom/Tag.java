@@ -86,10 +86,7 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
      */
     public synchronized NamedNodeMap getAttributes() {
         
-        // cached results not implemented
-        if (domAttributes != null) return domAttributes;
-        
-        Map map = new HashMap(3);
+        HashMap map = new LinkedHashMap(3);
         
         SCAN_LOOP:
             for (TokenItem next = first().getNext(); next != null; next = next.getNext()) {

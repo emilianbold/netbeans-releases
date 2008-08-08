@@ -66,6 +66,7 @@ made subject to such option by the copyright holder.
         <!-- Javon templates -->
         <folder name="Client">
             <attr name="position" intvalue="0"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.end2end.Bundle"/>
             <file name="Client.java" url="../../e2e/templates/ClientTemplate.template">
                  <attr name="template" boolvalue="false"/>
             </file>
@@ -75,6 +76,7 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Server">
             <attr name="position" intvalue="0"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.end2end.Bundle"/>
             <file name="Servlet.java" url="../../e2e/templates/ServletTemplate.template">
                  <attr name="template" boolvalue="false"/>
             </file>

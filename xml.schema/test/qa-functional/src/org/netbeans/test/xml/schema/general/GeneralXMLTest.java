@@ -149,6 +149,12 @@ public class GeneralXMLTest extends JellyTestCase {
       )
     {
       // Create Java application
+
+      // Workaround for MacOS platform
+      // TODO : check platform
+      // TODO : remove after normal issue fix
+      NewProjectWizardOperator.invoke().cancel( );
+
       NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke( );
       opNewProjectWizard.selectCategory( sCategory );
       opNewProjectWizard.selectProject( sProject );
@@ -183,6 +189,11 @@ public class GeneralXMLTest extends JellyTestCase {
       ProjectsTabOperator pto = new ProjectsTabOperator( );
       ProjectRootNode prn = pto.getProjectRootNode( sProject );
       prn.select( );
+
+      // Workaround for MacOS platform
+      // TODO : check platform
+      // TODO : remove after normal issue fix
+      NewFileWizardOperator.invoke().cancel( );
 
       NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
       opNewFileWizard.selectCategory( "XML" );
@@ -296,6 +307,11 @@ public class GeneralXMLTest extends JellyTestCase {
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock("File|New File...");
 
       // JDialogOperator jdNew = new JDialogOperator( "New File" );
+      // Workaround for MacOS platform
+      // TODO : check platform
+      // TODO : remove after normal issue fix
+      NewFileWizardOperator.invoke().cancel( );
+
       NewFileWizardOperator fwNew = new NewFileWizardOperator( "New File" );
       fwNew.selectCategory( "XML" );
       fwNew.selectFileType( "XML Document" );
@@ -384,6 +400,13 @@ public class GeneralXMLTest extends JellyTestCase {
       ProjectsTabOperator pto = new ProjectsTabOperator( );
       ProjectRootNode prn = pto.getProjectRootNode( sProject );
       prn.select( );
+
+      Sleep( 1000 );
+
+      // Workaround for MacOS platform
+      // TODO : check platform
+      // TODO : remove after normal issue fix
+      NewFileWizardOperator.invoke().cancel( );
 
       NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
       opNewFileWizard.selectCategory( "XML" );

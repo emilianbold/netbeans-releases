@@ -1125,7 +1125,7 @@ public class TreeModelNode extends AbstractNode {
         private Task evalTask;
         
         public LazyEvaluator() {
-            evalTask = RequestProcessor.getDefault().post(this);
+            evalTask = new RequestProcessor("Debugger Values Evaluator", 1).post(this);
         }
         
         public void evaluate(Evaluable eval) {
