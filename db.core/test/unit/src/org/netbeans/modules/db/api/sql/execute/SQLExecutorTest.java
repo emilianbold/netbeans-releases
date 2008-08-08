@@ -70,15 +70,7 @@ public class SQLExecutorTest extends TestBase {
             // expected
         }
 
-        // This happens asynchronously and we have no idea if something went
-        // wrong or not.
-        //
-        // TODO - fix this when the new API for a synchronous connect
-        // becomes available
-        ConnectionManager.getDefault().showConnectionDialog(dbconn);
-
-        // Let's just wait a bit and then if there is still no connection, bail
-        Thread.sleep(10000);
+        ConnectionManager.getDefault().connect(dbconn);
 
         assertNotNull(dbconn.getJDBCConnection());
         assert(! dbconn.getJDBCConnection().isClosed());

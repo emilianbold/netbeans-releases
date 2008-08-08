@@ -543,19 +543,24 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             }
         }
         
-        private void reformat(BaseDocument doc, int dotPos) throws BadLocationException {
-            Reformat reformat = Reformat.get(doc);
+        private void reformat(final BaseDocument doc, final int dotPos) throws BadLocationException {
+            final Reformat reformat = Reformat.get(doc);
             reformat.lock();
 
             try {
-                doc.atomicLock();
-                try {
-                    int startOffset = org.netbeans.editor.Utilities.getRowStart(doc, dotPos);
-                    int endOffset = org.netbeans.editor.Utilities.getRowEnd(doc, dotPos);
-                    reformat.reformat(startOffset, endOffset);
-                } finally {
-                    doc.atomicUnlock();
-                }
+                doc.runAtomic(new Runnable() {
+
+                    public void run() {
+                        try {
+                            int startOffset = org.netbeans.editor.Utilities.getRowStart(doc, dotPos);
+                            int endOffset = org.netbeans.editor.Utilities.getRowEnd(doc, dotPos);
+                            reformat.reformat(startOffset, endOffset);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+
             } finally {
                 reformat.unlock();
             }

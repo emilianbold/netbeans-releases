@@ -81,7 +81,10 @@ public final class TestExecutionManager {
     public static TestExecutionManager getInstance() {
         return INSTANCE;
     }
-    
+
+    synchronized void reset() {
+        this.finished = false;
+    }
     /**
      * Starts a RubyExecution with the given executionDescriptor and testRecognizer.
      * 

@@ -39,12 +39,16 @@
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
 import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.ruby.railsprojects.database.ConfigurableRailsAdapter;
 import org.netbeans.modules.ruby.railsprojects.database.RailsAdapterFactory;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
@@ -62,15 +66,49 @@ import org.openide.WizardValidationException;
  */
 public class RailsAdaptersPanel extends SettingsPanel {
 
+    private String projectName;
+    private boolean manuallyEdited;
+    private DocumentListener databaseNameListener;
     /** Creates new form RailsAdaptersPanel */
     public RailsAdaptersPanel() {
         initComponents();
         List<RailsDatabaseConfiguration> adapters = RailsAdapterFactory.getAdapters();
         developmentComboBox.setModel(new AdapterListModel(adapters));
         developmentComboBox.setRenderer(new AdapterListCellRendered());
+        developmentComboBox.addItemListener(new ItemListener() {
+
+            public void itemStateChanged(ItemEvent e) {
+                initDatabaseNameField();
+            }
+        });
+
+        databaseNameListener = new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                manuallyEdited = true;
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                manuallyEdited = true;
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                manuallyEdited = true;
+            }
+        };
 
         //TODO: enable once the logic for editing database.yml
         // to change production and test databases is implemented
+    }
+
+    private void initDatabaseNameField() {
+        if (manuallyEdited) {
+            return;
+        }
+        RailsDatabaseConfiguration configuration = (RailsDatabaseConfiguration) developmentComboBox.getSelectedItem();
+        databaseNameField.getDocument().removeDocumentListener(databaseNameListener);
+        databaseNameField.setText(configuration.getDatabaseName(projectName)); //NOI18N
+        databaseNameField.getDocument().addDocumentListener(databaseNameListener);
     }
 
     /** This method is called from within the constructor to
@@ -197,6 +235,12 @@ private void userNameFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
     @Override
     void read( WizardDescriptor settings) {
+        String name = (String) settings.getProperty("name"); //NOI18N
+        if (!name.equals(projectName)) {
+            projectName = name;
+            initDatabaseNameField();
+        }
+
     }
 
     @Override

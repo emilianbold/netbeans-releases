@@ -164,6 +164,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     NetBeansUtils.setJvmOption(
                             ideLocation, MYSQL_STOP_ARGS_PROPERTY, 
                             StringUtils.asString(new String[]{"stop", MYSQL_SERVICE_NAME}, StringUtils.SPACE), true);
+                    NetBeansUtils.setJvmOption(
+                            ideLocation, MYSQL_PORT_PROPERTY, 
+                            getProperty(MySQLPanel.PORT_PROPERTY));
                 } else {
                     File daemon = new File(getProduct().getInstallationLocation(),
                                 MYSQL_SERVER_DAEMON_FILE_UNIX);
@@ -175,7 +178,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         NetBeansUtils.setJvmOption(
                                 ideLocation, MYSQL_START_ARGS_PROPERTY, "start", true);
                         NetBeansUtils.setJvmOption(
-                                ideLocation, MYSQL_STOP_ARGS_PROPERTY, "stop", true);                        
+                                ideLocation, MYSQL_STOP_ARGS_PROPERTY, "stop", true);
+                        NetBeansUtils.setJvmOption(
+                                ideLocation, MYSQL_PORT_PROPERTY,
+                                getProperty(MySQLPanel.PORT_PROPERTY));
                     } else {
                         File gksu = null;
                         for(String s: POSSIBLE_GKSU_LOCATIONS) {
@@ -208,6 +214,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                             NetBeansUtils.setJvmOption(
                                     ideLocation, MYSQL_STOP_ARGS_PROPERTY,
                                     StringUtils.asString(new String[]{daemon.getAbsolutePath(), "stop"}, StringUtils.SPACE), true);
+                            NetBeansUtils.setJvmOption(
+                                    ideLocation, MYSQL_PORT_PROPERTY,
+                                    getProperty(MySQLPanel.PORT_PROPERTY));
                         } else {
                             LogManager.log("... gksu not available on the system, skipping MySQL integration");
                         }
@@ -741,6 +750,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                             NetBeansUtils.removeJvmOption(
                                     nbLocation,
                                     MYSQL_STOP_ARGS_PROPERTY);
+                            NetBeansUtils.removeJvmOption(
+                                    nbLocation,
+                                    MYSQL_PORT_PROPERTY);
                         }
                     } else {
                         LogManager.log("... ide location is null");
@@ -1056,6 +1068,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "-Dcom.sun.mysql.stopcommand";
     public static final String MYSQL_STOP_ARGS_PROPERTY =
             "-Dcom.sun.mysql.stopargs";
+    public static final String MYSQL_PORT_PROPERTY =
+            "-Dcom.sun.mysql.port";
     public static final String MYSQL_SERVER_DAEMON_FILE_UNIX =
             "support-files/mysql.server";
     public static final String[] POSSIBLE_GKSU_LOCATIONS = {

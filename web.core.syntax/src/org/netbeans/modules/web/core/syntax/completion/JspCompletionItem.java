@@ -63,6 +63,7 @@ import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.core.syntax.spi.AutoTagImporterProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
 import org.openide.filesystems.FileObject;
@@ -158,61 +159,65 @@ public class JspCompletionItem {
             this.help = help;
         }
         
-        protected boolean substituteText( JTextComponent c, int offset, int len, String fill, int moveBack) {
-            BaseDocument doc = (BaseDocument)c.getDocument();
-            try {
-                doc.atomicLock();
-                try {
-                    //test whether we are trying to insert sg. what is already present in the text
-                    String currentText = doc.getText(offset, (doc.getLength() - offset) < fill.length() ? (doc.getLength() - offset) : fill.length()) ;
-                    if(!fill.substring(0, fill.length() - 1).equals(currentText)) {
-                        //remove common part
-                        doc.remove( offset, len );
-                        doc.insertString( offset, fill, null);
-                    } else {
-                        c.setCaretPosition(c.getCaret().getDot() + fill.length() - len);
+        protected boolean substituteText(final JTextComponent c, final int offset, final int len, final String fill, int moveBack) {
+            final BaseDocument doc = (BaseDocument) c.getDocument();
+            final boolean[] result = new boolean[1];
+            result[0] = true;
+
+            doc.runAtomic(new Runnable() {
+
+                public void run() {
+                    try {
+                        //test whether we are trying to insert sg. what is already present in the text
+                        String currentText = doc.getText(offset, (doc.getLength() - offset) < fill.length() ? (doc.getLength() - offset) : fill.length());
+                        if (!fill.substring(0, fill.length() - 1).equals(currentText)) {
+                            //remove common part
+                            doc.remove(offset, len);
+                            doc.insertString(offset, fill, null);
+                        } else {
+                            c.setCaretPosition(c.getCaret().getDot() + fill.length() - len);
+                        }
+                    } catch (BadLocationException ex) {
+                        result[0] = false;
                     }
-                } finally {
-                    doc.atomicUnlock();
+
                 }
-                //format the inserted text
-                reformat(c);
-                
-                if (moveBack != 0) {
-                    Caret caret = c.getCaret();
-                    int dot = caret.getDot();
-                    caret.setDot(dot - moveBack);
-                }
-            } catch( BadLocationException exc ) {
-                return false;    //not sucessfull
-            } 
-            return true;
+            });
+
+            //format the inserted text
+            reformat(c);
+
+            if (moveBack != 0) {
+                Caret caret = c.getCaret();
+                int dot = caret.getDot();
+                caret.setDot(dot - moveBack);
+            }
+
+            return result[0];
         }
         
         private void reformat(JTextComponent component) {
-            try {
-                BaseDocument doc = (BaseDocument)component.getDocument();
-                int dotPos = component.getCaretPosition();
-                Reformat reformat = Reformat.get(doc);
-                reformat.lock();
 
-                try {
-                    doc.atomicLock();
+            final BaseDocument doc = (BaseDocument) component.getDocument();
+            final int dotPos = component.getCaretPosition();
+            final Reformat reformat = Reformat.get(doc);
+            reformat.lock();
+
+            doc.runAtomic(new Runnable() {
+
+                public void run() {
                     try {
                         int startOffset = Utilities.getRowStart(doc, dotPos);
                         int endOffset = Utilities.getRowEnd(doc, dotPos);
                         reformat.reformat(startOffset, endOffset);
-                    } finally {
-                        doc.atomicUnlock();
-                    }
-                } finally {
-                    reformat.unlock();
+                    } catch (BadLocationException ex) {
+                        //ignore
+                        }
                 }
-            }catch(BadLocationException e) {
-                //ignore
-            }
+            });
+
         }
-        
+
         public String getPaintText() {
             return getItemText();
         }
@@ -323,23 +328,26 @@ public class JspCompletionItem {
 
         }
         
-        protected boolean substituteText( JTextComponent c, int offset, int len, String fill, int moveBack) {
-            BaseDocument doc = (BaseDocument)c.getDocument();
+        protected boolean substituteText(final JTextComponent c, int offset, int len, String fill, int moveBack) {
+            BaseDocument doc = (BaseDocument) c.getDocument();
             boolean value = super.substituteText(c, offset, len, fill, moveBack);
-            try {
-                doc.atomicLock();
-                
-                String mimeType = NbEditorUtilities.getFileObject(c.getDocument()).getMIMEType();
-                Lookup mimeLookup = MimeLookup.getLookup(MimePath.get(mimeType));
-                Collection<? extends AutoTagImporterProvider> providers = mimeLookup.lookup(new Lookup.Template<AutoTagImporterProvider>(AutoTagImporterProvider.class)).allInstances();
-                if (providers != null) {
-                    for (AutoTagImporterProvider provider : providers) {
-                        provider.importLibrary(c.getDocument(), tagInfo.getTagLibrary().getPrefixString(), tagInfo.getTagLibrary().getURI());
+
+            doc.runAtomic(new Runnable() {
+
+                public void run() {
+
+                    String mimeType = NbEditorUtilities.getFileObject(c.getDocument()).getMIMEType();
+                    Lookup mimeLookup = MimeLookup.getLookup(MimePath.get(mimeType));
+                    Collection<? extends AutoTagImporterProvider> providers = mimeLookup.lookup(new Lookup.Template<AutoTagImporterProvider>(AutoTagImporterProvider.class)).allInstances();
+                    if (providers != null) {
+                        for (AutoTagImporterProvider provider : providers) {
+                            provider.importLibrary(c.getDocument(), tagInfo.getTagLibrary().getPrefixString(), tagInfo.getTagLibrary().getURI());
+                        }
                     }
+
                 }
-            } finally {
-                doc.atomicUnlock();
-            }
+            });
+
             return value;
         }
     }

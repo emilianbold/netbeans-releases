@@ -60,6 +60,7 @@ import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -172,38 +173,39 @@ public final class HTMLPaletteUtilities {
     {
         insert(s, target, true);
     }
-    
-    public static void insert(String s, JTextComponent target, boolean reformat) 
-    throws BadLocationException
-    {
-
-        if (s == null)
-            s = "";
-        
-        Document _doc = target.getDocument();
+   
+    public static void insert(final String s, final JTextComponent target, final boolean reformat)
+            throws BadLocationException {
+        final Document _doc = target.getDocument();
         if (_doc == null || !(_doc instanceof BaseDocument)) {
             return;
         }
-        
-        BaseDocument doc = (BaseDocument)_doc;
-        Indent indent = Indent.get(doc);
+
+        BaseDocument doc = (BaseDocument) _doc;
+        final Indent indent = Indent.get(doc);
         indent.lock();
         try {
-            doc.atomicLock();
-            try {
-                int start = insert(s, target, _doc);
-                if (reformat && start >= 0 && _doc instanceof BaseDocument) {
-                    // format the inserted text
-                    int end = start + s.length();
-                    indent.reindent(start, end);
+            doc.runAtomic(new Runnable() {
+
+                public void run() {
+                    try {
+                        String s2 = s == null ? "" : s;
+                        int start = insert(s2, target, _doc);
+                        if (reformat && start >= 0 && _doc instanceof BaseDocument) {
+                            // format the inserted text
+                            int end = start + s2.length();
+                            indent.reindent(start, end);
+                        }
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
-            } finally {
-                doc.atomicUnlock();
-            }
+            });
+
         } finally {
             indent.unlock();
         }
-        
+
     }
     
     private static int insert(String s, JTextComponent target, Document doc) 

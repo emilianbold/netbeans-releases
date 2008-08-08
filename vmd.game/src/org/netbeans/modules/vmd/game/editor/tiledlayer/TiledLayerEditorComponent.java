@@ -2054,15 +2054,19 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
             int count = getCount();
             int selStart = -1; // -1 means selected sequence is not started
             int selCount = 0; // 0 => no selected cols sequence
-
+            boolean selected = false;
+            
             for (int idx = 0; idx < count; idx++) {
-                if (isSelected(idx)) {
+                selected = isSelected(idx);
+                if (selected) {
                     if (selStart == -1) {
                         selStart = idx;
                     }
                     selCount++;
                     setSelection(idx, false);
-                } else {
+                }
+                // if selection sequence finished or it is the last row/column
+                if ( !selected || idx == count - 1 ){
                     if (selCount > 0) {
                         delete(selStart, selCount);
                         // update iterator

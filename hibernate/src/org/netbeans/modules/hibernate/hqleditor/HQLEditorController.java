@@ -39,15 +39,14 @@
 package org.netbeans.modules.hibernate.hqleditor;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -55,20 +54,14 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 import org.dom4j.DocumentException;
+import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
-import org.hibernate.cfg.JDBCMetaDataConfiguration;
-import org.hibernate.cfg.reveng.DefaultReverseEngineeringStrategy;
-import org.hibernate.cfg.reveng.OverrideRepository;
-import org.hibernate.cfg.reveng.ReverseEngineeringSettings;
-import org.hibernate.cfg.reveng.TableFilter;
-import org.hibernate.tool.hbm2x.HibernateMappingExporter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent;
-import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.openide.filesystems.FileObject;
@@ -116,14 +109,14 @@ public class HQLEditorController {
                     try {
                         // Parse POJOs from HQL
                         // Check and if required compile POJO files mentioned in HQL
-                        AnnotationConfiguration customConfiguration = processAndConstructCustomConfiguration(hql, configFileObject, customClassLoader, project);
+                        SessionFactory sessionFactory = processAndConstructSessionFactory(hql, configFileObject, customClassLoader, project);
 
                         ph.progress(50);
                         ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"));
-                        HQLResult r = queryExecutor.execute(hql, customConfiguration, maxRowCount, ph);
+                        HQLResult r = queryExecutor.execute(hql, sessionFactory, maxRowCount, ph);
                         ph.progress(80);
                         ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionProcessResults"));
-                        editorTopComponent.setResult(r);
+                        editorTopComponent.setResult(r, customClassLoader);
                     } catch (Exception e) {
                         Exceptions.printStackTrace(e);
                     }
@@ -146,8 +139,7 @@ public class HQLEditorController {
         editorTopComponent.fillHibernateConfigurations(activatedNodes);
     }
 
-    public AnnotationConfiguration getHibernateConfigurationForThisContext(FileObject configFileObject,
-            Project project,
+    public SessionFactory getHibernateSessionFactoryForThisContext(FileObject configFileObject,
             List<FileObject> mappingFOList,
             List<Class> annotatedClassList,
             CustomClassLoader customClassLoader) {
@@ -187,37 +179,18 @@ public class HQLEditorController {
             for (Class annotatedPOJO : annotatedClassList) {
                 logger.info("Adding annotated class to custom configuration " + annotatedPOJO.getName());
 
-                File mappingFile = getMappingFileForPOJO(annotatedPOJO, document);
-                logger.info("Got mapping file " + mappingFile);
-                if (mappingFile != null) {
-                    org.dom4j.Element mappingElement = sessionFactoryElement.addElement("mapping"); //NOI18N
-                    mappingElement.addAttribute("file", mappingFile.getAbsolutePath()); //NOI18N
-                }
-
+                customConfiguration.addAnnotatedClass(annotatedPOJO);
             }
 //        // configure 
             logger.info("configuring custom configuration..");
             customConfiguration.configure(getW3CDocument(document));
+            return customConfiguration.buildSessionFactory();
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }
-        return customConfiguration;
+        return null;
     }
 
-    private void prepareOutputDir() throws IOException {
-        try {
-            if (outputDir != null && outputDir.isValid()) {
-                outputDir.delete();
-            }
-                //outputDir = 
-                FileObject parentFO = FileUtil.toFileObject(new File(System.getProperty("java.io.tmpdir"))); //NOI18N
-                outputDir = FileUtil.createFolder(parentFO, "nb-hb"); //NOI18N
-                logger.info("outputdir = " + outputDir);
-            
-        } catch (Exception e) {
-            throw new IOException("Error in creating outputDir " + e.getMessage());
-        }
-    }
 
     private org.w3c.dom.Document getW3CDocument(org.dom4j.Document document) {
         try {
@@ -228,97 +201,7 @@ public class HQLEditorController {
         return null;
     }
 
-    private File getMappingFileFromOutputDir(String classname) {
-        File mappingFile = null;
-        try {
-            Enumeration<? extends FileObject> fileObjects = outputDir.getChildren(true);
-            while (fileObjects.hasMoreElements()) {
-                FileObject file = fileObjects.nextElement();
-                if (!file.isFolder() && HibernateMappingDataLoader.REQUIRED_MIME.equals(file.getMIMEType())) {
-                    if (file.getName().equalsIgnoreCase(classname + ".hbm")) { //NOI18N
-                        logger.info("found mapping filename match " + file + " for " + classname + " classname.");
-                        return FileUtil.toFile(file);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
-        }
-        return mappingFile;
-    }
-
-    private File getMappingFileForPOJO(Class annotatedPOJO, org.dom4j.Document document) {
-        try {
-            if (!annotatedPOJO.isAnnotationPresent(javax.persistence.Entity.class)) {
-                logger.info("Not an entity class " + annotatedPOJO);
-                return null;
-            }
-            // Prepare output dir
-            prepareOutputDir();
-
-            JDBCMetaDataConfiguration cfg = new JDBCMetaDataConfiguration();
-            cfg.configure(getW3CDocument(document));
-            OverrideRepository or = new OverrideRepository();
-
-            TableFilter tableFilter = new TableFilter();
-            tableFilter.setMatchCatalog(getTableCatalogFromAnnotatedPOJO(annotatedPOJO));
-            tableFilter.setMatchSchema(getTableSchemaFromAnnotatedPOJO(annotatedPOJO));
-            tableFilter.setMatchName(getTableNameFromAnnotatedPOJO(annotatedPOJO));
-            tableFilter.setExclude(new Boolean(false));
-
-            tableFilter.setPackage(
-                    annotatedPOJO.getPackage() == null ? "" : annotatedPOJO.getPackage().getName());
-            logger.info("Setup table filter :  " + tableFilter);
-            or.addTableFilter(tableFilter);
-            DefaultReverseEngineeringStrategy strategy = new DefaultReverseEngineeringStrategy();
-            ReverseEngineeringSettings settings = new ReverseEngineeringSettings(strategy);
-            settings.setDefaultPackageName(
-                    annotatedPOJO.getPackage() == null ? "" : annotatedPOJO.getPackage().getName());
-            strategy.setSettings(settings);
-            cfg.setReverseEngineeringStrategy(or.getReverseEngineeringStrategy(strategy));
-            cfg.readFromJDBC();
-
-            HibernateMappingExporter exporter = new HibernateMappingExporter(cfg, FileUtil.toFile(outputDir));
-            exporter.start();
-        } catch (Exception e) {
-            Exceptions.printStackTrace(e);
-        }
-        return getMappingFileFromOutputDir(getTableNameFromAnnotatedPOJO(annotatedPOJO));
-    }
-
-    private String getTableNameFromAnnotatedPOJO(Class annotatedPOJO) {
-        String tableName = "";
-        if (annotatedPOJO.isAnnotationPresent(javax.persistence.Table.class)) {
-            javax.persistence.Table table = (javax.persistence.Table) annotatedPOJO.getAnnotation(javax.persistence.Table.class);
-            tableName = (table.name() == null) ? annotatedPOJO.getSimpleName().toUpperCase() : table.name();
-        } else {
-            tableName = annotatedPOJO.getSimpleName().toUpperCase();
-        }
-        logger.info("extracted table name " + tableName);
-        return tableName;
-    }
-
-    private String getTableSchemaFromAnnotatedPOJO(Class annotatedPOJO) {
-        String tableSchemaName = ".*";
-        if (annotatedPOJO.isAnnotationPresent(javax.persistence.Table.class)) {
-            javax.persistence.Table table = (javax.persistence.Table) annotatedPOJO.getAnnotation(javax.persistence.Table.class);
-            tableSchemaName = (table.schema() == null) ? ".*" : table.schema();
-        }
-        logger.info("extracted table schema " + tableSchemaName);
-        return tableSchemaName;
-    }
-
-    private String getTableCatalogFromAnnotatedPOJO(Class annotatedPOJO) {
-        String tableCatalogName = ".*";
-        if (annotatedPOJO.isAnnotationPresent(javax.persistence.Table.class)) {
-            javax.persistence.Table table = (javax.persistence.Table) annotatedPOJO.getAnnotation(javax.persistence.Table.class);
-            tableCatalogName = (table.catalog() == null) ? ".*" : table.catalog();
-        }
-        logger.info("extracted table catelog name " + tableCatalogName);
-        return tableCatalogName;
-    }
-
-    public AnnotationConfiguration processAndConstructCustomConfiguration(String hql, FileObject configFileObject,
+    public SessionFactory processAndConstructSessionFactory(String hql, FileObject configFileObject,
             CustomClassLoader customClassLoader, Project project) {
         HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
 
@@ -347,6 +230,21 @@ public class HQLEditorController {
                         logger.info("Got clazz " + clazz);
                         if (clazz != null) {
                             matchedMappingFOList.add(mappingFO);
+                            for (FileObject relatedMappingFO : getRelatedMappings(mappingFO, mappingPOJOMap)) {
+                                List<String> relatedPojoNames = mappingPOJOMap.get(relatedMappingFO);
+                                if (relatedPojoNames != null) {
+                                    logger.info("Processing relationships from " + relatedMappingFO + " mapping file.");
+                                    logger.info("Related POJOs " + relatedPojoNames);
+                                    for (String relatedClassName : relatedPojoNames) {
+                                        Class relatedClazz = processMatchingClass(relatedClassName, customClassLoader, project);
+                                        logger.info("Got related POJO clazz " + relatedClazz);
+                                        if (relatedClazz != null) {
+                                            matchedMappingFOList.add(relatedMappingFO);
+                                        }
+                                    }
+                                }
+                            }
+
                         }
                     }
                 }
@@ -365,18 +263,146 @@ public class HQLEditorController {
                         logger.info("Got clazz " + clazz);
                         if (clazz != null) {
                             matchedAnnotatedPOJOClassNameList.add(clazz);
+                            List<Class> relatedPOJOClasses = getRelatedPOJOClasses(clazz, annotatedPOJOClassNameList, customClassLoader, project);
+                            logger.info("Related POJO Class list " + relatedPOJOClasses);
+                            matchedAnnotatedPOJOClassNameList.addAll(relatedPOJOClasses);
                         }
                     }
                 }
             }
         }
 
-        return getHibernateConfigurationForThisContext(
+        return getHibernateSessionFactoryForThisContext(
                 configFileObject,
-                project,
                 matchedMappingFOList,
                 matchedAnnotatedPOJOClassNameList,
                 customClassLoader);
+    }
+
+    private List<Class> getRelatedPOJOClasses(Class clazz, List<String> annotatedPOJOClassNameList,
+            CustomClassLoader ccl, Project project) {
+        List<Class> relatedPOJOClasses = new ArrayList<Class>();
+        getRelatedPOJOClasses(clazz, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+        return relatedPOJOClasses;
+    }
+
+    private void getRelatedPOJOClasses(Class clazz, List<String> annotatedPOJOClassNameList, List<Class> relatedPOJOClasses,
+            CustomClassLoader ccl, Project project) {
+      
+        for (java.lang.reflect.Method m : clazz.getMethods()) {
+            if (m.isAnnotationPresent(javax.persistence.ManyToOne.class) || m.isAnnotationPresent(javax.persistence.OneToOne.class) ||
+                    m.isAnnotationPresent(javax.persistence.OneToMany.class)) {
+                logger.info("Found relationship in " + m.getName() + " method of " + clazz.getName() + " related POJO.");
+                try {
+                    Class relatedPOJOClass = m.getReturnType();
+                    logger.info("Related POJO Class " + relatedPOJOClass.getName());
+                    if (annotatedPOJOClassNameList.contains(relatedPOJOClass.getName())) {
+                        logger.info("adding to related POJO class list " + relatedPOJOClass);
+                        relatedPOJOClasses.add(relatedPOJOClass);
+                        getRelatedPOJOClasses(relatedPOJOClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+
+                    }
+                    // Add other side classes of relation, if targetEntity defined.
+                    javax.persistence.OneToMany oneToManyAnnotation = m.getAnnotation(javax.persistence.OneToMany.class);
+                    if (oneToManyAnnotation != null) {
+                        Class targetEntityClass = oneToManyAnnotation.targetEntity();
+                        if (targetEntityClass != null && (!targetEntityClass.getName().equals("void"))) {
+                            if(relatedPOJOClasses.contains(targetEntityClass)) {
+                                // Already processed class
+                                logger.info("Already processed " + targetEntityClass + ". Returning.");
+                                return;
+                            }
+                            targetEntityClass = processMatchingClass(targetEntityClass.getName(), ccl, project);
+                            if (targetEntityClass != null) {
+                                
+                                relatedPOJOClasses.add(targetEntityClass);
+                                getRelatedPOJOClasses(targetEntityClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+                            }
+                        }
+                    }
+
+                    javax.persistence.ManyToOne manyToOneAnnotation = m.getAnnotation(javax.persistence.ManyToOne.class);
+                    if (manyToOneAnnotation != null) {
+                        Class targetEntityClass = manyToOneAnnotation.targetEntity();
+                        if (targetEntityClass != null && (!targetEntityClass.getName().equals("void"))) {
+                            if(relatedPOJOClasses.contains(targetEntityClass)) {
+                                // Already processed class
+                                logger.info("Already processed " + targetEntityClass + ". Returning.");
+                                return;
+                            }
+                            targetEntityClass = processMatchingClass(targetEntityClass.getName(), ccl, project);
+                            if (targetEntityClass != null) {
+                                relatedPOJOClasses.add(targetEntityClass);
+                                getRelatedPOJOClasses(targetEntityClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+                            }
+                        }
+                    }
+                    javax.persistence.OneToOne oneToOneAnnotation = m.getAnnotation(javax.persistence.OneToOne.class);
+                    if (oneToOneAnnotation != null) {
+                        Class targetEntityClass = oneToOneAnnotation.targetEntity();
+                        if (targetEntityClass != null && (!targetEntityClass.getName().equals("void"))) {
+                            if(relatedPOJOClasses.contains(targetEntityClass)) {
+                                // Already processed class
+                                logger.info("Already processed " + targetEntityClass + ". Returning.");
+                                return;
+                            }
+                            targetEntityClass = processMatchingClass(targetEntityClass.getName(), ccl, project);
+                            if (targetEntityClass != null) {
+                                relatedPOJOClasses.add(targetEntityClass);
+                                getRelatedPOJOClasses(targetEntityClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+                            }
+                        }
+                    }
+                } catch (IllegalArgumentException illegalArgumentException) {
+                    logger.log(Level.INFO, "Accessor method is not annotated", illegalArgumentException);
+                }
+
+            }
+        }
+    }
+
+    private List<FileObject> getRelatedMappings(FileObject mappingFO, Map<FileObject, List<String>> mappingPOJOMap) {
+        List<FileObject> relatedMappings = new ArrayList<FileObject>();
+        try {
+            org.dom4j.io.SAXReader xmlReader = new org.dom4j.io.SAXReader();
+            org.dom4j.Document document = xmlReader.read(FileUtil.toFile(mappingFO));
+            Iterator classElementIterator = document.getRootElement().elementIterator("class");
+            while (classElementIterator.hasNext()) {
+                org.dom4j.Element classElement = (org.dom4j.Element) classElementIterator.next();
+                relatedMappings.addAll(
+                        processMappingRelationships(classElement.elementIterator("many-to-one"), mappingPOJOMap));
+                relatedMappings.addAll(
+                        processMappingRelationships(classElement.elementIterator("one-to-one"), mappingPOJOMap));
+
+            }
+        } catch (Exception e) {
+            logger.log(Level.INFO, "Problem in parsing mapping file for relation", e);
+        }
+
+        return relatedMappings;
+    }
+
+    private List<FileObject> processMappingRelationships(Iterator relationshipIterator, Map<FileObject, List<String>> mappingPOJOMap) {
+        List<FileObject> relatedMappings = new ArrayList<FileObject>();
+        while (relationshipIterator.hasNext()) {
+            org.dom4j.Element relationshipElement = (org.dom4j.Element) relationshipIterator.next();
+            FileObject relatedMappingFO = findRelatedMappingFO(relationshipElement.attributeValue("class"), mappingPOJOMap);
+            if (relatedMappingFO != null) {
+                relatedMappings.add(relatedMappingFO);
+            }
+        }
+        logger.info("Related mapping files : " + relatedMappings);
+        return relatedMappings;
+    }
+
+    private FileObject findRelatedMappingFO(String pojoName, Map<FileObject, List<String>> mappingPOJOMap) {
+        for (FileObject mappingFile : mappingPOJOMap.keySet()) {
+            List<String> pojoNameList = mappingPOJOMap.get(mappingFile);
+            if (pojoNameList.contains(pojoName)) {
+                return mappingFile;
+            }
+        }
+        return null; // mapping file not found.
     }
 
     private boolean foundClassNameMatch(String hqlClassName, String className) {
@@ -431,10 +457,9 @@ public class HQLEditorController {
                 List<File> outputPath = new ArrayList<File>();
                 outputPath.add(FileUtil.toFile(buildFolderFO));
                 List<File> sourcePath = new ArrayList<File>();
-                for(SourceGroup sourceGroup : HibernateUtil.getSourceGroups(project)) {
+                for (SourceGroup sourceGroup : HibernateUtil.getSourceGroups(project)) {
                     sourcePath.add(
-                            FileUtil.toFile(sourceGroup.getRootFolder())
-                            );
+                            FileUtil.toFile(sourceGroup.getRootFolder()));
                 }
                 fileManager.setLocation(StandardLocation.CLASS_OUTPUT, outputPath);
                 fileManager.setLocation(StandardLocation.CLASS_PATH, getProjectClasspath(project, sourceFO));
@@ -442,14 +467,14 @@ public class HQLEditorController {
                 List<String> options = new ArrayList<String>();
                 options.add("-target"); //NOI18N
                 String jdkVersion = System.getProperty("java.specification.version"); //NOI18N
-                if(jdkVersion == null || jdkVersion.equals("")) { //NOI18N
+                if (jdkVersion == null || jdkVersion.equals("")) { //NOI18N
                     // Set to 1.5
                     jdkVersion = "1.5"; //NOI18N
                 }
                 options.add(jdkVersion);
 
-                
-                
+
+
                 // for some reason the following is not working.. Bug in JavaC API?
 //                options.add("-classpath");
 //                options = addClasspath(project, sourceFO, options);
@@ -467,7 +492,7 @@ public class HQLEditorController {
                     logger.info("CNF after processing.. " + className);
                     Exceptions.printStackTrace(ee);
                 }
-                // Ant approach -- commented out for future use.
+            // Ant approach -- commented out for future use.
             //  FileObject buildXMLFileObject = project.getProjectDirectory().getFileObject("build", "xml");
             //   java.util.Properties p = new java.util.Properties();
             // p.setProperty("javac.includes", ActionUtils.antIncludesList(
@@ -498,7 +523,7 @@ public class HQLEditorController {
             File f = new File(cpEntry);
             cpEntries.add(f);
         }
-        logger.info("Adding classpath " + cpEntries); 
-        return cpEntries; 
+        logger.info("Adding classpath " + cpEntries);
+        return cpEntries;
     }
 }
