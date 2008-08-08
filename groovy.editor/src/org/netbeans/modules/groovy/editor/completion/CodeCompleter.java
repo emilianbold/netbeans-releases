@@ -1595,7 +1595,10 @@ public class CodeCompleter implements CodeCompletionHandler {
                         LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
                     } else {
                         for (IndexedClass indexedClass : classes) {
-                            if (indexedClass.getSignature().startsWith(packageName)) {
+                            
+                            String signature = indexedClass.getSignature();
+                            
+                            if (signature != null && signature.startsWith(packageName)) {
                                 addToProposalUsingFilter(proposals, request, indexedClass.getSignature());
                             }
                         }
