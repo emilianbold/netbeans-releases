@@ -265,6 +265,7 @@ public final class GemPanel extends JPanel {
         reloadNewButton.setEnabled(true);
         reloadInstalledButton.setEnabled(true);
         reloadReposButton.setEnabled(true);
+        manageButton.setEnabled(true);
     }
 
     private void setEnabled(TabIndex tab, boolean enabled) {
