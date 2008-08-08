@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,31 +37,64 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.highlight.semantic;
+package org.netbeans.modules.db.mysql.installations;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.db.mysql.impl.Installation;
+import org.netbeans.modules.db.mysql.util.Utils;
+import org.openide.util.Utilities;
 
 /**
- *
- * @author Vladimir Voskresensky
+ * Supports the MySQL/NetBeans bundled installation.  The bundled
+ * installation sets a system variable to tell us what the start
+ * and stop commands and arguments are.
+ * 
+ * @author David Van Couvering
  */
-public class InstantiationUsagesTest extends SemanticHighlightingTestBase {
-
-    public InstantiationUsagesTest(String testName) {
-        super(testName);
+public class BundledInstallation implements Installation {
+    private String startExe;
+    private String startArgs;
+    private String stopExe;
+    private String stopArgs;
+    
+    private static final BundledInstallation DEFAULT = 
+            new BundledInstallation();
+    
+    public static final BundledInstallation getDefault() {
+        return DEFAULT;
+    }
+    
+    private BundledInstallation() {
+        startExe = System.getProperty("com.sun.mysql.startcommand");
+        startArgs = System.getProperty("com.sun.mysql.startargs");
+        stopExe = System.getProperty("com.sun.mysql.stopcommand");
+        stopArgs = System.getProperty("com.sun.mysql.stopargs");
     }
 
-    public void testMacroUsages() throws Exception {
-//        String source = "macros.cc"; // NOI18N
-//        performTest(source, source + ".dat", source + ".err"); // NOI18N
+    public boolean isStackInstall() {
+        return true;
     }
 
-    @Override
-    protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        return Collections.<CsmOffsetable>emptyList();
+    public boolean isInstalled() {
+        return startExe != null && startExe.length() > 0;
+    }
+
+    public String[] getAdminCommand() {
+        return new String[] {
+            "",
+            ""
+        };
+    }
+
+    public String[] getStartCommand() {
+        return new String[] { startExe, startArgs };
+    }
+
+    public String[] getStopCommand() {
+        return new String[] { stopExe, stopArgs };
+    }
+    
+    public String getDefaultPort() {
+        return "3306";
     }
 
 }

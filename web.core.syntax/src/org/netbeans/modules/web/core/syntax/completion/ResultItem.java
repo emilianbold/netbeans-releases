@@ -105,33 +105,47 @@ public abstract class ResultItem implements CompletionQuery.ResultItem, Completi
     }
     
     //afaik called only from abbrevs result item
-    public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
-        BaseDocument doc = (BaseDocument)c.getDocument();
+    public boolean substituteText(final JTextComponent c, final int offset, final int len, final boolean shift) {
+        final BaseDocument doc = (BaseDocument) c.getDocument();
         String text = getItemText();
-        
-        if (text != null) {
-            if (toAdd != null && !toAdd.equals("\n")) // NOI18N
-                text += toAdd;
-            // Update the text
-            doc.atomicLock();
-            try {
-                String textToReplace = doc.getText(offset, len);
-                if (text.equals(textToReplace)) return false;
-                
-                doc.remove(offset, len);
-                doc.insertString(offset, text, null);
-                if (selectionStartOffset >= 0) {
-                    c.select(offset + selectionStartOffset,
-                            offset + selectionEndOffset);
-                }
-            } catch (BadLocationException e) {
-                // Can't update
-            } finally {
-                doc.atomicUnlock();
-            }
+
+        if (text == null) {
+            return false;
         }
+
+        if (toAdd != null && !toAdd.equals("\n")) { //NOI18N
+            text += toAdd;
+        }
+
+        final String text2 = text;
+        final boolean[] retval = new boolean[1];
+        retval[0] = true;
         
-        return true;
+        // Update the text
+        doc.runAtomic(new Runnable() {
+
+            public void run() {
+                try {
+                    String textToReplace = doc.getText(offset, len);
+                    if (text2.equals(textToReplace)) {
+                        retval[0] = false;
+                    }
+
+                    doc.remove(offset, len);
+                    doc.insertString(offset, text2, null);
+                    if (selectionStartOffset >= 0) {
+                        c.select(offset + selectionStartOffset,
+                                offset + selectionEndOffset);
+                    }
+                } catch (BadLocationException ex) {
+                    retval[0] = false;
+                }
+
+            }
+        });
+
+        return retval[0];
+
     }
     
     public Component getPaintComponent(javax.swing.JList list, boolean isSelected, boolean cellHasFocus) {
