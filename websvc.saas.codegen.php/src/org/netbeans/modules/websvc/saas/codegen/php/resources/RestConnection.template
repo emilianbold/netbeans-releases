@@ -23,10 +23,23 @@
         private $username = null;
         private $password = null;
     
-        public function RestConnection($url, $params = null) {
+        public function RestConnection($url, $params1, $params2) {
+            $pathParams = null;
+            $params = null;
+            if(isset($params2)) {
+                $pathParams = $params1;
+                $params = $params2;
+            } else if($params1){
+                $params = $params1;
+            }
             if($url == null)
               throw new Exception('$url parameter cannot be empty in RestConnection()');
             $this->url = $url;
+            if($pathParams != null) {
+                foreach ($pathParams as $key => $value) {
+                    $this->url = str_replace($key, $value, $this->url);
+                }
+            }
             if($params != null) {
                 $this->url = $this->url."?";
                 foreach ($params as $key => $value) {
@@ -35,23 +48,30 @@
                 $len = strlen($this->url);
                 $this->url = substr($this->url, 0, $len-1);
             }
-            $this->date = date("EEE, dd MMM yyyy HH:mm:ss z");
+            $this->date = gmdate("D, d M Y H:i:s T");
             $this->req =& new HTTP_Request($this->url);
-            if($this->username != null && $this->password != null)
-              $this->req->setBasicAuth($this->username, $this->password);
         }
         
         public function setAuthentication($username, $password) {
             $this->username = $username;
             $this->password = $password;
+            if($this->username != null && $this->password != null)
+              $this->req->setBasicAuth($this->username, $this->password);
         }
     
         public function getDate() {
-            return $date;
+            return $this->date;
         }
 
         public function setHeaders($headers = array("")) {
+            //remove all previous headers
+            foreach ($this->headers as $key => $value) {
+              $this->req->removeHeader($key);
+            }
             $this->headers = $headers;
+            foreach ($this->headers as $key => $value) {
+              $this->req->addHeader($key, $value);
+            }
         }
 
         public function get() {

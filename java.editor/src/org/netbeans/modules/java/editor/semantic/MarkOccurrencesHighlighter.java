@@ -208,6 +208,16 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
     }
     
     List<int[]> processImpl(CompilationInfo info, Preferences node, Document doc, int caretPosition) {
+        TokenSequence<JavaTokenId> cts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+
+        if (cts != null) {
+            cts.move(caretPosition);
+
+            if (cts.moveNext() && cts.token().id() == JavaTokenId.IDENTIFIER && cts.offset() == caretPosition) {
+                caretPosition++;
+            }
+        }
+
         CompilationUnitTree cu = info.getCompilationUnit();
         TreePath tp = info.getTreeUtilities().pathFor(caretPosition);
         TreePath typePath = findTypePath(tp);
@@ -350,7 +360,11 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         
         //variable declaration:
         if (!insideJavadoc) {
-            el = info.getTrees().getElement(tp);
+            if (tp.getParentPath() != null && tp.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
+                el = info.getTrees().getElement(tp.getParentPath());
+            } else {
+                el = info.getTrees().getElement(tp);
+            }
         }
         
         if (   el != null

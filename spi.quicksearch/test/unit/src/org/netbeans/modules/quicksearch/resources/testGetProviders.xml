@@ -50,11 +50,11 @@ made subject to such option by the copyright holder.
         </folder>
         
         <folder name="test1">
-            <file name="org-netbeans-modules-quicksearch-ProviderRegistryTest$Test1Provider.instance"/>
+            <file name="org-netbeans-modules-quicksearch-ProviderModelTest$Test1Provider.instance"/>
         </folder>
         
         <folder name="test2">
-            <file name="org-netbeans-modules-quicksearch-ProviderRegistryTest$Test2Provider.instance"/>
+            <file name="org-netbeans-modules-quicksearch-ProviderModelTest$Test2Provider.instance"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.quicksearch.resources.Bundle"/>
             <attr name="command" stringvalue="t"/>
         </folder>
