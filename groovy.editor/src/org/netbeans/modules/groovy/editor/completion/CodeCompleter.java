@@ -119,6 +119,7 @@ import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -1531,24 +1532,24 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         // get the JavaSource for our file.
 
-        JavaSource javaSource = getJavaSourceFromRequest(request);
+        final JavaSource javaSource = getJavaSourceFromRequest(request);
 
         // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
 
         if (packageRequest.basePackage.length() > 0 || request.behindImport) {
             if (!(request.behindImport && packageRequest.basePackage.length() == 0)) {
-                List<? extends javax.lang.model.element.Element> typelist;
-                typelist = getElementListForPackage(javaSource, packageRequest.basePackage);
+                List<String> stringTypelist;
+                stringTypelist = getElementListForPackageAsString(javaSource, packageRequest.basePackage);
 
-                if (typelist == null) {
+                if (stringTypelist == null) {
                     LOG.log(Level.FINEST, "Typelist is null for package : {0}", packageRequest.basePackage);
                     return false;
                 }
 
-                LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
+                LOG.log(Level.FINEST, "Number of types found:  {0}", stringTypelist.size());
 
-                for (Element element : typelist) {
-                    addToProposalUsingFilter(proposals, request, element.toString());
+                for (String elementString : stringTypelist) {
+                    addToProposalUsingFilter(proposals, request, elementString);
                 }
             }
 
@@ -1650,20 +1651,20 @@ public class CodeCompleter implements CodeCompletionHandler {
         // prefix
 
         for (String singlePackage : defaultImports) {
-            List<? extends javax.lang.model.element.Element> typelist;
+            List<String> stringTypelist;
 
-            typelist = getElementListForPackage(javaSource, singlePackage);
+            stringTypelist = getElementListForPackageAsString(javaSource, singlePackage);
 
-            if (typelist == null) {
+            if (stringTypelist == null) {
                 LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
                 continue;
             }
 
-            LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
+            LOG.log(Level.FINEST, "Number of types found:  {0}", stringTypelist.size());
 
-            for (Element element : typelist) {
+            for (String elementString : stringTypelist) {
                 // LOG.log(Level.FINEST, "Single Type : {0}", element.toString());
-                addToProposalUsingFilter(proposals, request, element.toString());
+                addToProposalUsingFilter(proposals, request, elementString);
             }
         }
 
@@ -1730,17 +1731,63 @@ public class CodeCompleter implements CodeCompletionHandler {
         return typelist;
 
     }
+    
+    
+    List<String> getElementListForPackageAsString(final JavaSource javaSource, final String pkg) {
+        LOG.log(Level.FINEST, "getElementListForPackage(), Package :  {0}", pkg);
+        
+        final List<String> result = new ArrayList<String>();
 
-    List<javax.lang.model.element.Element> getMethodsForType(JavaSource javaSource, final String typeName) {
+        if (javaSource != null) {
+            
+            try {
+                javaSource.runUserActionTask(new Task<CompilationController>() {
+                    public void run(CompilationController info) {
+                        
+                        List<? extends javax.lang.model.element.Element> typelist = null;
+
+                        Elements elements = getElementsForJavaSource(javaSource);
+
+                        if (elements != null && pkg != null) {
+                            LOG.log(Level.FINEST, "TypeSearcherHelper.run(), elements retrieved");
+                            PackageElement packageElement = elements.getPackageElement(pkg);
+
+                            if (packageElement == null) {
+                                LOG.log(Level.FINEST, "packageElement is null");
+                            } else {
+                                typelist = packageElement.getEnclosedElements();
+                                
+                                for (Element element : typelist) {
+                                    result.add(element.toString());
+                                }
+                            }
+
+                        }
+                    }
+                }, true);
+            } catch (IOException ex) {
+                LOG.log(Level.FINEST, "IOException : {0}", ex.getMessage());
+            }
+
+        }
+
+        return result;
+
+    }
+    
+    
+    
+    
+    
+    
+
+    List<javax.lang.model.element.Element> getMethodsForType(Elements elements, JavaSource javaSource, final String typeName) {
         LOG.log(Level.FINEST, "getMethodsForType(), Type :  {0}", typeName);
 
-
-        Elements e = getElementsForJavaSource(javaSource);
-
-        if (e != null) {
+        if (elements != null) {
             List<javax.lang.model.element.Element> methodlist = new ArrayList<javax.lang.model.element.Element>();
 
-            javax.lang.model.element.TypeElement te = e.getTypeElement(typeName);
+            javax.lang.model.element.TypeElement te = elements.getTypeElement(typeName);
 
             if (te != null) {
                 List<? extends javax.lang.model.element.Element> enclosed = te.getEnclosedElements();
@@ -2215,7 +2262,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
 
         public void run(CompilationController info) throws Exception {
-            List<javax.lang.model.element.Element> methodlist = getMethodsForType(javaSource, className);
+            
+            List<javax.lang.model.element.Element> methodlist = getMethodsForType(info.getElements(), javaSource, className);
 
             for (Element element : methodlist) {
 
