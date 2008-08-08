@@ -439,13 +439,9 @@ public class CompilerSetManager {
                         setsCopy = new ArrayList<CompilerSet>();
                         setsCopy.addAll(sets);
                     }
-                    provider.loadCompilerSetData(setsCopy);
-                    // TODO: this should be upgraded to error reporting
-                    // about absence of tool chain on remote host
-                    // also compilersetmanager without compiler sets
-                    // should be handled gracefully
                     log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
                     state = STATE_COMPLETE;
+                    provider.loadCompilerSetData(setsCopy);
                 }
             });
         } else {
