@@ -519,13 +519,15 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
         private final String name;
         private static final String NEW_CSTR   = "org/netbeans/modules/groovy/editor/resources/new_constructor_16.png"; //NOI18N
         private boolean expand; // should this item expand to a constructor body?
-        private final ExecutableElement exe;
+        private final String paramListString;
+        private final List<CodeCompleter.ParamDesc> paramList;
 
-        ConstructorItem(String name, ExecutableElement exe, int anchorOffset, CodeCompleter.CompletionRequest request, boolean expand) {
+        ConstructorItem(String name, String paramListString, List<CodeCompleter.ParamDesc> paramList, int anchorOffset, CodeCompleter.CompletionRequest request, boolean expand) {
             super(null, anchorOffset, request);
             this.name = name;
             this.expand = expand;
-            this.exe = exe;
+            this.paramListString = paramListString;
+            this.paramList = paramList;
         }
 
         @Override
@@ -533,7 +535,7 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             if(expand){
                 return name + " - generate"; // NOI18N
             } else {
-                return name + "(" + CodeCompleter.getParameterListForMethod(exe) +  ")";
+                return name + "(" + paramListString +  ")";
             }            
         }
 
@@ -596,8 +598,6 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 
             StringBuilder sb = new StringBuilder();
             
-            List<CodeCompleter.ParamDesc> params = CodeCompleter.getParameterList(exe);
-
             sb.append(getInsertPrefix());
             sb.append("(");
             
@@ -605,7 +605,7 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             
             // sb.append("${cursor}"); // NOI18N
 
-            for (CodeCompleter.ParamDesc paramDesc : params) {
+            for (CodeCompleter.ParamDesc paramDesc : paramList) {
                 
                 LOG.log(Level.FINEST, "-------------------------------------------------------------------");
                 LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.fullTypeName);
@@ -627,7 +627,7 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
                 // sb.append(paramDesc.name);
 
 
-                if (id < params.size()) {
+                if (id < paramList.size()) {
                     sb.append(", "); //NOI18N
                 }
 

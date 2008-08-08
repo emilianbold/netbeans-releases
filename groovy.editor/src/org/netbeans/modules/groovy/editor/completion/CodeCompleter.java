@@ -2102,7 +2102,11 @@ public class CodeCompleter implements CodeCompletionHandler {
                                 if (constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
 
                                     LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
-                                    proposals.add(new ConstructorItem(constructorName, (ExecutableElement) encl, anchor, request, false));
+                                    
+                                    String paramListString = getParameterListForMethod((ExecutableElement)encl);
+                                    List<CodeCompleter.ParamDesc> paramList = getParameterList((ExecutableElement)encl);
+                                    
+                                    proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, request, false));
                                     stuffAdded = true;
                                 }
                             }
@@ -2329,7 +2333,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             if (camelCaseSignature.startsWith(prefix)) {
                 LOG.log(Level.FINEST, "Prefix matches Class's CamelCase signature. Adding."); // NOI18N
-                proposals.add(new ConstructorItem(requestedClass.getName(), null, anchor, request, true));
+                proposals.add(new ConstructorItem(requestedClass.getName(), null, null, anchor, request, true));
                 return true;
             }
 
