@@ -235,9 +235,14 @@ public final class RunAsPanel extends JPanel {
 
             // can be overriden
             protected void processUpdate() {
-                putValue(propName, field.getText());
-                markAsModified(label, propName, field.getText());
+                putValue(propName, getPropValue());
+                markAsModified(label, propName, getPropValue());
                 validateFields();
+            }
+
+            // can be overriden
+            protected String getPropValue() {
+                return field.getText();
             }
         }
     }

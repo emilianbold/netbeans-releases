@@ -365,37 +365,14 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                             JavaSource javaSource = JavaSource.create(cpi);
 
                             if (javaSource != null) {
-                                Elements elements = CodeCompleter.getElementsForJavaSource(javaSource);
-
-                                if (elements != null) {
-                                    final javax.lang.model.element.TypeElement typeElement = elements.getTypeElement(fqName);
-
-                                    if (typeElement != null) {
-                                        
-                                        if (!SwingUtilities.isEventDispatchThread()) {
-                                            try {
-                                                SwingUtilities.invokeAndWait(new Runnable() {
-
-                                                    public void run() {
-                                                        ElementOpen.open(cpi, typeElement);
-                                                    }
-                                                });
-                                            } catch (InterruptedException ex) {
-                                                Exceptions.printStackTrace(ex);
-                                            } catch (InvocationTargetException ex) {
-                                                Exceptions.printStackTrace(ex);
-                                            }
-
-                                        } else {
-                                            ElementOpen.open(cpi, typeElement);
-                                        }
-                                        
-                                    } else {
-                                        LOG.log(Level.FINEST, "typeElement == null"); // NOI18N
-                                    }
-                                } else {
-                                    LOG.log(Level.FINEST, "elements == null"); // NOI18N
+                                
+                                try {
+                                    javaSource.runUserActionTask(new SourceLocator(fqName, cpi), false);
+                                } catch (IOException ex) {
+                                    LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
+                                    return null;
                                 }
+
                             } else {
                                 LOG.log(Level.FINEST, "javaSource == null"); // NOI18N
                             }
@@ -430,6 +407,53 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
         return "";
     }
 
+    /**
+     * Locates and opens in Editor the Java Element given as Full-Qualified name in fqName.
+     */
+    private class SourceLocator implements Task<CompilationController> {
+        
+        String fqName;
+        ClasspathInfo cpi;
+
+        public SourceLocator(String fqName, ClasspathInfo cpi) {
+            this.fqName = fqName;
+            this.cpi = cpi;
+        }
+
+        public void run(CompilationController info) throws Exception {
+            
+            Elements elements = info.getElements();
+
+            if (elements != null) {
+                final javax.lang.model.element.TypeElement typeElement = elements.getTypeElement(fqName);
+
+                if (typeElement != null) {
+
+                    if (!SwingUtilities.isEventDispatchThread()) {
+
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            public void run() {
+                                ElementOpen.open(cpi, typeElement);
+                            }
+                        });
+
+                    } else {
+                        ElementOpen.open(cpi, typeElement);
+                    }
+
+                } else {
+                    LOG.log(Level.FINEST, "typeElement == null"); // NOI18N
+                }
+            } else {
+                LOG.log(Level.FINEST, "elements == null"); // NOI18N
+            }
+            
+        }
+    }
+    
+    
+    
     private OffsetRange getReferenceSpan(TokenSequence<?> ts, TokenHierarchy<Document> th, int lexOffset) {
         Token<?> token = ts.token();
         TokenId id = token.id();
