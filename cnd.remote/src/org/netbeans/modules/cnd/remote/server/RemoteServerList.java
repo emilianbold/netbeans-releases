@@ -113,7 +113,7 @@ public class RemoteServerList implements ServerList {
      * @return A RemoteServerRecord for hkey
      */
     public synchronized ServerRecord get(String hkey) {
-        
+
         // Search the active server list
 	for (RemoteServerRecord record : items) {
             if (hkey.equals(record.getName())) {
@@ -182,6 +182,7 @@ public class RemoteServerList implements ServerList {
         if (record == null) {
             record = new RemoteServerRecord(name);
         } else {
+            record.setDeleted(false);
             unlisted.remove(record);
         }
         items.add(record);
@@ -229,11 +230,14 @@ public class RemoteServerList implements ServerList {
     }
     
     public synchronized void clear() {
+        for (RemoteServerRecord record : items) {
+            record.setDeleted(true);
+        }
         getPreferences().remove(REMOTE_SERVERS);
         unlisted.addAll(items);
         items.clear();
     }
-    
+
     private void removeFromPreferences(String hkey) {
         StringBuilder sb = new StringBuilder();
         
