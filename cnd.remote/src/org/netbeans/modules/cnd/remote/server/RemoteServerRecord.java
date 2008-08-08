@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -160,7 +161,12 @@ public class RemoteServerRecord implements ServerRecord {
             } else {
                 state = STATE_ONLINE;
                 CompilerSetManager.getDefault(name); // Trigger creation of the CSM if it doesn't already exist...
-                HostInfoProvider.getDefault().getMapper(name).init();
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    public void run() {
+                        RemotePathMap.getMapper(name).init();
+                    }
+                });
             }
         }
         if (pcs != null) {

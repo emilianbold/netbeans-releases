@@ -39,12 +39,17 @@
 package org.netbeans.modules.cnd.remote.mapper;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
 import org.openide.util.NbPreferences;
 
@@ -161,10 +166,42 @@ public class RemotePathMap implements PathMap {
                 return true;
             }
         }
+
         for (String mpoint : map.keySet()) {
             if (ulpath.startsWith(unifySeparators(mpoint))) {
                 return true;
             }
+        }
+
+        // check if local path is mirrored by remote path
+        if (!PlatformInfo.getDefault(hkey).isWindows() && !PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).isWindows()) {
+            File path = new File(lpath);
+            if (path.exists() && path.isDirectory()) {
+                File validationFile = null;
+                try {
+                    // create file
+                    validationFile = File.createTempFile("cnd", "tmp", path); // NOI18N
+                    BufferedWriter out = new BufferedWriter(new FileWriter(validationFile));
+                    String validationLine = Double.toString(Math.random());
+                    out.write(validationLine);
+                    out.close();
+                    // check existance
+                    if ( 0 == RemoteCommandSupport.run(hkey, "PATH=/bin:/usr/bin cat " + validationFile.getAbsolutePath() + " | grep " + validationLine)) {
+                        synchronized(map) {
+                            map.put(lpath, lpath);
+                        }
+                        return true;
+                    }
+
+                } catch (IOException ex) {
+                    // directory is write protected
+                } finally {
+                    if (validationFile != null && validationFile.exists()) {
+                        validationFile.delete();
+                    }
+                }
+            }
+            //TODO: check parent directories in other thread
         }
 
         if (fixMissingPaths) {

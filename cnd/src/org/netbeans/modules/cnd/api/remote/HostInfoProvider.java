@@ -126,10 +126,6 @@ public abstract class HostInfoProvider {
             public String getRemotePath(String lpath) {
                 return lpath;
             }
-
-            public void init() {
-                // do nothing
-            }
         }
 
         @Override

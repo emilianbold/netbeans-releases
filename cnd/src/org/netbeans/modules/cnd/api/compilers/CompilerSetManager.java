@@ -285,7 +285,7 @@ public class CompilerSetManager {
             return PlatformTypes.PLATFORM_GENERIC;
         }
     }
-
+    
     public CompilerSetManager deepCopy() {
         waitForCompletion(); // in case its a remote connection...
         List<CompilerSet> setsCopy =  new ArrayList<CompilerSet>();
