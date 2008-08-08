@@ -138,18 +138,26 @@ public final class ConnectionManager {
         }
         ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnectionNoConnect(dbconn.getDelegate());
     }
-     /**
+
+    /**
      * Connects this connection to the database <b>without opening any
-     * dialog</b>.  If not all the necessary parameters are set, this
-     * method will throw an exception (versus prompting the user for input)
-     * <p>
-     * This method is called synchronously, and will throw an exception
-     * if called on the AWT event thread
-      *
-      * @return false if not the username or URL are not provided
+     * dialog</b>.  If not all the necessary parameters, such as the user name or password,
+     * are set, the method will silently return <code>false</code>.
+     *
+     * <p>The connection is made synchronously in the calling thread, which must not
+     * be the AWT event dispatching thread.</p>
+     *
+     * @param dbconn the database connection to be connected.
+     * @return false if not all parameters necessary to connect are available.
+     *
+     * @throws NullPointerException if the dbconn parameter is null.
+     * @throws DatabaseException if an error occurs while connecting.
+     * @throws IllegalStateException if this connection is not added to the
+     *         ConnectionManager or the calling thread is the AWT event dispatching thread.
+     *
+     * @since 1.26
      */
     public boolean connect(DatabaseConnection dbconn) throws DatabaseException {
-
         if (dbconn == null) {
             throw new NullPointerException();
         }
@@ -177,14 +185,14 @@ public final class ConnectionManager {
     }
 
     /**
-
-    /**
      * Remove an existing connection from the Database Explorer.  This method
      * unregisters the connection from the the explorer so it will
      * no longer appear as a connection in the UI.  This method also closes
      * the underlying JDBC connection if it is open.
      *
      * @param dbconn the connection to be removed
+     *
+     * @since 1.25
      */
     public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
         if ( dbconn == null ) {

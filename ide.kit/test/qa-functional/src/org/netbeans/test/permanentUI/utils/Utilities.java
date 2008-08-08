@@ -38,16 +38,20 @@
  */
 package org.netbeans.test.permanentUI.utils;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.jemmy.ComponentChooser;
 
 /**
  *
@@ -262,8 +266,9 @@ public class Utilities {
         if (submenu != null) {
             output += "> ";
         }
-        output += "   " + menu.getMnemo();
-
+        if (menu.getMnemo() != 0) {
+            output += "   " + menu.getMnemo();
+        }
         out.println(output);
 
         //print submenu
@@ -331,6 +336,40 @@ public class Utilities {
             Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
         }
         return textLines;
+    }
+
+    public static NbMenuItem parseSubTreeByLines(String filename) {
+        Hashtable<Integer, NbMenuItem> levelRoots = new Hashtable<Integer, NbMenuItem>();
+        NbMenuItem mainNode = new NbMenuItem();
+        int actLevel = -1;
+        levelRoots.put(new Integer(actLevel), mainNode);
+        try {
+            Scanner scanner = new Scanner(new File(filename));
+            while (scanner.hasNextLine()) {
+                String nextLine = scanner.nextLine();
+                int spaces = 0;
+                while (nextLine.charAt(spaces) == ' ') {
+                    spaces++;
+                }
+                nextLine = nextLine.substring(spaces).trim();
+                NbMenuItem newNode = new NbMenuItem();
+                newNode.setName(nextLine);
+                actLevel = spaces / 4;//every level is intended
+                //NbMenuItem node =
+                ArrayList<NbMenuItem> submenu = levelRoots.get(actLevel - 1).getSubmenu();
+                if (submenu == null) {
+                    submenu = new ArrayList<NbMenuItem>();
+                }
+                submenu.add(newNode);
+                levelRoots.get(actLevel - 1).setSubmenu(submenu);//set new submenu with the new node in it
+
+                levelRoots.put(actLevel, newNode);
+            }
+
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return mainNode;
     }
 
     /**
@@ -437,21 +476,19 @@ public class Utilities {
     }
 
     public static String readFileToString(String filename) {
-        if(!(new File(filename).exists())) {
-            return "DIFF is empty";
-        } else {
-
-        }
+        if (!(new File(filename).exists())) {
+            return "file " + filename + " is empty";
+        } 
         FileInputStream fis = null;
         byte[] b = null;
-                 
+
         try {
             fis = new FileInputStream(filename);
-            
+
             int x = fis.available();
-            
-           b = new byte[x];
-            
+
+            b = new byte[x];
+
             fis.read(b);
         } catch (IOException ex) {
             System.out.println("problems with diff file - nothing with the test");
@@ -464,8 +501,28 @@ public class Utilities {
                 ex.printStackTrace();
             }
         }
-        
-    
+
+
         return new String(b);
+    }
+
+    public static ArrayList<Component> findComponentsInContainer(Container cont, ComponentChooser chooser, boolean recursive) {
+        Component[] components = cont.getComponents();
+        ArrayList<Component> results = new ArrayList<Component>();
+        for (int i = 0; i < components.length; i++) {
+            if (components[i] != null) {
+                if (chooser.checkComponent(components[i])) {
+                    results.add(components[i]);
+                //System.out.println("Added :"+components[i].toString());
+                }
+                if (recursive && components[i] instanceof Container) {
+                    ArrayList<Component> aa = findComponentsInContainer((Container) components[i], chooser, recursive);
+                    //System.out.println("adding all " + aa);
+                    results.addAll(aa);
+                }
+            }
+        }
+
+        return results;
     }
 }

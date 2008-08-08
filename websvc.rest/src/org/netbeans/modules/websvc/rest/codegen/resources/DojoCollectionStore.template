@@ -16,7 +16,34 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
 	this._numItems = 0;
         this._ref__CONTAINER_ITEM_NAME__ = null;
         this._refData = {};
+        this._proxy = "";
 },
+
+    _getProxy : function() {
+        return this._proxy;
+    },
+   
+    setProxy : function(proxy_) {
+        this._proxy = proxy_;
+    },
+
+    _setQueryUrl : function(requestKw, qUrl) {
+        if(this._getProxy().length > 0) {
+            requestKw.url = this._getProxy()+"?url="+qUrl;
+            rjsSupport.setHttpProxy(this._getProxy());
+        } else {
+            requestKw.url = qUrl;
+        }
+
+        //add timestamp to make url unique in case of IE7
+        var timestamp = new Date().getTime();
+        if(requestKw.url.indexOf("?") == -1) {
+            requestKw.url += "?timestamp="+timestamp;
+        } else {
+            requestKw.url += "&timestamp="+timestamp;
+        }
+    },
+
     _setupQueryRequest:function (result, requestKw) {
 	var start = 1;
 	var max = 100;
@@ -24,17 +51,12 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
 		start = result.start || start;
 		max = result.max || max;
 	}
-	requestKw.url = this._serverQueryUrl;
-        if(max != -1)
-            requestKw.url += "?start=" + start + "&max=" + max;
+        this._setQueryUrl(requestKw, this._serverQueryUrl);
 
-        //add timestamp to make url unique in case of IE7
-        var timestamp = new Date().getTime();
-        if(requestKw.url.indexOf("?") != -1)
-            requestKw.url = requestKw.url+"&timestamp="+timestamp;
-        else
-            requestKw.url = requestKw.url+"?timestamp="+timestamp;
         requestKw.url += "&expandLevel=0";
+
+        if(max != -1)
+            requestKw.url += "&start=" + start + "&max=" + max;
 
         var method = "GET";
         if(method == 'GET') {
@@ -92,6 +114,9 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
             method = saveKeywordArgs.method || method;
             data = saveKeywordArgs.data || data;
         }
+        if(this._proxy.length > 0) {
+            rjsSupport.setHttpProxy(this._getProxy());
+        }
         var jsonStr = '';
         if(method == 'put') {
              var ci = new __CONTAINER_ITEM_NAME__(this._serverSaveUrl+id+'/');
@@ -108,7 +133,7 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
             } else {
                 alert('Update failed for __CONTAINER_ITEM_PATH_NAME__ with Id: \''+id+'\'.');
             }
-            requestKw.url = this._serverSaveUrl+id+'/';
+            this._setQueryUrl(requestKw, this._serverSaveUrl+id+'/');
             method = 'get';
             requestKw.headers = {"Accept" : "application/json"};
             requestKw.mimetype = "application/json";          
@@ -141,7 +166,7 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
                     }
                 }  
             }
-            requestKw.url = this._serverSaveUrl;
+            this._setQueryUrl(requestKw, this._serverSaveUrl);
             method = 'get';
             requestKw.headers = {"Accept" : "application/json"}; 
             requestKw.mimetype = "application/json";   
@@ -214,8 +239,12 @@ djd43.declare("rdj.data.__CONTAINER_NAME__Store", djd43.data.core.RemoteStore, {
 	bindKw.sync = result.sync;
 	bindKw.handle = bindfunc;
 	this._setupQueryRequest(result, bindKw);
-	var request = djd43.io.bind(bindKw);
-	result._abortFunc = request.abort;
+        try {
+            var request = djd43.io.bind(bindKw);
+            result._abortFunc = request.abort;
+        } catch(e) {
+            return "-1";
+        }
 	return result;
 }, deleteItem:function (item) {
         var id = item['Id'];

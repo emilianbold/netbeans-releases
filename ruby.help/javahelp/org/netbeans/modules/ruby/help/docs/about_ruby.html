@@ -11,90 +11,97 @@
     <title>About Ruby Development in NetBeans</title>
   </head>
   <body>
-    <h1>About Ruby Development in NetBeans</h1>
+    <h1>About Ruby Development in the NetBeans IDE</h1>
 <p> <small><a href="#seealso">See Also</a></small> 
 
-  <p>The  NetBeans Ruby Pack provides  tools for programming in the Ruby language,
+  <p>The NetBeans Ruby pack provides  tools for programming in the Ruby language,
 including the JRuby and Rails runtimes. Ruby is a dynamic, open source programming language
 with a focus on simplicity and productivity. Ruby support in NetBeans has the following features:</p>
 
+<h3>Ruby Platform Management</h3>
+
+<p>The Ruby pack includes a JRuby installation. You can use the Ruby
+Platform manager to register other JRuby and Ruby interpreters with
+the IDE.
+</p>
    <h3 >Advanced Source Code Editor</h3>
 <p>
 This language-aware editor indents and completes your Ruby code and performs semantic syntax highlighting. The editor does live parsing of your code, 
 matches words and brackets, marks errors
 and occurrences, displays hints and rdoc, and
-offers well integrated refactoring, debugging and <code>JUnit</code> testing.</p>
-<p> 
-For more information on the editor, see the links under &quot;Using the Ruby Editor&quot; on the  
-    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-      <param name="viewerActivator" value="javax.help.LinkButton">
-      <param name="content" value=
-        "http://www.netbeans.org/kb/60/ruby/index.html">
-      <param name="text" value="<html><u>Ruby&nbsp;Documentation&nbsp;web&nbsp;page.</u></html>">
-         <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-   </object>
-</p>
+offers well integrated refactoring, debugging, and testing.</p>
+
 <h3 >Ruby Gems Installation Manager</h3>
 
 <p>
-Built-in support for the RubyGems packaging system lets you easily
-extend your Ruby installation.
-You can add and manage freely available Ruby software libraries
-and distribute your own packages. To start the Gem Manager, choose Tools &gt; Ruby Gems. You can see which Gems you have installed on the Installed tab, and you can install new gems on the New Gems tab. </p>
-<p>For more information on Ruby Gems, see the following web page:<br>
-  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="viewerActivator" value="javax.help.LinkButton">
-    <param name="content" value=
-        "http://wiki.netbeans.org/wiki/view/RubyGems">
-    <param name="text" value="<html><u>RubyGems</u></html>">
-         <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-  </object>
+Built-in support for the Ruby Gems packaging system lets you easily
+add libraries to your Ruby and JRuby repositories, as well as get updates.
+To start the Gem Manager, choose Tools &gt; Ruby Gems. The Installed
+tab shows the contents of the repository, the Updated tab
+show if there are new versions of installed gems. You use the New Gems
+tab shows to add gems to the repository.
 </p>
 
-<h3 >Ruby on Rails</h3>
-<p>
-For Ruby on Rails projects, the IDE supports JRuby by default, as well as  native Ruby if you have installed your own native version of Ruby as described in 
-  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="viewerActivator" value="javax.help.LinkButton">
-    <param name="content" value=
-        "http://www.netbeans.org/kb/60/ruby/setting-up.html#native">
-    <param name="text" value="<html><u>Installing and Configuring Ruby Support</u></html>.">
-         <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-  </object>
+<h3>Ruby on Rails</h3>
+<p>The NetBeans IDE provides easy access to Rails scripts. For example,
+the Rails Generator dialog box provides access to Rails code generators,
+such as the controller generator, model generator, and scaffold generator.</p>
+<p>Many of the common rake tasks are integrated in the pop-up menus. For
+example, you can right-click on a project node and choose
+Migrate Database to invoke the rake db:migrate commands. All the
+project's rake targets can be accessed through the Run/Debug Rake Task
+action, which is available from the pop-up menu for the project node.
 </p>
-<p>If you want to install your own version of Ruby on Rails (for example, to get a native Ruby interpreter for better debugging support), see  the following web page for more information:<br> 
-  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-    <param name="viewerActivator" value="javax.help.LinkButton">
-    <param name="content" value=
-        "http://www.rubyonrails.org/down">
-    <param name="text" value="<html><u>Get Ruby on Rails in no time</u></html>">
-         <param name="textFontSize" value="medium">
-        <param name="textColor" value="blue">
-  </object></p>
-<p>In the Projects window, the logical project view separates controllers from models, views, database migrations.
-  You can use the Rails code generator for quick scaffolding
-  and speed up your workflow with well-integrated Rake targets and database migrations.
-  The IDE supports the WEBrick and Mongrel web servers, all embedded Ruby (ERB) files, and all RHTML files.</p>
-<h3 >Ruby Project Support</h3>
+<p>The Rails Plugins manager makes it easy to add plugins to your Rails
+projects as well as obtain updates.
+</p>
+<p>The GlassFish V3 application server is included
+in the Ruby pack. In
+addition, the IDE supports the WEBrick and Mongrel web servers.
+</p>
 
-<p>
-The IDE supports both Ruby projects and Ruby on Rails projects. You can use either the built-in JRuby
-interpreter and Rails support or any other Ruby installation on your system.
-The IDE provides Rake build tool integration and gives you access to the
-Interactive Ruby Shell (IRB). </p>
-<p>For information on creating Ruby and Ruby on Rails projects, see <a href="ruby_quickref.html">Working With NetBeans Ruby</a>.</p>
-<p> For the latest information on NetBeans Ruby support, see the following web page:<br>
-           <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<h3 >Interactive Ruby Shell and Rails Console Support</h3>
+
+<p>You can open an Interactive Ruby (IRB) shell in the IDE
+by choosing Window &gt; Other &gt; Ruby Shell (IRB) from the main menu.
+The IDE opens a shell using the interpreter setting for the currently
+active project.</p>
+<p>In Rails projects, you open a Rails console from a project's pop-up menu.</p>
+<h3>NetBeans Ruby Web Pages</h3>
+<p>For more information about Ruby development in the NetBeans IDE,
+see the following web sites:</p>
+<dl>
+  <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
         <param name="viewerActivator" value="javax.help.LinkButton">
         <param name="content" value=
-        "http://www.netbeans.org/kb/60/ruby-index.html">
-        <param name="text" value="<html><u>NetBeans Ruby Documentation</u></html>">
+        "http://wiki.netbeans.org/Ruby">
+        <param name="text" value="<html><u>NetBeans Ruby Community Wiki</u></html>">
          <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
-   </object> </p>
+   </object>
+ </dd>
+  <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="viewerActivator" value="javax.help.LinkButton">
+        <param name="content" value=
+        "http://www.netbeans.org/features/ruby/">
+        <param name="text" value="<html><u>NetBeans Ruby Features</u></html>">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>
+ </dd>
+   <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="viewerActivator" value="javax.help.LinkButton">
+        <param name="content" value=
+        "http://www.netbeans.org/kb/trails/ruby.html">
+        <param name="text" value="<html><u>Ruby and Rails Learning Trail</u></html>">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>
+ </dd>
+ </dl>
 <dl>
 <dt><a name="seealso">See Also</a></dt>
 <dd><a href="ruby_quickref.html">Working With NetBeans Ruby</a></dd>

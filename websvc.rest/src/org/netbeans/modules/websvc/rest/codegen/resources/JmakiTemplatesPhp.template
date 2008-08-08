@@ -2,4 +2,11 @@
    addWidget( array("name" => "dojo.rest.__CONTAINER_PATH_NAME__table",
        "service" => "___BASE_URL___/__CONTAINER_PATH_NAME__/"
    ));
+// Use below if using proxy for javascript cross-domain
+/*
+   addWidget( array("name" => "dojo.rest.__CONTAINER_PATH_NAME__table",
+       "service" => "___BASE_URL___/__CONTAINER_PATH_NAME__/",
+       "args" => "proxy=___BASE_URL___/../restproxy"
+   ));
+*/
 ?>

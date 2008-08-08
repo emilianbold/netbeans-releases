@@ -111,7 +111,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
 
     private boolean handleCompileLibraries(final Library[] libraries, final int operation) throws IOException {
         assert libraries != null : "Libraries cannot be null";  //NOI18N
-        return ClassPathModifierSupport.handleLibraries(project, project.getAntProjectHelper(), cs, eval, project.getClassPathUiSupportCallback(), refHelper, 
+        return ClassPathModifierSupport.handleLibraries(project, project.getAntProjectHelper(), cs, eval, createClassPathUiSupportCallback(null), refHelper, 
                 new String[]{ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.WAR_CONTENT_ADDITIONAL}, libraries, 
                 ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES, operation);
     }
@@ -144,7 +144,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
         assert artifacts != null : "Artifacts cannot be null";    //NOI18N
         assert artifactElements != null : "ArtifactElements cannot be null";  //NOI18N
         assert artifacts.length == artifactElements.length : "Each artifact has to have corresponding artifactElement"; //NOI18N
-        return ClassPathModifierSupport.handleAntArtifacts(project, project.getAntProjectHelper(), cs, eval, project.getClassPathUiSupportCallback(), 
+        return ClassPathModifierSupport.handleAntArtifacts(project, project.getAntProjectHelper(), cs, eval, createClassPathUiSupportCallback(null), 
                 artifacts, artifactElements, ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES, operation);
     }
 
@@ -172,7 +172,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
 
     private boolean addCompileRoots(final URL[] roots, final int operation) throws IOException {
         assert roots != null : "The classPathRoots cannot be null";      //NOI18N        
-        return ClassPathModifierSupport.handleRoots(project, project.getAntProjectHelper(), cs, eval, project.getClassPathUiSupportCallback(), 
+        return ClassPathModifierSupport.handleRoots(project, project.getAntProjectHelper(), cs, eval, createClassPathUiSupportCallback(null), 
                 convertURLsToURIs(roots), ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES, operation);
     }
 

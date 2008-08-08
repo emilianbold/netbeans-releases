@@ -322,18 +322,16 @@ public class SQLCloneableEditor extends CloneableEditor {
             return;
         }
 
-        splitter.setTopComponent(null);
-        splitter.setBottomComponent(null);
-        
-        splitter.setTopComponent(editor);
-        splitter.setBottomComponent(resultComponent);
-        
-        splitter.setDividerLocation(250);
-        splitter.setDividerSize(7);
+        if (splitter.getBottomComponent() == null) {
+            splitter.setBottomComponent(resultComponent);
+            splitter.setDividerLocation(250);
+            splitter.setDividerSize(7);
 
-        container.invalidate();
-        container.validate();
-        container.repaint();
+            container.invalidate();
+            container.validate();
+            container.repaint();
+        }
+
 
         enableTabActions();
     }
@@ -373,7 +371,10 @@ public class SQLCloneableEditor extends CloneableEditor {
     }
 
     protected void componentDeactivated() {
-        if (sqlEditorSupport().isConsole()) {
+        SQLEditorSupport sqlEditorSupport = sqlEditorSupport();
+        // #132333: need to test if the support is still valid (it may be not, because
+        // the DataObject was deleted as the editor was closing.)
+        if (sqlEditorSupport.isConsole() && sqlEditorSupport.isValid()) {
             try {
                 cloneableEditorSupport().saveDocument();
             } catch (IOException e) {
@@ -590,7 +591,7 @@ public class SQLCloneableEditor extends CloneableEditor {
                             DialogDescriptor.CLOSED_OPTION
                         };
                         final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(SQLCloneableEditor.class, "LBL_SQL_HISTORY_TITLE"), true, options,
-                                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(SQLCloneableEditor.class), null);
+                                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx("sql_history"), null);  // NOI18N
                         dlg = DialogDisplayer.getDefault().createDialog(desc);
                         dlg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SQLCloneableEditor.class, "ACSD_DLG"));
                         panel.setSize(panel.getPreferredSize());

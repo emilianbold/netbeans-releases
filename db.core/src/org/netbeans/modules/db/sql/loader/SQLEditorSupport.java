@@ -176,7 +176,7 @@ public class SQLEditorSupport extends DataEditorSupport
     }
     
     protected String messageName() {
-        if (!getDataObject().isValid()) return ""; // NOI18N
+        if (!isValid()) return ""; // NOI18N
         
         if (isConsole()) {
             // just the name, no modified or r/o flags
@@ -187,7 +187,7 @@ public class SQLEditorSupport extends DataEditorSupport
     }
     
     protected String messageHtmlName() {
-        if (!getDataObject().isValid()) return ""; // NOI18N
+        if (!isValid()) return ""; // NOI18N
         
         if (isConsole()) {
             // just the name, no modified or r/o flags
@@ -209,7 +209,7 @@ public class SQLEditorSupport extends DataEditorSupport
         closeExecutionResult();
         closeLogger();
         
-        if (isConsole() && getDataObject().isValid()) {
+        if (isConsole() && isValid()) {
             try {
                 getDataObject().delete();
             } catch (IOException e) {
@@ -228,6 +228,10 @@ public class SQLEditorSupport extends DataEditorSupport
     
     boolean isConsole() {
         return ((SQLDataObject)getDataObject()).isConsole();
+    }
+    
+    boolean isValid() {
+        return getDataObject().isValid();
     }
     
     protected CloneableEditor createCloneableEditor() {
@@ -286,7 +290,7 @@ public class SQLEditorSupport extends DataEditorSupport
     
     /**
      * Executes either all or a part of the given sql string (which can contain
-     * zero or more SQL statements). If startOffset < endOffset, the part of
+     * zero or more SQL statements). If startOffset &lt; endOffset, the part of
      * sql specified is executed. If startOffset == endOffset, the statement
      * containing the character at startOffset, if any, is executed.
      *

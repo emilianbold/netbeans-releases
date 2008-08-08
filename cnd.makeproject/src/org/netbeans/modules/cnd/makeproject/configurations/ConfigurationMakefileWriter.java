@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
@@ -534,11 +533,10 @@ public class ConfigurationMakefileWriter {
     }
     
     private void writeDependencyChecking(MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        ToolchainDescriptor td = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getToolchainDescriptor();
-        if (conf.getDependencyChecking().getValue() && td.getMake().getDependencySupportCode() != null) {
+        if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration()) {
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
-            bw.write(td.getMake().getDependencySupportCode());
+            bw.write("include .dep.inc\n"); // NOI18N
         }
     }
     
@@ -625,13 +623,13 @@ public class ConfigurationMakefileWriter {
         
         bw.write("#!/bin/bash"); // NOI18N
         if (conf.getPackagingConfiguration().getVerbose().getValue()) {
-            bw.write(" -x");
+            bw.write(" -x"); // NOI18N
         }
         bw.write("\n"); // NOI18N
         bw.write("\n"); // NOI18N
-        bw.write("#\n");
-        bw.write("# Generated - do not edit!\n");
-        bw.write("#\n");
+        bw.write("#\n"); // NOI18N
+        bw.write("# Generated - do not edit!\n"); // NOI18N
+        bw.write("#\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Macros\n"); // NOI18N
@@ -697,7 +695,7 @@ public class ConfigurationMakefileWriter {
         String output = packagingConfiguration.getOutputValue();
         String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
         
-        bw.write("# Copy files and create sirectories and links\n"); // NOI18N
+        bw.write("# Copy files and create directories and links\n"); // NOI18N
         for (FileElement elem : fileList) {
             bw.write("cd $TOP\n"); // NOI18N
             if (elem.getType() == FileElement.FileType.FILE) {
@@ -705,10 +703,10 @@ public class ConfigurationMakefileWriter {
                 if (toDir != null && toDir.length() >= 0) {
                     bw.write("makeDirectory " + "$TMPDIR/" + toDir + "\n"); // NOI18N
                 }
-                bw.write("copyFileToTmpDir " + elem.getFrom() + " $TMPDIR/" + elem.getTo() + " " + elem.getPermission() + "\n"); // NOI18N
+                bw.write("copyFileToTmpDir " + elem.getFrom() + " $TMPDIR/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
             }
             else if (elem.getType() == FileElement.FileType.DIRECTORY) {
-                bw.write("makeDirectory " + " $TMPDIR/" + elem.getTo() + " " + elem.getPermission() + "\n"); // NOI18N
+                bw.write("makeDirectory " + " $TMPDIR/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
             }
             else if (elem.getType() == FileElement.FileType.SOFTLINK) {
                 String toDir = IpeUtils.getDirName(elem.getTo());
@@ -718,6 +716,9 @@ public class ConfigurationMakefileWriter {
                 }
                 bw.write("cd " + "$TMPDIR/" + toDir + "\n"); // NOI18N
                 bw.write("ln -s " + elem.getFrom() + " " + toName + "\n"); // NOI18N
+            }
+            else if (elem.getType() == FileElement.FileType.UNKNOWN) {
+                // skip ???
             }
             else {
                 assert false;
@@ -730,7 +731,7 @@ public class ConfigurationMakefileWriter {
             bw.write("# Generate zip file\n"); // NOI18N
             bw.write("cd $TOP\n"); // NOI18N
             bw.write("cd $TMPDIR\n"); // NOI18N
-            bw.write(packagingConfiguration.getToolValue() + " -r "+ packagingConfiguration.getOptionsValue() + " " + outputRelToTmp + " *\n");
+            bw.write(packagingConfiguration.getToolValue() + " -r "+ packagingConfiguration.getOptionsValue() + " " + outputRelToTmp + " *\n"); // NOI18N
         }
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             bw.write("# Generate tar file\n"); // NOI18N
@@ -738,13 +739,14 @@ public class ConfigurationMakefileWriter {
             bw.write("cd $TMPDIR\n"); // NOI18N
             String options = packagingConfiguration.getOptionsValue() + "cf"; // NOI18N
             if (options.charAt(0) != '-') { // NOI18N
-                options += '-'; // NOI18N
+                options = "-" + options; // NOI18N
             }
             bw.write(packagingConfiguration.getToolValue() + " " + options + " " + outputRelToTmp + " *\n"); // NOI18N
         }
         else {
             assert false;
         }
+        bw.write("checkReturnCode\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Cleanup\n"); // NOI18N
@@ -812,7 +814,7 @@ public class ConfigurationMakefileWriter {
         bw.write("cd $TOP\n"); // NOI18N
         List<InfoElement> infoList = packagingConfiguration.getHeader().getValue();
         for (InfoElement elem : infoList) {
-            bw.write("echo \'" + elem.getName() + "=\"" + elem.getValue() + "\"\'" + " >> $PKGINFOFILE\n");
+            bw.write("echo \'" + elem.getName() + "=\"" + elem.getValue() + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
         }
         bw.write("\n"); // NOI18N        
         bw.write("cd $TOP\n"); // NOI18N 
@@ -821,10 +823,10 @@ public class ConfigurationMakefileWriter {
         List<String> dirList = findUndefinedDirectories(packagingConfiguration);
         for (String dir : dirList) {
             bw.write("echo \"");// NOI18N
-            bw.write("d");// NOI18N
+            bw.write("d"); // NOI18N
             bw.write(" none"); // Classes // NOI18N
             bw.write(" " + dir); // NOI18N
-            bw.write(" " + MakeOptions.getInstance().getDefExePerm()); // NOI18N
+            bw.write(" 0" + MakeOptions.getInstance().getDefExePerm()); // NOI18N
             bw.write(" " + MakeOptions.getInstance().getDefOwner()); // NOI18N
             bw.write(" " + MakeOptions.getInstance().getDefGroup()); // NOI18N
             bw.write("\""); // NOI18N
@@ -851,20 +853,24 @@ public class ConfigurationMakefileWriter {
             bw.write(" none"); // Classes // NOI18N
             bw.write(" " + elem.getTo());// NOI18N
             if (elem.getFrom().length() > 0) {
-                bw.write("=" + elem.getFrom());// NOI18N
+                String from = elem.getFrom();
+                if (IpeUtils.isPathAbsolute(from)) {
+                    from = IpeUtils.toRelativePath(conf.getBaseDir(), from);
+                }
+                bw.write("=" + from);// NOI18N
             }
             if (elem.getType() != FileElement.FileType.SOFTLINK) {
-                bw.write(" " + elem.getPermission());// NOI18N
+                bw.write(" 0" + elem.getPermission());// NOI18N
                 bw.write(" " + elem.getOwner());// NOI18N
                 bw.write(" " + elem.getGroup());// NOI18N
             }
-            bw.write("\"");
+            bw.write("\""); // NOI18N
             bw.write(" >> $PROTOTYPEFILE\n"); // NOI18N
         }
         bw.write("\n"); // NOI18N
         bw.write("# Make package\n"); // NOI18N        
         bw.write("cd $TOP\n"); // NOI18N   
-        bw.write(packagingConfiguration.getToolValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
+        bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
         bw.write("pkgtrans -s $TMPDIR tmp.pkg " + packageName + "\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N

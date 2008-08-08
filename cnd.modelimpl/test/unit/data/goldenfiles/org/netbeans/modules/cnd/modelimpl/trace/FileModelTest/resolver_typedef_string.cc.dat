@@ -1,0 +1,111 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 1):
+<U>#define '["_resolver_typedef_string_H",<204>,line=9,col=9],offset=145,file=null'=''
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE resolver_typedef_string.cc
+Includes:
+"resolver_typedef_string.h" [1:1/0-1:37/36]
+Macros:
+    <no macros>
+FUNCTION DEFINITION write  [3:1/38-8:2/129] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE write(string)
+    UNIQUE NAME f:write(string)
+    DECLARATION: write  [32:1/579-32:34/612]
+    PARAMETERS:
+        str [3:20/57-3:30/67]  TYPE: std::string TEXT=string  [3:20/57-3:26/63]  INIT: null  SCOPE: write 
+    RETURNS std::wstring TEXT=std::wstring  [3:1/38-3:13/50]
+    STATEMENT COMPOUND  [4:1/69-8:2/129] SCOPE: write 
+        STATEMENT DECLARATION  [5:5/75-5:23/93] SCOPE: Stmt  [4:1/69-8:2/129]
+            USING DECL. std::wstring  [5:5/75-5:23/93]; REF DECL: std::wstring  [27:5/517-27:43/555] SCOPE: null
+        STATEMENT DECLARATION  [6:5/99-6:17/111] SCOPE: Stmt  [4:1/69-8:2/129]
+            VARIABLE out [6:5/99-6:17/111]  TYPE: std::wstring TEXT=wstring  [6:5/99-6:12/106]  INIT: null  SCOPE: Stmt  [4:1/69-8:2/129]
+        STATEMENT RETURN  [7:5/116-7:16/127] SCOPE: Stmt  [4:1/69-8:2/129] text: 'return out;'
+NAMESPACE DEFINITOIN A [10:1/131-20:2/299] SCOPE: resolver_typedef_string.cc
+    FUNCTION DEFINITION read  [11:5/149-14:6/210] FunctionDDImpl SCOPE: A 
+        SIGNATURE read()
+        UNIQUE NAME f:A::read()
+        DECLARATION: read  [35:3/630-35:17/644]
+        PARAMETERS:
+        RETURNS std::string TEXT=string  [11:5/149-11:11/155]
+        STATEMENT COMPOUND  [11:19/163-14:6/210] SCOPE: read 
+            STATEMENT DECLARATION  [12:9/173-12:20/184] SCOPE: Stmt  [11:19/163-14:6/210]
+                VARIABLE str [12:9/173-12:20/184]  TYPE: std::string TEXT=string  [12:9/173-12:15/179]  INIT: null  SCOPE: Stmt  [11:19/163-14:6/210]
+            STATEMENT RETURN  [13:9/193-13:20/204] SCOPE: Stmt  [11:19/163-14:6/210] text: 'return str;'
+    FUNCTION DEFINITION read  [16:5/220-19:6/297] FunctionDefinitionImpl SCOPE: resolver_typedef_string.cc
+        SIGNATURE read() const
+        UNIQUE NAME f:A::ClassA::read() const
+        DECLARATION: read  [40:5/700-40:26/721]
+        PARAMETERS:
+        RETURNS $unresolved$::wstring TEXT=wstring  [16:5/220-16:12/227]
+        STATEMENT COMPOUND  [16:34/249-19:6/297] SCOPE: read 
+            STATEMENT DECLARATION  [17:9/259-17:21/271] SCOPE: Stmt  [16:34/249-19:6/297]
+                VARIABLE str [17:9/259-17:21/271]  TYPE: $unresolved$::wstring TEXT=wstring  [17:9/259-17:16/266]  INIT: null  SCOPE: Stmt  [16:34/249-19:6/297]
+            STATEMENT RETURN  [18:9/280-18:20/291] SCOPE: Stmt  [16:34/249-19:6/297] text: 'return str;'
+
+========== Dumping model of PROJECT DummyProject
+FUNCTION DEFINITION write  [3:1/38-8:2/129] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE write(string)
+    UNIQUE NAME f:write(string)
+    DECLARATION: write  [32:1/579-32:34/612]
+    PARAMETERS:
+        str [3:20/57-3:30/67]  TYPE: std::string TEXT=string  [3:20/57-3:26/63]  INIT: null  SCOPE: write 
+    RETURNS std::wstring TEXT=std::wstring  [3:1/38-3:13/50]
+    STATEMENT COMPOUND  [4:1/69-8:2/129] SCOPE: write 
+        STATEMENT DECLARATION  [5:5/75-5:23/93] SCOPE: Stmt  [4:1/69-8:2/129]
+            USING DECL. std::wstring  [5:5/75-5:23/93]; REF DECL: std::wstring  [27:5/517-27:43/555] SCOPE: null
+        STATEMENT DECLARATION  [6:5/99-6:17/111] SCOPE: Stmt  [4:1/69-8:2/129]
+            VARIABLE out [6:5/99-6:17/111]  TYPE: std::wstring TEXT=wstring  [6:5/99-6:12/106]  INIT: null  SCOPE: Stmt  [4:1/69-8:2/129]
+        STATEMENT RETURN  [7:5/116-7:16/127] SCOPE: Stmt  [4:1/69-8:2/129] text: 'return out;'
+USING DECL. std::string  [30:1/559-30:18/576]; REF DECL: std::string  [23:5/454-23:44/493] SCOPE: $Global$ 
+FUNCTION write [32:1/579-32:34/612] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: write  [3:1/38-8:2/129]
+    SIGNATURE write(string)
+    UNIQUE NAME F:write(string)
+    PARAMETERS:
+        str [32:22/600-32:32/610]  TYPE: std::string TEXT=string  [32:22/600-32:28/606]  INIT: null  SCOPE: write 
+    RETURNS std::wstring TEXT=std::wstring  [32:1/579-32:15/593]
+NAMESPACE DEFINITIONS for A (A) 
+    resolver_typedef_string.cc  [10:1/131-20:2/299]
+    resolver_typedef_string.h  [34:1/614-42:2/728]
+NAMESPACE A (A) 
+    FUNCTION DEFINITION read  [11:5/149-14:6/210] FunctionDDImpl SCOPE: A 
+        SIGNATURE read()
+        UNIQUE NAME f:A::read()
+        DECLARATION: read  [35:3/630-35:17/644]
+        PARAMETERS:
+        RETURNS std::string TEXT=string  [11:5/149-11:11/155]
+        STATEMENT COMPOUND  [11:19/163-14:6/210] SCOPE: read 
+            STATEMENT DECLARATION  [12:9/173-12:20/184] SCOPE: Stmt  [11:19/163-14:6/210]
+                VARIABLE str [12:9/173-12:20/184]  TYPE: std::string TEXT=string  [12:9/173-12:15/179]  INIT: null  SCOPE: Stmt  [11:19/163-14:6/210]
+            STATEMENT RETURN  [13:9/193-13:20/204] SCOPE: Stmt  [11:19/163-14:6/210] text: 'return str;'
+    FUNCTION read [35:3/630-35:17/644] FunctionImpl SCOPE: A 
+        DEFINITION: read  [11:5/149-14:6/210]
+        SIGNATURE read()
+        UNIQUE NAME F:A::read()
+        PARAMETERS:
+        RETURNS std::string TEXT=string  [35:3/630-35:9/636]
+    USING NAMESPACE. std  [36:3/647-36:22/666]; REF NS: std SCOPE: null
+    CLASS ClassA (A::ClassA ) [37:3/670-41:5/726] lcurly=683 SCOPE: A 
+        BASE CLASSES:
+        MEMBERS:
+            FUNCTION read [40:5/700-40:26/721] MethodImpl SCOPE: ClassA 
+                DEFINITION: read  [16:5/220-19:6/297]
+                SIGNATURE read() const
+                UNIQUE NAME F:A::ClassA::read() const
+                PARAMETERS:
+                RETURNS std::wstring TEXT=wstring  [40:5/700-40:12/707]
+NAMESPACE DEFINITIONS for std (std) 
+    resolver_typedef_string.h  [11:1/173-24:2/495]
+    resolver_typedef_string.h  [26:1/497-28:2/557]
+NAMESPACE std (std) 
+    CLASS basic_string<typename _CharT,typename _Traits=char_traits<_CharT>,typename _Alloc=allocator<_CharT>> (std::basic_string ) [18:5/305-21:7/444] lcurly=436 SCOPE: std 
+        BASE CLASSES:
+        MEMBERS:
+    TYPEDEF string  [23:5/454-23:44/493] TYPE: std::basic_string TEXT=std::basic_string<char>  [23:13/462-23:36/485] SCOPE: std 
+    TYPEDEF wstring  [27:5/517-27:43/555] TYPE: std::basic_string TEXT=basic_string<wchar_t>  [27:13/525-27:34/546] SCOPE: std 
+

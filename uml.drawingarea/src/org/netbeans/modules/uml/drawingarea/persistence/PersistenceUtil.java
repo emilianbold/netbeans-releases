@@ -135,7 +135,7 @@ public class PersistenceUtil {
     //helper methods
     public static NodeWriter populateNodeWriter(NodeWriter nodeWriter, Widget widget) {
         nodeWriter.setRootNode(false); //This is NOT a Scene / Diagram
-        nodeWriter.setLocation(widget.getLocation());
+        nodeWriter.setLocation(widget.getPreferredLocation());
 
 //        nodeWriter.setSize(widget.getBounds().getSize());
         Rectangle bnd = widget.getBounds();//border need correction for selection border sizes

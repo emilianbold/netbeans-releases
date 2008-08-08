@@ -46,10 +46,13 @@ import java.beans.PropertyChangeSupport;
 import java.io.InputStream;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -130,6 +133,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     }
 
     private final UUID uuid =   UUID.randomUUID();
+    private static final Logger LOGGER = Logger.getLogger(DatabaseNodeInfo.class.getName());
     
     public static Map readInfo() {
         Map data;
@@ -494,13 +498,17 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         notifyChange();
     }
 
-    public synchronized void setConnected(boolean connected) {
+    private synchronized void setConnected(boolean connected) {
         this.connected = connected;
-        notifyChange();
     }
     
     public synchronized boolean isConnected() {
-        return connected;
+        if (this instanceof ConnectionNodeInfo) {
+            return this.connected;
+        } else {
+            ConnectionNodeInfo cinfo = (ConnectionNodeInfo)getParent(CONNECTION);
+            return cinfo.isConnected();
+        }
     }
 
     public DatabaseConnection getDatabaseConnection()

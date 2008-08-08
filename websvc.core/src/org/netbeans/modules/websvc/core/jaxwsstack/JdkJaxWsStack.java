@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.websvc.core.jaxwsstack;
 
+import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
+
 /**
  *
  * @author mkuchtiak
@@ -50,8 +53,8 @@ public final class JdkJaxWsStack extends AbstractJaxWsStack {
         this.jaxWsVersion = jaxWsVersion;
     }
 
-    public String getVersion() {
-        return jaxWsVersion;
+    public WSStackVersion getVersion() {
+        return WSStackFactory.createWSStackVersion(jaxWsVersion);
     }
 
 }

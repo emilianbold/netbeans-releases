@@ -41,6 +41,7 @@ package org.netbeans.modules.css.gsf;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -76,7 +77,12 @@ public class CSSStructureScanner implements StructureScanner {
         //eof hack
         
         //so far the css parser always parses the whole css content
-        ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
+        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
+        if(!presultIterator.hasNext()) {
+            return Collections.emptyList();
+        }
+        
+        ParserResult presult = presultIterator.next();
         final TranslatedSource source = presult.getTranslatedSource();
         SimpleNode root = ((CSSParserResult) presult).root();
 
@@ -126,7 +132,12 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         //so far the css parser always parses the whole css content
-        ParserResult presult = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator().next();
+        Iterator<? extends ParserResult> presultIterator = info.getEmbeddedResults(Css.CSS_MIME_TYPE).iterator();
+        if (!presultIterator.hasNext()) {
+            return Collections.emptyMap();
+        }
+
+        ParserResult presult = presultIterator.next();
         final TranslatedSource source = presult.getTranslatedSource();
         SimpleNode root = ((CSSParserResult) presult).root();
 

@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.web.client.javascript.debugger.api;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -105,6 +106,7 @@ import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -467,7 +469,7 @@ public final class NbJSDebugger {
         }
     }
 
-    private void setBreakpoint(NbJSBreakpoint bp) {
+    private void setBreakpoint(final NbJSBreakpoint bp) {
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
         if (bpImpl != null) {
             return;
@@ -498,13 +500,17 @@ public final class NbJSDebugger {
                 condition = "";
             }
             bpImpl.setCondition(condition);
-
-            String bpId = debugger.setBreakpoint(bpImpl);
-            if (bpId != null) {
-                bpImpl.setId(bpId);
-                breakpointsMap.put(bp, bpImpl);
-                bp.addPropertyChangeListener(WeakListeners.propertyChange(breakpointPropertyChangeListener, bp));
-            }
+            final JSBreakpointImpl tmpBreakpointImp = bpImpl;
+            RequestProcessor.getDefault().post(new Runnable () {
+                public void run() {
+                    String bpId = debugger.setBreakpoint(tmpBreakpointImp);
+                    if (bpId != null) {
+                        tmpBreakpointImp.setId(bpId);
+                        breakpointsMap.put(bp, tmpBreakpointImp);
+                        bp.addPropertyChangeListener(WeakListeners.propertyChange(breakpointPropertyChangeListener, bp));
+                    }
+                }
+            });
         }
     }
 

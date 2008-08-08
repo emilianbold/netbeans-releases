@@ -20,6 +20,8 @@ package org.netbeans.modules.xslt.tmap.model.api;
 
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xslt.tmap.model.impl.AttributesType;
 import org.netbeans.modules.xslt.tmap.model.impl.AttributesType.AttrType;
@@ -33,6 +35,10 @@ public enum TMapAttributes implements Attribute {
 //    PARTNER_LINK_TYPE(PartnerLinkTypeReference.PARTNER_LINK_TYPE, QName.class),
 //    ROLE_NAME(PartnerLinkTypeReference.ROLE_NAME, String.class, AttributesType.AttrType.NCNAME),
 //    OPERATION_NAME(OperationReference.OPERATION_NAME, String.class, AttributesType.AttrType.NCNAME),
+    // 142908
+    PARTNER_LINK_TYPE(PartnerLinkTypeReference.PARTNER_LINK_TYPE, PartnerLinkType.class, AttributesType.AttrType.QNAME),
+    ROLE_NAME(PartnerLinkTypeReference.ROLE_NAME, Role.class, AttributesType.AttrType.NCNAME),
+    //\142908
     TARGET_NAMESPACE( TransformMap.TARGET_NAMESPACE, String.class , AttrType.URI ),
     LOCATION( Import.LOCATION , String.class , AttrType.URI ),
     NAMESPACE( Import.NAMESPACE , String.class , AttrType.URI ),

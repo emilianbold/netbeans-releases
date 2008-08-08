@@ -190,7 +190,7 @@ public class ConfigurationDescriptorProvider {
                     for (int i = 0; i < families.length; i++) {
                         buffer.append(families[i]);
                         if (i < families.length - 1) {
-                            buffer.append(",");
+                            buffer.append(","); // NOI18N
                         }
                     }
                     family = buffer.toString();

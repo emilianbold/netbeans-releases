@@ -275,6 +275,7 @@ public class TiledLayer extends Layer implements ImageResourceListener {
 		int right = Integer.MIN_VALUE;
 		int top = Integer.MAX_VALUE;
 		int bottom = Integer.MIN_VALUE;
+                boolean layerEmpty = true;
 		synchronized (this.grid) {
 			for (int r = 0; r < this.grid.length; r++ ) {
 				for (int c = 0; c < this.grid[r].length; c++) {
@@ -287,9 +288,16 @@ public class TiledLayer extends Layer implements ImageResourceListener {
 						top = Math.min(top, r);
 						//find bottom boundry
 						bottom = Math.max(bottom, r);
+                                                layerEmpty = false;
 					}
 				}
 			}
+                        if (layerEmpty){
+                            left = 0;
+                            right = 0;
+                            top = 0;
+                            bottom = 0;
+                        }
 			//then remove all the rows and cols outside the boundries
 			//remove right
 			this.deleteColumns(right + 1, this.grid[0].length - right -1);

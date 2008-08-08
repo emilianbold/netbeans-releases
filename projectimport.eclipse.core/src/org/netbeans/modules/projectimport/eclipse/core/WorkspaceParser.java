@@ -44,6 +44,7 @@ package org.netbeans.modules.projectimport.eclipse.core;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -53,9 +54,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.netbeans.modules.projectimport.eclipse.core.spi.LaunchConfiguration;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -98,6 +101,7 @@ final class WorkspaceParser {
             parseResourcesPreferences();
             parseWorkspaceProjects();
             parseJSFLibraryRegistryV2();
+            parseLaunchConfigurations();
         } catch (IOException e) {
             throw new ProjectImporterException(
                     "Cannot load workspace properties", e); // NOI18N
@@ -126,7 +130,11 @@ final class WorkspaceParser {
                 workspace.addVariable(var);
             } else if (key.startsWith(USER_LIBRARY_PREFIX) && !value.startsWith(IGNORED_CP_ENTRY)) { // #73542
                 String libName = key.substring(USER_LIBRARY_PREFIX_LENGTH);
-                workspace.addUserLibrary(libName, UserLibraryParser.getJars(value));
+                List<String> jars = new ArrayList<String>();
+                List<String> javadocs = new ArrayList<String>();
+                List<String> sources = new ArrayList<String>();
+                UserLibraryParser.getJars(libName, value, jars, javadocs, sources);
+                workspace.addUserLibrary(libName, jars, javadocs, sources);
             } // else we don't use other properties in the meantime
         }
     }
@@ -158,7 +166,8 @@ final class WorkspaceParser {
                 }
                 jars.add(path);
             }
-            workspace.addUserLibrary(libraryName, jars);
+            // TODO: in Ganymede Javadoc/sources customization does not seem to be persisted. eclipse defect??
+            workspace.addUserLibrary(libraryName, jars, null, null);
         }
     }
     
@@ -300,4 +309,37 @@ final class WorkspaceParser {
         return new File(pathS);
     }
     
+    private void parseLaunchConfigurations() throws IOException, ProjectImporterException {
+        List<LaunchConfiguration> configs = new ArrayList<LaunchConfiguration>();
+        File[] launches = new File(workspace.getDirectory(), ".metadata/.plugins/org.eclipse.debug.core/.launches").listFiles(new FilenameFilter() { // NOI18N
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".launch"); // NOI18N
+            }
+        });
+        if (launches != null) {
+            for (File launch : launches) {
+                Document doc;
+                try {
+                    doc = XMLUtil.parse(new InputSource(launch.toURI().toString()), false, false, null, null);
+                } catch (SAXException x) {
+                    throw new ProjectImporterException("Could not parse " + launch, x);
+                }
+                Element launchConfiguration = doc.getDocumentElement();
+                String type = launchConfiguration.getAttribute("type"); // NOI18N
+                Map<String,String> attrs = new HashMap<String,String>();
+                NodeList nl = launchConfiguration.getElementsByTagName("stringAttribute"); // NOI18N
+                for (int i = 0; i < nl.getLength(); i++) {
+                    Element stringAttribute = (Element) nl.item(i);
+                    attrs.put(stringAttribute.getAttribute("key"), stringAttribute.getAttribute("value")); // NOI18N
+                }
+                configs.add(new LaunchConfiguration(launch.getName().replaceFirst("\\.launch$", ""), type, // NOI18N
+                        attrs.get("org.eclipse.jdt.launching.PROJECT_ATTR"), // NOI18N
+                        attrs.get("org.eclipse.jdt.launching.MAIN_TYPE"), // NOI18N
+                        attrs.get("org.eclipse.jdt.launching.PROGRAM_ARGUMENTS"), // NOI18N
+                        attrs.get("org.eclipse.jdt.launching.VM_ARGUMENTS"))); // NOI18N
+            }
+        }
+        workspace.setLaunchConfigurations(configs);
+    }
+
 }

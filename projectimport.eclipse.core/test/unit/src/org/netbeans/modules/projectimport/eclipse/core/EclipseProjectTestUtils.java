@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.projectimport.eclipse.core.spi.DotClassPathEntry;
 
@@ -57,10 +58,15 @@ public class EclipseProjectTestUtils {
     }
     
     public static EclipseProject createEclipseProject(File proj, DotClassPath cp, Workspace w, String name) throws IOException {
+        return createEclipseProject(proj, cp, w, name, new ArrayList<Link>());
+    }
+    
+    public static EclipseProject createEclipseProject(File proj, DotClassPath cp, Workspace w, String name, List<Link> links) throws IOException {
         EclipseProject ep = new EclipseProject(proj);
         if (w != null) {
             ep.setName(name);
             ep.setWorkspace(w);
+            ep.setLinks(links);
             w.addProject(ep);
         }
         ep.setClassPath(cp);

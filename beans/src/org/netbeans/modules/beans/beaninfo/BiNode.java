@@ -46,6 +46,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
 import javax.swing.GrayFilter;
 import org.netbeans.api.java.source.SourceUtils;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -546,10 +547,12 @@ public final class BiNode extends AbstractNode {
         return new Error(msg);
     }
     
-    public static Node createBiNode(BiAnalyser bia) {
+    public static Node createBiNode(BiAnalyser bia, NotifyDescriptor error) {
         if (bia == null) {
-            String msg = NbBundle.getMessage(BiNode.class, "CTL_NODE_UnknownBeanInfoState");
-            return new Error(msg);
+            Object msg = error == null
+                    ? NbBundle.getMessage(BiNode.class, "CTL_NODE_UnknownBeanInfoState")
+                    : error.getMessage();
+            return new Error(msg.toString());
         } else if (bia.isBeanBroken()) {
             String msg = NbBundle.getMessage(
                     BiNode.class, "MSG_BrokenBean",

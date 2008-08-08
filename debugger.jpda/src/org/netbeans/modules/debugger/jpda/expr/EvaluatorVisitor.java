@@ -82,6 +82,7 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.InvalidStackFrameException;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -1368,6 +1369,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         }
                     } catch (NativeMethodException nmex) {
                         // ignore - no arguments available
+                    } catch (InvalidStackFrameException ex) {
                     }
                     return (Value) Assert2.error(arg0, "unknownVariable", paramName);
                 }
@@ -1427,6 +1429,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (outerRef == null) return null;
         object = (ObjectReference) object.getValue(outerRef);
+        if (object == null) return null;
         return findEnclosingObject(arg0, object, type, fieldName, methodName);
     }
 
@@ -1904,6 +1907,10 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         return clazz.classObject();
                     }
                     Field f = clazz.fieldByName(fieldName);
+                    if (!f.isStatic()) {
+                        Assert2.error(arg0, "accessInstanceVariableFromStaticContext", fieldName);
+                        return null;
+                    }
                     if (f != null) {
                         return clazz.getValue(f);
                     } else {

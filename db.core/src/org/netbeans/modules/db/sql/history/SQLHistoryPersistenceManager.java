@@ -127,10 +127,12 @@ public class SQLHistoryPersistenceManager {
         return numElemsToRemove;
     }
     
-    public void updateSQLSaved(int limit, FileObject root) {
+    public List<SQLHistory> updateSQLSaved(int limit, FileObject root) {
+        String historyFilePath = null;
+        List<SQLHistory> updatedSQLHistoryList = null;
         try {
-            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
-            List<SQLHistory> updatedSQLHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);  
+            historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
+            updatedSQLHistoryList = retrieve(historyFilePath, root);  
             // Remove elements from list based on the number of statements to save that is set in the SQL History dialog
             if (limit < updatedSQLHistoryList.size()) {
                 numElemsToRemove = updatedSQLHistoryList.size() - limit;
@@ -142,11 +144,13 @@ public class SQLHistoryPersistenceManager {
                     df.getPrimaryFile().getFileSystem().runAtomicAction(modifier);
                 }
             }
+            updatedSQLHistoryList = retrieve(historyFilePath, root); 
         } catch (ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+        return updatedSQLHistoryList;
     }
     
     private static final class AtomicReader implements FileSystem.AtomicAction {

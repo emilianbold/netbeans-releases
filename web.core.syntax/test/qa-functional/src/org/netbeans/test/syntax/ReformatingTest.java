@@ -74,6 +74,18 @@ public class ReformatingTest extends CompletionTest {
         return NbModuleSuite.create(conf.addTest(SuiteCreator.class));
     }
 
+    @Override
+    public File getProjectsDir(){
+        File datadir = new CompletionTest().getDataDir();
+        return new File(datadir, "IndentationTestProjects");
+    }
+
+    @Override
+    protected void finalizeProjectsOpening() {
+        IndentCasesTest.setIndent(2);
+        IndentCasesTest.setIndent(4);
+    }
+
     public static final class SuiteCreator extends NbTestSuite {
 
         public SuiteCreator() {

@@ -52,7 +52,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Abort;
 import com.sun.tools.javac.util.CouplingAbort;
-import com.sun.tools.javac.util.FatalError;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -61,7 +60,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,6 +86,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
@@ -97,6 +96,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -170,6 +170,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     static final String SOURCE_LEVEL_ROOT = "sourceLevel"; //NOI18N
     static final String EXTRA_COMPILER_OPTIONS = "extraCompilerOptions"; //NOI18N
     static final String CLASSPATH_ATTRIBUTE = "classPath"; //NOI18N
+    static final String DIGEST = "digest"; //NOI18N
     
     //non-final, non-private for tests...
     static int DELAY = Utilities.isWindows() ? 2000 : 1000;
@@ -209,6 +210,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private int compileScheduled;
     
     private int lockRU;
+
+    private final Map<URL, String> root2DebugData = new HashMap<URL, String>();
     
     /** Creates a new instance of RepositoryUpdater */
     private RepositoryUpdater() {        
@@ -1427,6 +1430,30 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                 }
                                 completed = true;
+
+                                //UI Gestures:
+                                Object[] data = new Object[2 * root2DebugData.size() + 1];
+                                int index = 0;
+
+                                data[index++] = Index.getCacheFolder().getName();
+                                
+                                for (Entry<URL, String> e : root2DebugData.entrySet()) {
+                                    File cacheFile = Index.getClassFolder(e.getKey(), true);
+
+                                    if (cacheFile != null) {
+                                        data[index] = cacheFile.getParentFile().getName();
+                                    }
+
+                                    index++;
+                                    data[index++] = e.getValue();
+                                }
+
+                                root2DebugData.clear();
+
+                                LogRecord rec = new LogRecord(Level.CONFIG, RepositoryUpdater.class.getName());
+                                rec.setParameters(data);
+
+                                Logger.getLogger("org.netbeans.ui.java.RepositoryUpdater").log(rec);
                             } finally {
                                 if (!completed && !continuation) {
                                     resetDirty (ticket);
@@ -1787,7 +1814,22 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 Iterable<? extends File> children, Iterable<? extends File> virtualChildren,
                 boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter,
                 Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile,
-                Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel, boolean generateVirtual) throws IOException {
+                Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel, boolean generateVirtual)
+                throws IOException 
+        {
+            parseFiles(root, classCache, isInitialCompilation, children,
+                    virtualChildren, clean, handle, filter, resources, compiledFiles,
+                    toRecompile, misplacedSource2FQNs, allowCancel, generateVirtual,
+                    true, null);
+        }
+
+        private void parseFiles(URL root, final File classCache, boolean isInitialCompilation,
+                Iterable<? extends File> children, Iterable<? extends File> virtualChildren,
+                boolean clean, ProgressHandle handle, JavaFileFilterImplementation filter,
+                Map<String,List<File>> resources, Set<File> compiledFiles, Set<File> toRecompile,
+                Map<URI, List<String>> misplacedSource2FQNs, boolean allowCancel, boolean generateVirtual,
+                boolean digestChanged, File folderFile) throws IOException {
+        
             assert !allowCancel || compiledFiles != null;
             LOGGER.fine("parseFiles: " + root);            
             final FileObject rootFo = URLMapper.findFileObject(root);
@@ -1875,6 +1917,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if (uqImpl == null) {
                 //IDE is exiting, indeces are already closed.
                 return;
+            }
+            if (clean == false && digestChanged == false) {
+                // no need to recompile whole root and no change detected
+                // in source root.
+                return;
+            }
+            if (resources == null && folderFile != null) {
+                resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile, folderFile), true);
             }
             SourceAnalyser sa = uqImpl.getSourceAnalyser();
             assert sa != null;
@@ -2173,15 +2223,13 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 Map<String, List<File>> resources = Collections.<String, List<File>>emptyMap();
                 final FileList children = new FileList(folderFile);
                 Set<File> compiledFiles = new HashSet<File>();
-                children.getJavaFiles();
-                if (children.digestChanged()) {
-                    resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile, folderFile), true);
-                    parseFiles(root, classCache, isInitialCompilation,
-                            children.getJavaFiles(), children.getVirtualJavaFiles(),
-                            clean, handle, filter, resources, compiledFiles, null, misplacedSource2FQNs, false, true);
-                } else {
-                    ClassIndexManager.getDefault().createUsagesQuery(root, true);
+                if (isInitialCompilation) {
+                    root2DebugData.put(root, children.getJavaFiles().size() + ":" + children.getVirtualJavaFiles().size());
                 }
+                parseFiles(root, classCache, isInitialCompilation,
+                        children.getJavaFiles(), children.getVirtualJavaFiles(),
+                        clean, handle, filter, null, compiledFiles, null, misplacedSource2FQNs,
+                        false, true, children.digestChanged(), folderFile);
                 
                 if (!misplacedSource2FQNs.isEmpty()) {
                     if (LOGGER.isLoggable(Level.FINE)) {
@@ -2189,7 +2237,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         LOGGER.log(Level.FINE, "misplacedSource2FQNs={0}", misplacedSource2FQNs);
                     }
                     
-                    resources.clear();
+                    resources = new HashMap<String, List<File>>();
                     
                     gatherResourceForParseFilesFromRoot(compiledFiles, rootFile, classCache, resources);
                     
@@ -2757,25 +2805,23 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
         private void computeDigest(File root, final List<File> javaFiles) {
             StringBuilder sb = new StringBuilder(200);
-            sb.append(SourceLevelQuery.getSourceLevel(FileUtil.toFileObject(root)));
             for (File f : javaFiles) {
                 sb.append(f.getPath()).append(f.lastModified());
             }
             try {
-                MessageDigest md5 = MessageDigest.getInstance("MD5");
+                MessageDigest md5 = MessageDigest.getInstance("MD5"); // NOI18N
                 byte[] b = sb.toString().getBytes();
                 byte[] digest = md5.digest(b);
                 URL rootUrl = root.toURI().toURL();
-                Properties prop = loadProperties(rootUrl);
-                String data = prop.getProperty("digest");
-                if (data != null) {
+                String data = getAttribute(rootUrl, DIGEST, null);
+                if (data != null && getAttribute(rootUrl, DIRTY_ROOT, null) == null) {
                     String newDigest = printDigest(digest);
                     if (data.equals(newDigest) == true) {
                         digestChanged = false;
+                        return;
                     }
                 }
-                prop.put("digest", printDigest(digest));
-                storeProperties(rootUrl, prop);
+                ensureAttributeValue(rootUrl, DIGEST, printDigest(digest), true);
             } catch (IOException e) {
             } catch (NoSuchAlgorithmException ex) {
                 Exceptions.printStackTrace(ex);

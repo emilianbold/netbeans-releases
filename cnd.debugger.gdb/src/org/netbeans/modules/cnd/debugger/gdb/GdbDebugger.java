@@ -244,7 +244,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (iotab != null) {
                 iotab.setErrSeparated(false);
             }
-            runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory() + "/");  // NOI18N
+            runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory().replace("\\", "/") + "/");  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = pae.getProfile().getConsoleType().getValue();
             platform = ((MakeConfiguration) pae.getConfiguration()).getPlatform().getValue();
@@ -278,6 +278,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat",  // NOI18N
                     Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
+            gdb.enable_timings(false);
             if (pae.getID() == DEBUG_ATTACH) {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 CommandBuffer cb = new CommandBuffer(gdb);
@@ -374,11 +375,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     CommandBuffer cb = new CommandBuffer(gdb);
                     gdb.info_threads(cb); // we get the PID from this...
                     String msg = cb.waitForCompletion();
-                    if (msg.startsWith("* 1 thread ")) { // NOI18N
-                        int pos = msg.indexOf('.');
-                        if (pos > 0) {
+                    int pos1 = msg.indexOf("* 1 thread "); // NOI18N
+                    if (pos1 >= 0) {
+                        int pos2 = msg.indexOf('.', pos1);
+                        if (pos2 > 0) {
                             try {
-                                programPID = Long.valueOf(msg.substring(11, pos));
+                                programPID = Long.valueOf(msg.substring(pos1 + 11, pos2));
                             } catch (NumberFormatException ex) {
                                 log.warning("Failed to get PID from \"info threads\""); // NOI18N
                             }
@@ -1053,21 +1055,24 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         if (cb != null) {
             cb.append(omsg);
-        } else if (msg.startsWith("GNU gdb ") && startupTimer != null) { // NOI18N
-            // Cancel the startup timer - we've got our first response from gdb
-            startupTimer.cancel();
-            startupTimer = null;
+        } else if (msg.startsWith("GNU gdb ")) { // NOI18N
+            if (startupTimer != null) {
+                // Cancel the startup timer - we've got our first response from gdb
+                startupTimer.cancel();
+                startupTimer = null;
+            }
 
             // Now process the version information
             int first = msg.indexOf('.');
-            int last = msg.lastIndexOf('.');
+            int next = msg.indexOf('.', first + 1);
             try {
-                if (first == last) {
+                if (next == -1) {
                     gdbVersion = Double.parseDouble(msg.substring(8));
                 } else {
-                    gdbVersion = Double.parseDouble(msg.substring(8, last));
+                    gdbVersion = Double.parseDouble(msg.substring(8, next));
                 }
             } catch (NumberFormatException ex) {
+                log.warning("GdbDebugger: Failed to parse version string");
             }
             if (msg.contains("cygwin")) { // NOI18N
                 cygwin = true;
@@ -1084,6 +1089,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (!isTmp && getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
                 setRunning();
             }
+        } else if (msg.contains("(no debugging symbols found)") && state.equals(STATE_STARTING)) { // NOI18N
+            DialogDisplayer.getDefault().notify(
+                           new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                           "ERR_NoDebuggingSymbolsFound"))); // NOI18N
+            setExited();
+            finish(false);
         } else if (msg.startsWith("gdb: unknown target exception")) { // NOI18N
             DialogDisplayer.getDefault().notify(
                            new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
@@ -1287,7 +1298,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             if (killcmd.size() > 0) {
                 killcmd.add("-s"); // NOI18N
-                killcmd.add((platform == PlatformTypes.PLATFORM_MACOSX && signal == 2) ? "TRAP" : Integer.toString(signal)); // NOI18N
+                
+                String signalName = Integer.toString(signal);
+                // for MacOS we should substitute signal number with the real name
+                if (platform == PlatformTypes.PLATFORM_MACOSX) {
+                    switch (signal) {
+                        case 2 : signalName = "TRAP"; break; // NOI18N
+                        case 15 : signalName = "TERM"; break; // NOI18N
+                        default : assert false : "No textual value for MacOS signal " + signal + ", please add it to kill command in GdbDebugger.";// NOI18N
+                    }
+                }
+                killcmd.add(signalName);
+                
                 killcmd.add(Long.toString(pid));
                 ProcessBuilder pb = new ProcessBuilder(killcmd);
                 try {
@@ -1809,7 +1831,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             MakeArtifact ma = new MakeArtifact(mcd, conf);
             String runDirectory = conf.getProfile().getRunDirectory().replace("\\", "/");  // NOI18N
             String path = runDirectory + '/' + ma.getOutput();
-            if (isExecutable(conf, path)) {
+            if (isExecutableOrSharedLibrary(conf, path)) {
                 ProjectActionEvent pae = new ProjectActionEvent(
                         project,
                         DEBUG_ATTACH,
@@ -1842,11 +1864,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * @param path The absolute pathname to the file
      * @return true iff the input parameters get an executable
      */
-    private static boolean isExecutable(MakeConfiguration conf, String path) {
+    private static boolean isExecutableOrSharedLibrary(MakeConfiguration conf, String path) {
         File file;
         int platform = conf.getPlatform().getValue();
 
-        if (conf.isApplicationConfiguration()) {
+        if (conf.isApplicationConfiguration() || conf.isDynamicLibraryConfiguration()) {
             return true;
         } else if (conf.isMakefileConfiguration()) {
             if (platform == PlatformTypes.PLATFORM_WINDOWS) {

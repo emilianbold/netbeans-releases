@@ -23,6 +23,7 @@ import org.netbeans.jellytools.util.StringFilter;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.junit.utils.Utilities;
 
 /**

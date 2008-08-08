@@ -413,7 +413,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         if (node instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) node;
-            return CallStackNodeModel.getCSFName (null, sf, true);
+            return CallStackNodeModel.getCSFToolTipText(sf);
         }
         if (node instanceof JPDAThreadGroup) {
             return ((JPDAThreadGroup) node).getName ();

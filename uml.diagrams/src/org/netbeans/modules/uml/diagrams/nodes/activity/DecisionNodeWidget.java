@@ -73,13 +73,13 @@ public class DecisionNodeWidget extends ControlNodeWidget
             
             //create main view 
             PolygonWidget polygonWidget = new PolygonWidget(scene,
-                                                 getWidgetID(),
+                                                 getResourcePath(),
                                                  bundle.getString("LBL_body"));
              polygonWidget.setMinimumSize(new Dimension(
                                       MIN_NODE_WIDTH, MIN_NODE_HEIGHT));
             polygonWidget.setUseGradient(useGradient);
-            polygonWidget.setCustomizableResourceTypes(
-                    new ResourceType[]{ResourceType.BACKGROUND});
+//            polygonWidget.setCustomizableResourceTypes(
+//                    new ResourceType[]{ResourceType.BACKGROUND});
             polygonWidget.setOpaque(true);
             setCurrentView(polygonWidget);
         }

@@ -42,6 +42,7 @@ package org.netbeans.modules.projectimport.eclipse.core.spi;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -159,7 +160,13 @@ public class ProjectFactorySupport {
         String[] labels = new String[rootURLs.length];
         for (int i = 0; i < rootURLs.length; i++) {
             for (DotClassPathEntry e : sources) {
-                String path = rootURLs[i].getFile();
+                String path;
+                try {
+                    path = new File(rootURLs[i].toURI()).getPath();
+                } catch (URISyntaxException ex) {
+                    LOG.info("cannot convert '"+rootURLs[i].toExternalForm()+"' to file: "+ex.toString()); //NOI18N
+                    continue;
+                }
                 if (path.endsWith("/") || path.endsWith("\\")) { //NOI18N
                     path = path.substring(0, path.length()-1);
                 }
@@ -650,14 +657,30 @@ public class ProjectFactorySupport {
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         }
     }
-    
-    public static boolean areSourceRootsOwned(ProjectImportModel model, List<String> importProblems) {
+
+    /**
+     * Checks whether (potentially) external source roots are already owned by another project.
+     * If they are, the import cannot proceed - the imported project would not be treated as
+     * the new owner of the source roots, and so could not work with them (e.g. to set their CP).
+     * Internal source roots beneath the project directory do not pose this problem, as
+     * {@link FileOwnerQuery} should consider the new project to be the default owner of anything
+     * underneath it.
+     * @param model a model of the project being considered for import
+     * @param nbProjectDir the proposed directory to use as the NetBeans {@linkplain Project#getProjectDirectory project directory}
+     * @param importProblems problems to append to in case this returns true
+     * @return true if the import would be blocked by ownership issues; false normally
+     */
+    public static boolean areSourceRootsOwned(ProjectImportModel model, File nbProjectDir, List<String> importProblems) {
         for (File sourceRootFile : model.getEclipseSourceRootsAsFileArray()) {
+            if (sourceRootFile.getAbsolutePath().startsWith(nbProjectDir.getAbsolutePath())) {
+                continue;
+            }
             FileObject fo = FileUtil.toFileObject(sourceRootFile);
             Project p = FileOwnerQuery.getOwner(fo);
             if (p != null) {
                 importProblems.add(NbBundle.getMessage(EclipseProject.class, "MSG_SourceRootOwned", // NOI18N
-                        model.getProjectName(), sourceRootFile.getPath(), p.getProjectDirectory().getPath()));
+                        model.getProjectName(), sourceRootFile.getPath(),
+                        FileUtil.getFileDisplayName(p.getProjectDirectory())));
                 return true;
             }
         }

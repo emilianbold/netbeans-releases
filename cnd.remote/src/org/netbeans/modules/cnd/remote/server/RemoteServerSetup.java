@@ -64,10 +64,10 @@ public class RemoteServerSetup {
     private static final String GET_LIB_INFO = "PATH=/bin:/usr/bin:$PATH  ls -1 2>&1 "; // NOI18N
     private static final String REMOTE_LIB_DIR = ".netbeans/6.5/cnd2/lib/"; // NOI18N
     
-    private Map<String, Double> scriptSetupMap;
-    private Map<String, String> binarySetupMap;
-    private Map<String, List<String>> updateMap;
-    private String hkey;
+    private final Map<String, Double> scriptSetupMap;
+    private final Map<String, String> binarySetupMap;
+    private final Map<String, List<String>> updateMap;
+    private final String hkey;
     private boolean cancelled;
     private boolean failed;
     private String reason;
@@ -77,7 +77,7 @@ public class RemoteServerSetup {
         
         // Script setup map
         scriptSetupMap = new HashMap<String, Double>();
-        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.3)); // NOI18N
+        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.7)); // NOI18N
         
         // Binary setup map
         binarySetupMap = new HashMap<String, String>();
@@ -93,7 +93,9 @@ public class RemoteServerSetup {
         
         updateMap.clear(); // remote entries if run for other remote systems
         updateList = getScriptUpdates(updateList);
-        updateList = getBinaryUpdates(updateList);
+        if (!isFailedOrCanceled()) {
+            updateList = getBinaryUpdates(updateList);
+        }
         
         if (!updateList.isEmpty()) {
             updateMap.put(hkey, updateList);
@@ -114,7 +116,7 @@ public class RemoteServerSetup {
                         "PATH=/bin:/usr/bin:$PATH mkdir -p " + REMOTE_SCRIPT_DIR); // NOI18N
                 if (exit_status == 0) {
                     for (String key : scriptSetupMap.keySet()) {
-                        log.fine("RSS.setup: Copying" + path + " to " + hkey);
+                        log.fine("RSS.setup: Copying " + path + " to " + hkey);
                         File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
                         RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
                         RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key);
@@ -220,12 +222,13 @@ public class RemoteServerSetup {
                 String val = support.toString();
                 int count = 0;
                 for (String line : val.split("\n")) { // NOI18N
-                    int pos = line.indexOf(':');
-                    if (pos > 0) {
+                    int pos1 = line.indexOf(':');
+                    if (pos1 > 0) {
                         if (count++ == 0) {
                             list.add(REMOTE_LIB_DIR);
                         }
-                        list.add(line.substring(0, pos));
+                        int pos2 = line.indexOf(':', pos1 + 1);
+                        list.add(line.substring(pos1 + 1, pos2).trim());
                     }
                 }
             }
@@ -264,6 +267,10 @@ public class RemoteServerSetup {
     
     protected boolean isFailed() {
         return failed;
+    }
+
+    private boolean isFailedOrCanceled() {
+        return failed || cancelled;
     }
     
     private String getBinarySetupFiles() {

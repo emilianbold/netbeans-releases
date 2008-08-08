@@ -542,8 +542,6 @@ public class DnDHandler implements DragSourceListener, DragGestureListener, Drop
             }
             w.setTimeEvent(f);
             return w;
-        } else if (item.equals("exit")) { // NOI18N
-            return builder.createExit();
         } else if (item.equals("throw")) { // NOI18N
             return builder.createThrow();
         } else if (item.equals("rethrow")) { // NOI18N

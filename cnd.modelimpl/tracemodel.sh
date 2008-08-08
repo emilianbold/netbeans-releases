@@ -92,6 +92,7 @@ function classpath() {
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-project-ant.jar
     CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-project-libraries.jar
     CP=${CP}${path_sep}${ide}/modules/org-openidex-util.jar
+    CP=${CP}${path_sep}${ide}/modules/org-netbeans-modules-xml-catalog.jar
     CP=${CP}${path_sep}${platform}/lib/org-openide-util.jar
     CP=${CP}${path_sep}${platform}/modules/org-openide-dialogs.jar
     CP=${CP}${path_sep}${platform}/modules/org-openide-nodes.jar

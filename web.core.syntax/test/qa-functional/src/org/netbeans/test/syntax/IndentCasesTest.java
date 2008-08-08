@@ -88,7 +88,7 @@ public class IndentCasesTest extends J2eeTestCase {
         }
     }
 
-    private void setIndent(int number){
+    public static void setIndent(int number){
         OptionsOperator options = OptionsOperator.invoke();
         options.selectEditor();
         new JTabbedPaneOperator(options).selectPage("Formatting");
