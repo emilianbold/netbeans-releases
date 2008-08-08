@@ -56,13 +56,14 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.ConstructorNode;
-import org.codehaus.groovy.ast.DynamicVariable;
+import org.codehaus.groovy.ast.GroovyCodeVisitor;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ClosureListExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
@@ -209,8 +210,7 @@ public class AstUtilities {
         int lineNumber = node.getLineNumber();
         int columnNumber = node.getColumnNumber();
         if (lineNumber < 1 || columnNumber < 1) {
-            lineNumber = 1;
-            columnNumber = 1;
+            return OffsetRange.NONE;
         }
 
         if (node instanceof FieldNode) {
@@ -261,7 +261,7 @@ public class AstUtilities {
         } else if (node instanceof ConstructorNode) {
             int start = getOffset(doc, lineNumber, columnNumber);
             ConstructorNode constructorNode = (ConstructorNode) node;
-            return new OffsetRange(start, start + constructorNode.getDeclaringClass().getNameWithoutPackage().length());
+            return getNextIdentifierByName(doc, constructorNode.getDeclaringClass().getNameWithoutPackage(), start);
         } else if (node instanceof MethodNode) {
             int start = getOffset(doc, lineNumber, columnNumber);
             MethodNode methodNode = (MethodNode) node;
@@ -289,10 +289,16 @@ public class AstUtilities {
             }
             int start = getOffset(doc, lineNumber, columnNumber);
             return new OffsetRange(start, start + methodCall.getMethodAsString().length());
+        } else if (node instanceof ConstructorCallExpression) {
+            ConstructorCallExpression methodCall = (ConstructorCallExpression) node;
+            String name = methodCall.getType().getNameWithoutPackage();
+            int start = getOffset(doc, lineNumber, columnNumber);
+            return getNextIdentifierByName(doc, name, start);
         } else if (node instanceof ClassExpression) {
             ClassExpression clazz = (ClassExpression) node;
+            String name = clazz.getType().getNameWithoutPackage();
             int start = getOffset(doc, lineNumber, columnNumber);
-            return new OffsetRange(start, start + clazz.getText().length());
+            return getNextIdentifierByName(doc, name, start);
         } else if (node instanceof ConstantExpression) {
             ConstantExpression constantExpression = (ConstantExpression) node;
             int start = getOffset(doc, lineNumber, columnNumber);
@@ -453,7 +459,7 @@ public class AstUtilities {
         return sb.toString();
     }
 
-    private static OffsetRange getNextIdentifierByName(BaseDocument doc, String fieldName, int startOffset) {
+    public static OffsetRange getNextIdentifierByName(BaseDocument doc, String fieldName, int startOffset) {
         // since Groovy 1.5.6 the start offset is on 'def' on field/method declaration:
         // ^def foo = ...
         // ^Map bar = ...
@@ -569,7 +575,7 @@ public class AstUtilities {
      * Doesn't check VariableScope if variable is declared there,
      * but assumes it is there and makes search for given variable
      */
-    public static ASTNode getVariable(ASTNode scope, String variable, AstPath path) {
+    public static ASTNode getVariable(ASTNode scope, String variable, AstPath path, BaseDocument doc, int cursorOffset) {
         if (scope instanceof ClosureExpression) {
             ClosureExpression closure = (ClosureExpression) scope;
             for (Parameter parameter : closure.getParameters()) {
@@ -640,7 +646,7 @@ public class AstUtilities {
                 VariableScope variableScope = blockStatement.getVariableScope();
                 if (variableScope.getReferencedClassVariable(variable) != null) {
                     // let's take first occurrence of the variable
-                    VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path);
+                    VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path, doc, cursorOffset);
                     scopeVisitor.collect();
                     Set<ASTNode> occurrences = scopeVisitor.getOccurrences();
                     if (!occurrences.isEmpty()) {
@@ -679,6 +685,32 @@ public class AstUtilities {
             }
         }
         return null;
+    }
+
+    /**
+     * Use this if you need some part of node that is not available as node.
+     * For example return type of method definition is not accessible as node,
+     * so I am wrapping MethodNode in this FakeASTNode and I also provide
+     * text to compute OffsetRange for...
+     */
+    public static final class FakeASTNode extends ASTNode {
+
+        private final String text;
+        private final ASTNode orig;
+        
+        public FakeASTNode(ASTNode orig, String text) {
+            this.orig = orig;
+            this.text = text;
+        }
+
+        public ASTNode getOriginalNode() { return orig; }
+
+        @Override
+        public String getText() { return text; }
+
+        @Override
+        public void visit(GroovyCodeVisitor visitor) {}
+
     }
 
 }

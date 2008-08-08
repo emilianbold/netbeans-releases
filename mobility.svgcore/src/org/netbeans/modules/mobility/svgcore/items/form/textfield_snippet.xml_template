@@ -1,7 +1,7 @@
 <g id="%%COMPONENT_ID%%" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
        <!-- Metadata information. Please don't edit. -->
    <text display="none">type=textfield</text>
-       <text display="none">readOnly=false</text>
+       <text display="none">editable=true</text>
        <text display="none">enabled=true</text>
 
        <rect x="0" y="0" rx="5" ry="5" width="200" height="30" fill="none" stroke="black" stroke-width="2">

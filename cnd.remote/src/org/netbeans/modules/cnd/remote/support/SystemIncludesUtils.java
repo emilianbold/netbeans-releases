@@ -66,49 +66,38 @@ import org.openide.util.RequestProcessor;
  */
 public class SystemIncludesUtils {
 
-//    public static RequestProcessor.Task load(final RemoteServerRecord server) {
-//        final CompilerSet cs = new FakeCompilerSet(); // server.getCompilerSets() ???
-//        return load(server.getServerName(), server.getUserName(), cs);
-//    }
-
     public static void load(final String hkey, final List<CompilerSet> csList) {
-        Set<String> paths = new HashSet<String>();
-        String storagePrefix = null;
-        for (CompilerSet cs : csList) {
-            for (Tool tool : cs.getTools()) {
-                if (tool instanceof BasicCompiler) {
-                    BasicCompiler bc = (BasicCompiler) tool;
-                    storagePrefix = bc.getStoragePrefix();
-                    for (Object obj : bc.getSystemIncludeDirectories()) {
-                        String localPath = (String) obj;
-                        if (localPath.length() < storagePrefix.length()) {
-                            System.err.println("CompilerSet " + bc.getDisplayName() + " has returned invalid include path: " + localPath);
-                        } else {
-                            paths.add(localPath.substring(storagePrefix.length()));
-                        }
-                    }
-                }
-            }
-        }
-        if (storagePrefix != null) {
-            load(hkey, storagePrefix, paths);
-        }
-    // TODO: we can painlessly ignore CompilerSets without tools and load() calls with empty list
-    // but existence of them should ring some bells
-    }
-
-    public static RequestProcessor.Task load(final String hkey, final String storagePrefix, final Collection<String> paths) {
-        synchronized (inProgress) {
-            if (inProgress.contains(storagePrefix)) { //TODO: very weak validation
-                return null;
-            }
-            inProgress.add(storagePrefix);
-        }
-        return RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
+                String storagePrefix = null;
                 try {
-                    boolean success = doLoad(hkey, storagePrefix, paths);
+                    Set<String> paths = new HashSet<String>();
+                    for (CompilerSet cs : csList) {
+                        for (Tool tool : cs.getTools()) {
+                            if (tool instanceof BasicCompiler) {
+                                BasicCompiler bc = (BasicCompiler) tool;
+                                storagePrefix = bc.getStoragePrefix();
+                                for (Object obj : bc.getSystemIncludeDirectories()) {
+                                    String localPath = (String) obj;
+                                    if (localPath.length() < storagePrefix.length()) {
+                                        System.err.println("CompilerSet " + bc.getDisplayName() + " has returned invalid include path: " + localPath);
+                                    } else {
+                                        paths.add(localPath.substring(storagePrefix.length()));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    synchronized (inProgress) {
+                        if (inProgress.contains(storagePrefix)) { //TODO: very weak validation
+                            return;
+                        }
+                        inProgress.add(storagePrefix);
+                    }
+                    if (storagePrefix != null) {
+                        doLoad(hkey, storagePrefix, paths);
+                    }
                 } finally {
                     synchronized (inProgress) {
                         inProgress.remove(storagePrefix);
@@ -116,9 +105,7 @@ public class SystemIncludesUtils {
                 }
             }
         });
-    }
-
-    // TODO: to think about next way:
+    }    // TODO: to think about next way:
     // just put links in the path mapped from server and set up
     // toolchain accordingly. Although those files will confuse user...
     // Hiding links in nbproject can help but would lead for different

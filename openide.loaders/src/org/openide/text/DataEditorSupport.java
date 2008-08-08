@@ -399,7 +399,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             charsets.put(tmpObj, c);
             return super.openDocument();
         } finally {
-            charsets.get(tmpObj);
+            charsets.remove(tmpObj);
         }
     }
 

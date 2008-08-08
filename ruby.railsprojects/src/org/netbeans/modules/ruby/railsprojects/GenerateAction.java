@@ -131,7 +131,9 @@ public final class GenerateAction extends NodeAction {
 //            return;
 //        }
 
-        if (!RubyPlatform.gemManagerFor(project).isValidRails(true)) {
+        // #141908 -- check whether rails is installed in vendor/
+        FileObject railsInstall = project.getProjectDirectory().getFileObject("vendor/rails/railties"); // NOI18N
+        if (railsInstall == null && !RubyPlatform.gemManagerFor(project).isValidRails(true)) {
             return;
         }
 

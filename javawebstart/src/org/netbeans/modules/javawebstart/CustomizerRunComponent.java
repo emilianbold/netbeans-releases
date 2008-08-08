@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.netbeans.modules.java.j2seproject.api.J2SERunConfigProvider;
+import org.netbeans.modules.javawebstart.ui.customizer.JWSProjectProperties;
 
 /**
  * 
@@ -129,10 +130,12 @@ public class CustomizerRunComponent extends javax.swing.JPanel implements Action
     }
     
     private void initMaps() {
-        runUnselectedMap.put("$target.run", null);
-        runUnselectedMap.put("$target.debug", null);
-        runSelectedMap.put("$target.run", "jws-run");
-        runSelectedMap.put("$target.debug", "jws-debug");
+        runUnselectedMap.put(JWSProjectProperties.CONFIG_TARGET_RUN_PROPNAME, null);
+        runUnselectedMap.put(JWSProjectProperties.CONFIG_TARGET_DEBUG_PROPNAME, null);
+        runUnselectedMap.put(JWSProjectProperties.COS_UNSUPPORTED_PROPNAME, null);
+        runSelectedMap.put(JWSProjectProperties.CONFIG_TARGET_RUN_PROPNAME, JWSProjectProperties.CONFIG_TARGET_RUN);
+        runSelectedMap.put(JWSProjectProperties.CONFIG_TARGET_DEBUG_PROPNAME, JWSProjectProperties.CONFIG_TARGET_DEBUG);
+        runSelectedMap.put(JWSProjectProperties.COS_UNSUPPORTED_PROPNAME, "true"); // NOI18N
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

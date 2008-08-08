@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,37 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.highlight.semantic;
+package org.netbeans.modules.dbschema.migration.archiver.serializer;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import java.io.ByteArrayOutputStream;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Andrei Badea
  */
-public class InstantiationUsagesTest extends SemanticHighlightingTestBase {
+public class XMLGraphSerializerTest extends NbTestCase {
 
-    public InstantiationUsagesTest(String testName) {
-        super(testName);
+    public XMLGraphSerializerTest(String name) {
+        super(name);
     }
 
-    public void testMacroUsages() throws Exception {
-//        String source = "macros.cc"; // NOI18N
-//        performTest(source, source + ".dat", source + ".err"); // NOI18N
+    public void testIssue80307() throws Exception {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        new XMLGraphSerializer(outputStream).writeObject(new FooList());
+
+        String string = new String(outputStream.toByteArray(), "UTF-8");
+        assertTrue(string.contains("XMLGraphSerializerTest$Foo42"));
+        assertTrue(string.contains("XMLGraphSerializerTest$Foo42#1"));
     }
 
-    @Override
-    protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        return Collections.<CsmOffsetable>emptyList();
+    private static final class Foo {
+
+        @Override
+        public int hashCode() {
+            return 42;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Foo;
+        }
     }
 
+    private static final class FooList {
+
+        private final Foo foo1 = new Foo();
+        private final Foo foo2 = new Foo();
+    }
 }
