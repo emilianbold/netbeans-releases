@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider.Entity;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -90,7 +91,12 @@ public class SemanticEntitiesProvider {
                 }
 
                 public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                    return ModelUtils.getFieldsBlocks(csmFile);
+                    return ModelUtils.collect(csmFile, getCollector());
+                }
+
+                @Override
+                public ReferenceCollector getCollector() {
+                    return new ModelUtils.FieldReferenceCollector();
                 }
             });
 
@@ -103,7 +109,12 @@ public class SemanticEntitiesProvider {
                 }
 
                 public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                    return ModelUtils.getFunctionNames(csmFile);
+                    return ModelUtils.collect(csmFile, getCollector());
+                }
+
+                @Override
+                public ReferenceCollector getCollector() {
+                    return new ModelUtils.FunctionReferenceCollector();
                 }
 
                 @Override
@@ -125,7 +136,7 @@ public class SemanticEntitiesProvider {
                 }
 
                 @Override
-                public AttributeSet getColor(CsmOffsetable obj) {
+                public AttributeSet getAttributes(CsmOffsetable obj) {
                     CsmMacro macro = (CsmMacro) ((CsmReference) obj).getReferencedObject();
                     return macro == null || !macro.isSystem() ? color : sysMacroColors;
                 }
@@ -147,7 +158,39 @@ public class SemanticEntitiesProvider {
                 }
 
                 public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                    return ModelUtils.getTypedefBlocks(csmFile);
+                    return ModelUtils.collect(csmFile, getCollector());
+                }
+
+                @Override
+                public ReferenceCollector getCollector() {
+                    return new ModelUtils.TypedefReferenceCollector();
+                }
+            });
+
+            // unused variables
+            list.add(new AbstractSemanticEntity(FontColorProvider.Entity.UNUSED_VARIABLES) {
+
+                private final AttributeSet UNUSED_TOOLTIP = AttributesUtilities.createImmutable(
+                            EditorStyleConstants.Tooltip,
+                            NbBundle.getMessage(SemanticEntitiesProvider.class, "UNUSED_VARIABLE_TOOLTIP")); // NOI18N
+
+                public String getName() {
+                    return "unused-variables"; // NOI18N
+                }
+
+                public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                    return ModelUtils.collect(csmFile, getCollector());
+                }
+
+                @Override
+                public ReferenceCollector getCollector() {
+                    return new ModelUtils.UnusedVariableCollector();
+                }
+
+                @Override
+                public void updateFontColors(FontColorProvider provider) {
+                    super.updateFontColors(provider);
+                    color = AttributesUtilities.createComposite(UNUSED_TOOLTIP, color);
                 }
             });
         } // if (!HighlighterBase.MINIMAL)
@@ -161,7 +204,8 @@ public class SemanticEntitiesProvider {
                 StyleConstants.Underline, null,
                 StyleConstants.StrikeThrough, null,
                 StyleConstants.Background, null,
-                EditorStyleConstants.WaveUnderlineColor, null);
+                EditorStyleConstants.WaveUnderlineColor, null,
+                EditorStyleConstants.Tooltip, null);
 
         public AbstractSemanticEntity() {
             this.entity = null;
@@ -177,12 +221,18 @@ public class SemanticEntitiesProvider {
         }
 
         protected static AttributeSet getFontColor(FontColorProvider provider, FontColorProvider.Entity entity) {
-            return AttributesUtilities.createComposite(provider.getColor(entity), cleanUp);
+            AttributeSet attributes = AttributesUtilities.createComposite(provider.getColor(entity), cleanUp);
+            return attributes;
         }
 
-        public AttributeSet getColor(CsmOffsetable obj) {
+        public AttributeSet getAttributes(CsmOffsetable obj) {
             return color;
         }
+
+        public ReferenceCollector getCollector() {
+            return null;
+        }
+
     }
 
     // Singleton

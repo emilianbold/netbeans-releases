@@ -42,6 +42,7 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -139,6 +140,7 @@ final class ResultPanelOutput extends JScrollPane
         textPane.setEditable(false);
         textPane.getCaret().setVisible(true);
         textPane.getCaret().setBlinkRate(0);
+        textPane.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
         setViewportView(textPane);
 
         /*

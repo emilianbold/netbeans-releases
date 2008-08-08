@@ -82,7 +82,7 @@ final class FileAssociationsOptionsPanelController extends OptionsPanelControlle
     }
 
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx("netbeans.optionsDialog.advanced.files");  //NOI18N
     }
 
     public JComponent getComponent(Lookup masterLookup) {

@@ -375,6 +375,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         for (AntLogger l : getInterestedLoggersByScript(null)) {
             l.buildInitializationFailed(ev);
         }
+        interestingOutputCallback.run();
     }
     
     public void buildStarted(BuildEvent ev) {
@@ -420,6 +421,9 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                 } catch (Error x) {
                     ERR.notify(EM_LEVEL, x);
                 }
+            }
+            if (e.getException() != null) {
+                interestingOutputCallback.run();
             }
         } finally {
             AntBridge.resumeDelegation();

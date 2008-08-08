@@ -65,6 +65,7 @@ import org.netbeans.test.j2ee.addmethod.AddFinderMethodTest;
 import org.netbeans.test.j2ee.addmethod.AddMethodTest;
 import org.netbeans.test.j2ee.addmethod.AddSelectMethodTest;
 import org.netbeans.test.j2ee.addmethod.CallEJBTest;
+import org.netbeans.test.j2ee.lib.J2eeProjectSupport;
 import org.netbeans.test.j2ee.lib.Utils;
 import org.openide.util.Exceptions;
 
@@ -170,9 +171,9 @@ public class EJBValidation extends J2eeTestCase {
 
     public void closeProjects() {
         EditorOperator.closeDiscardAll();
-        ProjectSupport.closeProject(EAR_PROJECT_NAME);
-        ProjectSupport.closeProject(EJB_PROJECT_NAME);
-        ProjectSupport.closeProject(WEB_PROJECT_NAME);
+        J2eeProjectSupport.closeProject(EAR_PROJECT_NAME);
+        J2eeProjectSupport.closeProject(EJB_PROJECT_NAME);        
+        J2eeProjectSupport.closeProject(WEB_PROJECT_NAME);
     }
 
     public void prepareDatabase() {

@@ -46,7 +46,6 @@ import org.netbeans.test.xml.schema.general.GeneralXMLTest;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -102,6 +101,11 @@ public class XMLCodeCompletion extends GeneralXMLTest {
       ProjectRootNode prn = pto.getProjectRootNode( sProject );
       prn.select( );
 
+      // Workaround for MacOS platform
+      // TODO : check platform
+      // TODO : remove after normal issue fix
+      NewFileWizardOperator.invoke().cancel( );
+
       NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
       opNewFileWizard.selectCategory( "Java" );
       opNewFileWizard.selectFileType( "Java Package" );
@@ -129,6 +133,11 @@ public class XMLCodeCompletion extends GeneralXMLTest {
       ProjectsTabOperator pto = new ProjectsTabOperator( );
       ProjectRootNode prn = pto.getProjectRootNode( sApplication + "|Source Packages|" + sPackage );
       prn.select( );
+
+      // Workaround for MacOS platform
+      // TODO : check platform
+      // TODO : remove after normal issue fix
+      NewFileWizardOperator.invoke().cancel( );
 
       NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
 

@@ -1205,18 +1205,20 @@
             throw new Error("Can't get a source command arguments out of [" + command + "]");
         }
         var sourceURI = matches[1];
-        var data = NetBeans.Utils.getSourceAsync(sourceURI,
-            function(data, succeeds) {
-                var sourceResponse =
-                    <response command="source"
-                        success={(succeeds ? "1" : "0")}
-                        transaction_id={transaction_id}>{data}</response>;
-                socket.send(sourceResponse);
-            }
-        );
+        var data = currentFirebugContext.sourceCache.load(sourceURI);
+        if (data) {
+            // Firebug converts sources to Unicode, but we
+            // transmit them in UTF-8 - the default XML encoding.
+            // We may need to convert the source text to UTF-8
+            // here using nsIScriptableUnicodeConverter service.
+            data = data.join("\n");
+        }
+        var sourceResponse =
+            <response command="source"
+                success={(data ? "1" : "0")}
+                transaction_id={transaction_id}>{data}</response>;
+        socket.send(sourceResponse);
     }
-
-
 
     // responses to ide
     function sendInitMessage()
@@ -1518,7 +1520,12 @@
         debugging = true;
         stepping = false;
 
-        // TODO update status bar
+        // Cache the sources
+        FBL.updateScriptFiles(currentFirebugContext);
+        for (var url in currentFirebugContext.sourceFileMap) {            
+            currentFirebugContext.sourceCache.load(url);
+        }
+        // TODO update status bar        
 
         debugState.frames = new Array();
         var prevFrame = frame;

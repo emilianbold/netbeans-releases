@@ -238,7 +238,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             currentTarget = target;
             
             //hack - I need to call the handleTagClosingSymbol() if a character was really typed into the editor
-            //but outside of the insertStringMethod() which is called under document atomicLock().
+            //but outside of the insertStringMethod() which is called under document atomic lock.
             insertedText = null;
             int dotPos = target.getCaret().getDot();
             super.actionPerformed(evt, target);
@@ -247,7 +247,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 try {
                     handleTagClosingSymbol((BaseDocument)target.getDocument(), dotPos, insertedText.charAt(0));
                 } catch (BadLocationException ble) {
-                    //ignore
+                    
                 }
             }
             currentTarget = null;
@@ -329,7 +329,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             super.replaceSelection(target, dotPos, caret, str, overwrite);
         }
 
-        private void handleTagClosingSymbol(BaseDocument doc, int dotPos, char lastChar) throws BadLocationException {
+        private void handleTagClosingSymbol(final BaseDocument doc, final int dotPos, final char lastChar) throws BadLocationException {
             if (lastChar == '>') {
                 TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
                 for (LanguagePath languagePath : (Set<LanguagePath>) tokenHierarchy.languagePaths()) {
@@ -337,18 +337,20 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                         HTMLLexerFormatter htmlFormatter = new HTMLLexerFormatter(languagePath);
 
                         if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
-                            Reformat reformat = Reformat.get(doc);
+                            final Reformat reformat = Reformat.get(doc);
                             reformat.lock();
-
                             try {
-                                doc.atomicLock();
-                                try {
-                                    int startOffset = Utilities.getRowStart(doc, dotPos);
-                                    int endOffset = Utilities.getRowEnd(doc, dotPos);
-                                    reformat.reformat(startOffset, endOffset);
-                                } finally {
-                                    doc.atomicUnlock();
-                                }
+                                doc.runAtomic(new Runnable() {
+                                public void run() {
+                                        try {
+                                            int startOffset = Utilities.getRowStart(doc, dotPos);
+                                            int endOffset = Utilities.getRowEnd(doc, dotPos);
+                                            reformat.reformat(startOffset, endOffset);
+                                        } catch (BadLocationException ex) {
+                                            //ignore
+                                        }
+                                } 
+                            });
                             } finally {
                                 reformat.unlock();
                             }

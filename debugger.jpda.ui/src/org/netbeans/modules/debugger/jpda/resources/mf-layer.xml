@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
                         <attr name="position" intvalue="1760"/>
                     </file>
-                    
+
                     <file name="SeparatorAfterFormat.instance">
 			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1600"/>
@@ -77,7 +77,7 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance">
                         <attr name="position" intvalue="1840"/>
-                    </file>                    
+                    </file>
                     </folder>
             </folder>
         </folder>
@@ -114,7 +114,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleMethodFieldBreakpointAction.instance"/>
             <file name="org-netbeans-modules-debugger-jpda-ui-actions-EvaluateAction.instance"/>
             <file name="org-netbeans-modules-debugger-jpda-ui-debugging-ThreadsHistoryAction.instance"/>
-            <file name="org-netbeans-modules-debugger-jpda-ui-actions-GoToHitAction.instance"/>
+            <!--file name="org-netbeans-modules-debugger-jpda-ui-actions-GoToHitAction.instance"/-->
         </folder>
         <folder name="Window">
             <folder name="Debug">
@@ -127,7 +127,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+
     <folder name="Projects">
         <folder name="Debugger_Actions_temporary">
             <file name="org-netbeans-modules-debugger-ui-actions-DebugProjectAction.shadow">
@@ -196,7 +196,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-debugger-ui-actions-FixAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-FixAction.instance"/>
                 <attr name="position" intvalue="1900"/>
-            </file>            
+            </file>
             <file name="Separator4.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="2000"/>
@@ -273,7 +273,7 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Toolbars">
-        <!--<folder name="Build">            
+        <!--<folder name="Build">
             <attr name="org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow/org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
