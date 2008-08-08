@@ -47,6 +47,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
@@ -77,7 +78,7 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     private JSDebuggerState debuggerState = JSDebuggerState.NOT_CONNECTED;
 
     private JSWindow[] windows = JSWindow.EMPTY_ARRAY;
-    private HashMap<String, JSSource> sources = new HashMap<String, JSSource>();
+    private HashMap<String, JSSource> sources = new LinkedHashMap<String, JSSource>();
 
     private JSCallStackFrame[] callStackFrames = JSCallStackFrame.EMPTY_ARRAY;
 
