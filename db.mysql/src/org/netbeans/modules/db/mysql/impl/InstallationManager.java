@@ -41,14 +41,13 @@
 
 package org.netbeans.modules.db.mysql.impl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.db.mysql.impl.Installation.Command;
+import org.netbeans.modules.db.mysql.installations.BundledInstallation;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -68,6 +67,15 @@ public class InstallationManager {
 
     public static List<Installation> getInstallations() {
         if ( INSTALLATIONS == null ) {
+            // First see if we're bundled with MySQL.  If so, just return
+            // the bundled installation
+            Installation bundled = BundledInstallation.getDefault();
+            if (bundled.isInstalled()) {
+                ArrayList<Installation> bundledList = new ArrayList<Installation>();
+                bundledList.add(bundled);
+                return bundledList;
+            }
+
             Collection loadedInstallations = 
                     Lookups.forPath(INSTALLATION_PROVIDER_PATH)
                         .lookupAll(Installation.class);
