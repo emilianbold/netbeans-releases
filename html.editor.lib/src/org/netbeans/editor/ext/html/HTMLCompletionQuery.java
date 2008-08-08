@@ -41,13 +41,10 @@
 
 package org.netbeans.editor.ext.html;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.SyntaxElement;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.awt.Color;
@@ -608,31 +605,34 @@ public class HTMLCompletionQuery  {
             substituteText(component, substOffset, component.getCaretPosition() - substOffset, shift);
         }
         
-        boolean replaceText( JTextComponent component, String text ) {
-            BaseDocument doc = (BaseDocument)component.getDocument();
-            doc.atomicLock();
-            try {
-                //test whether we are trying to insert sg. what is already present in the text
-                String currentText = doc.getText(offset, (doc.getLength() - offset) < text.length() ? (doc.getLength() - offset) : text.length()) ;
-                if(!text.equals(currentText)) {
-                    //remove common part
-                    doc.remove( offset, length );
-                    doc.insertString( offset, text, null);
-                } else {
-                    int newCaretPos = component.getCaret().getDot() + text.length() - length;
-                    //#82242 workaround - the problem is that in some situations
-                    //1) result item is created and it remembers the remove length
-                    //2) document is changed
-                    //3) RI is substituted.
-                    //this situation shouldn't happen imho and is a problem of CC infrastructure
-                    component.setCaretPosition(newCaretPos < doc.getLength() ? newCaretPos : doc.getLength());
+        boolean replaceText(final JTextComponent component, final String text) {
+            final BaseDocument doc = (BaseDocument) component.getDocument();
+            final boolean[] result = new boolean[1];
+            result[0] = true;
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        //test whether we are trying to insert sg. what is already present in the text
+                        String currentText = doc.getText(offset, (doc.getLength() - offset) < text.length() ? (doc.getLength() - offset) : text.length());
+                        if (!text.equals(currentText)) {
+                            //remove common part
+                            doc.remove(offset, length);
+                            doc.insertString(offset, text, null);
+                        } else {
+                            int newCaretPos = component.getCaret().getDot() + text.length() - length;
+                            //#82242 workaround - the problem is that in some situations
+                            //1) result item is created and it remembers the remove length
+                            //2) document is changed
+                            //3) RI is substituted.
+                            //this situation shouldn't happen imho and is a problem of CC infrastructure
+                            component.setCaretPosition(newCaretPos < doc.getLength() ? newCaretPos : doc.getLength());
+                        }
+                    } catch (BadLocationException ble) {
+                        result[0] = false;
+                    }
                 }
-            } catch( BadLocationException exc ) {
-                return false;    //not sucessfull
-            } finally {
-                doc.atomicUnlock();
-            }
-            return true;
+            });
+            return result[0];
         }
         
         protected void reformat(JTextComponent component, String text) {
@@ -721,34 +721,9 @@ public class HTMLCompletionQuery  {
             }
             return replaced;
         }
-        
-        @Override
-        protected void reformat(JTextComponent component, String text) {
-            try {
-                BaseDocument doc = (BaseDocument)component.getDocument();
-                int dotPos = component.getCaretPosition();
-                Reformat reformat = Reformat.get(doc);
-                reformat.lock();
 
-                try {
-                    doc.atomicLock();
-                    try {
-                        int startOffset = Utilities.getRowStart(doc, dotPos);
-                        int endOffset = Utilities.getRowEnd(doc, dotPos);
-                        reformat.reformat(startOffset, endOffset);
-                    } finally {
-                        doc.atomicUnlock();
-                    }
-                } finally {
-                    reformat.unlock();
-                }
-            }catch(BadLocationException e) {
-                //ignore
-            }
-        }
-        
         @Override
-                public CharSequence getInsertPrefix() {
+        public CharSequence getInsertPrefix() {
             //disable instant substitution
             return null;
         }
@@ -796,27 +771,29 @@ public class HTMLCompletionQuery  {
         
         @Override
         protected void reformat(JTextComponent component, String text) {
-            try {
-                BaseDocument doc = (BaseDocument)component.getDocument();
-                int dotPos = component.getCaretPosition();
-                Reformat reformat = Reformat.get(doc);
-                reformat.lock();
 
-                try {
-                    doc.atomicLock();
-                    try {
-                        int startOffset = Utilities.getRowStart(doc, dotPos);
-                        int endOffset = Utilities.getRowEnd(doc, dotPos);
-                        reformat.reformat(startOffset, endOffset);
-                    } finally {
-                        doc.atomicUnlock();
+            final BaseDocument doc = (BaseDocument) component.getDocument();
+            final int dotPos = component.getCaretPosition();
+            final Reformat reformat = Reformat.get(doc);
+            reformat.lock();
+
+            try {
+                doc.runAtomic(new Runnable() {
+
+                    public void run() {
+                        try {
+                            int startOffset = Utilities.getRowStart(doc, dotPos);
+                            int endOffset = Utilities.getRowEnd(doc, dotPos);
+                            reformat.reformat(startOffset, endOffset);
+                        } catch (BadLocationException ex) {
+                            //ignore
+                        }
                     }
-                } finally {
-                    reformat.unlock();
-                }
-            }catch(BadLocationException e) {
-                //ignore
+                });
+            } finally {
+                reformat.unlock();
             }
+
         }
         
     }

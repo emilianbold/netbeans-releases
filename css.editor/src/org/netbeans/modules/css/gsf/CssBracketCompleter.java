@@ -166,29 +166,34 @@ public class CssBracketCompleter implements KeystrokeHandler {
 
     }
 
-    public int beforeBreak(Document doc, int dot, JTextComponent jtc) throws BadLocationException {
+    public int beforeBreak(final Document doc, final int dot, final JTextComponent jtc) throws BadLocationException {
         if (dot == 0 || dot == doc.getLength()) { //check corners
             return -1;
         }
         String context = doc.getText(dot - 1, 2); //get char before and after
-
+        
         if ("{}".equals(context)) {
-            Reformat reformatter = Reformat.get(doc);
+            final Reformat reformatter = Reformat.get(doc);
             BaseDocument bdoc = (BaseDocument) doc;
 
             reformatter.lock();
             try {
-                bdoc.atomicLock();
-                //smart indent
-                doc.insertString(dot, "\n", null);
-                //move caret
-                jtc.getCaret().setDot(dot);
-                //and indent the line
-                try {
-                    reformatter.reformat(dot - 1, dot + 2);
-                } finally {
-                    bdoc.atomicUnlock();
-                }
+                bdoc.runAtomic(new Runnable() {
+
+                    public void run() {
+                        try {
+                            //smart indent
+                            doc.insertString(dot, "\n", null);
+                            //move caret
+                            jtc.getCaret().setDot(dot);
+                            //and indent the line
+                            reformatter.reformat(dot - 1, dot + 2);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+
             } finally {
                 reformatter.unlock();
             }
