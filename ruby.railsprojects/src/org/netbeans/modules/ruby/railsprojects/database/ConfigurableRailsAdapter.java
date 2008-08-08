@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby.railsprojects.database;
@@ -52,7 +52,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
- * Wraps a <code>RailsDatabaseConfiguration</code> and modifies database.yml 
+ * Wraps a <code>RailsDatabaseConfiguration</code> and modifies database.yml
  * so that the specified extra parameters are put into it.
  *
  * @author Erno Mononen
@@ -67,18 +67,18 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
 
     /**
      * Creates a new instance of ConfigurableRailsAdapter.
-     * 
+     *
      * @param delegate the configuration representing the original configuration.
      * @param userName the user name to be put into the generated configuration,
      * i.e. value for the <code>username:</code> attribute.
      * @param password the user name to be put into the generated configuration,
      * i.e. value for the <code>password:</code> attribute.
-     * @param database the name of the database to be put into the generated configuration, 
+     * @param database the name of the database to be put into the generated configuration,
      * i.e. value for the <code>database:</code> attribute.
      * @param jdbc specifies whether the generated configuration should use JDBC
-     * to access the database. 
+     * to access the database.
      */
-    public ConfigurableRailsAdapter(RailsDatabaseConfiguration delegate, 
+    public ConfigurableRailsAdapter(RailsDatabaseConfiguration delegate,
             String userName, String password, String database, boolean jdbc) {
         this.delegate = delegate;
         this.userName = userName;
@@ -104,7 +104,7 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
     public String getDisplayName() {
         return delegate.getDisplayName();
     }
-    
+
 
     /**
      * Replaces the value of the given attribute with the given value. If the specified
@@ -113,7 +113,7 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
      * @param attributeName the name of the attribute to replace
      * @param attributeValue the value for the attribute
      * @param addAfter the name of the attribute after which the specified <code>attributeName</code>
-     * should be created. May be <code>null</code> in which case the attribute is not created 
+     * should be created. May be <code>null</code> in which case the attribute is not created
      * if it does not exist already. A non-null <code>addAfter</code> has no effect if
      * the attribute already exists.
      * @throws javax.swing.text.BadLocationException
@@ -137,17 +137,17 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
         int attributeNameEndIndex = attributeNameIndex + attributeName.length();
         int attributeValuelength = 0;
         for (int i = attributeNameEndIndex; i < text.length(); i++) {
-            if ((text.charAt(i)) == '\n') {
-                break;  
+            if ((text.charAt(i)) == '\n') { //NOI18N
+                break;
             } else {
                 attributeValuelength++;
             }
         }
         doc.remove(attributeNameEndIndex, attributeValuelength);
         doc.insertString(attributeNameEndIndex, attributeValue != null ? " " + attributeValue : "", null);
-        
+
     }
-    
+
     private void edit(FileObject dir) {
         FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
         if (fo != null) {
@@ -177,7 +177,7 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
             }
         }
     }
-    
+
     private void setDatabase(Document databaseYml) throws BadLocationException {
 
         JdbcInfo jdbcInfo = getJdbcInfo();
@@ -192,18 +192,18 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
         // change the adapter
         changeAttribute(databaseYml, "adapter:", "jdbc", null); //NOI18N
         // add url and driver
-        RailsAdapters.addProperty(databaseYml, "url:", jdbcInfo.getURL("localhost", dbName), "adapter:");
-        RailsAdapters.addProperty(databaseYml, "driver:", jdbcInfo.getDriverClass(), "adapter:");
+        RailsAdapters.addProperty(databaseYml, "url:", jdbcInfo.getURL("localhost", dbName), "adapter:"); //NOI18N
+        RailsAdapters.addProperty(databaseYml, "driver:", jdbcInfo.getDriverClass(), "adapter:"); //NOI18N
 
         // remove database, since we now have url and driver
-        RailsAdapters.removeProperty(databaseYml, "database:");
+        RailsAdapters.removeProperty(databaseYml, "database:"); //NOI18N
 
     }
 
     private boolean isEmpty(String str) {
         return str == null || "".equals(str.trim());
     }
-    
+
     public JdbcInfo getJdbcInfo() {
         return delegate.getJdbcInfo();
     }

@@ -156,6 +156,10 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
 
             return null;
         }
+
+        if (el != null && toFind.equals(el.getEnclosingElement())) {
+            return null;
+        }
         
         return super.visitNewClass(node, p);
     }

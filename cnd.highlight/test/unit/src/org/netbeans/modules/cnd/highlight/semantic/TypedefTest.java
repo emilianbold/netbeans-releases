@@ -54,13 +54,13 @@ public class TypedefTest extends SemanticHighlightingTestBase {
         super(testName);
     }
 
-    public void testClassFieldsInItsMethodsBody() throws Exception {
-        String source = "welcome.cc"; // NOI18N
-        performTest(source, source + ".dat", null); // NOI18N
+    public void testTypedefs() throws Exception {
+        performTest("welcome.cc"); // NOI18N
     }
     
     protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        List<? extends CsmOffsetable> list = ModelUtils.getTypedefBlocks(testFile);
+        List<? extends CsmOffsetable> list = ModelUtils.collect(
+                testFile, new ModelUtils.TypedefReferenceCollector());
         assert list != null && list.size() > 0;
         return list;
     }

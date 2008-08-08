@@ -237,7 +237,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     };
 
     private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
-            Arrays.asList(' ', '=', ';', '+', '-', '*', '/', '%'));
+            Arrays.asList(' ', '=', ';', '+', '-', '*', '/',
+                '%', '(', ')', '[', ']', '{', '}')); 
 
     private boolean caseSensitive;
     private NameKind nameKind;
@@ -781,8 +782,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             String namePrefix, String localFileURL, String type) {
 
         String varName = CodeUtils.extractVariableName(var);
+        String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
 
-        if (isPrefix(varName, namePrefix)) {
+        if (isPrefix(varName, namePrefix) && !PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
             IndexedConstant ic = new IndexedConstant(varName, null,
                     null, localFileURL, var.getStartOffset(), 0, type);
 

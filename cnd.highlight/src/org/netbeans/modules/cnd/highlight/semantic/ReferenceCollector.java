@@ -37,51 +37,35 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.railsprojects.database;
+package org.netbeans.modules.cnd.highlight.semantic;
 
-import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 
 /**
- * Represents the MySQL database adapter.
+ * Reference collector visits all references in the file and
+ * creates a list of offsetable blocks that satisfy some criteria.
+ * A good example is unused variable finder.
  *
- * @author Erno Mononen
+ * @author Alexey Vladykin
  */
-class MySQLAdapter implements RailsDatabaseConfiguration {
+public interface ReferenceCollector {
 
-    public String railsGenerationParam() {
-        return "mysql"; //NOI18N
-    }
+    /**
+     * Visit another reference in the file.
+     *
+     * @param ref  reference to visit
+     * @param file  the file this reference belongs to
+     */
+    void visit(CsmReference ref, CsmFile file);
 
-    public void editConfig(RailsProject project) {
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-        if (platform.isJRuby()) {
-            // as of 1.1 RC2 JRuby apparently supports socket, but commenting it
-            // out still using 127.0.0.1 rather than localhost for the reasons
-            // described in issue #131024
-            RailsAdapters.commentOutSocket(project.getProjectDirectory(), "127.0.0.1"); //NOI18N
-        }
-    }
-
-    public JdbcInfo getJdbcInfo() {
-        return new JdbcInfo() {
-
-            public String getDriverClass() {
-                return "com.mysql.jdbc.Driver"; //NOI18N
-            }
-
-            public String getURL(String host, String database) {
-                return "jdbc:mysql://" + host + ":3306/" + database; //NOI18N
-            }
-        };
-    }
-
-    public String getDisplayName() {
-        return railsGenerationParam();
-    }
-
-    public String getDatabaseName(String projectName) {
-        return projectName + "_development"; //NOI18N
-    }
+    /**
+     * Returns a list of offsetable blocks satisfying some criteria.
+     *
+     * @return  list of offsetable blocks in non-specified order
+     */
+    List<? extends CsmOffsetable> getBlocks();
 
 }
