@@ -185,10 +185,10 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
         
         private Properties prepareSharedProps() {
             Properties props = new Properties();
-            props.setProperty("$label", NbBundle.getBundle(JWSCompositeCategoryProvider.class).getString("LBL_Category_WebStart"));
-            props.setProperty("$target.run", "jws-run"); // NOI18N
-            props.setProperty("$target.debug", "jws-debug"); // NOI18N
-            props.setProperty("compile.on.save.unsupported.javawebstart", "true");
+            props.setProperty(JWSProjectProperties.CONFIG_LABEL_PROPNAME, NbBundle.getBundle(JWSCompositeCategoryProvider.class).getString("LBL_Category_WebStart"));
+            props.setProperty(JWSProjectProperties.CONFIG_TARGET_RUN_PROPNAME, JWSProjectProperties.CONFIG_TARGET_RUN);
+            props.setProperty(JWSProjectProperties.CONFIG_TARGET_DEBUG_PROPNAME, JWSProjectProperties.CONFIG_TARGET_DEBUG);
+            props.setProperty(JWSProjectProperties.COS_UNSUPPORTED_PROPNAME, "true"); // NOI18N
             return props;
         }
         
