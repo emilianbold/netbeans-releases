@@ -208,6 +208,16 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
     }
     
     List<int[]> processImpl(CompilationInfo info, Preferences node, Document doc, int caretPosition) {
+        TokenSequence<JavaTokenId> cts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+
+        if (cts != null) {
+            cts.move(caretPosition);
+
+            if (cts.moveNext() && cts.token().id() == JavaTokenId.IDENTIFIER && cts.offset() == caretPosition) {
+                caretPosition++;
+            }
+        }
+
         CompilationUnitTree cu = info.getCompilationUnit();
         TreePath tp = info.getTreeUtilities().pathFor(caretPosition);
         TreePath typePath = findTypePath(tp);

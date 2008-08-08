@@ -293,6 +293,10 @@ public class MarkOccDetTest extends TestBase {
         performTest("BreakOrContinue", 81, 25);
     }
     
+    public void testCaretPosition136665() throws Exception {
+        performTest("CaretPosition136665", 7, 8);
+    }
+    
     private void performTest(String name, final int line, final int column) throws Exception {
         performTest(name, line, column, false);
     }
