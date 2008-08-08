@@ -58,10 +58,12 @@ public final class Validator extends TMapValidator {
   @Override
   public void visit(TransformMap transformMap) {
     String namespace = transformMap.getPeer().getNamespaceURI();
+    System.out.println("validator namespace");
 
-    if (TMapConstants.OLD_TRANSFORM_MAP_NS_URI.equals(namespace)) {
-      addError("FIX_DeprecatedTMap", transformMap, namespace); // NOI18N
-    }
+// 142908
+//    if (TMapConstants.OLD_TRANSFORM_MAP_NS_URI.equals(namespace)) {
+//      addError("FIX_DeprecatedTMap", transformMap, namespace); // NOI18N
+//    }
     if ( !TMapComponent.TRANSFORM_MAP_NS_URI.equals(namespace)) {
       addError("FIX_IncorrectNamespace", transformMap, namespace); // NOI18N
     }

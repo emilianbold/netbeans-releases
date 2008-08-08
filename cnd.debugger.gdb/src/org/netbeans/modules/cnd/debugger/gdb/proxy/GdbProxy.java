@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
@@ -448,6 +449,8 @@ public class GdbProxy implements GdbMiDefinitions {
             cmd.append("-break-insert "); // NOI18N
             if (temporary) {
                 cmd.append("-t "); // NOI18N
+            } else if (debugger.getGdbVersion() >= 6.8) {
+                cmd.append("-f "); // NOI18N
             }
         }
 
@@ -455,7 +458,7 @@ public class GdbProxy implements GdbMiDefinitions {
         if (Utilities.isWindows() && name.indexOf('/') == 0 && name.indexOf(':') == 2) {
             // Remove first slash
             name = name.substring(1);
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+        } else if (debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
             cmd.append("-l 1 "); // NOI18N - Always use 1st choice
         }
         if (flags == GdbBreakpoint.SUSPEND_THREAD) {

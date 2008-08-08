@@ -543,6 +543,9 @@ public class JsModel {
                 codeBlocks.add(blockData);
             } else if (htmlId == HTMLTokenId.VALUE_JAVASCRIPT) {
 
+                int sourceStart = ts.offset();
+                int sourceEnd = sourceStart + htmlToken.length();
+                
                 // Look for well known attribute names that are associated
                 // with JavaScript event handlers
                 String value = htmlToken.toString();
@@ -553,6 +556,8 @@ public class JsModel {
                     if((fch == '\'' || fch == '"') && !state.in_inlined_javascript) {
                         state.opening_quotation_stripped = true;
                         value = value.substring(1);
+                        sourceStart++; //skip the quotation
+                        sourceEnd -= 2; //skip the quotation
                     }
                 }
                 
@@ -591,10 +596,10 @@ public class JsModel {
                     value = value.replace("&amp;", "&");
                 }
 
-                int sourceStart = ts.offset();
+                
                 String text = value;
 //                int sourceEnd = sourceStart + text.length();
-                int sourceEnd = sourceStart + htmlToken.length();
+                
 
                 if(!state.in_inlined_javascript) {
                     //first inlined JS section - add the prelude

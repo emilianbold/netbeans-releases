@@ -47,6 +47,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.util.NbBundle;
 
 /**
@@ -95,19 +96,23 @@ public class AccidentalAssignmentRule extends PHPRule {
     }
 
     private void check(Expression expr) {
-        if (!(expr instanceof Assignment)) {
-            return;
-        }
-
-        OffsetRange range = new OffsetRange(expr.getStartOffset(), expr.getEndOffset());
-
-        Hint hint = new Hint(AccidentalAssignmentRule.this, getDisplayName(),
-                context.compilationInfo.getFileObject(), range, null, 500);
-
-        addResult(hint);
+        expr.accept(new ExpressionFinder());
     }
 
     public String getDisplayName() {
         return NbBundle.getMessage(AccidentalAssignmentRule.class, "AccidentalAssignmentDispName");
+    }
+    
+    private class ExpressionFinder extends DefaultVisitor{
+        @Override
+        public void visit(Assignment node) {
+            OffsetRange range = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+
+            Hint hint = new Hint(AccidentalAssignmentRule.this, getDisplayName(),
+                    context.compilationInfo.getFileObject(), range, null, 500);
+
+            addResult(hint);
+            super.visit(node);
+        }
     }
 }

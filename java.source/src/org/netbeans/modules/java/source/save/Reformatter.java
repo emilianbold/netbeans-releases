@@ -1480,9 +1480,9 @@ public class Reformatter implements ReformatTask {
             indent += continuationIndentSize;
             spaces(cs.spaceBeforeForParen() ? 1 : 0);
             accept(LPAREN);
+            spaces(cs.spaceWithinForParens() ? 1 : 0);
             List<? extends StatementTree> inits = node.getInitializer();
             if (inits != null && !inits.isEmpty()) {
-                spaces(cs.spaceWithinForParens() ? 1 : 0);
                 for (Iterator<? extends StatementTree> it = inits.iterator(); it.hasNext();) {
                     scan(it.next(), p);
                 }
@@ -1512,8 +1512,8 @@ public class Reformatter implements ReformatTask {
                         spaces(cs.spaceAfterComma() ? 1 : 0);
                     }
                 }
-                spaces(cs.spaceWithinForParens() ? 1 : 0);
             }
+            spaces(cs.spaceWithinForParens() ? 1 : 0);
             accept(RPAREN);
             indent = old;
             CodeStyle.BracesGenerationStyle redundantForBraces = cs.redundantForBraces();

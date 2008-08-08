@@ -456,6 +456,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             AbsentInformationException aiex = new AbsentInformationException(ex.getLocalizedMessage());
             aiex.initCause(ex);
             throw aiex;
+        } catch (InvalidStackFrameException ex) {
+            AbsentInformationException aiex = new AbsentInformationException(ex.getLocalizedMessage());
+            aiex.initCause(ex);
+            throw aiex;
         } catch (ObjectCollectedException ocex) {
             AbsentInformationException aiex = new AbsentInformationException(ocex.getLocalizedMessage());
             aiex.initCause(ocex);

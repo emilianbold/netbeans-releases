@@ -90,6 +90,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test142051_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue142051.php", "echo \"Name2: \".$user2->^", false);
     }
+    
+    public void test140633() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue140633.php", "echo $_COOKI^", false);
+    }
 
     // #136092 Code completion doesn't show reference parameters
     public void test136092_withoutReference() throws Exception {

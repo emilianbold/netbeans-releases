@@ -1,10 +1,10 @@
 Name: MySQL Connector/J
-Version: 5.1.5
+Version: 5.1.6
 Description: Allows Java programs to interact with a MySQL database
 License: GPL
 OSR: 7015
 Origin: http://dev.mysql.com/downloads/connector/j/5.1.html
-Files: mysql-connector-java-5.1.5-bin.jar
+Files: mysql-connector-java-5.1.6-bin.jar
 Source: http://dev.mysql.com/downloads/connector/j/5.1.html
 Comment: Out-of-the-box support for MySQL Java database applications
 

@@ -212,7 +212,7 @@ public class PHPIndexer implements Indexer {
         // php runtime files. Go to the php.project/tools, modify and run
         // preindex.sh script. Also change the number of license in
         // php.project/external/preindexed-php-license.txt
-        return "0.4.8"; // NOI18N
+        return "0.4.9"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -436,16 +436,20 @@ public class PHPIndexer implements Indexer {
                 Variable var = (Variable) assignment.getLeftHandSide();
                 String varType = CodeUtils.extractVariableTypeFromAssignment(assignment);
                 String varName = CodeUtils.extractVariableName(var);
-                StringBuilder signature = new StringBuilder();
-                signature.append(varName.toLowerCase() + ";" + varName + ";");
-                
-                if (varType != null){
-                    signature.append(varType);
+                String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
+
+                if (!PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
+                    StringBuilder signature = new StringBuilder();
+                    signature.append(varName.toLowerCase() + ";" + varName + ";");
+
+                    if (varType != null) {
+                        signature.append(varType);
+                    }
+
+                    signature.append(";"); //NOI18N
+                    signature.append(var.getStartOffset() + ";");
+                    document.addPair(FIELD_VAR, signature.toString(), true);
                 }
-                
-                signature.append(";"); //NOI18N
-                signature.append(var.getStartOffset() + ";");
-                document.addPair(FIELD_VAR, signature.toString(), true);
             }
             
             if (assignment.getRightHandSide() instanceof Assignment) {

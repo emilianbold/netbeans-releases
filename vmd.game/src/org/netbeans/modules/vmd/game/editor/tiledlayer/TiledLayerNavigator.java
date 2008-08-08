@@ -40,8 +40,11 @@
  */
 package org.netbeans.modules.vmd.game.editor.tiledlayer;
 
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Set;
@@ -62,6 +65,13 @@ public class TiledLayerNavigator extends javax.swing.JPanel implements TiledLaye
     public TiledLayerNavigator(TiledLayer tiledLayer) {
         this.tiledLayer = tiledLayer;
         initComponents();
+        this.addComponentListener(new ComponentAdapter() {
+
+            @Override
+            public void componentResized(ComponentEvent e) {
+                refreshSizeInfo();
+            }
+        });
         manualInit();
     }
 
@@ -77,6 +87,12 @@ public class TiledLayerNavigator extends javax.swing.JPanel implements TiledLaye
         this.autoUpdate = autoUpdate;
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        refreshSizeInfo();
+    }
+
     private void manualInit() {
         textFieldLayerName.setText(this.tiledLayer.getName());
         textFieldImage.setText(this.tiledLayer.getImageResource().getRelativeResourcePath());
@@ -88,6 +104,7 @@ public class TiledLayerNavigator extends javax.swing.JPanel implements TiledLaye
 
             public void mouseClicked(MouseEvent e) {
                 preview.refresh();
+                refreshSizeInfo();
             }
         });
 
@@ -279,12 +296,15 @@ private void textFieldRowsActionPerformed(java.awt.event.ActionEvent evt) {//GEN
 
     // TiledLayerListener implementation
     public void tileChanged(TiledLayer source, int row, int col) {
+        refreshSizeInfo();
     }
 
     public void tilesChanged(TiledLayer source, Set positions) {
+        refreshSizeInfo();
     }
 
     public void tilesStructureChanged(TiledLayer source) {
+        refreshSizeInfo();
     }
 
     public void columnsInserted(TiledLayer source, int index, int count) {

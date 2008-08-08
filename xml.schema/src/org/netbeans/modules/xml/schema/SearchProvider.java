@@ -41,7 +41,6 @@
 package org.netbeans.modules.xml.schema;
 
 import java.awt.Container;
-import javax.swing.Icon;
 
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -52,12 +51,15 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.multiview.SchemaColumnViewMultiViewDesc;
+import org.netbeans.modules.xml.schema.multiview.SchemaMultiViewSupport;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaColumnsView;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
 import org.netbeans.modules.xml.schema.ui.nodes.categorized.CategorizedSchemaNodeFactory;
 import org.netbeans.modules.xml.validation.ShowCookie;
 
 import org.netbeans.modules.xml.search.api.SearchTarget;
+import org.openide.filesystems.FileObject;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -105,16 +107,28 @@ final class SearchProvider extends org.netbeans.modules.xml.search.spi.SearchPro
   }
 
   @Override
-  protected final void gotoVisual(Component component)
-  {
-    highlight(component);
-
+  protected final void gotoVisual(Component component) {
+    openDocument(component);
     if (myView instanceof SchemaTreeView) {
-      ((SchemaTreeView) myView).showComponent((SchemaComponent) component);
+        SchemaMultiViewSupport.requestMultiviewActive(SchemaColumnViewMultiViewDesc.PREFERRED_ID);
+        ((SchemaTreeView) myView).showComponent((SchemaComponent) component);
+    } else if (myView instanceof SchemaColumnsView) {
+        SchemaMultiViewSupport.requestMultiviewActive(SchemaColumnViewMultiViewDesc.PREFERRED_ID);
+        ((SchemaColumnsView) myView).showComponent((SchemaComponent) component);
     }
-    else if (myView instanceof SchemaColumnsView) {
-      ((SchemaColumnsView) myView).showComponent((SchemaComponent) component);
-    }
+    highlight(component);
+  }
+  
+  //The searched component is in output window. The document may/maynot be open
+  //hence just open the document and this will make the TC active as well.
+  private void openDocument(Component component) {
+        try {
+            FileObject file = component.getModel().getModelSource().getLookup().lookup(FileObject.class);
+            SchemaDataObject sdo = (SchemaDataObject) DataObject.find(file);
+            sdo.getSchemaEditorSupport().open();
+        } catch (Exception ex) {
+            //swallow: nothing breaks 'coz of this exception
+        }
   }
 
   private Object getView() {

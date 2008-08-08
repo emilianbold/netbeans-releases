@@ -218,4 +218,8 @@ public class RailsJdbcAsAdapterConnection implements RailsDatabaseConfiguration 
         
     }
 
+    public String getDatabaseName(String projectName) {
+        return projectName + "_development"; //NOI18N
+    }
+
 }

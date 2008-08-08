@@ -270,7 +270,7 @@ public abstract class Command {
     }
 
     protected String getPhpInterpreter() {
-        String retval = PhpOptions.getInstance().getPhpInterpreter();
+        String retval = project.getPhpInterpreter();
         return (retval != null && retval.length() >  0) ? retval.trim() : null;
     }
 

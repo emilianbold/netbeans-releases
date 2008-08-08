@@ -67,7 +67,8 @@ made subject to such option by the copyright holder.
         <property name="run.jvmargs" value="" />
         <property name="work.dir" value="${basedir}"/>
         <property name="application.args" value="" />
-        <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="${debug-transport}" listeningcp="${classpath}">
+        <property name="stopclassname" value="" />
+        <nbjpdastart addressproperty="jpda.address" name="${classname}" transport="${debug-transport}" listeningcp="${classpath}" stopclassname="${stopclassname}">
             <classpath>
                 <path path="${classpath-translated}"/>
             </classpath>
