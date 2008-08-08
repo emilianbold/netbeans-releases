@@ -67,9 +67,12 @@ import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.codehaus.groovy.control.SourceUnit;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.groovy.editor.AstUtilities.FakeASTNode;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.gsf.api.OffsetRange;
 
 /**
@@ -101,6 +104,12 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
     }
 
     public void collect() {
+
+        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, cursorOffset);
+        if (ts.token().id() != GroovyTokenId.IDENTIFIER) {
+            // cursor is not positioned on identifier
+            return;
+        }
 
         if (leaf instanceof Variable) {
             Variable variable = (Variable) leaf;

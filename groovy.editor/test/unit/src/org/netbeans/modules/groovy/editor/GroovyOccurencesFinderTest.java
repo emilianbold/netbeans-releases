@@ -176,6 +176,10 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         doTest("pac^kage foo");
     }
 
+    public void testNonIdentifier() throws Exception {
+        doTest("    int membervar1 =^ 2");
+    }
+
     private void doTest(String caretLine) throws Exception {
         checkOccurrences("testfiles/GroovyScopeTestcase.groovy", caretLine, true);
     }
