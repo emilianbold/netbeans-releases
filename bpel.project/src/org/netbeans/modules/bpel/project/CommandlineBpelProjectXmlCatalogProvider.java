@@ -22,13 +22,16 @@ package org.netbeans.modules.bpel.project;
 import java.io.File;
 
 import java.net.URI;
+import org.netbeans.modules.xml.retriever.XMLCatalogProvider;
 
 /**
  * Basic Java class representing the XML Catalog Provider. This class is 
  * used by both in Populate Catalog Wizard and in Ant task for project building.
  * The reason for creation of this class is to eliminate the netbeans 
  * dependency XMLCatalogProvider has on Project API( FileObject)
+ * 
  * @author Sreenivasan Genipudi
+ * @author Kirill Sorokin
  */
 public class CommandlineBpelProjectXmlCatalogProvider {
 
@@ -41,7 +44,8 @@ public class CommandlineBpelProjectXmlCatalogProvider {
     private URI mProjectCatalogUri = null;
     private URI mRetrieverCatalogUri = null;
    
-    CommandlineBpelProjectXmlCatalogProvider() {
+    private CommandlineBpelProjectXmlCatalogProvider() {
+        // Does nothing
     }
     
     /**
@@ -58,13 +62,14 @@ public class CommandlineBpelProjectXmlCatalogProvider {
     
     /**
      * Set the source directory
+     * 
      * @param sourceDir Source directory
      */
     public void setSourceDirectory(String sourceDir) {
         mSourceDir = sourceDir;
         
         final String projectDir = mSourceDir + File.separator + ".." + File.separator;
-        final String retrieverCatalogDir = projectDir + org.netbeans.modules.xml.retriever.XMLCatalogProvider.TYPE_RETRIEVED;
+        final String retrieverCatalogDir = projectDir + XMLCatalogProvider.TYPE_RETRIEVED;
         
         mRetrieverCatalogPath = (retrieverCatalogDir + File.separator + "catalog.xml").replace('\\','/');;
         mRetrieverPath = (retrieverCatalogDir + File.separator + "src").replace('\\','/');

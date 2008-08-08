@@ -746,6 +746,7 @@ public class ConfigurationMakefileWriter {
         else {
             assert false;
         }
+        bw.write("checkReturnCode\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Cleanup\n"); // NOI18N

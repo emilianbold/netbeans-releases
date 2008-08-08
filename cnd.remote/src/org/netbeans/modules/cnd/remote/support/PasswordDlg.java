@@ -90,8 +90,6 @@ public class PasswordDlg extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         tfHost = new javax.swing.JTextField();
 
-        setPreferredSize(new java.awt.Dimension(300, 60));
-
         tfPassword.setText(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.tfPassword.text")); // NOI18N
         tfPassword.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -120,8 +118,8 @@ public class PasswordDlg extends javax.swing.JPanel {
                     .add(jLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
-                    .add(tfPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE))
+                    .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                    .add(tfPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

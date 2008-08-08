@@ -1,15 +1,11 @@
 /*
- * TestClassTest.java
- * JUnit based test
- *
- * Created on Date
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
  */
 
 package org.netbeans.test.junit.testcreation.test;
 
 import junit.framework.TestCase;
-import junit.framework.*;
-import java.util.ArrayList;
 
 /**
  *
@@ -21,39 +17,39 @@ public class TestClassTest extends TestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
+        super.setUp();
     }
 
+    @Override
     protected void tearDown() throws Exception {
+        super.tearDown();
     }
 
     /**
-     * Test of add method, of class org.netbeans.test.junit.testcreation.test.TestClass.
+     * Test of add method, of class TestClass.
      */
     public void testAdd() {
-        // TODO add your test code.
     }
 
     /**
-     * Test of arrayListCount method, of class org.netbeans.test.junit.testcreation.test.TestClass.
+     * Test of arrayListCount method, of class TestClass.
      */
     public void testArrayListCount() {
-        // TODO add your test code.
     }
 
     /**
-     * Test of sqr method, of class org.netbeans.test.junit.testcreation.test.TestClass.
+     * Test of sqr method, of class TestClass.
      */
     public void testSqr() {
-        // TODO add your test code.
     }
 
     /**
-     * Test of thirdPow method, of class org.netbeans.test.junit.testcreation.test.TestClass.
+     * Test of thirdPow method, of class TestClass.
      */
     public void testThirdPow() {
-        // TODO add your test code.
     }
-    
+
 }
 
