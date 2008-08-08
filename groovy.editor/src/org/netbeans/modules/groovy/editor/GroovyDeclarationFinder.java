@@ -254,7 +254,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 if ((type == null) && (lhs != null) && (closest != null) && call.isSimpleIdentifier()) {
                     assert root instanceof ModuleNode;
                     ModuleNode moduleNode = (ModuleNode) root;
-                    VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path);
+                    VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path, doc, lexOffset);
                     scopeVisitor.collect();
                 }
                 if (type == null) {
@@ -270,7 +270,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                 VariableExpression variableExpression = (VariableExpression) closest;
                 ASTNode scope = AstUtilities.getScope(path, variableExpression);
                 if (scope != null) {
-                    ASTNode variable = AstUtilities.getVariable(scope, variableExpression.getName(), path);
+                    ASTNode variable = AstUtilities.getVariable(scope, variableExpression.getName(), path, doc, lexOffset);
                     if (variable != null) {
                         // I am using getRange and not getOffset, because getRange is adding 'def_' to offset of field
                         int offset = AstUtilities.getRange(variable, doc).getStart();
@@ -289,7 +289,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
                             // we are in script?
                             scope = (ModuleNode) path.root();
                         }
-                        ASTNode variable = AstUtilities.getVariable(scope, ((ConstantExpression) property).getText(), path);
+                        ASTNode variable = AstUtilities.getVariable(scope, ((ConstantExpression) property).getText(), path, doc, lexOffset);
                         if (variable != null) {
                             int offset = AstUtilities.getOffset(doc, variable.getLineNumber(), variable.getColumnNumber());
                             return new DeclarationLocation(info.getFileObject(), offset);
