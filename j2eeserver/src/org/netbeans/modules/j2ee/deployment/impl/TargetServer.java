@@ -164,7 +164,24 @@ public class TargetServer {
 
     private boolean canFileDeploy(Target[] targetz, J2eeModule deployable) throws IOException {
         if (targetz == null || targetz.length != 1) {
-            Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+            LOGGER.log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+
+            if (targetz != null && LOGGER.isLoggable(Level.FINE)) {
+                StringBuilder builder = new StringBuilder("[");
+                for (int i = 0; i < targetz.length; i++) {
+                    if (i > 0) {
+                        builder.append(",");
+                    }
+                    builder.append("[")
+                            .append(targetz[i].getName())
+                                .append(",")
+                                    .append(targetz[i].getDescription())
+                                        .append("]");
+                }
+                builder.append("]");
+                LOGGER.log(Level.FINE, builder.toString());
+            }
+
             return false;
         }
 
@@ -176,7 +193,24 @@ public class TargetServer {
 
     private boolean canFileDeploy(TargetModule[] targetModules, J2eeModule deployable) throws IOException {
         if (targetModules == null || targetModules.length != 1) {
-            Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+            LOGGER.log(Level.INFO, NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+
+            if (targetModules != null && LOGGER.isLoggable(Level.FINE)) {
+                StringBuilder builder = new StringBuilder("[");
+                for (int i = 0; i < targetModules.length; i++) {
+                    if (i > 0) {
+                        builder.append(",");
+                    }
+                    builder.append("[")
+                            .append(targetModules[i].getId())
+                                .append(",")
+                                    .append(targetModules[i].getTargetName())
+                                        .append("]");
+                }
+                builder.append("]");
+                LOGGER.log(Level.FINE, builder.toString());
+            }
+
             return false;
         }
 

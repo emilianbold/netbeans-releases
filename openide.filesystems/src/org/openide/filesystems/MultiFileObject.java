@@ -1062,7 +1062,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 }
 
                 if (this.getFileObject(name, ext) != null) {
-                    FSException.io("EXC_DataAlreadyExist", n, fs.getDisplayName()); // NOI18N
+                    FSException.io("EXC_DataAlreadyExist", n, fs.getDisplayName(), getPath()); // NOI18N
                 }
 
                 String fullName = getPath() + PATH_SEP + n;

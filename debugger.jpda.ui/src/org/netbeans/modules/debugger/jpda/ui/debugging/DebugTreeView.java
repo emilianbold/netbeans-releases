@@ -76,10 +76,6 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
     
     DebugTreeView() {
         super();
-//        tree.setPreferredSize(new Dimension(5, 5)); // [TODO]
-//        tree.setMinimumSize(new Dimension(5, 5));
-//        setPreferredSize(new Dimension(5, 5));
-//        setMinimumSize(new Dimension(5, 5));
         setBackground(whiteColor);
         tree.setOpaque(false);
         ((JComponent)tree.getParent()).setOpaque(false);
@@ -94,7 +90,6 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
     public List<TreePath> getVisiblePaths() {
         synchronized(tree) {
             List<TreePath> result = new ArrayList<TreePath>();
-//            collectVisiblePaths(result, tree.getPathForRow(0));
             int count = tree.getRowCount();
             for (int x = 0; x < count; x++) {
                 TreePath path = tree.getPathForRow(x);
@@ -240,17 +235,6 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
         return false;
     }
     
-    private void collectVisiblePaths(List<TreePath> result, TreePath path) {
-        result.add(path);
-        Enumeration<TreePath> paths = tree.getExpandedDescendants(path);
-        if (paths != null) {
-            while (paths.hasMoreElements()) {
-                path = paths.nextElement();
-                collectVisiblePaths(result, path);
-            }
-        }
-    }
-
     public void treeExpanded(TreeExpansionEvent event) {
         repaint(); // [TODO]
     }
