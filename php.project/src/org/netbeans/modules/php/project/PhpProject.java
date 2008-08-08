@@ -56,6 +56,7 @@ import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -158,6 +159,14 @@ public class PhpProject implements Project, AntProjectListener {
             webRoot = sourcesDirectory.getFileObject(webRootPath);
         }
         return webRoot;
+    }
+
+    public String getPhpInterpreter() {
+        String interpreter = getEvaluator().getProperty(PhpProjectProperties.INTERPRETER);
+        if (interpreter != null && interpreter.length() > 0) {
+            return interpreter;
+        }
+        return PhpOptions.getInstance().getPhpInterpreter();
     }
 
     public void configurationXmlChanged(AntProjectEvent event) {

@@ -141,6 +141,18 @@ public final class Utils {
         return newLocation;
     }
 
+    public static void browsePhpInterpreter(Component parent, JTextField textField) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpInterpreter"));
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setCurrentDirectory(LastUsedFolders.getOptionsInterpreter());
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
+            File phpInterpreter = FileUtil.normalizeFile(chooser.getSelectedFile());
+            LastUsedFolders.setOptionsInterpreter(phpInterpreter);
+            textField.setText(phpInterpreter.getAbsolutePath());
+        }
+    }
+
     public static List getAllItems(final JComboBox comboBox) {
         return new AbstractList() {
             public Object get(int i) {
