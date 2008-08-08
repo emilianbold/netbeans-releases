@@ -140,4 +140,8 @@ class JavaDBAdapter implements RailsDatabaseConfiguration {
         };
     }
 
+    public String getDatabaseName(String projectName) {
+        return "db/development.db"; //NOI18N
+    }
+
 }

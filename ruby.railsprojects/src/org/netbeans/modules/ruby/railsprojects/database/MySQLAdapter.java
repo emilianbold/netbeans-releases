@@ -80,4 +80,8 @@ class MySQLAdapter implements RailsDatabaseConfiguration {
         return railsGenerationParam();
     }
 
+    public String getDatabaseName(String projectName) {
+        return projectName + "_development"; //NOI18N
+    }
+
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -39,34 +39,29 @@
 
 package org.netbeans.modules.ruby.railsprojects.database;
 
-import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 
 /**
- * Represent a Rails database adapter that doesn't require any 
- * extra configuration to be done, except commenting out socket 
- * in case of JRuby.
+ * Represents the adapter for SQLite2 and SQLite2.
  *
  * @author Erno Mononen
  */
-class StandardRailsAdapter implements RailsDatabaseConfiguration {
-    
-    private final String database;
+class SQLiteAdapter implements RailsDatabaseConfiguration {
 
-    StandardRailsAdapter(String database) {
-        this.database = database;
+    private final String version;
+
+    /**
+     * @param version the SQLite version, e.g sqlite2 or sqlite3.
+     */
+    public SQLiteAdapter(String version) {
+        this.version = version;
     }
 
     public String railsGenerationParam() {
-        return database;
+        return version; //NOI18N
     }
 
     public void editConfig(RailsProject project) {
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-        if (platform.isJRuby()) {
-            // JRuby doesn't support socket
-            RailsAdapters.commentOutSocket(project.getProjectDirectory(), "localhost"); //NOI18N
-        }
     }
 
     public JdbcInfo getJdbcInfo() {
@@ -78,9 +73,7 @@ class StandardRailsAdapter implements RailsDatabaseConfiguration {
     }
 
     public String getDatabaseName(String projectName) {
-        return projectName + "_development"; //NOI18N
+        return "db/development." + version; //NOI18N
     }
-    
-    
 
 }
