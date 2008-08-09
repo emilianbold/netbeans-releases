@@ -35,6 +35,12 @@ public class JsfCrudELResolver extends ELResolver {
         if (property != null) {
             propertyName = property.toString();
         }
+
+        if (JSFCRUD_NULL.equals(propertyName) &&
+                base == null) {
+            context.setPropertyResolved(true);
+            return JSFCRUD_NULL;
+        }
         
         if (JSFCRUD_NULL.equals(propertyName) &&
                 ! (base instanceof JsfCrudMethod) &&
