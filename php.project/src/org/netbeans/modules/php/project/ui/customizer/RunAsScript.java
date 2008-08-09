@@ -53,6 +53,7 @@ import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.project.PhpProject;
@@ -130,8 +131,13 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
                     if (defaultInterpreterCheckBox.isSelected()) {
-                        interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
-                        composeHint();
+                        // #143315
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
+                                composeHint();
+                            }
+                        });
                     }
                 }
             }
