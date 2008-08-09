@@ -50,26 +50,21 @@ import org.netbeans.modules.db.core.test.TestBase;
  * @author David Van Couvering
  */
 public class SQLExecutorTest extends TestBase {
+    
+    private DatabaseConnection dbconn;
 
     public SQLExecutorTest(String name) {
         super(name);
     }
 
-    /**
-     * Test of execute method, of class SQLExecutor.
-     */
-    public void testExecute() throws Exception {
-        DatabaseConnection dbconn = getDatabaseConnection();
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        
+        dbconn = getDatabaseConnection();
 
         ConnectionManager.getDefault().disconnect(dbconn);
-
-        try {
-            SQLExecutor.execute(dbconn, "SELECT ydayaday");
-            fail("No exception when executing on a closed connection");
-        } catch (DatabaseException dbe) {
-            // expected
-        }
-
+        
         ConnectionManager.getDefault().connect(dbconn);
 
         assertNotNull(dbconn.getJDBCConnection());
@@ -86,17 +81,61 @@ public class SQLExecutorTest extends TestBase {
                 "SELECT * FROM TEST";
 
         SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
+        checkExecution(info, sql);
+    }
 
-        assertNotNull(info);
-        assertFalse(info.hasExceptions());
+    public void testExecuteOnClosedConnection() throws Exception {
+        DatabaseConnection broken = getDatabaseConnection();
 
-        sql = "INSERT INTO TEST VALUES(1); INSERT INTO TEST VALUES(3);";
+        ConnectionManager.getDefault().disconnect(broken);
 
-        info = SQLExecutor.execute(dbconn, sql);
+        try {
+            SQLExecutor.execute(broken, "SELECT ydayaday");
+            fail("No exception when executing on a closed connection");
+        } catch (DatabaseException dbe) {
+            // expected
+        }
+    }
+
+    public void testExecute() throws Exception {
+        String sql = "INSERT INTO TEST VALUES(1); INSERT INTO TEST VALUES(3);";
+
+        SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
         assertNotNull(info);
         assertTrue(info.hasExceptions());
         assertTrue(info.getExceptions().size() == 1);
         assertNotNull(info.getExceptions().get(0));
+    }
+        
+    public void testDelimiter() throws Exception {
+        String sql = "SELECT * FROM TEST;\n--Here is a comment\nDELIMITER ??\n SELECT * FROM TEST??\n " +
+                "--Another comment\n DELIMITER ;\nSELECT * FROM TEST;";
+        SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
+        checkExecution(info, sql);
+
+        info = SQLExecutor.execute(dbconn,
+                "DELIMITER ??\nSELECT * FROM TEST?? DELIMITER ;\nSELECT * FROM TEST;");
+        checkExecution(info, sql);
+
+        info = SQLExecutor.execute(dbconn,
+                "/** a block comment */\nDELIMITER ??\nSELECT * FROM TEST??");
+        checkExecution(info, sql);
+
+        info = SQLExecutor.execute(dbconn,
+                "DELIMITER ??\nSELECT * FROM TEST;");
+
+        assertTrue(info.hasExceptions());
+    }
+    
+    private void checkExecution(SQLExecutionInfo info, String sql) throws Exception {
+        assertNotNull(info);
+
+        if (info.hasExceptions()) {
+            for (Throwable t : info.getExceptions()) {
+                t.printStackTrace();
+            }
+            throw new Exception("Executing SQL '" + sql + "' generated exceptions - see output for details");
+        }        
     }
 
 }
