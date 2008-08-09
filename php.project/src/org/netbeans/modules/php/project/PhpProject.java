@@ -161,12 +161,12 @@ public class PhpProject implements Project, AntProjectListener {
         return webRoot;
     }
 
-    public String getPhpInterpreter() {
+    public PhpInterpreter getPhpInterpreter() {
         String interpreter = getEvaluator().getProperty(PhpProjectProperties.INTERPRETER);
         if (interpreter != null && interpreter.length() > 0) {
-            return interpreter;
+            return new PhpInterpreter(interpreter);
         }
-        return PhpOptions.getInstance().getPhpInterpreter();
+        return new PhpInterpreter(PhpOptions.getInstance().getPhpInterpreter());
     }
 
     public void configurationXmlChanged(AntProjectEvent event) {

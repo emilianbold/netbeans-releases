@@ -117,6 +117,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
             public void actionPerformed(ActionEvent e) {
                 boolean selected = defaultInterpreterCheckBox.isSelected();
                 interpreterBrowseButton.setEnabled(!selected);
+                interpreterTextField.setEditable(!selected);
                 String newValue = null;
                 if (selected) {
                     newValue = PhpOptions.getInstance().getPhpInterpreter();
@@ -152,6 +153,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         boolean def = phpInterpreter == null || phpInterpreter.length() == 0;
         defaultInterpreterCheckBox.setSelected(def);
         interpreterBrowseButton.setEnabled(!def);
+        interpreterTextField.setEditable(!def);
     }
 
     @Override
@@ -178,7 +180,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         for (int i = 0; i < textFields.length; i++) {
             String val = getValue(propertyNames[i]);
             if (PhpProjectProperties.INTERPRETER.equals(propertyNames[i])) {
-                val = project.getPhpInterpreter();
+                val = project.getPhpInterpreter().getFullCommand();
             }
             textFields[i].setText(val);
         }
