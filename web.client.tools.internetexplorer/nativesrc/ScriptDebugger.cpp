@@ -158,7 +158,6 @@ STDMETHODIMP ScriptDebugger::onHandleBreakPoint(IRemoteDebugApplicationThread __
     }else if(br == BREAKREASON_ERROR && (featureSet & SUSPEND_ON_EXCEPTIONS)) {
         EXCEPINFO excepInfo;
         pScriptErrorDebug->GetExceptionInfo(&excepInfo);
-        changeState(STATE_EXCEPTION, OK);
         tstring errorMsg;
         if(excepInfo.bstrSource != NULL) {
             errorMsg = (TCHAR *)excepInfo.bstrSource;
@@ -170,6 +169,7 @@ STDMETHODIMP ScriptDebugger::onHandleBreakPoint(IRemoteDebugApplicationThread __
             errorMsg.append((TCHAR *)excepInfo.bstrDescription);
         }
         m_pDbgpConnection->sendErrorMessage(errorMsg);
+        changeState(STATE_EXCEPTION, OK);
         return S_OK;
     }
     spRemoteDebugApp->ResumeFromBreakPoint(pDebugAppThread, BREAKRESUMEACTION_CONTINUE, 
