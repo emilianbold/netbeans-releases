@@ -41,38 +41,39 @@
 
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.io.File;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
+import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 
 /**
  *
  * @author sg155630
  */
-public abstract class SemanticHighlightingTestBase  extends TraceModelTestBase {
+public abstract class SemanticHighlightingTestBase  extends ProjectBasedTestCase {
     
     public SemanticHighlightingTestBase(String name) {
         super(name);
     }
     
-    protected abstract Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset);
-    
-    protected @Override void postTest(String[] args, Object... params) {
-        FileImpl file = getFileImpl(new File(args[0]));
-        int offset = -1;
-        if (params != null && params.length > 0) {
-            offset = params[0] instanceof Integer ? (Integer)params[0] : -1;
-        }
+    protected abstract Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile, int offset);
+
+    protected void performTest(String source) throws Exception {
+        performTest(source, -1);
+    }
+
+    protected void performTest(String testFileName, int offset) throws Exception {
+        FileImpl file = (FileImpl)getCsmFile(getDataFile(testFileName));
         Collection<? extends CsmOffsetable> out = getBlocks(file, offset);
-        assert out != null;
+        assertNotNull(out);
         int i = 1;
         for (CsmOffsetable b : out) {
-            System.out.println( "Block " + (i++) + ": Lines " +  // NOI18N
+            ref( "Block " + (i++) + ": Lines " +  // NOI18N
                     file.getLineColumn(b.getStartOffset())[0] + "-" + file.getLineColumn(b.getEndOffset())[0] + // NOI18N
                     "\tOffsets " + // NOI18N
                     b.getStartOffset() + "-" + b.getEndOffset()); // NOI18N
         }
+        compareReferenceFiles();
     }
+
 }

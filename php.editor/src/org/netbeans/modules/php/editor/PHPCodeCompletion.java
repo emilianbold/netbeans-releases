@@ -48,6 +48,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -234,6 +235,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private final static String[] PHP_CLASS_KEYWORDS = {
         "$this->", "self::", "parent::"
     };
+
+    private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
+            Arrays.asList(' ', '=', ';', '+', '-', '*', '/',
+                '%', '(', ')', '[', ']', '{', '}')); 
 
     private boolean caseSensitive;
     private NameKind nameKind;
@@ -777,8 +782,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             String namePrefix, String localFileURL, String type) {
 
         String varName = CodeUtils.extractVariableName(var);
+        String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
 
-        if (isPrefix(varName, namePrefix)) {
+        if (isPrefix(varName, namePrefix) && !PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
             IndexedConstant ic = new IndexedConstant(varName, null,
                     null, localFileURL, var.getStartOffset(), 0, type);
 
@@ -1078,6 +1084,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             return QueryType.NONE;
         }
         char lastChar = typedText.charAt(typedText.length() - 1);
+
+        if (AUTOPOPUP_STOP_CHARS.contains(Character.valueOf(lastChar))){
+            return QueryType.STOP;
+        }
+
         Document document = component.getDocument();
         TokenHierarchy th = TokenHierarchy.get(document);
         TokenSequence<PHPTokenId> ts = th.tokenSequence(PHPTokenId.language());

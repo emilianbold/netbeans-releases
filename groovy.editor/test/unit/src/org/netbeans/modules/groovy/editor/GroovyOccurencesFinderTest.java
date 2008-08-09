@@ -144,27 +144,21 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
         doTest("TestCase.create().met^hod1(1)");
     }
 
-    // failing, offsets for both constructor declaration and call look bad :-(
-//    public void testConstructor1() throws Exception {
-//        doTest("new Tes^tCase().method1(1)");
-//    }
-//
-//    public void testConstructor2() throws Exception {
-//        doTest("    TestCa^se() {");
-//    }
+    public void testConstructor1() throws Exception {
+        doTest("new Tes^tCase().method1(1)");
+    }
 
-    // not yet implemented
-//    public void testClass1() throws Exception {
-//        doTest("class TestC^ase {");
-//    }
-//
-//    public void testClass2() throws Exception {
-//        doTest("        new Test^Case()");
-//    }
-//
-//    public void testClass3() throws Exception {
-//        doTest("T^estCase.create().method1(1)");
-//    }
+    public void testConstructor2() throws Exception {
+        doTest("    TestCa^se() {");
+    }
+
+    public void testClass1() throws Exception {
+        doTest("class TestC^ase {");
+    }
+
+    public void testClass2() throws Exception {
+        doTest("T^estCase.create().method1(1)");
+    }
 
     public void testLocalVar3() throws Exception {
         doTest("        int local^var1 = 3");
@@ -177,7 +171,15 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
     public void testParameter5() throws Exception {
         doTest("        def localvar3 = membervar1 + par^am1 + localvar1 + localvar2");
     }
-    
+
+    public void testPackageInScript() throws Exception {
+        doTest("pac^kage foo");
+    }
+
+    public void testNonIdentifier() throws Exception {
+        doTest("    int membervar1 =^ 2");
+    }
+
     private void doTest(String caretLine) throws Exception {
         checkOccurrences("testfiles/GroovyScopeTestcase.groovy", caretLine, true);
     }

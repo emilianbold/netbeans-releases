@@ -396,24 +396,22 @@ public final class AntBuildExtender {
         public void addDependency(String mainBuildTarget, String extensionTarget) {
             assert implementation.getExtensibleTargets().contains(mainBuildTarget) : 
                 "The target '" + mainBuildTarget + "' is not designated by the project type as extensible.";
-            synchronized (AntBuildExtender.class) {
+            synchronized (this) {
                 loadDependency(mainBuildTarget, extensionTarget);
                 updateProjectMetadata();
             }
         }
         
-        private void loadDependency(String mainBuildTarget, String extensionTarget) {
-            synchronized (AntBuildExtender.class) {
-                Collection<String> tars = dependencies.get(mainBuildTarget);
-                if (tars == null) {
-                    tars = new ArrayList<String>();
-                    dependencies.put(mainBuildTarget, tars);
-                }
-                if (!tars.contains(extensionTarget)) {
-                    tars.add(extensionTarget);
-                } else {
-                    //log?
-                }
+        private synchronized void loadDependency(String mainBuildTarget, String extensionTarget) {
+            Collection<String> tars = dependencies.get(mainBuildTarget);
+            if (tars == null) {
+                tars = new ArrayList<String>();
+                dependencies.put(mainBuildTarget, tars);
+            }
+            if (!tars.contains(extensionTarget)) {
+                tars.add(extensionTarget);
+            } else {
+                //log?
             }
         }
         
@@ -436,7 +434,7 @@ public final class AntBuildExtender {
 
         Map<String, Collection<String>> getDependencies() {
             TreeMap<String, Collection<String>> toRet = new TreeMap<String, Collection<String>>();
-            synchronized (AntBuildExtender.class) {
+            synchronized (this) {
                 for (String str : dependencies.keySet()) {
                     ArrayList<String> col = new ArrayList<String>();
                     col.addAll(dependencies.get(str));

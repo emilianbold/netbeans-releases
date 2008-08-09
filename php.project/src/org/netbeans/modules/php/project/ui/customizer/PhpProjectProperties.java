@@ -82,6 +82,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     public static final String INCLUDE_PATH = "include.path"; // NOI18N
     public static final String GLOBAL_INCLUDE_PATH = "php.global.include.path"; // NOI18N
     public static final String ARGS = "script.arguments"; // NOI18N
+    public static final String INTERPRETER = "interpreter"; // NOI18N
     public static final String RUN_AS = "run.as"; // NOI18N
     public static final String REMOTE_CONNECTION = "remote.connection"; // NOI18N
     public static final String REMOTE_DIRECTORY = "remote.directory"; // NOI18N
@@ -91,6 +92,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         URL,
         INDEX_FILE,
         ARGS,
+        INTERPRETER,
         RUN_AS,
         REMOTE_CONNECTION,
         REMOTE_DIRECTORY,
@@ -447,7 +449,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         Map<String, String> def = configs.get(null);
         for (String prop : CFG_PROPS) {
             String v = def.get(prop);
-            EditableProperties ep = prop.equals(ARGS) ? privateProperties : projectProperties;
+            EditableProperties ep = isPrivateProperty(prop) ? privateProperties : projectProperties;
             if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                 if (v != null && v.length() > 0) {
                     ep.setProperty(prop, v);
@@ -474,7 +476,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             for (Map.Entry<String, String> entry2 : c.entrySet()) {
                 String prop = entry2.getKey();
                 String v = entry2.getValue();
-                String path = (prop.equals(ARGS)) ? privatePath : sharedPath;
+                String path = isPrivateProperty(prop) ? privatePath : sharedPath;
                 EditableProperties ep = getProject().getHelper().getProperties(path);
                 if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                     if (v != null && (v.length() > 0 || (def.get(prop) != null && def.get(prop).length() > 0))) {
@@ -488,5 +490,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             // Make sure the definition file is always created, even if it is empty.
             getProject().getHelper().putProperties(sharedPath, getProject().getHelper().getProperties(sharedPath));
         }
+    }
+
+    private boolean isPrivateProperty(String property) {
+        return property.equals(ARGS) || property.equals(INTERPRETER);
     }
 }

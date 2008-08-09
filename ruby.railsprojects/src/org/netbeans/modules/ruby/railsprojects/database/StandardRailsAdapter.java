@@ -76,6 +76,10 @@ class StandardRailsAdapter implements RailsDatabaseConfiguration {
     public String getDisplayName() {
         return railsGenerationParam();
     }
+
+    public String getDatabaseName(String projectName) {
+        return projectName + "_development"; //NOI18N
+    }
     
     
 

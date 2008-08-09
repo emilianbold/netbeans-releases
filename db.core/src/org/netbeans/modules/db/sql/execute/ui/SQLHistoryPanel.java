@@ -208,6 +208,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         searchTextField.setMinimumSize(new java.awt.Dimension(20, 22));
 
         insertSQLButton.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Insert")); // NOI18N
+        insertSQLButton.setEnabled(false);
         insertSQLButton.setFocusTraversalPolicyProvider(true);
         insertSQLButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -509,8 +510,18 @@ private void verifySQLLimit() {
             List<SQLHistory> filteredSqlHistoryList = new ArrayList<SQLHistory>();
             String match = searchTextField.getText();
             String url = (String)connectionComboBox.getSelectedItem();
+            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
+            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
+            List<SQLHistory> persistedSQLHistoryList = null;
+            try {
+                persistedSQLHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             // modify list of SQL to reflect a selection from the Connection dropdown or if a match text entered
-            for (SQLHistory sqlHistory : sqlHistoryList) {
+            for (SQLHistory sqlHistory : persistedSQLHistoryList) {
                 if (sqlHistory.getUrl().equals(url) || url.equals(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ConnectionCombo"))) {
                     if (!match.equals(MATCH_EMPTY)) {
                         if (sqlHistory.getSql().toLowerCase().indexOf(match.toLowerCase()) != -1) {
@@ -525,39 +536,42 @@ private void verifySQLLimit() {
         }
     }
 
-    private final class UrlComboBoxModel implements ComboBoxModel, ActionListener {
-
-        public void setSelectedItem(Object item) {
-            connectionComboBox.setSelectedItem(item);
-        }
-
-        public Object getSelectedItem() {
-            return (String) connectionComboBox.getSelectedItem();
-        }
-
-        public int getSize() {
-            return comboData.length;
-        }
-
-        public Object getElementAt(int index) {
-            return comboData[index];
-        }
-
-        public void addListDataListener(ListDataListener arg0) {
-        }
-
-        public void removeListDataListener(ListDataListener arg0) {
-        }
-
-        public void actionPerformed(ActionEvent arg0) {
-        }
-    }
+//    private final class UrlComboBoxModel implements ComboBoxModel, ActionListener {
+//
+//        public void setSelectedItem(Object item) {
+//            connectionComboBox.setSelectedItem(item);
+//        }
+//
+//        public Object getSelectedItem() {
+//            return (String) connectionComboBox.getSelectedItem();
+//        }
+//
+//        public int getSize() {
+//            return comboData.length;
+//        }
+//
+//        public Object getElementAt(int index) {
+//            return comboData[index];
+//        }
+//
+//        public void addListDataListener(ListDataListener arg0) {
+//        }
+//
+//        public void removeListDataListener(ListDataListener arg0) {
+//        }
+//
+//        public void actionPerformed(ActionEvent arg0) {
+//        }
+//    }
 
     private final class HistoryTableModel extends DefaultTableModel implements ActionListener, DocumentListener {
         List<String> sqlList;
         List<String> dateList;
             
         public int getRowCount() {
+            if (sqlHistoryTable.getSelectedRow() == -1) {
+                insertSQLButton.setEnabled(false);
+            } 
             return data.length;
         }
 
@@ -579,6 +593,9 @@ private void verifySQLLimit() {
         }
 
         public Object getValueAt(int row, int col) {
+            if (sqlHistoryTable.isRowSelected(row)) {
+                insertSQLButton.setEnabled(true);
+            } 
             return data[row][col];
         }
 
@@ -620,6 +637,9 @@ private void verifySQLLimit() {
         }
 
         public void actionPerformed(ActionEvent evt) {
+            view.setSQLHistoryList(view.filterSQLHistoryList());
+            sqlHistoryTable.repaint();
+            sqlHistoryTable.clearSelection();
             searchTextField.setText(""); // NOI18N
             refreshTable(evt);
         }
@@ -680,7 +700,6 @@ private void verifySQLLimit() {
             // Refresh table
             if (data.length > 0) {
                 sqlHistoryTable.revalidate();
-                insertSQLButton.setEnabled(true);
             } else {
                 sqlHistoryTable.revalidate();
                 insertSQLButton.setEnabled(false);
@@ -713,7 +732,6 @@ private void verifySQLLimit() {
                         data[i][0] = localData[i][0];
                         data[i][1] = localData[i][1];
                     }
-                    insertSQLButton.setEnabled(true);
                 } else {
                     data = new Object[0][0];
                     insertSQLButton.setEnabled(false);
@@ -756,7 +774,6 @@ private void verifySQLLimit() {
                         data[i][0] = localData[i][0];
                         data[i][1] = localData[i][1];
                     }                    
-                    insertSQLButton.setEnabled(true);
                 } else {
                     data = new Object[0][0];                                        
                     insertSQLButton.setEnabled(false);

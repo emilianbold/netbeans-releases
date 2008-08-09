@@ -256,9 +256,9 @@ public final class SourcesHelper {
         @Override
         public Collection<FileObject> getIncludeRoots() {
             Collection<FileObject> supe = super.getIncludeRoots();
-            computeIncludeExcludePatterns();
             if (supe.size() == 1) {
                 Set<FileObject> roots = new HashSet<FileObject>();
+                computeIncludeExcludePatterns();
                 for (File r : matcher.findIncludedRoots()) {
                     FileObject subroot = FileUtil.toFileObject(r);
                     if (subroot != null) {
