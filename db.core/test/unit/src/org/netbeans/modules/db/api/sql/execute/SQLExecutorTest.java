@@ -70,12 +70,17 @@ public class SQLExecutorTest extends TestBase {
         assertNotNull(dbconn.getJDBCConnection());
         assert(! dbconn.getJDBCConnection().isClosed());
 
-        SQLExecutionInfo info = SQLExecutor.execute(dbconn, "DROP TABLE test;");
-        checkExecution(info);
-
-        String sql = "CREATE TABLE test(id integer primary key)";
+        SQLExecutionInfo info;
+        
         if (isMySQL()) {
-            sql += "ENGINE=InnoDB;";
+            checkExecution(SQLExecutor.execute(dbconn, "DROP DATABASE IF EXISTS test;"));
+            checkExecution(SQLExecutor.execute(dbconn, "CREATE DATABASE test;"));
+            checkExecution(SQLExecutor.execute(dbconn, "USE test;"));
+        }
+
+        String sql = "CREATE TABLE TEST(id integer primary key)";
+        if (isMySQL()) {
+            sql += " ENGINE=InnoDB";
         }
 
         info = SQLExecutor.execute(dbconn, sql);
@@ -169,8 +174,8 @@ public class SQLExecutorTest extends TestBase {
         SQLExecutor.execute(dbconn, sql);
         
         sql = 
-            //"DELIMITER $$\n" +
-            //"\n" +
+            "DELIMITER $$\n" +
+            "\n" +
             "CREATE FUNCTION inventory_in_stock(p_inventory_id INT) RETURNS BOOLEAN " +
             "READS SQL DATA " +
             "BEGIN " +
