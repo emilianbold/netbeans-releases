@@ -941,21 +941,33 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
                
 <ST_PHP_NOWDOC>{NOWDOC_CHARS}*{NEWLINE}+{LABEL}";"?[\n\r] {
     int label_len = yylength() - 1;
+    int back = 1;
 
     if (yytext().charAt(label_len-1)==';') {
 	   label_len--;
+           back++;
     }
     if (label_len > heredoc_len && yytext().substring(label_len - heredoc_len,label_len).equals(heredoc)) {
+        back = back + heredoc_len;
+        yypushback(back);
         yybegin(ST_PHP_END_NOWDOC);
     }
-    yypushback(1);
+    else {
+        yypushback(1);
+    }
     return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }
 
-<ST_PHP_END_NOWDOC>{ANY_CHAR} {
+<ST_PHP_END_NOWDOC>{LABEL}";"?[\n\r] {
     heredoc=null; heredoc_len=0;
     yybegin(ST_PHP_IN_SCRIPTING);
-    return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+    int back = 1;
+    // mark just the label
+    if (yytext().charAt(yylength() - 2)==';') {
+	    back++;
+    }
+    yypushback(back);
+    return PHPTokenId.PHP_NOWDOC_TAG;
 }
                      
 <ST_PHP_IN_SCRIPTING>b?"<<<"{TABS_AND_SPACES}({LABEL}|"\""{LABEL}"\""){NEWLINE} {
@@ -1005,22 +1017,31 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 
 <ST_PHP_HEREDOC>{HEREDOC_CHARS}*{HEREDOC_NEWLINE}+{LABEL}";"?[\n\r] {
     int label_len = yylength() - 1;
+    int back = 1;
 
     if (yytext().charAt(label_len-1)==';') {
 	   label_len--;
+           back++;
     }
     if (label_len > heredoc_len && yytext().substring(label_len - heredoc_len,label_len).equals(heredoc)) {
-    	   yypushback(1);
+           back = back + heredoc_len;
+    	   yypushback(back);
         yybegin(ST_PHP_END_HEREDOC);
     }
     return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
 }
 
-<ST_PHP_END_HEREDOC>{ANY_CHAR} {
+<ST_PHP_END_HEREDOC>{LABEL}";"?[\n\r] {
     heredoc=null;
     heredoc_len=0;
     yybegin(ST_PHP_IN_SCRIPTING);
-    return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
+    int back = 1;
+    // mark just the label
+    if (yytext().charAt(yylength() - 2)==';') {
+	    back++;
+    }
+    yypushback(back);
+    return PHPTokenId.PHP_HEREDOC_TAG;
 }
 
 <ST_PHP_DOUBLE_QUOTES,ST_PHP_BACKQUOTE,ST_PHP_HEREDOC,ST_PHP_QUOTES_AFTER_VARIABLE>"{$" {
