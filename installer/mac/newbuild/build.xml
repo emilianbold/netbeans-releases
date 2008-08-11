@@ -352,11 +352,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${basedir}/mysql/pkg/scripts/mysql-admin.server"
               todir="${basedir}/build/mysql.pkg/Contents/Resources"/>
         <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/mysql-admin.server" perm="ugo+x"/>          
-                     
-        <copy file="${basedir}/mysqlstartup/pkg/scripts/postflight"
-              todir="${basedir}/build/mysqlstartup.pkg/Contents/Resources/"/>
-        <chmod file="${basedir}/build/mysqlstartup.pkg/Contents/Resources/postflight" perm="ugo+x"/>          
-              
+
         <ant target="build-dmg">             
              <property name="packages" value="./build/baseide.pkg ./build/javase.pkg  ./build/webcommon.pkg ./build/javaee.pkg ./build/ruby.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
              <property name="bundle.type" value="-mysql"/> 
