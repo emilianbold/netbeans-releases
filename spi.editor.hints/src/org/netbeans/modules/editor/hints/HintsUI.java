@@ -50,6 +50,8 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -105,7 +107,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     
     static Logger UI_GESTURES_LOGGER = Logger.getLogger("org.netbeans.ui.editor.hints");
     
-    private JTextComponent comp;
+    private Reference<JTextComponent> compRef;
     private Popup listPopup;
     private Popup tooltipPopup;
     private JLabel hintIcon;
@@ -119,7 +121,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     }
     
     public JTextComponent getComponent() {
-        return comp;
+        return compRef == null ? null : compRef.get();
     }
     
     public void removeHints() {
@@ -128,15 +130,17 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     }
     
     public void setComponent (JTextComponent comp) {
-        boolean change = this.comp != comp;
+        JTextComponent thisComp = getComponent();
+        boolean change = thisComp != comp;
         if (change) {
             unregister();
-            this.comp = comp;
+            this.compRef = new WeakReference<JTextComponent>(comp);
             register();
         }
     }
     
     private void register() {
+        JTextComponent comp = getComponent(); 
         if (comp == null) {
             return;
         }
@@ -144,6 +148,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     }
     
     private void unregister() {
+        JTextComponent comp = getComponent(); 
         if (comp == null) {
             return;
         }
@@ -152,6 +157,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     
     
     public void removePopups() {
+        JTextComponent comp = getComponent(); 
         if (comp == null) {
             return;
         }
@@ -192,6 +198,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     }
     
     boolean isKnownComponent(Component c) {
+        JTextComponent comp = getComponent(); 
         return c != null && 
                (c == comp 
                 || c == hintIcon 
@@ -202,6 +209,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     }
     
     public void showPopup(FixData hints) {
+        JTextComponent comp = getComponent(); 
         if (comp == null || (hints.isComputed() && hints.getFixes().isEmpty())) {
             return;
         }
@@ -242,6 +250,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     public void showPopup(FixData fixes, String description, JTextComponent component, Point position) {
         removeHints();
         setComponent(component);
+        JTextComponent comp = getComponent(); 
         
         if (comp == null || fixes == null)
             return ;
@@ -328,6 +337,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     }
     
     private Dimension getMaxSizeAt( Point p ) {
+        JTextComponent comp = getComponent(); 
         Rectangle screenBounds = null;
         if( null != comp && null != comp.getGraphicsConfiguration() ) {
             screenBounds = comp.getGraphicsConfiguration().getBounds();
@@ -351,7 +361,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
             
             if (f != null) {
                 e.consume();
-                JTextComponent c = this.comp;
+                JTextComponent c = getComponent(); 
                 invokeHint (f);
                 if (c != null && org.openide.util.Utilities.isMac()) {
                     // see issue #65326
@@ -411,7 +421,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     }
     
     boolean invokeDefaultAction(boolean onlyActive) {
-        JTextComponent comp = this.comp;
+        JTextComponent comp = getComponent(); 
         if (comp == null) {
             Logger.getLogger(HintsUI.class.getName()).log(Level.WARNING, "HintsUI.invokeDefaultAction called, but comp == null");
             return false;
@@ -468,6 +478,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     }
     
     public void keyPressed(KeyEvent e) {
+        JTextComponent comp = getComponent(); 
         if (comp == null) {
             return;
         }
@@ -539,7 +550,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
         }
         
         removePopups();
-        final JTextComponent component = comp;
+        final JTextComponent component = getComponent(); 
         JumpList.checkAddEntry(component);
         final Cursor cur = component.getCursor();
         component.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));

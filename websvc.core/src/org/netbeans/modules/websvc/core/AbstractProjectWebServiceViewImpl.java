@@ -38,8 +38,9 @@
  */
 package org.netbeans.modules.websvc.core;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.event.ChangeListener;
-import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.netbeans.api.project.Project;
 
@@ -51,9 +52,9 @@ import org.netbeans.api.project.Project;
 public abstract class AbstractProjectWebServiceViewImpl implements ProjectWebServiceViewImpl {
 
     private ChangeSupport serviceListeners,  clientListeners;
-    private Project project;
+    private Reference<Project> project;
     protected AbstractProjectWebServiceViewImpl(Project project) {
-        this.project = project;
+        this.project = new WeakReference<Project>(project);
         serviceListeners = new ChangeSupport(this);
         clientListeners = new ChangeSupport(this);
     }
@@ -113,7 +114,7 @@ public abstract class AbstractProjectWebServiceViewImpl implements ProjectWebSer
     }
 
     protected Project getProject() {
-        return project;
+        return project.get();
     }
 
 }
