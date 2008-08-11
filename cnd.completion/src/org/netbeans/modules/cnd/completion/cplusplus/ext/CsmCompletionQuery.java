@@ -1054,7 +1054,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES |
                                                             CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS |
                                                             CompletionResolver.RESOLVE_GLOB_NAMESPACES |
-                                                            CompletionResolver.RESOLVE_LIB_CLASSES);
+                                                            CompletionResolver.RESOLVE_LIB_CLASSES |
+                                                            CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
                                 } else {
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                 }
@@ -1438,6 +1439,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                      | CompletionResolver.RESOLVE_CLASSES
                                                      | CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS
                                                      | CompletionResolver.RESOLVE_GLOB_NAMESPACES
+                                                     | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS
                                                      );
                         if (compResolver.refresh() && compResolver.resolve(varPos, varName, openingSource)) {
                             res = compResolver.getResult();
@@ -1678,7 +1680,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         private CsmClassifier findExactClass(final String var, final int varPos) {
             CsmClassifier cls = null;
-            compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES);
+            compResolver.setResolveTypes(CompletionResolver.RESOLVE_CLASSES | CompletionResolver.RESOLVE_LIB_CLASSES | CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
             if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
                 CompletionResolver.Result res = compResolver.getResult();
                 Collection<? extends CsmObject> allItems = res.addResulItemsToCol(new ArrayList());
