@@ -102,6 +102,10 @@ public class ScriptingSetup extends JellyTestCase {
         ScriptingUtilities.waitForPendingBackgroundTasks();        */
     }
 
+    public void testCloseTaskWindow() {
+        CommonUtilities.closeTaskWindow();
+    }
+
 /* TODO create PHPProject
     public void testOpenPHPProject() {
         openProject(Projects.PHP_PROJECT);

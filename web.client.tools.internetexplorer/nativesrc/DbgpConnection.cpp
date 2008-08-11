@@ -402,7 +402,6 @@ DWORD WINAPI DbgpConnection::commandHandler(LPVOID param) {
         while(pDbgpConnection->readCommand(cmdString)) {
             pDbgpConnection->processCommand(cmdString, pDbgpConnection);
         }
-        pDbgpConnection->getScriptDebugger()->endSession();
     }
     
     ::CoUninitialize();

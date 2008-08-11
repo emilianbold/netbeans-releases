@@ -524,8 +524,6 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     private void pathsChanged() {
         synchronized (this) {
             classpaths.clear();
-        }
-        synchronized (mutablePathImpls) {
             for (Map<List<String>,MutableClassPathImplementation> m : mutablePathImpls.values()) {
                 for (MutableClassPathImplementation impl : m.values()) {
                     impl.change();

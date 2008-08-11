@@ -266,6 +266,26 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         return task;
     }
 
+    public Future<OperationState> startServer(final OperationStateListener stateListener, FileObject jdkRoot, String[] jvmArgs) {
+        Logger.getLogger("glassfish").log(Level.FINEST, 
+                "CSS.startServer called on thread \"" + Thread.currentThread().getName() + "\"");
+        OperationStateListener startServerListener = new OperationStateListener() {
+            public void operationStateChanged(OperationState newState, String message) {
+                if(newState == OperationState.RUNNING) {
+                    setServerState(ServerState.STARTING);
+                } else if(newState == OperationState.COMPLETED) {
+                    setServerState(ServerState.RUNNING);
+                } else if(newState == OperationState.FAILED) {
+                    setServerState(ServerState.STOPPED);
+                }
+            }
+        };
+        FutureTask<OperationState> task = new FutureTask<OperationState>(
+                new StartTask(properties, jdkRoot, jvmArgs, startServerListener, stateListener));
+        RequestProcessor.getDefault().post(task);
+        return task;
+    }
+
     public Future<OperationState> stopServer(final OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, 
                 "CSS.stopServer called on thread \"" + Thread.currentThread().getName() + "\"");

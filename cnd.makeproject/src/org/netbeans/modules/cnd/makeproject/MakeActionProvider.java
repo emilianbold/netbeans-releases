@@ -56,6 +56,7 @@ import javax.swing.JOptionPane;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
+import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -85,6 +86,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
@@ -222,6 +224,14 @@ public class MakeActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
         }
+
+        if (COMMAND_RUN_SINGLE.equals(command)) {
+            Node node = context.lookup(Node.class);
+            if (node != null) {
+                ShellRunAction.performAction(node);
+            }
+            return;
+        }
         
         if (!conf.getDevelopmentHost().isLocalhost()) {
             String hkey = conf.getDevelopmentHost().getName();
@@ -229,7 +239,7 @@ public class MakeActionProvider implements ActionProvider {
             assert registry != null;
             ServerRecord record = registry.get(hkey);
             assert record != null;
-            if (!record.isOnline()) {
+            if (!record.isOnline() || record.isDeleted()) {
                 initServerRecord(record);
                 return;
             }
@@ -258,11 +268,27 @@ public class MakeActionProvider implements ActionProvider {
     }
 
     private void initServerRecord(ServerRecord record) {
-        String message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
-        int res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
-        if (res == JOptionPane.YES_OPTION) {
-            // start validation phase
-            record.validate();
+        String message;
+        int res;
+        
+        if (record.isOffline()) {
+            message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
+            res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
+            if (res == JOptionPane.YES_OPTION) {
+                // start validation phase
+                record.validate();
+            }
+        } else if (record.isDeleted()) {
+            message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getName());
+            res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
+            if (res == JOptionPane.YES_OPTION) {
+                ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                assert registry != null;
+                registry.addServer(record.getName(), false);
+                // start validation phase
+                record.validate();
+            }
+            
         }
     }
     
@@ -793,6 +819,9 @@ public class MakeActionProvider implements ActionProvider {
                 command.equals(COMMAND_MOVE) ||
                 command.equals(COMMAND_RENAME)) {
             return true;
+        } else if (command.equals(COMMAND_RUN_SINGLE)) {
+            Node node = context.lookup(Node.class);
+            return (node != null) && (node.getCookie(ShellExecSupport.class) != null);
         } else {
             return false;
         }
@@ -854,10 +883,6 @@ public class MakeActionProvider implements ActionProvider {
             if (!record.isOnline()) {
                 lastValidation = false;
                 runBTA = true;
-//            } else {
-//                // TODO: Do we want to do a real validation now? Is cnd.remote able to provide it?
-//                lastValidation = true;
-//                return true;
             }
             // TODO: all validation below works, but it may be more efficient to make a verifying script
         }
@@ -924,8 +949,12 @@ public class MakeActionProvider implements ActionProvider {
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
-        
-        if ( runBTA || Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
+
+        if (conf.getDevelopmentHost().isLocalhost() && Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
+            runBTA = true;
+        }
+
+        if (runBTA) { 
             if (conf.getDevelopmentHost().isLocalhost()) {
                 BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
                 bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N

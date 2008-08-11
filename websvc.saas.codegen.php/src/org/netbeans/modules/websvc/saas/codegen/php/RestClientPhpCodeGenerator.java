@@ -218,11 +218,8 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         methodBody += "        " + queryParamsCode;
 
         methodBody += "$conn = new " + Constants.REST_CONNECTION + "(\"" + getBean().getUrl() + "\"";
-        if (!pathParamsCode.trim().equals("")) {
-            methodBody += ", $" + Constants.PATH_PARAMS + ", " + (queryParamsCode.trim().equals("") ? "null" : "$"+Constants.QUERY_PARAMS);
-        } else if (!queryParamsCode.trim().equals("")) {
-            methodBody += ", $" + Constants.QUERY_PARAMS;
-        }
+        methodBody += ", " + (pathParamsCode.trim().equals("") ? "array()" : "$" + Constants.PATH_PARAMS);
+        methodBody += ", " + (queryParamsCode.trim().equals("") ? "array()" : "$"+Constants.QUERY_PARAMS);
         methodBody += ");\n";
 
         //Insert authentication code after new "+Constants.REST_CONNECTION+"() call
@@ -232,7 +229,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         HttpMethodType httpMethod = getBean().getHttpMethod();
         if (getBean().getHeaderParameters() != null && getBean().getHeaderParameters().size() > 0) {
             methodBody += "        " + getHeaderOrParameterDefinition(getBean().getHeaderParameters(), Constants.HEADER_PARAMS, false, httpMethod);
-            methodBody += INDENT+"$conn->setHeaders($" +Constants.HEADER_PARAMS+");";
+            methodBody += INDENT+"$conn->setHeaders($" +Constants.HEADER_PARAMS+");\n";
         }
 
         boolean hasRequestRep = !getBean().findInputRepresentations(getBean().getMethod()).isEmpty();
@@ -455,7 +452,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     private String getTemplateParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate) {
         StringBuffer sb = new StringBuffer();
         for (ParameterInfo param : params) {
-            sb.append(getHeaderOrParameterDefinitionPart(param, varName, evaluate));
+            sb.append(getHeaderOrParameterDefinitionPart(param, varName, evaluate, true));
         }
 
         String paramCode = "";
@@ -507,19 +504,29 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         return paramUsage;
     }
     
-    public static String getHeaderOrParameterDefinitionPart(List<ParameterInfo> params, String varName, boolean evaluate) {
+    public static String getHeaderOrParameterDefinitionPart(List<ParameterInfo> params, 
+            String varName, boolean evaluate) {
+        return getHeaderOrParameterDefinitionPart(params, varName, evaluate, false);
+    }
+    
+    public static String getHeaderOrParameterDefinitionPart(List<ParameterInfo> params, 
+            String varName, boolean evaluate, boolean isTemplate) {
         StringBuffer sb = new StringBuffer();
         for (ParameterInfo param : params) {
-            sb.append(getHeaderOrParameterDefinitionPart(param, varName, evaluate || param.isApiKey()));
+            sb.append(getHeaderOrParameterDefinitionPart(param, varName, 
+                    evaluate || param.isApiKey(), isTemplate));
         }
         return sb.toString();
     }
     
-    public static String getHeaderOrParameterDefinitionPart(ParameterInfo param, String varName, boolean evaluate) {
+    public static String getHeaderOrParameterDefinitionPart(ParameterInfo param, 
+            String varName, boolean evaluate, boolean isTemplate) {
         StringBuffer sb = new StringBuffer();
         String paramName = Util.getParameterName(param);
+        if(isTemplate)
+            paramName = "{"+paramName+"}";
         String paramVal = null;
-        String indent = "             ";
+        String indent = INDENT;
         if(evaluate) {
             paramVal = PhpUtil.findParamValue(param);
             if (param.getType() != String.class) {
@@ -548,16 +555,19 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         return paramCode;
     }
     
-    public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate, HttpMethodType httpMethod) {
+    public String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate, HttpMethodType httpMethod) {
         String part = getHeaderOrParameterDefinitionPart(params, varName, evaluate);
         if (httpMethod == HttpMethodType.PUT ||
                 httpMethod == HttpMethodType.POST) {
             if (!Util.isContains(params, new ParameterInfo(Constants.CONTENT_TYPE, String.class))) {
-                part += ", array(\"" + Constants.CONTENT_TYPE + "\" => " + Util.getVariableName(Constants.CONTENT_TYPE) + ")";
+                part += INDENT+"$"+varName+"[\"" + Constants.CONTENT_TYPE + "\"] = $"+Util.getVariableName(Constants.CONTENT_TYPE)+";\n";
             }
         }
         String paramCode = "";
         paramCode += "$" + varName + " = array();\n";
+        if(getBean().getAuthenticationType() == SaasAuthenticationType.SIGNED_URL) {
+            paramCode += INDENT+"$headerParams[\"Date\"] =  $date;\n";
+        }
         paramCode += part + "\n";
         return paramCode;
     }

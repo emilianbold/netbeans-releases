@@ -54,6 +54,7 @@ import java.util.Set;
 import java.beans.PropertyChangeEvent;
 
 import com.sun.jdi.Bootstrap;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
@@ -381,7 +382,7 @@ public class JPDAStart extends Task implements Runnable {
                             for (FileObject src : SourceForBinaryQuery.findSourceRoots(entry).getRoots()) {
                                 getProject().log("url=" + src.getURL().toString(), Project.MSG_DEBUG);
                                 URL url = src.getURL();
-                                ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl(startedSessionRef);
+                                ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl(startedSessionRef, url);
 
                                 BuildArtifactMapper.addArtifactsUpdatedListener(url, l);
                                 listeners.put(url, l);
@@ -769,9 +770,11 @@ public class JPDAStart extends Task implements Runnable {
 
         private final WeakReference<Session> startedSessionRef[];
         private final RequestProcessor hotFixRP = new RequestProcessor("Java Debugger HotFix", 1);
+        private final URL url;
 
-        public ArtifactsUpdatedImpl(WeakReference<Session> startedSessionRef[]) {
+        public ArtifactsUpdatedImpl(WeakReference<Session> startedSessionRef[], URL url) {
             this.startedSessionRef = startedSessionRef;
+            this.url = url;
         }
 
         public void artifactsUpdated(Iterable<File> artifacts) {
@@ -852,6 +855,8 @@ public class JPDAStart extends Task implements Runnable {
                         } catch (ClassCircularityError ccer) {
                             error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixCircularity");
                             error = MessageFormat.format(error, ccer.getLocalizedMessage());
+                        } catch (VMDisconnectedException vmdisc) {
+                            BuildArtifactMapper.removeArtifactsUpdatedListener(url, ArtifactsUpdatedImpl.this);
                         }
                         if (error != null) {
                             notifyError(error);
@@ -861,6 +866,8 @@ public class JPDAStart extends Task implements Runnable {
                         }
                     }
                 });
+            } else {
+                BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
             }
             
             if (error != null) {

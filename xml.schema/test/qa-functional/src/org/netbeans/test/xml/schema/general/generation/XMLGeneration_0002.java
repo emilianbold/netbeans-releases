@@ -120,6 +120,12 @@ public class XMLGeneration_0002 extends XMLGeneration {
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock("File|New File...");
 
       // JDialogOperator jdNew = new JDialogOperator( "New File" );
+
+      // Workaround for MacOS platform
+      // TODO : check platform
+      // TODO : remove after normal issue fix
+      NewFileWizardOperator.invoke().cancel( );
+
       NewFileWizardOperator fwNew = new NewFileWizardOperator( "New File" );
       fwNew.selectCategory( "XML" );
       fwNew.selectFileType( "XML Document" );
@@ -152,8 +158,8 @@ public class XMLGeneration_0002 extends XMLGeneration {
 
       for( CImportClickData cli : aimpData )
       {
-        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
-        ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error );
+        Sleep( 1000 );
+        ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error, cli.timeout );
       }
 
       JButtonOperator jOk = new JButtonOperator( jBrowser, "OK" );

@@ -100,11 +100,11 @@ public class Utilities {
         
         if (name == null) {
             if(et instanceof LiteralTree) {
-                String guess = (String) ((LiteralTree) et).getValue();
-                if (guess != null)
-                    return guessLiteralName(guess);
-            } else
-                return DEFAULT_NAME;
+                Object guess = ((LiteralTree) et).getValue();
+                if (guess != null && guess instanceof String)
+                    return guessLiteralName((String) guess);
+            } 
+            return DEFAULT_NAME;
         }
         
         Scope s = info.getTrees().getScope(tp);

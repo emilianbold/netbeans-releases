@@ -275,4 +275,8 @@ public class RailsJdbcConnection implements RailsDatabaseConfiguration {
     public JdbcInfo getJdbcInfo() {
         return null;
     }
+
+    public String getDatabaseName(String projectName) {
+        return projectName + "_development"; //NOI18N
+    }
 }

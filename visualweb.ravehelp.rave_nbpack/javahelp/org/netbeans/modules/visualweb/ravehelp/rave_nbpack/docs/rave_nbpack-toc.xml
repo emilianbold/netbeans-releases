@@ -193,9 +193,8 @@
 			<tocitem text="Tags">
 				<tocitem text="About Tag Libraries" target="about_taglib" />
 				<tocitem text="About the JSTL" target="about_jstl" />
-				<tocitem text="Tag Libraries">
-					<tocitem text="Creating a Reusable Tag Library" target="taglib_create_separate" />
-				</tocitem>
+			
+			
 				<tocitem text="Tag Library Descriptors">
 					<tocitem text="About Tag Library Descriptors" target="about_tld" />
 					<tocitem text="Creating a Tag Library Descriptor" target="tld_create" />

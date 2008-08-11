@@ -43,7 +43,7 @@
     </loadresource>
 
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
-    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-${glassfish.v3.version}"/>    
+    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-prelude-${glassfish.v3.version}"/>    
     <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/bundles/multiplatform.zip"/>
     <!--<property name="glassfish_v3_location" value="file:${user.home}/releng/hudson/glassfish-v3-preview2-b10d.zip"/>-->
     <property name="glassfish_v3_location_ml"  value="${glassfish_v3_location}"/>
@@ -58,8 +58,9 @@
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 
     <property name="mpkg.name_nb_mysql" value="NetBeans IDE with MySQL"/> 
-    <property name="mysql_10.5.pkg.name" value="mysql-5.0.51a-osx10.5-x86"/>
-    <property name="mysql_10.4.pkg.name" value="mysql-5.0.51a-osx10.4-i686"/>
+    <property name="mysql.version"      value="5.0.67"/>
+    <property name="mysql_10.5.pkg.name" value="mysql-5.0.67-osx10.5-x86"/>
+    <property name="mysql_10.4.pkg.name" value="mysql-5.0.67-osx10.4-i686"/>
     <property name="mysql_10.5.dmg.name" value="netbeans-6.5-mysql-macosx10.5-x86"/>
     <property name="mysql_10.4.dmg.name" value="netbeans-6.5-mysql-macosx10.4-x86"/>
     <property name="mysql_startup.pkg.name" value="MySQLStartupItem"/>

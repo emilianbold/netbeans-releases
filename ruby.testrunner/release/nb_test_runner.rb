@@ -183,7 +183,10 @@ module Rake
     alias original_define define
     def define
       test_runner = ENV['NB_TEST_RUNNER']
-      @ruby_opts << "-r#{test_runner}"
+      # convert the path to use forward slashes, backslashes
+      # don't work here with JRuby. On MRI both work.
+      test_runner = test_runner.gsub("\\", "/")
+      @ruby_opts << "-r\"#{test_runner}\""
       original_define
     end
     

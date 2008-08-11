@@ -102,6 +102,10 @@ public final class Gem implements Comparable<Gem> {
         return desc;
     }
 
+    public String getHTMLDescription() {
+        return desc.replace("\n", "<br>\n"); // NOI18N
+    }
+
     public @Override String toString() {
         // TODO: Shown in ListCellRenderer => provide appropriate ListCellRenderer for the lists in GemPanel
         StringBuilder sb = new StringBuilder(100);

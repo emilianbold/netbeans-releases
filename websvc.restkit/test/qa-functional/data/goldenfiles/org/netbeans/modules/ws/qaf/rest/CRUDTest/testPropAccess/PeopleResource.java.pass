@@ -10,8 +10,8 @@ import java.util.Collection;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
@@ -45,7 +45,7 @@ public class PeopleResource {
      * @return an instance of PeopleConverter
      */
     @GET
-    @ProduceMime({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public PeopleConverter get(@QueryParam("start")
     @DefaultValue("0")
     int start, @QueryParam("max")
@@ -69,7 +69,7 @@ public class PeopleResource {
      * @return an instance of PersonConverter
      */
     @POST
-    @ConsumeMime({"application/xml", "application/json"})
+    @Consumes({"application/xml", "application/json"})
     public Response post(PersonConverter data) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {

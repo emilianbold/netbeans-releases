@@ -54,9 +54,9 @@ public class CodeGenerationSuite {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(CreateConstructorTest.class)
-                .addTest(CreateConstructorTest.class)                    
-                .addTest(CreateEqualsHashcodeTest.class)
+                /*.addTest(CreateConstructorTest.class)*/
+                /*.addTest(CreateEqualsHashcodeTest.class)
                 .addTest(CreateGetterSetterTest.class)
-                .addTest(ImplementMethodTest.class));                
+                .addTest(ImplementMethodTest.class)*/); 
     }
 }

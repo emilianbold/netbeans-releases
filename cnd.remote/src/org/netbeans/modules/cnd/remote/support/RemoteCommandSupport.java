@@ -51,7 +51,7 @@ import java.util.Map;
 /**
  * Run a remote command. This remote command should <b>not</b> expect input. The output
  * from the command is stored in a StringWriter and can be gotten via toString().
- * 
+ *
  * @author gordonp
  */
 public class RemoteCommandSupport extends RemoteConnectionSupport {
@@ -126,6 +126,8 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
         StringBuilder cmdline = new StringBuilder();
 
+        boolean needExport = cmd.indexOf(';') > -1;
+
         if (env != null) {
             for (String ev : env.keySet()) {
                 // The following code is important! But ChannelExec.setEnv(...) was added after JSch 0.1.24,
@@ -133,7 +135,11 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                 //echannel.setEnv(var, val); // not in 0.1.24
 
                 //as a workaround
-                cmdline.append( ev + "=\"" + env.get(ev) + "\";" ); // NOI18N
+                String doset = ev + "=\"" + env.get(ev) + "\" ";
+                if (needExport) {
+                    doset = "export " + doset + ";";
+                }
+                cmdline.append( doset ); // NOI18N
             }
 
         }

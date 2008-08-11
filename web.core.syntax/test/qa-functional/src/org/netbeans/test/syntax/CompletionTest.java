@@ -125,8 +125,8 @@ public class CompletionTest extends J2eeTestCase {
 
     private static final boolean GENERATE_GOLDEN_FILES = false;//generate golden files, or test
     private static boolean projectsOpened = false;//open test projects
-    protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "jspx", "tagx", "xhtml"});
-    protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf"});
+    protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "xhtml"});
+    protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf", "jspx", "tagx"});
     protected final static List JS_EXTS = Arrays.asList(new String[]{"js"/*,"java"*/});
     public final static Logger LOG = Logger.getLogger(CompletionTest.class.getName());
     
@@ -145,10 +145,12 @@ public class CompletionTest extends J2eeTestCase {
     @Override
     public void setUp() throws IOException {
         if (!projectsOpened && isRegistered(Server.ANY)){
+            log("Opening files from " + getProjectsDir().getAbsolutePath());
             for (File file : getProjectsDir().listFiles()) {
                 openProjects(file.getAbsolutePath());
                 resolveServer(file.getName());
             }
+            finalizeProjectsOpening();
             projectsOpened = true;
         }
         System.out.println("########  " + getName() + "  #######");
@@ -179,9 +181,12 @@ public class CompletionTest extends J2eeTestCase {
         }
     }
     
-    public File getProjectsDir(){
+    protected File getProjectsDir(){
         File datadir = new CompletionTest().getDataDir();
         return new File(datadir, "CompletionTestProjects");
+    }
+
+    protected void finalizeProjectsOpening(){
     }
     
     @Override

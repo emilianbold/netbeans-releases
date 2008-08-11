@@ -315,7 +315,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
         Set<Datasource> datasources = null;
         ResourceConfiguratorInterface rci = getResourceConfigurator();
         File resourceDir = module.getResourceDirectory();
-        if ((rci != null) && (resourceDir != null) && resourceDir.exists()) {
+        if (rci != null && resourceDir != null && resourceDir.exists()) {
             datasources = rci.getResources(resourceDir);
         }
         if(datasources == null) {
@@ -347,7 +347,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
         Set<MessageDestination> destinations = null;
         ResourceConfiguratorInterface rci = getResourceConfigurator();
         File resourceDir = module.getResourceDirectory();
-        if (resourceDir != null && resourceDir.exists()) {
+        if (rci != null && resourceDir != null && resourceDir.exists()) {
             destinations = rci.getMessageDestinations(resourceDir);
         }
         if(destinations == null) {

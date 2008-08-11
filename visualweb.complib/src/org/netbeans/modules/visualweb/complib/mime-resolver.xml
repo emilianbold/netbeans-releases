@@ -5,6 +5,6 @@
 <MIME-resolver>
     <file>
         <ext name="complib_item"/>
-        <resolver mime="text/complib_item+xml"/>
+        <resolver mime="text/x-complib-palette+xml"/>
     </file>
 </MIME-resolver>

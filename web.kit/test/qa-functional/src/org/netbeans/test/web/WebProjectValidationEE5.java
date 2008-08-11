@@ -103,7 +103,7 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
               "testNewJSP", "testNewJSP2", /*"testJSPNavigator",*/ "testNewServlet", "testNewServlet2",
               "testCompileAllJSP", "testCompileJSP",
               "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
-              "testCleanAndBuildProject", "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", /*"testHTMLNavigator",*/ "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
                /*"testJSPNavigator", "testHTMLNavigator" */);
@@ -186,7 +186,7 @@ public class WebProjectValidationEE5 extends WebProjectValidation {
         ProjectSupport.waitScanFinished();
         verifyWebPagesNode("index.jsp");
         verifyWebPagesNode("WEB-INF|web.xml");
-        verifyWebPagesNode("META-INF|sun-web.xml");
+        verifyWebPagesNode("WEB-INF|sun-web.xml");
     }
 
     @Override

@@ -69,11 +69,6 @@ import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
-// XXX
-// check local vs remote file
-//  - if remote not found => skip (add to ignored)
-//  - if remote is folder and local is file (and vice versa) => skip (add to ignored)
-// translate some of well-known exceptions
 /**
  * Remote client able to connect/disconnect to FTP
  * as well as download/upload files to a FTP server.
@@ -264,10 +259,10 @@ public class RemoteClient implements Cancellable {
                 if (children != null) {
                     for (File child : children) {
                         if (isVisible(child)) {
-                            LOGGER.fine("File " + file + " added to upload queue");
+                            LOGGER.fine("File " + child + " added to upload queue");
                             queue.offer(TransferFile.fromFile(child, baseLocalAbsolutePath));
                         } else {
-                            LOGGER.fine("File " + file + " NOT added to upload queue [invisible]");
+                            LOGGER.fine("File " + child + " NOT added to upload queue [invisible]");
                         }
                     }
                 }
@@ -303,10 +298,10 @@ public class RemoteClient implements Cancellable {
                 try {
                     uploadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage()));
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage().trim()));
                     continue;
                 } catch (RemoteException exc) {
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage()));
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage().trim()));
                     continue;
                 }
             }
@@ -447,10 +442,10 @@ public class RemoteClient implements Cancellable {
                 try {
                     downloadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage()));
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage().trim()));
                     continue;
                 } catch (RemoteException exc) {
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage()));
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage().trim()));
                     continue;
                 }
             }
@@ -476,19 +471,36 @@ public class RemoteClient implements Cancellable {
                 return;
             }
             // in fact, useless but probably expected
-            // XXX handle if exists but it is a file
             if (!localFile.exists()) {
-                localFile.mkdirs();
+                if (!localFile.mkdirs()) {
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateDir", localFile));
+                    return;
+                }
+            } else if (localFile.isFile()) {
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_DirFileCollision", file));
+                return;
             }
             transferSucceeded(transferInfo, file);
         } else if (file.isFile()) {
             // file => simply download it
 
+            // #142682 - because from the ui we get only files (folders are removed) => ensure parent folder exists
+            File parent = localFile.getParentFile();
+            assert parent != null : "File " + localFile + " has no parent file?!";
+            if (!parent.exists()) {
+                if (!parent.mkdirs()) {
+                    transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateDir", parent));
+                    return;
+                }
+            } else if (parent.isFile()) {
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_DirFileCollision", file));
+                return;
+            }
+            assert parent.isDirectory() : "Parent file of " + localFile + " must be a directory";
+
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("Downloading " + file.getRelativePath() + " => " + localFile.getAbsolutePath());
             }
-
-            // XXX check if the remote file exists?
 
             if (!cdBaseRemoteDirectory(file.getParentRelativePath(), false)) {
                 LOGGER.fine("Remote directory " + file.getParentRelativePath() + " does not exist => ignoring file " + file.getRelativePath());
@@ -545,7 +557,7 @@ public class RemoteClient implements Cancellable {
         int replyCode = ftpClient.getReplyCode();
         if (FTPReply.isNegativePermanent(replyCode)
                 || FTPReply.isNegativeTransient(replyCode)) {
-            message = NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", ftpClient.getReplyString());
+            message = NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", ftpClient.getReplyString().trim());
         } else {
             message = NbBundle.getMessage(RemoteClient.class, upload ? "MSG_FtpCannotUploadFile" : "MSG_FtpCannotDownloadFile", fileName);
         }

@@ -424,7 +424,7 @@ public class CSSCompletion implements CodeCompletionHandler {
             //filter out non-public properties
             if(!p.name().startsWith("-")) {
                 CSSElement handle = new CssPropertyElement(p);
-                CompletionProposal proposal = createCompletionItem(handle, p.name(), kind, anchor, false);
+                CompletionProposal proposal = createPropertyNameCompletionItem(handle, p.name(), kind, anchor, false);
                 proposals.add(proposal);
             }
         }
@@ -497,14 +497,15 @@ public class CSSCompletion implements CodeCompletionHandler {
         if (typedText == null || typedText.length() == 0) {
             return QueryType.NONE;
         }
-        char c = typedText.charAt(0);
+        char c = typedText.charAt(typedText.length() - 1);
         switch (c) {
             case '\n':
             case '}':
             case ';': {
                 return QueryType.STOP;
             }
-            case ':': {
+            case ':':
+            case ',': {
                 return QueryType.COMPLETION;
             }
         }
@@ -541,7 +542,7 @@ public class CSSCompletion implements CodeCompletionHandler {
                 //artificial origin, get real origin from the first ancestor element with an origin
                 Element parent = value;
                 while((parent = parent.parent()) != null) {
-                    if(parent.origin() != null) {
+                    if(parent.origin() != null && !parent.origin().startsWith("-")) {
                         origin = parent.origin();
                         break;
                     }
@@ -553,6 +554,15 @@ public class CSSCompletion implements CodeCompletionHandler {
             }
             
             return new ValueCompletionItem(element, value.toString(), origin, kind, anchorOffset, addSemicolon);
+    }
+    
+    private CSSCompletionItem createPropertyNameCompletionItem(CSSElement element, 
+            String value, 
+            CompletionItemKind kind, 
+            int anchorOffset, 
+            boolean addSemicolon) {
+        
+        return new PropertyCompletionItem(element, value, kind, anchorOffset, addSemicolon);
     }
     
     private CSSCompletionItem createCompletionItem(CSSElement element, 
@@ -676,6 +686,24 @@ public class CSSCompletion implements CodeCompletionHandler {
             
             return new ImageIcon(i);
         }
+    }
+    
+    private class PropertyCompletionItem extends CSSCompletionItem {
+        
+        private PropertyCompletionItem(CSSElement element, 
+                String value, 
+                CompletionItemKind kind, 
+                int anchorOffset, 
+                boolean addSemicolon) {
+            
+                super(element, value, kind, anchorOffset, addSemicolon);
+        }
+
+        @Override
+         public String getInsertPrefix() {
+            return super.getInsertPrefix() + ":";
+        }
+        
     }
 
     /**

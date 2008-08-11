@@ -456,6 +456,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             AbsentInformationException aiex = new AbsentInformationException(ex.getLocalizedMessage());
             aiex.initCause(ex);
             throw aiex;
+        } catch (InvalidStackFrameException ex) {
+            AbsentInformationException aiex = new AbsentInformationException(ex.getLocalizedMessage());
+            aiex.initCause(ex);
+            throw aiex;
         } catch (ObjectCollectedException ocex) {
             AbsentInformationException aiex = new AbsentInformationException(ocex.getLocalizedMessage());
             aiex.initCause(ocex);
@@ -1023,7 +1027,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 try {
                     CallStackFrame[] frames = getCallStack(depth, depth + 1);
                     //frame = new CallStackFrameImpl(this, threadReference.frame(depth), depth, debugger);
-                    frame = frames[0];
+                    if (frames.length > 0) {
+                        frame = frames[0];
+                    }
                 //} catch (IncompatibleThreadStateException ex) {
                 } catch (AbsentInformationException ex) {
                     Exceptions.printStackTrace(ex);
@@ -1096,8 +1102,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             //setLockerThreads(lockedThreadsWithMonitors);
             return lockedThreadsWithMonitors != null;
         } catch (VMDisconnectedException e) {
-            return false;
+        } catch (InternalException e) {
+        } catch (ObjectCollectedException e) {
         }
+        return false;
     }
 
     private static Map<ThreadReference, ObjectReference> findLockPath(ThreadReference tr, ObjectReference waitingMonitor) throws IncompatibleThreadStateException {

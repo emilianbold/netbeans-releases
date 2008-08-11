@@ -34,7 +34,7 @@
                   <Group type="102" attributes="0">
                       <Component id="nameLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="nameField" pref="641" max="32767" attributes="0"/>
+                      <Component id="nameField" pref="664" max="32767" attributes="0"/>
                   </Group>
                   <Component id="directoryKindRadio" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="adHocKindRadio" alignment="0" min="-2" max="-2" attributes="0"/>

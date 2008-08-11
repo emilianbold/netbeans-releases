@@ -52,24 +52,45 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.groovy.grailsproject.ui.wizards.GrailsArtifacts;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Martin Adamek
  */
-public class GrailsSources implements Sources {
+public class GrailsSources extends FileChangeAdapter implements Sources {
     
     private final FileObject projectDir;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
-    GrailsSources(FileObject projectDir) {
+    private GrailsSources(FileObject projectDir) {
         this.projectDir = projectDir;
     }
-    
+
+    static GrailsSources create(FileObject projectDir) {
+        GrailsSources sources = new GrailsSources(projectDir);
+        sources.startFSListener();
+        return sources;
+    }
+
+    private void startFSListener () {
+        try {
+            FileSystem fs = projectDir.getFileSystem();
+            fs.addFileChangeListener(FileUtil.weakFileChangeListener(this, fs));
+        } catch (FileStateInvalidException x) {
+            Exceptions.printStackTrace(x);
+        }
+    }
+
     public SourceGroup[] getSourceGroups(String type) {
         if (Sources.TYPE_GENERIC.equals(type)) {
             return new SourceGroup[] {
@@ -134,6 +155,20 @@ public class GrailsSources implements Sources {
         changeSupport.removeChangeListener(listener);
     }
     
+    @Override
+    public void fileDeleted(FileEvent fe) {
+        changeSupport.fireChange();
+    }
+
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
+        changeSupport.fireChange();
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        changeSupport.fireChange();
+    }
     
     private final class Group implements SourceGroup {
         
