@@ -157,10 +157,7 @@ public final class WebClientToolsProjectUtils {
     }
     
     public static boolean isFirefoxSupported() {
-        HtmlBrowser.Factory ffBrowser = getFirefoxBrowser();
-        
-        // XXX remove version check once FF 3 support is done
-        return ffBrowser != null && FirefoxBrowserUtils.isSupportedFirefox(ffBrowser);
+        return getFirefoxBrowser() != null;
     }
     
     public static boolean isInternetExplorerSupported() {
@@ -168,7 +165,7 @@ public final class WebClientToolsProjectUtils {
     }
     
     /**
-     *  Checks if any supported browsers (Firefox 2.0.0.x and Internet Explorer on Windows) are
+     *  Checks if any supported browsers (Firefox, Internet Explorer on Windows) are
      *  configured in the IDE
      * 
      * @return true if some supported browser is configured
