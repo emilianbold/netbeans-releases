@@ -1240,7 +1240,7 @@ catch (IOException ex) {
          // Deselect everything
          pDiagram.selectAll(false);
          
-         engine.layout();
+         engine.layout(true);
          
 //         // Set the default mode to be selection
 //         // TODO: Do we still need to set the mode to perform layout.

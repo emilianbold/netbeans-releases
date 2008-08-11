@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.event.KeyAdapter;
@@ -77,26 +76,25 @@ import org.openide.util.Exceptions;
  * @author  Nam Nguyen
  */
 public class SingletonSetupPanelVisual extends javax.swing.JPanel implements AbstractPanel.Settings {
-    
+
     private Project project;
     private List<ChangeListener> listeners;
-    private boolean uriOveridden;
     private boolean resourceClassNameOveridden;
-    
-    
+
     /** Creates new form CrudSetupPanel */
     public SingletonSetupPanelVisual(String name) {
         setName(name);
         this.listeners = new ArrayList<ChangeListener>();
         initComponents();
         packageComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
+
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 fireChange();
             }
         });
         medaTypeComboBox.setModel(new DefaultComboBoxModel(GenericResourceBean.getSupportedMimeTypes()));
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -120,8 +118,6 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
         contentClassLabel = new javax.swing.JLabel();
         selectClassButton = new javax.swing.JButton();
         contentClassTextField = new javax.swing.JTextField();
-        resourceNameLabel = new javax.swing.JLabel();
-        resourceNameTextField = new javax.swing.JTextField();
         jSeparator2 = new javax.swing.JSeparator();
 
         setName("null");
@@ -140,8 +136,8 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
         org.openide.awt.Mnemonics.setLocalizedText(uriLabel, org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "LBL_UriTemplate")); // NOI18N
 
         uriTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                uriChanged(evt);
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                uriTextFieldKeyReleased(evt);
             }
         });
 
@@ -201,20 +197,11 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
             }
         });
 
-        resourceNameLabel.setLabelFor(resourceNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(resourceNameLabel, org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "LBL_ResourceName")); // NOI18N
-
-        resourceNameTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                resourceNameChanged(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+            .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 537, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(locationLabel)
@@ -222,27 +209,30 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
                     .add(packageLabel))
                 .add(23, 23, 23)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
-                    .add(locationComboBox, 0, 347, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, packageComboBox, 0, 347, Short.MAX_VALUE))
+                    .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
+                    .add(locationComboBox, 0, 393, Short.MAX_VALUE)
+                    .add(packageComboBox, 0, 393, Short.MAX_VALUE))
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(mediaTypeLabel)
+                .add(62, 62, 62)
+                .add(medaTypeComboBox, 0, 395, Short.MAX_VALUE)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(contentClassLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(contentClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(selectClassButton)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(contentClassLabel)
-                    .add(resourceNameLabel)
                     .add(classLabel)
-                    .add(uriLabel)
-                    .add(mediaTypeLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(uriLabel))
+                .add(58, 58, 58)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, uriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
-                    .add(classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
-                    .add(resourceNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(contentClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(selectClassButton))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, medaTypeComboBox, 0, 346, Short.MAX_VALUE))
+                    .add(uriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
+                    .add(classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -263,16 +253,12 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
                 .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(resourceNameLabel)
-                    .add(resourceNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(uriLabel)
+                    .add(uriTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(classLabel)
                     .add(classTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(uriLabel)
-                    .add(uriTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(mediaTypeLabel)
@@ -280,8 +266,8 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(contentClassLabel)
-                    .add(selectClassButton)
-                    .add(contentClassTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(contentClassTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(selectClassButton)))
         );
 
         classLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "ClassName")); // NOI18N
@@ -314,10 +300,6 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
         selectClassButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "DESC_SelectRepresenationClass")); // NOI18N
         contentClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "RepresentationClass")); // NOI18N
         contentClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "DESC_RepresentationClass")); // NOI18N
-        resourceNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "LBL_ResourceName")); // NOI18N
-        resourceNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "DESC_ResourceName")); // NOI18N
-        resourceNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "ResourceName")); // NOI18N
-        resourceNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "DESC_ResourceName")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "LBL_Specify_Resource_Class")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "LBL_Specify_Resource_Class")); // NOI18N
@@ -331,48 +313,32 @@ private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRS
     fireChange();
 }//GEN-LAST:event_representationClassChanged
 
-private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChanged
-    uriOveridden = true;
-    fireChange();
-}//GEN-LAST:event_uriChanged
-
-private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resourceNameChanged
-    String newName = resourceNameTextField.getText();
-    if (! resourceClassNameOveridden) {
-        classTextField.setText(Util.deriveResourceClassName(newName));
-    }
-    if (! uriOveridden) {
-        uriTextField.setText(Util.lowerFirstChar(newName));
-    }
-    fireChange();
-    
-}//GEN-LAST:event_resourceNameChanged
-
     private void selectClassButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectClassButtonActionPerformed
-    fireChange();
-    
+        fireChange();
+
 }//GEN-LAST:event_selectClassButtonActionPerformed
 
     private void mouseClickHandler(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mouseClickHandler
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 final ElementHandle<TypeElement> handle = TypeElementFinder.find(Util.getClasspathInfo(project), new TypeElementFinder.Customizer() {
 
-                            public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
-                                return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
-                            }
+                    public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
+                        return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
+                    }
 
-                            public boolean accept(ElementHandle<TypeElement> typeHandle) {
-                                return true;
-                            }
-                        });
+                    public boolean accept(ElementHandle<TypeElement> typeHandle) {
+                        return true;
+                    }
+                });
 
                 if (handle != null) {
                     contentClassTextField.setText(handle.getQualifiedName());
                     fireChange();
                 }
             }
-        });    
+        });
 }//GEN-LAST:event_mouseClickHandler
 
     private void locationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationComboBoxActionPerformed
@@ -387,8 +353,15 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     private void packageComboBoxKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_packageComboBoxKeyReleased
         fireChange();
     }//GEN-LAST:event_packageComboBoxKeyReleased
-                
-    
+
+private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriTextFieldKeyReleased
+// TODO add your handling code here:
+    String uri = uriTextField.getText();
+    if (!resourceClassNameOveridden) {
+        classTextField.setText(Util.deriveResourceClassName(uri));
+    }
+    fireChange();
+}//GEN-LAST:event_uriTextFieldKeyReleased
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel classLabel;
     private javax.swing.JTextField classTextField;
@@ -403,44 +376,39 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     private javax.swing.JLabel packageLabel;
     private javax.swing.JLabel projectLabel;
     private javax.swing.JTextField projectTextField;
-    private javax.swing.JLabel resourceNameLabel;
-    private javax.swing.JTextField resourceNameTextField;
     private javax.swing.JButton selectClassButton;
     private javax.swing.JLabel uriLabel;
     private javax.swing.JTextField uriTextField;
     // End of variables declaration//GEN-END:variables
-    
+
     public void addChangeListener(ChangeListener listener) {
         listeners.add(listener);
     }
-    
+
     public void fireChange() {
-        ChangeEvent event =  new ChangeEvent(this);
-        
+        ChangeEvent event = new ChangeEvent(this);
+
         for (ChangeListener listener : listeners) {
             listener.stateChanged(event);
         }
     }
-    
+
     public boolean valid(WizardDescriptor wizard) {
         AbstractPanel.clearErrorMessage(wizard);
-        String resourceName = resourceNameTextField.getText().trim();
+        String resourceUri = uriTextField.getText().trim();
         String packageName = getPackage();
         String className = classTextField.getText().trim();
         SourceGroup[] groups = SourceGroupSupport.getJavaSourceGroups(project);
-        
+
         if (groups == null || groups.length < 1) {
             AbstractPanel.setErrorMessage(wizard, "MSG_NoJavaSourceRoots");
-        } else if (resourceName.length() == 0 || ! Utilities.isJavaIdentifier(resourceName)) {
-            AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceName");
-            return false;
-        } else if (className.length() == 0 || ! Utilities.isJavaIdentifier(className)) {
+        } else if (className.length() == 0 || !Utilities.isJavaIdentifier(className)) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceClassName");
             return false;
-        } else if (uriTextField.getText().trim().length() == 0) {
+        } else if (resourceUri.length() == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EmptyUriTemplate");
             return false;
-        } else if (! Util.isValidPackageName(packageName)) {
+        } else if (!Util.isValidPackageName(packageName)) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidPackageName");
             return false;
         } else if (getResourceClassFile() != null) {
@@ -449,28 +417,24 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
         }
         return true;
     }
-    
+
     public SourceGroup getLocationValue() {
-        return (SourceGroup)locationComboBox.getSelectedItem();
+        return (SourceGroup) locationComboBox.getSelectedItem();
     }
 
     public String getPackage() {
-        return ((JTextComponent)packageComboBox.getEditor().getEditorComponent()).getText();
+        return ((JTextComponent) packageComboBox.getEditor().getEditorComponent()).getText();
     }
 
     private void locationChanged() {
         updateSourceGroupPackages();
         fireChange();
     }
-    
-    private String getResourceName() {
-        return resourceNameTextField.getText();
-    }
-    
+
     private String getResourceClassName() {
         return classTextField.getText();
     }
-    
+
     private FileObject getResourceClassFile() {
         FileObject folder = null;
         try {
@@ -478,37 +442,33 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
             if (folder != null) {
                 return folder.getFileObject(getResourceClassName(), Constants.JAVA_EXT);
             }
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             //OK just return null
         }
         return null;
     }
-    
-    public static final String DEFAULT_RESOURCE_NAME = "Generic";
-    
+    public static final String DEFAULT_URI = "generic";
+
     public void read(WizardDescriptor settings) {
-        String value = (String) settings.getProperty(WizardProperties.RESOURCE_NAME);
+        String value = (String) settings.getProperty(WizardProperties.RESOURCE_URI);
         if (value == null || value.trim().length() == 0) {
-            resourceNameTextField.setText(DEFAULT_RESOURCE_NAME);
-            classTextField.setText(Util.deriveResourceClassName(getResourceName()));
+            uriTextField.setText(DEFAULT_URI);
+            classTextField.setText(Util.deriveResourceClassName(DEFAULT_URI));
             //uriTextField.setText("/" + Util.pluralize(Util.lowerFirstChar(getResourceName())) + "/{name}"); //NOI18N
-            uriTextField.setText(Util.lowerFirstChar(getResourceName()));
-            contentClassTextField.setText(GenericResourceBean.
-                getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
+            contentClassTextField.setText(GenericResourceBean.getDefaultRepresetationClass((MimeType) medaTypeComboBox.getSelectedItem()));
         } else {
-            resourceNameTextField.setText(value);
+            uriTextField.setText(value);
             classTextField.setText((String) settings.getProperty(WizardProperties.RESOURCE_CLASS));
-            uriTextField.setText((String) settings.getProperty(WizardProperties.RESOURCE_URI));
             medaTypeComboBox.setSelectedItem(((MimeType[]) settings.getProperty(WizardProperties.MIME_TYPES))[0]);
             String[] types = (String[]) settings.getProperty(WizardProperties.REPRESENTATION_TYPES);
             if (types != null && types.length > 0) {
                 contentClassTextField.setText(types[0]);
             }
         }
-        
+
         project = Templates.getProject(settings);
         FileObject targetFolder = Templates.getTargetFolder(settings);
-        
+
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
 
         SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
@@ -525,21 +485,20 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
                 locationComboBox.setSelectedItem(targetSourceGroup);
                 String targetPackage = SourceGroupSupport.getPackageForFolder(targetSourceGroup, targetFolder);
                 if (targetPackage != null) {
-                    ((JTextComponent)packageComboBox.getEditor().getEditorComponent()).setText(targetPackage);
-               }
+                    ((JTextComponent) packageComboBox.getEditor().getEditorComponent()).setText(targetPackage);
+                }
             }
         }
     }
-    
+
     public void store(WizardDescriptor settings) {
         settings.putProperty(WizardProperties.RESOURCE_PACKAGE, getPackage());
-        settings.putProperty(WizardProperties.RESOURCE_NAME, resourceNameTextField.getText());
         settings.putProperty(WizardProperties.RESOURCE_CLASS, classTextField.getText());
         settings.putProperty(WizardProperties.RESOURCE_URI, uriTextField.getText());
-        settings.putProperty(WizardProperties.MIME_TYPES, new MimeType[] { (MimeType) medaTypeComboBox.getSelectedItem() });
-        settings.putProperty(WizardProperties.REPRESENTATION_TYPES, new String[] { contentClassTextField.getText()} );
-        
-        try {            
+        settings.putProperty(WizardProperties.MIME_TYPES, new MimeType[]{(MimeType) medaTypeComboBox.getSelectedItem()});
+        settings.putProperty(WizardProperties.REPRESENTATION_TYPES, new String[]{contentClassTextField.getText()});
+
+        try {
             Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage(), true));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -547,15 +506,14 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     }
 
     private void updateSourceGroupPackages() {
-        SourceGroup sourceGroup = (SourceGroup)locationComboBox.getSelectedItem();
+        SourceGroup sourceGroup = (SourceGroup) locationComboBox.getSelectedItem();
         if (sourceGroup != null) {
             ComboBoxModel model = PackageView.createListView(sourceGroup);
-            if (model.getSelectedItem()!= null && model.getSelectedItem().toString().startsWith("META-INF")
-                    && model.getSize() > 1) { // NOI18N
+            if (model.getSelectedItem() != null && model.getSelectedItem().toString().startsWith("META-INF") && model.getSize() > 1) { // NOI18N
+
                 model.setSelectedItem(model.getElementAt(1));
             }
             packageComboBox.setModel(model);
         }
     }
-    
 }

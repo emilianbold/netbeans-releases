@@ -446,7 +446,14 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("templateMethods.cc", 4, 9, "templateMethods.cc", 20, 1); //B in C2
         performTest("templateMethods.cc", 8, 28, "templateMethods.cc", 31, 1); //A in D2
     }
-    
+
+    public void test_iz_143285_nested_classifiers() throws Exception {
+        // IZ#143285 Unresolved reference to typedefed class' typedef
+        performTest("IZ143285_nested_classifiers.cc", 11, 33, "IZ143285_nested_classifiers.cc", 8, 17);
+        performTest("IZ143285_nested_classifiers.cc", 15, 28, "IZ143285_nested_classifiers.cc", 3, 9);
+        performTest("IZ143285_nested_classifiers.cc", 16, 16, "IZ143285_nested_classifiers.cc", 7, 13);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -514,4 +521,4 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         }
     }
 
-    }
+}

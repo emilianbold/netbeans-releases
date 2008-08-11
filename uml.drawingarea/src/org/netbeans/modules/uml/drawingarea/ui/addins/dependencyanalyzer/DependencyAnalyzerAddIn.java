@@ -436,7 +436,7 @@ public class DependencyAnalyzerAddIn // implements IAddIn, IAddInButtonSupport,	
 				for (int i=0; i<count; i++)
 				{
 					IImplementation curRelation = impls.get(i);
-					IInterface contractClass = curRelation.getContract();
+					IClassifier contractClass = curRelation.getContract();
 					if (contractClass != null)
 					{
 						String name = contractClass.getName();

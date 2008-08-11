@@ -596,12 +596,15 @@ abstract public class DiagramEngine {
         return retVal;
     }
     
-    public void layout()
+    public void layout(boolean save)
     {
         DesignerScene diagramScene = getScene();
         GraphLayout gLayout = GraphLayoutFactory.createHierarchicalGraphLayout(diagramScene, true);
 //        GraphLayout gLayout = GraphLayoutFactory.createOrthogonalGraphLayout(scene, true);
-        diagramScene.getSceneAnimator().getPreferredLocationAnimator().addAnimatorListener(new MyAnimatorListener());
+        if (save)
+        {
+            diagramScene.getSceneAnimator().getPreferredLocationAnimator().addAnimatorListener(new MyAnimatorListener());
+        }
         gLayout.layoutGraph(diagramScene);
 
     }

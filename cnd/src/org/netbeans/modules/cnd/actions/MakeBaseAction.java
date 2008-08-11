@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
@@ -118,7 +117,8 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                     tabName,
                     "make", // NOI18N
                     false,
-                    true).execute();
+                    true,
+                    false).execute();
         } catch (IOException ioe) {
         }
     }

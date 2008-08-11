@@ -804,6 +804,7 @@ class DiagramLoader
         {
             EdgeInfo edgeReader = new EdgeInfo();
             Widget connWidget = null;
+            Hashtable<String, String> props = new Hashtable();
 
             edgeReader.setPEID(reader.getAttributeValue(null, "xmi.id"));
             while (reader.hasNext())
@@ -823,6 +824,11 @@ class DiagramLoader
                     {
                         edgeReader.setSemanticModelBridgePresentation(reader.getAttributeValue(null, "presentation"));
                     }
+                    if (reader.getName().getLocalPart().equalsIgnoreCase("DiagramElement.property"))
+                    {
+                        props = processProperties();
+                        edgeReader.setProperties(props);
+                    }                    
                     if (reader.getName().getLocalPart().equalsIgnoreCase("Uml2SemanticModelBridge.element"))
                     {
                         reader.nextTag();
@@ -886,16 +892,24 @@ class DiagramLoader
         } 
 //            pE.setXMIID(PEID);
         pE.addSubject(elt);
-
-        String proxyType = edgeReader.getSemanticModelBridgePresentation();
-        if (proxyType.trim().length() > 0 && !proxyType.equalsIgnoreCase(""))
+        
+        Hashtable edgeProps = edgeReader.getProperties();
+        if (edgeProps != null && edgeProps.size() > 0)
         {
-            proxyPE = new ProxyPresentationElement(pE, proxyType);
+            if (edgeProps.containsKey(UMLEdgeWidget.PROXY_PRESENTATION_ELEMENT)) 
+            {
+                String proxyType = edgeReader.getSemanticModelBridgePresentation();
+                if (proxyType.trim().length() > 0 && !proxyType.equalsIgnoreCase("")) 
+                {
+                    proxyPE = new ProxyPresentationElement(pE, proxyType);
+                }
+            }
         }
         if (proxyPE != null)
         {
             connWidget = scene.addEdge(proxyPE);
-        } else
+        } 
+        else
         {
             connWidget = scene.addEdge(pE);
         }

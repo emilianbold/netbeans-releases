@@ -213,7 +213,7 @@ public final class RakeRunner {
             pwd = FileUtil.toFile(rakeFile.getParent());
         }
 
-        final List<RakeTask> tasksToRun = new ArrayList(Arrays.asList(tasks));
+        List<RakeTask> tasksToRun = Arrays.asList(tasks);
         computeAndSetDisplayName(tasksToRun);
 
         String charsetName = null;
@@ -247,7 +247,7 @@ public final class RakeRunner {
      * @param tasks the tasks to build <code>ExecutionDescriptor</code>s for.
      * @return
      */
-    List<ExecutionDescriptor> getExecutionDescriptors(List<RakeTask> tasks) {
+    List<ExecutionDescriptor> getExecutionDescriptors(List<? extends RakeTask> tasks) {
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
         GemManager gemManager = platform.getGemManager();
@@ -344,7 +344,7 @@ public final class RakeRunner {
 
     }
 
-    private void computeAndSetDisplayName(final List<RakeTask> tasks) {
+    private void computeAndSetDisplayName(final List<? extends RakeTask> tasks) {
         ProjectInformation info = ProjectUtils.getInformation(project);
         String baseDisplayName = info == null ? NbBundle.getMessage(RakeRunnerAction.class, "RakeRunnerAction.Rake") : info.getDisplayName();
         StringBuilder displayNameSB = new StringBuilder(baseDisplayName).append(" ("); // NOI18N

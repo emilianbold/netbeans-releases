@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.form.palette;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -582,11 +583,16 @@ public final class PaletteUtils {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
-                Project p = projRef.get();
-                if (p != null)
-                    PaletteUtils.bootClassPathChanged(p, classPath);
-                else
+                final Project p = projRef.get();
+                if (p != null) {
+                    EventQueue.invokeLater(new Runnable() { // Issue 141326
+                        public void run() {
+                            PaletteUtils.bootClassPathChanged(p, classPath);
+                        }
+                    });
+                } else {
                     classPath.removePropertyChangeListener(this);
+                }
             }
         }
     }
