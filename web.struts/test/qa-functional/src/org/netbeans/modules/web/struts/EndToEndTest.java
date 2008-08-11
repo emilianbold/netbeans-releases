@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package test;
+package org.netbeans.modules.web.struts;
 
 import java.io.BufferedReader;
 import java.io.IOException;

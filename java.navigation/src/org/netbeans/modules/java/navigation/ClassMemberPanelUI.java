@@ -202,7 +202,13 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     }
     
     public FileObject getFileObject() {
-        return getRootNode().getDescritption().fileObject;
+        final ElementNode root = getRootNode();
+        if (root != null) {
+            return root.getDescritption().fileObject;
+        }
+        else {
+            return null;
+        }        
     }
     
     // FilterChangeListener ----------------------------------------------------

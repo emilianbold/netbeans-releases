@@ -863,7 +863,7 @@ public class Utilities {
         for (int i = 0; i < orig.length; i++) {
             if (orig[i] != changed[i]) {
                 final BadLocationException[] badLocationExceptions = new BadLocationException [0];
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         try {
                             doc.remove(offset, orig.length);
@@ -943,7 +943,7 @@ public class Utilities {
         formatter.reformatLock();
         try {
             final Object[] result = new Object [1];
-            doc.runAtomic (new Runnable () {
+            doc.runAtomicAsUser (new Runnable () {
                 public void run () {
                     try {
                         result [0] = formatter.reformat (doc, startOffset, endOffset);

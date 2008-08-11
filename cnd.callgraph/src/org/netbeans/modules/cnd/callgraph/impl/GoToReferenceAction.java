@@ -44,25 +44,31 @@ package org.netbeans.modules.cnd.callgraph.impl;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JMenuItem;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.Function;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
 /**
  *
  * @author Alexander Simon
  */
-public class GoToReferenceAction extends AbstractAction {
+public class GoToReferenceAction extends AbstractAction implements Presenter.Popup {
     public static final int FUNCTION = 0;
     public static final int CALLER = 1;
     public static final int CALLEE = 2;
     
     private Call call;
     private Function function;
+    private JMenuItem menuItem;
     
     public GoToReferenceAction(Call call) {
         this.call = call;
         putValue(Action.NAME, getString("GoToReference")); // NOI18N
+        menuItem = new JMenuItem(this); 
+        Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
     }
 
     public GoToReferenceAction(Function function, int what) {
@@ -78,6 +84,12 @@ public class GoToReferenceAction extends AbstractAction {
                 putValue(Action.NAME, getString("GoToCallee")); // NOI18N
                 break;
         }
+        menuItem = new JMenuItem(this); 
+        Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+    }
+
+    public JMenuItem getPopupPresenter() {
+        return menuItem;
     }
     
     public void actionPerformed(ActionEvent e) {
@@ -91,4 +103,5 @@ public class GoToReferenceAction extends AbstractAction {
     private String getString(String key) {
         return NbBundle.getMessage(getClass(), key);
     }
+
 }

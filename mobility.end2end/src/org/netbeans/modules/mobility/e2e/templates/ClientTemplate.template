@@ -48,7 +48,7 @@ public class ${mapping.getClientMapping().getClassName()} {
     public ${mapping.getClientMapping().getClassName()}(String serverURL) {
         this.serverURL = serverURL;
     }
-
+<#list mapping.getServiceMappings() as service>
 <#list service.getMethods() as method>
     public ${mapping.getRegistry().getTypeSerializer( method.getReturnType()).instanceOf( mapping, method.getReturnType())} ${method.getName()}(<#rt>
     <#lt><#list method.getParameters() as parameter>${mapping.getRegistry().getTypeSerializer( parameter.getType()).instanceOf( mapping, parameter.getType())} ${parameter.getName()}<#if parameter_has_next>, </#if></#list>) throws IOException {
@@ -77,7 +77,7 @@ public class ${mapping.getClientMapping().getClassName()} {
             return ${mapping.getRegistry().getTypeSerializer( method.getReturnType()).fromObject( mapping, method.getReturnType(), "invokeServer("+method.getRequestID()?c+", "+invocationParam+", "+invocationParamIDs+")" )};
         </#if>
     }
-
+</#list>
 </#list>
 
     /**
