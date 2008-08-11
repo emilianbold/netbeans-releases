@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.api.sql.execute;
 
-import java.sql.SQLException;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -73,19 +72,51 @@ public class SQLExecutorTest extends TestBase {
         SQLExecutionInfo info;
         
         if (isMySQL()) {
-            checkExecution(SQLExecutor.execute(dbconn, "DROP DATABASE IF EXISTS test;"));
-            checkExecution(SQLExecutor.execute(dbconn, "CREATE DATABASE test;"));
-            checkExecution(SQLExecutor.execute(dbconn, "USE test;"));
+            checkExecution(SQLExecutor.execute(dbconn, "DROP DATABASE IF EXISTS " + getSchema() +";"));
+            checkExecution(SQLExecutor.execute(dbconn, "CREATE DATABASE " + getSchema() + ";"));
+            checkExecution(SQLExecutor.execute(dbconn, "USE " + getSchema() +";"));
+        } else {
+            SQLExecutor.execute(dbconn, "DROP TABLE TEST");
         }
 
         String sql = "CREATE TABLE TEST(id integer primary key)";
         if (isMySQL()) {
             sql += " ENGINE=InnoDB";
+            createRentalTable();
         }
 
         info = SQLExecutor.execute(dbconn, sql);
         checkExecution(info);
     }
+    
+    @Override
+    public void tearDown() throws Exception {
+        if (isMySQL()) {
+            checkExecution(SQLExecutor.execute(dbconn, "DROP DATABASE IF EXISTS " + getSchema() +";"));
+        } else {
+            SQLExecutor.execute(dbconn, "DROP TABLE TEST");
+        }        
+    }
+
+    private void createRentalTable() throws Exception {
+        assertTrue(isMySQL());
+
+        String sql = "CREATE TABLE rental ( " +
+          "rental_id INT NOT NULL AUTO_INCREMENT, " +
+          "rental_date DATETIME NOT NULL, " +
+          "inventory_id MEDIUMINT UNSIGNED NOT NULL, " +
+          "customer_id SMALLINT UNSIGNED NOT NULL, " +
+          "return_date DATETIME DEFAULT NULL, " +
+          "staff_id TINYINT UNSIGNED NOT NULL, " +
+          "last_update TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, " +
+          "PRIMARY KEY (rental_id), " +
+          "UNIQUE KEY  (rental_date,inventory_id,customer_id), " +
+          "KEY idx_fk_inventory_id (inventory_id), " +
+          "KEY idx_fk_customer_id (customer_id), " + 
+          "KEY idx_fk_staff_id (staff_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+
+        checkExecution(SQLExecutor.execute(dbconn, sql));
+}
 
     private boolean isMySQL() {
         return dbconn.getDriverClass().equals("com.mysql.jdbc.Driver"); // NOI8N
@@ -173,32 +204,38 @@ public class SQLExecutorTest extends TestBase {
         String sql = "DROP FUNCTION inventory_in_stock";
         SQLExecutor.execute(dbconn, sql);
         
-        sql = 
+        sql =
             "DELIMITER $$\n" +
-            "\n" +
+            "CREATE FUNCTION inventory_held_by_customer(p_inventory_id INT) RETURNS INT " +
+            "READS SQL DATA " +
+            "BEGIN " +
+              "DECLARE v_customer_id INT; " +
+              "DECLARE EXIT HANDLER FOR NOT FOUND RETURN NULL; " +
+              "SELECT customer_id INTO v_customer_id " +
+              "FROM rental " +
+              "WHERE return_date IS NULL " +
+              "AND inventory_id = p_inventory_id; " +
+              "RETURN v_customer_id; " +
+            "END $$ " +
+            "DELIMITER ;\n" +
+            "DELIMITER $$\n" +
             "CREATE FUNCTION inventory_in_stock(p_inventory_id INT) RETURNS BOOLEAN " +
             "READS SQL DATA " +
             "BEGIN " +
             "    DECLARE v_rentals INT; " +
             "    DECLARE v_out     INT; " +
-            " " +
             "    #AN ITEM IS IN-STOCK IF THERE ARE EITHER NO ROWS IN THE rental TABLE " +
             "    #FOR THE ITEM OR ALL ROWS HAVE return_date POPULATED " +
-            " " +
             "    SELECT COUNT(*) INTO v_rentals " +
             "    FROM rental " +
             "    WHERE inventory_id = p_inventory_id; " +
-            " " +
             "    IF v_rentals = 0 THEN " +
             "      RETURN TRUE; " +
             "    END IF; " +
-            " " +
-            " " +
             "    SELECT COUNT(rental_id) INTO v_out " +
             "    FROM inventory LEFT JOIN rental USING(inventory_id) " +
             "    WHERE inventory.inventory_id = p_inventory_id " +
             "    AND rental.return_date IS NULL; " +
-            " " +
             "    IF v_out > 0 THEN " +
             "      RETURN FALSE; " +
             "    ELSE " +
