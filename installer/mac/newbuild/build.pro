@@ -58,8 +58,9 @@
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 
     <property name="mpkg.name_nb_mysql" value="NetBeans IDE with MySQL"/> 
-    <property name="mysql_10.5.pkg.name" value="mysql-5.0.51a-osx10.5-x86"/>
-    <property name="mysql_10.4.pkg.name" value="mysql-5.0.51a-osx10.4-i686"/>
+    <property name="mysql.version"      value="5.0.67"/>
+    <property name="mysql_10.5.pkg.name" value="mysql-5.0.67-osx10.5-x86"/>
+    <property name="mysql_10.4.pkg.name" value="mysql-5.0.67-osx10.4-i686"/>
     <property name="mysql_10.5.dmg.name" value="netbeans-6.5-mysql-macosx10.5-x86"/>
     <property name="mysql_10.4.dmg.name" value="netbeans-6.5-mysql-macosx10.4-x86"/>
     <property name="mysql_startup.pkg.name" value="MySQLStartupItem"/>
