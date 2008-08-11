@@ -47,7 +47,6 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -57,7 +56,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.ui.options.IsChangedListener;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
@@ -70,7 +68,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     private boolean updating = false;
     private boolean modified = false;
     private ToolsPanel tp;
-    private boolean initialized = false;
+//    private boolean initialized = false;
     
     /**
      * Creates new form ParserSettingsPanel
@@ -326,7 +324,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         try {
             updating = true;
-            init();
+//            init();
             compilerCollectionComboBox.removeActionListener(this);
             updateCompilerCollections(tp.getCurrentCompilerSet());
             compilerCollectionComboBox.addActionListener(this);
@@ -399,18 +397,18 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         return (PredefinedPanel[]) predefinedPanels.values().toArray(new PredefinedPanel[predefinedPanels.size()]);
     }
     
-    private synchronized void init() {
-        if (!initialized) {
-            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-            if (registry != null) {
-                ServerRecord record = registry.getDefaultRecord();
-                if (record != null) {
-                    Logger rdlog = Logger.getLogger("cnd.remote.logger"); // NOI18N
-                    rdlog.fine("ParserSettingsPanel<Init>: Validating " + record.getName());
-                    record.validate(); // ensure the development host is initialized
-                }
-            }            
-        }
-        initialized = true;
-    }
+//    private synchronized void init() {
+//        if (!initialized) {
+//            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+//            if (registry != null) {
+//                ServerRecord record = registry.getDefaultRecord();
+//                if (record != null) {
+//                    Logger rdlog = Logger.getLogger("cnd.remote.logger"); // NOI18N
+//                    rdlog.fine("ParserSettingsPanel<Init>: Validating " + record.getName());
+//                    record.validate(); // ensure the development host is initialized
+//                }
+//            }
+//        }
+//        initialized = true;
+//    }
 }
