@@ -569,6 +569,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     }
 
     private void updateWarningBackrefState() {
+        if (lblWarningBackref == null) {
+            return;
+        }
         boolean visible;
         try {
             visible = chkRegexp.isSelected()
