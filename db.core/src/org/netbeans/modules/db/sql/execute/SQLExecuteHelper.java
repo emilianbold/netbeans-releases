@@ -213,9 +213,10 @@ public final class SQLExecuteHelper {
             sqlLength = sql.length();
             parse();
         }
-        
+
         private void parse() {
             checkDelimiterStatement();
+            checkPoundComment();
             while (pos < sqlLength) {
                 char ch = sql.charAt(pos);
                 
@@ -309,6 +310,9 @@ public final class SQLExecuteHelper {
                     if (statement.length() > 0 || !Character.isWhitespace(ch)) {
                         // remember the position of the first appended char
                         if (statement.length() == 0) {
+                            if (checkPoundComment()) {
+                                continue;
+                            }
                             // See if the next statement changes the delimiter
                             // Note how we skip over a 'delimiter' statement - it's not
                             // something we send to the server.
@@ -485,6 +489,25 @@ public final class SQLExecuteHelper {
         
         public List<StatementInfo> getStatements() {
             return Collections.unmodifiableList(statements);
+        }
+        
+        public boolean checkPoundComment() {
+            skipWhitespace();
+                        
+            if ( pos == sqlLength) {
+                return false;
+            }
+
+            char ch = sql.charAt(pos);
+
+            if (ch != '#') {
+                return false;
+            }
+            while (pos < sqlLength && sql.charAt(pos) != '\n' ) {
+                pos++;
+            }
+
+            return true;
         }
     }
 }

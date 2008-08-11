@@ -39,38 +39,14 @@
 
 package org.netbeans.modules.db.api.sql.execute;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
- * Provides information about the execution of one or more SQL statements.
- *
- * Note this initial implementation is quite simple, just doing as much
- * as I need.  It can be extended to provide more information.
  *
  * @author David Van Couvering
  */
-public interface SQLExecutionInfo {
-    /**
-     * Determine if any statements had exceptions
-     *
-     * @return true if any statement executed had exceptions
-     */
+public interface StatementExecutionInfo {
+    public String getSQL();
     public boolean hasExceptions();
-
-    /**
-     * Get all exceptions for all statements.  This is useful for quickly
-     * reporting all exceptions.  Use getStatementInfos() for more complete
-     * information about each statement
-     *
-     * @return the list of all exceptions encountered when executing the SQL, or
-     * an empty list if none were encountered
-     */
-    public List<? extends Throwable> getExceptions();
-
-    /**
-     * Get the list of information about the statements that were executed
-     *
-     * @return list of information about statements executed
-     */
-    public List<StatementExecutionInfo> getStatementInfos();
+    public Collection<Throwable> getExceptions();
 }

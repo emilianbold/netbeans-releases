@@ -70,18 +70,20 @@ public class SQLExecutorTest extends TestBase {
         assertNotNull(dbconn.getJDBCConnection());
         assert(! dbconn.getJDBCConnection().isClosed());
 
-        try {
-            dbconn.getJDBCConnection().createStatement().execute("DROP TABLE test");
-        } catch (SQLException sqle) {
-            System.out.println("Got an exception dropping table: " + sqle.getMessage());
+        SQLExecutionInfo info = SQLExecutor.execute(dbconn, "DROP TABLE test;");
+        checkExecution(info);
+
+        String sql = "CREATE TABLE test(id integer primary key)";
+        if (isMySQL()) {
+            sql += "ENGINE=InnoDB;";
         }
 
-        String sql = "CREATE TABLE test(id integer primary key); " +
-                "INSERT INTO test VALUES(1); " +
-                "SELECT * FROM TEST";
+        info = SQLExecutor.execute(dbconn, sql);
+        checkExecution(info);
+    }
 
-        SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
-        checkExecution(info, sql);
+    private boolean isMySQL() {
+        return dbconn.getDriverClass().equals("com.mysql.jdbc.Driver"); // NOI8N
     }
 
     public void testExecuteOnClosedConnection() throws Exception {
@@ -98,44 +100,110 @@ public class SQLExecutorTest extends TestBase {
     }
 
     public void testExecute() throws Exception {
-        String sql = "INSERT INTO TEST VALUES(1); INSERT INTO TEST VALUES(3);";
+        SQLExecutionInfo info = SQLExecutor.execute(dbconn, "SELECT * FROM TEST;");
+        checkExecution(info);
+        assertTrue(info.getStatementInfos().size() == 1);
 
-        SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
-        assertNotNull(info);
+        info = SQLExecutor.execute(dbconn, "SELECT * FROM TEST; SELECT id FROM TEST;");
+        checkExecution(info);
+        assertTrue(info.getStatementInfos().size() == 2);
+    }
+
+    public void testBadExecute() throws Exception {
+        SQLExecutionInfo info = SQLExecutor.execute(dbconn, "SELECT * FROM BADTABLE;");
+
         assertTrue(info.hasExceptions());
-        assertTrue(info.getExceptions().size() == 1);
-        assertNotNull(info.getExceptions().get(0));
     }
         
     public void testDelimiter() throws Exception {
         String sql = "SELECT * FROM TEST;\n--Here is a comment\nDELIMITER ??\n SELECT * FROM TEST??\n " +
                 "--Another comment\n DELIMITER ;\nSELECT * FROM TEST;";
         SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
-        checkExecution(info, sql);
+        checkExecution(info);
 
         info = SQLExecutor.execute(dbconn,
                 "DELIMITER ??\nSELECT * FROM TEST?? DELIMITER ;\nSELECT * FROM TEST;");
-        checkExecution(info, sql);
+        checkExecution(info);
 
         info = SQLExecutor.execute(dbconn,
                 "/** a block comment */\nDELIMITER ??\nSELECT * FROM TEST??");
-        checkExecution(info, sql);
+        checkExecution(info);
 
         info = SQLExecutor.execute(dbconn,
                 "DELIMITER ??\nSELECT * FROM TEST;");
 
         assertTrue(info.hasExceptions());
     }
+
+    public void testPoundComment() throws Exception {
+        checkExecution(SQLExecutor.execute(dbconn, "#This is a comment\nSELECT * FROM TEST;"));
+    }
     
-    private void checkExecution(SQLExecutionInfo info, String sql) throws Exception {
+    private void checkExecution(SQLExecutionInfo info) throws Exception {
         assertNotNull(info);
 
         if (info.hasExceptions()) {
-            for (Throwable t : info.getExceptions()) {
-                t.printStackTrace();
+            for (StatementExecutionInfo stmtinfo : info.getStatementInfos()) {
+                if (stmtinfo.hasExceptions()) {
+                    System.err.println("The following SQL had exceptions:");
+                } else {
+                    System.err.println("The following SQL executed cleanly:");
+                }
+                System.err.println(stmtinfo.getSQL());
+
+                for (Throwable t : stmtinfo.getExceptions()) {
+                    t.printStackTrace();
+                }
             }
-            throw new Exception("Executing SQL '" + sql + "' generated exceptions - see output for details");
+
+            throw new Exception("Executing SQL generated exceptions - see output for details");
         }        
+    }
+    
+    public void testMySQLStoredFunction() throws Exception {
+        if (! isMySQL()) {
+            return;
+        }
+
+        String sql = "DROP FUNCTION inventory_in_stock";
+        SQLExecutor.execute(dbconn, sql);
+        
+        sql = 
+            //"DELIMITER $$\n" +
+            //"\n" +
+            "CREATE FUNCTION inventory_in_stock(p_inventory_id INT) RETURNS BOOLEAN " +
+            "READS SQL DATA " +
+            "BEGIN " +
+            "    DECLARE v_rentals INT; " +
+            "    DECLARE v_out     INT; " +
+            " " +
+            "    #AN ITEM IS IN-STOCK IF THERE ARE EITHER NO ROWS IN THE rental TABLE " +
+            "    #FOR THE ITEM OR ALL ROWS HAVE return_date POPULATED " +
+            " " +
+            "    SELECT COUNT(*) INTO v_rentals " +
+            "    FROM rental " +
+            "    WHERE inventory_id = p_inventory_id; " +
+            " " +
+            "    IF v_rentals = 0 THEN " +
+            "      RETURN TRUE; " +
+            "    END IF; " +
+            " " +
+            " " +
+            "    SELECT COUNT(rental_id) INTO v_out " +
+            "    FROM inventory LEFT JOIN rental USING(inventory_id) " +
+            "    WHERE inventory.inventory_id = p_inventory_id " +
+            "    AND rental.return_date IS NULL; " +
+            " " +
+            "    IF v_out > 0 THEN " +
+            "      RETURN FALSE; " +
+            "    ELSE " +
+            "      RETURN TRUE; " +
+            "    END IF; " +
+            "END";
+
+        SQLExecutor.execute(dbconn, sql);
+        //SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
+        //checkExecution(info);
     }
 
 }
