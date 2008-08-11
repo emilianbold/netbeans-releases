@@ -8,26 +8,29 @@ package test;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 /**
  *
- * @author tester
+ * @author cawe
  */
 @Entity
 @Table(name = "TABLE109")
-@NamedQueries({})
+@NamedQueries({@NamedQuery(name = "Table109.findAll", query = "SELECT t FROM Table109 t")})
 public class Table109 implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "ID", nullable = false)
+    @Basic(optional = false)
+    @Column(name = "ID")
     private Integer id;
     @Column(name = "A")
     private BigInteger a;

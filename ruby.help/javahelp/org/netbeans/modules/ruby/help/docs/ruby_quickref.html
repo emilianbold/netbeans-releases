@@ -55,10 +55,15 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
 <tr valign="top">
   <td>Add files to your project</td>
   <td><ol>
-    <li>In the Projects window, select the main project node and right-click<a href="usingirb.html"></a> it.</li>
-  <li>Select New and choose the type of file you would like to add.</li>
-  <li>In the New File wizard, specify the file name, location, and so on as needed, and then click Finish to create the file.</li>
-  </ol></td>
+      <li>
+        In the Projects window, right-click the project node or a subnode,
+        choose New, and choose the type of file you would like to add.
+      </li>
+      <li>In the New File wizard, specify the file name, location, and so on as needed, and then click Finish to create the file.</li>
+  </ol>
+  <p>
+  </p>
+  </td>
 </tr>
 <tr valign="top">
   <td>Generate a Rails model, controller, migration, scaffold, and so on</td>
@@ -67,14 +72,22 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
     select Generate to open the Rails Generator dialog box.</li>
     <li>Expand the Generate drop-down list and choose the item you would like to generate.
     </li>
+    <li>Using the generator's instructions that appear in the
+    scroll box, fill out the form.
+    </li>
+    <li>Click OK to generate the code. The Output window
+    lists the files that the generator creates and modifies.
+    </li>
     </ol>
   </td>
 </tr>
 <tr valign="top">
   <td>Edit files </td>
   <td><ol>
-      <li>In the Projects window, select the node for your project and, if necessary, double-click it to open the node.</li>
-      <li>Navigate to the file you want to edit and double-click it to open it in the editor.
+      <li>In the Projects window, double-click the project node
+      to expand it.</li>
+      <li>Expand the subnodes to navigate to the file 
+      that you want to edit, and double-click it to open it in the editor.
       </li>
       </ol>
       <p>
@@ -170,7 +183,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
             <param name="text" value="<html><u>Ruby Debugging</u></html>">
          <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
-          </object>.</p>
+          </object></p>
   </td>
 </tr>
 <tr valign="top">
@@ -187,7 +200,7 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
             <param name="text" value="<html><u>Ruby Gems</u></html>">
          <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
-          </object>.</p>
+          </object></p>
   </td>
 </tr>
 <tr valign="top">
@@ -219,18 +232,25 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
             <param name="text" value="<html><u>Ruby Rake</u></html>">
          <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
-          </object>.</p>
+          </object></p>
   </td>
 </tr>
 <tr valign="top">
-  <td>Use the interactive Ruby shell (irb) in NetBeans </td>
+  <td>Use the interactive Ruby shell (irb) in the IDE</td>
   <td><ul>
       <li>
-      Choose Window &gt; Other &gt; Ruby Shell (IRB) from the main menu.
-      For more information, see
-      <a href="usingirb.html">Using Interactive Ruby (IRB)</a>.
+        To open an interactive Ruby (IRB) shell in the IDE,
+        right-click a Ruby or Ruby on Rails project node in the Projects
+        window and choose Ruby Shell (IRB) from the pop-up menu.
       </li>
-  </ul></td>
+    </ul>
+    <p>
+      The IRB shell opens in a tabbed window at the bottom of the IDE in the same
+      location as the Output window. The IDE looks at project's Ruby Platform setting
+      in the Properties manager to determine which interpreter to use.
+      The window's tab shows which interpreter is used.
+    </p>
+  </td>
 </tr>
 <tr valign="top">
   <td>Open a Rails Console </td>
@@ -247,9 +267,18 @@ This topic describes common tasks that you can perform with NetBeans Ruby and Ru
       <li>
         To change a project's settings, such as Ruby interpreter,
         web server, or Rails environment, right-click the project
-        node and choose Properties from the pop-up menu.
+        node and choose Properties from the pop-up menu to open
+        the Properties manager.
       </li>
-  </ul></td>
+    </ul>
+    <p>
+      You can set up multiple configurations for a project. Open
+      a project's Properties manager and click New to create a
+      new configuration.
+      To change from one configuration to another, right-click 
+      the project node and choose Set Configuration.
+    </p>
+  </td>
 </tr>
 </table>
 

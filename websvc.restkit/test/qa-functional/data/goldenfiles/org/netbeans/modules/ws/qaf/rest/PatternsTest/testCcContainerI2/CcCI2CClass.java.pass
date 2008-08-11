@@ -10,7 +10,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 
 /**
  * REST Web Service
@@ -32,7 +32,7 @@ public class CcCI2CClass {
      * @return an instance of java.util.prefs.Preferences
      */
     @GET
-    @ProduceMime("text/plain")
+    @Produces("text/plain")
     public Preferences getText() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();

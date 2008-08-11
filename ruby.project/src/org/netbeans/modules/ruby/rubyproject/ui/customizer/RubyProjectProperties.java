@@ -47,6 +47,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -85,9 +86,6 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-/**
- * @author Petr Hrebejk
- */
 public class RubyProjectProperties extends SharedRubyProjectProperties {
 
     // Properties stored in the PROJECT.PROPERTIES    
@@ -100,7 +98,17 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
                     
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
+    public static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
     
+
+    /** All per-configuration properties to be stored. */
+    private static final String[] CONFIG_PROPS = {
+        MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RUN_WORK_DIR, RAKE_ARGS, JRUBY_PROPS, PLATFORM_ACTIVE
+    };
+
+    /** Private per-configuration properties. */
+    private static final String[] PRIVATE_PROPS = { APPLICATION_ARGS, RUN_WORK_DIR, RAKE_ARGS, PLATFORM_ACTIVE };
+
     // MODELS FOR VISUAL CONTROLS
     
     // CustomizerSources
@@ -140,13 +148,16 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
 
     
     /** Creates a new instance of RubyUIProperties and initializes them */
-    public RubyProjectProperties( RubyProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper ) {
+    public RubyProjectProperties(RubyProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator,
+            ReferenceHelper refHelper, GeneratedFilesHelper genFileHelper) {
         this.project = project;
         this.updateHelper  = updateHelper;
         this.evaluator = evaluator;
         this.genFileHelper = genFileHelper;
-        //this.cs = new ClassPathSupport( evaluator, refHelper, updateHelper.getRakeProjectHelper(), WELL_KNOWN_PATHS, LIBRARY_PREFIX, LIBRARY_SUFFIX, ANT_ARTIFACT_PREFIX );
-        this.cs = new ProjectPropertyExtender( evaluator, refHelper, updateHelper.getRakeProjectHelper(), WELL_KNOWN_PATHS, LIBRARY_PREFIX, LIBRARY_SUFFIX, ANT_ARTIFACT_PREFIX );
+        //this.cs = new ClassPathSupport( evaluator, refHelper, updateHelper.getRakeProjectHelper(),
+                // WELL_KNOWN_PATHS, LIBRARY_PREFIX, LIBRARY_SUFFIX, ANT_ARTIFACT_PREFIX );
+        this.cs = new ProjectPropertyExtender( evaluator, refHelper, updateHelper.getRakeProjectHelper(),
+                WELL_KNOWN_PATHS, LIBRARY_PREFIX, LIBRARY_SUFFIX, ANT_ARTIFACT_PREFIX );
                 
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
@@ -328,12 +339,13 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
     }
     
     public static void storePlatform(final EditableProperties ep, final RubyPlatform platform) {
-        ep.setProperty("platform.active", platform.getID()); // NOI18N
+        ep.setProperty(PLATFORM_ACTIVE, platform.getID());
+    }
+    
+    private static boolean isPrivateConfigProperty(final String prop) {
+        return Arrays.asList(PRIVATE_PROPS).contains(prop);
     }
 
-    /**
-     * A mess.
-     */
     Map<String/*|null*/,Map<String,String>> readRunConfigs() {
         Map<String,Map<String,String>> m = new TreeMap<String,Map<String,String>>(new Comparator<String>() {
             public int compare(String s1, String s2) {
@@ -341,7 +353,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
             }
         });
         Map<String,String> def = new TreeMap<String,String>();
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RUN_WORK_DIR, RAKE_ARGS, JRUBY_PROPS}) {
+        for (String prop : CONFIG_PROPS) {
             String v = updateHelper.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
             if (v == null) {
                 v = updateHelper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
@@ -350,6 +362,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
                 def.put(prop, v);
             }
         }
+        def.put(PLATFORM_ACTIVE, getPlatform().getID());
         m.put(null, def);
         FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
         if (configs != null) {
@@ -377,17 +390,13 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
         return m;
     }
 
-    /**
-     * A royal mess.
-     */
     void storeRunConfigs(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs,
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RUN_WORK_DIR, RAKE_ARGS, JRUBY_PROPS}) {
+        for (String prop : CONFIG_PROPS) {
             String v = def.get(prop);
-            EditableProperties ep = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR) || prop.equals(RAKE_ARGS)) ?
-                privateProperties : projectProperties;
+            EditableProperties ep = isPrivateConfigProperty(prop) ? privateProperties : projectProperties;
             if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                 if (v != null && v.length() > 0) {
                     ep.setProperty(prop, v);
@@ -412,8 +421,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
             for (Map.Entry<String,String> entry2 : c.entrySet()) {
                 String prop = entry2.getKey();
                 String v = entry2.getValue();
-                String path = (prop.equals(APPLICATION_ARGS) || prop.equals(RUN_WORK_DIR) || prop.equals(RAKE_ARGS)) ?
-                    privatePath : sharedPath;
+                String path = isPrivateConfigProperty(prop) ? privatePath : sharedPath;
                 EditableProperties ep = updateHelper.getProperties(path);
                 if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                     if (v != null && (v.length() > 0 || (def.get(prop) != null && def.get(prop).length() > 0))) {

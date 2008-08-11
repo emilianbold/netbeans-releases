@@ -153,14 +153,14 @@ final class VisualizerChildren extends Object {
      */
     public int getIndex(final javax.swing.tree.TreeNode p1) {
         VisualizerNode visNode = (VisualizerNode) p1;
-        if (visNode.getParent() != this.parent) {
-            return -1;
-        }
-
-        if (visNode.indexOf == -1) {
+        if (visNode.indexOf != -1) {
+            if (visNode.indexOf >= visNodes.size() || visNodes.get(visNode.indexOf) != visNode) {
+                return -1;
+            }
+        } else {
             recomputeIndexes(visNode);
+            assert visNode.indexOf != -1 : dumpIndexes(visNode); // NOI18N
         }
-        assert visNode.indexOf != -1 : dumpIndexes(visNode); // NOI18N
         return visNode.indexOf;
     }
 

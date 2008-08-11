@@ -61,7 +61,7 @@ public class InvocationWidget extends ActivityNodeWidget
 
     public InvocationWidget(Scene scene)
     {
-        super(scene, true, true);  // context palette is on, Default part is off
+        super(scene, true, false);  // context palette is on, Default part is off
     }
 
     @Override

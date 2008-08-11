@@ -443,26 +443,35 @@ DbgpResponse *SourceCommand::process(DbgpConnection *pDbgpConnection, map<char, 
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(SOURCE, argsMap.find('i')->second);
     int success = 0;
     if(buffer == NULL) {
-        tstring domText = getDOMText(pDbgpConnection, fileURI);
+        tstring domText;
+        //If document is not yet loaded, generate using DOM
+        //Check for exception status is made to avoid an issue where-in getDOMText blocks forever
+        if(pScriptDebugger->getStatus() != STATE_EXCEPTION) {
+            domText = getDOMText(pDbgpConnection, fileURI);
+        }
         if(domText.length() != 0) {
             pDbgpResponse->setValue(domText);
             success = 1;
         }else {
+            //As a last resort, get the source using WinInet APIs
             USES_CONVERSION;
             HINTERNET hSession = InternetOpen(L"Source Reader", PRE_CONFIG_INTERNET_ACCESS, L"", 
-                                                NULL, INTERNET_INVALID_PORT_NUMBER|INTERNET_FLAG_FROM_CACHE);
+                                                NULL, INTERNET_INVALID_PORT_NUMBER);
             if (hSession != NULL) {
                 HINTERNET hUrlFile = InternetOpenUrl(hSession, fileURI.c_str(), NULL, 0, 0, 0);
-                DWORD bufSize;
-                InternetQueryDataAvailable(hUrlFile, &bufSize, 0, 0);
-                char *pBytes = new char[bufSize+1];
-                DWORD dwBytesRead = 0;
-                BOOL read = InternetReadFile(hUrlFile, pBytes, bufSize, &dwBytesRead);
-                if(read) {
-                    pBytes[dwBytesRead] = 0;
-                    pDbgpResponse->setValue(A2W(pBytes));
-                    success = 1;
-                    delete []pBytes;
+                if (hUrlFile != NULL) {
+                    DWORD bufSize;
+                    if(InternetQueryDataAvailable(hUrlFile, &bufSize, 0, 0)) {
+                        char *pBytes = new char[bufSize+1];
+                        DWORD dwBytesRead = 0;
+                        BOOL read = InternetReadFile(hUrlFile, pBytes, bufSize, &dwBytesRead);
+                        if(read) {
+                            pBytes[dwBytesRead] = 0;
+                            pDbgpResponse->setValue(A2W(pBytes));
+                            success = 1;
+                            delete []pBytes;
+                        }
+                    }
                 }
             }
         }
@@ -496,20 +505,26 @@ tstring SourceCommand::getDOMText(DbgpConnection *pDbgpConnection, tstring fileU
             spFrameWebBrowser->get_Document(&spDisp);
             CComQIPtr<IHTMLDocument2> spHtmlDocument = spDisp;
             CComPtr<IHTMLElementCollection> spHTMLElementCollection;
-            HRESULT hr = spHtmlDocument->get_all(&spHTMLElementCollection);
-            long items;
-            spHTMLElementCollection->get_length(&items);
-            for (long i=0; i<items; i++) {
-                CComVariant index = i;
-                CComPtr<IDispatch> spDisp1;
-                hr = spHTMLElementCollection->item(index, index, &spDisp1);
-                CComQIPtr<IHTMLElement> spHTMLElement = spDisp1;
-                CComBSTR bstr;
-                spHTMLElement->get_outerHTML(&bstr);
-                if(bstr != NULL) {
-                    result.append((TCHAR *)(bstr));
+            if(spHtmlDocument != NULL) {
+                HRESULT hr = spHtmlDocument->get_all(&spHTMLElementCollection);
+                long items;
+                if(spHTMLElementCollection != NULL) {
+                    spHTMLElementCollection->get_length(&items);
+                    for (long i=0; i<items; i++) {
+                        CComVariant index = i;
+                        CComPtr<IDispatch> spDisp1;
+                        hr = spHTMLElementCollection->item(index, index, &spDisp1);
+                        CComQIPtr<IHTMLElement> spHTMLElement = spDisp1;
+                        if(spHTMLElement != NULL) {
+                            CComBSTR bstr;
+                            spHTMLElement->get_outerHTML(&bstr);
+                            if(bstr != NULL) {
+                                result.append((TCHAR *)(bstr));
+                            }
+                        }
+                     }
                 }
-             }
+            }
         }
     }
     return result;

@@ -40,8 +40,12 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes.activity;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
@@ -52,32 +56,38 @@ import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
  */
 public class SubPartitionWidget extends CompartmentWidget
 {
-    private Scene scene;
     private ContainerWidget containerWidget;
+    private IActivityPartition subPart;
 
     public SubPartitionWidget(Scene scene, IActivityPartition subPart,
-                               ActivityPartitionWidget actPartitionWidget)
+            ActivityPartitionWidget actPartitionWidget)
     {
         super(scene, subPart, actPartitionWidget);
-        this.scene = scene;
+        this.subPart = subPart;
     }
-   
+
     public String getWidgetID()
     {
         return UMLWidget.UMLWidgetIDString.SUBPARTITIONWIDGET.toString();
     }
 
     @Override
-    public void initContainedElements()
-    {
-        // do nothing
-    }
-
-    @Override
     public ContainerWidget getContainerWidget()
     {
         if (containerWidget == null)
+        {
             containerWidget = new ContainerWidget(getScene());
+        }
         return containerWidget;
     }
+
+    public List<IElement> getContainedElements()
+    {
+        ArrayList<IElement> list = new ArrayList<IElement>();
+        for (IActivityNode node : subPart.getNodeContents())
+        {
+            list.add(node);
+        }
+        return list;
     }
+}

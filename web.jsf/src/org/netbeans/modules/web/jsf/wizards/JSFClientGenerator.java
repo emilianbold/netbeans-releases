@@ -98,6 +98,7 @@ import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
@@ -143,7 +144,7 @@ public class JSFClientGenerator {
     static final int PROGRESS_STEP_COUNT = 8;
     
     public static void generateJSFPages(ProgressContributor progressContributor, ProgressPanel progressPanel, final Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerPackage, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, final List<String> entities, final boolean ajaxify, String jpaControllerPackage, FileObject jpaControllerFileObject, FileObject converterFileObject, int progressIndex) throws IOException {
-        final boolean isInjection = true;//Util.isSupportedJavaEEVersion(project);
+        final boolean isInjection = Util.isContainerManaged(project); //Util.isSupportedJavaEEVersion(project);
         
 //        String simpleControllerName = JpaControllerUtil.simpleClassName(controllerClass);
         String simpleControllerName = controllerFileObject.getName();
@@ -502,7 +503,7 @@ public class JSFClientGenerator {
                 + "<f:view>\n<html>\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>Listing " + simpleEntityName + " Items</title>\n"
                 + styleAndScriptTags
-                + "\n</head>\n<body>\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
+                + "\n</head>\n<body>\n<h:panelGroup id=\"messagePanel\" layout=\"block\">\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n</h:panelGroup>\n ");
         listSb.append("<h1>Listing " + simpleEntityName + " Items</h1>\n");
         listSb.append("<h:form styleClass=\"jsfcrud_list_form\">\n");
         listSb.append("<h:outputText escape=\"false\" value=\"(No " + simpleEntityName + " Items Found)<br />\" rendered=\"#{" + managedBean + ".pagingInfo.itemCount == 0}\" />\n");
@@ -583,7 +584,7 @@ public class JSFClientGenerator {
                 + "<f:view>\n<html>\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>New " + simpleEntityName + "</title>\n"
                 + styleAndScriptTags
-                + "\n</head>\n<body>\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
+                + "\n</head>\n<body>\n<h:panelGroup id=\"messagePanel\" layout=\"block\">\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n</h:panelGroup>\n ");
         newSb.append("<h1>New " + simpleEntityName + "</h1>\n");
         newSb.append("<h:form>\n  <h:inputHidden id=\"validateCreateField\" validator=\"#{" + managedBean + ".validateCreate}\" value=\"value\"/>\n <h:panelGrid columns=\"2\">\n");
         
@@ -639,7 +640,7 @@ public class JSFClientGenerator {
                 + "<f:view>\n<html>\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>Editing " + simpleEntityName + "</title>\n"
                 + styleAndScriptTags
-                + "\n</head>\n<body>\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
+                + "\n</head>\n<body>\n<h:panelGroup id=\"messagePanel\" layout=\"block\">\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n</h:panelGroup>\n ");
         editSb.append("<h1>Editing " + simpleEntityName + "</h1>\n");
         editSb.append("<h:form>\n"
                 + "<h:panelGrid columns=\"2\">\n");
@@ -701,7 +702,7 @@ public class JSFClientGenerator {
                 + "<f:view>\n<html>\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>" + simpleEntityName + " Detail</title>\n"
                 + styleAndScriptTags
-                + "\n</head>\n<body>\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
+                + "\n</head>\n<body>\n<h:panelGroup id=\"messagePanel\" layout=\"block\">\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n</h:panelGroup>\n ");
         detailSb.append("<h1>" + simpleEntityName + " Detail</h1>\n");
         detailSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
         

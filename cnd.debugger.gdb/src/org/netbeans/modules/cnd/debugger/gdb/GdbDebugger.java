@@ -102,6 +102,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -511,17 +512,17 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
 
-    private String getOsArch() {
+    private static String getOsArch() {
         String orig = System.getProperty("os.arch"); // NOI18N
         return "-" + ((orig.equals("i386") || orig.equals("i686")) ? "x86" : orig); // NOI18N
     }
 
-    private String getOsName() {
+    private static String getOsName() {
         return "-" + System.getProperty("os.name").replace(" ", "_"); // NOI18N
     }
 
-    private String getExtension() {
-        return platform == PlatformTypes.PLATFORM_WINDOWS ? ".dll" : platform == PlatformTypes.PLATFORM_MACOSX ? ".dylib" : ".so"; // NOI18N
+    private static String getExtension() {
+        return Utilities.isWindows() ? ".dll" : Utilities.getOperatingSystem() == PlatformTypes.PLATFORM_MACOSX ? ".dylib" : ".so"; // NOI18N
     }
 
     private String fixPath(String path) {

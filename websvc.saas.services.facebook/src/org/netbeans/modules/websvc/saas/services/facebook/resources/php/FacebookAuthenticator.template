@@ -8,6 +8,7 @@
     define("_RETURN_URL", "facebook_return_url");
     define("_AUTH_TOKEN", "facebook_auth_token");
     define("_SESSION_KEY", "facebook_session_key");
+    define("_SESSION_KEY_PARAM", "fsk");
     define("_EXPIRE", "3600");
     
     class  FacebookSocialNetworkingServiceAuthenticator {
@@ -42,23 +43,23 @@
             return self::getSession(_SESSION_KEY);
         }
         
-        public static function login() {
+        public static function login($authToken) {
             self::init();
-            $sessionKey = self::getSession(_SESSION_KEY);
 
-            // If there is already a session key, we are already logged in.
-            // Simply return.
-            if ($sessionKey != null) {
-                return;
+            $rUrl = self::ensureSession($authToken);
+            if($rUrl) {
+                if($rUrl != "-1") {
+                    self::doRedirect($rUrl);
+                    exit(0);
+                } else {
+                    return;
+                }
             }
-
-            $authToken = self::getSession(_AUTH_TOKEN);
 
             // If there is an auth token instead of a session key, we need to
             // obtain the session key using the auth token.  If there is no
             // auth token, we redirect to the login page.
-            if ($authToken != null) {
-                self::deleteSession(_AUTH_TOKEN);
+            if ($authToken) {
                 $method = "facebook.auth.getSession";
                 $v = "1.0";
                 $sig = array();
@@ -78,8 +79,6 @@
 
                 try {
                     $xml = $res->getDataAsXml();
-                    if($xml->error_response)
-                      throw new Exception("Error: ".$xml->error_code.", messge: ".$xml->error_msg);
                     if(!($xml->session_key))
                       throw new Exception("Invalid xml: ".$res->getResponseBody());
                     $sessionKey = self::findSessionKey($res->getResponseBody());
@@ -91,7 +90,6 @@
                 $returnUrl = self::getSession(_RETURN_URL);
 
                 if ($returnUrl != null) {
-                    self::deleteSession(_RETURN_URL);
                     self::doRedirect($returnUrl);
                     exit(0);
                 }
@@ -99,6 +97,30 @@
                 self::sessionInit();
                 self::doRedirect(self::$LOGIN_URL."?rUrl=".$_SERVER['REQUEST_URI']);
                 exit(0);
+            }
+        }
+        
+        private static function ensureSession($authToken) {
+            $sessionKey = self::getSession(_SESSION_KEY);
+            if(!$sessionKey) {
+                $sessionKey = $_GET[_SESSION_KEY_PARAM];
+                if($sessionKey)
+                  self::saveSession(_SESSION_KEY, $sessionKey);
+            }
+            if ($sessionKey) {
+                if($authToken && $sessionKey) {
+                    $rUrl = self::getSession(_RETURN_URL);
+                    if ($rUrl != null) {
+                        self::saveSession(_SESSION_KEY, $sessionKey);
+                        self::deleteSession(_RETURN_URL);
+                        if(strpos($rUrl, '?'))
+                          $rUrl.='&'._SESSION_KEY_PARAM.'='.$sessionKey;
+                        else
+                          $rUrl.='?'._SESSION_KEY_PARAM.'='.$sessionKey;
+                        return $rUrl;
+                    }
+                }
+                return "-1";
             }
         }
         

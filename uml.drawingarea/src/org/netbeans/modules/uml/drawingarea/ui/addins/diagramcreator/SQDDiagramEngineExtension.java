@@ -76,5 +76,5 @@ public interface SQDDiagramEngineExtension {
      * but invication should be from drawing area sometimes
      */
     
-    public void layout();
+    public void layout(boolean save);
 }

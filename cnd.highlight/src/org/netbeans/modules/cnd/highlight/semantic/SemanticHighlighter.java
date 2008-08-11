@@ -132,7 +132,7 @@ public class SemanticHighlighter extends HighlighterBase {
                     });
                     // here we apply highlighting to discovered blocks
                     for (int i = 0; i < entities.size(); ++i) {
-                        addHighlights(newBag, collectors.get(i).getBlocks(), entities.get(i));
+                        addHighlights(newBag, collectors.get(i).getReferences(), entities.get(i));
                     }
                 }
             }

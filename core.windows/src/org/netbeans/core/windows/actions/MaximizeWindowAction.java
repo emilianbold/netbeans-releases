@@ -55,6 +55,8 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.core.windows.Switches;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import org.openide.util.Mutex;
 
 
@@ -65,7 +67,7 @@ import org.openide.util.Mutex;
 public class MaximizeWindowAction extends AbstractAction {
 
     private final PropertyChangeListener propListener;
-    private TopComponent topComponent;
+    private Reference<TopComponent> topComponent;
     private boolean isPopup;
     
     public MaximizeWindowAction() {
@@ -98,7 +100,7 @@ public class MaximizeWindowAction extends AbstractAction {
      * see #38801 for details
      */
     public MaximizeWindowAction (TopComponent tc) {
-        topComponent = tc;
+        topComponent = new WeakReference<TopComponent>(tc);
         propListener = null;
         isPopup = true;
         updateState();
@@ -194,13 +196,17 @@ public class MaximizeWindowAction extends AbstractAction {
     
     private TopComponent getTCToWorkWith () {
         if (topComponent != null) {
-            return topComponent;
+            TopComponent tc = topComponent.get();
+            if (tc != null) {
+                return tc;
+            }
         }
         return TopComponent.getRegistry().getActivated();
     }
     
     /** Overriden to share accelerator between instances of this action.
      */ 
+    @Override
     public void putValue(String key, Object newValue) {
         if (Action.ACCELERATOR_KEY.equals(key)) {
             ActionUtils.putSharedAccelerator("MaximizeWindow", newValue);

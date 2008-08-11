@@ -77,16 +77,23 @@ public class LifelineBoxWidget extends BackgroundWidget {
     private String name="",classifier="";
     //
     public LifelineBoxWidget(Scene scene,String name,String classifier) {
-        super(scene, "LIFELINE.LIFELINEBOX", "LifelineBox", 4, 4);
+        super(scene, "LIFELINE.LIFELINEBOX", 
+              NbBundle.getMessage(LifelineBoxWidget.class, "LBL_Lifeline_Box"), 
+              4, 4); // NO18N
+        
         setBorder(BorderFactory.createRoundedBorder(4, 4, null, getForeground()));//background should be white according to uml spec and no rounding
-        stereotypeWidget=new UMLLabelWidget(scene,"stereotype",bundle.getString("LBL_stereotype"));
+        stereotypeWidget=new UMLLabelWidget(scene,"stereotype",bundle.getString("LBL_stereotype")); // NO18N
         stereotypeWidget.setAlignment(LabelWidget.Alignment.CENTER);
         stereotypeWidget.setEnabled(false);
         addChild(stereotypeWidget);
         
         setLayout(new LifelineBoxLayout());
 
-        labelWidget=new EditableCompartmentWidget(scene,":",this,getParentWidget(), "LifelineBoxNameClassifier", "Lifeline Box Name and Classifier");//new LabelWidget(scene,name);
+        labelWidget=new EditableCompartmentWidget(scene,
+                                                  ":",
+                                                  this,getParentWidget(), 
+                                                  "LifelineBoxNameClassifier", // NO18N
+                                                  NbBundle.getMessage(LifelineBoxWidget.class, "LBL_Lifeline_Name"));
         labelWidget.setMinimumSize(new Dimension(40,0));
         labelWidget.setAlignment(LabelWidget.Alignment.CENTER);
         addChild(labelWidget);
