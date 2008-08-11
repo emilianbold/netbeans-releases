@@ -102,7 +102,7 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
      * @param envp environment variables (name-value pairs of the form ABC=123)
      * @param out Output
      * @param io Input
-     * @param parseOutput true if output should be parsed for compiler errors
+     * @param unbuffer - true if stdout unbuffering is needed
      * @return completion code
      */
     public abstract int executeCommand(
