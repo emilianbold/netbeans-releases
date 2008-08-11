@@ -87,7 +87,7 @@ public final class TestRecognizer extends OutputRecognizer {
 
     @Override
     public RecognizedOutput processLine(String line) {
-        
+
         for (TestRecognizerHandler handler : handlers) {
             if (handler.matches(line)) {
                 if (LOGGER.isLoggable(Level.FINE)) {
@@ -99,6 +99,10 @@ public final class TestRecognizer extends OutputRecognizer {
                 } catch (IllegalStateException ise) {
                     // ISE is thrown when mathing a group fails, should be enough to log a warning
                     LOGGER.log(Level.WARNING, "Failed to process line: " + line + " with handler: " + handler, ise);
+                    return null;
+                } catch (IndexOutOfBoundsException ioobe) {
+                    // IOOBE is thrown when there is no group with the expected index.
+                    LOGGER.log(Level.WARNING, "Failed to process line: " + line + " with handler: " + handler, ioobe);
                     return null;
                 }
             }
