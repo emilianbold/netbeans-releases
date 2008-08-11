@@ -1047,7 +1047,7 @@ public abstract class CsmResultItem
                                             text += obj;
                                         }
                                     }
-                                    if (addClosingParen) {
+                                    if (isDeclaration || addClosingParen) {
                                         text += ")";  // NOI18N
                                         if (isDeclaration && CsmKindUtilities.isMethod(ctr) && ((CsmMethod)ctr).isConst()) {
                                             // Fix for IZ#143117: Method autocompletion does not add 'const' keyword
