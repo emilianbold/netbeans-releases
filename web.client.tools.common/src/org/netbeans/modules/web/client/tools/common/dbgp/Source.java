@@ -104,8 +104,13 @@ public class Source{
             return getBoolean(getNode(), SUCCESS);
         }
 
+        public Encoding getEncoding(){
+            String enc = getAttribute(getNode(), Property.ENCODING);
+            return enc != null ? Encoding.valueOf(enc.toUpperCase()) : null;
+        }
+
         public String getSourceCode() {
-            return getNodeValue(getNode());
+            return new String(Message.getDecodedBytes(getEncoding(), getNodeValue(getNode())));
         }
     }
 }

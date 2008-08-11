@@ -409,7 +409,7 @@ public class ExtFormatter extends Formatter implements FormatLayer {
         if (doc instanceof BaseDocument) {
             final BaseDocument bdoc = (BaseDocument)doc;
 
-            bdoc.runAtomic (new Runnable () {
+            bdoc.runAtomicAsUser (new Runnable () {
                 public void run () {
                     boolean newLineInserted = false;
                     try {

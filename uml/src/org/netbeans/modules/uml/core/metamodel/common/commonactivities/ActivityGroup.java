@@ -118,17 +118,20 @@ public class ActivityGroup extends Namespace implements IActivityGroup
      */
 
 
-    public boolean addOwnedElement (INamedElement element)
+    public boolean addOwnedElement(INamedElement element)
     {
-       boolean retVal = true;
-       
-       if( element instanceof IActivityNode)
-         addNodeContent( (IActivityNode)element );
-       else
-         retVal = super.addOwnedElement( element );    
-       
-       return retVal;
-    }    
+        boolean retVal = true;
+        if (element instanceof IActivityGroup ||
+            !(element instanceof IActivityNode)  )  
+        {
+            retVal = super.addOwnedElement(element);
+        } 
+        else 
+        {
+            addNodeContent((IActivityNode) element);
+        }
+        return retVal;
+    }   
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup#addSubGroup(org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup)

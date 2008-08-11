@@ -1,12 +1,11 @@
 <?php
     session_start();
-    
+
     include_once "FacebookSocialNetworkingServiceAuthenticator.php";
-    
+
     $authToken = $_GET["auth_token"];
-    FacebookSocialNetworkingServiceAuthenticator::saveSession("facebook_auth_token", $authToken);
-            
-    FacebookSocialNetworkingServiceAuthenticator::login();
+        
+    FacebookSocialNetworkingServiceAuthenticator::login($authToken);
     $sessionKey = FacebookSocialNetworkingServiceAuthenticator::getSessionKey();
          
     printf("<html>");

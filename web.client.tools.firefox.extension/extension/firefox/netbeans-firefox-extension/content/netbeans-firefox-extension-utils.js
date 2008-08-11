@@ -224,6 +224,13 @@
         return null;
     }
     
+    this.convertUnicodeToUTF8 = function(unicode) {
+          var converter = this.CCIN(NetBeans.Constants.ScriptableUnicodeConverterCID,
+                                    NetBeans.Constants.ScriptableUnicodeConverterIF);
+          converter.charset = "UTF-8";
+          return converter.ConvertFromUnicode(unicode) + converter.Finish();
+    }
+    
     this.isFF2 = function() {
         return getFirefoxVersion() == 2;
     }
@@ -252,6 +259,6 @@
         
         return null;
     }
-
+    
     // ************************************************************************************************
 }).apply(NetBeans.Utils);

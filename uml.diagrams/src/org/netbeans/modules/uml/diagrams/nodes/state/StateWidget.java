@@ -76,8 +76,6 @@ import org.openide.util.NbBundle;
  */
 public class StateWidget extends UMLNodeWidget
 {
-
-    private Widget currentView;
     private Scene scene;
     private Widget stateWidget;
     private Widget detailWidget;
@@ -111,15 +109,17 @@ public class StateWidget extends UMLNodeWidget
         if (element instanceof State)
         {
             state = (State) presentation.getFirstSubject();
-            currentView = createStateView(state);
-            setCurrentView(currentView);
+            setCurrentView(createStateView(state));
         }
     }
 
     private void initStateWidget()
     {
         stateWidget = new BackgroundWidget(
-                scene, getWidgetID() + "." + UMLNodeWidget.DEFAULT, "Default", 15, 15);
+                scene, getResourcePath(), 
+                NbBundle.getMessage(UMLNodeWidget.class, "LBL_Default"), 15, 15);
+        stateWidget.setOpaque(true);
+        stateWidget.setCheckClipping(true);
         detailWidget = new Widget(getScene());
         detailWidget.setForeground(null);
         detailWidget.setBackground(null);
@@ -205,6 +205,7 @@ public class StateWidget extends UMLNodeWidget
         }
 
         updateTransitions();
+        updateSizeWithOptions();
     }
 
     private void updateTransitions()

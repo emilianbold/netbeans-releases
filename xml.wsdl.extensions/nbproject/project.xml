@@ -91,6 +91,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.bpel.core</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.model</friend>
+                <friend>org.netbeans.modules.bpel.mapper</friend>
                 <friend>org.netbeans.modules.bpel.project</friend>
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
                 <friend>org.netbeans.modules.bpel.validation</friend>
@@ -105,6 +106,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.script.project</friend>
                 <friend>org.netbeans.modules.workflow.project</friend>
                 <friend>org.netbeans.modules.wlm.model</friend>
+                <friend>org.netbeans.modules.wlm.editor</friend>
+                <friend>org.netbeans.modules.wlm.project</friend>
                 <friend>com.zaz.nbmodules.screenscraping.project</friend>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel</package>
                 <package>org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation</package>

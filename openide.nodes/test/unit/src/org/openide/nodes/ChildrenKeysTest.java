@@ -59,7 +59,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.tree.TreeNode;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
@@ -81,7 +80,7 @@ public class ChildrenKeysTest extends NbTestCase {
     }
     
 //    public static ChildrenKeysTest suite() {
-//        return new ChildrenKeysTest("testChildrensAreNotCreatedOnNodeRemoval");
+//        return new ChildrenKeysTest("testRefreshKey");
 //    }
 
     @Override
@@ -1351,6 +1350,112 @@ public class ChildrenKeysTest extends NbTestCase {
         Node[] nodes = lch.getNodes();
         nodes[2].addNodeListener(l);
         lch.keys("A", "B");
+    }
+    
+    
+    public void testRefreshKey1() {
+        doTestRefreshKey(true);
+    }
+    
+    public void testRefreshKey2() {
+        doTestRefreshKey(false);
+    }
+
+    public void doTestRefreshKey(boolean initViaGetNodes) {
+        class MyNode extends AbstractNode {
+            MyNode() {
+                super(Children.LEAF);
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                return obj instanceof MyNode ? getName().equals(((MyNode) obj).getName()) : false;
+            }
+
+            @Override
+            public int hashCode() {
+                return getName().hashCode();
+            }
+            
+        }
+        class K extends Keys {
+            boolean canReturnNull = true;
+            String append = "";
+
+            K() {
+                super(lazy());
+            }
+
+            @Override
+            protected void addNotify() {
+                keys("a", "-b", "c");
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (canReturnNull && key.toString().startsWith("-")) {
+                    return null;
+                }
+                MyNode n = new MyNode();
+                n.setName(key.toString() + append);
+                return new Node[]{n};
+            }
+        }
+
+        K ch = new K();
+        Node root = createNode(ch);
+
+        Listener l = new Listener();
+        l.disableConsistencyCheck = true;
+
+        root.addNodeListener(l);
+        if (initViaGetNodes) {
+            Node[] nodes = root.getChildren().getNodes();
+            assertEquals("Two nodes created", 2, nodes.length);
+            assertEquals("1st is a", "a", nodes[0].getName());
+            assertEquals("2nd is c", "c", nodes[1].getName());
+        } else {
+            root.getChildren().getNodesCount();
+            Node node = ch.getNodeAt(1);
+            assertEquals("1st is a", "a", ch.getNodeAt(0).getName());
+            assertEquals("2nd is c", "c", ch.getNodeAt(1).getName());
+        }
+
+        if (lazy()) {
+            l.assertRemoveEvent("Empty should be removed", new int[] {1});
+        } else {
+            l.assertNoEvents("No events so far");
+        }
+
+        ch.refreshKey("-b");
+        l.assertNoEvents("No event should be fired");
+        
+        ch.canReturnNull = false;
+        ch.refreshKey("-b");
+        NodeMemberEvent ev = l.assertAddEvent("One add event", new int[] {1});
+        assertEquals("-b", ev.getDelta()[0].getName());
+        assertEquals("3 nodes expected", 3, ch.getNodesCount());
+        assertEquals("1st is a", "a", ch.getNodeAt(0).getName());
+        assertEquals("2nd is -b", "-b", ch.getNodeAt(1).getName());
+        assertEquals("3rd is c", "c", ch.getNodeAt(2).getName());
+        
+        ch.refreshKey("-b");
+        l.assertNoEvents("No event should be fired");
+
+        ch.append = "_new";
+        ch.refreshKey("-b");
+        ev = l.assertRemoveEvent("One add event", new int[] {1});
+        assertEquals("-b", ev.getDelta()[0].getName());
+        ev = l.assertAddEvent("One add event", new int[] {1});
+        assertEquals("-b_new", ev.getDelta()[0].getName());
+        assertEquals("3 nodes expected", 3, ch.getNodesCount());
+        ch.append = "";
+        
+        ch.canReturnNull = true;
+        ch.refreshKey("-b");
+        ev = l.assertRemoveEvent("One add event", new int[] {1});
+        assertEquals("-b_new", ev.getDelta()[0].getName());
+        assertEquals("2 nodes expected", 2, ch.getNodesCount());
     }
 
     public void testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces() throws Exception {
