@@ -135,10 +135,13 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
                 setIsInitialized(true);
                 setFont(getCurrentView().getFont());
             }
-            if (!PersistenceUtil.isDiagramLoading())
+           else
             {
-                initRegions();
-                addRegionElements();
+                if (!PersistenceUtil.isDiagramLoading())
+                {
+                    initRegions();
+                    addRegionElements();
+                }
             }
         }
     }
@@ -420,9 +423,6 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
         updateConstraint();
     }
     
-    public void notifyCompartmentWidgetAdded()
-    {
-    }
     
     public void addChildrenInBounds() {
         for(CompartmentWidget w:regionWidgets)

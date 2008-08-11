@@ -58,12 +58,15 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
+import org.netbeans.modules.uml.drawingarea.util.Util;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
@@ -152,7 +155,7 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
         };
     }
 
-    public abstract void initContainedElements();
+    public abstract List<IElement> getContainedElements();
 
     public abstract String getWidgetID();
 
@@ -315,10 +318,6 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
         return getParentNodeWidget(parent);
     }
     
-    public void notifyAdded()
-    {
-        compositeWidget.notifyCompartmentWidgetAdded();
-    }
 
     public void remove(Widget w)
     {
@@ -425,4 +424,48 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
         nameWidget.setNameFont(font);
         revalidate();
     }
+    
+    
+    public void initContainedElements()
+    {
+        if (!(getScene() instanceof GraphScene))
+        {
+            return;
+        }
+ 
+        Point point = new Point(10,10);
+        for (IElement e : getContainedElements())
+        {
+            boolean found = false;
+            List<Widget> list = getContainerWidget().getChildren();
+            List<Widget> children = new ArrayList<Widget>(list);
+            for (Widget child: children)
+            {
+                Object object = ((DesignerScene)getScene()).findObject(child);
+                assert object instanceof IPresentationElement;
+                if (((IPresentationElement)object).getFirstSubject() == e)
+                {
+                    ((UMLNodeWidget)child).initializeNode((IPresentationElement)object);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                IPresentationElement presentation = Util.createNodePresentationElement();
+                presentation.addSubject(e);
+
+                Widget w = ((DesignerScene) getScene()).addNode(presentation);
+                if (w != null)
+                {
+                    w.removeFromParent();
+                    getContainerWidget().addChild(w);
+                    w.setPreferredLocation(point);
+                    point = new Point(point.x + 50, point.y + 50);
+                }
+            }
+        }
+    }
+
+    
 }
