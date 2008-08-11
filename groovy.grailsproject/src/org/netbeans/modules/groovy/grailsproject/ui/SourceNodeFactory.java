@@ -130,7 +130,7 @@ public class SourceNodeFactory implements NodeFactory {
                 }
             }
 
-//            java.util.Collections.sort(result);
+            java.util.Collections.sort(result);
             return result;
         }
 
