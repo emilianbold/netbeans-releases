@@ -308,9 +308,10 @@ Microsystems, Inc. All Rights Reserved.
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
             <arg value="hdiutil mount -mountpoint ${mysql.dir} ${mysql.dir}/mysql.dmg;
-                        cp -RPfv ${mysql.dir}/${mysql.pkg.name}.pkg  ${basedir}/build/mysql.pkg;
+                        cp -RPfv ${mysql.dir}/${mysql.pkg.name}.pkg         ${basedir}/build/mysql.pkg;
                         cp -RPfv ${mysql.dir}/${mysql_startup.pkg.name}.pkg ${basedir}/build/mysqlstartup.pkg;
-                        hdiutil detach ${mysql.dir};"/>            
+                        cp -RPfv ${mysql.dir}/${mysql_prefPane.name}        ${basedir}/dist_dmg/${mysql_prefPane.name};
+                        hdiutil detach ${mysql.dir};"/>
         </exec>                                       
         <delete dir="${mysql.dir}"/>       
         
