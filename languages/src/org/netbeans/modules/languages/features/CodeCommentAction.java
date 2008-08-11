@@ -87,7 +87,7 @@ public class CodeCommentAction extends CommentAction {
                 if (caret.isSelectionVisible()) {
                     final int startPos = Utilities.getRowStart(doc, target.getSelectionStart());
                     final int endPos = target.getSelectionEnd();
-                    doc.runAtomic (new Runnable () {
+                    doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             try {
                                 int end = (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) ?
@@ -113,7 +113,7 @@ public class CodeCommentAction extends CommentAction {
                 } else { // selection not visible
                     final int pos = Utilities.getRowStart(doc, target.getSelectionStart());
                     final String mt = getRealMimeType(ts, pos);
-                    doc.runAtomic (new Runnable () {
+                    doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             try {
                                 modifyLine(doc, mt, pos);
