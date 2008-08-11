@@ -73,7 +73,10 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.ResourceTable;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.ObjectSelectable;
@@ -725,7 +728,40 @@ public abstract class UMLNodeWidget extends Widget
             PropertyChangeListener listener = (PropertyChangeListener) view;
             listener.propertyChange(event);
         }
-
+        
+        String propName = event.getPropertyName();
+        if(propName.equals(ModelElementChangedKind.ELEMENTADDEDTONAMESPACE.toString()))
+        {
+            // If a nested link is present, and it is not connected to the 
+            // correct owner, remove it.
+            
+            if (getScene() instanceof GraphScene)
+            {
+                IPresentationElement node = (IPresentationElement) scene.findObject(this);
+                INamedElement modelElement = (INamedElement) node.getFirstSubject();
+                
+                Collection < Object > inEdges = scene.findNodeEdges(node, false, true);
+                for(Object edge : inEdges)
+                {
+                    if (edge instanceof IPresentationElement)
+                    {
+                        IPresentationElement presentation = (IPresentationElement) edge;
+                        if("NestedLink".equals(presentation.getFirstSubjectsType()) == true)
+                        {
+                            IPresentationElement target = (IPresentationElement) scene.getEdgeSource(edge);
+                            if(target != null)
+                            {
+                                IElement subject = target.getFirstSubject();
+                                if(subject.equals(modelElement.getNamespace()) == false) 
+                                {
+                                    scene.removeEdge(edge);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     
