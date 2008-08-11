@@ -2374,6 +2374,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return;
         }
         this.doc = new StrongRef(doc, strong);
+        Logger.getLogger("TIMER").log(Level.FINE, "TextDocument", doc);
     }
 
     private final class StrongRef extends WeakReference<StyledDocument> 

@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -325,7 +326,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
         run();
     }
     
-    private Map<TopComponent, Lookup.Result> watchedLkpResults = new HashMap<TopComponent, Lookup.Result>(3);
+    private Map<TopComponent, Lookup.Result> watchedLkpResults = new WeakHashMap<TopComponent, Lookup.Result>(3);
     
     private void watchOpenedEditors() {
         ArrayList<TopComponent> editorsToWatch = findShowingEditors();
@@ -339,7 +340,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
             Lookup.Result res = watchedLkpResults.get(tc);
             if( null != res ) {
                 res.removeLookupListener(this);
-                watchedLkpResults.remove(res);
+                watchedLkpResults.remove(tc);
             }
         }
         

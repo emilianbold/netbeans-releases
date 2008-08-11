@@ -41,6 +41,7 @@ package org.netbeans.test.ide;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
@@ -49,6 +50,8 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import junit.framework.Assert;
@@ -95,48 +98,81 @@ public final class WatchProjects {
         LOG.fine("getOpenProjects: " + getProjects);
     }
     
-    public static void assertProjects() throws Exception {
-        closeProjects.invoke(
-            projectManager,
-            getProjects.invoke(projectManager)
-        );
+    private static void cleanWellKnownStaticFields() throws Exception {
+        Object o;
         
         resetJTreeUIs(Frame.getFrames());
 
         tryCloseNavigator();
-        
+
         StringSelection ss = new StringSelection("");
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
         Toolkit.getDefaultToolkit().getSystemSelection().setContents(ss, ss);
-            
+
         for (Frame f : Frame.getFrames()) {
             f.setVisible(false);
         }
-        
+        JFrame empty = new JFrame("Clear");
+        empty.getContentPane().setLayout(new FlowLayout());
+        empty.getContentPane().add(new JEditorPane());
+        empty.pack();
+        empty.setVisible(true);
+        empty.requestFocusInWindow();
+
         clearField("sun.awt.im.InputContext", "previousInputMethod");
         clearField("sun.awt.im.InputContext", "inputMethodWindowContext");
         clearField("sun.awt.im.CompositionAreaHandler", "compositionAreaOwner");
-        clearField("sun.awt.AppContext", "mainAppContext");
+//        clearField("sun.awt.AppContext", "mainAppContext");
         clearField("org.netbeans.modules.beans.BeanPanel", "INSTANCE");
         clearField("java.awt.KeyboardFocusManager", "focusedWindow");
         clearField("java.awt.KeyboardFocusManager", "activeWindow");
         clearField("java.awt.KeyboardFocusManager", "focusOwner");
+        clearField("java.awt.KeyboardFocusManager", "permanentFocusOwner");
         clearField("org.netbeans.jemmy.EventTool", "listenerSet");
         clearField("sun.awt.X11.XKeyboardFocusManagerPeer", "currentFocusOwner");
         clearField("sun.awt.X11.XKeyboardFocusManagerPeer", "currentFocusedWindow");
         clearField("org.netbeans.modules.java.navigation.CaretListeningFactory", "INSATNCE");
-        
-        Object o = getFieldValue("org.netbeans.api.java.source.JavaSource", "toRemove");
+        clearField("org.netbeans.modules.editor.hints.HintsUI", "INSTANCE");
+//        clearField("org.netbeans.modules.websvc.core.ProjectWebServiceView", "views");
+        clearField("org.netbeans.api.java.source.support.OpenedEditors", "DEFAULT");
+        clearField("org.netbeans.spi.palette.PaletteSwitch", "theInstance");
+        clearField("org.netbeans.core.NbMainExplorer$MainTab", "lastActivated");
+        clearField("org.netbeans.core.NbMainExplorer$MainTab", "DEFAULT");
+
+        o = getFieldValue("org.netbeans.api.java.source.JavaSource", "toRemove");
         if (o instanceof Collection) {
-            Collection c = (Collection)o;
+            Collection c = (Collection) o;
             c.clear();
         }
-        
+        o = getFieldValue("org.netbeans.api.java.source.JavaSource", "requests");
+        if (o instanceof Collection) {
+            Collection c = (Collection) o;
+            c.clear();
+        }
+
         clearField("sun.awt.im.InputContext", "previousInputMethod");
         clearField("sun.awt.im.InputContext", "inputMethodWindowContext");
-        
+    }
+    
+
+    public static void assertTextDocuments() throws Exception {
+        cleanWellKnownStaticFields();
         System.setProperty("assertgc.paths", "5");
-        Log.assertInstances("Checking if all projects are really garbage collected");
+        Log.assertInstances("Are all documents GCed?", "TextDocument");
+    }
+    
+    public static void assertProjects() throws Exception {
+        Object o;
+
+        closeProjects.invoke(
+            projectManager,
+            getProjects.invoke(projectManager)
+        );
+
+        cleanWellKnownStaticFields();
+
+        System.setProperty("assertgc.paths", "5");
+        Log.assertInstances("Checking if all projects are really garbage collected", "Project");
     }
     
     private static void resetJTreeUIs(Component[] arr) {
@@ -173,15 +209,29 @@ public final class WatchProjects {
         clearField("org.netbeans.modules.navigator.ProviderRegistry","instance");
     }
 
-    private static void clearField(String clazz, String... name) throws Exception {
+    private static Object clearField(String clazz, String... name) throws Exception {
         Object ret = null;
         for (int i = 0; i < name.length; i++) {
-            Field f = i == 0 ? getField(clazz, name[0]) : getField(ret.getClass(), name[i]);
+            Field f;
+            try {
+                f = i == 0 ? getField(clazz, name[0]) : getField(ret.getClass(), name[i]);
+            } catch (NoSuchFieldException ex) {
+                LOG.log(Level.WARNING, "Cannot get " + name[i]);
+                continue;
+            } catch (ClassNotFoundException ex) {
+                LOG.log(Level.WARNING, "Cannot class " + clazz);
+                continue;
+            }
             Object now = ret;
             ret = f.get(now);
             f.set(now, null);
             Assert.assertEquals("Field is really cleared " + f, null, f.get(now));
+            if (ret == null) {
+                LOG.info("Getting " + f + " from " + now + " returned null");
+                break;
+            }
         }
+        return ret;
     }
     private static Object getFieldValue(String clazz, String... name) throws Exception {
         Object ret = null;
