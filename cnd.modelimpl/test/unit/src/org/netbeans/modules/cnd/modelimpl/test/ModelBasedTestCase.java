@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,71 +31,77 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.projectimport.eclipse.core;
+package org.netbeans.modules.cnd.modelimpl.test;
 
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.test.BaseTestCase;
 
 /**
  *
+ * @author Vladimir Kvashin
  */
-public class ProjectOpenHookImpl extends ProjectOpenedHook{
+public class ModelBasedTestCase extends BaseTestCase {
 
-    private static final RequestProcessor PROJ_OPEN_HOOK_RESYNCHRONIZER = new RequestProcessor("Eclipse.Resynchronizer"); // NOI18N
-    private static RequestProcessor.Task currentTask;
-    
-    private UpgradableProject upgradable;
-    private Project project;
-    
-    private static final Logger LOG =
-            Logger.getLogger(ProjectOpenHookImpl.class.getName());
-    
-    public ProjectOpenHookImpl(Project project, UpgradableProject upgradable) {
-        this.upgradable = upgradable;
-        this.project = project;
-    }
-    
-    @Override
-    protected synchronized void projectOpened() {
-        if (currentTask == null)  {
-            currentTask = PROJ_OPEN_HOOK_RESYNCHRONIZER.create(new RunnableImpl());
-        }
-        // coalesce events from multiple project being opened.
-        currentTask.schedule(10000);
+    private final Collection<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
+
+
+    public ModelBasedTestCase(String testName) {
+        super(testName);
     }
 
     @Override
-    protected void projectClosed() {
+    protected void setUp() throws Exception {
+	super.setUp();
+	DiagnosticExceptoins.Hook hook = new DiagnosticExceptoins.Hook() {
+	    public void exception(Throwable thr) {
+		thr.printStackTrace();
+		exceptions.add(thr);
+	    }
+	};
+	DiagnosticExceptoins.setHook(hook);
     }
 
-    private static class RunnableImpl implements Runnable {
-
-        public RunnableImpl() {
-        }
-
-        public void run() {
-            try {
-                // coalesce events from multiple project being opened.
-                OpenProjects.getDefault().openProjects().get();
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            
-            new UpdateAllProjects().update(true);
-        }
+    /**
+     * Registers an exception.
+     * The idea is to process an exception that occurs in main thread
+     * in the same way as exceptions that occur in code model threads
+     */
+    protected void registerException(Throwable thr) {
+	exceptions.add(thr);
     }
+
+    /** Asserts that no exceptions occur in code model threads */
+    protected void assertNoExceptions() throws Exception {
+	assertEmpty(exceptions);
+    }
+
+    private void assertEmpty(Collection<Throwable> errors) throws Exception {
+	// the idea here was to somehow make JUnit infrastructure
+	// display all caught exceptions;
+	// but I don't yet know how to;
+	// so for the time being we just throw 1-st one
+	if (!errors.isEmpty()) {
+	    for (Throwable thr : errors) {
+		if (thr instanceof Exception) {
+		    throw (Exception) thr;
+		}
+		else if( thr instanceof Error ) {
+		    throw (Error) thr;
+		} else {
+		    throw new Exception(thr);
+		}
+	    }
+	}
+    }
+
 
 }
