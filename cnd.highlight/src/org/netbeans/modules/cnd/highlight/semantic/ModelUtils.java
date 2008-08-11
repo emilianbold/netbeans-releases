@@ -39,18 +39,26 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 
@@ -60,13 +68,13 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
  */
 public class ModelUtils {
 
-    /*package*/ static List<? extends CsmOffsetable> collect(final CsmFile csmFile, final ReferenceCollector collector) {
+    /*package*/ static List<CsmReference> collect(final CsmFile csmFile, final ReferenceCollector collector) {
         CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
                 public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
                     collector.visit(ref, csmFile);
                 }
         });
-        return collector.getBlocks();
+        return collector.getReferences();
     }
 
     /*package*/ static List<CsmOffsetable> getInactiveCodeBlocks(CsmFile file) {
@@ -82,10 +90,7 @@ public class ModelUtils {
         public AbstractReferenceCollector() {
             list = new ArrayList<CsmReference>();
         }
-        public void clear() {
-            list.clear();
-        }
-        public List<? extends CsmOffsetable> getBlocks() {
+        public List<CsmReference> getReferences() {
             return list;
         }
     }
@@ -158,102 +163,92 @@ public class ModelUtils {
     }
 
     /*package*/ static class UnusedVariableCollector implements ReferenceCollector {
-        private final Set<VariableInfo> set;
+        private final Map<CsmUID, ReferenceCounter> counters;
+        private Set<CsmUID> parameters;
         public UnusedVariableCollector() {
-            set = new LinkedHashSet<VariableInfo>();
+            counters = new LinkedHashMap<CsmUID, ReferenceCounter>();
         }
         public String getEntityName() {
             return "unused-variables"; // NOI18N
         }
-        public void clear() {
-            set.clear();
-        }
         public void visit(CsmReference ref, CsmFile file) {
             CsmObject obj = ref.getReferencedObject();
-            if (CsmKindUtilities.isLocalVariable(obj) && !CsmKindUtilities.isParameter(obj)) {
-                CsmVariable var = (CsmVariable)obj;
-                if (var.getContainingFile().equals(file)) {
-                    VariableInfo info = new VariableInfo(var);
-                    if (set.remove(info)) {
-                        info.setUsed(true);
-                    }
-                    set.add(info);
+            if (isWanted(obj, file)) {
+                CsmUID uid = ((CsmVariable)obj).getUID();
+                ReferenceCounter counter = counters.get(uid);
+                if (counter == null) {
+                    counter = new ReferenceCounter(ref);
+                    counters.put(uid, counter);
+                } else {
+                    counter.increment();
                 }
             }
         }
-        public List<? extends CsmOffsetable> getBlocks() {
-            List<VariableInfo> result = new ArrayList<VariableInfo>();
-            for (VariableInfo info : set) {
-                if (!info.isUsed()) {
-                    result.add(info);
+        public List<CsmReference> getReferences() {
+            List<CsmReference> result = new ArrayList<CsmReference>();
+            for (ReferenceCounter counter : counters.values()) {
+                if (counter.getCount() == 1) {
+                    result.add(counter.getFirstReference());
                 }
             }
             return result;
         }
-    }
-
-    private static class VariableInfo implements CsmOffsetable {
-
-        private final int startOffset;
-        private final int endOffset;
-        private boolean used;
-
-        public VariableInfo(CsmVariable variable) {
-            this.startOffset = variable.getStartOffset();
-            this.endOffset = variable.getEndOffset();
-            this.used = false;
-        }
-
-        public int getStartOffset() {
-            return startOffset;
-        }
-
-        public int getEndOffset() {
-            return endOffset;
-        }
-
-        public Position getStartPosition() {
-            throw new UnsupportedOperationException("Not implemented"); // NOI18N
-        }
-
-        public Position getEndPosition() {
-            throw new UnsupportedOperationException("Not implemented"); // NOI18N
-        }
-
-        public CsmFile getContainingFile() {
-            throw new UnsupportedOperationException("Not implemented"); // NOI18N
-        }
-
-        public CharSequence getText() {
-            throw new UnsupportedOperationException("Not implemented"); // NOI18N
-        }
-
-        public boolean isUsed() {
-            return used;
-        }
-
-        public void setUsed(boolean used) {
-            this.used = used;
-        }
-
-        @Override
-        public int hashCode() {
-            // all variables come from the same file,
-            // so we don't compare containingFile
-            return 7 * getStartOffset() + 13 * getEndOffset();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof VariableInfo) {
-                VariableInfo that = (VariableInfo)obj;
-                // all variables come from the same file,
-                // so we don't compare containingFile
-                return getStartOffset() == that.getStartOffset()
-                        && getEndOffset() == that.getEndOffset();
-            } else {
+        private boolean isWanted(CsmObject obj, CsmFile file) {
+            if (!CsmKindUtilities.isLocalVariable(obj)) {
+                // we want only local variables ...
                 return false;
             }
+            CsmVariable var = (CsmVariable)obj;
+            if (!var.getContainingFile().equals(file)) {
+                // ... only from current file
+                return false;
+            }
+            if (CsmKindUtilities.isParameter(obj)) {
+                Set<CsmUID> set = getFunctionDefinitionParameters(file);
+                return set.contains(var.getUID());
+            } else {
+                return true;
+            }
+        }
+        private Set<CsmUID> getFunctionDefinitionParameters(CsmFile file) {
+            if (parameters == null) {
+                parameters = new HashSet<CsmUID>();
+                CsmSelect select = CsmSelect.getDefault();
+                CsmFilter filter = select.getFilterBuilder().createKindFilter(
+                        new CsmDeclaration.Kind[] {CsmDeclaration.Kind.FUNCTION_DEFINITION});
+                Iterator<CsmOffsetableDeclaration> i = select.getDeclarations(file, filter);
+                while (i.hasNext()) {
+                    CsmFunctionDefinition fundef = (CsmFunctionDefinition)i.next();
+                    for (Object obj : fundef.getParameters()) {
+                        parameters.add(((CsmParameter)obj).getUID());
+                    }
+                }
+            }
+            return parameters;
+        }
+    }
+
+    private static class ReferenceCounter {
+
+        private CsmReference reference;
+        private int count;
+
+        public ReferenceCounter(CsmReference reference) {
+            this.reference = reference;
+            this.count = 1;
+        }
+
+        public CsmReference getFirstReference() {
+            return reference;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public void increment() {
+            ++count;
+            reference = null;
         }
 
     }
