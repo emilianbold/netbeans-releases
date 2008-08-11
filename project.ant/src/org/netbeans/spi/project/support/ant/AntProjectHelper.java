@@ -77,6 +77,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
@@ -447,12 +448,7 @@ public final class AntProjectHelper {
      * @param path path to the changed file (XML or properties)
      */
     void fireExternalChange(final String path) {
-        final Mutex.Action<Void> action = new Mutex.Action<Void>() {
-            public Void run() {
-                fireChange(path, false);
-                return null;
-            }
-        };
+        final Mutex.Action<Void> action = new ActionImpl(this, path);
         if (ProjectManager.mutex().isWriteAccess() || ProjectLibraryProvider.FIRE_CHANGES_SYNCH) {
             // Run it right now. postReadRequest would be too late.
             ProjectManager.mutex().readAccess(action);
@@ -461,11 +457,7 @@ public final class AntProjectHelper {
             action.run();
         } else {
             // Not safe to acquire a new lock, so run later in read access.
-            RP.post(new Runnable() {
-                public void run() {
-                    ProjectManager.mutex().readAccess(action);
-                }
-            });
+            RP.post(new RunnableImpl(action));
         }
     }
 
@@ -1225,6 +1217,35 @@ public final class AntProjectHelper {
     @Override
     public String toString() {
         return "AntProjectHelper[" + getProjectDirectory() + "]"; // NOI18N
+    }
+
+    private static class RunnableImpl implements Runnable {
+        private final Action<Void> action;
+
+        public RunnableImpl(Action<Void> action) {
+            this.action = action;
+        }
+
+        public void run() {
+            ProjectManager.mutex().readAccess(action);
+        }
+    }
+
+    private static class ActionImpl implements Action<Void> {
+
+        private final String path;
+        private AntProjectHelper helper;
+
+        public ActionImpl(AntProjectHelper helper, String path) {
+            this.path = path;
+            this.helper = helper;
+        }
+
+        public Void run() {
+            helper.fireChange(path, false);
+            helper = null;
+            return null;
+        }
     }
 
 }

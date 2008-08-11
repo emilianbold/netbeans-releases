@@ -53,10 +53,10 @@ import org.netbeans.junit.NbTestCase;
  *
  * @author Jiri.Skrivanek@sun.com, mrkam@netbeans.org
  */
-public class IDECommitValidationTest extends JellyTestCase {
+public class MemoryValidationTest extends JellyTestCase {
 
     private static boolean initBlacklistedClassesHandler() {        
-        String configFN = new IDECommitValidationTest("Dummy").getDataDir()
+        String configFN = new MemoryValidationTest("Dummy").getDataDir()
                 + File.separator + "BlacklistedClassesHandlerConfig.xml";
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getInstance();
         
@@ -72,7 +72,7 @@ public class IDECommitValidationTest extends JellyTestCase {
     
     
     /** Need to be defined because of JUnit */
-    public IDECommitValidationTest(String name) {
+    public MemoryValidationTest(String name) {
         super(name);
     }
     
@@ -82,31 +82,31 @@ public class IDECommitValidationTest extends JellyTestCase {
         
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
             IDEValidation.class
-        ).clusters(".*").enableModules(".*");
+        ).clusters("ide[0-9]*|java[0-9]*").enableModules(".*");
 
         
         if (blacklistEnabled) {
             conf = conf.addTest("testBlacklistedClassesHandler");
         }
         conf = conf.addTest("testInitGC");
-        conf = conf.addTest("testMainMenu");
-        conf = conf.addTest("testHelp");
-        conf = conf.addTest("testOptions");
+//        conf = conf.addTest("testMainMenu");
+//        conf = conf.addTest("testHelp");
+//        conf = conf.addTest("testOptions");
         conf = conf.addTest("testNewProject");
         // sample project must exist before testShortcuts
-        conf = conf.addTest("testShortcuts");
+//        conf = conf.addTest("testShortcuts");
         conf = conf.addTest("testNewFile");
-        conf = conf.addTest("testCVSLite");
-        conf = conf.addTest("testProjectsView");
-        conf = conf.addTest("testFilesView");
+//        conf = conf.addTest("testCVSLite");
+//        conf = conf.addTest("testProjectsView");
+//        conf = conf.addTest("testFilesView");
         conf = conf.addTest("testEditor");
         conf = conf.addTest("testBuildAndRun");
         conf = conf.addTest("testDebugging");
-        conf = conf.addTest("testJUnit");
-        conf = conf.addTest("testXML");
-        conf = conf.addTest("testDb");
-        conf = conf.addTest("testWindowSystem");
-//        conf = conf.addTest("testGCDocuments");
+//        conf = conf.addTest("testJUnit");
+//        conf = conf.addTest("testXML");
+//        conf = conf.addTest("testDb");
+//        conf = conf.addTest("testWindowSystem");
+        conf = conf.addTest("testGCDocuments");
 //        conf = conf.addTest("testGCProjects");
         // not in commit suite because it needs net connectivity
         // suite.addTest(new IDEValidation("testPlugins"));
