@@ -73,6 +73,8 @@ import org.openide.util.Utilities;
 public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
     private static final String PLUGIN_SPEC_PATH = "vendor/plugins/rspec/bin/spec"; // NOI18N
+    private static final String SCRIPT_SPEC_PATH = "script/spec"; // NOI18N
+    private static final String SPEC_BIN = "spec"; // NOI18N
     private static final TestRunner INSTANCE = new RspecRunner();
     private static final String SPEC_OPTS = "spec/spec.opts"; // NOI18N
     private static final String NETBEANS_SPEC_OPTS = SPEC_OPTS + ".netbeans"; // NOI18N
@@ -166,18 +168,29 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         TestExecutionManager.getInstance().start(desc, recognizer);
     }
 
+    /**
+     * Gets the spec binary to use for the project. Prefers the spec rails plugin
+     * if found.
+     * 
+     * @param project
+     * @return
+     */
     private File getSpec(Project project) {
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-        String spec = platform.findExecutable("spec"); //NOI18N
-        if (spec != null) {
-            return new File(spec);
-        }
         FileObject projectDir = project.getProjectDirectory();
+        FileObject specScript = projectDir.getFileObject(SCRIPT_SPEC_PATH);
+        if (specScript != null) {
+            return FileUtil.toFile(specScript);
+        }
         if (projectDir != null) {
             FileObject pluginSpec = projectDir.getFileObject(PLUGIN_SPEC_PATH);
             if (pluginSpec != null) {
                 return FileUtil.toFile(pluginSpec);
             }
+        }
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        String spec = platform.findExecutable(SPEC_BIN); //NOI18N
+        if (spec != null) {
+            return new File(spec);
         }
         // this should not happen as the presence of the binary
         // should be checked before invoking this test runner
