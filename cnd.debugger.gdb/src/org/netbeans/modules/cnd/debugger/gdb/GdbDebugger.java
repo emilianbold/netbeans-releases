@@ -280,12 +280,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
             gdb.enable_timings(false);
             if (pae.getID() == DEBUG_ATTACH) {
+                String pgm = null;
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 if (((MakeConfiguration) pae.getConfiguration()).isDynamicLibraryConfiguration()) {
-                    String pgm = getExePathFromPID(programPID);
-                    if (pgm != null) {
-                        gdb.file_exec_and_symbols(pgm);
-                    }
+                    pgm = getExePath(programPID);
+//                    if (pgm != null) {
+//                        gdb.file_exec_and_symbols(pgm); // Should this be file_symbolfile() ?
+//                    }
                 }
                 CommandBuffer cb = new CommandBuffer(gdb);
                 gdb.target_attach(cb, Long.toString(programPID));
@@ -310,6 +311,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     });
                 } else {
                     final String path = getFullPath(runDirectory, pae.getExecutable());
+                    
+                    if (platform == PlatformTypes.PLATFORM_MACOSX && pgm == null) {
+                        pgm = getMacExePath();
+                    }
+                    if (pgm != null) {
+                        gdb.file_symbol_file(pgm);
+                    }
 
                     // 1) see if path was explicitly loaded by target_attach (this is system dependent)
                     if (!symbolsRead(cb.toString(), path)) {
@@ -319,6 +327,24 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                                 gdb.file_symbol_file(path);
                             }
                             setLoading();
+                        } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
+                            cb = new CommandBuffer(gdb);
+                            gdb.info_share(cb);
+                            cb.waitForCompletion();
+                            String addr = getMacDylibAddress(path, cb.toString());
+                            if (addr != null) {
+                                gdb.addSymbolFile(path, addr);
+                                setLoading();
+                            } else {
+                                final String msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure"); // NOI18N
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+                                        setExited();
+                                        finish(false);
+                                    }
+                                });
+                            }
                         } else {
                             // 3) send an "info files" command to gdb. Its response should say what symbols
                             // are read.
@@ -661,7 +687,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 if (ep.equals(exepath) || (platform == PlatformTypes.PLATFORM_WINDOWS && ep.equals(exepath + ".exe"))) { // NOI18N
                     return true;
                 }
-            } else if (line.contains("Loaded symbols for ") && equivalentPaths(exepath, line.substring(19))) {
+            } else if (line.contains("Loaded symbols for ") && equivalentPaths(exepath, line.substring(19))) { // NOI18N
                 return true;
             }
         }
@@ -676,7 +702,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     private String winpath(String path) {
-        if (platform == PlatformTypes.PLATFORM_WINDOWS && path.startsWith("/cygdrive/")) {
+        if (platform == PlatformTypes.PLATFORM_WINDOWS && path.startsWith("/cygdrive/")) { // NOI18N
             return path.substring(10, 11).toUpperCase() + ':' + path.substring(11);
         } else {
             return path;
@@ -721,7 +747,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return false;
     }
     
-    private String getExePathFromPID(long pid) {
+    private String getExePath(long pid) {
         if (platform != PlatformTypes.PLATFORM_WINDOWS && pid > 0) {
             String procdir = "/proc/" + Long.toString(pid); // NOI18N
             File pathfile = new File(procdir, "path/a.out"); // NOI18N - Solaris only?
@@ -733,6 +759,48 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 if (path != null && path.length() > 0) {
                     return path;
                 }
+            }
+        }
+        return null;
+    }
+    
+    private String getMacExePath() {
+        CommandBuffer cb = new CommandBuffer(gdb);
+        
+        gdb.info_files(cb);
+        cb.waitForCompletion();
+        String info = cb.toString();
+        for (String line : info.split("\\\\n")) { // NOI18N
+            if (line.contains("Symbols from ")) { // NOI18N
+                String ep = line.substring(15, line.length() - 3);
+                return ep;
+            }
+        }
+        return null;
+    }
+    
+    private String getMacDylibAddress(String path, String info) {
+        String line;
+        int start = 0;
+        int next = info.indexOf(",shlib-info="); // NOI18N
+        
+        while ((line = info.substring(start, next > 0 ? next : info.length())) != null) {
+            if (line.contains(path)) {
+                return parseMacDylibAddress(line);
+            }
+            start = next + 12;
+            next = info.indexOf(",shlib-info=", start); // NOI18N
+        }
+        return null;
+        
+    }
+
+    private static String parseMacDylibAddress(String line) {
+        int pos1 = GdbUtils.findMatchingCurly(line, 0);
+        if (pos1 != -1) {
+            Map<String, String> map = GdbUtils.createMapFromString(line.substring(1, pos1));
+            if (map.containsKey("loaded_addr")) { // NOI18N
+                return map.get("loaded_addr"); // NOI18N
             }
         }
         return null;
@@ -1146,6 +1214,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 msg.contains("show copying") || // NOI18N
                 msg.startsWith("There is absolutely no warranty for GDB") || // NOI18N
                 msg.startsWith("Source directories searched: ") || // NOI18N
+                msg.contains("LC_SEGMENT.__TEXT_addr = ") || // NOI18N
                 msg.startsWith("This GDB was configured as")) { // NOI18N
             // do nothing (but don't print these expected messages)
         } else if (programPID == 0 && msg.startsWith("process ")) { // NOI18N (Unix method)

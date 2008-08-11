@@ -139,6 +139,10 @@ public class GdbProxy implements GdbMiDefinitions {
         return engine.sendCommand("-file-exec-and-symbols " + programName); // NOI18N
     }
     
+    public int addSymbolFile(String path, String addr) {
+        return engine.sendCommand("add-symbol-file " + path + " " + addr); // NOI18N
+    }
+    
     /** Attach to a running program */
     public int target_attach(CommandBuffer cb, String pid) {
 //        return engine.sendCommand("-target-attach " + pid); // NOI18N - no implementaion
