@@ -12,7 +12,6 @@
 		<tocitem text="About Ruby Development in the NetBeans IDE" target="nbruby_about_ruby" />
 		<tocitem text="Working With NetBeans Ruby" target="nbruby_ruby_quickref" />
 		<tocitem text="Ruby Editor Shortcut Keys and Code Templates" target="nbruby_editor_shortcuts_codetemplates" />
-		<tocitem text="Creating and Customizing Ruby Code Templates" target="create_customize_codetemplates" />
-		<tocitem text="Using Interactive Ruby (IRB)" target="nbruby_usingirb" />
+		<tocitem text="Creating and Customizing Ruby Code Templates" target="nbruby_create_customize_codetemplates" />
 	</tocitem>
 </toc>

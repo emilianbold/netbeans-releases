@@ -11,9 +11,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.POST;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Consumes;
 
 /**
  * REST Web Service
@@ -35,7 +35,7 @@ public class CI2CClass {
      * @return an instance of java.util.prefs.Preferences
      */
     @GET
-    @ProduceMime("text/plain")
+    @Produces("text/plain")
     public Preferences getText() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -47,8 +47,8 @@ public class CI2CClass {
      * @return an HTTP response with content of the created resource
      */
     @POST
-    @ConsumeMime("text/plain")
-    @ProduceMime("text/plain")
+    @Consumes("text/plain")
+    @Produces("text/plain")
     public Response postText(Preferences content) {
         //TODO
         return Response.created(context.getAbsolutePath()).build();

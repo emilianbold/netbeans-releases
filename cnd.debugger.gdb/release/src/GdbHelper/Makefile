@@ -84,7 +84,7 @@ endif
 
 testit :sh= uname -s
 
-all: check init dist/$(OSNAME)-$(PLATFORM)/GdbHelper-$(OSNAME)-$(PLATFORM).${SOEXT}
+all: check init dist/$(OSNAME)-$(PLATFORM)/GdbHelper-$(OSNAME)-$(PLATFORM).${SOEXT} dist/$(OSNAME)-$(PLATFORM)/unbuffer-$(OSNAME)-$(PLATFORM).${SOEXT}
 
 dist/$(OSNAME)-$(PLATFORM)/GdbHelper-$(OSNAME)-$(PLATFORM).${SOEXT}: \
 		build/$(OSNAME)-$(PLATFORM)/GdbHelper.o
@@ -92,7 +92,15 @@ dist/$(OSNAME)-$(PLATFORM)/GdbHelper-$(OSNAME)-$(PLATFORM).${SOEXT}: \
 		build/$(OSNAME)-$(PLATFORM)/GdbHelper.o
 
 build/$(OSNAME)-$(PLATFORM)/GdbHelper.o: GdbHelper.c
-	gcc ${CFLAGS} -o build/$(OSNAME)-$(PLATFORM)/GdbHelper.o GdbHelper.c 
+	gcc ${CFLAGS} -o build/$(OSNAME)-$(PLATFORM)/GdbHelper.o GdbHelper.c
+
+dist/$(OSNAME)-$(PLATFORM)/unbuffer-$(OSNAME)-$(PLATFORM).${SOEXT}: \
+		build/$(OSNAME)-$(PLATFORM)/unbuffer.o
+	gcc ${LDFLAGS} -o dist/$(OSNAME)-$(PLATFORM)/unbuffer-$(OSNAME)-$(PLATFORM).${SOEXT} \
+		build/$(OSNAME)-$(PLATFORM)/unbuffer.o
+
+build/$(OSNAME)-$(PLATFORM)/unbuffer.o: unbuffer.c
+	gcc ${CFLAGS} -o build/$(OSNAME)-$(PLATFORM)/unbuffer.o unbuffer.c 
 
 clean:
 	rm -rf build/$(OSNAME)-$(PLATFORM) dist/$(OSNAME)-$(PLATFORM)

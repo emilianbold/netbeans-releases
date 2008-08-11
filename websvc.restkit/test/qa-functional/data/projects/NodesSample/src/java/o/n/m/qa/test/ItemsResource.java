@@ -11,9 +11,9 @@ package o.n.m.qa.test;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ProduceMime;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
+import javax.ws.rs.Produces;
 
 /**
  * REST Web Service
@@ -35,7 +35,7 @@ public class ItemsResource {
      * @return an instance of java.lang.String
      */
     @GET
-    @ProduceMime("application/xml")
+    @Produces("application/xml")
     public String getXml() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();

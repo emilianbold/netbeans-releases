@@ -66,6 +66,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -774,8 +775,8 @@ public class HTMLCompletionQuery  {
 
             final BaseDocument doc = (BaseDocument) component.getDocument();
             final int dotPos = component.getCaretPosition();
-            final Reformat reformat = Reformat.get(doc);
-            reformat.lock();
+            final Indent indent = Indent.get(doc);
+            indent.lock();
 
             try {
                 doc.runAtomic(new Runnable() {
@@ -784,14 +785,14 @@ public class HTMLCompletionQuery  {
                         try {
                             int startOffset = Utilities.getRowStart(doc, dotPos);
                             int endOffset = Utilities.getRowEnd(doc, dotPos);
-                            reformat.reformat(startOffset, endOffset);
+                            indent.reindent(startOffset, endOffset);
                         } catch (BadLocationException ex) {
                             //ignore
                         }
                     }
                 });
             } finally {
-                reformat.unlock();
+                indent.unlock();
             }
 
         }

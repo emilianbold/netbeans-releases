@@ -207,8 +207,8 @@ public class SchemaView_0001 extends SchemaView {
 
       for( CImportClickData cli : aimpData )
       {
-        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
-        ExpandByClicks( jtTable, cli.row, cli.col, cli.count, cli.result, cli.error );
+        Sleep( 1000 );
+        ExpandByClicks( jtTable, cli.row, cli.col, cli.count, cli.result, cli.error, cli.timeout );
       }
 
       JButtonOperator jbOk = new JButtonOperator( jdImport, "OK" );
@@ -274,8 +274,8 @@ public class SchemaView_0001 extends SchemaView {
 
       for( CImportClickData cli : aincData )
       {
-        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
-        ExpandByClicks( jtTable, cli.row, cli.col, cli.count, cli.result, cli.error );
+        Sleep( 1000 );
+        ExpandByClicks( jtTable, cli.row, cli.col, cli.count, cli.result, cli.error, cli.timeout );
       }
 
       JButtonOperator jbOk = new JButtonOperator( jdInclude, "OK" );
@@ -343,8 +343,8 @@ public class SchemaView_0001 extends SchemaView {
 
       for( CImportClickData cli : aredData )
       {
-        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
-        ExpandByClicks( jtTable, cli.row, cli.col, cli.count, cli.result, cli.error );
+        Sleep( 1000 );
+        ExpandByClicks( jtTable, cli.row, cli.col, cli.count, cli.result, cli.error, cli.timeout );
       }
 
       JButtonOperator jbOk = new JButtonOperator( jdRedefine, "OK" );
