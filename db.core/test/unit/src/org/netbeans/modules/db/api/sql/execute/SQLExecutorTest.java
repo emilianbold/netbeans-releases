@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.api.sql.execute;
 
+import java.sql.SQLException;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -91,6 +92,14 @@ public class SQLExecutorTest extends TestBase {
     
     @Override
     public void tearDown() throws Exception {
+        try {
+            if (dbconn.getJDBCConnection() == null || dbconn.getJDBCConnection().isClosed()) {
+                return;
+            }
+        } catch (SQLException e) {
+            // do nothing
+        }
+        
         if (isMySQL()) {
             checkExecution(SQLExecutor.execute(dbconn, "DROP DATABASE IF EXISTS " + getSchema() +";"));
         } else {
@@ -101,7 +110,7 @@ public class SQLExecutorTest extends TestBase {
     private void createRentalTable() throws Exception {
         assertTrue(isMySQL());
 
-        String sql = "CREATE TABLE rental ( " +
+        String sql = "USE " + getSchema() + "; CREATE TABLE rental ( " +
           "rental_id INT NOT NULL AUTO_INCREMENT, " +
           "rental_date DATETIME NOT NULL, " +
           "inventory_id MEDIUMINT UNSIGNED NOT NULL, " +
@@ -172,7 +181,9 @@ public class SQLExecutorTest extends TestBase {
     }
 
     public void testPoundComment() throws Exception {
-        checkExecution(SQLExecutor.execute(dbconn, "#This is a comment\nSELECT * FROM TEST;"));
+        checkExecution(SQLExecutor.execute(dbconn, 
+                "#This is a comment\nSELECT * FROM TEST; #This is a comment at the end of the line\n" +
+                "SELECT * FROM TEST; # Another eol comment"));
     }
     
     private void checkExecution(SQLExecutionInfo info) throws Exception {
@@ -201,16 +212,16 @@ public class SQLExecutorTest extends TestBase {
             return;
         }
 
-        String sql = "DROP FUNCTION inventory_in_stock";
-        SQLExecutor.execute(dbconn, sql);
+       SQLExecutor.execute(dbconn, "DROP FUNCTION inventory_in_stock");
+       SQLExecutor.execute(dbconn, "DROP FUNCTION inventory_held_by_customer");
         
-        sql =
+       String sql =
             "DELIMITER $$\n" +
             "CREATE FUNCTION inventory_held_by_customer(p_inventory_id INT) RETURNS INT " +
             "READS SQL DATA " +
             "BEGIN " +
-              "DECLARE v_customer_id INT; " +
-              "DECLARE EXIT HANDLER FOR NOT FOUND RETURN NULL; " +
+              "DECLARE v_customer_id INT; # Testing comment in this context\n" +
+              "DECLARE EXIT HANDLER FOR NOT FOUND RETURN NULL; # Another comment\n" +
               "SELECT customer_id INTO v_customer_id " +
               "FROM rental " +
               "WHERE return_date IS NULL " +
@@ -218,14 +229,16 @@ public class SQLExecutorTest extends TestBase {
               "RETURN v_customer_id; " +
             "END $$ " +
             "DELIMITER ;\n" +
+
             "DELIMITER $$\n" +
             "CREATE FUNCTION inventory_in_stock(p_inventory_id INT) RETURNS BOOLEAN " +
             "READS SQL DATA " +
             "BEGIN " +
-            "    DECLARE v_rentals INT; " +
-            "    DECLARE v_out     INT; " +
-            "    #AN ITEM IS IN-STOCK IF THERE ARE EITHER NO ROWS IN THE rental TABLE " +
-            "    #FOR THE ITEM OR ALL ROWS HAVE return_date POPULATED " +
+            "    DECLARE v_rentals INT; #Testing comment in this context\n" +
+            "    DECLARE v_out     INT; #Another comment\n" +
+            
+            "    #AN ITEM IS IN-STOCK IF THERE ARE EITHER NO ROWS IN THE rental TABLE\n" +
+            "    #FOR THE ITEM OR ALL ROWS HAVE return_date POPULATED\n" +
             "    SELECT COUNT(*) INTO v_rentals " +
             "    FROM rental " +
             "    WHERE inventory_id = p_inventory_id; " +
@@ -243,9 +256,7 @@ public class SQLExecutorTest extends TestBase {
             "    END IF; " +
             "END";
 
-        SQLExecutor.execute(dbconn, sql);
-        //SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
-        //checkExecution(info);
+        checkExecution(SQLExecutor.execute(dbconn, sql));
     }
 
 }
