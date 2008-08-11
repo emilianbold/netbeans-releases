@@ -755,12 +755,14 @@ public class ZoomManager implements Scene.SceneListener
             KeyStroke[] additionalKeystrokes = 
             {
                  KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK),
+                 KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.CTRL_MASK),
                  KeyStroke.getKeyStroke(KeyEvent.VK_ADD, KeyEvent.CTRL_MASK)
             };
             
             KeyStroke[] additionalMacKeystrokes = 
             {
                  KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK),
+                 KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.META_MASK),
                  KeyStroke.getKeyStroke(KeyEvent.VK_ADD, KeyEvent.CTRL_MASK)
             };          
 
