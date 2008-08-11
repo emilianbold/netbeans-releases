@@ -321,31 +321,35 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
     
     public LocalVariable[] getMethodArguments() {
-        StackFrame sf = getStackFrame();
-        String url = debugger.getEngineContext().getURL(sf,
-                                                        getDefaultStratum());
-        List<Value> argValues = getArgumentValues(sf);
-        if (argValues == null) return null;
-        MethodArgument[] argumentNames = EditorContextBridge.getContext().getArguments(url, sf.location().lineNumber());
-        if (argumentNames == null) return null;
-        LocalVariable[] arguments = new LocalVariable[argumentNames.length];
-        for (int i = 0; i < arguments.length; i++) {
-            com.sun.jdi.Value value = argValues.get(i);
-            if (value instanceof ObjectReference) {
-                arguments[i] =
-                        new ArgumentObjectVariable(debugger,
-                                             (ObjectReference) value,
-                                             argumentNames[i].getName(),
-                                             argumentNames[i].getType());
-            } else {
-                arguments[i] =
-                        new ArgumentVariable(debugger,
-                                             (PrimitiveValue) value,
-                                             argumentNames[i].getName(),
-                                             argumentNames[i].getType());
+        try {
+            StackFrame sf = getStackFrame();
+            String url = debugger.getEngineContext().getURL(sf,
+                                                            getDefaultStratum());
+            List<Value> argValues = getArgumentValues(sf);
+            if (argValues == null) return null;
+            MethodArgument[] argumentNames = EditorContextBridge.getContext().getArguments(url, sf.location().lineNumber());
+            if (argumentNames == null) return null;
+            LocalVariable[] arguments = new LocalVariable[argumentNames.length];
+            for (int i = 0; i < arguments.length; i++) {
+                com.sun.jdi.Value value = argValues.get(i);
+                if (value instanceof ObjectReference) {
+                    arguments[i] =
+                            new ArgumentObjectVariable(debugger,
+                                                 (ObjectReference) value,
+                                                 argumentNames[i].getName(),
+                                                 argumentNames[i].getType());
+                } else {
+                    arguments[i] =
+                            new ArgumentVariable(debugger,
+                                                 (PrimitiveValue) value,
+                                                 argumentNames[i].getName(),
+                                                 argumentNames[i].getType());
+                }
             }
+            return arguments;
+        } catch (InvalidStackFrameException e) {
+            return new LocalVariable[0];
         }
-        return arguments;
     }
     
     List<LocalVariable> findOperationArguments(Operation operation) {

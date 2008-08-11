@@ -167,17 +167,16 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         lblHintTextToFind.setMinimumSize(new Dimension(0, 0));
         
         JLabel lblReplacement;
-        JLabel lblDummyReplacement;
 	if (searchAndReplace) {
             lblReplacement = new JLabel();
             cboxReplacement = new JComboBox();
             cboxReplacement.getAccessibleContext().setAccessibleDescription(getText("BasicSearchForm.cbox.Replacement.AccessibleDescription"));
             lblReplacement.setLabelFor(cboxReplacement);
-            lblDummyReplacement = new JLabel();
+            lblWarningBackref = new JLabel();
 	} else {
             lblReplacement = null;
             cboxReplacement = null;
-            lblDummyReplacement = null;
+            lblWarningBackref = null;
         }
         
         JLabel lblFileNamePattern = new JLabel();
@@ -201,9 +200,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             Mnemonics.setLocalizedText(
                     lblReplacement,
                     getText("BasicSearchForm.lblReplacement.text"));        //NOI18N
-            lblDummyReplacement.setText("dummy");                           //NOI18N
-            lblDummyReplacement.setForeground(SystemColor.textInactiveText);
-            lblDummyReplacement.setVisible(false);
+            Mnemonics.setLocalizedText(
+                    lblWarningBackref,
+                    getText("BasicSearchForm.lblHintReplacement.text"));
+            lblWarningBackref.setForeground(SystemColor.textInactiveText);
             cboxReplacement.setEditable(true);
         }
 
@@ -263,7 +263,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                         .addPreferredGap(RELATED)
                         .add(createParallelGroup(criteriaPanelLayout, LEADING,
                                                  lblHintFileNamePattern,
-                                                 lblDummyReplacement,
+                                                 lblWarningBackref,
                                                  lblHintTextToFind,
                                                  cboxTextToFind,
                                                  cboxReplacement,
@@ -289,7 +289,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                                               DEFAULT_SIZE,
                                               PREFERRED_SIZE))
                     .addPreferredGap(RELATED)
-                    .add(lblDummyReplacement);
+                    .add(lblWarningBackref);
         }
         seqGroup.addPreferredGap(UNRELATED)
                 .add(criteriaPanelLayout.createParallelGroup(BASELINE)
@@ -430,6 +430,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 } else {
                     assert sourceComboBox == cboxReplacement;
                     searchCriteria.setReplaceString(text);
+                    updateWarningBackrefState();
                 }
             }
         }
@@ -466,6 +467,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         boolean regexp = chkRegexp.isSelected();
         chkCaseSensitive.setEnabled(!regexp);
         chkWholeWords.setEnabled(!regexp);
+        updateWarningBackrefState();
 
         searchCriteria.setUsabilityChangeListener(this);
     }
@@ -565,6 +567,39 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                                        : defaultTextColor);
         }
     }
+
+    private void updateWarningBackrefState() {
+        boolean visible;
+        try {
+            visible = chkRegexp.isSelected()
+                     && isBackrefSyntaxUsed(replacementPatternEditor.getText());
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+            visible = false;
+        }
+        lblWarningBackref.setVisible(visible);
+    }
+
+    private static boolean isBackrefSyntaxUsed(String text) {
+        final int len = text.length();
+        if (len < 2) {
+            return false;
+        }
+        String textToSearch = text.substring(0, len - 1);
+        int startIndex = 0;
+        int index;
+        while ((index = textToSearch.indexOf('\\', startIndex)) != -1) {
+            char c = text.charAt(index + 1);
+            if (c == '\\') {
+                startIndex = index + 1;
+            } else if ((c >= '0') && (c <= '9')) {
+                return true;
+            } else {
+                startIndex = index + 2;
+            }
+        }
+        return false;
+    }
     
     private Color getErrorTextColor() {
         if (errorTextColor == null) {
@@ -601,6 +636,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             chkCaseSensitive.setEnabled(!selected);
             chkWholeWords.setEnabled(!selected);
             lblHintTextToFind.setVisible(!selected);
+            updateWarningBackrefState();
         } else if (toggle == chkCaseSensitive) {
             searchCriteria.setCaseSensitive(selected);
         } else if (toggle == chkWholeWords) {
@@ -1001,6 +1037,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private JTextComponent fileNamePatternEditor;
     private JTextComponent replacementPatternEditor;
     private JLabel lblHintTextToFind;
+    private JLabel lblWarningBackref;
     
     private Color errorTextColor, defaultTextColor;
     private boolean invalidTextPattern = false;

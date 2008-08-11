@@ -12,7 +12,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
@@ -32,20 +32,20 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="mainClassTextField" pref="289" max="32767" attributes="2"/>
+                      <Component id="mainClassTextField" pref="319" max="32767" attributes="2"/>
                       <EmptySpace min="74" pref="74" max="74" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jTextFieldContextPath" pref="289" max="32767" attributes="2"/>
+                      <Component id="jTextFieldContextPath" pref="319" max="32767" attributes="2"/>
                       <EmptySpace min="74" pref="74" max="74" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="serverInstanceComboBox" pref="308" max="32767" attributes="0"/>
+                      <Component id="serverInstanceComboBox" pref="324" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="addServerButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="serverLibraryCheckbox" pref="289" max="32767" attributes="2"/>
+                      <Component id="serverLibraryCheckbox" pref="319" max="32767" attributes="2"/>
                       <EmptySpace min="74" pref="74" max="74" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -56,7 +56,7 @@
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="mainClassLabel" min="-2" pref="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="405" max="32767" attributes="0"/>
+              <EmptySpace pref="423" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="1" attributes="0">
@@ -69,10 +69,10 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jTextFieldEjbModuleName" alignment="0" pref="156" max="32767" attributes="2"/>
-                  <Component id="jTextFieldWebAppName" alignment="0" pref="156" max="32767" attributes="2"/>
-                  <Component id="jTextFieldCarName" alignment="0" pref="156" max="32767" attributes="2"/>
-                  <Component id="mainClassTextFieldWithinEar" alignment="0" pref="156" max="32767" attributes="0"/>
+                  <Component id="jTextFieldEjbModuleName" alignment="0" pref="214" max="32767" attributes="2"/>
+                  <Component id="jTextFieldWebAppName" alignment="0" pref="214" max="32767" attributes="2"/>
+                  <Component id="jTextFieldCarName" alignment="0" pref="214" max="32767" attributes="2"/>
+                  <Component id="mainClassTextFieldWithinEar" alignment="0" pref="214" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="74" max="-2" attributes="0"/>
           </Group>
@@ -80,7 +80,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabelEnterprise" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jComboBoxEnterprise" pref="276" max="32767" attributes="0"/>
+              <Component id="jComboBoxEnterprise" pref="330" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -145,9 +145,6 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLabelEnterprise">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_AddToEnterprise_LabelMnemonic" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="jComboBoxEnterprise"/>
         </Property>
@@ -170,9 +167,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="serverInstanceLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_Server_LabelMnemonic" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="serverInstanceComboBox"/>
         </Property>
@@ -227,9 +221,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="j2eeSpecLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_J2EESpecLevel_CheckBoxMnemonic" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="j2eeSpecComboBox"/>
         </Property>
@@ -255,9 +246,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabelContextPath">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/j2ee/common/project/ui/Bundle.properties" key="LBL_NWP1_ContextPath_CheckBoxMnemonic" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="jTextFieldContextPath"/>
         </Property>

@@ -63,6 +63,7 @@ import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.NbJSDebuggerConstants;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
+import org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil;
 import org.netbeans.modules.web.client.tools.common.dbgp.Feature;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLContentProvider;
 //import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLContentProviderImpl;
@@ -82,6 +83,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSBreakpointImpl;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSFactory;
 import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSDebuggerFactory;
 import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSDebuggerFactoryLookup;
 import org.netbeans.modules.web.client.javascript.debugger.models.NbJSPreferences;
@@ -105,6 +107,7 @@ import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -196,6 +199,7 @@ public final class NbJSDebugger {
                 } catch (RuntimeException re) {
                     Log.getLogger().log(Level.INFO, re.getMessage(), re);
                 }
+                openEditorsForWindows();
             }
         }
     }
@@ -467,7 +471,7 @@ public final class NbJSDebugger {
         }
     }
 
-    private void setBreakpoint(NbJSBreakpoint bp) {
+    private void setBreakpoint(final NbJSBreakpoint bp) {
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
         if (bpImpl != null) {
             return;
@@ -498,13 +502,17 @@ public final class NbJSDebugger {
                 condition = "";
             }
             bpImpl.setCondition(condition);
-
-            String bpId = debugger.setBreakpoint(bpImpl);
-            if (bpId != null) {
-                bpImpl.setId(bpId);
-                breakpointsMap.put(bp, bpImpl);
-                bp.addPropertyChangeListener(WeakListeners.propertyChange(breakpointPropertyChangeListener, bp));
-            }
+            final JSBreakpointImpl tmpBreakpointImp = bpImpl;
+            RequestProcessor.getDefault().post(new Runnable () {
+                public void run() {
+                    String bpId = debugger.setBreakpoint(tmpBreakpointImp);
+                    if (bpId != null) {
+                        tmpBreakpointImp.setId(bpId);
+                        breakpointsMap.put(bp, tmpBreakpointImp);
+                        bp.addPropertyChangeListener(WeakListeners.propertyChange(breakpointPropertyChangeListener, bp));
+                    }
+                }
+            });
         }
     }
 
@@ -564,7 +572,7 @@ public final class NbJSDebugger {
         if (debugger != null) {
             return debugger.getWindows();
         }
-        return new JSWindow[0];
+        return JSWindow.EMPTY_ARRAY;
     }
 
     // Sources
@@ -745,5 +753,15 @@ public final class NbJSDebugger {
      */
     public URI getURI() {
         return uri;
+    }
+    
+    private void openEditorsForWindows() {
+        JSWindow[] windows = getWindows();
+        // Now open the editor for top level windows
+        for (JSWindow window : windows) {
+            String strURI = window.getURI();
+            JSSource source = JSFactory.createJSSource(strURI);
+            NbJSEditorUtil.openFileObject(getFileObjectForSource(source)); 
+        }
     }
 }

@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Method;
@@ -372,22 +373,23 @@ public class JPDADebuggerImpl extends JPDADebugger {
             // 2) pop obsoleted frames
             JPDAThread t = getCurrentThread ();
             if (t != null && t.isSuspended()) {
-                CallStackFrame frame = getCurrentCallStackFrame ();
-
-                //PATCH #52209
-                if (t.getStackDepth () < 2 && frame.isObsolete()) return;
                 try {
-                    if (!frame.equals (t.getCallStack (0, 1) [0])) return;
-                } catch (AbsentInformationException ex) {
-                    return;
-                }
+                    if (t.getStackDepth () < 2) return;
+                    CallStackFrame frame;
+                    try {
+                        frame = t.getCallStack(0, 1)[0]; // Retrieve the new, possibly obsoleted frame and check it.
+                    } catch (AbsentInformationException ex) {
+                        return;
+                    }
 
-                //PATCH #52209
-                if (frame.isObsolete () && ((CallStackFrameImpl) frame).canPop()) {
-                    frame.popFrame ();
-                    setState (STATE_RUNNING);
-                    updateCurrentCallStackFrame (t);
-                    setState (STATE_STOPPED);
+                    //PATCH #52209
+                    if (frame.isObsolete () && ((CallStackFrameImpl) frame).canPop()) {
+                        frame.popFrame ();
+                        setState (STATE_RUNNING);
+                        updateCurrentCallStackFrame (t);
+                        setState (STATE_STOPPED);
+                    }
+                } catch (InvalidStackFrameException e) {
                 }
             }
             
@@ -818,9 +820,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 iee.initCause (e);
                 throw iee;
             } catch (IncompatibleThreadStateException itsex) {
-                ErrorManager.getDefault().notify(itsex);
                 IllegalStateException isex = new IllegalStateException(itsex.getLocalizedMessage());
                 isex.initCause(itsex);
+                throw isex;
+            } catch (InternalException e) {
+                IllegalStateException isex = new IllegalStateException(e.getLocalizedMessage());
+                isex.initCause(e);
                 throw isex;
             } catch (RuntimeException rex) {
                 Throwable cause = rex.getCause();
@@ -854,7 +859,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Value[] arguments
     ) throws InvalidExpressionException {
         synchronized (currentThreadAndFrameLock) {
-            if (currentThread == null)
+            if (thread == null && currentThread == null)
                 throw new InvalidExpressionException
                         (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
         }
@@ -888,14 +893,18 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     throw new InvalidExpressionException (pvex.getMessage());
                 }
                 l = disableAllBreakpoints ();
-                return org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
-                    invokeVirtual (
-                        reference,
-                        method,
-                        tr,
-                        Arrays.asList (arguments),
-                        this
-                    );
+                try {
+                    return org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
+                        invokeVirtual (
+                            reference,
+                            method,
+                            tr,
+                            Arrays.asList (arguments),
+                            this
+                        );
+                } catch (InternalException e) {
+                    throw new InvalidExpressionException (e.getLocalizedMessage());
+                }
             } catch (InvalidExpressionException ieex) {
                 if (ieex.getTargetException() instanceof UnsupportedOperationException) {
                     methodCallsUnsupportedExc = ieex;
@@ -1633,7 +1642,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     javaEngineProvider.getSession ().setCurrentLanguage (stratum);
                 lastStratumn = stratum;
             } catch (AbsentInformationException e) {
-                System.out.println("NoInformationException");
             }
     }
  

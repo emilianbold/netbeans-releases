@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -212,7 +213,8 @@ public class ExplorerManagerTest extends NbTestCase
         Node[] arr = em.getSelectedNodes();
         assertEquals("No nodes can be selected", 0, arr.length);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1110
     public void testGarbageCollectOfExploreredContextIssue124712() throws Exception {
         class K extends Children.Keys<String> {
             public void keys(String... keys) {

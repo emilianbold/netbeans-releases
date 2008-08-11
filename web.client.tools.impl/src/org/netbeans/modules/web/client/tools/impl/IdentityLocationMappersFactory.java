@@ -42,8 +42,8 @@ package org.netbeans.modules.web.client.tools.impl;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSFileObjectLocation;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 import org.netbeans.modules.web.client.tools.api.JSLocation;
@@ -149,7 +149,13 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
         }
 
         FileObject uriToFO(URI hostUri) {
-            String urlPath = externalFormWithoutQuery(hostUri);
+            String urlPath;
+            try {
+                urlPath = hostUri.toURL().toExternalForm();
+            } catch (MalformedURLException mue) {
+                Log.getLogger().log(Level.INFO, "URI mapping failed due to URI->URL conversion", mue);
+                urlPath = null;
+            }
 
             if (urlPath != null && urlPath.startsWith(serverPrefix)) {
                 String relativePath = urlPath.substring(serverPrefix.length());
@@ -174,44 +180,6 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
                 return null;
             }
         }
-    
-        private String externalFormWithoutQuery(URI uri) {
-            try {
-                URL u = uri.toURL();
-
-                if (u == null) {
-                    return "";
-                // compute length of StringBuffer
-                }
-                int len = u.getProtocol().length() + 1;
-                if (u.getAuthority() != null && u.getAuthority().length() > 0) {
-                    len += 2 + u.getAuthority().length();
-                }
-                if (u.getPath() != null) {
-                    len += u.getPath().length();
-                }
-                if (u.getQuery() != null) {
-                    len += 1 + u.getQuery().length();
-                }
-                if (u.getRef() != null) {
-                    len += 1 + u.getRef().length();
-                }
-                StringBuffer result = new StringBuffer(len);
-                result.append(u.getProtocol());
-                result.append(":");
-                if (u.getAuthority() != null && u.getAuthority().length() > 0) {
-                    result.append("//");
-                    result.append(u.getAuthority());
-                }
-                if (u.getPath() != null) {
-                    result.append(u.getPath());
-                }
-
-                return result.toString();
-            } catch (MalformedURLException ex) {
-                return null;
-            }
-        }        
     }
     
     private static final class NbJSToJSLocationMapperImpl implements NbJSToJSLocationMapper {

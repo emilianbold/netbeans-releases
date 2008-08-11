@@ -261,7 +261,6 @@ public:
         return state;
     }
 private:
-    CComPtr<IRemoteDebugApplication> m_spRemoteDebugApplication;
     DWORD m_dwRemoteDebugAppCookie, m_dwRemoteDebugAppThreadCookie, m_dwDebugAppCookie;
     DWORD m_dwThreadID;
     static BOOL isCurrentprocessThread(DWORD threadId);
@@ -280,15 +279,13 @@ private:
     DbgpConnection *m_pDbgpConnection;
     void getTopStackFrame(IRemoteDebugApplicationThread *pDebugAppThread, StackFrame *pStackFrame);
     void getTopStackFrame(StackFrame *pStackFrame);
-    void getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, StackFrame *pStackFrame);
+    BOOL getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, StackFrame *pStackFrame);
     void resume(BREAKRESUMEACTION resumeAction);
     State state;
     map<State, tstring> statesMap;
     IDebugProperty *resolveProperty(IDebugProperty *pDebugProperty, tstring relativeName);
     Property *getProperty(IDebugProperty *pDebugProperty, tstring name, int stackDepth, BOOL recurse=FALSE);
     IDebugProperty *getChildDebugProperty(IDebugProperty *pDebugProperty, tstring name);
-    //Property locals;
-    //map<tstring, DebugPropertyInfo *> propertyMap;
     BOOL getStackFrameDescriptor(int stackDepth, DebugStackFrameDescriptor *pDescriptor);
     HANDLE m_hDebugExprCallBackEvent;
     IDebugProperty *evalToDebugProperty(tstring expression, int stackDepth);

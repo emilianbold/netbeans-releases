@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 
         <title>New Database Connection Dialog Box</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-    </head>
+</head>
 
     <body>
         <h2>New Database Connection Dialog Box</h2>
@@ -60,48 +60,49 @@ made subject to such option by the copyright holder.
         </ul>
 
         <p>When you create a database connection, you supply the details needed to connect to a specific database.
-        You need to supply the following database connection details.</p>
+        Depending on the database driver you are using, you need to supply some or all of the following database connection details. </p>
             <ul>
                 <li><b>Name.</b> Choose the registered JDBC driver from the drop-down list.
                 The drop-down list only contains drivers registered with the IDE. 
                 If your driver is not listed, you need to <a href="adddriver.html">add the JDBC driver</a> before
                 you can connect to the database.</li>
+                <li><strong>Host.</strong> Type the host for the database. Use <tt>localhost</tt> if the database is located on a local machine.</li>
+                <li><strong>Port.</strong> Type the post to be used by the database connection.</li>
+                <li>Database. Type the name of the database.</li>
                 <li><b>Driver.</b> This field is automatically supplied based on the selected registered driver.</li>
-                <li><b>Database URL.</b> Type the JDBC database URL for the database connection. 
-                <p>This URL typically begins with <tt>jdbc:</tt>and a short code name 
-                for the driver, followed by another colon. The rest of the URL depends on 
-                the type of driver you are using. For example, you might need to specify 
-                a host and port; alternatively, the name of a database file might suffice, 
-                or an ODBC DSN. For MySQL, the Database URL might look as follows:
-                <pre>jdbc:mysql://localhost:3306/mydatabase</pre>
-                To help you get started, the IDE provides templates for the correct URL format for
-                the most common drivers. If in doubt, refer to the documentation 
-                for the driver that you are using. </p></li>
-                <li><b>User Name.</b> Type user name for the database.</li>
+                  <li><b>User Name.</b> Type user name for the database.</li>
                 <li><b>Password.</b> Type the password for the database.</li>
-                <li><b>Remember Password.</b> Select this if you want the IDE to remember your password. 
-                  <p>If selected, you will not be prompted for the user name and password on subsequent connections to the database
-                and the Remember Password property is set to True.</p> 
-                <p>To set the Remember Password property to False, right-click the database connection node
-                in the Services window and choose Properties and modify the property in the Properties window.</p></li>
-            </ul>
-        <ul class="note">
+                <li><b>Remember Password.</b> Select this if you want the IDE to remember your password.
+                 If selected, you will not be prompted for the user name and password on subsequent connections to the database
+                  and the Remember Password property is set to True.
+                 To set the Remember Password property to False, right-click the database connection node
+                  in the Services window and choose Properties and modify the property in the Properties window.
+                <ul class="note">
             <li>Storing a password represents a potential security risk.
             Connection passwords are stored in an xml file in the <tt>config/Databases/Connections</tt> directory in the IDE user dir.
             Passwords are scrambled but they are not encrypted.
-            <p>For more about securing database passwords, see the following NetBeans FAQ:<p>
+            For more about securing database passwords, see the following NetBeans FAQ:<p>
                 <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                 <param name="content" value="http://wiki.netbeans.org/wiki/view/FaqSecuringDBConnectionPasswords">
                 <param name="text" value="<html><u>How do I secure my database password?</u></html>">
                 <param name="textFontSize" value="medium">
                 <param name="textColor" value="blue">
-                </object></p>
+                </object>
             </li>
-        </ul>
+        </ul></li>
+            <li><b>Show JDBC URL.</b> When you select this checkbox, the IDE displays the JDBC URL in the text field. This can be useful for identifying the database connection. Ths URL resembles ths following URL:
+              <p><pre>jdbc:mysql://localhost:3306/mydatabase</pre></p>
+              </li>
+            </ul>
+            
+                 
+                </li>
+                
 
 
 
-        <dl>
+
+<dl>
                 <dt><a name="seealso">See Also</a></dt>
                 <dd><a href="connectdb.html">Connecting to a Database</a></dd>
                 <dd><a href="adddriver.html">Adding a JDBC Driver</a></dd>

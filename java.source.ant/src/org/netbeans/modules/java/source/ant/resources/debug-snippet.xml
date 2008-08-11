@@ -67,16 +67,21 @@ made subject to such option by the copyright holder.
         <property name="run.jvmargs" value="" />
         <property name="work.dir" value="${basedir}"/>
         <property name="application.args" value="" />
-        <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="${debug-transport}" listeningcp="${classpath}">
+        <property name="stopclassname" value="" />
+        <nbjpdastart addressproperty="jpda.address" name="${classname}" transport="${debug-transport}" listeningcp="${classpath}" stopclassname="${stopclassname}">
             <classpath>
                 <path path="${classpath-translated}"/>
             </classpath>
         </nbjpdastart>
-        <java classpath="${classpath-translated}" classname="${classname}" dir="${work.dir}">
+        <java classpath="${classpath-translated}" classname="${classname}" dir="${work.dir}" jvm="${platform.java}" fork="true">
             <jvmarg line="${debug-args-line}"/>
             <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <jvmarg line="${run.jvmargs}" />
             <arg line="${application.args}" />
+            <syspropertyset>
+                <propertyref prefix="run-sys-prop."/>
+                <mapper from="run-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
         </java>
     </target>
 </project>

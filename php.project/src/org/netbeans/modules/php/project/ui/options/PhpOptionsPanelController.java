@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.ui.options;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -50,6 +51,7 @@ import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -65,9 +67,11 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
     private static final String TAB_FOLDER = "org.netbeans.modules.php/options/"; // NOI18N
     private final PhpOptionsPanel phpOptionsPanel = new PhpOptionsPanel();
     private final Collection<? extends AdvancedOption> options;
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     // @GuardedBy(this)
     private Map<OptionsPanelController, AdvancedOption> controllers2Options;
     private JTabbedPane pane;
+    private boolean changed;
 
     public PhpOptionsPanelController() {
         options = Lookups.forPath(TAB_FOLDER).lookupAll(AdvancedOption.class);
@@ -103,6 +107,8 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
         phpOptionsPanel.setDebuggerPort(getPhpOptions().getDebuggerPort());
         phpOptionsPanel.setDebuggerStoppedAtTheFirstLine(getPhpOptions().isDebuggerStoppedAtTheFirstLine());
+
+        changed = false;
     }
 
     @Override
@@ -120,6 +126,8 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         getPhpOptions().setDebuggerStoppedAtTheFirstLine(phpOptionsPanel.isDebuggerStoppedAtTheFirstLine());
 
         getPhpOptions().setPhpGlobalIncludePath(phpOptionsPanel.getPhpGlobalIncludePath());
+
+        changed = false;
     }
 
     @Override
@@ -198,12 +206,12 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
-        // what this method is for??? javadoc is really poor...
+        propertyChangeSupport.addPropertyChangeListener(l);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
-        // what this method is for??? javadoc is really poor...
+        propertyChangeSupport.removePropertyChangeListener(l);
     }
 
     private PhpOptions getPhpOptions() {
@@ -211,25 +219,14 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
     }
 
     public void stateChanged(ChangeEvent e) {
-        validateComponent();
+        changed();
     }
 
     private boolean validateComponent() {
-        String phpInterpreter = phpOptionsPanel.getPhpInterpreter();
-        if (phpInterpreter.length() > 0) {
-            File file = new File(phpInterpreter);
-            if (!file.isAbsolute()) {
-                phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_PhpNotAbsolutePath"));
-                return false;
-            }
-            if (!file.isFile()) {
-                phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_PhpNotFile"));
-                return false;
-            }
-            if (!file.canRead()) {
-                phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_PhpCannotRead"));
-                return false;
-            }
+        String err = Utils.validatePhpInterpreter(phpOptionsPanel.getPhpInterpreter());
+        if (err != null) {
+            phpOptionsPanel.setError(err);
+            return false;
         }
         Integer debuggerPort = phpOptionsPanel.getDebuggerPort();
         if (debuggerPort == null || debuggerPort < 1) {
@@ -239,5 +236,13 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
         // everything ok
         phpOptionsPanel.setError(" "); // NOI18N
         return true;
+    }
+
+    private void changed() {
+        if (!changed) {
+            changed = true;
+            propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+        }
+        propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
 }

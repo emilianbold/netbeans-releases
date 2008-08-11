@@ -193,11 +193,12 @@ public class SaasServicesModel {
         if (Saas.NS_WADL.equals(jaxbServiceObject.getType())) {
             return new WadlSaas(parent, jaxbServiceObject);
         } else if (Saas.NS_WSDL.equals(jaxbServiceObject.getType())) {
-            return new WsdlSaas(parent, jaxbServiceObject);
+            if (WsdlUtil.hasWsdlSupport())
+                return new WsdlSaas(parent, jaxbServiceObject);
         } else {
             return new CustomSaas(parent, jaxbServiceObject); //custom
-
         }
+        return null;
     }
 
     private void loadSaasServiceFile(FileObject saasFile, boolean userDefined) {
@@ -209,8 +210,10 @@ public class SaasServicesModel {
             Saas service = null;
             if (g == null || g.getName() == null || g.getName().trim().length() == 0) {
                 service = createService(parent, ss);
-                service.setUserDefined(userDefined);
-                parent.addService(service);
+                if(service != null) {
+                    service.setUserDefined(userDefined);
+                    parent.addService(service);
+                }
             } else {
                 while (g != null) {
                     SaasGroup child = parent.getChildGroup(g.getName());
@@ -223,8 +226,10 @@ public class SaasServicesModel {
 
                     if (g.getGroup().size() == 0) {
                         service = createService(child, ss);
-                        service.setUserDefined(userDefined);
-                        child.addService(service);
+                        if(service != null) {
+                            service.setUserDefined(userDefined);
+                            child.addService(service);
+                        }
                         break;
                     } else {
                         // 'group' element part of straight path, has only single child
@@ -234,8 +239,8 @@ public class SaasServicesModel {
                     }
                 }
             }
-
-            service.upgrade();
+            if(service != null)
+                service.upgrade();
         } catch (Exception ex) {
             Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Error loading saas file: " + saasFile.getPath()));
         }

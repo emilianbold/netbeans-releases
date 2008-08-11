@@ -39,15 +39,16 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -59,173 +60,13 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
  */
 public class ModelUtils {
 
-    private interface Validator {
-
-        boolean validate(CsmReference ref);
-    }
-
-    private interface Validator2 {
-
-        boolean validate(CsmReference ref, CsmFile csmFile);
-    }
-
-    // Singleton
-    private static class Instantiator {
-
-        private static final Map<CsmFile, List<CsmReference>[]> map = new WeakHashMap<CsmFile, List<CsmReference>[]>();
-        private static Validator2[] validators = {
-            // 0 - fields
-            new Validator2() {
-
-                public boolean validate(CsmReference ref, CsmFile csmFile) {
-                    CsmObject obj = ref.getReferencedObject();
-                    return obj != null && CsmKindUtilities.isField(obj);
+    /*package*/ static List<? extends CsmOffsetable> collect(final CsmFile csmFile, final ReferenceCollector collector) {
+        CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
+                public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
+                    collector.visit(ref, csmFile);
                 }
-            },
-            // 1 - typedefs
-            new Validator2() {
-
-                public boolean validate(CsmReference ref, CsmFile csmFile) {
-                    CsmObject obj = ref.getReferencedObject();
-                    return obj != null && CsmKindUtilities.isTypedef(obj);
-                }
-            },
-            // 2- function names
-            new Validator2() {
-
-                public boolean validate(CsmReference ref, CsmFile csmFile) {
-                    CsmObject csmObject = ref.getReferencedObject();
-                    if (CsmKindUtilities.isFunctionDeclaration(csmObject)) {
-                        // check if we are in the function declaration
-                        CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) csmObject;
-                        if (decl.getContainingFile().equals(csmFile) &&
-                                decl.getStartOffset() <= ref.getStartOffset() &&
-                                decl.getEndOffset() >= ref.getEndOffset()) {
-                            return true;
-                        }
-                        // check if we are in function definition name => go to declaration
-                        // else it is more useful to jump to definition of function
-                        CsmFunctionDefinition definition = ((CsmFunction) csmObject).getDefinition();
-                        if (definition != null) {
-                            if (csmFile.equals(definition.getContainingFile()) &&
-                                    definition.getStartOffset() <= ref.getStartOffset() &&
-                                    ref.getStartOffset() <= definition.getBody().getStartOffset()) {
-                                // it is ok to jump to declaration
-                                return true;
-                            }
-                        }
-                    } else if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
-                        CsmFunctionDefinition definition = (CsmFunctionDefinition) csmObject;
-                        if (csmFile.equals(definition.getContainingFile()) &&
-                                definition.getStartOffset() <= ref.getStartOffset() &&
-                                ref.getStartOffset() <= definition.getBody().getStartOffset()) {
-                            // it is ok to jump to declaration
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            }
-        };
-    }
-
-    // null==lists[idxToCheck] means we already used this storage, so we recreate it
-    @SuppressWarnings("unchecked")
-    public static List<CsmReference>[] getStorage(CsmFile csmFile, int idxToCheck) {
-        List<CsmReference>[] lists = Instantiator.map.get(csmFile);
-        synchronized(Instantiator.map) {
-            if (lists == null || lists[idxToCheck] == null) {
-                lists = new List/*<CsmReference>*/[Instantiator.validators.length];
-                Instantiator.map.put(csmFile, lists);
-            }
-        }
-        return lists;
-    }
-
-    private static List<CsmReference> getBlocksFromReferences(CsmFile file, final Validator validator) {
-        final List<CsmReference> out = new ArrayList<CsmReference>();
-        CsmFileReferences.getDefault().accept(file,
-                new CsmFileReferences.Visitor() {
-                    public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
-                        if (validator.validate(ref)) {
-                            out.add(ref);
-                        }
-                    }
-                });
-        return out;
-    }
-
-    private static List<CsmReference> getBlocksFromReferences2(final CsmFile csmFile, final int idx) {
-        final List<CsmReference>[] lists = getStorage(csmFile, idx);
-        if (lists[idx] == null) {
-            for(int i = 0; i < Instantiator.validators.length; i++) {
-                lists[i] = new ArrayList<CsmReference>();
-            }
-            CsmFileReferences.getDefault().accept(csmFile,
-                    new CsmFileReferences.Visitor() {
-                        public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
-                            for (int i = 0; i <Instantiator.validators.length; i++) {
-                                if (Instantiator.validators[i].validate(ref, csmFile)) {
-                                    lists[i].add(ref);
-                                }
-                            }
-                        }
-                    });
-        }
-        List<CsmReference> result = lists[idx];
-        lists[idx] = null; // this data was valid only once
-        return result;
-    }
-
-    // Data Providers
-    /*package*/ static List<? extends CsmOffsetable> getFieldsBlocks(CsmFile file) {
-        //return getBlocksFromReferences2(file, 0);
-        return getBlocksFromReferences(file, new Validator() {
-
-            public boolean validate(CsmReference ref) {
-                CsmObject obj = ref.getReferencedObject();
-                return obj != null && CsmKindUtilities.isField(obj);
-            }
         });
-    }
-
-    /*package*/ static List<CsmReference> getFunctionNames(final CsmFile csmFile) {
-        //return getBlocksFromReferences2(csmFile, 2);
-        return getBlocksFromReferences(csmFile, new Validator() {
-
-            public boolean validate(CsmReference ref) {
-                CsmObject csmObject = ref.getReferencedObject();
-                if (CsmKindUtilities.isFunctionDeclaration(csmObject)) {
-                    // check if we are in the function declaration
-                    CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) csmObject;
-                    if (decl.getContainingFile().equals(csmFile) &&
-                            decl.getStartOffset() <= ref.getStartOffset() &&
-                            decl.getEndOffset() >= ref.getEndOffset()) {
-                        return true;
-                    }
-                    // check if we are in function definition name => go to declaration
-                    // else it is more useful to jump to definition of function
-                    CsmFunctionDefinition definition = ((CsmFunction) csmObject).getDefinition();
-                    if (definition != null) {
-                        if (csmFile.equals(definition.getContainingFile()) &&
-                                definition.getStartOffset() <= ref.getStartOffset() &&
-                                ref.getStartOffset() <= definition.getBody().getStartOffset()) {
-                            // it is ok to jump to declaration
-                            return true;
-                        }
-                    }
-                } else if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
-                    CsmFunctionDefinition definition = (CsmFunctionDefinition) csmObject;
-                    if (csmFile.equals(definition.getContainingFile()) &&
-                            definition.getStartOffset() <= ref.getStartOffset() &&
-                            ref.getStartOffset() <= definition.getBody().getStartOffset()) {
-                        // it is ok to jump to declaration
-                        return true;
-                    }
-                }
-                return false;
-            }
-        });
+        return collector.getBlocks();
     }
 
     /*package*/ static List<CsmOffsetable> getInactiveCodeBlocks(CsmFile file) {
@@ -236,14 +77,185 @@ public class ModelUtils {
         return CsmFileInfoQuery.getDefault().getMacroUsages(file);
     }
 
-    /*package*/ static List<? extends CsmOffsetable> getTypedefBlocks(CsmFile file) {
-//        return getBlocksFromReferences2(file, 1);
-        return getBlocksFromReferences(file, new Validator() {
-
-            public boolean validate(CsmReference ref) {
-                CsmObject obj = ref.getReferencedObject();
-                return obj != null && CsmKindUtilities.isTypedef(obj);
-            }
-        });
+    private static abstract class AbstractReferenceCollector implements ReferenceCollector {
+        protected final List<CsmReference> list;
+        public AbstractReferenceCollector() {
+            list = new ArrayList<CsmReference>();
+        }
+        public void clear() {
+            list.clear();
+        }
+        public List<? extends CsmOffsetable> getBlocks() {
+            return list;
+        }
     }
+
+    /*package*/ static class FieldReferenceCollector extends AbstractReferenceCollector {
+        public String getEntityName() {
+            return "class-fields"; // NOI18N
+        }
+        public void visit(CsmReference ref, CsmFile file) {
+            CsmObject obj = ref.getReferencedObject();
+            if (CsmKindUtilities.isField(obj)) {
+                list.add(ref);
+            }
+        }
+    }
+
+    /*package*/ static class TypedefReferenceCollector extends AbstractReferenceCollector {
+        public String getEntityName() {
+            return "typedefs"; // NOI18N
+        }
+        public void visit(CsmReference ref, CsmFile file) {
+            CsmObject obj = ref.getReferencedObject();
+            if (CsmKindUtilities.isTypedef(obj)) {
+                list.add(ref);
+            }
+        }
+    }
+
+    /*package*/ static class FunctionReferenceCollector extends AbstractReferenceCollector {
+        public String getEntityName() {
+            return "functions-names"; // NOI18N
+        }
+        public void visit(CsmReference ref, CsmFile file) {
+            if (isWanted(ref, file)) {
+                list.add(ref);
+            }
+        }
+        private boolean isWanted(CsmReference ref, CsmFile file) {
+            CsmObject csmObject = ref.getReferencedObject();
+            if (CsmKindUtilities.isFunctionDeclaration(csmObject)) {
+                // check if we are in the function declaration
+                CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) csmObject;
+                if (decl.getContainingFile().equals(file) &&
+                        decl.getStartOffset() <= ref.getStartOffset() &&
+                        decl.getEndOffset() >= ref.getEndOffset()) {
+                    return true;
+                }
+                // check if we are in function definition name => go to declaration
+                // else it is more useful to jump to definition of function
+                CsmFunctionDefinition definition = ((CsmFunction) csmObject).getDefinition();
+                if (definition != null) {
+                    if (file.equals(definition.getContainingFile()) &&
+                            definition.getStartOffset() <= ref.getStartOffset() &&
+                            ref.getStartOffset() <= definition.getBody().getStartOffset()) {
+                        // it is ok to jump to declaration
+                        return true;
+                    }
+                }
+            } else if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
+                CsmFunctionDefinition definition = (CsmFunctionDefinition) csmObject;
+                if (file.equals(definition.getContainingFile()) &&
+                        definition.getStartOffset() <= ref.getStartOffset() &&
+                        ref.getStartOffset() <= definition.getBody().getStartOffset()) {
+                    // it is ok to jump to declaration
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    /*package*/ static class UnusedVariableCollector implements ReferenceCollector {
+        private final Set<VariableInfo> set;
+        public UnusedVariableCollector() {
+            set = new LinkedHashSet<VariableInfo>();
+        }
+        public String getEntityName() {
+            return "unused-variables"; // NOI18N
+        }
+        public void clear() {
+            set.clear();
+        }
+        public void visit(CsmReference ref, CsmFile file) {
+            CsmObject obj = ref.getReferencedObject();
+            if (CsmKindUtilities.isLocalVariable(obj) && !CsmKindUtilities.isParameter(obj)) {
+                CsmVariable var = (CsmVariable)obj;
+                if (var.getContainingFile().equals(file)) {
+                    VariableInfo info = new VariableInfo(var);
+                    if (set.remove(info)) {
+                        info.setUsed(true);
+                    }
+                    set.add(info);
+                }
+            }
+        }
+        public List<? extends CsmOffsetable> getBlocks() {
+            List<VariableInfo> result = new ArrayList<VariableInfo>();
+            for (VariableInfo info : set) {
+                if (!info.isUsed()) {
+                    result.add(info);
+                }
+            }
+            return result;
+        }
+    }
+
+    private static class VariableInfo implements CsmOffsetable {
+
+        private final int startOffset;
+        private final int endOffset;
+        private boolean used;
+
+        public VariableInfo(CsmVariable variable) {
+            this.startOffset = variable.getStartOffset();
+            this.endOffset = variable.getEndOffset();
+            this.used = false;
+        }
+
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException("Not implemented"); // NOI18N
+        }
+
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException("Not implemented"); // NOI18N
+        }
+
+        public CsmFile getContainingFile() {
+            throw new UnsupportedOperationException("Not implemented"); // NOI18N
+        }
+
+        public CharSequence getText() {
+            throw new UnsupportedOperationException("Not implemented"); // NOI18N
+        }
+
+        public boolean isUsed() {
+            return used;
+        }
+
+        public void setUsed(boolean used) {
+            this.used = used;
+        }
+
+        @Override
+        public int hashCode() {
+            // all variables come from the same file,
+            // so we don't compare containingFile
+            return 7 * getStartOffset() + 13 * getEndOffset();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof VariableInfo) {
+                VariableInfo that = (VariableInfo)obj;
+                // all variables come from the same file,
+                // so we don't compare containingFile
+                return getStartOffset() == that.getStartOffset()
+                        && getEndOffset() == that.getEndOffset();
+            } else {
+                return false;
+            }
+        }
+
+    }
+
 }

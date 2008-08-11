@@ -50,8 +50,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
@@ -68,13 +72,17 @@ import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
-import org.openide.util.Exceptions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Andrei Badea
  */
 public class SQLCompletionQuery extends AsyncCompletionQuery {
+
+    private static final Logger LOGGER = Logger.getLogger(SQLCompletionQuery.class.getName());
 
     // XXX refactor to get rid of the one-line methods.
     // XXX quoted identifiers.
@@ -104,17 +112,19 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                         return;
                     }
                     String identifierQuoteString = null;
+                    Quoter quoter = null;
                     try {
                         DatabaseMetaData dmd = conn.getMetaData();
                         identifierQuoteString = dmd.getIdentifierQuoteString();
+                        quoter = SQLIdentifiers.createQuoter(dmd);
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
                     }
-                    doQuery(newEnv, metadata, identifierQuoteString);
+                    doQuery(newEnv, metadata, quoter, identifierQuoteString);
                 }
             });
         } catch (MetadataModelException e) {
-            Exceptions.printStackTrace(e);
+            reportError(e);
         }
         if (items != null) {
             items.fill(resultSet);
@@ -126,14 +136,14 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     // Called by unit tests.
-    SQLCompletionItems doQuery(SQLCompletionEnv env, Metadata metadata, String quoteString) {
+    SQLCompletionItems doQuery(SQLCompletionEnv env, Metadata metadata, Quoter quoter, String quoteString) {
         this.env = env;
         this.metadata = metadata;
         this.quoteString = quoteString;
         anchorOffset = -1;
         substitutionOffset = 0;
-        items = new SQLCompletionItems(env.getStatementOffset());
         if (env != null && env.isSelect()) {
+            items = new SQLCompletionItems(quoter, env.getStatementOffset());
             completeSelect();
         }
         return items;
@@ -146,27 +156,31 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
         SQLStatement statement = SQLStatementAnalyzer.analyze(env.getTokenSequence());
         fromClause = statement.getTablesInEffect(env.getCaretOffset());
-        switch (context) {
-            case SELECT:
-                insideSelect();
-                break;
-            case FROM:
-                insideFrom();
-                break;
-            case WHERE:
-                if (fromClause != null) {
-                    insideWhere();
-                }
-        }
-    }
 
-    private void insideSelect() {
         Identifier ident = findIdentifier();
         if (ident == null) {
             return;
         }
         anchorOffset = ident.anchorOffset;
         substitutionOffset = ident.substitutionOffset;
+        switch (context) {
+            case SELECT:
+                insideSelect(ident);
+                break;
+            case FROM:
+                insideFrom(ident);
+                break;
+            case JOIN_CONDITION:
+                insideJoinCondition(ident);
+                break;
+            case WHERE:
+                if (fromClause != null) {
+                    insideWhere(ident);
+                }
+        }
+    }
+
+    private void insideSelect(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeSelectSimpleIdent(ident.lastPrefix, ident.prefixQuoteString);
         } else if (ident.fullyTypedIdent.isSimple()) {
@@ -176,13 +190,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void insideFrom() {
-        Identifier ident = findIdentifier();
-        if (ident == null) {
-            return;
-        }
-        anchorOffset = ident.anchorOffset;
-        substitutionOffset = ident.substitutionOffset;
+    private void insideFrom(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeFromSimpleIdent(ident.lastPrefix, ident.prefixQuoteString);
         } else if (ident.fullyTypedIdent.isSimple()) {
@@ -190,19 +198,23 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void insideWhere() {
-        Identifier ident = findIdentifier();
-        if (ident == null) {
-            return;
-        }
-        anchorOffset = ident.anchorOffset;
-        substitutionOffset = ident.substitutionOffset;
+    private void insideJoinCondition(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
-            completeWhereSimpleIdent(ident.lastPrefix, ident.prefixQuoteString);
+            completeSimpleIdentBasedOnFromClause(ident.lastPrefix, ident.prefixQuoteString);
         } else if (ident.fullyTypedIdent.isSimple()) {
-            completeWhereSingleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+            completeSingleQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
         } else if (ident.fullyTypedIdent.isSingleQualified()) {
-            completeWhereDoubleQualIdent(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+            completeDoubleQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+        }
+    }
+
+    private void insideWhere(Identifier ident) {
+        if (ident.fullyTypedIdent.isEmpty()) {
+            completeSimpleIdentBasedOnFromClause(ident.lastPrefix, ident.prefixQuoteString);
+        } else if (ident.fullyTypedIdent.isSimple()) {
+            completeSingleQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
+        } else if (ident.fullyTypedIdent.isSingleQualified()) {
+            completeDoubleQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.prefixQuoteString);
         }
     }
 
@@ -272,18 +284,6 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         if (schema != null) {
             items.addTables(schema, null, lastPrefix, prefixQuoteString, substitutionOffset);
         }
-    }
-
-    private void completeWhereSimpleIdent(String typedPrefix, String prefixQuoteString) {
-        completeSimpleIdentBasedOnFromClause(typedPrefix, prefixQuoteString);
-    }
-
-    private void completeWhereSingleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
-        completeSingleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
-    }
-
-    private void completeWhereDoubleQualIdent(QualIdent fullyTypedIdent, String lastPrefix, String prefixQuoteString) {
-        completeDoubleQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, prefixQuoteString);
     }
 
     private void completeSimpleIdentBasedOnFromClause(String typedPrefix, String prefixQuoteString) {
@@ -532,6 +532,18 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             }
         }
         return result;
+    }
+
+    private static void reportError(MetadataModelException e) {
+        LOGGER.log(Level.INFO, null, e);
+        String error = e.getMessage();
+        String message;
+        if (error != null) {
+            message = NbBundle.getMessage(SQLCompletionQuery.class, "MSG_Error", error);
+        } else {
+            message = NbBundle.getMessage(SQLCompletionQuery.class, "MSG_ErrorNoMessage");
+        }
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
     private static final class Identifier {

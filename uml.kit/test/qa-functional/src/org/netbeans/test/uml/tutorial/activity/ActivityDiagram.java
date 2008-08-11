@@ -105,7 +105,7 @@ public class ActivityDiagram extends UMLTestCase {
     private static final String defaultNewElementName=LibProperties.getProperties().COMMON_NEW_ELEMENT_NAME;
     private ProjectsTabOperator pto=null;
     private Node lastDiagramNode=null;
-    private static final String workdir=System.getProperty("xtest.workdir");
+    private static final String workdir=System.getProperty("nbjunit.workdir");
     private static String lastTestCase=null;
     //preferred sized
     private static final int widthAreaPreferred=800;

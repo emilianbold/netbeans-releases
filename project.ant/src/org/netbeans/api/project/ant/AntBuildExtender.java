@@ -317,7 +317,7 @@ public final class AntBuildExtender {
         if (extensions  != null) {
             FileObject nbproj = implementation.getOwningProject().getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH).getParent();
             for (Extension ext : extensions.values()) {
-                Element child = doc.createElement(AntBuildExtenderAccessor.ELEMENT_EXTENSION);
+                Element child = doc.createElementNS(AntBuildExtenderAccessor.AUX_NAMESPACE, AntBuildExtenderAccessor.ELEMENT_EXTENSION);
                 child.setAttribute(AntBuildExtenderAccessor.ATTR_ID, ext.id);
                 String relPath = FileUtil.getRelativePath(nbproj, ext.file);
                 assert relPath != null;
@@ -325,7 +325,7 @@ public final class AntBuildExtender {
                 root.appendChild(child);
                 for (String target : ext.dependencies.keySet()) {
                     for (String depTarget : ext.dependencies.get(target)) {
-                        Element dep = doc.createElement(AntBuildExtenderAccessor.ELEMENT_DEPENDENCY);
+                        Element dep = doc.createElementNS(AntBuildExtenderAccessor.AUX_NAMESPACE, AntBuildExtenderAccessor.ELEMENT_DEPENDENCY);
                         dep.setAttribute(AntBuildExtenderAccessor.ATTR_TARGET, target);
                         dep.setAttribute(AntBuildExtenderAccessor.ATTR_DEPENDSON, depTarget);
                         child.appendChild(dep);
@@ -396,24 +396,22 @@ public final class AntBuildExtender {
         public void addDependency(String mainBuildTarget, String extensionTarget) {
             assert implementation.getExtensibleTargets().contains(mainBuildTarget) : 
                 "The target '" + mainBuildTarget + "' is not designated by the project type as extensible.";
-            synchronized (AntBuildExtender.class) {
+            synchronized (this) {
                 loadDependency(mainBuildTarget, extensionTarget);
                 updateProjectMetadata();
             }
         }
         
-        private void loadDependency(String mainBuildTarget, String extensionTarget) {
-            synchronized (AntBuildExtender.class) {
-                Collection<String> tars = dependencies.get(mainBuildTarget);
-                if (tars == null) {
-                    tars = new ArrayList<String>();
-                    dependencies.put(mainBuildTarget, tars);
-                }
-                if (!tars.contains(extensionTarget)) {
-                    tars.add(extensionTarget);
-                } else {
-                    //log?
-                }
+        private synchronized void loadDependency(String mainBuildTarget, String extensionTarget) {
+            Collection<String> tars = dependencies.get(mainBuildTarget);
+            if (tars == null) {
+                tars = new ArrayList<String>();
+                dependencies.put(mainBuildTarget, tars);
+            }
+            if (!tars.contains(extensionTarget)) {
+                tars.add(extensionTarget);
+            } else {
+                //log?
             }
         }
         
@@ -436,7 +434,7 @@ public final class AntBuildExtender {
 
         Map<String, Collection<String>> getDependencies() {
             TreeMap<String, Collection<String>> toRet = new TreeMap<String, Collection<String>>();
-            synchronized (AntBuildExtender.class) {
+            synchronized (this) {
                 for (String str : dependencies.keySet()) {
                     ArrayList<String> col = new ArrayList<String>();
                     col.addAll(dependencies.get(str));

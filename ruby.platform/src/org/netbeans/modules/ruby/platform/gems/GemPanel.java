@@ -83,23 +83,28 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * @todo Use a table instead of a list for the gem lists, use checkboxes to choose
- *   items to be uninstalled, and show the installation date (based
- *   on file timestamps)
+ * @todo Use a table instead of a list for the gem lists, use checkboxes to
+ *   choose items to be uninstalled, and show the installation date (based on
+ *   file timestamps)
  */
 public final class GemPanel extends JPanel {
     
     private static final Logger LOGGER = Logger.getLogger(GemPanel.class.getName());
-    
+
+    /** Preference key for storing lastly used directory when installing new gem. */
     private static final String LAST_GEM_DIRECTORY = "lastLocalGemDirectory"; // NOI18N
 
+    /** Preference key for storing lastly selected platform. */
     private static final String LAST_PLATFORM_ID = "gemPanelLastPlatformID"; // NOI18N
+
     static enum TabIndex { UPDATED, INSTALLED, NEW; }
     
     private RequestProcessor updateTasksQueue;
-    
+
+    /** Whether this dialog is closed. */
     private boolean closed;
-    
+
+    /** see {@link #isModified} */
     private boolean gemsModified;
 
     public GemPanel(String availableFilter) {
@@ -115,7 +120,7 @@ public final class GemPanel extends JPanel {
      * may be <code>null</code> in which case the last selected platform is preselected.
      */
     public GemPanel(String availableFilter, RubyPlatform preselected) {
-        updateTasksQueue = new RequestProcessor("Gem Updater", 5);
+        updateTasksQueue = new RequestProcessor("Gem Updater", 5); // NOI18N
         initComponents();
         if (preselected == null) {
             Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
@@ -187,16 +192,8 @@ public final class GemPanel extends JPanel {
     }
     
     private void cancelRunningTasks() {
-        LOGGER.finest("Cancelling all running GemPanel tasks");
+        LOGGER.finer("Cancelling all running GemPanel tasks");
         // TODO: implement
-    }
-    
-    public void run() {
-        // This will also update the New and Installed lists because Update depends on these
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-            }
-        });
     }
     
     private static void updateGemDescription(JTextPane pane, Gem gem) {
@@ -216,26 +213,27 @@ public final class GemPanel extends JPanel {
         sb.append(gem.getName());
         sb.append("</h2>\n"); // NOI18N
 
-        if (gem.getInstalledVersions() != null && gem.getAvailableVersions() != null) {
+        String installedAsString = gem.getInstalledVersionsAsString();
+        String availableAsString = gem.getAvailableVersionsAsString();
+        if (installedAsString != null && availableAsString != null) {
             // It's an update gem
             sb.append("<h3>"); // NOI18N
             sb.append(getMessage("InstalledVersion"));
             sb.append("</h3>"); // NOI18N
-            sb.append(gem.getInstalledVersions());
+            sb.append(installedAsString);
 
             sb.append("<h3>"); // NOI18N
             sb.append(getMessage("AvailableVersion"));
             sb.append("</h3>"); // NOI18N
-            sb.append(gem.getAvailableVersions());
+            sb.append(availableAsString);
             sb.append("<br>"); // NOI18N
         } else {
             sb.append("<h3>"); // NOI18N
-            String version = gem.getInstalledVersions();
+            String version = installedAsString;
             if (version == null) {
-                version = gem.getAvailableVersions();
+                version = availableAsString;
             }
             if (version.indexOf(',') == -1) {
-            // TODO I18N
                 sb.append(getMessage("Version"));
             } else {
                 sb.append(getMessage("Versions"));
@@ -248,12 +246,13 @@ public final class GemPanel extends JPanel {
             sb.append("<h3>"); // NOI18N
             sb.append(getMessage("Description"));
             sb.append("</h3>"); // NOI18N
-            sb.append(gem.getDescription());
+            sb.append(gem.getHTMLDescription());
         }
 
         sb.append("</html>"); // NOI18N
 
         pane.setText(sb.toString());
+        pane.setCaretPosition(0);
     }
 
     private void setEnabledGUI(boolean enabled) {
@@ -266,6 +265,7 @@ public final class GemPanel extends JPanel {
         reloadNewButton.setEnabled(true);
         reloadInstalledButton.setEnabled(true);
         reloadReposButton.setEnabled(true);
+        manageButton.setEnabled(true);
     }
 
     private void setEnabled(TabIndex tab, boolean enabled) {
@@ -306,7 +306,7 @@ public final class GemPanel extends JPanel {
                 searchInstText.setEnabled(enabled);
                 break;
             default:
-                throw new IllegalArgumentException("Unknonw tab: " + tab);
+                throw new IllegalArgumentException("Unknonw tab: " + tab); // NOI18N
         }
         boolean everythingDone = newPanel.isEnabled() && updatedPanel.isEnabled() && installedPanel.isEnabled();
         // allow certain actions only when all tabs are updated
@@ -324,7 +324,7 @@ public final class GemPanel extends JPanel {
         GemManager gemManager = getGemManager();
         assert gemManager != null : "gemManager must not be null";
         assert !gemManager.needsReload() : "gemManager is reloaded";
-        LOGGER.finest("Updating UI for: " + gemManager);
+        LOGGER.finer("Updating UI for: " + gemManager);
         
         hideProgressBars();
 
@@ -346,7 +346,7 @@ public final class GemPanel extends JPanel {
                 String latestInstalled = installedGem.getLatestInstalled();
                 if (Util.compareVersions(latestAvailable, latestInstalled) > 0) {
                     Gem update = new Gem(gem.getName(),
-                            installedGem.getInstalledVersions(),
+                            installedGem.getInstalledVersionsAsString(),
                             latestAvailable);
                     update.setDescription(installedGem.getDescription());
                     updatedGems.add(update);
@@ -385,7 +385,7 @@ public final class GemPanel extends JPanel {
                 list = installedList;
                 break;
             default:
-                throw new IllegalArgumentException("Unknonw tab: " + tab);
+                throw new IllegalArgumentException("Unknonw tab: " + tab); // NOI18N
         }
 
         if (gems == null) {
@@ -393,7 +393,7 @@ public final class GemPanel extends JPanel {
             return;
         }
 
-        GemListModel model = new GemListModel(gems, getGemFilter(tab));
+        GemListModel model = new GemListModel(gems, getGemFilter());
         list.clearSelection();
         list.setModel(model);
         list.invalidate();
@@ -927,21 +927,32 @@ public final class GemPanel extends JPanel {
     }//GEN-LAST:event_proxyButtonActionPerformed
 
     private void searchNewTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNewTextActionPerformed
-        applyFilter(newList, TabIndex.NEW);
+        applyFilter(searchNewText.getText());
     }//GEN-LAST:event_searchNewTextActionPerformed
 
     private void searchUpdatedTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchUpdatedTextActionPerformed
-        applyFilter(updatedList, TabIndex.UPDATED);
+        applyFilter(searchUpdatedText.getText());
     }//GEN-LAST:event_searchUpdatedTextActionPerformed
 
     private void searchInstTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchInstTextActionPerformed
-        applyFilter(installedList, TabIndex.INSTALLED);
+        applyFilter(searchInstText.getText());
     }//GEN-LAST:event_searchInstTextActionPerformed
 
-    private void applyFilter(JList installedList, TabIndex tabIndex) {
-        GemListModel gemModel = (GemListModel) installedList.getModel();
-        gemModel.applyFilter(getGemFilter(tabIndex));
-        setTabTitle(tabIndex, gemModel);
+    private void applyFilter(final String filter) {
+        // keep search filter fields in sync
+        searchNewText.setText(filter);
+        searchUpdatedText.setText(filter);
+        searchInstText.setText(filter);
+        
+        applyFilter(TabIndex.INSTALLED, installedList);
+        applyFilter(TabIndex.UPDATED, updatedList);
+        applyFilter(TabIndex.NEW, newList);
+    }
+
+    private void applyFilter(final TabIndex tab, final JList list) {
+        GemListModel gemModel = (GemListModel) list.getModel();
+        gemModel.applyFilter(getGemFilter());
+        setTabTitle(tab, gemModel);
     }
 
     private void reloadReposButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadReposButtonActionPerformed
@@ -1069,8 +1080,7 @@ public final class GemPanel extends JPanel {
     }//GEN-LAST:event_installLocalButtonActionPerformed
 
     private void allVersionsCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_allVersionsCheckboxActionPerformed
-        RubyPreferences.setFetchAllVersions(!getGemManager().hasObsoleteRubyGemsVersion() &&
-                allVersionsCheckbox.isSelected());
+        RubyPreferences.setFetchAllVersions(allVersionsCheckbox.isSelected());
     }//GEN-LAST:event_allVersionsCheckboxActionPerformed
 
     private void descriptionCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_descriptionCheckboxActionPerformed
@@ -1144,7 +1154,7 @@ public final class GemPanel extends JPanel {
         final GemManager gemManager = getGemManager();
         Runnable updateTask = new Runnable() {
             public void run() {
-                LOGGER.finest("Update of " + gemManager + " scheduled");
+                LOGGER.finer("Update of " + gemManager + " scheduled");
                 assert !EventQueue.isDispatchThread();
 
                 final List<String> errors = new ArrayList<String>();
@@ -1153,7 +1163,7 @@ public final class GemPanel extends JPanel {
                 // Update UI
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        LOGGER.finest("Update of " + gemManager + " finished");
+                        LOGGER.finer("Update of " + gemManager + " finished");
                         if (closed) {
                             return;
                         }
@@ -1172,36 +1182,22 @@ public final class GemPanel extends JPanel {
                         if (!platformHasChanged) {
                             notifyGemsUpdated();
                         } else { // platform has changed, ignore UI update
-                            LOGGER.finest("Gem Manager has changed from " + gemManager
+                            LOGGER.finer("Gem Manager has changed from " + gemManager
                                     + " to " + getGemManager() + ". Ignoring update."); // NOI18N
                         }
                     }
                 });
             }
         };
-        LOGGER.finest("Submitting refreshing of gems for: " + gemManager);
+        LOGGER.finer("Submitting refreshing of gems for: " + gemManager);
         updateTasksQueue.post(updateTask);
     }
 
-    private String getGemFilter(TabIndex tab) {
+    private String getGemFilter() {
         assert EventQueue.isDispatchThread();
-
-        String filter = null;
-        JTextField tf;
-        if (tab == TabIndex.INSTALLED) {
-            tf = searchInstText;
-        } else if (tab == TabIndex.UPDATED) {
-            tf = searchUpdatedText;
-        } else {
-            assert tab == TabIndex.NEW;
-            tf = searchNewText;
-        }
-        filter = tf.getText().trim();
-        if (filter.length() == 0) {
-            filter = null;
-        }
-
-        return filter;
+        // filter field are kept in sync, does not matter which one is used
+        String filter = searchInstText.getText().trim();
+        return filter.length() == 0 ? null : filter;
     }
 
     private RubyPlatform getSelectedPlatform() {

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.compilers;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -186,22 +187,30 @@ public class CompilerSetManager {
     }
 
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
-    public static CompilerSetManager create() {
-        CompilerSetManager csm;
-        synchronized (MASTER_LOCK) {
-            csm = new CompilerSetManager(LOCALHOST);
+    public static CompilerSetManager create(String hkey) {
+        CompilerSetManager newCsm = new CompilerSetManager(hkey);
+        if (newCsm.getCompilerSets().size() == 1 && newCsm.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
+            newCsm.remove(newCsm.getCompilerSets().get(0));
         }
-        return csm;
+        return newCsm;
     }
 
     /** Replace the default CompilerSetManager. Let registered listeners know its been updated */
-    public static synchronized void setDefault(CompilerSetManager csm) {
-        if (csm.getCompilerSets().size() == 0) { // No compilers found
-            csm.add(CompilerSet.createEmptyCompilerSet(csm.getPlatform()));
-        }
+    public static synchronized void setDefaults(Collection<CompilerSetManager> csms) {
         synchronized (MASTER_LOCK) {
-            csm.saveToDisk();
-            managers.put(csm.hkey, csm);
+            // TODO: not remove, only replace now...
+//            for (CompilerSetManager oldCsm : managers.values()) {
+//                // erase old info
+//                getPreferences().remove(CSM + oldCsm.hkey + NO_SETS);
+//            }
+//            managers.clear();
+            for (CompilerSetManager csm : csms) {
+                if (csm.getCompilerSets().size() == 0) { // No compilers found
+                    csm.add(CompilerSet.createEmptyCompilerSet(csm.getPlatform()));
+                }                
+                csm.saveToDisk();
+                managers.put(csm.hkey, csm);
+            }
         }
     }
 
@@ -276,7 +285,7 @@ public class CompilerSetManager {
             return PlatformTypes.PLATFORM_GENERIC;
         }
     }
-
+    
     public CompilerSetManager deepCopy() {
         waitForCompletion(); // in case its a remote connection...
         List<CompilerSet> setsCopy =  new ArrayList<CompilerSet>();
@@ -358,12 +367,13 @@ public class CompilerSetManager {
     /** Initialize remote CompilerSets */
     private void initRemoteCompilerSets(final String key) {
         final CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
-        ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        ServerList registry = Lookup.getDefault().lookup(ServerList.class);
         assert registry != null;
         assert provider != null;
         ServerRecord record = registry.get(key);
         assert record != null;
 
+        log.warning("CSM.initRemoteCompilerSets for " + key + " [" + state + "]");
         record.validate();
         if (record.isOnline()) {
             RequestProcessor.getDefault().post(new Runnable() {
@@ -429,13 +439,9 @@ public class CompilerSetManager {
                         setsCopy = new ArrayList<CompilerSet>();
                         setsCopy.addAll(sets);
                     }
-                    provider.loadCompilerSetData(setsCopy);
-                    // TODO: this should be upgraded to error reporting
-                    // about absence of tool chain on remote host
-                    // also compilersetmanager without compiler sets
-                    // should be handled gracefully
                     log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
                     state = STATE_COMPLETE;
+                    provider.loadCompilerSetData(setsCopy);
                 }
             });
         } else {
@@ -473,7 +479,7 @@ public class CompilerSetManager {
                 initCompiler(Tool.FortranCompiler, path, cs, compiler.getNames());
             }
             initCompiler(Tool.MakeTool, path, cs, d.getMake().getNames());
-            initCompiler(Tool.DebuggerTool, path, cs, d.getDebuggerNames());
+            initCompiler(Tool.DebuggerTool, path, cs, d.getDebugger().getNames());
         }
     }
 
@@ -693,6 +699,16 @@ public class CompilerSetManager {
         return null;
     }
 
+    public static String getDefaultDevelopmentHost() {
+        ServerList registry = Lookup.getDefault().lookup(ServerList.class);
+        String host;
+        if (registry == null) {
+            host = CompilerSetManager.LOCALHOST;
+        } else {
+            host = registry.getDefaultRecord().getName();
+        }
+        return host;
+    }
     /**
      * Check if the gdb module is enabled. Don't show the gdb line if it isn't.
      *

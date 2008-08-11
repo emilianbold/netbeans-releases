@@ -277,7 +277,7 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
         );
 
         fileLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "L_Line_Breakpoint_File_Name")); // NOI18N
-        fileLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Line_Breakpoint_File_Name_1")); // NOI18N
+        fileLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_L_Line_Breakpoint_File_Name")); // NOI18N
         tfFileName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "A11y_TF_ File")); // NOI18N
         tfFileName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TF_Line_Breakpoint_File_Name_Description")); // NOI18N
         lineNumLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointPanel.class, "ACSD_L_Line_Breakpoint_Line_Number")); // NOI18N

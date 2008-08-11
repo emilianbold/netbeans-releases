@@ -141,7 +141,8 @@ public final class EncapsulateFieldUI implements RefactoringUI {
         TreePath selectedField = selectedObject.resolve(javac);
         Element elm = javac.getTrees().getElement(selectedField);
         TypeElement encloser = null;
-        if (elm != null && ElementKind.FIELD == elm.getKind()) {
+        if (elm != null && ElementKind.FIELD == elm.getKind()
+                && !"this".contentEquals(elm.getSimpleName())) { // NOI18N
             encloser = (TypeElement) elm.getEnclosingElement();
             if (ElementKind.INTERFACE != encloser.getKind() && NestingKind.ANONYMOUS != encloser.getNestingKind()) {
                 // interface constants, local variables and annonymous declarations are unsupported

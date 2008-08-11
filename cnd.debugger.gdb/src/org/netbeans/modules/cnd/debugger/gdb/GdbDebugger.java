@@ -68,8 +68,8 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
@@ -78,7 +78,6 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
-import org.netbeans.modules.cnd.debugger.gdb.expr.Expression;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
@@ -101,7 +100,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -199,6 +197,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private GdbBreakpoint currentBreakpoint = null;
     private String hkey;
     private int platform;
+    private PathMap pathMap;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -239,16 +238,17 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         setStarting();
         try {
             pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+            hkey = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getName();
+            pathMap = HostInfoProvider.getDefault().getMapper(hkey);
             iotab = (InputOutput) lookupProvider.lookupFirst(null, InputOutput.class);
             if (iotab != null) {
                 iotab.setErrSeparated(false);
             }
-            runDirectory = pae.getProfile().getRunDirectory().replace("\\", "/") + "/";  // NOI18N
+            runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory().replace("\\", "/") + "/");  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = pae.getProfile().getConsoleType().getValue();
-            hkey = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getName();
             platform = ((MakeConfiguration) pae.getConfiguration()).getPlatform().getValue();
-            if (platform == PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
+            if (platform != PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
                     pae.getID() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
@@ -278,8 +278,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat",  // NOI18N
                     Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
+            gdb.enable_timings(false);
             if (pae.getID() == DEBUG_ATTACH) {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
+                if (((MakeConfiguration) pae.getConfiguration()).isDynamicLibraryConfiguration()) {
+                    String pgm = getExePathFromPID(programPID);
+                    if (pgm != null) {
+                        gdb.file_exec_and_symbols(pgm);
+                    }
+                }
                 CommandBuffer cb = new CommandBuffer(gdb);
                 gdb.target_attach(cb, Long.toString(programPID));
                 cb.waitForCompletion();
@@ -308,7 +315,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     if (!symbolsRead(cb.toString(), path)) {
                         // 2) see if we can validate via /proc (or perhaps other platform specific means)
                         if (validAttachViaSlashProc(programPID, path)) { // Linux or Solaris
-                            if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                            if (isSolaris()) {
                                 gdb.file_symbol_file(path);
                             }
                             setLoading();
@@ -341,7 +348,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                     String gdbHelper = getGdbHelper();
                     if (gdbHelper != null) {
-                        if (Utilities.isMac()) {
+                        if (platform == PlatformTypes.PLATFORM_MACOSX) {
                             gdb.gdb_set("environment", "DYLD_INSERT_LIBRARIES=" + gdbHelper); // NOI18N
                             gdb.gdb_set("environment", "DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
                         } else {
@@ -350,7 +357,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                 }
 
-                if (Utilities.isWindows()) {
+                if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     if (conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                         gdb.set_new_console();
                     }
@@ -359,7 +366,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     continueAfterFirstStop = false; // step into project
                 }
                 gdb.break_insert_temporary("main"); // NOI18N
-                if (Utilities.isWindows()) {
+                if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     // WinAPI apps don't have a "main" function. Use "WinMain" if Windows.
                     gdb.break_insert_temporary("WinMain"); // NOI18N
                 }
@@ -370,21 +377,22 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     ErrorManager.getDefault().notify(ex);
                     ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
                 }
-                if (Utilities.isWindows()) {
+                if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     CommandBuffer cb = new CommandBuffer(gdb);
                     gdb.info_threads(cb); // we get the PID from this...
                     String msg = cb.waitForCompletion();
-                    if (msg.startsWith("* 1 thread ")) { // NOI18N
-                        int pos = msg.indexOf('.');
-                        if (pos > 0) {
+                    int pos1 = msg.indexOf("* 1 thread "); // NOI18N
+                    if (pos1 >= 0) {
+                        int pos2 = msg.indexOf('.', pos1);
+                        if (pos2 > 0) {
                             try {
-                                programPID = Long.valueOf(msg.substring(11, pos));
+                                programPID = Long.valueOf(msg.substring(pos1 + 11, pos2));
                             } catch (NumberFormatException ex) {
                                 log.warning("Failed to get PID from \"info threads\""); // NOI18N
                             }
                         }
                     }
-                } else if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+                } else if (platform != PlatformTypes.PLATFORM_MACOSX) {
                     gdb.info_proc(); // we get the PID from this...
                 }
             }
@@ -415,6 +423,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     public InputOutput getIO() {
         return iotab;
+    }
+
+    public PathMap getPathMap() {
+        return pathMap;
+    }
+    
+    public static GdbDebugger getGdbDebugger() {
+        DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+        if (currentEngine == null) {
+            return null;
+        }
+        return (GdbDebugger) currentEngine.lookupFirst(null, GdbDebugger.class);
     }
 
     private String getCompilerSetPath(ProjectActionEvent pae) {
@@ -475,7 +495,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
 
     private String getExtension() {
-        return Utilities.isWindows() ? ".dll" : Utilities.isMac() ? ".dylib" : ".so"; // NOI18N
+        return platform == PlatformTypes.PLATFORM_WINDOWS ? ".dll" : platform == PlatformTypes.PLATFORM_MACOSX ? ".dylib" : ".so"; // NOI18N
     }
 
     private String fixPath(String path) {
@@ -489,9 +509,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
 
     private String getFullPath(String rundir, String path) {
-        if (Utilities.isWindows() && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':') {
+        if (platform == PlatformTypes.PLATFORM_WINDOWS && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':') {
             return path;
-        } else if (Utilities.isUnix() && path.charAt(0) == '/') {
+        } else if (path.charAt(0) == '/') {
             return path;
         } else {
             return rundir + '/' + path;
@@ -582,7 +602,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             }
         }
-        return programName.toString();
+        return pathMap.getRemotePath(programName.toString());
     }
 
     /** Get the gdb version */
@@ -597,7 +617,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 shareToken = gdb.info_share();
                 cb.setID(shareToken);
             } else if (evt.getNewValue().equals(STATE_READY)) {
-                if (Utilities.isWindows()) {
+                if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     gdb.break_insert("dlopen"); // NOI18N
                 } else {
                     gdb.gdb_set("stop-on-solib-events", "1"); // NOI18N
@@ -632,18 +652,35 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         int pos = -1;
         for (String line : results.split("\\\\n")) { // NOI18N
             if (line.contains("Reading symbols from ") || // NOI18N
-                    (Utilities.getOperatingSystem() == Utilities.OS_MAC && line.contains("Symbols from "))) { // NOI18N
-                if (Utilities.isWindows() && (pos = line.indexOf("/cygdrive/")) != -1) { // NOI18N
+                    (platform == PlatformTypes.PLATFORM_MACOSX && line.contains("Symbols from "))) { // NOI18N
+                if (platform == PlatformTypes.PLATFORM_WINDOWS && (pos = line.indexOf("/cygdrive/")) != -1) { // NOI18N
                     line = line.substring(0, pos) +
                             line.substring(pos + 10,pos + 11).toUpperCase() + ':' + line.substring(pos + 11);
                 }
                 String ep = line.substring(21, line.length() - 8);
-                if (ep.equals(exepath) || (Utilities.isWindows() && ep.equals(exepath + ".exe"))) { // NOI18N
+                if (ep.equals(exepath) || (platform == PlatformTypes.PLATFORM_WINDOWS && ep.equals(exepath + ".exe"))) { // NOI18N
                     return true;
                 }
+            } else if (line.contains("Loaded symbols for ") && equivalentPaths(exepath, line.substring(19))) {
+                return true;
             }
         }
         return false;
+    }
+    
+    private boolean equivalentPaths(String path1, String path2) {
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            return winpath(path1).equals(winpath(path2));
+        }
+        return path1.equals(path1);
+    }
+    
+    private String winpath(String path) {
+        if (platform == PlatformTypes.PLATFORM_WINDOWS && path.startsWith("/cygdrive/")) {
+            return path.substring(10, 11).toUpperCase() + ':' + path.substring(11);
+        } else {
+            return path;
+        }
     }
 
     private boolean symbolsReadFromInfoFiles(String results, String exepath) {
@@ -665,7 +702,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * @return true if the project matches the attached to executable
      */
     private boolean validAttachViaSlashProc(long pid, String exepath) {
-        if (!Utilities.isWindows()) {
+        if (platform != PlatformTypes.PLATFORM_WINDOWS) {
             String procdir = "/proc/" + Long.toString(pid); // NOI18N
             File pathfile = new File(procdir, "path/a.out"); // NOI18N - Solaris only?
             if (!pathfile.exists()) {
@@ -682,6 +719,23 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         }
         return false;
+    }
+    
+    private String getExePathFromPID(long pid) {
+        if (platform != PlatformTypes.PLATFORM_WINDOWS && pid > 0) {
+            String procdir = "/proc/" + Long.toString(pid); // NOI18N
+            File pathfile = new File(procdir, "path/a.out"); // NOI18N - Solaris only?
+            if (!pathfile.exists()) {
+                pathfile = new File(procdir, "exe"); // NOI18N - Linux?
+            }
+            if (pathfile.exists()) {
+                String path = getPathFromSymlink(pathfile.getAbsolutePath());
+                if (path != null && path.length() > 0) {
+                    return path;
+                }
+            }
+        }
+        return null;
     }
 
     private String getPathFromSymlink(String apath) {
@@ -892,7 +946,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.append(msg.substring(13, msg.length() - 1));
                 cb.done();
             }
-        } else if (msg.startsWith("^done,thread-id=") && Utilities.isMac()) { // NOI18N
+        } else if (msg.startsWith("^done,thread-id=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
             cb = gdb.getCommandBuffer(itok);
             if (cb != null) {
                 cb.done();
@@ -903,7 +957,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.append(msg.substring(6));
                 cb.done();
             }
-        } else if (msg.startsWith("^done,shlib-info=") && Utilities.isMac()) { // NOI18N
+        } else if (msg.startsWith("^done,shlib-info=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
             String info = msg.substring(17);
             cb = gdb.getCommandBuffer(itok);
             if (cb != null) {
@@ -940,7 +994,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         ProjectActionEvent pae;
                         pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                         int conType = pae.getProfile().getConsoleType().getValue();
-                        if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && !Utilities.isWindows()) {
+                        if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && platform != PlatformTypes.PLATFORM_WINDOWS) {
                             // FIXME - core dumping on Windows...
                             gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N
                         }
@@ -1041,21 +1095,24 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         if (cb != null) {
             cb.append(omsg);
-        } else if (msg.startsWith("GNU gdb ") && startupTimer != null) { // NOI18N
-            // Cancel the startup timer - we've got our first response from gdb
-            startupTimer.cancel();
-            startupTimer = null;
+        } else if (msg.startsWith("GNU gdb ")) { // NOI18N
+            if (startupTimer != null) {
+                // Cancel the startup timer - we've got our first response from gdb
+                startupTimer.cancel();
+                startupTimer = null;
+            }
 
             // Now process the version information
             int first = msg.indexOf('.');
-            int last = msg.lastIndexOf('.');
+            int next = msg.indexOf('.', first + 1);
             try {
-                if (first == last) {
+                if (next == -1) {
                     gdbVersion = Double.parseDouble(msg.substring(8));
                 } else {
-                    gdbVersion = Double.parseDouble(msg.substring(8, last));
+                    gdbVersion = Double.parseDouble(msg.substring(8, next));
                 }
             } catch (NumberFormatException ex) {
+                log.warning("GdbDebugger: Failed to parse version string");
             }
             if (msg.contains("cygwin")) { // NOI18N
                 cygwin = true;
@@ -1072,6 +1129,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (!isTmp && getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
                 setRunning();
             }
+        } else if (msg.contains("(no debugging symbols found)") && state.equals(STATE_STARTING) && !isAttaching()) { // NOI18N
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+                           "ERR_NoDebuggingSymbolsFound"))); // NOI18N
+            setExited();
+            finish(false);
         } else if (msg.startsWith("gdb: unknown target exception")) { // NOI18N
             DialogDisplayer.getDefault().notify(
                            new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
@@ -1169,8 +1231,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 setExited();
                 finish(true);
             }
-            if (!(firstOutput && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS &&
-                    msg.startsWith("PR_"))) { // NOI18N
+            if (!(firstOutput && isSolaris() && msg.startsWith("PR_"))) { // NOI18N
                 firstOutput = false;
                 iotab.getOut().println(msg);
             }
@@ -1181,7 +1242,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         int pos;
         if (info.startsWith("[frame={level=") && (pos = info.indexOf(",args=[")) > 0 && info.endsWith("]}]")) { // NOI18N
             info = info.substring(pos + 7, info.length() - 3);
-        } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC &&
+        } else if (platform == PlatformTypes.PLATFORM_MACOSX &&
                 info.startsWith("{frame={level=") && (pos = info.indexOf(",args={")) > 0 && info.endsWith("}}}")) { // NOI18N
             info = info.substring(pos + 7, info.length() - 3);
         }
@@ -1258,7 +1319,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             ArrayList<String> killcmd = new ArrayList<String>();
             File f;
 
-            if (Utilities.isWindows()) {
+            if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                 f = InstalledFileLocator.getDefault().locate("bin/GdbKillProc.exe", null, false); // NOI18N
                 if (f.exists()) {
                     killcmd.add(f.getAbsolutePath());
@@ -1276,7 +1337,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             if (killcmd.size() > 0) {
                 killcmd.add("-s"); // NOI18N
-                killcmd.add((Utilities.isMac() && signal == 2) ? "TRAP" : Integer.toString(signal)); // NOI18N
+                
+                String signalName = Integer.toString(signal);
+                // for MacOS we should substitute signal number with the real name
+                if (platform == PlatformTypes.PLATFORM_MACOSX) {
+                    switch (signal) {
+                        case 2 : signalName = "TRAP"; break; // NOI18N
+                        case 15 : signalName = "TERM"; break; // NOI18N
+                        default : assert false : "No textual value for MacOS signal " + signal + ", please add it to kill command in GdbDebugger.";// NOI18N
+                    }
+                }
+                killcmd.add(signalName);
+                
                 killcmd.add(Long.toString(pid));
                 ProcessBuilder pb = new ProcessBuilder(killcmd);
                 try {
@@ -1497,7 +1569,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     int idx = temporaryBreakpoints.indexOf(map.get("bkptno")); // NOI18N
                     if (idx >= 0) {
                         temporaryBreakpoints.remove(idx);
-                        if (Utilities.isMac()) {
+                        if (platform == PlatformTypes.PLATFORM_MACOSX) {
                             updateCurrentCallStack();
                             setStopped(); // stepping out of dlopen
                         }
@@ -1660,7 +1732,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             Map<String, String> map = GdbUtils.createMapFromString(frame.substring(6, frame.length()));
             String func = map.get("func"); // NOI18N
             if (func != null && func.equals("dlopen") && !checkNextFrame) { // NOI18N
-                if (Utilities.isMac()) {
+                if (platform == PlatformTypes.PLATFORM_MACOSX) {
                     checkNextFrame = true;
                 } else {
                     gdb.stack_select_frame(i);
@@ -1703,7 +1775,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
 
     private String getOSPath(String path) {
-        if (Utilities.isWindows()) {
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
             if (isCygwin() && path.startsWith("/cygdrive/")) { // NOI18N
                 return path.charAt(10) + ":" + path.substring(11); // NOI18N
             } else if (isMinGW() && path.charAt(0) == '/' && path.charAt(2) == '/') {
@@ -1748,7 +1820,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     if (firstBPfullname != null && firstBPfullname.equals(fullname) &&
                             firstBPline != null && firstBPline.equals(line)) {
                         continueAfterFirstStop = false;
-                    } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC &&
+                    } else if (platform == PlatformTypes.PLATFORM_MACOSX &&
                             firstBPfile != null && firstBPfile.equals(file) &&
                             firstBPline != null && firstBPline.equals(line)) {
                         continueAfterFirstStop = false;
@@ -1770,7 +1842,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             String line = map.get("line"); // NOI18N
             String func = map.get("func"); // NOI18N
             if (number != null && ((number.equals("1")) || // NOI18N
-                   (number.equals("2") && func != null && func.equals("WinMain") && Utilities.isWindows()))) { // NOI18N
+                   (number.equals("2") && func != null && func.equals("WinMain") && platform == PlatformTypes.PLATFORM_WINDOWS))) { // NOI18N
                 firstBPfullname = fullname;
                 firstBPfile = file;
                 firstBPline = line;
@@ -1798,7 +1870,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             MakeArtifact ma = new MakeArtifact(mcd, conf);
             String runDirectory = conf.getProfile().getRunDirectory().replace("\\", "/");  // NOI18N
             String path = runDirectory + '/' + ma.getOutput();
-            if (isExecutable(conf, path)) {
+            if (isExecutableOrSharedLibrary(conf, path)) {
                 ProjectActionEvent pae = new ProjectActionEvent(
                         project,
                         DEBUG_ATTACH,
@@ -1831,13 +1903,14 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * @param path The absolute pathname to the file
      * @return true iff the input parameters get an executable
      */
-    private static boolean isExecutable(MakeConfiguration conf, String path) {
+    private static boolean isExecutableOrSharedLibrary(MakeConfiguration conf, String path) {
         File file;
+        int platform = conf.getPlatform().getValue();
 
-        if (conf.isApplicationConfiguration()) {
+        if (conf.isApplicationConfiguration() || conf.isDynamicLibraryConfiguration()) {
             return true;
         } else if (conf.isMakefileConfiguration()) {
-            if (Utilities.isWindows()) {
+            if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                 if (path.endsWith(".dll")) { // NOI18N
                     return false;
                 } else if (!path.endsWith(".exe")) { // NOI18N
@@ -2189,7 +2262,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      *  @return The possibly modified path
      */
     public String getBestPath(String path) {
-        if (path.indexOf(' ') == -1 && Utilities.getOperatingSystem() != Utilities.OS_MAC) {
+        path = pathMap.getRemotePath(path);
+        if (path.indexOf(' ') == -1 && platform == PlatformTypes.PLATFORM_MACOSX) {
             return path;
         } else if (path.startsWith(runDirectory)) {
             return (path.substring(runDirectory.length()));
@@ -2323,6 +2397,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public boolean isMinGW() {
         return mingw;
     }
+    
+    public boolean isUnix() {
+        return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC ||
+                platform == PlatformTypes.PLATFORM_LINUX || platform == PlatformTypes.PLATFORM_MACOSX;
+    }
+    
+    public boolean isSolaris() {
+        return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC;
+    }
 
     public boolean isCplusPlus() {
         return cplusplus;
@@ -2341,5 +2424,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 lastGo == LAST_GO_WAS_STEP || lastGo == LAST_GO_WAS_NEXT) {
             this.lastGo = lastGo;
         }
+    }
+    
+    private boolean isAttaching() {
+        ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+        return pae.getID() == DEBUG_ATTACH;
     }
 }

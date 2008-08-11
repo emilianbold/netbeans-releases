@@ -119,10 +119,6 @@ public abstract class RemoteConnectionSupport {
         } while (retry);
     }
     
-    public RemoteConnectionSupport(String key) {
-        this(key, 22);
-    }
-    
     public Channel getChannel() {
         return channel;
     }
@@ -158,6 +154,10 @@ public abstract class RemoteConnectionSupport {
     
     public boolean isFailed() {
         return failed;
+    }
+
+    public boolean isFailedOrCancelled() {
+        return failed || cancelled;
     }
     
     protected void setExitStatus(int exit_status) {

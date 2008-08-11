@@ -49,14 +49,16 @@ import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
     
@@ -308,5 +310,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         lib.setName(NbBundle.getMessage(Hk2JavaEEPlatformImpl.class, "LBL_LIBRARY"));
         lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, properties.getClasses());
         libraries = new LibraryImplementation[] {lib};
+    }
+    
+    @Override
+    public Lookup getLookup() {
+        String gfRootStr = properties.getGlassfishRoot();
+        Lookup baseLookup = Lookups.fixed(gfRootStr);
+        return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/gfv3/Lookup"); //NOI18N
+//
+//        WSStackSPI metroStack = new GlassfishJaxWsStack(gfRootStr);
+//        return Lookups.fixed(WSStackFactory.createWSStack(metroStack));
     }
 }

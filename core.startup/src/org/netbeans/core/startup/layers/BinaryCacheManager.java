@@ -42,17 +42,15 @@
 package org.netbeans.core.startup.layers;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
-import org.netbeans.Stamps;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.XMLFileSystem;
 
 /**
  * Partial implementation of the cache manager using BinaryFS as the layer
@@ -71,8 +69,12 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
     
     @Override
     public FileSystem load(FileSystem previous, ByteBuffer bb) throws IOException {
-        FileSystem fs = new BinaryFS(cacheLocation(), bb);
-        return fs;
+        try {
+            FileSystem fs = new BinaryFS(cacheLocation(), bb);
+            return fs;
+        } catch (BufferUnderflowException ex) {
+            throw (IOException)new IOException().initCause(ex);
+        }
     }
 
     @Override

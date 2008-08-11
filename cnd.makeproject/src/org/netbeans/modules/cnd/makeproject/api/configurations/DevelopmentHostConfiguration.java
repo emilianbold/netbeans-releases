@@ -56,7 +56,7 @@ public class DevelopmentHostConfiguration {
     
     public static final String PROP_DEV_HOST = "devHost"; // NOI18N
     
-    private int def;
+    private final int def;
     private int value;
     private String[] names;
     private boolean modified;
@@ -65,10 +65,16 @@ public class DevelopmentHostConfiguration {
     
     private static ServerList serverList = null;
     
-    public DevelopmentHostConfiguration() {
+    public DevelopmentHostConfiguration(String host) {
         names = getServerNames();
         value = 0;
-        def = 0; // localost is always defined and should be considered the default
+        for (int i = 0; i < names.length; i++) {
+            if (host.equals(names[i])) {
+                value = i;
+                break;
+            }
+        }        
+        def = value;
         pcs = new PropertyChangeSupport(this);
     }
     
@@ -116,7 +122,7 @@ public class DevelopmentHostConfiguration {
     private boolean addDevelopmentHost(String host) {
         ServerList list = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         if (list != null) {
-            list.addServer(host);
+            list.addServer(host, false);
         }
         return list != null;
     }
@@ -156,7 +162,8 @@ public class DevelopmentHostConfiguration {
     
     @Override
     public Object clone() {
-        DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration();
+        DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration(getName());
+        // FIXUP: left setValue call to leave old logic
         clone.setValue(getName());
         return clone;
     }
@@ -187,4 +194,5 @@ public class DevelopmentHostConfiguration {
     public boolean isLocalhost() {
         return CompilerSetManager.LOCALHOST.equals(getName());
     }
+
 }

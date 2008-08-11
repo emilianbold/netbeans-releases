@@ -71,6 +71,9 @@ void ScriptDebugger::FinalRelease() {
         delete m_pBreakpointMgr;
     }
     CloseHandle(m_hDebugExprCallBackEvent);
+    if(m_dwRemoteDebugAppCookie) {
+        Utils::revokeInterfaceFromGlobal(m_dwRemoteDebugAppCookie);
+    }
 }
 
 void ScriptDebugger::cleanup() {
@@ -119,10 +122,10 @@ STDMETHODIMP ScriptDebugger::onHandleBreakPoint(IRemoteDebugApplicationThread __
     BREAKREASON br, IActiveScriptErrorDebug __RPC_FAR *pScriptErrorDebug) {
     CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
     HRESULT hr = pDebugAppThread->GetApplication(&spRemoteDebugApp);
-    if(m_dwRemoteDebugAppCookie == 0 && hr == S_OK) {
-        Utils::registerInterfaceInGlobal(spRemoteDebugApp, IID_IRemoteDebugApplication, 
-                                            &m_dwRemoteDebugAppCookie);
-    }
+    //if(m_dwRemoteDebugAppCookie == 0 && hr == S_OK) {
+    //    Utils::registerInterfaceInGlobal(spRemoteDebugApp, IID_IRemoteDebugApplication, 
+    //                                        &m_dwRemoteDebugAppCookie);
+    //}
     Utils::registerInterfaceInGlobal(pDebugAppThread, IID_IRemoteDebugApplicationThread, 
                                         &m_dwRemoteDebugAppThreadCookie);
     StackFrame frame;
@@ -155,7 +158,6 @@ STDMETHODIMP ScriptDebugger::onHandleBreakPoint(IRemoteDebugApplicationThread __
     }else if(br == BREAKREASON_ERROR && (featureSet & SUSPEND_ON_EXCEPTIONS)) {
         EXCEPINFO excepInfo;
         pScriptErrorDebug->GetExceptionInfo(&excepInfo);
-        changeState(STATE_EXCEPTION, OK);
         tstring errorMsg;
         if(excepInfo.bstrSource != NULL) {
             errorMsg = (TCHAR *)excepInfo.bstrSource;
@@ -167,6 +169,7 @@ STDMETHODIMP ScriptDebugger::onHandleBreakPoint(IRemoteDebugApplicationThread __
             errorMsg.append((TCHAR *)excepInfo.bstrDescription);
         }
         m_pDbgpConnection->sendErrorMessage(errorMsg);
+        changeState(STATE_EXCEPTION, OK);
         return S_OK;
     }
     spRemoteDebugApp->ResumeFromBreakPoint(pDebugAppThread, BREAKRESUMEACTION_CONTINUE, 
@@ -229,7 +232,7 @@ void ScriptDebugger::getTopStackFrame(StackFrame *pStackFrame) {
     }
 }
 
-void ScriptDebugger::getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, 
+BOOL ScriptDebugger::getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, 
                                            StackFrame *pStackFrame) {
     CComPtr<IDebugCodeContext> spDebugCodeCtxt; 
     HRESULT hr = pFrameDescriptor->pdsf->GetCodeContext(&spDebugCodeCtxt);
@@ -263,8 +266,10 @@ void ScriptDebugger::getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor,
             if(description != NULL) {
                 pStackFrame->location = (TCHAR *)(description);
             }
+            return TRUE;
         }
     }
+    return FALSE;
 }
 
 list<StackFrame *> ScriptDebugger::getStackFrames() {
@@ -281,8 +286,9 @@ list<StackFrame *> ScriptDebugger::getStackFrames() {
             hr = spDebugStackFrames->Next(1, &frameDescriptor, &frameCount);
             if(hr == S_OK) {
                 StackFrame *pInfo = new StackFrame();
-                getStackFrame(&frameDescriptor, pInfo);
-                frames.push_back(pInfo);
+                if(getStackFrame(&frameDescriptor, pInfo)) {
+                    frames.push_back(pInfo);
+                }
             }
         }
     }
@@ -448,29 +454,32 @@ IDebugProperty *ScriptDebugger::resolveProperty(IDebugProperty *pDebugProperty, 
 }
 
 IDebugProperty *ScriptDebugger::getChildDebugProperty(IDebugProperty *pDebugProperty, tstring name) {
-    if(pDebugProperty != NULL) {
-        DebugPropertyInfo propertyInfo;
-        HRESULT hr = pDebugProperty->GetPropertyInfo(DBGPROP_INFO_ALL, 10, &propertyInfo);
-        CComPtr<IEnumDebugPropertyInfo> spEnumDebugPropInfo;
-        hr = pDebugProperty->EnumMembers(DBGPROP_INFO_ALL, 10, IID_IDebugPropertyEnumType_LocalsPlusArgs, 
-                                                    &spEnumDebugPropInfo);
-        ULONG count = 1;
-        DebugPropertyInfo childPropInfo;
-        if(hr == S_OK && spEnumDebugPropInfo != NULL) {
-            while(count > 0) {
-                hr = spEnumDebugPropInfo->Next(1, &childPropInfo, &count);
-                if(hr == S_OK) {
-                    if((TCHAR *)(childPropInfo.m_bstrName) == name) {
-                        return childPropInfo.m_pDebugProp;
-                    }
+    if(pDebugProperty == NULL) {
+        return NULL;
+    }
+    DebugPropertyInfo propertyInfo;
+    HRESULT hr = pDebugProperty->GetPropertyInfo(DBGPROP_INFO_ALL, 10, &propertyInfo);
+    CComPtr<IEnumDebugPropertyInfo> spEnumDebugPropInfo;
+    hr = pDebugProperty->EnumMembers(DBGPROP_INFO_ALL, 10, IID_IDebugPropertyEnumType_LocalsPlusArgs, 
+                                                &spEnumDebugPropInfo);
+    ULONG count = 1;
+    DebugPropertyInfo childPropInfo;
+    if(hr == S_OK && spEnumDebugPropInfo != NULL) {
+        while(count > 0) {
+            hr = spEnumDebugPropInfo->Next(1, &childPropInfo, &count);
+            if(hr == S_OK) {
+                if((TCHAR *)(childPropInfo.m_bstrName) == name) {
+                    return childPropInfo.m_pDebugProp;
                 }
             }
         }
     }
-    return NULL;
 }
 
 Property *ScriptDebugger::getProperty(IDebugProperty *pDebugProperty, tstring name, int stackDepth, BOOL recurse) {
+    if(pDebugProperty == NULL) {
+        return NULL;
+    }
     DebugPropertyInfo propertyInfo;
     HRESULT hr = pDebugProperty->GetPropertyInfo(DBGPROP_INFO_ALL, 10, &propertyInfo);
 
@@ -764,8 +773,11 @@ BOOL ScriptDebugger::isCurrentprocessThread(DWORD dwThreadID) {
 }
 
 void ScriptDebugger::setDebugApplication(IRemoteDebugApplication *pRemoteDebugApplication) {
-    m_spRemoteDebugApplication = pRemoteDebugApplication;
     pRemoteDebugApplication->AddRef();
+    if(m_dwRemoteDebugAppCookie == 0) {
+        Utils::registerInterfaceInGlobal(pRemoteDebugApplication, IID_IRemoteDebugApplication, 
+                                            &m_dwRemoteDebugAppCookie);
+    }
 }
 
 ScriptDebugger *ScriptDebugger::createScriptDebugger() {
@@ -832,9 +844,6 @@ HRESULT ScriptDebugger::startSession() {
         registerForDebugAppNodeEvents();
 
         hr = spRemoteDebugApp->ConnectDebugger(this);
-        if(SUCCEEDED(hr)) {
-            spRemoteDebugApp->CauseBreak();
-        }
     }
     return hr;
 }
@@ -897,10 +906,7 @@ void ScriptDebugger::unregisterForDebugAppNodeEvents() {
 
 HRESULT ScriptDebugger::getRemoteDebugApplication(IRemoteDebugApplication **ppRemoteDebugApp) {
     HRESULT hr = E_FAIL;
-    if(m_dwThreadID == GetCurrentThreadId()) {
-        *ppRemoteDebugApp = m_spRemoteDebugApplication;
-        hr = S_OK;
-    }else if(m_dwRemoteDebugAppCookie > 0){
+    if(m_dwRemoteDebugAppCookie > 0){
         hr = Utils::getInterfaceFromGlobal(m_dwRemoteDebugAppCookie, IID_IRemoteDebugApplication, 
                                             (void **)ppRemoteDebugApp);
     }

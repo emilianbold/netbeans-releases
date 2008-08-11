@@ -403,7 +403,9 @@ public class MainMenuTest extends JellyTestCase {
             ideFile = new PrintStream(menuItemsLogFile);
             Utilities.printMenuStructure(ideFile, menuItem, "---", 1);
             assertNotNull("Cannot find menu " + menuName, menuItem);//is there such menu?
-            assertFile(Utilities.compareNbMenuItems(menuItem, permanentMenu, 1), permuiLogsFile, menuItemsLogFile, diffFile);
+            assertFile(Utilities.compareNbMenuItems(menuItem, permanentMenu, 1),
+                    //"[+]missing in IDE, [-] missing in spec\n"+Utilities.readFileToString(diffFile),
+                    permuiLogsFile, menuItemsLogFile, diffFile);
 
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();

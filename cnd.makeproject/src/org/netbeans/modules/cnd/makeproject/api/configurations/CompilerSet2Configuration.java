@@ -208,7 +208,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     @Override
     public Object clone() {
-        CompilerSet2Configuration clone = new CompilerSet2Configuration(developmentHostConfiguration);
+        CompilerSet2Configuration clone = new CompilerSet2Configuration((DevelopmentHostConfiguration)developmentHostConfiguration.clone());
         clone.setCompilerSetName((StringConfiguration)getCompilerSetName().clone());
         return clone;
     }

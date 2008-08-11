@@ -38,22 +38,27 @@
  */
 package org.netbeans.test.permanentUI.utils;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import org.netbeans.jemmy.ComponentChooser;
 
 /**
  *
  * @author Lukas Hasik
  */
 public class Utilities {
+
     private static boolean debug = false;
 
     /**
@@ -87,21 +92,23 @@ public class Utilities {
             Scanner scanner = new Scanner(new File(filename));
             //starts "| Item |"
             String menuName = scanner.nextLine();
-            if(debug)
-                System.out.println("1: "+menuName);
+            if (debug) {
+                System.out.println("1: " + menuName);
+            }
             int from;
             if ((from = menuName.indexOf("| ")) != -1) {
                 parsedMenu.setName(menuName.substring(from + "| ".length(), menuName.lastIndexOf(" |")));
                 char mnemo = menuName.substring(menuName.lastIndexOf(" |") + "| ".length()).trim().charAt(0);
-                parsedMenu.setMnemo(Character.isLetter(mnemo)?mnemo:'-');
+                parsedMenu.setMnemo(Character.isLetter(mnemo) ? mnemo : '-');
             } else {
-                System.out.println("Wrong file: missing header - menu name as | menuName |");                
+                System.out.println("Wrong file: missing header - menu name as | menuName |");
                 throw new IllegalStateException("Wrong file: missing header - menu name as | menuName |");
             }
             //skip ====== bellow menu name
             menuName = scanner.nextLine();
-            if(debug)
-                System.out.println("2: "+menuName);
+            if (debug) {
+                System.out.println("2: " + menuName);
+            }
             if (!(menuName.matches("^={5,}+\\s*+"))) {
                 System.err.println("Wrong file: missing ===== - bellow  menu name");
                 throw new IllegalStateException("Wrong file: missing ===== - bellow  menu name");
@@ -148,7 +155,7 @@ public class Utilities {
             if ((to = submenuName.indexOf(">")) != -1) {
                 parsedMenu.setName(submenuName.substring(0, submenuName.lastIndexOf(">")).trim());
             } else {
-                 throw new IllegalStateException("Wrong file: missing header - submenu name                 > [x] submenu item                  B");
+                throw new IllegalStateException("Wrong file: missing header - submenu name                 > [x] submenu item                  B");
             }
 
             ArrayList<NbMenuItem> submenu = new ArrayList<NbMenuItem>();
@@ -183,8 +190,9 @@ public class Utilities {
         //parse line
         Scanner line = new Scanner(lineText);
         NbMenuItem menuitem = new NbMenuItem();
-        if(debug)
-                System.out.println("Parsing line: "+line);
+        if (debug) {
+            System.out.println("Parsing line: " + line);
+        }
         //is it separator? "======="
         if (line.hasNext("^={5,}+\\s*")) { //at least 5x =
 
@@ -258,15 +266,16 @@ public class Utilities {
         if (submenu != null) {
             output += "> ";
         }
-        output += "   " + menu.getMnemo();
-
+        if (menu.getMnemo() != 0) {
+            output += "   " + menu.getMnemo();
+        }
         out.println(output);
 
         //print submenu
         if (level > 0 && submenu != null) {
             Iterator<NbMenuItem> sIt = submenu.iterator();
             while (sIt.hasNext()) {
-                printMenuStructure(out,/*(NbMenuItem)*/ sIt.next(), separator + separator, level-1);
+                printMenuStructure(out,/*(NbMenuItem)*/ sIt.next(), separator + separator, level - 1);
             }
         }
     }
@@ -329,6 +338,40 @@ public class Utilities {
         return textLines;
     }
 
+    public static NbMenuItem parseSubTreeByLines(String filename) {
+        Hashtable<Integer, NbMenuItem> levelRoots = new Hashtable<Integer, NbMenuItem>();
+        NbMenuItem mainNode = new NbMenuItem();
+        int actLevel = -1;
+        levelRoots.put(new Integer(actLevel), mainNode);
+        try {
+            Scanner scanner = new Scanner(new File(filename));
+            while (scanner.hasNextLine()) {
+                String nextLine = scanner.nextLine();
+                int spaces = 0;
+                while (nextLine.charAt(spaces) == ' ') {
+                    spaces++;
+                }
+                nextLine = nextLine.substring(spaces).trim();
+                NbMenuItem newNode = new NbMenuItem();
+                newNode.setName(nextLine);
+                actLevel = spaces / 4;//every level is intended
+                //NbMenuItem node =
+                ArrayList<NbMenuItem> submenu = levelRoots.get(actLevel - 1).getSubmenu();
+                if (submenu == null) {
+                    submenu = new ArrayList<NbMenuItem>();
+                }
+                submenu.add(newNode);
+                levelRoots.get(actLevel - 1).setSubmenu(submenu);//set new submenu with the new node in it
+
+                levelRoots.put(actLevel, newNode);
+            }
+
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return mainNode;
+    }
+
     /**
      * trims unnecessary spaces from text line
      * @param line
@@ -381,7 +424,7 @@ public class Utilities {
                         } else { //compareItem doesn't exist
                             originItem = itOrigin.next();
                             returnText += originItem.getName() + " should NOT be in the menu. [" + originItem.toString() + "] \n";
-                        }                        
+                        }
                     } else {
                         if (itCompare.hasNext()) {//originItem doesn't exist
                             compareItem = itCompare.next();
@@ -413,21 +456,73 @@ public class Utilities {
         }
         return newArray;
     }
-    
+
     public static NbMenuItem getMenuByName(String menuName, NbMenuItem aMenu) {
         //browse throught the menu
-        if(menuName.equals(aMenu.getName())) {
+        if (menuName.equals(aMenu.getName())) {
             return aMenu;
         }
-        if(aMenu.getSubmenu() != null) { //recursively for submenu
-            
+        if (aMenu.getSubmenu() != null) { //recursively for submenu
+
             Iterator<NbMenuItem> aMenuIt = aMenu.getSubmenu().iterator();
-            while(aMenuIt.hasNext()) {
+            while (aMenuIt.hasNext()) {
                 NbMenuItem ret = getMenuByName(menuName, aMenuIt.next());
-                if(ret != null)
+                if (ret != null) {
                     return ret;
+                }
             }
         }
-        return  null;
+        return null;
+    }
+
+    public static String readFileToString(String filename) {
+        if (!(new File(filename).exists())) {
+            return "file " + filename + " is empty";
+        } 
+        FileInputStream fis = null;
+        byte[] b = null;
+
+        try {
+            fis = new FileInputStream(filename);
+
+            int x = fis.available();
+
+            b = new byte[x];
+
+            fis.read(b);
+        } catch (IOException ex) {
+            System.out.println("problems with diff file - nothing with the test");
+            ex.printStackTrace();
+        } finally {
+            try {
+                fis.close();
+            } catch (IOException ex) {
+                System.out.println("just closing the diff file - nothing with the test");
+                ex.printStackTrace();
+            }
+        }
+
+
+        return new String(b);
+    }
+
+    public static ArrayList<Component> findComponentsInContainer(Container cont, ComponentChooser chooser, boolean recursive) {
+        Component[] components = cont.getComponents();
+        ArrayList<Component> results = new ArrayList<Component>();
+        for (int i = 0; i < components.length; i++) {
+            if (components[i] != null) {
+                if (chooser.checkComponent(components[i])) {
+                    results.add(components[i]);
+                //System.out.println("Added :"+components[i].toString());
+                }
+                if (recursive && components[i] instanceof Container) {
+                    ArrayList<Component> aa = findComponentsInContainer((Container) components[i], chooser, recursive);
+                    //System.out.println("adding all " + aa);
+                    results.addAll(aa);
+                }
+            }
+        }
+
+        return results;
     }
 }

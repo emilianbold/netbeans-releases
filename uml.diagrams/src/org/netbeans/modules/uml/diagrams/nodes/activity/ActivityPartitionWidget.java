@@ -131,7 +131,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
     {
         //create main view 
         MainViewWidget mainView = new MainViewWidget(scene,
-                                                     getWidgetID(),
+                                                     getResourcePath(),
                                                      bundle.getString("LBL_body"));
         
         mainView.setLayout(

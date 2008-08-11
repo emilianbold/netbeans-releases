@@ -165,7 +165,6 @@ public class CommandRunner extends BasicTask<OperationState> {
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
             if (state == OperationState.COMPLETED) {
-                cmd.processResponse();
                 return cmd.getData();
             }
         } catch (InterruptedException ex) {
@@ -294,7 +293,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         URLConnection conn = null;
         String cmd = serverCmd.getCommand();
         String commandUrl = constructCommandUrl(cmd, true);
-        int retries = ("version".equals(cmd) || "__locations".equals(cmd)) ? 1 : 3;
+        int retries = 1; // disable ("version".equals(cmd) || "__locations".equals(cmd)) ? 1 : 3;
         
         Logger.getLogger("glassfish").log(Level.FINEST, 
                 "CommandRunner.call(" + commandUrl + ") called on thread \"" + 

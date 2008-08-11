@@ -59,6 +59,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
@@ -352,14 +353,16 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 //        }
 //        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
         
-            ClassPath cp = ClassPath.getClassPath(getLocationValue().getRootFolder(), ClassPath.COMPILE);
-            ClassLoader cl = cp.getClassLoader(true);
-            try {
-                Class.forName("javax.transaction.UserTransaction", false, cl);
-            }
-            catch (ClassNotFoundException cnfe) {
-                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_UserTransactionUnavailable"));
-                return false;
+            if (Util.isContainerManaged(project)) {
+                ClassPath cp = ClassPath.getClassPath(getLocationValue().getRootFolder(), ClassPath.COMPILE);
+                ClassLoader cl = cp.getClassLoader(true);
+                try {
+                    Class.forName("javax.transaction.UserTransaction", false, cl);
+                }
+                catch (ClassNotFoundException cnfe) {
+                    wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "ERR_UserTransactionUnavailable"));
+                    return false;
+                }
             }
         
             Sources srcs = (Sources) project.getLookup().lookup(Sources.class);

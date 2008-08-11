@@ -733,7 +733,6 @@ PREPROC_DIRECTIVE :
                     | ("if" PostIfChar) =>  "if"   { $setType(IF); }
                     | ("undef" PostPPKwdChar) => "undef"  { $setType(UNDEF);  }
                     | ("elif" PostIfChar) => "elif"  { $setType(ELIF);  }
-                    | ("elseif" PostIfChar) => "elseif"  { $setType(ELIF);  }
                     | ("else" PostPPKwdChar) =>  "else" { $setType(ELSE); }
                     | ("endif" PostPPKwdChar) => "endif" { $setType(ENDIF); }
                     | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); } DirectiveBody

@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.openide.util.Utilities;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -67,11 +66,6 @@ public final class PlatformInfo {
     private PlatformInfo(String hkey, int platform) {
         this.hkey = hkey;
         this.platform = platform;
-
-        //TODO: temp fixup
-        if (CompilerSetManager.LOCALHOST.equals(hkey) && PlatformTypes.PLATFORM_NONE == platform) {
-            platform = getDefaultPlatform();
-        }
 
         String path = getEnv().get("PATH"); // NOI18N
         if (Boolean.getBoolean("cnd.debug.use_altpath")) { // NOI18N
@@ -141,6 +135,10 @@ public final class PlatformInfo {
             buf.append(File.pathSeparator);
         }
         return buf.substring(0, buf.length() - 1); // remove the trailing pathSeparator...
+    }
+
+    public String getPathAsStringWith(String newDir) {
+        return getPathName() + '=' + getPathAsString() + pathSeparator() + newDir;
     }
 
     /**
@@ -217,7 +215,7 @@ public final class PlatformInfo {
         return isWindows() ? ";" : ":"; // NOI18N
     }
 
-    public int getPlatform(){
+    public int getPlatform() {
         return platform;
     }
 
@@ -241,27 +239,6 @@ public final class PlatformInfo {
     public boolean fileExists(String path) {
         return HostInfoProvider.getDefault().fileExists(hkey, path);
     }
-
-    //TODO: fixup, platformz
-    private static int defaultPlatform = -1;
-    private static int getDefaultPlatform() {
-        if (defaultPlatform <= 0) {
-            if (Utilities.isWindows())
-                defaultPlatform = PlatformTypes.PLATFORM_WINDOWS;
-            else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX)
-                defaultPlatform = PlatformTypes.PLATFORM_LINUX;
-            else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS && System.getProperty("os.arch").indexOf("86") >= 0) // NOI18N
-                defaultPlatform = PlatformTypes.PLATFORM_SOLARIS_INTEL;
-            else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS)
-                defaultPlatform = PlatformTypes.PLATFORM_SOLARIS_SPARC;
-            else if (Utilities.getOperatingSystem() == Utilities.OS_MAC)
-                defaultPlatform = PlatformTypes.PLATFORM_MACOSX;
-            else
-                defaultPlatform = PlatformTypes.PLATFORM_GENERIC;
-        }
-        return defaultPlatform;
-    }
-
     private static Map<String, PlatformInfo> map = new HashMap<String, PlatformInfo>();
 
     public static synchronized PlatformInfo getDefault(String hkey) {

@@ -103,16 +103,16 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         this.noneItem = noneItem;
         this.defaultItem = defaultItem;
         
-        radioButton.getAccessibleContext().setAccessibleName( 
-                radioButton.getText());
-        radioButton.getAccessibleContext().setAccessibleDescription(
-                radioButton.getText());
-
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     private void initComponents() {
         radioButton = new JRadioButton();
+        
+        radioButton.getAccessibleContext().setAccessibleName( 
+                radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                radioButton.getText());
 
         customEditor = new CustomEditor();
         radioButton.addActionListener(customEditor);

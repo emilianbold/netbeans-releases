@@ -57,7 +57,10 @@ import java.io.Writer;
 import java.lang.ref.Reference;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -346,7 +349,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
      */
     @Override
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-        Charset c = this.getDataObject() == charsetForObject ? charsetForSaveAndLoad : null;
+        Charset c = charsets.get(this.getDataObject());
         if (c == null) {
             c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         }
@@ -357,8 +360,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     /** can hold the right charset to be used during save, needed for communication
      * between saveFromKitToStream and saveDocument
      */
-    private static Charset charsetForSaveAndLoad;
-    private static DataObject charsetForObject;
+    private static Map<DataObject,Charset> charsets = Collections.synchronizedMap(new HashMap<DataObject,Charset>());
     /**
      * @inheritDoc
      */
@@ -371,7 +373,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             throw new NullPointerException("Kit is null"); // NOI18N
         }
         
-        Charset c = this.getDataObject() == charsetForObject ? charsetForSaveAndLoad : null;
+        Charset c = charsets.get(this.getDataObject());
         if (c == null) {
             c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
         }
@@ -392,13 +394,12 @@ public class DataEditorSupport extends CloneableEditorSupport {
     @Override
     public StyledDocument openDocument() throws IOException {
         Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+        DataObject tmpObj = getDataObject();
         try {
-            charsetForSaveAndLoad = c;
-            charsetForObject = getDataObject();
+            charsets.put(tmpObj, c);
             return super.openDocument();
         } finally {
-            charsetForSaveAndLoad = null;
-            charsetForObject = null;
+            charsets.remove(tmpObj);
         }
     }
 
@@ -415,15 +416,14 @@ public class DataEditorSupport extends CloneableEditorSupport {
                                      null, null);
             throw e;
         }
-        
-        Charset c = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+
+        DataObject tmpObj = this.getDataObject();
+        Charset c = FileEncodingQuery.getEncoding(tmpObj.getPrimaryFile());
         try {
-            charsetForSaveAndLoad = c;
-            charsetForObject = getDataObject();
+            charsets.put(obj, c);
             super.saveDocument();
         } finally {
-            charsetForSaveAndLoad = null;
-            charsetForObject = null;
+            charsets.remove(obj);
         }
     }
 

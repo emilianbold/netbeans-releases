@@ -53,7 +53,7 @@ public class JavaTypeSearchProvider implements SearchProvider {
 
     public void evaluate(SearchRequest request, SearchResponse response) {
         String text = removeNonJavaChars(request.getText());
-        if(text.equals("")) {
+        if(text.length() == 0) {
             return;
         }
         GoToTypeWorker worker = new GoToTypeWorker(text);
@@ -83,7 +83,7 @@ public class JavaTypeSearchProvider implements SearchProvider {
 
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            if (Character.isJavaIdentifierPart(c) || c == '*' || c == '?') {
+            if (Character.isJavaIdentifierPart(c)) {
                 sb.append(c);
             }
         }
