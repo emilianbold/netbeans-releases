@@ -32,6 +32,7 @@ void sameNameDiffScope(int name) {
     char* globalvar = 0;
     fun(::globalvar, &globalvar);
     ::globalvar = ++::globalvar + globalvar;
+    int (*funPtr)();
 }
 
 char* globalvar;

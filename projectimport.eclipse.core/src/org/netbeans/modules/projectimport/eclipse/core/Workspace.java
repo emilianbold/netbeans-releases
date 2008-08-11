@@ -161,7 +161,10 @@ public final class Workspace {
     private Set<Variable> resourcesVariables = new HashSet<Variable>();
     private Set<EclipseProject> projects = new HashSet<EclipseProject>();
     private Map<String,String> jreContainers;
+    // TODO: nice to have: refactor bellow three maps into a class or something
     private Map<String, List<String>> userLibraries;
+    private Map<String, List<String>> userLibraryJavadocs;
+    private Map<String, List<String>> userLibrarySources;
     private Collection<LaunchConfiguration> launchConfigurations;
     
     private boolean myEclipseLibrariesLoaded;
@@ -303,7 +306,7 @@ public final class Workspace {
                 }
                 assert index != -1 : key;
                 String libName = key.substring(index, end); //NOI18N
-                addUserLibrary(libName, jars);
+                addUserLibrary(libName, jars, null, null);
             }
         }
     }
@@ -344,11 +347,19 @@ public final class Workspace {
         projects.add(project);
     }
     
-    void addUserLibrary(String libName, List<String> jars) {
+    void addUserLibrary(String libName, List<String> jars, List<String> javadoc, List<String> sources) {
         if (userLibraries == null) {
             userLibraries = new HashMap<String, List<String>>();
+            userLibraryJavadocs = new HashMap<String, List<String>>();
+            userLibrarySources = new HashMap<String, List<String>>();
         }
         userLibraries.put(libName, jars);
+        if (javadoc != null) {
+            userLibraryJavadocs.put(libName, javadoc);
+        }
+        if (sources != null) {
+            userLibrarySources.put(libName, sources);
+        }
     }
 
     Map<String, List<String>> getUserLibraries() {
@@ -377,6 +388,78 @@ public final class Workspace {
         }
     }
     
+    private URL convertPathToURL(String path, List<String> importProblems, String libName) {
+        try {
+            File f = new File(path);
+            URL u = f.toURI().toURL();
+            boolean isFolder;
+            if (f.exists()) {
+                isFolder = f.isDirectory();
+            } else {
+                importProblems.add(NbBundle.getMessage(Workspace.class, "MSG_CannotFindLibrarySources", path, libName)); //NOI18N
+                return null;
+            }
+            if (isFolder) {
+                if (!u.toExternalForm().endsWith("/")) { //NOI18N
+                    u = new URL(u.toExternalForm()+"/"); //NOI18N
+                }
+            } else {
+                if (!"jar".equals(u.getProtocol())) { //NOI18N
+                    u = FileUtil.getArchiveRoot(u);
+                }
+            }
+            return u;
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+    
+    List<URL> getJavadocForUserLibrary(String libRawPath, List<String> importProblems) {
+        if (userLibraryJavadocs != null && userLibraryJavadocs.get(libRawPath) != null) {
+            List<String> jars = userLibraryJavadocs.get(libRawPath);
+            List<URL> urls = new ArrayList<URL>(jars.size());
+            for (String path : jars) {
+                String resolvedPath = EclipseProject.resolveJavadocLocationAttribute(path, this, importProblems, true);
+                if (resolvedPath != null) {
+                    try {
+                        urls.add(new URL(resolvedPath));
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    URL u = convertPathToURL(path, importProblems, libRawPath);
+                    if (u != null) {
+                        urls.add(u);
+                    }
+                }
+            }
+            return urls;
+        } else {
+            return null;
+        }
+    }
+    
+    List<URL> getSourcesForUserLibrary(String libRawPath, List<String> importProblems) {
+        if (userLibrarySources != null && userLibrarySources.get(libRawPath) != null) {
+            List<String> jars = userLibrarySources.get(libRawPath);
+            List<URL> urls = new ArrayList<URL>(jars.size());
+            for (String path : jars) {
+                String resolvedPath = EclipseProject.resolveSourcePathAttribute(path, this, false);
+                if (resolvedPath != null) {
+                    path = resolvedPath;
+                }
+                URL u = convertPathToURL(path, importProblems, libRawPath);
+                if (u != null) {
+                    urls.add(u);
+                }
+            }
+            return urls;
+        } else {
+            return null;
+        }
+    }
+    
     /**
      * Tries to find an <code>EclipseProject</code> in the workspace and either
      * returns its instance or null in the case it's not found.
@@ -398,15 +481,6 @@ public final class Workspace {
     
     public Set<EclipseProject> getProjects() {
         return projects;
-    }
-    
-    String getProjectAbsolutePath(String projectName) {
-        for (EclipseProject project : projects) {
-            if (project.getName().equals(projectName)) {
-                return project.getDirectory().getAbsolutePath();
-            }
-        }
-        return null;
     }
     
     EclipseProject getProjectByProjectDir(File projectDir) {

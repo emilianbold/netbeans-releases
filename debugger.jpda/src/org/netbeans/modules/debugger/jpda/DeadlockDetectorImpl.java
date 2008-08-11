@@ -65,7 +65,7 @@ import org.openide.util.WeakSet;
 public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyChangeListener {
     
     private JPDADebugger debugger;
-    private Set<JPDAThread> suspendedThreads = new WeakSet<JPDAThread>();
+    private final Set<JPDAThread> suspendedThreads = new WeakSet<JPDAThread>();
     
     private Map<Long, Node> monitorToNode;
 
@@ -92,11 +92,15 @@ public class DeadlockDetectorImpl extends DeadlockDetector implements PropertyCh
             JPDAThread thread = (JPDAThread) evt.getSource();
             boolean suspended = (Boolean) evt.getNewValue();
             Set<Deadlock> deadlocks = null;
-            synchronized (suspendedThreads) {
-                if (suspended) {
+            if (suspended) {
+                Set<JPDAThread> tempSuspThreads;
+                synchronized(suspendedThreads) {
                     suspendedThreads.add(thread);
-                    deadlocks = findDeadlockedThreads(suspendedThreads);
-                } else {
+                    tempSuspThreads = new HashSet<JPDAThread>(suspendedThreads);
+                }
+                deadlocks = findDeadlockedThreads(tempSuspThreads);
+            } else {
+                synchronized (suspendedThreads) {
                     suspendedThreads.remove(thread);
                 }
             }

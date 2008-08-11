@@ -64,15 +64,19 @@ made subject to such option by the copyright holder.
             </xsl:element>
             <xsl:element name="target">
                 <xsl:attribute name="name">jaxb-code-generation</xsl:attribute>
-                <xsl:attribute name="depends">xjc-typedef-target</xsl:attribute>            
+                <xsl:attribute name="depends">xjc-typedef-target,-do-init,-init-macrodef-javac</xsl:attribute>            
                 <mkdir dir="build/generated/addons/jaxb"/>
                 <mkdir dir="build/generated/jaxbCache"/>
                 <mkdir dir="${{build.classes.dir}}"/>
                 <xsl:apply-templates select="s:schemas/s:schema"/>
-                <javac destdir="${{build.classes.dir}}" srcdir="build/generated/addons/jaxb" source="${{javac.source}}"  target="${{javac.target}}">
-                    <sourcepath location="${{src.dir}}"/>
-                    <classpath path="${{jaxbwiz.gensrc.classpath}}"/>
-                </javac>
+                <xsl:element name="javac" namespace="http://www.netbeans.org/ns/j2se-project/3">
+                    <xsl:attribute name="includes"></xsl:attribute>
+                    <xsl:attribute name="excludes"></xsl:attribute>
+                    <xsl:attribute name="destdir">${build.classes.dir}</xsl:attribute>
+                    <xsl:attribute name="srcdir">build/generated/addons/jaxb</xsl:attribute>
+                    <xsl:attribute name="classpath">${jaxbwiz.gensrc.classpath}</xsl:attribute>
+                    <xsl:attribute name="sourcepath">${src.dir}</xsl:attribute>
+                </xsl:element>
             </xsl:element>             
         </xsl:element>
     </xsl:template>

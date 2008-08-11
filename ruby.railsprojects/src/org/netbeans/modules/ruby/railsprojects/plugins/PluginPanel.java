@@ -61,6 +61,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -76,7 +77,7 @@ import org.openide.util.RequestProcessor;
  * @author  Tor Norbye
  */
 public class PluginPanel extends javax.swing.JPanel {
-    private PluginManager pluginManager;
+    private final PluginManager pluginManager;
     
     private List<Plugin> installedPlugins;
     private List<Plugin> newPlugins;
@@ -91,6 +92,7 @@ public class PluginPanel extends javax.swing.JPanel {
     
     /** Creates new form PluginPanel */
     public PluginPanel(PluginManager pluginManager) {
+        Parameters.notNull("pluginManager", pluginManager);
         initComponents();
         this.pluginManager = pluginManager;
     }

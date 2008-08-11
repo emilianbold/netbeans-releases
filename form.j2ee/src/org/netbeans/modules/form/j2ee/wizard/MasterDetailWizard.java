@@ -73,6 +73,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.JoinColumn;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToMany;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
@@ -597,28 +598,34 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                     }
                     String relationField = null;
                     for (ManyToOne manyToOne : detailEntity.getAttributes().getManyToOne()) {
-                        // PENDING when there can be more JoinColumns?
-                        String columnName = manyToOne.getJoinColumn(0).getName();
+                        JoinColumn[] joinColumn = manyToOne.getJoinColumn();
+                        String columnName;
+                        if (joinColumn.length == 0) {
+                            columnName = manyToOne.getName().toUpperCase() + "_ID"; // NOI18N
+                        } else {
+                            // PENDING when there can be more JoinColumns?
+                            columnName = manyToOne.getJoinColumn(0).getName();
+                        }
                         if (relationColumn.equals(columnName)) {
                             relationField = manyToOne.getName();
                             break;
                         }
                     }
-                    for (OneToMany oneToMany : masterEntity.getAttributes().getOneToMany()) {
-                        String targetEntity = oneToMany.getTargetEntity();
-                        int index = targetEntity.lastIndexOf('.');
-                        if (index != -1) {
-                            targetEntity = targetEntity.substring(index+1);
-                        }
-                        if (detailEntityName.equals(targetEntity)
-                                && relationField.equals(oneToMany.getMappedBy())) {
-                            return new String[] {
-                                J2EEUtils.fieldToProperty(relationField),
-                                J2EEUtils.fieldToProperty(oneToMany.getName())
-                            };
-                        }
-                    }
                     if (relationField != null) {
+                        for (OneToMany oneToMany : masterEntity.getAttributes().getOneToMany()) {
+                            String targetEntity = oneToMany.getTargetEntity();
+                            int index = targetEntity.lastIndexOf('.');
+                            if (index != -1) {
+                                targetEntity = targetEntity.substring(index+1);
+                            }
+                            if (detailEntityName.equals(targetEntity)
+                                    && relationField.equals(oneToMany.getMappedBy())) {
+                                return new String[] {
+                                    J2EEUtils.fieldToProperty(relationField),
+                                    J2EEUtils.fieldToProperty(oneToMany.getName())
+                                };
+                            }
+                        }
                         return new String[] { J2EEUtils.fieldToProperty(relationField), null };
                     } else {
                         return null;

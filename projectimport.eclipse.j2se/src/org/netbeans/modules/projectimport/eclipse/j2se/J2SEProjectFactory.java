@@ -86,18 +86,32 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         // calculate nb project location
         File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
         
-        if (ProjectFactorySupport.areSourceRootsOwned(model, importProblems)) {
+        if (ProjectFactorySupport.areSourceRootsOwned(model, nbProjectDir, importProblems)) {
             return null;
         }
         
         // create basic NB project
         String buildScript = null;
-        if (nbProjectDir.exists() && new File(nbProjectDir, "build.xml").exists()) { //NOI18N
+        if (new File(nbProjectDir, "build.xml").exists()) { //NOI18N
             buildScript = "nb-build.xml"; //NOI18N
         }
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
                 nbProjectDir, model.getProjectName(), model.getEclipseSourceRootsAsFileArray(), 
                 model.getEclipseTestSourceRootsAsFileArray(), null, null, buildScript);
+        
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        boolean changed = false;
+        if (new File(nbProjectDir, "dist").exists()) { //NOI18N
+            ep.setProperty("dist.dir", "nbdist"); //NOI18N
+            changed = true;
+        }
+        if (new File(nbProjectDir, "build").exists()) { //NOI18N
+            ep.setProperty("build.dir", "nbbuild"); //NOI18N
+            changed = true;
+        }
+        if (changed) {
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        }
         
         // get NB project
         J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().

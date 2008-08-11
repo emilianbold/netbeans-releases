@@ -55,7 +55,8 @@ public enum PropertyType {
     
 //    PARTNER_LINK_TYPE(String.class, StringPropEditor.class),
 //    ROLE(String.class, StringPropEditor.class),
-//    ROLE(WSDLReference.class, ModelReferenceEditor.class),
+    // 142908
+    ROLE(WSDLReference.class, ModelReferenceEditor.class),
     
 //    OPERATION(String.class, StringPropEditor.class),
     
@@ -68,7 +69,8 @@ public enum PropertyType {
 //    WHILE_CONDITION(BooleanExpr.class), 
 //    TIME_EXPRESSION(String.class, StringPropEditor.class), 
 //    WSDL_FILE(String.class, StringPropEditor.class), 
-//    PARTNER_LINK_TYPE(WSDLReference.class, ModelReferenceEditor.class), 
+    // 142908
+    PARTNER_LINK_TYPE(WSDLReference.class, ModelReferenceEditor.class), 
 //    MY_ROLE(WSDLReference.class, ModelReferenceEditor.class), 
 //    PARTNER_ROLE(WSDLReference.class, ModelReferenceEditor.class), 
     // SUPPRESS_JOIN_FAILURE(TBoolean.class, TBooleanEditor.class), 

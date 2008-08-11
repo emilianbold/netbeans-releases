@@ -783,8 +783,6 @@ public final class OpenProjectList {
                     }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
-                } catch (IllegalArgumentException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
         

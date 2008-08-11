@@ -46,8 +46,14 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import junit.framework.*;
+import org.netbeans.modules.xml.axi.ContentModel;
 import org.netbeans.modules.xml.axi.Element;
+import org.netbeans.modules.xml.schema.model.AnyAttribute;
+import org.netbeans.modules.xml.schema.model.AttributeGroupReference;
 import org.netbeans.modules.xml.schema.model.AttributeReference;
+import org.netbeans.modules.xml.schema.model.ComplexContent;
+import org.netbeans.modules.xml.schema.model.ComplexExtension;
+import org.netbeans.modules.xml.schema.model.ComplexTypeDefinition;
 import org.netbeans.modules.xml.schema.model.ElementReference;
 import org.netbeans.modules.xml.schema.model.GlobalAttribute;
 import org.netbeans.modules.xml.schema.model.GlobalAttributeGroup;
@@ -57,6 +63,10 @@ import org.netbeans.modules.xml.schema.model.GlobalGroup;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.GroupReference;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
+import org.netbeans.modules.xml.schema.model.LocalAttributeContainer;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaComponentFactory;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.schema.model.Sequence;
 
@@ -81,31 +91,25 @@ public class SyncElementTest extends AbstractSyncTestCase {
     }
     
     public static Test suite() {
-	TestSuite suite = new TestSuite(SyncElementTest.class);
+	TestSuite suite = new TestSuite();
+        suite.addTest(new SyncElementTest("testRemoveElementFromType"));
+        suite.addTest(new SyncElementTest("testRemoveAttributeFromAttrGroup"));
+        suite.addTest(new SyncElementTest("testChangeType"));
+        suite.addTest(new SyncElementTest("testChangeAttributeRef"));
+        suite.addTest(new SyncElementTest("testChangeTypeContent"));
+        suite.addTest(new SyncElementTest("testChangeNameOfElement"));
+	suite.addTest(new SyncElementTest("testRemoveGlobalElement"));
+	suite.addTest(new SyncElementTest("testAddGlobalElement"));
+	suite.addTest(new SyncElementTest("testChangeElementRef"));        
+	suite.addTest(new SyncElementTest("testChangeBase"));
 	return suite;
     }
-    
-    public void testElementType() throws Exception {
-	removeElementFromType();
-	removeAttributeFromAttrGroup();
-	changeType();
-	changeAttributeRef();
-	changeTypeContent();
-        changeNameOfElement();
-	//deleteGlobalType();
-    }
-    
-    public void testElement() throws Exception {
-	removeGlobalElement();
-	addGlobalElement();
-	changeElementRef();
-    }
-    
+        
     /**
      * Removes an element from type "USAddress".
      * Element count should be one less.
      */
-    private void removeElementFromType() throws Exception {
+    public void testRemoveElementFromType() throws Exception {
 	Element address = findAXIGlobalElement("address");
 	int childCount = address.getChildElements().size();
 	assert(childCount == 3);
@@ -123,7 +127,7 @@ public class SyncElementTest extends AbstractSyncTestCase {
      * Removes an attribute from attribute group.
      * child count should be one less.
      */
-    private void removeAttributeFromAttrGroup() throws Exception {
+    public void testRemoveAttributeFromAttrGroup() throws Exception {
 	Element address = findAXIGlobalElement("address");
 	int childCount = address.getChildren().size();
 	assert(childCount == 4);
@@ -141,7 +145,7 @@ public class SyncElementTest extends AbstractSyncTestCase {
      * Change the type of element "address" from
      * "USAddress" to "USAddress1".
      */
-    private void changeType() throws Exception {
+    public void testChangeType() throws Exception {
 	PropertyListener l = new PropertyListener();
 	getAXIModel().addPropertyChangeListener(l);
 	Element address = findAXIGlobalElement("address");
@@ -160,7 +164,7 @@ public class SyncElementTest extends AbstractSyncTestCase {
     /**
      * Change the content of "USAddress1".
      */
-    private void changeTypeContent() throws Exception {
+    public void testChangeTypeContent() throws Exception {
 	PropertyListener l = new PropertyListener();
 	getAXIModel().addPropertyChangeListener(l);
 	Element address = findAXIGlobalElement("address");
@@ -179,7 +183,7 @@ public class SyncElementTest extends AbstractSyncTestCase {
 	assert(childCount == 3);
     }
     
-    private void changeNameOfElement() throws Exception {
+    public void testChangeNameOfElement() throws Exception {
 	Element address = findAXIGlobalElement("address");
 	int childCount = address.getChildElements().size();
 	GlobalElement e = findGlobalElement("address");
@@ -191,7 +195,7 @@ public class SyncElementTest extends AbstractSyncTestCase {
         assert(address.getName().equals("NewAddress"));
     }
     
-    private void changeNameOfType() throws Exception {
+    public void testChangeNameOfType() throws Exception {
 	Element address = findAXIGlobalElement("address");
 	int childCount = address.getChildElements().size();
 	GlobalComplexType type = findGlobalComplexType("USAddress1");
@@ -202,7 +206,7 @@ public class SyncElementTest extends AbstractSyncTestCase {
 	assert(childCount == address.getChildElements().size());
     }
     
-    private void changeElementRef() throws Exception {
+    public void testChangeElementRef() throws Exception {
 	getSchemaModel().startTransaction();
 	GlobalGroup group = findGlobalGroup("group1");
 	ElementReference ref = (ElementReference)group.getChildren().get(0).getChildren().get(0);
@@ -217,7 +221,7 @@ public class SyncElementTest extends AbstractSyncTestCase {
     /**
      * Remove a global element.
      */
-    private void removeGlobalElement() throws Exception {
+    public void testRemoveGlobalElement() throws Exception {
 	int elementCount = getAXIModel().getRoot().getElements().size();
 	Element address = findAXIGlobalElement("NewAddress");        
 	GlobalElement ge = (GlobalElement)address.getPeer();
@@ -229,7 +233,7 @@ public class SyncElementTest extends AbstractSyncTestCase {
 	assert( (elementCount-1) == newCount);
     }
     
-    private void addGlobalElement() throws Exception {
+    public void testAddGlobalElement() throws Exception {
 	int elementCount = getAXIModel().getRoot().getElements().size();
 	getSchemaModel().startTransaction();
 	GlobalElement ge = getSchemaModel().getFactory().createGlobalElement();
@@ -252,7 +256,7 @@ public class SyncElementTest extends AbstractSyncTestCase {
 	}
     }
     
-    private void renameGlobalElement() throws Exception {
+    public void testRenameGlobalElement() throws Exception {
 	getSchemaModel().startTransaction();
 	GlobalElement ge = (GlobalElement)globalElement.getPeer();
 	ge.setName("address1");
@@ -261,7 +265,7 @@ public class SyncElementTest extends AbstractSyncTestCase {
 	assert(globalElement.getName().equals("address1"));
     }
     
-    private void changeAttributeRef() throws Exception {
+    public void testChangeAttributeRef() throws Exception {
 	getSchemaModel().startTransaction();
 	GlobalAttributeGroup group = findGlobalAttributeGroup("attr-group");
 	AttributeReference ref = (AttributeReference)group.getChildren().get(0);
@@ -276,7 +280,7 @@ public class SyncElementTest extends AbstractSyncTestCase {
     /**
      * Remove a GCT "USAddress1", even tho it is being used by "address".
      */
-    private void deleteGlobalType() throws Exception {
+    public void testDeleteGlobalType() throws Exception {
 	Element address = findAXIGlobalElement("NewAddress");
 	int childCount = address.getChildElements().size();
 	assert(childCount == 3);
@@ -287,6 +291,49 @@ public class SyncElementTest extends AbstractSyncTestCase {
 	getAXIModel().sync();
 	childCount = address.getChildElements().size();
 	assert(childCount == 0);
+    }
+    
+    /**
+     * Changes the base for a complex type.
+     */
+    public void testChangeBase() throws Exception {
+	PropertyListener l = new PropertyListener();
+	getAXIModel().addPropertyChangeListener(l);
+        ContentModel cm1 = findContentModel("CT1");
+        assert(cm1.getChildElements().size() == 1);
+	GlobalComplexType ct1 = findGlobalComplexType("CT1");
+	GlobalComplexType ct2 = findGlobalComplexType("CT2");
+        ComplexTypeDefinition def = ct1.getDefinition();
+        LocalAttributeContainer lac = ct1;
+        SchemaComponentFactory factory = def.getModel().getFactory();
+	getSchemaModel().startTransaction();        
+        ComplexContent cc = factory.createComplexContent();
+        ComplexExtension ce = factory.createComplexExtension();
+        moveComplexContents(lac,ce);
+        cc.setLocalDefinition(ce);
+        ct1.setDefinition(cc);
+        ce.setBase(ce.createReferenceTo(ct2, GlobalType.class));
+	getSchemaModel().endTransaction();
+	getAXIModel().sync();
+        assert(cm1.getChildElements().size() == 2);        
+    }
+    
+    private void moveComplexContents(final LocalAttributeContainer oldParent,
+            final LocalAttributeContainer newParent) {
+        if(oldParent==null || newParent==null) return;
+        SchemaModel model = getSchemaModel();
+        ArrayList<Class<? extends SchemaComponent>> childTypes =
+                new ArrayList<Class<? extends SchemaComponent>>(4);
+        childTypes.add(LocalAttribute.class);
+        childTypes.add(AttributeReference.class);
+        childTypes.add(AttributeGroupReference.class);
+        childTypes.add(AnyAttribute.class);
+        childTypes.add(ComplexTypeDefinition.class);
+        for(SchemaComponent child :oldParent.getChildren(childTypes)) {
+            if(newParent.canPaste(child))
+                model.addChildComponent(newParent,child.copy(newParent),-1);
+            model.removeChildComponent(child);
+        }
     }
     
     static class PropertyListener implements PropertyChangeListener {

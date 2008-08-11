@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -643,7 +644,13 @@ class LuceneIndex extends Index {
             case PREFIX:
                 if (name.length() == 0) {
                     //Special case (all) handle in different way
-                    gsfEmptyPrefixSearch(in, result, primaryField);
+                    if (terms != null && terms.size() > 0) {
+                        gsfEmptyPrefixSearch(in, result, terms);
+                    }
+                    else {
+                        gsfEmptyPrefixSearch(in, result, Collections.singleton(primaryField));
+                    }
+                    
                     return;
                 }
                 else {
@@ -654,7 +661,12 @@ class LuceneIndex extends Index {
             case CASE_INSENSITIVE_PREFIX:
                 if (name.length() == 0) {
                     //Special case (all) handle in different way
-                    gsfEmptyPrefixSearch(in, result, primaryField);
+                    if (terms != null && terms.size() > 0) {
+                        gsfEmptyPrefixSearch(in, result, terms);
+                    }
+                    else {
+                        gsfEmptyPrefixSearch(in, result, Collections.singleton(primaryField));
+                    }
                     return;
                 }
                 else {                    
@@ -910,11 +922,12 @@ class LuceneIndex extends Index {
     }
     
     private <T> void gsfEmptyPrefixSearch (final IndexReader in, final Set<SearchResult> result, 
-                                        final String primaryField) throws IOException {        
-        final int bound = in.maxDoc();        
+                                        final Set<String> terms) throws IOException {
+        final int bound = in.maxDoc();
+        final FieldSelector fieldSelector = new CustomFieldSelector(terms);
         for (int i=0; i<bound; i++) {
             if (!in.isDeleted(i)) {
-                final Document doc = in.document(i);
+                final Document doc = in.document(i, fieldSelector);
                 if (doc != null) {
                     SearchResult map = new DocumentSearchResult(doc, i);
                     result.add(map);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,12 +46,12 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.test.j2ee.*;
 import javax.swing.JTextField;
+import org.netbeans.test.j2ee.EJBValidation;
+import org.netbeans.jellytools.modules.java.editor.GenerateCodeOperator;
 
 /**
  *
@@ -74,13 +74,14 @@ public class AddFinderMethodTest extends AddMethodTest {
         junit.textui.TestRunner.run(new AddFinderMethodTest("testAddFinderMethod2InEB"));
     }
 
-    public void setUp() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
         System.out.println("########  " + getName() + "  #######");
     }
 
     public void testAddFinderMethod1InEB() throws IOException {
         beanName = "TestingEntity";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddFinderMethodAction");
         dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddFinderMethodAction");
         methodName = "findByTest1";
         returnManyCardinality = true;
@@ -96,7 +97,6 @@ public class AddFinderMethodTest extends AddMethodTest {
 
     public void testAddFinderMethod2InEB() throws IOException {
         beanName = "TestingEntity";
-        editorPopup = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_EJBActionGroup") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddFinderMethodAction");
         dialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.Bundle", "LBL_AddFinderMethodAction");
         methodName = "findByTest3";
         returnManyCardinality = false;
@@ -110,12 +110,13 @@ public class AddFinderMethodTest extends AddMethodTest {
         addMethod();
     }
 
+    @Override
     protected void addMethod() throws IOException {
-        EditorOperator editor = new EditorWindowOperator().getEditor(beanName + "Bean.java");
+        EditorOperator editor = EditorWindowOperator.getEditor(beanName + "Bean.java");
         editor.select(11);
 
         // invoke Add Business Method dialog
-        new ActionNoBlock(null, editorPopup).perform(editor);
+        GenerateCodeOperator.openDialog(dialogTitle, editor);
         NbDialogOperator dialog = new NbDialogOperator(dialogTitle);
         JLabelOperator lblOper = new JLabelOperator(dialog, "Name");
         new JTextFieldOperator((JTextField) lblOper.getLabelFor()).setText(methodName);
@@ -137,7 +138,7 @@ public class AddFinderMethodTest extends AddMethodTest {
             Node openFile2 = new Node(new ProjectsTabOperator().getProjectRootNode(EJBValidation.EJB_PROJECT_NAME),
                     "Source Packages|test|" + toSearchFile);
             new OpenAction().performAPI(openFile2);
-            final EditorOperator editor2 = new EditorWindowOperator().getEditor(toSearchFile);
+            final EditorOperator editor2 = EditorWindowOperator.getEditor(toSearchFile);
             waitForEditorText(editor2, methodName);
             editor2.closeDiscard();
         }

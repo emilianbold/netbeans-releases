@@ -301,7 +301,7 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
         allCats.addActionListener(this);
         pm.add(allCats);
 
-        for (ProviderModel.Category cat : ProviderRegistry.getInstance().getProviders().getCategories()) {
+        for (ProviderModel.Category cat : ProviderModel.getInstance().getCategories()) {
             if (!CommandEvaluator.RECENT.equals(cat.getName())) {
                 JRadioButtonMenuItem item = new JRadioButtonMenuItem(cat.getDisplayName(), cat == evalCat);
                 item.putClientProperty(CATEGORY, cat);
@@ -428,7 +428,7 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
 
     private int computePrefWidth () {
         FontMetrics fm = command.getFontMetrics(command.getFont());
-        ProviderModel pModel = ProviderRegistry.getInstance().getProviders();
+        ProviderModel pModel = ProviderModel.getInstance();
         int maxWidth = 0;
         for (Category cat : pModel.getCategories()) {
             // skip recent category

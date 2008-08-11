@@ -47,7 +47,6 @@ public class SwitchUiTest extends JellyTestCase{
     @Override
     protected void setUp() throws Exception {        
         os_name = System.getProperty("os.name");
-        //System.out.println(os_name);
         System.out.println("### "+getName()+" ###");
         
     }
@@ -71,18 +70,14 @@ public class SwitchUiTest extends JellyTestCase{
      }
     
     public void testInvokeCloseSwitch() throws Exception {
-        //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
-        //JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 3000);
         try {
-            TestKit.closeProject(PROJECT_NAME);
-            
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
             RepositoryMaintenance.loadRepositoryFromFile(TMP_PATH + File.separator + REPO_PATH, getDataDir().getCanonicalPath() + File.separator + "repo_dump");
             projectPath = TestKit.prepareProject("Java", "Java Application", PROJECT_NAME);
             
-            ImportWizardOperator iwo = ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
+            ImportWizardOperator.invoke(ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME));
             RepositoryStepOperator rso = new RepositoryStepOperator();
             //rso.verify();
             rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE + RepositoryMaintenance.changeFileSeparator(TMP_PATH + File.separator + REPO_PATH, false));
@@ -112,11 +107,7 @@ public class SwitchUiTest extends JellyTestCase{
             rbo.selectFolder("branches");
             rbo.ok();
             assertEquals("Folder wasn't created", "branches", so.getRepositoryFolder());
-            
             so.cancel();
-            
-        } catch (Exception e) {
-            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }    

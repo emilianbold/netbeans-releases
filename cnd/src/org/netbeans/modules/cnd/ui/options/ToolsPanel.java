@@ -122,7 +122,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private HashMap<String, CompilerSetManager> copiedManagers = new HashMap<String, CompilerSetManager>();
     private CompilerSet currentCompilerSet;
     private ServerList serverList;
-    private ServerRecord serverRecord;
     private ServerUpdateCache serverUpdateCache;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
@@ -140,22 +139,18 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         serverUpdateCache = null;
         serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         if (serverList != null) {
-            serverRecord = serverList.getDefaultRecord();
-            hkey = serverRecord.getName();
+            hkey = serverList.getDefaultRecord().getName();
             btEditDevHost.setEnabled(true);
+            cbDevHost.setEnabled(true);
         } else {
-            serverRecord = null;
             hkey = CompilerSetManager.LOCALHOST;
         }
 
-        errorTextArea.setText("");
         lstDirlist.setCellRenderer(new MyCellRenderer());
 
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setOpaque( false );
-        } else {
-            errorTextArea.setBackground(getBackground());
-        }
+        } 
     }
 
     public ToolsPanel(ToolsPanelModel model) {
@@ -206,8 +201,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btMakeBrowse.setEnabled(false);
         btDebuggerBrowse.setEnabled(false);
         btVersions.setEnabled(false);
-        tfMakePath.setEnabled(false);
-        tfGdbPath.setEnabled(false);
+        tfMakePath.setEditable(false);
+        tfGdbPath.setEditable(false);
         btVersions.setEnabled(false);
 
         if (model.enableRequiredCompilerCB()) {
@@ -301,6 +296,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
             hkey = (String) cbDevHost.getSelectedItem();
             update(true);
+        } else {
+            update(false);            
         }
     }
 
@@ -313,11 +310,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 if (csm.getCompilerSets().size() > 0)
                     csm.getCompilerSet(0).setAsDefault(true);
             }
-            if (index >= 0 && index < csm.getCompilerSets().size())
+            if (index >= 0 && index < csm.getCompilerSets().size()) {
                 update(false, csm.getCompilerSets().get(index));
-            else if (index > 0)
+            } else if (index > 0) {
                 update(false, csm.getCompilerSets().get(index-1));
-            else {
+            } else {
                 tfBaseDirectory.setText(""); // NOI18N
                 btBaseDirectory.setEnabled(false);
                 cbFamily.removeAllItems();
@@ -517,7 +514,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
 
     private boolean isRemoteHostSelected() {
-        return serverList.get((String)cbDevHost.getSelectedItem()).isRemote();
+        return serverList == null ? false : serverList.get((String)cbDevHost.getSelectedItem()).isRemote();
     }
 
     private void changeCompilerSet(CompilerSet cs) {
@@ -699,15 +696,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
 
             // post errors in error text area
-            errorTextArea.setText("");
-            errorTextArea.setRows(0);
+            lblErrors.setText("<html>"); // NOI18N
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
-                // TODO: for a while disabling message about status of host,
-                // it should be visible from compiler sets panel
-//                if (!devhostValid) {
-//                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey));
-//                }
+                if (!devhostValid) {
+                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey));
+                }
                 if (cbMakeRequired.isSelected() && !makeValid) {
                     if (!isPathFieldValid(tfMakePath)) {
                         errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedMake"));
@@ -731,10 +725,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 for (int i = 0; i < errors.size(); i++) {
                     errorString.append(errors.get(i));
                     if (i < errors.size() - 1)
-                        errorString.append("\n"); // NOI18N
+                        errorString.append("<br>"); // NOI18N
                 }
-                errorTextArea.setRows(errors.size());
-                errorTextArea.setText(errorString.toString());
+                lblErrors.setText("<html>" + errorString.toString() + "</html>"); //NOI18N
 
                 validate();
                 repaint();
@@ -757,12 +750,12 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btMakeBrowse.setEnabled(enable);
         btDebuggerBrowse.setEnabled(enable);
         btVersions.setEnabled(versionEnabled);
-        tfMakePath.setEnabled(enable);
-        tfGdbPath.setEnabled(enable);
-        tfBaseDirectory.setEnabled(enable);
-        tfCPath.setEnabled(enable);
-        tfCppPath.setEnabled(enable);
-        tfFortranPath.setEnabled(enable);        
+        tfMakePath.setEditable(enable);
+        tfGdbPath.setEditable(enable);
+        tfBaseDirectory.setEditable(enable);
+        tfCPath.setEditable(enable);
+        tfCppPath.setEditable(enable);
+        tfFortranPath.setEditable(enable);        
     }
     /**
      * Lets caller know if any data has been changed.
@@ -942,6 +935,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
      * button should <b>never</b> be enabled if its null.
      */
     private void editDevHosts() {
+        assert serverList != null;
         // Show the Dev Host Manager dialog
         ServerUpdateCache newServerUpdateCache = serverList.show(serverUpdateCache);
 
@@ -966,8 +960,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             } else {
                 log.fine("TP.editDevHosts: No selection found");
             }
-            onNewDevHostSelected();
             cbDevHost.addItemListener(this);
+            onNewDevHostSelected();
         }
     }
 
@@ -1053,8 +1047,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btBaseDirectory = new javax.swing.JButton();
         btVersions = new javax.swing.JButton();
         buttomPanel = new javax.swing.JPanel();
-        errorScrollPane = new javax.swing.JScrollPane();
-        errorTextArea = new javax.swing.JTextArea();
+        lblErrors = new javax.swing.JLabel();
         btRestore = new javax.swing.JButton();
         ToolSetPanel = new javax.swing.JPanel();
         spDirlist = new JScrollPane(lstDirlist);
@@ -1405,44 +1398,25 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         btVersions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btVersions.AccessibleContext.accessibleDescription")); // NOI18N
 
         buttomPanel.setOpaque(false);
-        buttomPanel.setLayout(new java.awt.GridBagLayout());
+        buttomPanel.setLayout(new javax.swing.BoxLayout(buttomPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        errorScrollPane.setBorder(null);
-        errorScrollPane.setOpaque(false);
-
-        errorTextArea.setEditable(false);
-        errorTextArea.setForeground(new java.awt.Color(255, 0, 0));
-        errorTextArea.setLineWrap(true);
-        errorTextArea.setRows(3);
-        errorTextArea.setBorder(null);
-        errorScrollPane.setViewportView(errorTextArea);
-        errorTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.errorTextArea.AccessibleContext.accessibleName")); // NOI18N
-        errorTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.errorTextArea.AccessibleContext.accessibleDescription")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 6, 0, 6);
-        buttomPanel.add(errorScrollPane, gridBagConstraints);
+        lblErrors.setForeground(new java.awt.Color(255, 51, 51));
+        lblErrors.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        lblErrors.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lblErrors.text")); // NOI18N
+        lblErrors.setEnabled(false);
+        lblErrors.setFocusable(false);
+        buttomPanel.add(lblErrors);
+        lblErrors.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lblErrors.AccessibleContext.accessibleName")); // NOI18N
 
         btRestore.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_RestoreDefault_BT").charAt(0));
         btRestore.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btRestore.text")); // NOI18N
+        btRestore.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         btRestore.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btRestoreActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 7);
-        buttomPanel.add(btRestore, gridBagConstraints);
+        buttomPanel.add(btRestore);
         btRestore.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btRestore.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1572,6 +1546,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 0);
         add(lbDevHost, gridBagConstraints);
+
+        cbDevHost.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -1808,8 +1784,6 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JCheckBox cbFortranRequired;
     private javax.swing.JCheckBox cbGdbRequired;
     private javax.swing.JCheckBox cbMakeRequired;
-    private javax.swing.JScrollPane errorScrollPane;
-    private javax.swing.JTextArea errorTextArea;
     private javax.swing.JLabel lbBaseDirectory;
     private javax.swing.JLabel lbCCommand;
     private javax.swing.JLabel lbCppCommand;
@@ -1819,6 +1793,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JLabel lbGdbCommand;
     private javax.swing.JLabel lbMakeCommand;
     private javax.swing.JLabel lbToolCollections;
+    private javax.swing.JLabel lblErrors;
     private javax.swing.JList lstDirlist;
     private javax.swing.JLabel requiredToolsLabel;
     private javax.swing.JPanel requiredToolsPanel;

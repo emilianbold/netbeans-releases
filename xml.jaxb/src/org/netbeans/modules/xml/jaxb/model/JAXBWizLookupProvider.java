@@ -30,6 +30,7 @@ package org.netbeans.modules.xml.jaxb.model;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.jaxb.api.model.JAXBWizModel;
 import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -44,6 +45,8 @@ public class JAXBWizLookupProvider implements LookupProvider {
         JAXBWizModel model = new JAXBWizModelImpl(project);
         JAXBGenSourceClassPathProvider cpProvider = 
                 new JAXBGenSourceClassPathProvider(project);
-        return Lookups.fixed(new Object[] {model, cpProvider});
+        JAXBWizSourceForBinaryQueryImpl sfbq = new JAXBWizSourceForBinaryQueryImpl();
+        ProjectOpenedHook poh = new JAXBWizProjectOpenedHookImpl(project);
+        return Lookups.fixed(new Object[] {model, cpProvider, sfbq, poh});
     }
 }

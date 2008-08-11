@@ -315,7 +315,7 @@ introduced by support for multiple source roots. -jglick
                             <xsl:with-param name="roots" select="/p:project/p:configuration/webproject3:data/webproject3:source-roots"/>
                         </xsl:call-template>
                     </xsl:attribute>
-                    <istrue value="${{deploy.on.save}}"/>
+                    <isfalse value="${{disable.deploy.on.save}}"/>
                 </condition>            
             </target>
             

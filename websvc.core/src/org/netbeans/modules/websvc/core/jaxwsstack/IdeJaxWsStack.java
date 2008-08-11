@@ -39,14 +39,15 @@
 
 package org.netbeans.modules.websvc.core.jaxwsstack;
 
+import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
+
 /**
  *
  * @author mkuchtiak
  */
 public final class IdeJaxWsStack extends AbstractJaxWsStack {
     
-    public String getVersion() {
-        return "2.1.4"; //NOI18N
+    public WSStackVersion getVersion() {
+        return WSStackVersion.valueOf(2,1,4,0);
     }
-
 }

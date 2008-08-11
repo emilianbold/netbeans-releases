@@ -22,6 +22,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 
 public class CreateProjectTest extends ExtJellyTestCase {
 
@@ -37,7 +38,6 @@ public class CreateProjectTest extends ExtJellyTestCase {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateProjectTest.class).addTest(
             "testCreateJUnit4Project",
             "testAddLibrary",
-            "testGeneratedRootSuiteFile",
             "testGeneratedProjectSuiteFile",
             "testGeneratedMainTestFile").enableModules(".*").clusters(".*"));
     }
@@ -51,6 +51,7 @@ public class CreateProjectTest extends ExtJellyTestCase {
         newOp.next();
         new JTextFieldOperator(newOp, 0).typeText(TEST_PROJECT_NAME);
         newOp.finish();
+        ProjectSupport.waitScanFinished();
 
         // select source packages node
         ProjectsTabOperator pto = new ProjectsTabOperator();

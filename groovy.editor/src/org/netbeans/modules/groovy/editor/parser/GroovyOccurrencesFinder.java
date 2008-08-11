@@ -54,6 +54,7 @@ import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.netbeans.modules.groovy.editor.AstUtilities.FakeASTNode;
 import org.netbeans.modules.groovy.editor.VariableScopeVisitor;
 
 /**
@@ -128,7 +129,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         }
 
         Map<OffsetRange, ColoringAttributes> highlights = new HashMap<OffsetRange, ColoringAttributes>(100);
-        highlight(path, highlights, document);
+        highlight(path, highlights, document, caretPosition);
 
         if (isCancelled()) {
             return;
@@ -159,14 +160,22 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         LOG.log(Level.FINEST, "\n\nsetCaretPosition() = {0}\n", position); //NOI18N
     }
 
-    private static void highlight(AstPath path, Map<OffsetRange, ColoringAttributes> highlights, BaseDocument document) {
+    private static void highlight(AstPath path, Map<OffsetRange, ColoringAttributes> highlights, BaseDocument document, int cursorOffset) {
         ASTNode root = path.root();
         assert root instanceof ModuleNode;
         ModuleNode moduleNode = (ModuleNode) root;
-        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path);
+        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path, document, cursorOffset);
         scopeVisitor.collect();
         for (ASTNode astNode : scopeVisitor.getOccurrences()) {
-            OffsetRange range = AstUtilities.getRange(astNode, document);
+            OffsetRange range;
+            if (astNode instanceof FakeASTNode) {
+                String text = astNode.getText();
+                ASTNode orig = ((FakeASTNode) astNode).getOriginalNode();
+                int start = AstUtilities.getOffset(document, orig.getLineNumber(), orig.getColumnNumber());
+                range = AstUtilities.getNextIdentifierByName(document, text, start);
+            } else {
+                range = AstUtilities.getRange(astNode, document);
+            }
             highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
         }
     }

@@ -930,7 +930,9 @@ public class FormUtils
 
         // do not highlight current row
         EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editor);
-        eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        if (eui != null) { // Issue 142686
+            eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        }
 
         setupTextUndoRedo(editor);
     }

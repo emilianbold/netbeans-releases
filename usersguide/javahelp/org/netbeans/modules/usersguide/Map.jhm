@@ -372,6 +372,9 @@
   <mapID target="netbeans.optionsDialog.general" url="configure/options_general.html" />
   <!--ID for CSH in Options | Basic Options - Editor Category: --> 
   <mapID target="netbeans.optionsDialog.editor.general" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.formatting" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.codeTemplates" url="configure/options_editor.html" />
+  <mapID target="netbeans.optionsDialog.editor.macros" url="configure/options_editor.html" />
   <!--ID for CSH in Options | Basic Options - Fonts and Colors Category: --> 
   <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/options_fontscolors.html" />
   

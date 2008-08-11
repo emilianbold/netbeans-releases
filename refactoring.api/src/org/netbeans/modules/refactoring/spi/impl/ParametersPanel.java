@@ -670,6 +670,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
+                    if (progressHandle == null) {
+                        return;
+                    }
                     progressHandle.progress(isIndeterminate ? -2 : event.getCount());
                 } catch (Throwable e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -685,6 +688,9 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     public void stop(ProgressEvent event) {
         Runnable run = new Runnable() {
             public void run() {
+                if (progressHandle == null) {
+                    return;
+                }
                 progressHandle.finish();
                 progressPanel.remove(progressBar);
                 progressPanel.add(innerPanel, BorderLayout.CENTER);

@@ -326,8 +326,8 @@ public class StartTagPanel extends TagPanel {
     public void setTagName(String value) {
         String tagName=value;
         Font font = tagNameLabel.getFont();
-        //font = font.deriveFont((font.getStyle() | java.awt.Font.BOLD), font.getSize()+2);
-        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize()+2);
+        //font = font.deriveFont((font.getStyle() | java.awt.Font.BOLD), font.getSize());
+        font = font.deriveFont((font.getStyle() | java.awt.Font.PLAIN), font.getSize());
         tagNameLabel.setFont(font);
         tagNameLabel.setText(tagName);
     }

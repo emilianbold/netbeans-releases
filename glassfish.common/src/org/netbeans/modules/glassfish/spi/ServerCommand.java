@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -190,9 +189,11 @@ public abstract class ServerCommand {
 
         private final String property;
         private Manifest info;
+        private Map<String,String> propertyMap;
 
         public GetPropertyCommand(final String property) {
             this.property = property;
+            this.propertyMap = new HashMap<String, String>();
         }
 
         @Override
@@ -211,22 +212,20 @@ public abstract class ServerCommand {
                 return false;
             }
 
-            // !PW FIXME process manifest result
+            for (String key : info.getEntries().keySet()) {
+                int equalsIndex = key.indexOf('=');
+                if(equalsIndex >= 0) {
+                    propertyMap.put(key.substring(0, equalsIndex), key.substring(equalsIndex+1));
+                } else {
+                    propertyMap.put(key, "");
+                }
+            }
 
             return true;
         }
 
         public Map<String, String> getData() {
-            Map<String,String> retVal = new HashMap<String, String>();
-            if (null != info) {
-                for (String key : info.getEntries().keySet()) {
-                    String[] nv = key.split("=");
-                    if (nv.length == 2) {
-                        retVal.put(nv[0], nv[1]);
-                    }
-                }
-            }
-            return retVal;
+            return propertyMap;
         }
     }
 

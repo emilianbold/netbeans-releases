@@ -695,7 +695,7 @@ public class ConfigurationMakefileWriter {
         String output = packagingConfiguration.getOutputValue();
         String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
         
-        bw.write("# Copy files and create sirectories and links\n"); // NOI18N
+        bw.write("# Copy files and create directories and links\n"); // NOI18N
         for (FileElement elem : fileList) {
             bw.write("cd $TOP\n"); // NOI18N
             if (elem.getType() == FileElement.FileType.FILE) {
@@ -739,13 +739,14 @@ public class ConfigurationMakefileWriter {
             bw.write("cd $TMPDIR\n"); // NOI18N
             String options = packagingConfiguration.getOptionsValue() + "cf"; // NOI18N
             if (options.charAt(0) != '-') { // NOI18N
-                options += '-'; // NOI18N
+                options = "-" + options; // NOI18N
             }
             bw.write(packagingConfiguration.getToolValue() + " " + options + " " + outputRelToTmp + " *\n"); // NOI18N
         }
         else {
             assert false;
         }
+        bw.write("checkReturnCode\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Cleanup\n"); // NOI18N
@@ -852,7 +853,11 @@ public class ConfigurationMakefileWriter {
             bw.write(" none"); // Classes // NOI18N
             bw.write(" " + elem.getTo());// NOI18N
             if (elem.getFrom().length() > 0) {
-                bw.write("=" + elem.getFrom());// NOI18N
+                String from = elem.getFrom();
+                if (IpeUtils.isPathAbsolute(from)) {
+                    from = IpeUtils.toRelativePath(conf.getBaseDir(), from);
+                }
+                bw.write("=" + from);// NOI18N
             }
             if (elem.getType() != FileElement.FileType.SOFTLINK) {
                 bw.write(" 0" + elem.getPermission());// NOI18N
@@ -865,7 +870,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
         bw.write("# Make package\n"); // NOI18N        
         bw.write("cd $TOP\n"); // NOI18N   
-        bw.write(packagingConfiguration.getToolValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
+        bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
         bw.write("pkgtrans -s $TMPDIR tmp.pkg " + packageName + "\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N

@@ -49,7 +49,9 @@ import java.lang.reflect.Method;
 
 /**
  * Ant task wrapper which invokes the JBI Generation task
+ * 
  * @author Sreenivasan Genipudi
+ * @author Kirill Sorokin
  */
 public class CliGenerateCatalogTask extends Task {
 
@@ -88,35 +90,42 @@ public class CliGenerateCatalogTask extends Task {
         try {
             m_myClassLoader = new AntClassLoader();
             initClassLoader();
-            Class antTaskClass = Class.forName("org.netbeans.modules.bpel.project.anttasks.cli.CliGenerateCatalogDelegate", true, m_myClassLoader);
+            Class antTaskClass = Class.forName(
+                    "org.netbeans.modules.bpel.project.anttasks.cli." + // NOI18N
+                    "CliGenerateCatalogDelegate", true, m_myClassLoader); // NOI18N
             Thread.currentThread().setContextClassLoader(m_myClassLoader);
             Object genJBIInstObj = antTaskClass.newInstance();
             
-            Method driver = antTaskClass.getMethod("setBuildDirectory", new Class[] {String.class});
+            Method driver = antTaskClass.getMethod(
+                    "setBuildDirectory", new Class[] {String.class}); // NOI18N
             driver.invoke(genJBIInstObj, new Object[] {this.mBuildDirectory});
             
-            driver = antTaskClass.getMethod("setSourceDirectory", new Class[] {String.class});
+            driver = antTaskClass.getMethod(
+                    "setSourceDirectory", new Class[] {String.class}); // NOI18N
             driver.invoke(genJBIInstObj, new Object[] {this.mSourceDirectory});
             
-            driver = antTaskClass.getMethod("execute", (Class[]) null);
+            driver = antTaskClass.getMethod("execute", (Class[]) null); // NOI18N
             driver.invoke(genJBIInstObj, (Object[]) null);
         } catch (Exception e) {
-            throw new BuildException("Errors found.", e);
+            throw new BuildException("Errors found.", e); // NOI18N
         }
     }
 
     private void initClassLoader() {
         Path path = new Path(getProject());
         path.setRefid(m_ref);
-
-        Path parentPath = new Path(getProject());
-        ClassLoader cl = this.getClass().getClassLoader();
-        if (cl instanceof AntClassLoader) {
-            parentPath.setPath(((AntClassLoader) cl).getClasspath());
-            ((AntClassLoader) cl).setParent(null);
+        
+        final Path parentPath = new Path(getProject());
+        final ClassLoader loader = this.getClass().getClassLoader();
+        if (loader instanceof AntClassLoader) {
+            final AntClassLoader antLoader = (AntClassLoader) loader;
+            
+            parentPath.setPath(antLoader.getClasspath());
+            antLoader.setParent(null);
             parentPath.add(path);
             path = parentPath;
         }
+        
         m_myClassLoader.setClassPath(path);
         m_myClassLoader.setParent(null);
         m_myClassLoader.setParentFirst(false);

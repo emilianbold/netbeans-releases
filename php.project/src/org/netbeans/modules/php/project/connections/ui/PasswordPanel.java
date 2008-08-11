@@ -99,6 +99,34 @@ public class PasswordPanel extends javax.swing.JPanel {
         passwordLabel = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
 
+        setFocusTraversalPolicy(new java.awt.FocusTraversalPolicy() {
+            public java.awt.Component getDefaultComponent(java.awt.Container focusCycleRoot){
+                return passwordField;
+            }//end getDefaultComponent
+
+            public java.awt.Component getFirstComponent(java.awt.Container focusCycleRoot){
+                return passwordField;
+            }//end getFirstComponent
+
+            public java.awt.Component getLastComponent(java.awt.Container focusCycleRoot){
+                return passwordField;
+            }//end getLastComponent
+
+            public java.awt.Component getComponentAfter(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  usernameField){
+                    return passwordField;
+                }
+                return passwordField;//end getComponentAfter
+            }
+            public java.awt.Component getComponentBefore(java.awt.Container focusCycleRoot, java.awt.Component aComponent){
+                if(aComponent ==  passwordField){
+                    return usernameField;
+                }
+                return passwordField;//end getComponentBefore
+
+            }}
+        );
+
         usernameLabel.setLabelFor(usernameField);
         org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.usernameLabel.text")); // NOI18N
 
@@ -135,6 +163,18 @@ public class PasswordPanel extends javax.swing.JPanel {
                     .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        usernameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.usernameLabel.AccessibleContext.accessibleName")); // NOI18N
+        usernameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.usernameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        usernameField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.usernameField.AccessibleContext.accessibleName")); // NOI18N
+        usernameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.usernameField.AccessibleContext.accessibleDescription")); // NOI18N
+        passwordLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.passwordLabel.AccessibleContext.accessibleName")); // NOI18N
+        passwordLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.passwordLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        passwordField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.passwordField.AccessibleContext.accessibleName")); // NOI18N
+        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.passwordField.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordPanel.class, "PasswordPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

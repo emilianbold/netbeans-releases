@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -63,7 +64,7 @@ public class Breakpoint extends ActionsProviderSupport
     
     /**{@inheritDoc}*/
     public Breakpoint() {
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, false);
         
         TopComponent.getRegistry().addPropertyChangeListener(
                 WeakListeners.propertyChange(this, TopComponent.getRegistry()));
@@ -89,13 +90,21 @@ public class Breakpoint extends ActionsProviderSupport
     public void propertyChange(
             final PropertyChangeEvent event) {
         
+        // IZ 135771. Ensure we're in EDT.
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    Breakpoint.this.propertyChange(event);
+                }
+            });
+            
+            return;
+        }
+        
         final TopComponent activeTc = 
                 WindowManager.getDefault().getRegistry().getActivated();
         final MultiViewHandler mvh = 
                 MultiViews.findMultiViewHandler(activeTc);
-        
-        final TopComponent navigatorTc = 
-                WindowManager.getDefault().findTopComponent("navigatorTC");
         
         String currentViewName = null;
         
@@ -107,31 +116,32 @@ public class Breakpoint extends ActionsProviderSupport
             }
         }
         
-        boolean enabled;
-        if ((activeTc != null) && (activeTc.equals(navigatorTc))) {
+        boolean enabled = false;
+        if ("bpelsource".equals(currentViewName)) {
             enabled = true;
+        } else if ("bpel-business-rules".equals(currentViewName)) {
+            enabled = false;
+        } else if ("bpel-logging-alerting".equals(currentViewName)) {
+            enabled = false;
         } else {
-            enabled = (EditorUtil.getCurrentLine() != null) &&
-                    ("orch-designer".equals(currentViewName) || 
-                    "bpelsource".equals(currentViewName));
-                    
-            if (enabled && "orch-designer".equals(currentViewName)) {
-                final Node node = getCurrentNode();
-
+            final Node node = getCurrentNode();
+            
+            if (node != null) {
                 final javax.swing.Action[] actions = node.getActions(true);
                 if (actions != null) {
-                    enabled = false;
-
                     for (javax.swing.Action action: actions) {
-                        if ((action instanceof BpelNodeTypedAction) && 
-                                ((BpelNodeTypedAction) action).getType() == ActionType.TOGGLE_BREAKPOINT) {
-                            enabled = true;
-                            break;
+                        if (action instanceof BpelNodeTypedAction) {
+                            final BpelNodeTypedAction bnAction = 
+                                    (BpelNodeTypedAction) action;
+                                    
+                            if (bnAction.getType() == ActionType.TOGGLE_BREAKPOINT) {
+                                enabled = true;
+                                break;
+                            }
                         }
                     }
                 }
             }
-            
         }
         
         setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, enabled);

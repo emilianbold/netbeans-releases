@@ -165,7 +165,6 @@ public class CommandRunner extends BasicTask<OperationState> {
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();
             if (state == OperationState.COMPLETED) {
-                cmd.processResponse();
                 return cmd.getData();
             }
         } catch (InterruptedException ex) {

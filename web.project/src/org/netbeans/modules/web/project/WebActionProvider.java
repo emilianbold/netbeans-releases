@@ -902,7 +902,7 @@ class WebActionProvider implements ActionProvider {
             return false;
         }
 
-        boolean cos = Boolean.parseBoolean((String) project.getWebProjectProperties().get(WebProjectProperties.DEPLOY_ON_SAVE));
+        boolean cos = !Boolean.parseBoolean((String) project.getWebProjectProperties().get(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE));
         // build or compile source file (JSP compilation allowed)
         if (cos && (COMMAND_BUILD.equals(command)
                 || (COMMAND_COMPILE_SINGLE.equals(command)

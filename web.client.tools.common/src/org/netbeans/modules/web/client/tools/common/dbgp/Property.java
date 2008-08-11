@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.web.client.tools.common.dbgp;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +50,6 @@ import org.netbeans.modules.web.client.tools.common.dbgp.Message.Encoding;
 import org.w3c.dom.Node;
 
 import sun.misc.BASE64Encoder;
-
 
 /**
  * @author ads, jdeva

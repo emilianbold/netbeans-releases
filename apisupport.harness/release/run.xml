@@ -144,6 +144,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="run" depends="-prepare-as-app,-prepare-as-platform">
+        <touch file="${cluster}/.lastModified"/> <!-- #138427 -->
         <property name="run.args" value=""/>
         <property name="run.args.extra" value=""/>
         <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP Windows NT (unknown) Windows Vista" executable="${run.exe}" failonerror="yes">

@@ -38,12 +38,22 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.project.PhpProject;
@@ -52,6 +62,7 @@ import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -59,7 +70,7 @@ import org.openide.util.WeakListeners;
  * @author  Radek Matous, Tomas Mysik
  */
 public class RunAsScript extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -5593489197914071L;
+    private static final long serialVersionUID = -559447897914071L;
     private final PhpProject project;
     private final JLabel[] labels;
     private final JTextField[] textFields;
@@ -81,15 +92,18 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         initComponents();
         this.labels = new JLabel[] {
             indexFileLabel,
-            argsLabel
+            interpreterLabel,
+            argsLabel,
         };
         this.textFields = new JTextField[] {
             indexFileTextField,
-            argsTextField
+            interpreterTextField,
+            argsTextField,
         };
         this.propertyNames = new String[] {
             PhpProjectProperties.INDEX_FILE,
-            PhpProjectProperties.ARGS
+            PhpProjectProperties.INTERPRETER,
+            PhpProjectProperties.ARGS,
         };
         assert labels.length == textFields.length && labels.length == propertyNames.length;
         for (int i = 0; i < textFields.length; i++) {
@@ -98,13 +112,34 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         }
 
         // php cli
-        loadPhpInterpreter();
+        initPhpInterpreterFields();
+        defaultInterpreterCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                boolean selected = defaultInterpreterCheckBox.isSelected();
+                interpreterBrowseButton.setEnabled(!selected);
+                interpreterTextField.setEditable(!selected);
+                String newValue = null;
+                if (selected) {
+                    newValue = PhpOptions.getInstance().getPhpInterpreter();
+                } else {
+                    newValue = interpreterTextField.getText();
+                }
+                // hack - fire event in _every_ case (need to update run configuration)
+                interpreterTextField.setText(newValue + " "); // NOI18N
+            }
+        });
         phpInterpreterListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PhpOptions.PROP_PHP_INTERPRETER.equals(evt.getPropertyName())) {
-                    loadPhpInterpreter();
-                    composeHint();
-                    validateFields();
+                    if (defaultInterpreterCheckBox.isSelected()) {
+                        // #143315
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
+                                composeHint();
+                            }
+                        });
+                    }
                 }
             }
         };
@@ -113,8 +148,12 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         composeHint();
     }
 
-    void loadPhpInterpreter() {
-        interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
+    private void initPhpInterpreterFields() {
+        String phpInterpreter = getValue(PhpProjectProperties.INTERPRETER);
+        boolean def = phpInterpreter == null || phpInterpreter.length() == 0;
+        defaultInterpreterCheckBox.setSelected(def);
+        interpreterBrowseButton.setEnabled(!def);
+        interpreterTextField.setEditable(!def);
     }
 
     @Override
@@ -139,7 +178,11 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
     protected void loadFields() {
         for (int i = 0; i < textFields.length; i++) {
-            textFields[i].setText(getValue(propertyNames[i]));
+            String val = getValue(propertyNames[i]);
+            if (PhpProjectProperties.INTERPRETER.equals(propertyNames[i])) {
+                val = project.getPhpInterpreter().getFullCommand();
+            }
+            textFields[i].setText(val);
         }
     }
 
@@ -173,6 +216,15 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
             super.processUpdate();
             composeHint();
         }
+
+        @Override
+        protected String getPropValue() {
+            if (PhpProjectProperties.INTERPRETER.equals(getPropName())
+                    && defaultInterpreterCheckBox.isSelected()) {
+                return ""; // NOI18N
+            }
+            return super.getPropValue().trim();
+        }
     }
 
     /** This method is called from within the constructor to
@@ -184,109 +236,224 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        interpreterLabel = new javax.swing.JLabel();
-        interpreterTextField = new javax.swing.JTextField();
-        configureButton = new javax.swing.JButton();
-        argsLabel = new javax.swing.JLabel();
-        argsTextField = new javax.swing.JTextField();
-        runAsLabel = new javax.swing.JLabel();
-        runAsCombo = new javax.swing.JComboBox();
-        indexFileLabel = new javax.swing.JLabel();
-        indexFileTextField = new javax.swing.JTextField();
-        indexFileBrowseButton = new javax.swing.JButton();
-        hintLabel = new javax.swing.JLabel();
+        interpreterLabel = new JLabel();
+        interpreterTextField = new JTextField();
+        interpreterBrowseButton = new JButton();
+        defaultInterpreterCheckBox = new JCheckBox();
+        configureButton = new JButton();
+        argsLabel = new JLabel();
+        argsTextField = new JTextField();
+        runAsLabel = new JLabel();
+        runAsCombo = new JComboBox();
+        indexFileLabel = new JLabel();
+        indexFileTextField = new JTextField();
+        indexFileBrowseButton = new JButton();
+        hintLabel = new JLabel();
+
+        setFocusTraversalPolicy(new FocusTraversalPolicy() {
+
+
+
+            public Component getDefaultComponent(Container focusCycleRoot){
+                return argsTextField;
+            }//end getDefaultComponent
+            public Component getFirstComponent(Container focusCycleRoot){
+                return argsTextField;
+            }//end getFirstComponent
+            public Component getLastComponent(Container focusCycleRoot){
+                return argsTextField;
+            }//end getLastComponent
+            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  indexFileTextField){
+                    return indexFileBrowseButton;
+                }
+                if(aComponent ==  indexFileBrowseButton){
+                    return argsTextField;
+                }
+                if(aComponent ==  runAsCombo){
+                    return interpreterTextField;
+                }
+                if(aComponent ==  interpreterTextField){
+                    return interpreterBrowseButton;
+                }
+                if(aComponent ==  interpreterBrowseButton){
+                    return defaultInterpreterCheckBox;
+                }
+                if(aComponent ==  defaultInterpreterCheckBox){
+                    return configureButton;
+                }
+                if(aComponent ==  configureButton){
+                    return indexFileTextField;
+                }
+                return argsTextField;//end getComponentAfter
+            }
+            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
+                if(aComponent ==  indexFileBrowseButton){
+                    return indexFileTextField;
+                }
+                if(aComponent ==  argsTextField){
+                    return indexFileBrowseButton;
+                }
+                if(aComponent ==  interpreterTextField){
+                    return runAsCombo;
+                }
+                if(aComponent ==  interpreterBrowseButton){
+                    return interpreterTextField;
+                }
+                if(aComponent ==  defaultInterpreterCheckBox){
+                    return interpreterBrowseButton;
+                }
+                if(aComponent ==  configureButton){
+                    return defaultInterpreterCheckBox;
+                }
+                if(aComponent ==  indexFileTextField){
+                    return configureButton;
+                }
+                return argsTextField;//end getComponentBefore
+
+            }}
+        
+        );
 
         interpreterLabel.setLabelFor(interpreterTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(interpreterLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_PhpInterpreter")); // NOI18N
 
+        Mnemonics.setLocalizedText(interpreterLabel, NbBundle.getMessage(RunAsScript.class, "LBL_PhpInterpreter")); // NOI18N
         interpreterTextField.setEditable(false);
+        Mnemonics.setLocalizedText(interpreterBrowseButton, NbBundle.getMessage(RunAsScript.class, "LBL_BrowseInterpreter"));
+        interpreterBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                interpreterBrowseButtonActionPerformed(evt);
+            }
+        });
 
-        org.openide.awt.Mnemonics.setLocalizedText(configureButton, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_Configure")); // NOI18N
-        configureButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        defaultInterpreterCheckBox.setSelected(true);
+
+        Mnemonics.setLocalizedText(defaultInterpreterCheckBox, NbBundle.getMessage(RunAsScript.class, "LBL_UseDefaultInterpreter"));
+        Mnemonics.setLocalizedText(configureButton, NbBundle.getMessage(RunAsScript.class, "LBL_Configure"));
+        configureButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 configureButtonActionPerformed(evt);
             }
         });
 
         argsLabel.setLabelFor(argsTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(argsLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_Arguments")); // NOI18N
 
+        Mnemonics.setLocalizedText(argsLabel, NbBundle.getMessage(RunAsScript.class, "LBL_Arguments")); // NOI18N
         runAsLabel.setLabelFor(runAsCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(runAsLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_RunAs")); // NOI18N
 
+        Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsScript.class, "LBL_RunAs")); // NOI18N
         indexFileLabel.setLabelFor(indexFileTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileLabel, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
 
+        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
         indexFileTextField.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(indexFileBrowseButton, org.openide.util.NbBundle.getMessage(RunAsScript.class, "LBL_Browse")); // NOI18N
-        indexFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(indexFileBrowseButton,NbBundle.getMessage(RunAsScript.class, "LBL_Browse")); // NOI18N
+        indexFileBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 indexFileBrowseButtonActionPerformed(evt);
             }
         });
-
-        org.openide.awt.Mnemonics.setLocalizedText(hintLabel, "dummy"); // NOI18N
+        Mnemonics.setLocalizedText(hintLabel, "dummy");
         hintLabel.setEnabled(false);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
+
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(runAsLabel)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(interpreterLabel)
                     .add(indexFileLabel)
                     .add(argsLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(hintLabel)
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, argsTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(indexFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(GroupLayout.LEADING)
+                            .add(GroupLayout.TRAILING, argsTextField, GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                                .addPreferredGap(LayoutStyle.RELATED)
                                 .add(indexFileBrowseButton))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, runAsCombo, 0, 222, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(interpreterTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(GroupLayout.TRAILING, runAsCombo, 0, 302, Short.MAX_VALUE)
+                            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(interpreterTextField, GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
+                                .addPreferredGap(LayoutStyle.RELATED)
+                                .add(interpreterBrowseButton))
+                            .add(layout.createSequentialGroup()
+                                .add(defaultInterpreterCheckBox)
+                                .addPreferredGap(LayoutStyle.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .add(configureButton)))
                         .add(0, 0, 0))))
+        
         );
 
-        layout.linkSize(new java.awt.Component[] {configureButton, indexFileBrowseButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new Component[] {configureButton, indexFileBrowseButton, interpreterBrowseButton}, GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(runAsLabel)
-                    .add(runAsCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(runAsCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(interpreterLabel)
-                    .add(interpreterTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(interpreterBrowseButton)
+                    .add(interpreterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(defaultInterpreterCheckBox)
                     .add(configureButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(indexFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(indexFileTextField, GroupLayout.PREFERRED_SIZE, 19, GroupLayout.PREFERRED_SIZE)
                     .add(indexFileLabel)
                     .add(indexFileBrowseButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(argsTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(argsTextField, GroupLayout.PREFERRED_SIZE, 19, GroupLayout.PREFERRED_SIZE)
                     .add(argsLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .addPreferredGap(LayoutStyle.RELATED)
                 .add(hintLabel)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        
         );
+
+        interpreterLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.interpreterLabel.AccessibleContext.accessibleName")); // NOI18N
+        interpreterLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.interpreterLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        interpreterTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.interpreterTextField.AccessibleContext.accessibleName")); // NOI18N
+        interpreterTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.interpreterTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        interpreterBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.interpreterBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        interpreterBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.interpreterBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        defaultInterpreterCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.defaultInterpreterCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        defaultInterpreterCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.defaultInterpreterCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        configureButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.configureButton.AccessibleContext.accessibleName")); // NOI18N
+        configureButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.configureButton.AccessibleContext.accessibleDescription")); // NOI18N
+        argsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.argsLabel.AccessibleContext.accessibleName")); // NOI18N
+        argsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.argsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        argsTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.argsTextField.AccessibleContext.accessibleName")); // NOI18N
+        argsTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.argsTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        runAsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.runAsLabel.AccessibleContext.accessibleName")); // NOI18N
+        runAsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.runAsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        runAsCombo.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.runAsCombo.AccessibleContext.accessibleName")); // NOI18N
+        runAsCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.runAsCombo.AccessibleContext.accessibleDescription")); // NOI18N
+        indexFileLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.indexFileLabel.AccessibleContext.accessibleName")); // NOI18N
+        indexFileLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.indexFileLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        indexFileTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.indexFileTextField.AccessibleContext.accessibleName")); // NOI18N
+        indexFileTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.indexFileTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        indexFileBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.indexFileBrowseButton.AccessibleContext.accessibleName")); // NOI18N
+        indexFileBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.indexFileBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        hintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.hintLabel.AccessibleContext.accessibleName")); // NOI18N
+        hintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.hintLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsScript.class, "RunAsScript.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RunAsScript.class, "RunAsScript.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void configureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureButtonActionPerformed
@@ -297,17 +464,23 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         Utils.browseSourceFile(project, indexFileTextField);
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
+    private void interpreterBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_interpreterBrowseButtonActionPerformed
+        Utils.browsePhpInterpreter(this, interpreterTextField);
+    }//GEN-LAST:event_interpreterBrowseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel argsLabel;
-    private javax.swing.JTextField argsTextField;
-    private javax.swing.JButton configureButton;
-    private javax.swing.JLabel hintLabel;
-    private javax.swing.JButton indexFileBrowseButton;
-    private javax.swing.JLabel indexFileLabel;
-    private javax.swing.JTextField indexFileTextField;
-    private javax.swing.JLabel interpreterLabel;
-    private javax.swing.JTextField interpreterTextField;
-    private javax.swing.JComboBox runAsCombo;
-    private javax.swing.JLabel runAsLabel;
+    private JLabel argsLabel;
+    private JTextField argsTextField;
+    private JButton configureButton;
+    private JCheckBox defaultInterpreterCheckBox;
+    private JLabel hintLabel;
+    private JButton indexFileBrowseButton;
+    private JLabel indexFileLabel;
+    private JTextField indexFileTextField;
+    private JButton interpreterBrowseButton;
+    private JLabel interpreterLabel;
+    private JTextField interpreterTextField;
+    private JComboBox runAsCombo;
+    private JLabel runAsLabel;
     // End of variables declaration//GEN-END:variables
 }

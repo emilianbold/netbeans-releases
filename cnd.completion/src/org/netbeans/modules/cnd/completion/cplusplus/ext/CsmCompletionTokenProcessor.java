@@ -1815,6 +1815,10 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                         break;
 
                     case NEW_LINE:
+                        if (topID == PREPROC_DIRECTIVE) {
+                            // end line finishes preproc directive
+                            popExp();
+                        }
                     case WHITESPACE:
                     case LINE_COMMENT:
                     case BLOCK_COMMENT:
@@ -1987,6 +1991,8 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
                 case SEMICOLON:
+                case LBRACE:
+                case RBRACE:
                     pushExp(CsmCompletionExpression.createEmptyVariable(
                         bufferStartPos + bufferOffsetDelta + offset));
                     errorState = false;

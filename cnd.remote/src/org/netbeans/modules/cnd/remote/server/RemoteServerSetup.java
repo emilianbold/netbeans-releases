@@ -77,7 +77,7 @@ public class RemoteServerSetup {
         
         // Script setup map
         scriptSetupMap = new HashMap<String, Double>();
-        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.4)); // NOI18N
+        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.7)); // NOI18N
         
         // Binary setup map
         binarySetupMap = new HashMap<String, String>();
@@ -116,7 +116,7 @@ public class RemoteServerSetup {
                         "PATH=/bin:/usr/bin:$PATH mkdir -p " + REMOTE_SCRIPT_DIR); // NOI18N
                 if (exit_status == 0) {
                     for (String key : scriptSetupMap.keySet()) {
-                        log.fine("RSS.setup: Copying" + path + " to " + hkey);
+                        log.fine("RSS.setup: Copying " + path + " to " + hkey);
                         File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
                         RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
                         RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key);
@@ -222,12 +222,13 @@ public class RemoteServerSetup {
                 String val = support.toString();
                 int count = 0;
                 for (String line : val.split("\n")) { // NOI18N
-                    int pos = line.indexOf(':');
-                    if (pos > 0) {
+                    int pos1 = line.indexOf(':');
+                    if (pos1 > 0) {
                         if (count++ == 0) {
                             list.add(REMOTE_LIB_DIR);
                         }
-                        list.add(line.substring(0, pos));
+                        int pos2 = line.indexOf(':', pos1 + 1);
+                        list.add(line.substring(pos1 + 1, pos2).trim());
                     }
                 }
             }

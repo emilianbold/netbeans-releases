@@ -38,10 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -71,6 +76,8 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -85,15 +92,17 @@ public class PackagingFilesPanel extends ListEditorPanel {
     private JButton addButton;
     private JButton addFileOrDirectoryButton;
     private JButton addFilesButton;
+    private JButton addLinkButton;
     private PackagingFilesOuterPanel packagingFilesOuterPanel;
 
     public PackagingFilesPanel(List<FileElement> fileList, String baseDir) {
-        super(fileList.toArray(), new JButton[]{new JButton(), new JButton(), new JButton()});
+        super(fileList.toArray(), new JButton[]{new JButton(), new JButton(), new JButton(), new JButton()});
         getAddButton().setVisible(false);
         this.baseDir = baseDir;
         this.addButton = extraButtons[0];
         this.addFileOrDirectoryButton = extraButtons[1];
         this.addFilesButton = extraButtons[2];
+        this.addLinkButton = extraButtons[3];
 
         addButton.setText(getString("PackagingFilesPanel.addButton.text"));
 	addButton.setMnemonic(getString("PackagingFilesPanel.addButton.mn").charAt(0));
@@ -109,6 +118,11 @@ public class PackagingFilesPanel extends ListEditorPanel {
 	addFilesButton.setMnemonic(getString("PackagingFilesPanel.addFilesButton.mn").charAt(0));
         addFilesButton.getAccessibleContext().setAccessibleDescription(getString("PackagingFilesPanel.addFilesButton.ad"));
         addFilesButton.addActionListener(new AddFilesButtonAction());
+        
+        addLinkButton.setText(getString("PackagingFilesPanel.addLinkButton.text"));
+	addLinkButton.setMnemonic(getString("PackagingFilesPanel.addLinkButton.mn").charAt(0));
+        addLinkButton.getAccessibleContext().setAccessibleDescription(getString("PackagingFilesPanel.addLinkButton.ad"));
+        addLinkButton.addActionListener(new AddLinkButtonAction());
 
         getEditButton().setVisible(false);
         getDefaultButton().setVisible(false);
@@ -125,6 +139,26 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 topFolder += "/"; // NOI18N
             }
             addObjectAction(new FileElement(FileType.UNKNOWN, "", topFolder)); // NOI18N
+        }
+    }
+    
+    
+    class AddLinkButtonAction implements java.awt.event.ActionListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+	    PackagingNewLinkPanel packagingNewEntryPanel = new PackagingNewLinkPanel(packagingFilesOuterPanel.getTopDirectoryTextField().getText());
+	    DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, getString("AddNewLinkDialogTitle"));
+	    packagingNewEntryPanel.setDialogDesriptor(dialogDescriptor);
+            DialogDisplayer.getDefault().notify(dialogDescriptor);
+	    if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
+		return;
+            addObjectAction(new FileElement(
+                    FileType.SOFTLINK,
+                    packagingNewEntryPanel.getLink(),
+                    packagingNewEntryPanel.getName(),
+                    "", // packagingFilesOuterPanel.getFilePermTextField().getText(),
+                    packagingFilesOuterPanel.getOwnerTextField().getText(),
+                    packagingFilesOuterPanel.getGroupTextField().getText()
+            ));
         }
     }
 
@@ -222,6 +256,9 @@ public class PackagingFilesPanel extends ListEditorPanel {
     }
     
     class AddFilesButtonAction implements java.awt.event.ActionListener {
+//        private PackagingAddingFilesProgressPanel progressPanel;
+        private boolean cancelled = false;
+        
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
             if (FileChooser.getCurrectChooserFile() != null) {
@@ -238,15 +275,57 @@ public class PackagingFilesPanel extends ListEditorPanel {
             if (ret == FileChooser.CANCEL_OPTION) {
                 return;
             }
-            File dir = fileChooser.getSelectedFile();
-            addFilesFromDirectory(dir, dir);
+            final File dir = fileChooser.getSelectedFile();
+            
+            
+            JButton stopButton = new JButton(getString("PackagingAddingFilesProgressPanel.Stop.Button.text"));
+            stopButton.setMnemonic(getString("PackagingAddingFilesProgressPanel.Stop.Button.text").charAt(0));
+            stopButton.addActionListener(new StopButtonAction());
+	    final PackagingAddingFilesProgressPanel progressPanel = new PackagingAddingFilesProgressPanel(stopButton);
+	    DialogDescriptor dialogDescriptor = new DialogDescriptor(progressPanel, getString("PackagingAddingFilesProgressPanel.title"), true, new JButton[]{stopButton}, stopButton, DialogDescriptor.RIGHT_ALIGN, null, null);
+            final Dialog progressDialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
+            progressDialog.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowOpened(WindowEvent e) {
+                    new AddFilesFromDir(dir, progressPanel, progressDialog).start();
+                }
+            });
+            progressDialog.setVisible(true);
+            //addFilesFromDirectory(dir, dir);
         }
         
-        private void addFilesFromDirectory(File origDir, File dir) {
+        class AddFilesFromDir extends Thread {
+            private PackagingAddingFilesProgressPanel progressPanel;
+            private Dialog progressDialog;
+            private File dir;
+            
+            AddFilesFromDir(File dir, PackagingAddingFilesProgressPanel progressPanel, Dialog progressDialog) {
+                this.progressPanel = progressPanel;
+                this.progressDialog = progressDialog;
+                this.dir = dir;
+            }
+            
+            @Override
+            public void run() {
+                addFilesFromDirectory(dir, dir, progressPanel);
+                progressDialog.setVisible(false);
+            }
+        }
+        
+        class StopButtonAction implements java.awt.event.ActionListener {
+            public void actionPerformed(ActionEvent arg0) {
+                cancelled = true;
+            }
+        }
+        
+        private void addFilesFromDirectory(File origDir, File dir, PackagingAddingFilesProgressPanel progressPanel) {
             File[] files = dir.listFiles();
             for (int i = 0; i < files.length; i++) {
+                if (cancelled) {
+                    break;
+                }
                 if (files[i].isDirectory()) {
-                    addFilesFromDirectory(origDir, files[i]);
+                    addFilesFromDirectory(origDir, files[i], progressPanel);
                 }
                 else {
                     String path;
@@ -280,7 +359,8 @@ public class PackagingFilesPanel extends ListEditorPanel {
                             perm,
                             packagingFilesOuterPanel.getOwnerTextField().getText(),
                             packagingFilesOuterPanel.getGroupTextField().getText()
-                    )); // FIXUP: softlink
+                    ));
+                    progressPanel.setProgress(path);
                 }
             }
         }
@@ -396,6 +476,8 @@ public class PackagingFilesPanel extends ListEditorPanel {
 //		setRowHeight(19);
             getAccessibleContext().setAccessibleDescription(""); // NOI18N
             getAccessibleContext().setAccessibleName(""); // NOI18N
+            
+            putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
         }
 
         @Override
@@ -455,13 +537,16 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     label.setText(elem.getType().toString());
             } else if (col == 1) {
                 if (elem.getType() == FileElement.FileType.SOFTLINK) {
-                    label.setToolTipText(elem.getType() + ": " + elem.getTo() + "->" + elem.getFrom()); // NOI18N
+                    String msg = getString("Softlink_tt", elem.getTo() + "->" + elem.getFrom()); // NOI18N
+                    label.setToolTipText(msg);
                 }
                 else if (elem.getType() == FileElement.FileType.DIRECTORY) {
-                    label.setToolTipText(elem.getType() + ": " + elem.getTo()); // NOI18N
+                    String msg = getString("Directory_tt", elem.getTo()); // NOI18N
+                    label.setToolTipText(msg);
                 }
                 else if (elem.getType() == FileElement.FileType.FILE) {
-                    label.setToolTipText(elem.getType() + ": " + (new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom())).getAbsolutePath())); // NOI18N
+                    String msg = getString("File_tt", (new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom())).getAbsolutePath())); // NOI18N
+                    label.setToolTipText(msg);
                 }
                 return label;
                 
@@ -635,4 +720,9 @@ public class PackagingFilesPanel extends ListEditorPanel {
         }
         return bundle.getString(s);
     }
+    
+    private static String getString(String s, String a1) {
+        return NbBundle.getMessage(PackagingFilesPanel.class, s, a1);
+    }
+
 }

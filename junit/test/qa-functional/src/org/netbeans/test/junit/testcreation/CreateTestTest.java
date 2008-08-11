@@ -60,6 +60,7 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.junit.testcase.JunitTestCase;
 import org.netbeans.test.junit.utils.Utilities;
 
@@ -100,7 +101,8 @@ public class CreateTestTest extends JunitTestCase {
                   "testCreateWOHints",
                   "testCreateWOJavadoc",
                   "testCreateWOsetUp",
-                  "testCreateWOtearDown").enableModules(".*").clusters(".*"));
+                  "testCreateWOtearDown")
+                  .enableModules(".*").clusters(".*"));
     }
     
     /**
@@ -108,6 +110,7 @@ public class CreateTestTest extends JunitTestCase {
      * With default options (checkboxes)
      */
     public void testCreateTestByPopup() {
+        ProjectSupport.waitScanFinished();
         //open sample class
         Node n = Utilities.openFile(Utilities.SRC_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME+ "|" + Utilities.TEST_CLASS_NAME);
@@ -139,6 +142,7 @@ public class CreateTestTest extends JunitTestCase {
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 0);//public methods
+        System.out.println(jbo.getText());
         jbo.clickMouse();
         ndo.btOK().push();
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
@@ -165,6 +169,7 @@ public class CreateTestTest extends JunitTestCase {
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 1);//protected methods
+        System.out.println(jbo.getText());
         jbo.clickMouse();
         ndo.btOK().push();
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
@@ -190,7 +195,10 @@ public class CreateTestTest extends JunitTestCase {
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 2);//friendly methods
-        jbo.clickMouse();
+        System.out.println(jbo.getText());
+        jbo.push();
+        JTextFieldOperator tfo = new JTextFieldOperator(ndo);
+        tfo.setText(tfo.getText() + ".");
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
         assertFalse(ndo.btOK().isEnabled()); // OK button should be disabled
         ndo.btCancel().push(); //cancel the dialog
@@ -200,6 +208,12 @@ public class CreateTestTest extends JunitTestCase {
      * Test creation w/o setUp() 
      */
     public void testCreateWOsetUp() {
+        //necessary to delete created tests from testCreateTestWOsetUp
+        Utilities.takeANap(Utilities.ACTION_TIMEOUT);
+        Utilities.deleteNode(Utilities.TEST_PACKAGES_PATH +
+                "|" + TEST_PACKAGE_NAME);
+        Utilities.takeANap(Utilities.ACTION_TIMEOUT);
+        
         Node n = Utilities.openFile(Utilities.SRC_PACKAGES_PATH +
                 "|" + TEST_PACKAGE_NAME + "|" + Utilities.TEST_CLASS_NAME);
 //        Utilities.pushCreateTestsPopup(n);
@@ -207,7 +221,8 @@ public class CreateTestTest extends JunitTestCase {
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         Utilities.checkAllCheckboxes(ndo);
-        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 3);//setUp methods
+        JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 3);//tearDown methods
+        System.out.println(jbo.getText());
         jbo.clickMouse();
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
         ndo.btOK().push();
@@ -234,6 +249,7 @@ public class CreateTestTest extends JunitTestCase {
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         Utilities.checkAllCheckboxes(ndo);
         JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 4);//tearDown methods
+        System.out.println(jbo.getText());
         jbo.clickMouse();
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
         ndo.btOK().push();
@@ -260,6 +276,7 @@ public class CreateTestTest extends JunitTestCase {
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         Utilities.checkAllCheckboxes(ndo);
         JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 5);//methods bodies
+        System.out.println(jbo.getText());
         jbo.clickMouse();
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
         ndo.btOK().push();
@@ -286,7 +303,7 @@ public class CreateTestTest extends JunitTestCase {
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         Utilities.checkAllCheckboxes(ndo);
         JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 6);//javadoc
-        
+        System.out.println(jbo.getText());
         jbo.clickMouse();
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
         ndo.btOK().push();
@@ -313,7 +330,7 @@ public class CreateTestTest extends JunitTestCase {
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         Utilities.checkAllCheckboxes(ndo);
         JCheckBoxOperator jbo = new JCheckBoxOperator(ndo, 7);//hints
-        
+        System.out.println(jbo.getText());
         jbo.clickMouse();
         Utilities.takeANap(Utilities.ACTION_TIMEOUT);
         ndo.btOK().push();

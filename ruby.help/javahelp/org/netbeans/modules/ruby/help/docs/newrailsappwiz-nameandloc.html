@@ -11,22 +11,42 @@ All rights reserved.
 <body>
 <h2>New Ruby on Rails Application Wizard: Name and Location </h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small></p>
-<p>In this panel of the New Ruby on Rails Application wizard, you set the name of the project and can change its default location. </p>
-<p><i>You get to this panel by choosing File &gt; New Project, and in the New Project wizard, selecting the category Ruby and the project type Ruby on Rails Application.</i></p>
+<p>
+  In this panel of the New Ruby on Rails Application wizard, 
+  you set the name of the project and can change its 
+  default location. You also specify which Ruby interpreter
+  and server to use. You can change the interpreter and server
+  later using the project's Properties Manager.
+</p>
+<p>You get to this panel by choosing File &gt; New Project, and in the New Project wizard, selecting the category Ruby and the project type Ruby on Rails Application.</p>
 <ul class="note">
-  <li>Clicking the Next button  will open the database configuration window which enables you to use existing IDE connections or specify database information directly. Clicking Next again will open a  panel that enables you to install or update Rails and to install OpenSSL support. Clicking  Finish creates the project without using these options. </li>
+  <li>Clicking the Next button  will open the database configuration window which enables you to use existing IDE connections or specify database information directly. 
+  Clicking Next again will open a  panel that enables you to 
+  install or update Rails, OpenSSL support, and the Warbler gem. 
+  Clicking  Finish creates the project without using these options. </li>
 </ul>
 <p>The panel displays the following options:</p>
 <ul>
   <li><b>Project Name.</b> Specifies the name of the project, which is displayed in the Projects window. This name is also used to create the project folder. </li>
   <li><b>Project Location.</b> Specifies the location where you want to store the project metadata and source code.</li>
   <li><b>Project Folder.</b> Specifies the folder where you want to store the project metadata and source code. The folder is a concatenation of the project location and the project name.</li>
-  <li><b>Set as Main Project.</b> Sets the newly created project as the main project in the Projects window.</li>
   <li><b>Ruby Platform.</b> Select the platform you will use with the project from the drop-down list. If you want to use a platform other than what is displayed in the list, click  Manage to open the Ruby Platform Manager.</li>
   <li><b>Server.</b> Select the server you will use with the project from the drop-down list. </li>
   <li> <b>If Using JRuby.</b> The following option is useful only if you are using JRuby.
       <ul>
-        <li> <b>Add Rake Targets to Support App Server Deployment (.war).</b> Choose this option if you want to create a <code>.war</code> file so you can deploy your application to an application server, such as Glassfish. 
+      <li> 
+        <b>Add Rake Targets to Support App Server Deployment (.war).</b> 
+        Choose this option if you want to create a <code>.war</code> 
+        file so you can deploy your application to an application 
+        server, such as the GlassFish application server.
+        When you select this option, the IDE includes the 
+        Warbler gem and adds war: rake tasks to the project. 
+        If your JRuby repository does not have the 
+        Warbler gem, the IDE disables the Finish button.
+        You can install the Warbler gem in the fourth step 
+        of the wizard. Once the gem is installed, the Finish
+        button becomes enabled.
+      </li>
       </ul>
   </li>
 </ul>

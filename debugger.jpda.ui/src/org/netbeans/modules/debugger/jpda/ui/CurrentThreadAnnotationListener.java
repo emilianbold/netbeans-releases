@@ -229,7 +229,6 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             try {
                 stack = currentThread.getCallStack ();
             } catch (AbsentInformationException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 synchronized (currentPCLock) {
                     currentPCSet = false; // The annotation is goint to be removed
                 }

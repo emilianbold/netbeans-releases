@@ -59,11 +59,13 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.openide.DialogDescriptor;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -110,7 +112,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         model = new DefaultListModel();
         
         if (cache == null) {
-            RemoteServerList registry = RemoteServerList.getInstance();
+            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
             for (String hkey : registry.getServerNames()) {
                 model.addElement(hkey);
             }
@@ -131,6 +133,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         if (!record.isOnline()) {
             record.resetOfflineState(); // this is a do-over
             setButtons(false);
+            hideReason();            
             RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(entry, true);
             userInfo.setPassword(password);
             phandle = ProgressHandleFactory.createHandle("");
