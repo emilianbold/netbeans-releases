@@ -43,7 +43,6 @@ package org.netbeans.modules.web.core.syntax.completion;
 
 
 import java.awt.Graphics;
-import java.io.IOException;
 import java.util.Collection;
 import javax.swing.text.*;
 import java.awt.Color;
@@ -59,18 +58,11 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.core.syntax.spi.AutoTagImporterProvider;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 
 
