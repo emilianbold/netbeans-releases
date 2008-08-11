@@ -61,6 +61,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
 
 /**
@@ -95,7 +96,8 @@ public class LocalNativeExecution extends NativeExecution {
             String arguments,
             String[] envp,
             PrintWriter out,
-            Reader in) throws IOException, InterruptedException {
+            Reader in,
+            boolean unbuffer) throws IOException, InterruptedException {
         String commandInterpreter;
         String commandLine;
         int rc = -1;
@@ -123,6 +125,18 @@ public class LocalNativeExecution extends NativeExecution {
             nueEnvp = new ArrayList();
         }
         nueEnvp.add("SPRO_EXPAND_ERRORS="); // NOI18N
+        
+        if (unbuffer) {
+            String unbufferPath = getUnbufferPath();
+            if (unbufferPath != null) {
+                if (Utilities.isMac()) {
+                    nueEnvp.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
+                    nueEnvp.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
+                } else {
+                    nueEnvp.add("LD_PRELOAD=" + unbufferPath); // NOI18N
+                }
+            }
+        }
         
         envp = (String[] ) nueEnvp.toArray(new String[0]);
         executionProcess = desc.exec(null, envp, true, runDirFile);
@@ -165,6 +179,42 @@ public class LocalNativeExecution extends NativeExecution {
 //        if (executionProcess != null) {
 //            executionProcess.destroy();
 //        }
+    }
+    
+    private String getUnbufferPath() {
+        String name = "bin/unbuffer-" + getOsName() + "-" + getOsArch() + "." + getExtension(); // NOI18N
+        File file = InstalledFileLocator.getDefault().locate(name, null, false);
+        if (file != null && file.exists()) {
+            return fixPath(file.getAbsolutePath());
+        } else {
+            return null;
+        }
+    }
+
+    private static String getOsArch() {
+        String orig = System.getProperty("os.arch"); // NOI18N
+        return (orig.equals("i386") || orig.equals("i686")) ? "x86" : orig; // NOI18N
+    }
+
+    private static String getOsName() {
+        return System.getProperty("os.name").replace(" ", "_"); // NOI18N
+    }
+
+    private static String getExtension() {
+        return Utilities.isWindows() ? "dll" : Utilities.getOperatingSystem() == Utilities.OS_MAC ? "dylib" : "so"; // NOI18N
+    }
+
+    private String fixPath(String path) {
+        // TODO: implement
+        /*
+        if (isCygwin() && path.charAt(1) == ':') {
+            return "/cygdrive/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
+        } else if (isMinGW() && path.charAt(1) == ':') {
+            return "/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
+        } else {
+            return path;
+        }*/
+        return path;
     }
     
     
