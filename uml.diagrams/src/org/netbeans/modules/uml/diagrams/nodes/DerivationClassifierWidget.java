@@ -108,6 +108,7 @@ public class DerivationClassifierWidget extends UMLNodeWidget implements Propert
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
+        super.propertyChange(event);
         nameWidget.propertyChange(event);
     }
     
