@@ -69,6 +69,7 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -358,7 +359,7 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
 // TODO add your handling code here:
     String uri = uriTextField.getText();
     if (!resourceClassNameOveridden) {
-        classTextField.setText(Util.deriveResourceClassName(uri));
+        classTextField.setText(findFreeClassName(uri));
     }
     fireChange();
 }//GEN-LAST:event_uriTextFieldKeyReleased
@@ -450,22 +451,6 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
     public static final String DEFAULT_URI = "generic";
 
     public void read(WizardDescriptor settings) {
-        String value = (String) settings.getProperty(WizardProperties.RESOURCE_URI);
-        if (value == null || value.trim().length() == 0) {
-            uriTextField.setText(DEFAULT_URI);
-            classTextField.setText(Util.deriveResourceClassName(DEFAULT_URI));
-            //uriTextField.setText("/" + Util.pluralize(Util.lowerFirstChar(getResourceName())) + "/{name}"); //NOI18N
-            contentClassTextField.setText(GenericResourceBean.getDefaultRepresetationClass((MimeType) medaTypeComboBox.getSelectedItem()));
-        } else {
-            uriTextField.setText(value);
-            classTextField.setText((String) settings.getProperty(WizardProperties.RESOURCE_CLASS));
-            medaTypeComboBox.setSelectedItem(((MimeType[]) settings.getProperty(WizardProperties.MIME_TYPES))[0]);
-            String[] types = (String[]) settings.getProperty(WizardProperties.REPRESENTATION_TYPES);
-            if (types != null && types.length > 0) {
-                contentClassTextField.setText(types[0]);
-            }
-        }
-
         project = Templates.getProject(settings);
         FileObject targetFolder = Templates.getTargetFolder(settings);
 
@@ -489,6 +474,23 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
                 }
             }
         }
+
+        String value = (String) settings.getProperty(WizardProperties.RESOURCE_URI);
+        if (value == null || value.trim().length() == 0) {
+            uriTextField.setText(DEFAULT_URI);
+            classTextField.setText(findFreeClassName(DEFAULT_URI));
+            //uriTextField.setText("/" + Util.pluralize(Util.lowerFirstChar(getResourceName())) + "/{name}"); //NOI18N
+            contentClassTextField.setText(GenericResourceBean.getDefaultRepresetationClass((MimeType) medaTypeComboBox.getSelectedItem()));
+        } else {
+            uriTextField.setText(value);
+            classTextField.setText((String) settings.getProperty(WizardProperties.RESOURCE_CLASS));
+            medaTypeComboBox.setSelectedItem(((MimeType[]) settings.getProperty(WizardProperties.MIME_TYPES))[0]);
+            String[] types = (String[]) settings.getProperty(WizardProperties.REPRESENTATION_TYPES);
+            if (types != null && types.length > 0) {
+                contentClassTextField.setText(types[0]);
+            }
+        }
+
     }
 
     public void store(WizardDescriptor settings) {
@@ -515,5 +517,18 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
             }
             packageComboBox.setModel(model);
         }
+    }
+
+    private String findFreeClassName(String uri) {
+        try {
+            FileObject folder = SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage());
+            if (folder != null) {
+                return FileUtil.findFreeFileName(folder, Util.deriveResourceClassName(uri), Constants.JAVA_EXT);
+            }
+        } catch (IOException ex) {
+            //OK just return null
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 }

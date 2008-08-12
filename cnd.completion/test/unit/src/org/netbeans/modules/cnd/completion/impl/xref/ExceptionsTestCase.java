@@ -36,48 +36,27 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.client.tools.internetexplorer;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.logging.Level;
-
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
-import org.netbeans.modules.web.client.tools.common.launcher.Utils;
-import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSAbstractExternalDebugger;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.cnd.completion.impl.xref;
 
 /**
  *
- * @author Sandip V. Chitale <sandipchitale@netbeans.org>, jdeva
+ * @author Vladimir Kvashin
  */
-public class IEJSDebugger extends JSAbstractExternalDebugger {
+public class ExceptionsTestCase extends ReferencesBaseTestCase {
 
-    public IEJSDebugger(URI uri, HtmlBrowser.Factory browser) {
-        super(uri, browser);
+    public ExceptionsTestCase(String testName) {
+        super(testName);
+    }
+
+    public void testBoostMacros1() throws Exception {
+        performTest("boost_macros_1.cc");
+        assertNoExceptions();
     }
 
     @Override
-    protected void launchImpl(int port) {
-        LaunchDescriptor launchDescriptor = new LaunchDescriptor(getBrowserExecutable());
-        launchDescriptor.setURI(Utils.getDebuggerLauncherURI(port, getID()));
-        try {
-            Launcher.launch(launchDescriptor);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }        
+    public void compareReferenceFiles() {
+        // we needn't compare - just check that there are no exceptions
     }
 
-    public String getID() {
-        if (ID == null) {
-            ID = IEJSDebuggerConstants.NETBEANS_IE_DEBUGGER + "-" + getSequenceId(); // NOI18N
-        }
-        return ID;
-    }
 }

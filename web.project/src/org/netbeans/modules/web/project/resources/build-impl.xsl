@@ -245,7 +245,7 @@ introduced by support for multiple source roots. -jglick
                     </and>
                 </condition>
                 <available file="${{conf.dir}}/MANIFEST.MF" property="has.custom.manifest"/>
-                <available file="${{conf.dir}}/persistence.xml" property="has.persistence.xml"/>
+                <available file="${{persistence.xml.dir}}/persistence.xml" property="has.persistence.xml"/>
 
                 <condition property="do.war.package.with.custom.manifest">
                     <isset property="has.custom.manifest"/>
@@ -905,7 +905,7 @@ exists or setup the property manually. For example like this:
             <target name="-copy-persistence-xml" if="has.persistence.xml">
                 <mkdir dir="${{build.web.dir}}/WEB-INF/classes/META-INF"/>
                 <copy todir="${{build.web.dir}}/WEB-INF/classes/META-INF">
-                    <fileset dir="${{conf.dir}}" includes="persistence.xml"/>
+                    <fileset dir="${{persistence.xml.dir}}" includes="persistence.xml"/>
                 </copy>
             </target>
             

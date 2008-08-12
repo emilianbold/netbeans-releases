@@ -36,48 +36,72 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.client.tools.internetexplorer;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.logging.Level;
+package org.netbeans.modules.cnd.modelimpl.test;
 
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
-import org.netbeans.modules.web.client.tools.common.launcher.Utils;
-import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSAbstractExternalDebugger;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.Exceptions;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.test.BaseTestCase;
 
 /**
  *
- * @author Sandip V. Chitale <sandipchitale@netbeans.org>, jdeva
+ * @author Vladimir Kvashin
  */
-public class IEJSDebugger extends JSAbstractExternalDebugger {
+public class ModelBasedTestCase extends BaseTestCase {
 
-    public IEJSDebugger(URI uri, HtmlBrowser.Factory browser) {
-        super(uri, browser);
+    private final Collection<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
+
+
+    public ModelBasedTestCase(String testName) {
+        super(testName);
     }
 
     @Override
-    protected void launchImpl(int port) {
-        LaunchDescriptor launchDescriptor = new LaunchDescriptor(getBrowserExecutable());
-        launchDescriptor.setURI(Utils.getDebuggerLauncherURI(port, getID()));
-        try {
-            Launcher.launch(launchDescriptor);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }        
+    protected void setUp() throws Exception {
+	super.setUp();
+	DiagnosticExceptoins.Hook hook = new DiagnosticExceptoins.Hook() {
+	    public void exception(Throwable thr) {
+		thr.printStackTrace();
+		exceptions.add(thr);
+	    }
+	};
+	DiagnosticExceptoins.setHook(hook);
     }
 
-    public String getID() {
-        if (ID == null) {
-            ID = IEJSDebuggerConstants.NETBEANS_IE_DEBUGGER + "-" + getSequenceId(); // NOI18N
-        }
-        return ID;
+    /**
+     * Registers an exception.
+     * The idea is to process an exception that occurs in main thread
+     * in the same way as exceptions that occur in code model threads
+     */
+    protected void registerException(Throwable thr) {
+	exceptions.add(thr);
     }
+
+    /** Asserts that no exceptions occur in code model threads */
+    protected void assertNoExceptions() throws Exception {
+	assertEmpty(exceptions);
+    }
+
+    private void assertEmpty(Collection<Throwable> errors) throws Exception {
+	// the idea here was to somehow make JUnit infrastructure
+	// display all caught exceptions;
+	// but I don't yet know how to;
+	// so for the time being we just throw 1-st one
+	if (!errors.isEmpty()) {
+	    for (Throwable thr : errors) {
+		if (thr instanceof Exception) {
+		    throw (Exception) thr;
+		}
+		else if( thr instanceof Error ) {
+		    throw (Error) thr;
+		} else {
+		    throw new Exception(thr);
+		}
+	    }
+	}
+    }
+
+
 }
