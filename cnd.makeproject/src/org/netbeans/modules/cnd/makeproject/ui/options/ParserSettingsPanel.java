@@ -407,7 +407,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 if (record != null) {
                     Logger rdlog = Logger.getLogger("cnd.remote.logger"); // NOI18N
                     rdlog.fine("ParserSettingsPanel<Init>: Validating " + record.getName());
-                    record.validate(); // ensure the development host is initialized
+                    record.validate(false); // ensure the development host is initialized
                 }
             }            
         }
