@@ -154,6 +154,31 @@ public class ProxyPreferencesTest extends NbTestCase {
         checkEquals("Test didn't flush to Orig", test, orig);
     }
 
+    public void testRemoveKey() throws BackingStoreException {
+        Preferences orig = Preferences.userRoot().node(getName());
+        orig.put("key-2", "value-2");
+        assertNull("Original contains value", orig.get("key-1", null));
+        assertEquals("Original doesn't contain value", "value-2", orig.get("key-2", null));
+
+        Preferences test = ProxyPreferences.get(orig);
+        test.put("key-1", "xyz");
+        assertEquals("Wrong value", "xyz", test.get("key-1", null));
+        
+        test.remove("key-1");
+        assertNull("Test contains removed key-1", test.get("key-1", null));
+        
+        test.remove("key-2");
+        assertNull("Test contains removed key-2", test.get("key-2", null));
+
+        test.flush();
+        assertNull("Test flushed removed key-1", orig.get("key-1", null));
+        assertNull("Test.flush did not remove removed key-2", orig.get("key-2", null));
+    }
+    
+    // -----------------------------------------------------------------------
+    // private implementation
+    // -----------------------------------------------------------------------
+    
     private void write(Preferences prefs, String[] tree) {
         for(String s : tree) {
             int equalIdx = s.lastIndexOf('=');

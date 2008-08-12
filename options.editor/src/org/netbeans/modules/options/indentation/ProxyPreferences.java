@@ -148,6 +148,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
             checkRemoved();
             
             if (removedKeys.add(key)) {
+                data.remove(key);
                 bag = new EventBag<PreferenceChangeListener, PreferenceChangeEvent>();
                 bag.addListeners(prefListeners);
                 bag.addEvent(new PreferenceChangeEvent(this, key, null));
@@ -445,13 +446,25 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
             delegate.removeNodeChangeListener(weakNodeListener);
             delegate.removePreferenceChangeListener(weakPrefListener);
             try {
+                // write all valid key-value pairs
                 for(String key : data.keySet()) {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("Flushing " + absolutePath() + "/" + key + "=" + data.get(key));
+                    if (!removedKeys.contains(key)) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Writing " + absolutePath() + "/" + key + "=" + data.get(key));
+                        }
+                        delegate.put(key, data.get(key));
                     }
-                    delegate.put(key, data.get(key));
                 }
                 data.clear();
+
+                // remove all removed keys
+                for(String key : removedKeys) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Removing " + absolutePath() + "/" + key);
+                    }
+                    delegate.remove(key);
+                }
+                removedKeys.clear();
             } finally {
                 delegate.addNodeChangeListener(weakNodeListener);
                 delegate.addPreferenceChangeListener(weakPrefListener);
@@ -611,6 +624,12 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
         }
     }
     
+    public void silence() {
+        synchronized (tree.treeLock()) {
+            noEvents = true;
+        }
+    }
+    
     // ------------------------------------------------------------------------
     // private implementation
     // ------------------------------------------------------------------------
@@ -628,6 +647,7 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
     private final Map<String, ProxyPreferences> children = new HashMap<String, ProxyPreferences>();
     private final Set<String> removedChildren = new HashSet<String>();
 
+    private boolean noEvents = false;
     private PreferenceChangeListener weakPrefListener;
     private final Set<PreferenceChangeListener> prefListeners = new HashSet<PreferenceChangeListener>();
     private NodeChangeListener weakNodeListener;
@@ -822,6 +842,10 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
     }
 
     private void firePrefEvents(List<EventBag<PreferenceChangeListener, PreferenceChangeEvent>> events) {
+        if (noEvents) {
+            return;
+        }
+        
         for(EventBag<PreferenceChangeListener, PreferenceChangeEvent> bag : events) {
             for(PreferenceChangeEvent event : bag.getEvents()) {
                 for(PreferenceChangeListener l : bag.getListeners()) {
@@ -836,6 +860,10 @@ public final class ProxyPreferences extends Preferences implements PreferenceCha
     }
 
     private void fireNodeEvents(List<EventBag<NodeChangeListener, NodeChangeEvent>> events) {
+        if (noEvents) {
+            return;
+        }
+        
         for(EventBag<NodeChangeListener, NodeChangeEvent> bag : events) {
             for(NodeChangeEvent event : bag.getEvents()) {
                 for(NodeChangeListener l : bag.getListeners()) {
