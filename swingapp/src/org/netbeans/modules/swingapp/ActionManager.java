@@ -128,23 +128,26 @@ public class ActionManager {
     
     private static ActionManager emptyActionManager = new ActionManager(null, null);
 
-    public static synchronized ActionManager getActionManager(FileObject fileInProject) {
+    public static ActionManager getActionManager(FileObject fileInProject) {
         if(ams == null) {
-            ams = new HashMap<Project,ActionManager>();
+            ams = Collections.synchronizedMap(new HashMap<Project,ActionManager>());
         }
         Project proj = getProject(fileInProject);
         ActionManager am = ams.get(proj);
         if(am == null && AppFrameworkSupport.isFrameworkEnabledProject(fileInProject)) {
-            ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
-            FileObject root = cp.findOwnerRoot(fileInProject);
-            am = new ActionManager(proj, root);
-            ams.put(proj,am); // PENDING never removed, this is memory leak!!!
-            am = ams.get(proj);
+            synchronized(ActionManager.class) {
+                if (ams.get(proj) == null) {
+                    ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
+                    FileObject root = cp.findOwnerRoot(fileInProject);
+                    am = new ActionManager(proj, root);
+                    ams.put(proj,am);
+                }
+            }
         }
         return am;
     }
     
-    public static synchronized ActionManager getActionManager(Project project) {
+    public static ActionManager getActionManager(Project project) {
         Sources srcs = project.getLookup().lookup(Sources.class);
         if(srcs == null) return null;
         SourceGroup groups[] = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
