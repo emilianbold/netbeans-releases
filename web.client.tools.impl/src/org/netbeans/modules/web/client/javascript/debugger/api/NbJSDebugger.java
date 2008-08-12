@@ -281,13 +281,14 @@ public final class NbJSDebugger {
         DebuggerManager.getDebuggerManager().addDebuggerListener(debuggerManagerListener);
 
         preferenceChangeListener = new PreferenceChangeListenerImpl();
-        NbJSPreferences.getInstance().addPreferenceChangeListener(WeakListeners.create(
+        NbJSPreferences nbJSPreferences = NbJSPreferences.getInstance();
+        nbJSPreferences.addPreferenceChangeListener(WeakListeners.create(
                 PreferenceChangeListener.class,
                 preferenceChangeListener,
-                this.debugger));
+                nbJSPreferences));
 
         propertyChangeListener = new PropertyChangeListenerImpl();
-        this.debugger.addPropertyChangeListener(WeakListeners.propertyChange(propertyChangeListener, debugger));
+        this.debugger.addPropertyChangeListener(WeakListeners.propertyChange(propertyChangeListener, this.debugger));
         
 
         breakpointPropertyChangeListener = new BreakpointPropertyChangeListener();
