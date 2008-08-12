@@ -183,6 +183,12 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
                 suspensionPointHandler.interrupt();
                 suspensionPointHandler = null;
             }
+            
+            if (httpMessageHandler != null) {
+                httpMessageHandler.interrupt();
+                httpMessageHandler = null;
+            }
+            
             setDebuggerState(JSDebuggerState.DISCONNECTED_USER);
         }
     }
