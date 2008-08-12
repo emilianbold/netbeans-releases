@@ -617,7 +617,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         ProjectRootNode node = new ProjectsTabOperator().getProjectRootNode(projectName);
         node.performPopupAction(actionName);
         OutputTabOperator oto = new OutputTabOperator(projectName);
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 300000); //NOI18N
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         oto.waitText("(total time: "); //NOI18N
         dumpOutput();
         assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
