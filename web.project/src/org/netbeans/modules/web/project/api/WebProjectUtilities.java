@@ -221,7 +221,7 @@ public class WebProjectUtilities {
         //create default manifest
         if(confFolderFO != null) {
             String manifestText = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "MANIFEST.MF")); //NOI18N
-            FileObject manifest = FileUtil.createData(confFolderFO, "MANIFEST"); //NOI18N
+            FileObject manifest = FileUtil.createData(confFolderFO, "MANIFEST.MF"); //NOI18N
             FileLock lock = manifest.lock();
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(manifest.getOutputStream(lock)));
             try {
