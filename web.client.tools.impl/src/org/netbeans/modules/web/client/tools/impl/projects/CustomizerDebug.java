@@ -195,7 +195,7 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 645, Short.MAX_VALUE)
+                .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 650, Short.MAX_VALUE)
                 .add(22, 22, 22))
             .add(layout.createSequentialGroup()
                 .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 656, Short.MAX_VALUE)
@@ -227,6 +227,10 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
 
         debugServerJCheckBox.getAccessibleContext().setAccessibleDescription("null");
         debugClientJCheckBox.getAccessibleContext().setAccessibleDescription("null");
+        firefoxRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACSN_FF_RadioButton")); // NOI18N
+        firefoxRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACSD_FF_RadioButton")); // NOI18N
+        internetExplorerRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACSN_IE_RadioButton")); // NOI18N
+        internetExplorerRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACSD_IE_RadioButton")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void debugServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugServerActionPerformed
