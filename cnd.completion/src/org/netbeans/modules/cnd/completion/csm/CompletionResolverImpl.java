@@ -319,6 +319,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (needClassElements(context, offset)) {
                 //if (fun == null) System.err.printf("\nFunction is null. Offset: %d Context:\n%s \n", offset, context.toString());
                 CsmClass clazz = (fun == null) ? null : CsmBaseUtilities.getFunctionClass(fun);
+                clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
                 if (clazz != null) {
                     // get class variables visible in this method
                     resImpl.classFields = contResolver.getFields(clazz, fun, strPrefix, staticContext, match, true,false);
