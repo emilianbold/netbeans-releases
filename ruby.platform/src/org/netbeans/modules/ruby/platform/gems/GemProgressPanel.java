@@ -80,6 +80,9 @@ final class GemProgressPanel extends JPanel {
 
             return;
         }
+        if (!isShowing()) { // ignore request, closed by user (issue #139495)
+            return;
+        }
 
         // Can now accept user input
         outputArea.setEditable(true);
@@ -98,7 +101,7 @@ final class GemProgressPanel extends JPanel {
         if (!EventQueue.isDispatchThread()) {
             throw new AssertionError("#done must be called from EDT");
         }
-        if (this.isShowing()) {
+        if (isShowing()) {
             messageLabel.setText(message);
             progressBar.setIndeterminate(false);
             progressBar.getModel().setValue(progressBar.getModel().getMaximum());
