@@ -45,6 +45,7 @@ package org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -54,6 +55,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.uml.common.generics.IteratorT;
 import org.netbeans.modules.uml.core.eventframework.EventBlocker;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
@@ -675,6 +677,25 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
                }
             }
          }
+         else if(pElement instanceof IActivity)
+         {
+             retObj = new ETArrayList < INamedElement >();
+             
+             IActivity activity = (IActivity)pElement;
+             List<IActivityNode> nodes = activity.getNodes();
+             for(IActivityNode node : nodes)
+             {
+                 if(node.getGroups().size() >= 1)
+                 {
+                     System.out.println("Ignore");
+                 }
+                 else
+                 {
+                     retObj.add(node);
+                 }
+             }
+             
+         }
          else if (pElement instanceof INamespace)
          {
             retObj = ((INamespace) pElement).getOwnedElements();
@@ -869,24 +890,37 @@ catch (IOException ex) {
          {
              // IZ 139502 We should always remove theses objects from the list, 
              // since they are not model elements that have presentation.
+             boolean prompt = true;
              if (pOwnerElement instanceof IInteraction || 
                  pOwnerElement instanceof IActivity || 
                  pOwnerElement instanceof IStateMachine)
              {
                  pElements.remove(pOwnerElement);
+                 prompt = false;
              }
 
              int count = validElems.size();
              if (count > 0)
              {
                  //ask the user
-                 IQuestionDialog dialog = new SwingQuestionDialogImpl();
-                 String title = loadString("IDS_DEPTHDIALOGTITLE");
-                 String message = loadString("IDS_DEPTHDIALOGMSG");
-                 dialog.setDefaultButton(IQuestionDialog.IDOK);
-                 QuestionResponse result = dialog.displaySimpleQuestionDialogWithCheckbox(MessageDialogKindEnum.SQDK_YESNO, MessageIconKindEnum.EDIK_ICONWARNING, message, "", title, MessageResultKindEnum.SQDRK_RESULT_YES, false);
+                 int toInclude = MessageResultKindEnum.SQDRK_RESULT_YES;
+                 if(prompt == true)
+                 {
+                     IQuestionDialog dialog = new SwingQuestionDialogImpl();
+                     String title = loadString("IDS_DEPTHDIALOGTITLE");
+                     String message = loadString("IDS_DEPTHDIALOGMSG");
+                     dialog.setDefaultButton(IQuestionDialog.IDOK);
+                     QuestionResponse result = dialog.displaySimpleQuestionDialogWithCheckbox(MessageDialogKindEnum.SQDK_YESNO, 
+                                                                             MessageIconKindEnum.EDIK_ICONWARNING, 
+                                                                             message, 
+                                                                             "", 
+                                                                             title, 
+                                                                             MessageResultKindEnum.SQDRK_RESULT_YES, 
+                                                                             false);
+                     toInclude = result.getResult();
+                 }
 
-                 if (result.getResult() == MessageResultKindEnum.SQDRK_RESULT_NO)
+                 if (toInclude == MessageResultKindEnum.SQDRK_RESULT_NO)
                  {
                      // Don't include the child elements
                      count = 0;
