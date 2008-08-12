@@ -47,6 +47,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Type.ClassType;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -65,6 +66,7 @@ import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
@@ -190,18 +192,28 @@ public class AssignResultToVariable extends AbstractHint {
                         }
                         
                         TypeMirror type = copy.getTrees().getTypeMirror(tp);
+                        Element el = copy.getTrees().getElement(tp);
                         
                         if (type == null || NOT_ACCEPTABLE_TYPE_KINDS.contains(type.getKind())) {
                             return ;
                         }
-                        
+
+                        Tree t = tp.getLeaf();
+                        boolean isAnonymous = false; //handle anonymous classes #138223
+                        ExpressionTree identifier = null;
+                        if (t instanceof NewClassTree) {
+                            NewClassTree nct = ((NewClassTree)t);
+                            isAnonymous = nct.getClassBody() != null || el.getKind().isInterface() || el.getModifiers().contains(Modifier.ABSTRACT);
+                            identifier = nct.getIdentifier();
+                        }
+
                         type = Utilities.resolveCapturedType(copy, type);
                         
                         TreeMaker make = copy.getTreeMaker();
                         
                         name[0] = Utilities.guessName(copy, tp);
-                        
-                        VariableTree var = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name[0], make.Type(type), (ExpressionTree) tp.getLeaf());
+
+                        VariableTree var = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name[0], isAnonymous ? identifier : make.Type(type), (ExpressionTree) tp.getLeaf());
                         
                         var = Utilities.copyComments(copy, tp.getLeaf(), var);
                         
