@@ -47,11 +47,14 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.grailsproject.GrailsSources;
+import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
@@ -91,46 +94,14 @@ public class SourceNodeFactory implements NodeFactory {
                 return Collections.<SourceGroupKey>emptyList();
             }
             Sources sources = getSources();
-
+            List<SourceGroup> sourceGroups = GroovySources.getGroovySourceGroups(sources);
             List<SourceGroupKey> result =  new ArrayList<SourceGroupKey>();
 
-            for (FileObject fileObject : projectDir.getChildren()) {
-                if ("grails-app".equals(fileObject.getName())) { // NO18N
-                    for (FileObject grailsAppChild : fileObject.getChildren()) {
-                        if (grailsAppChild.isFolder()) {
-                            SourceGroup[] groups = sources.getSourceGroups("grails-app/" + grailsAppChild.getName()); // NO18N
-                            for(SourceGroup sourceGroup : groups) {
-                                result.add(new SourceGroupKey(sourceGroup));
-                            }
-                        }
-                    }
-                } else if ("src".equals(fileObject.getName())) { // NO18N
-                    for (FileObject srcChild : fileObject.getChildren()) {
-                        if (srcChild.isFolder()) {
-                            SourceGroup[] groups = sources.getSourceGroups("src/" + srcChild.getName()); // NO18N
-                            for(SourceGroup sourceGroup : groups) {
-                                result.add(new SourceGroupKey(sourceGroup));
-                            }
-                        }
-                    }
-                } else if ("test".equals(fileObject.getName())) { // NO18N
-                    for (FileObject testChild : fileObject.getChildren()) {
-                        if (testChild.isFolder()) {
-                            SourceGroup[] groups = sources.getSourceGroups("test/" + testChild.getName()); // NO18N
-                            for(SourceGroup sourceGroup : groups) {
-                                result.add(new SourceGroupKey(sourceGroup));
-                            }
-                        }
-                    }
-                } else if (fileObject.isFolder()) {
-                    SourceGroup[] groups = sources.getSourceGroups(fileObject.getName());
-                    for(SourceGroup sourceGroup : groups) {
-                        result.add(new SourceGroupKey(sourceGroup));
-                    }
-                }
+            for (SourceGroup sourceGroup : sourceGroups) {
+                result.add(new SourceGroupKey(sourceGroup));
             }
-
-            java.util.Collections.sort(result);
+            
+            Collections.sort(result);
             return result;
         }
 
