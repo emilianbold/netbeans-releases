@@ -473,7 +473,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
 
             addWellKnownFiles();
             addConfDirectoryFiles();
-            addPersitenceXmlDirectoryFiles();
+            addPersistenceXmlDirectoryFiles();
             addServerSpecificFiles();
             addFrameworkFiles();
         }
@@ -520,10 +520,10 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             confDir.addFileChangeListener(anyFileListener);
         }
         
-        private void addPersitenceXmlDirectoryFiles() {
+        private void addPersistenceXmlDirectoryFiles() {
             persistenceXmlDir = pwm.getPersistenceXmlDir();
             if (persistenceXmlDir == null ||
-                    (confDir != null && persistenceXmlDir.getPath().equals(confDir.getPath()))) {
+                    (confDir != null && FileUtil.toFile(persistenceXmlDir).equals(FileUtil.toFile(confDir)))) {
                 return;
             }
             FileObject[] children = persistenceXmlDir.getChildren();

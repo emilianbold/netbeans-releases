@@ -784,6 +784,9 @@ public class ActionManager {
                 RADProperty prop = comp.getBeanProperty("action");//NOI18N
                 if(prop != null) {
                     try {
+                        if (!(prop.getValue() instanceof ProxyAction)) {
+                            continue; // Hack to fix issue 112040
+                        }
                         //set to null then to the proxy to force an update
                         prop.setValue(null);
                         prop.setValue(action);

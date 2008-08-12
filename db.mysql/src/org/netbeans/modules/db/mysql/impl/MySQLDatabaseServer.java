@@ -88,6 +88,8 @@ import org.openide.util.Utilities;
 public class MySQLDatabaseServer implements DatabaseServer {
     // Synchronized on this
     private String displayName;
+    // Synchronized on this
+    private String shortDescription;
 
     // Synchronized on this
     private Task refreshTask;
@@ -257,19 +259,27 @@ public class MySQLDatabaseServer implements DatabaseServer {
     }
 
     private synchronized void updateDisplayName() {
-        String label;
+        String displayNameLabel;
+        String shortDescriptionLabel;
         if ( isConnected() ) {
-            label = "LBL_ServerDisplayName";
+            displayNameLabel = "LBL_ServerDisplayName";
+            shortDescriptionLabel = "LBL_ServerShortDescription";
         } else {
-            label = "LBL_ServerNotConnectedDisplayName";
+            displayNameLabel = "LBL_ServerNotConnectedDisplayName";
+            shortDescriptionLabel = "LBL_ServerNotConnectedShortDescription";
         }
-        setDisplayName(Utils.getMessage(
-                label, getHostPort(), getUser()));
+        String hostPort = getHostPort();
+        String user = getUser();
+        setDisplayName(Utils.getMessage(displayNameLabel, hostPort, user));
+        setShortDescription(Utils.getMessage(shortDescriptionLabel, hostPort, user));
     }
 
     public String getShortDescription() {
-        return Utils.getMessage(
-                "LBL_ServerShortDescription", getHostPort(), getUser());
+        return shortDescription;
+    }
+
+    private synchronized void setShortDescription(String shortDescription) {
+        this.shortDescription = shortDescription;
     }
 
     private String getHostPort() {

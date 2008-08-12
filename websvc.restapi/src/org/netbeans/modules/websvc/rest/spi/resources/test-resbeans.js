@@ -164,17 +164,20 @@ TestSupport.prototype = {
         if(resource != null && mIndex != -1) {
             var m = this.getElementsByTagName(resource, "method")[mIndex];
             request = this.getElementsByTagName(m, "request");
+            this.addTemplateParams(resource, request);
         }
-        this.addTemplateParams(resource.attrbutes().namedItem('path'), request);
         var paramRep = this.getParamRep(request, this.currentMethod);
         this.updatepage('paramHook', paramRep);
         document.getElementById("mimeType").value = this.currentMimeType;
         ts.clearOutput();
     },
     
-    addTemplateParams : function (rp, request) {
-        if(rp != null && request != null) {
-            var paths = req.split('/');
+    addTemplateParams : function (resource, request) {
+        if(resource != null && request != null) {
+            var rPath = resource.attributes.getNamedItem('path');
+            if(rPath == null)
+                return;
+            var paths = rPath.nodeValue.split('/');
             for(var i in paths) {
                 var path = paths[i];
                 if(path.indexOf("{") != -1) {
@@ -225,12 +228,11 @@ TestSupport.prototype = {
     doShowContent : function (uri) {
         this.clearInput();
         var r = this.wdr.findResource(uri);
+        this.currentResource = r;
         if(r != null) {
             var app1 = this.wadlDoc.documentElement;     
-            this.currentResource = r;
             this.doShowStaticResource(uri, r);
         } else {
-            this.currentResource = null;
             this.doShowDynamicResource(uri, this.wdr.getDefaultMethod(), this.wdr.getDefaultMime());
         }
     },
@@ -240,12 +242,11 @@ TestSupport.prototype = {
         var cat = ts.allcat[ndx];
         var r = cat.r;
         var uri = cat.uri;
+        this.currentResource = r;
         if(r != null && !ts.wdr.isTemplateResource(r)) {
             var app1 = this.wadlDoc.documentElement;     
-            this.currentResource = r;
             this.doShowStaticResource(uri, r);
         } else {
-            this.currentResource = null;
             this.doShowDynamicResource(uri, this.wdr.getDefaultMethod(), this.wdr.getDefaultMime());
         }
     },
