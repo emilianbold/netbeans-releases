@@ -194,10 +194,12 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private Stack<String> currentNotificationUrl = new Stack<String> ();
     private Map<String, UpdateLicenseImpl> name2license = new HashMap<String, UpdateLicenseImpl> ();
     private List<String> lines = new ArrayList<String> ();
+    private int bufferInitSize = 0;
 
     @Override
     public void characters (char[] ch, int start, int length) throws SAXException {
         lines.add (new String(ch, start, length));
+        bufferInitSize += length;
     }
 
     @Override
@@ -222,8 +224,8 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                 break;
             case notification :
                 // write catalog notification
-                if (this.provider != null) {
-                    StringBuffer sb = new StringBuffer ();
+                if (this.provider != null && ! lines.isEmpty ()) {
+                    StringBuffer sb = new StringBuffer (bufferInitSize);
                     for (String line : lines) {
                         sb.append (line);
                     }
@@ -236,18 +238,22 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                     provider.setNotification (notification);
                 }
                 lines.clear ();
+                bufferInitSize = 0;
                 currentNotificationUrl.pop ();
                 break;
             case module_notification :
                 // write module notification
-                ModuleDescriptor md = currentModule.peek ();
-                assert md != null : "ModuleDescriptor found for " + provider;
-                StringBuffer buf = new StringBuffer ();
-                for (String line : lines) {
-                    buf.append (line);
+                if (! lines.isEmpty ()) {
+                    ModuleDescriptor md = currentModule.peek ();
+                    assert md != null : "ModuleDescriptor found for " + provider;
+                    StringBuffer buf = new StringBuffer (bufferInitSize);
+                    for (String line : lines) {
+                        buf.append (line);
+                    }
+                    md.appendNotification (buf.toString ());
+                    lines.clear ();
+                    bufferInitSize = 0;
                 }
-                md.appendNotification (buf.toString ());
-                lines.clear ();
                 break;
             case external_package :
                 ERR.info ("Not supported yet.");
@@ -255,22 +261,27 @@ public class AutoupdateCatalogParser extends DefaultHandler {
             case license :
                 assert ! currentLicense.empty () : "Premature end of license " + qName;
                 
-                // find and fill UpdateLicenseImpl
-                StringBuffer sb = new StringBuffer ();
-                for (String line : lines) {
-                    sb.append (line);
-                }
-                UpdateLicenseImpl updateLicenseImpl = this.name2license.get (currentLicense.peek ());
-                // in invalid catalog might be a un-paired license
-                // assert updateLicenseImpl != null : "UpdateLicenseImpl found in map for key " + currentLicense.peek ();
-                if (updateLicenseImpl != null) {
-                    updateLicenseImpl.setAgreement (sb.toString ());
-                } else {
-                    ERR.info ("Unpaired license " + currentLicense.peek () + " without any module.");
+                if (! lines.isEmpty ()) {
+
+                    // find and fill UpdateLicenseImpl
+                    StringBuffer sb = new StringBuffer (bufferInitSize);
+                    for (String line : lines) {
+                        sb.append (line);
+                    }
+                    UpdateLicenseImpl updateLicenseImpl = this.name2license.get (currentLicense.peek ());
+                    // in invalid catalog might be a un-paired license
+                    // assert updateLicenseImpl != null : "UpdateLicenseImpl found in map for key " + currentLicense.peek ();
+                    if (updateLicenseImpl != null) {
+                        updateLicenseImpl.setAgreement (sb.toString ());
+                    } else {
+                        ERR.info ("Unpaired license " + currentLicense.peek () + " without any module.");
+                    }
+
+                    lines.clear ();
+                    bufferInitSize = 0;
                 }
                 
                 currentLicense.pop ();
-                lines.clear ();
                 break;
             default:
                 ERR.warning ("Unknown element " + qName);
