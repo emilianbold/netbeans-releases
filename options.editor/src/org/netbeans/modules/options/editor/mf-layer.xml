@@ -265,5 +265,11 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-    
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-all-languages">
+                <file name="language.nbs" url="../colors/allLanguages.nbs"/>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
