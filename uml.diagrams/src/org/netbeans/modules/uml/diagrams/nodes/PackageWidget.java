@@ -325,6 +325,7 @@ public class PackageWidget extends ContainerNode
     {
 //        nameWidget.propertyChange(event);
 
+        super.propertyChange(event);
         IElement element = (IElement) event.getSource();
         String propName = event.getPropertyName();
         if (element instanceof IPackage)
