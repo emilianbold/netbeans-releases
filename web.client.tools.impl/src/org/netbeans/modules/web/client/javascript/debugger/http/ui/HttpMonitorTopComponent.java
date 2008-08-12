@@ -398,6 +398,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         cleanButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/clean.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(cleanButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.cleanButton.text")); // NOI18N
+        cleanButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_CLEAN_TT")); // NOI18N
         cleanButton.setEnabled(false);
         cleanButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         cleanButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -414,6 +415,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         all_filterButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(all_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.all_filterButton.text")); // NOI18N
+        all_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_All_TT")); // NOI18N
         all_filterButton.setEnabled(false);
         all_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         all_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -427,6 +429,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         all_filterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_All_TT")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(html_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.html_filterButton.text")); // NOI18N
+        html_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_HTML_TT")); // NOI18N
         html_filterButton.setEnabled(false);
         html_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         html_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -440,6 +443,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         html_filterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_HTML_TT")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(js_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.js_filterButton.text")); // NOI18N
+        js_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_JS_TT")); // NOI18N
         js_filterButton.setEnabled(false);
         js_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         js_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -453,6 +457,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         js_filterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_JS_TT")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(xhr_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.xhr_filterButton.text")); // NOI18N
+        xhr_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_XHR_TT")); // NOI18N
         xhr_filterButton.setEnabled(false);
         xhr_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         xhr_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -466,6 +471,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         xhr_filterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_XHR_TT")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(css_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.css_filterButton.text")); // NOI18N
+        css_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_CSS_TT")); // NOI18N
         css_filterButton.setEnabled(false);
         css_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         css_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -479,6 +485,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         css_filterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_CSS_TT")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(images_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.images_filterButton.text")); // NOI18N
+        images_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_Images_TT")); // NOI18N
         images_filterButton.setEnabled(false);
         images_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         images_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -492,6 +499,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         images_filterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_Images_TT")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(flash_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.flash_filterButton.text")); // NOI18N
+        flash_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_Flash_TT")); // NOI18N
         flash_filterButton.setEnabled(false);
         flash_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         flash_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
