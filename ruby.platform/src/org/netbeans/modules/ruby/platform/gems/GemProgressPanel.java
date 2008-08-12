@@ -80,7 +80,7 @@ final class GemProgressPanel extends JPanel {
 
             return;
         }
-        if (!isShowing()) { // ignore request, closed by user (issue #139495)
+        if (!isShowing()) { // ignore request, dialog is closed
             return;
         }
 
@@ -101,7 +101,7 @@ final class GemProgressPanel extends JPanel {
         if (!EventQueue.isDispatchThread()) {
             throw new AssertionError("#done must be called from EDT");
         }
-        if (isShowing()) {
+        if (isShowing()) { // otherwise skip udpate, dialog is closed
             messageLabel.setText(message);
             progressBar.setIndeterminate(false);
             progressBar.getModel().setValue(progressBar.getModel().getMaximum());
