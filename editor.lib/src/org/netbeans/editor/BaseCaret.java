@@ -1253,7 +1253,7 @@ AtomicLockListener, FoldHierarchyListener {
                     try{
                         final String pastingString = (String)trans.getTransferData(DataFlavor.stringFlavor);
                         if (pastingString == null) return;
-                        doc.runAtomic (new Runnable () {
+                        doc.runAtomicAsUser (new Runnable () {
                             public void run () {
                                  try {
                                      doc.insertString(offset, pastingString, null);

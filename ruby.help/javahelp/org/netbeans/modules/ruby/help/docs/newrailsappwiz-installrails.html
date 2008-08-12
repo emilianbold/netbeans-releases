@@ -13,21 +13,49 @@ All rights reserved.
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> </p>
 
 
-<p>In this final panel of the New Ruby on Rails Application wizard, you can install or update Rails, and you can install OpenSSL support. There is also a button for setting your proxy if you are behind a firewall and you find that the installation cannot proceed. </p>
-<p><i>You open this panel by clicking Next in the Database Configuration panel of either the <a href="newrailsappwiz-nameandloc.html">New Ruby on Rails Application wizard</a> or  the <a href="newrailsappwiz-nameandloc.html">New Ruby on Rails Application With Sources wizard</a></i></p>
+<p>In this final panel of the New Ruby on Rails Application wizard, 
+you can install or update the Rails framework, JRuby OpenSSL support,
+and Warbler. There is also a button for setting your proxy if you 
+are behind a firewall and you find that the installation cannot proceed. </p>
+<p>You open this panel by clicking Next in the Database Configuration panel of 
+the <a href="newrailsappwiz-nameandloc.html">New Ruby on Rails Application wizard</a>.</p>
 <ul>
-  <li>The first button that appears on this panel depends on whether or not Rails is installed.
+  <li><b>Install/Update Rails</b>
     <ul>
-      <li>If Rails is not installed, you see <b>Install Rails</b>. Click this button to install the Rails gem and the  ActiveRecord-JDBC gem.</li>
-      <li>If Rails is installed, you see the <b>Update Rails</b> button followed by the version number. This button  is always displayed, even if you have the latest version of Rails. Clicking this button installs the latest versions of  Rails and the ActiveRecord-JDBC gem. </li>
+      <li>
+        If Rails is not installed, you see <b>Install Rails</b>. 
+        Click this button to install the Rails gem and the  ActiveRecord-JDBC gem.
+      </li>
+      <li>
+        If Rails is installed, you see the version number and the
+        <b>Update Rails</b> button. This button  is always displayed, 
+        even if you have the latest version of Rails. Clicking this 
+        button installs the latest versions of  Rails and the 
+        ActiveRecord-JDBC gem.
+      </li>
     </ul>
   </li>
-  <li><b>Install JRuby OpenSSL Support</b>. Enables you to install OpenSSL support as a Ruby gem. For legal reasons, NetBeans cannot bundle Ruby SSL support. If you are using JRuby in your application and plan to use Secure Sockets Layer (SSL), click this button to install this gem. For general information on SSL, see
+  <li><b>Install/Update JRuby OpenSSL Support</b>. Enables you to install 
+  or update OpenSSL support as a Ruby gem. For legal reasons, the IDE 
+  cannot bundle Ruby SSL support. If you are using JRuby in your 
+  application and plan to use Secure Sockets Layer (SSL), 
+  click this button to install this gem. For general information on SSL, see
       <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
         <param name="viewerActivator" value="javax.help.LinkButton">
         <param name="content" value=
         "http://www.verisign.com/ssl/ssl-information-center/how-ssl-security-works/index.html">
         <param name="text" value="<html><u>SSL Security: How It Works</u></html>.">
+         <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+   </object>
+</li>
+  <li><b>Install/Update Warbler</b>. Enables you to install 
+  or update Warbler. For more information about Warbler, see the&nbsp;
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="viewerActivator" value="javax.help.LinkButton">
+        <param name="content" value=
+        "http://caldersphere.rubyforge.org/warbler/">
+        <param name="text" value="<html><u>Warbler API</u></html>.">
          <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
    </object>

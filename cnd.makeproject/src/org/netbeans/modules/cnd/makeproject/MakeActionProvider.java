@@ -88,6 +88,7 @@ import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -1025,6 +1026,12 @@ public class MakeActionProvider implements ActionProvider {
         
         if (errormsg != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+            if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
+                MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider)project.getLookup().lookup(MakeCustomizerProvider.class);
+                if (makeCustomizerProvider != null) {
+                    makeCustomizerProvider.showCustomizer("Packaging"); // NOI18N
+                }
+            }
             return false;
         }
         

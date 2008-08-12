@@ -638,9 +638,9 @@ public class MakeConfiguration extends Configuration {
         }
         return subProjectOutputLocations;
     }
-
-    public String getAbsoluteOutputValue() {
-        String output;
+    
+    public String getOutputValue() {
+        String output = null;
         if (isLinkerConfiguration()) {
             output = getLinkerConfiguration().getOutputValue();
         } else if (isArchiverConfiguration()) {
@@ -648,8 +648,13 @@ public class MakeConfiguration extends Configuration {
         } else if (isMakefileConfiguration()) {
             output = getMakefileConfiguration().getOutput().getValue();
         } else {
-            output = null;
+            assert false;
         }
+        return output;
+    }
+
+    public String getAbsoluteOutputValue() {
+        String output = getOutputValue();
 
         if (output == null || IpeUtils.isPathAbsolute(output)) {
             return output;

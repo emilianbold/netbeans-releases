@@ -416,6 +416,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     /** Overrides superclass method, first processes document preparation.
      * @see #prepareDocument */
+    @Override
     public void open() {
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
         if (redirect != null) {
@@ -881,8 +882,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         
                         doMarkAsUnmodified = true;
                         ERR.fine("doMarkAsUnmodified"); // NOI18N
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                    } catch (BadLocationException blex) {
+                        Exceptions.printStackTrace(blex);
                     } finally {
                         if (lastSaveTime == -1) { // restore for unsuccessful save
                             ERR.fine("restoring old save time"); // NOI18N
@@ -1127,6 +1128,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     *
     * @return <code>true</code> if everything can be closed
     */
+    @Override
     protected boolean canClose() {
         if (cesEnv().isModified()) {
 
@@ -1374,16 +1376,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         // Doing this in a different thread would need to lock the document for
         // reading through doc.render() while this stream is open, which may be unacceptable
         // So we copy the document in memory
-        StyledDocument doc = getDocument();
+        StyledDocument tmpDoc = getDocument();
 
-        if (doc == null) {
+        if (tmpDoc == null) {
             return cesEnv().inputStream();
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try {
-            saveFromKitToStream(doc, kit, baos);
+            saveFromKitToStream(tmpDoc, kit, baos);
         } catch (BadLocationException e) {
             //assert false : e;
             // should not happen
@@ -1741,7 +1743,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
             String message = null;
 
-            if (e.getMessage() != e.getLocalizedMessage()) {
+            if ((Object)e.getMessage() != e.getLocalizedMessage()) {
                 message = e.getLocalizedMessage();
             } else {
                 message = Exceptions.findLocalizedMessage(e);
@@ -1940,6 +1942,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     * @param ask ask whether to save the document or not?
     * @return <code>false</code> if the operation is cancelled
     */
+    @Override
     protected boolean close(boolean ask) {
         CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
         if (redirect != null) {
@@ -2382,6 +2385,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return;
         }
         this.doc = new StrongRef(doc, strong);
+        Logger.getLogger("TIMER").log(Level.FINE, "TextDocument", doc);
     }
 
     private final class StrongRef extends WeakReference<StyledDocument> 
@@ -2481,12 +2485,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         /** @return cloned instance
         */
+        @Override
         public Object clone() {
             return new PlainEditorKit();
         }
 
         /** @return this (I am the ViewFactory)
         */
+        @Override
         public ViewFactory getViewFactory() {
             return this;
         }
@@ -2498,6 +2504,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         /** Set to a sane font (not proportional!). */
+        @Override
         public void install(JEditorPane pane) {
             super.install(pane);
             pane.setFont(new Font("Monospaced", Font.PLAIN, pane.getFont().getSize() + 1)); //NOI18N
@@ -2792,6 +2799,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             this.saveTime = saveTime;
         }
 
+        @Override
         public boolean replaceEdit(UndoableEdit anEdit) {
             if (delegate == null) {
                 delegate = anEdit;
@@ -2802,6 +2810,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return false;
         }
 
+        @Override
         public boolean addEdit(UndoableEdit anEdit) {
             if (!(anEdit instanceof BeforeModificationEdit) && !(anEdit instanceof SearchBeforeModificationEdit)) {
                 /* UndoRedo.addEdit() must not be done lazily
@@ -2815,6 +2824,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return false;
         }
 
+        @Override
         public void redo() {
             super.redo();
 
@@ -2823,6 +2833,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
+        @Override
         public boolean isSignificant() {
             return (delegate != null);
         }
@@ -2840,6 +2851,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             ERR.log(Level.FINE, null, new Exception("new BeforeModificationEdit(" + saveTime +")")); // NOI18N
         }
 
+        @Override
         public boolean addEdit(UndoableEdit anEdit) {
             if ((delegate == null) && !(anEdit instanceof SearchBeforeModificationEdit)) {
                 delegate = anEdit;
@@ -2850,6 +2862,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return delegate.addEdit(anEdit);
         }
 
+        @Override
         public void undo() {
             super.undo();
 
@@ -2869,6 +2882,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         SearchBeforeModificationEdit() {
         }
 
+        @Override
         public boolean replaceEdit(UndoableEdit anEdit) {
             if (delegate == null) {
                 delegate = anEdit;
@@ -2891,6 +2905,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             super.setLimit(1000);
         }
 
+        @Override
         public void redo() throws javax.swing.undo.CannotRedoException {
             final StyledDocument myDoc = support.getDocument();
 
@@ -2906,6 +2921,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
+        @Override
         public void undo() throws javax.swing.undo.CannotUndoException {
             final StyledDocument myDoc = support.getDocument();
 
@@ -2921,40 +2937,47 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
+        @Override
         public boolean canRedo() {
             final StyledDocument myDoc = support.getDocument();
 
             return new RenderUndo(2, myDoc).booleanResult;
         }
 
+        @Override
         public boolean canUndo() {
             final StyledDocument myDoc = support.getDocument();
 
             return new RenderUndo(3, myDoc).booleanResult;
         }
 
+        @Override
         public int getLimit() {
             final StyledDocument myDoc = support.getDocument();
 
             return new RenderUndo(4, myDoc).intResult;
         }
 
+        @Override
         public void discardAllEdits() {
             final StyledDocument myDoc = support.getDocument();
             new RenderUndo(5, myDoc);
         }
 
+        @Override
         public void setLimit(int l) {
             final StyledDocument myDoc = support.getDocument();
             new RenderUndo(6, myDoc, l);
         }
 
+        @Override
         public boolean canUndoOrRedo() {
             final StyledDocument myDoc = support.getDocument();
 
             return new RenderUndo(7, myDoc).booleanResult;
         }
 
+        @Override
         public java.lang.String getUndoOrRedoPresentationName() {
             if (support.isDocumentReady()) {
                 final StyledDocument myDoc = support.getDocument();
@@ -2964,6 +2987,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
+        @Override
         public java.lang.String getRedoPresentationName() {
             if (support.isDocumentReady()) {
                 final StyledDocument myDoc = support.getDocument();
@@ -2973,6 +2997,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
+        @Override
         public java.lang.String getUndoPresentationName() {
             if (support.isDocumentReady()) {
                 final StyledDocument myDoc = support.getDocument();
@@ -2982,6 +3007,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
         }
 
+        @Override
         public void undoOrRedo() throws javax.swing.undo.CannotUndoException, javax.swing.undo.CannotRedoException {
             final StyledDocument myDoc = support.getDocument();
 

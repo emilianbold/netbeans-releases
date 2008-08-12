@@ -565,7 +565,7 @@ function update() {
         document.getElementById("jdk_note").innerHTML = JDK_NOTE_MACOSX;
     }
     else {
-        document.getElementById("jdk_note").innerHTML = JDK_NOTE_ALL.replace('{0}',JDK_DOWNLOAD_LINK).replace('{1}',NBJDK_DOWNLOAD_LINK).replace('{2}',JDK_LATEST_UPDATE).replace('{2}',JDK_LATEST_UPDATE).replace('{3}',JAVA_COM_LINK);
+        document.getElementById("jdk_note").innerHTML = JDK_NOTE_ALL.replace('{0}',JAVA_COM_LINK).replace('{1}',JDK_DOWNLOAD_LINK).replace('{2}',NBJDK_DOWNLOAD_LINK);
     }
 }
 

@@ -228,7 +228,9 @@ public class RemoteServerSetup {
                             list.add(REMOTE_LIB_DIR);
                         }
                         int pos2 = line.indexOf(':', pos1 + 1);
-                        list.add(line.substring(pos1 + 1, pos2).trim());
+                        if (pos2 > 0) {
+                            list.add(line.substring(pos1 + 1, pos2).trim());
+                        }
                     }
                 }
             }
