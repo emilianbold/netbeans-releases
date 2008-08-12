@@ -98,6 +98,12 @@ public class ServerNodeProvider implements NodeProvider {
             return;
         }
 
+        if (options.isProviderRegistered() || options.isProviderRemoved()) {
+            // If someone explicitly removes the MySQL node, we shouldn't
+            // put it back - that's annoying...
+            return;
+        }
+
         registerConnectionListener();
         findAndRegisterInstallation();
     }
