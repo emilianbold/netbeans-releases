@@ -72,6 +72,7 @@ public class FileElement {
     private String permission;
     private String owner;
     private String group;
+    private boolean defaultValue;
     
     public FileElement(FileType type, String from, String to) {
         this.type = type;
@@ -80,6 +81,7 @@ public class FileElement {
         this.permission = ""; // NOI18N
         this.owner = ""; // NOI18N
         this.group = ""; // NOI18N
+        this.defaultValue = false;
     }
     
     public FileElement(FileType type, String from, String to, String permission, String owner, String group) {
@@ -89,8 +91,9 @@ public class FileElement {
         this.permission = permission;
         this.owner = owner;
         this.group = group;
+        this.defaultValue = false;
     }
-
+    
     public FileType getType() {
         return type;
     }
@@ -152,5 +155,13 @@ public class FileElement {
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    public boolean isDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(boolean defaultValue) {
+        this.defaultValue = defaultValue;
     }
 }
