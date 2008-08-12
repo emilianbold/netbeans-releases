@@ -128,7 +128,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
         }
 
         public URL[] getLibraries() {
-            String[] entries = new String[] {"javax.javaee", 
+            String[] entries = new String[] {"javax.javaee", //NOI
                                              "webservices-api", 
                                              "webservices-rt", 
                                              "webservices-tools", 
@@ -138,7 +138,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
                 File f = getJarName(gfRootStr, entry);
                 if ((f != null) && (f.exists())) {
                     try {
-                        cPath.add(f.toURL());
+                        cPath.add(f.toURI().toURL());
                     } catch (MalformedURLException ex) {
                         
                     }

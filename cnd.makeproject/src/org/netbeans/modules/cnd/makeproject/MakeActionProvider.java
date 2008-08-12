@@ -88,6 +88,7 @@ import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -276,7 +277,7 @@ public class MakeActionProvider implements ActionProvider {
             res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
             if (res == JOptionPane.YES_OPTION) {
                 // start validation phase
-                record.validate();
+                record.validate(true);
             }
         } else if (record.isDeleted()) {
             message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getName());
@@ -284,9 +285,9 @@ public class MakeActionProvider implements ActionProvider {
             if (res == JOptionPane.YES_OPTION) {
                 ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
                 assert registry != null;
-                registry.addServer(record.getName(), false);
+                registry.addServer(record.getName(), false, true);
                 // start validation phase
-                record.validate();
+                record.validate(true);
             }
             
         }
@@ -879,7 +880,7 @@ public class MakeActionProvider implements ActionProvider {
             assert serverList != null;
             ServerRecord record = serverList.get(hkey);
             assert record != null;
-            record.validate();
+            record.validate(false);
             if (!record.isOnline()) {
                 lastValidation = false;
                 runBTA = true;
@@ -1025,6 +1026,12 @@ public class MakeActionProvider implements ActionProvider {
         
         if (errormsg != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+            if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
+                MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider)project.getLookup().lookup(MakeCustomizerProvider.class);
+                if (makeCustomizerProvider != null) {
+                    makeCustomizerProvider.showCustomizer("Packaging"); // NOI18N
+                }
+            }
             return false;
         }
         

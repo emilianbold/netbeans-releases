@@ -129,8 +129,11 @@ public class ServerNode extends AbstractNode implements ChangeListener, Comparab
         // The display name changes depending on the 
         // state of the server instance
         String oldName = getDisplayName();
+        String oldShortDescription = getShortDescription();
         setDisplayName(server.getDisplayName());
         this.fireNameChange(oldName, getDisplayName());
+        setShortDescription(server.getShortDescription());
+        this.fireShortDescriptionChange(oldShortDescription, getShortDescription());
     }
                 
     @Override

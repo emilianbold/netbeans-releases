@@ -133,9 +133,9 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
     void paintStripes(Graphics g, JComponent comp) {
         List<TreePath> paths = getVisiblePaths(); // [TODO] do not call getVisiblePaths()
         int linesNumber = paths.size();
-        int zebraHeight = linesNumber * thickness;
         Rectangle rect = paths.size() > 0 ? tree.getRowBounds(tree.getRowForPath(paths.get(0))) : null;
         thickness = rect != null ? (int) Math.round(rect.getHeight()) : 18; // [TODO] compute height for each particular row
+        int zebraHeight = linesNumber * thickness;
         
         int width = getWidth();
         int height = getHeight();
@@ -195,6 +195,9 @@ public class DebugTreeView extends BeanTreeView implements TreeExpansionListener
             if (isHighlighted || isCurrent) {
                 //g.setColor(isHighlighted ? highlightColor : (isCurrent ? currentThreadColor : whiteColor));
                 g.setColor(isHighlighted ? highlightColor : currentThreadColor);
+                if (!isHighlighted) {
+                    System.out.println("PAINT, clipRect: " + clipRect + ", fillRect: " + new Rectangle(clipX, y1, clipW, y2 - y1));
+                }
                 g.fillRect(clipX, y1, clipW, y2 - y1);
             }
             sy += thickness;

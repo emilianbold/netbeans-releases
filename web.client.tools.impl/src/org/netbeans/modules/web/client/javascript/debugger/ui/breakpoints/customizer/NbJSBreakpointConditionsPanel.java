@@ -343,7 +343,7 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(spCondition, gridBagConstraints);
 
-        getAccessibleContext().setAccessibleDescription("null");
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ACSD_Conditions")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbWhenHitCountActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cbWhenHitCountActionPerformed

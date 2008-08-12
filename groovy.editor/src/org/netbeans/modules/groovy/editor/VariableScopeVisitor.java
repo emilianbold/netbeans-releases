@@ -67,6 +67,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.codehaus.groovy.control.SourceUnit;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.editor.BaseDocument;
@@ -106,7 +107,14 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
     public void collect() {
 
         TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, cursorOffset);
-        if (ts.token().id() != GroovyTokenId.IDENTIFIER) {
+        if (ts == null) {
+            return;
+        }
+        Token<? extends GroovyTokenId> token = ts.token();
+        if (token == null) {
+            return;
+        }
+        if (token.id() != GroovyTokenId.IDENTIFIER) {
             // cursor is not positioned on identifier
             return;
         }

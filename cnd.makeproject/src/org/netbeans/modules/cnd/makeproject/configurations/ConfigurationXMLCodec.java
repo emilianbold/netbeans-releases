@@ -250,6 +250,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentLinkerConfiguration = ((MakeConfiguration)currentConf).getLinkerConfiguration();
         } else if (element.equals(PACK_ELEMENT)) {
             currentPackagingConfiguration = ((MakeConfiguration)currentConf).getPackagingConfiguration();
+            currentPackagingConfiguration.getFiles().getValue().clear();
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration)currentConf).getArchiverConfiguration();
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {

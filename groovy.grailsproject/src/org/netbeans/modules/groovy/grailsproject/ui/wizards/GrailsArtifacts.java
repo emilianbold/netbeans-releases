@@ -51,83 +51,66 @@ import org.openide.util.NbBundle;
  */
 public class GrailsArtifacts {
 
-    private static final String CONFIGURATION = "grails-app/conf";
-    private static final String CONTROLLERS = "grails-app/controllers";
-    private static final String DOMAIN = "grails-app/domain";
-    private static final String MESSAGES = "grails-app/i18n";
-    private static final String SERVICES = "grails-app/services";
-    private static final String TAGLIB = "grails-app/taglib";
-    private static final String UTIL = "grails-app/utils";
-    private static final String VIEWS = "grails-app/views";
-    private static final String INTEGRATION_TESTS = "test/integration";
-    private static final String UNIT_TESTS = "test/unit";
-    private static final String SCRIPTS = "scripts";
-    private static final String SRC_JAVA = "src/java";
-    private static final String SRC_GROOVY = "src/groovy";
-    private static final String WEBAPP = "web-app";
-    private static final String LIB = "lib";
-
-    public static String getWizardTitle(SourceCategory sourceCategory) {
-        switch (sourceCategory) {
-            case CONTROLLERS: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_CONTROLLERS");
-            case DOMAIN: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_DOMAIN");
-            case SERVICES: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_SERVICES");
-            case VIEWS: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_VIEWS");
-            case TAGLIB: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_TAGLIB");
+    public static String getWizardTitle(SourceCategory SourceCategory) {
+        switch (SourceCategory) {
+            case GRAILSAPP_CONTROLLERS: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_CONTROLLERS");
+            case GRAILSAPP_DOMAIN: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_DOMAIN");
+            case GRAILSAPP_SERVICES: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_SERVICES");
+            case GRAILSAPP_VIEWS: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_VIEWS");
+            case GRAILSAPP_TAGLIB: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_TAGLIB");
             case SCRIPTS: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_SCRIPTS");
         }
         return null;
     }
 
     public static SourceCategory getCategoryForFolder(FileObject projectRoot, FileObject fileObject) {
-        String dirName = null; // NOI18N
+        String dirName = null;
         if (projectRoot != null && fileObject.isFolder()) {
             dirName = FileUtil.getRelativePath(projectRoot, fileObject);
         }
         if (dirName == null) {
-            return SourceCategory.NONE;
+            return null;
         }
-        if (CONFIGURATION.equals(dirName)) {
-            return SourceCategory.CONFIGURATION;
-        } else if (CONTROLLERS.equals(dirName)) {
-            return SourceCategory.CONTROLLERS;
-        } else if (DOMAIN.equals(dirName)) {
-            return SourceCategory.DOMAIN;
-        } else if (INTEGRATION_TESTS.equals(dirName)) {
-            return SourceCategory.INTEGRATION_TESTS;
-        } else if (LIB.equals(dirName)) {
+        if (SourceCategory.GRAILSAPP_CONF.getRelativePath().equals(dirName)) {
+            return SourceCategory.GRAILSAPP_CONF;
+        } else if (SourceCategory.GRAILSAPP_CONTROLLERS.getRelativePath().equals(dirName)) {
+            return SourceCategory.GRAILSAPP_CONTROLLERS;
+        } else if (SourceCategory.GRAILSAPP_DOMAIN.getRelativePath().equals(dirName)) {
+            return SourceCategory.GRAILSAPP_DOMAIN;
+        } else if (SourceCategory.TEST_INTEGRATION.getRelativePath().equals(dirName)) {
+            return SourceCategory.TEST_INTEGRATION;
+        } else if (SourceCategory.LIB.getRelativePath().equals(dirName)) {
             return SourceCategory.LIB;
-        } else if (MESSAGES.equals(dirName)) {
-            return SourceCategory.MESSAGES;
-        } else if (SCRIPTS.equals(dirName)) {
+        } else if (SourceCategory.GRAILSAPP_I18N.getRelativePath().equals(dirName)) {
+            return SourceCategory.GRAILSAPP_I18N;
+        } else if (SourceCategory.SCRIPTS.getRelativePath().equals(dirName)) {
             return SourceCategory.SCRIPTS;
-        } else if (SERVICES.equals(dirName)) {
-            return SourceCategory.SERVICES;
-        } else if (SRC_GROOVY.equals(dirName)) {
+        } else if (SourceCategory.GRAILSAPP_SERVICES.getRelativePath().equals(dirName)) {
+            return SourceCategory.GRAILSAPP_SERVICES;
+        } else if (SourceCategory.SRC_GROOVY.getRelativePath().equals(dirName)) {
             return SourceCategory.SRC_GROOVY;
-        } else if (SRC_JAVA.equals(dirName)) {
+        } else if (SourceCategory.SRC_JAVA.getRelativePath().equals(dirName)) {
             return SourceCategory.SRC_JAVA;
-        } else if (TAGLIB.equals(dirName)) {
-            return SourceCategory.TAGLIB;
-        } else if (UNIT_TESTS.equals(dirName)) {
-            return SourceCategory.UNIT_TESTS;
-        } else if (UTIL.equals(dirName)) {
-            return SourceCategory.UTIL;
-        } else if (VIEWS.equals(dirName)) {
-            return SourceCategory.VIEWS;
-        } else if (WEBAPP.equals(dirName)) {
+        } else if (SourceCategory.GRAILSAPP_TAGLIB.getRelativePath().equals(dirName)) {
+            return SourceCategory.GRAILSAPP_TAGLIB;
+        } else if (SourceCategory.TEST_UNIT.getRelativePath().equals(dirName)) {
+            return SourceCategory.TEST_UNIT;
+        } else if (SourceCategory.GRAILSAPP_UTILS.getRelativePath().equals(dirName)) {
+            return SourceCategory.GRAILSAPP_UTILS;
+        } else if (SourceCategory.GRAILSAPP_VIEWS.getRelativePath().equals(dirName)) {
+            return SourceCategory.GRAILSAPP_VIEWS;
+        } else if (SourceCategory.WEBAPP.getRelativePath().equals(dirName)) {
             return SourceCategory.WEBAPP;
-        } else {
-            return SourceCategory.NONE;
         }
+        return null;
     }
 
     public static SourceCategory getCategoryForTemplate(FileObject template) {
         String templatePath = template.getPath();
         if (TemplatesImpl.CONTROLLER.equals(templatePath)) { // NOI18N
-            return SourceCategory.CONTROLLERS;
+            return SourceCategory.GRAILSAPP_CONTROLLERS;
         } else if (TemplatesImpl.DOMAIN_CLASS.equals(templatePath)) {
-            return SourceCategory.DOMAIN;
+            return SourceCategory.GRAILSAPP_DOMAIN;
         } else if (TemplatesImpl.GANT_SCRIPT.equals(templatePath)) {
             return SourceCategory.SCRIPTS;
         } else if (TemplatesImpl.GROOVY_CLASS.equals(templatePath)) {
@@ -135,17 +118,17 @@ public class GrailsArtifacts {
         } else if (TemplatesImpl.GROOVY_SCRIPT.equals(templatePath)) {
             return SourceCategory.SCRIPTS;
         } else if (TemplatesImpl.GSP.equals(templatePath)) {
-            return SourceCategory.VIEWS;
+            return SourceCategory.GRAILSAPP_VIEWS;
         } else if (TemplatesImpl.INTEGRATION_TEST.equals(templatePath)) {
-            return SourceCategory.INTEGRATION_TESTS;
+            return SourceCategory.TEST_INTEGRATION;
         } else if (TemplatesImpl.SERVICE.equals(templatePath)) {
-            return SourceCategory.SERVICES;
+            return SourceCategory.GRAILSAPP_SERVICES;
         } else if (TemplatesImpl.TAG_LIB.equals(templatePath)) {
-            return SourceCategory.TAGLIB;
+            return SourceCategory.GRAILSAPP_TAGLIB;
         } else if (TemplatesImpl.UNIT_TEST.equals(templatePath)) {
-            return SourceCategory.UNIT_TESTS;
+            return SourceCategory.TEST_UNIT;
         }
-        return SourceCategory.NONE;
+        return null;
     }
 
 }

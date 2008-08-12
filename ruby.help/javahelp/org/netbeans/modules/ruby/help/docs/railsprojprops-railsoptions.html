@@ -22,10 +22,24 @@
   <p>You can set the following options:
 <ul>
   <li><b>Ruby Platform.</b> Select the platform that you will use for the project from the drop-down list. To use a platform other than what is displayed in the list, click Manage  to open the Platform Manager.</li>
-  <li><b>Configuration.</b> Specifies a name for the set of options that you specify in this dialog box. To use different configurations of settings with the project, such as  a different port number and set of Rake arguments, you can give the configuration a name and use the drop-down list to quickly change configurations. </li>
+  <li>
+    <b>Configuration.</b> Select the configuration for
+    the desired Rails project settings. To create a new configuration, 
+    click New,type a Profile Name, and click OK. You can then modify
+    the settings for that profile, such as specifying
+    a different server or Rails environment. You can switch
+    configurations by using this drop-down list, or by right-clicking
+    the project node and choosing Set Configuration from the pop-up menu.
+  </li>
   <li><b>Server. </b>Select the server that you want to use for the application. </li>
 
-  <li><b>Server Port Number.</b> Specifies the port number to use to access the running application on the server.</li>
+  <li>
+    <b>Server Port Number.</b> For the WEBrick and Mongrel servers,
+    use this text box to specify the starting point for 
+    finding a free port. When the specified
+    port is available, the IDE uses that port for running the server,
+    otherwise the IDE increments the port by one until it finds a free port. 
+  </li>
   <li><b>Rails Environment.</b> Select which mode you want to run the application in:  development, production,  test, or a custom environment that you have already created. </li>
   <li><b>Encoding.</b> Sets the character encoding for your application, which is used by the IDE when writing files to disk. The default encoding is UTF-8. </li>
   <li><b>Rake Arguments</b>. Passes custom flags to Rake when run from the IDE. </li>

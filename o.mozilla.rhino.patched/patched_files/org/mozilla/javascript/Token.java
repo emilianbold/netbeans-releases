@@ -428,6 +428,7 @@ public class Token
           case WITH:            return "WITH";
           case CATCH:           return "CATCH";
           case FINALLY:         return "FINALLY";
+          case VOID:            return "VOID";
           case RESERVED:        return "RESERVED";
           case EMPTY:           return "EMPTY";
           case BLOCK:           return "BLOCK";
