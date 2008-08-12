@@ -599,7 +599,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 String selectedNextCommand = (String) jComboBoxIndexableNext.getSelectedItem();
                 String selectedPreviousCommand = (String) jComboBoxCommandsIndexablePrevious.getSelectedItem();
                 Collection<DesignComponent> dataSets = MidpDocumentSupport.getCategoryComponent(document, DatabindingCategoryCD.TYPEID).getComponents();
-                removeUnusedConnector(component);
+                MidpDatabindingSupport.removeUnusedConnector(component, propertyEditor.getPropertyNames().get(0));
                 for (DesignComponent dataSet : dataSets) {
                     if (dataSet.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue().equals(selectedDataSet)) {
                         DesignComponent connector = MidpDatabindingSupport.getConnector(component, propertyEditor.getPropertyNames().get(0));
@@ -629,6 +629,8 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                         saveCommands(document, connector, selectedNextCommand, DataSetConnectorCD.PROP_NEXT_COMMAND);
                         saveCommands(document, connector, selectedPreviousCommand,DataSetConnectorCD.PROP_PREVIOUS_COMMAND);
                         MidpDatabindingSupport.removerUnusedIndexes(document);
+                        component.resetToDefault(propertyEditor.getPropertyNames().get(0));
+                        component.readProperty(propertyEditor.getPropertyNames().get(0));
                         break;
                     }
                 }
@@ -650,7 +652,11 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     public void resetValuesInModel(final DesignComponent component) {
-        removeUnusedConnector(component);
+        component.getDocument().getTransactionManager().writeAccess(new Runnable() {
+            public void run() {
+                MidpDatabindingSupport.removeUnusedConnector(component, propertyEditor.getPropertyNames().get(0));
+            }
+        });
         jComboBoxCommandUpdate.setSelectedItem(null);
         jComboBoxDatasets.setSelectedItem(null);
         jComboBoxCommandsIndexablePrevious.setSelectedItem(null);
@@ -665,19 +671,6 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         jComboBoxIndexNames.setSelectedItem(null);
         updateWarning();
         updateIndexableUIComponents();
-    }
-    
-    private void removeUnusedConnector(final DesignComponent component) {
-        final DesignDocument document = component.getDocument();
-        document.getTransactionManager().writeAccess(new Runnable() {
-
-            public void run() {
-                DesignComponent connector = MidpDatabindingSupport.getConnector(component, propertyEditor.getPropertyNames().get(0));
-                if (connector != null) {
-                    document.deleteComponent(connector);
-                }
-            }
-        });
     }
     
     private static String createDataSetName(String name, DesignComponent c) {

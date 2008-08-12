@@ -606,7 +606,7 @@ public abstract class CommonConfigurationXMLCodec
 
     
     private static void writePackaging(XMLEncoderStream xes, PackagingConfiguration packagingConfiguration) {
-        if (packagingConfiguration.getFiles().getValue().size() == 0) {
+        if (!packagingConfiguration.isModified()) {
             return;
         }
 	xes.elementOpen(PACK_ELEMENT);

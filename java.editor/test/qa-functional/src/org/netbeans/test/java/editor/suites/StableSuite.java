@@ -73,6 +73,8 @@ public class StableSuite {
                 .addTest(ImplementMethodTest.class)
                 .addTest(JavaFoldsNavigationTest.class)
                 .addTest(JavaFoldsTest.class)
+                .enableModules(".*")
+                .clusters(".*")
                 );
     }
 }

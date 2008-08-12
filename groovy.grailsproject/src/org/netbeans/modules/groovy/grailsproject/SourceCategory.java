@@ -34,31 +34,36 @@ package org.netbeans.modules.groovy.grailsproject;
  */
 public enum SourceCategory {
 
-    NONE(null),
-    CONFIGURATION(null),
-    CONTROLLERS("create-controller"),
-    DOMAIN("create-domain-class"),
-    MESSAGES(null),
-    SERVICES("create-service"),
-    TAGLIB("create-tag-lib"),
-    UTIL(null),
-    VIEWS("generate-views"),
-    INTEGRATION_TESTS("create-integration-test"),
-    UNIT_TESTS("create-unit-test"),
-    SCRIPTS("create-script"),
-    SRC_JAVA(null),
-    SRC_GROOVY(null),
-    WEBAPP(null),
-    LIB(null);
+    GRAILSAPP_CONF("grails-app/conf", null),
+    GRAILSAPP_CONTROLLERS("grails-app/controllers", "create-controller"),
+    GRAILSAPP_DOMAIN("grails-app/domain", "create-domain-class"),
+    GRAILSAPP_I18N("grails-app/i18n", null),
+    GRAILSAPP_SERVICES("grails-app/services", "create-service"),
+    GRAILSAPP_TAGLIB("grails-app/taglib", "create-tag-lib"),
+    GRAILSAPP_UTILS("grails-app/utils", null),
+    GRAILSAPP_VIEWS("grails-app/views", "generate-views"),
+    TEST_INTEGRATION("test/integration", "create-integration-test"),
+    TEST_UNIT("test/unit", "create-unit-test"),
+    SCRIPTS("scripts", "create-script"),
+    SRC_JAVA("src/java", null),
+    SRC_GROOVY("src/groovy", null),
+    WEBAPP("web-app", null),
+    LIB("lib", null);
 
-    private final String cmd;
+    private final String relativePath;
+    private final String command;
 
-    SourceCategory(String command) {
-        this.cmd = command;
+    SourceCategory(String relativePath, String command) {
+        this.relativePath = relativePath;
+        this.command = command;
     }
 
-    public String command() {
-        return cmd;
+    public String getRelativePath() {
+        return relativePath;
+    }
+
+    public String getCommand() {
+        return command;
     }
 
 }

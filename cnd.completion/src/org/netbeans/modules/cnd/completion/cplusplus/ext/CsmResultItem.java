@@ -67,6 +67,7 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
@@ -938,6 +939,7 @@ public abstract class CsmResultItem
         @Override
         public boolean substituteText(final JTextComponent c, final int offset, final int origLen, final boolean shift) {
             final boolean res[] = new boolean[] { true };
+            final AtomicBoolean showTooltip = new AtomicBoolean();
             final BaseDocument doc = (BaseDocument) c.getDocument();
             doc.runAtomic(new Runnable() {
 
@@ -1037,10 +1039,7 @@ public abstract class CsmResultItem
                                     text += '('; // NOI18N
                                     if (params.size() > 0) {
                                         selectionStartOffset = selectionEndOffset = text.length();
-                                        Completion completion = Completion.get();
-                                        completion.hideCompletion();
-                                        completion.hideDocumentation();
-                                        completion.showToolTip();
+                                        showTooltip.set(true);
                                     }
                                     if (isDeclaration) {
                                         for (Object obj : createParamsList()) {
@@ -1106,6 +1105,12 @@ public abstract class CsmResultItem
                     }
                 }
             });
+            if (showTooltip.get()) {
+                Completion completion = Completion.get();
+                completion.hideCompletion();
+                completion.hideDocumentation();
+                completion.showToolTip();
+            }
             return res[0];
         }
         

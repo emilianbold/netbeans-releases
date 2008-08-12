@@ -99,12 +99,12 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
     }
 
     public FileObject getLocation() {
-        return project.getWebModule().getConfDir();
+        return project.getWebModule().getPersistenceXmlDir();
     }
 
     public FileObject createLocation() throws IOException {
         // the folder should have been created when the project was generated
-        return project.getWebModule().getConfDir();
+        return project.getWebModule().getPersistenceXmlDir();
     }
 
     public PersistenceScope findPersistenceScope(FileObject fo) {
@@ -163,15 +163,15 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
 
     public void propertyChange(PropertyChangeEvent event) {
         String propName = event.getPropertyName();
-        if (propName == null || propName.equals(WebProjectProperties.CONF_DIR)) {
+        if (propName == null || propName.equals(WebProjectProperties.PERSISTENCE_XML_DIR)) {
             locationChanged();
         }
     }
 
     private void locationChanged() {
-        File confDirFile = project.getWebModule().getConfDirAsFile();
-        if (confDirFile != null) {
-            File persistenceXmlFile = new File(confDirFile, "persistence.xml"); // NOI18N
+        File persistenceXmlDirFile = project.getWebModule().getPersistenceXmlDirAsFile();
+        if (persistenceXmlDirFile != null) {
+            File persistenceXmlFile = new File(persistenceXmlDirFile, "persistence.xml"); // NOI18N
             scopesHelper.changePersistenceScope(persistenceScope, persistenceXmlFile);
             modelHelper.changePersistenceXml(persistenceXmlFile);
         } else {

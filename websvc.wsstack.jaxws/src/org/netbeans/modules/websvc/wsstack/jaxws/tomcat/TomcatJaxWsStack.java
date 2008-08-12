@@ -46,12 +46,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-//import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
-import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
@@ -59,10 +55,7 @@ import org.netbeans.modules.websvc.wsstack.api.WSTool;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
-//import org.netbeans.modules.websvc.serverapi.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
-//import org.netbeans.modules.websvc.serverapi.api.WSUriDescriptor;
-//import org.netbeans.modules.websvc.serverapi.spi.WSStackSPI;
 
 /**
  *
@@ -246,7 +239,7 @@ public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
             URL[] retValue = new URL[WSIT_LIBS.length];
             try {
                 for (int i = 0; i < WSIT_LIBS.length; i++) {
-                    retValue[i] = new File(catalinaHome, WSIT_LIBS[i]).toURL();
+                    retValue[i] = new File(catalinaHome, WSIT_LIBS[i]).toURI().toURL();
                 }
                 return retValue;
             } catch (MalformedURLException ex) {

@@ -224,9 +224,9 @@ public class DebuggerProxy {
         return response != null ? response.getBreakpoints() : null;
     }
 
-    public String getSource(URI uri) {
+    public byte[] getSource(URI uri) {
         SourceResponse response = (SourceResponse) sendCommand(getCommandFactory().sourceCommand(uri));
-        return response != null ? response.getSourceCode() : null;
+        return (response != null && response.isSusccess()) ? response.getSourceCode() : null;
     }
 
     public Message getSuspensionPoint() {
