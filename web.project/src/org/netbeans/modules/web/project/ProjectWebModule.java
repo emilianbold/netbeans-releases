@@ -263,6 +263,14 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return getFile(WebProjectProperties.CONF_DIR);
     }
     
+    public FileObject getPersistenceXmlDir() {
+        return getFileObject(WebProjectProperties.PERSISTENCE_XML_DIR);
+    }
+    
+    public File getPersistenceXmlDirAsFile() {
+        return getFile(WebProjectProperties.PERSISTENCE_XML_DIR);
+    }
+    
     public ClassPathProvider getClassPathProvider () {
         return (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
     }

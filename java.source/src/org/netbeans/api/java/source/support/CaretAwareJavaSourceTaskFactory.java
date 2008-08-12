@@ -40,6 +40,8 @@
  */
 package org.netbeans.api.java.source.support;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -105,7 +107,7 @@ public abstract class CaretAwareJavaSourceTaskFactory extends JavaSourceTaskFact
         return files;
     }
 
-    private Map<JTextComponent, ComponentListener> component2Listener = new HashMap<JTextComponent, ComponentListener>();
+    private Map<JTextComponent, ComponentListener> component2Listener = new WeakHashMap<JTextComponent, ComponentListener>();
     private static Map<FileObject, Integer> file2LastPosition = new WeakHashMap<FileObject, Integer>();
     
     /**Returns current caret position in current {@link JTextComponent} for a given file.
@@ -160,30 +162,39 @@ public abstract class CaretAwareJavaSourceTaskFactory extends JavaSourceTaskFact
         
     }
     
-    private class ComponentListener implements CaretListener {
+    private class ComponentListener implements CaretListener, Runnable {
         
-        private JTextComponent component;
+        private final Reference<JTextComponent> component;
         private final RequestProcessor.Task rescheduleTask;
         
         public ComponentListener(JTextComponent component) {
-            this.component = component;
-            rescheduleTask = WORKER.create(new Runnable() {
-                public void run() {
-                    FileObject file = OpenedEditors.getFileObject(ComponentListener.this.component);
-                    
-                    if (file != null) {
-                        setLastPosition(file, ComponentListener.this.component.getCaretPosition());
-                        reschedule(file);
-                    }
-                }
-            });
+            this.component = new WeakReference<JTextComponent>(component);
+            rescheduleTask = WORKER.create(this);
         }
         
+        public void run() {
+            JTextComponent c = component.get();
+            if (c == null) {
+                return;
+            }
+            FileObject file = OpenedEditors.getFileObject(c);
+
+            if (file != null) {
+                setLastPosition(file, c.getCaretPosition());
+                reschedule(file);
+            }
+        }
+        
+        
         public void caretUpdate(CaretEvent e) {
-            FileObject file = OpenedEditors.getFileObject(component);
+            JTextComponent c = component.get();
+            if (c == null) {
+                return;
+            }
+            FileObject file = OpenedEditors.getFileObject(c);
             
             if (file != null) {
-                setLastPosition(file, component.getCaretPosition());
+                setLastPosition(file, c.getCaretPosition());
                 rescheduleTask.schedule(timeout);
             }
         }
