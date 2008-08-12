@@ -162,6 +162,14 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                        "FixImpl",
                        "package test; public class Test {public void t() {Inner inner = new Test.Inner(); } private static class Inner {} }");
     }
+
+    public void testAnonymousClass138223() throws Exception {
+        performFixTest("test/Test.java",
+                "package test; public class Test {public void t() { new Run|nable() { public void run() {}}; } }",
+                "0:55-0:63:hint:Assign Return Value To New Variable",
+                "FixImpl",
+                "package test; public class Test {public void t() {Runnable runnable = new Runnable() { public void run() { } }; } }");
+    }
     
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
         int offset = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), path.getLeaf());
