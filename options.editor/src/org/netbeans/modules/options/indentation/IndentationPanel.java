@@ -48,6 +48,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -62,10 +63,13 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
+import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.openide.awt.Mnemonics;
 import org.openide.text.CloneableEditorSupport;
@@ -81,7 +85,9 @@ import org.openide.util.WeakListeners;
 public class IndentationPanel extends JPanel implements ChangeListener, ActionListener, PreferenceChangeListener {
 
     private static final Logger LOG = Logger.getLogger(IndentationPanel.class.getName());
-    
+
+    private final MimePath mimePath;
+    private final Preferences allLangPrefs;
     private final Preferences prefs;
     private final PreviewProvider preview;
     private final boolean showOverrideGlobalOptions;
@@ -89,16 +95,23 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     /** 
      * Creates new form IndentationPanel.
      */
-    public IndentationPanel(Preferences prefs, PreviewProvider preview) {
+    public IndentationPanel(MimePath mimePath, Preferences prefs, Preferences allLangPrefs, PreviewProvider preview) {
+        this.mimePath = mimePath;
         this.prefs = prefs;
         this.prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
 
-        if (preview == null) {
+        this.allLangPrefs = allLangPrefs;
+        if (this.allLangPrefs == null) {
+            assert preview == null;
+            assert mimePath == MimePath.EMPTY;
             this.preview = new IndentationPreview(prefs);
             this.showOverrideGlobalOptions = false;
         } else {
+            assert preview != null;
+            assert mimePath != MimePath.EMPTY;
             this.preview = preview;
             this.showOverrideGlobalOptions = true;
+            this.allLangPrefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, this.allLangPrefs));
         }
         
         initComponents ();
@@ -124,7 +137,10 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         sRightMargin.addChangeListener(this);
 
         // initialize controls
-        preferenceChange(null);
+        prefsChange(null);
+        if (showOverrideGlobalOptions) {
+            this.prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areGlobalOptionsOverriden());
+        }
     }
 
     public PreviewProvider getPreviewProvider() {
@@ -152,7 +168,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
     public void actionPerformed (ActionEvent e) {
         if (cbOverrideGlobalOptions == e.getSource()) {
-            prefs.putBoolean(SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, cbOverrideGlobalOptions.isSelected());
+            prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, cbOverrideGlobalOptions.isSelected());
         } else if (cbExpandTabsToSpaces == e.getSource()) {
             prefs.putBoolean(SimpleValueNames.EXPAND_TABS, cbExpandTabsToSpaces.isSelected());
         }
@@ -163,11 +179,30 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     // ------------------------------------------------------------------------
 
     public void preferenceChange(PreferenceChangeEvent evt) {
+        if (evt.getSource() == prefs) {
+            prefsChange(evt);
+        } else if (evt.getSource() == allLangPrefs) {
+            allLangPrefsChange(evt);
+        } else {
+            assert false;
+        }
+    }
+    
+    // ------------------------------------------------------------------------
+    // private implementation
+    // ------------------------------------------------------------------------
+
+    private void prefsChange(PreferenceChangeEvent evt) {
         String key = evt == null ? null : evt.getKey();
         boolean needsRefresh = false;
 
+//        System.out.println("~~~ prefsChange: key=" + key
+//                + (key == null ? "" : " prefs(" + key + ")=" + prefs.get(key, null)
+//                + (allLangPrefs == null ? "" : ", allLangPrefs(" + key + ")=" + allLangPrefs.get(key, null)))
+//                + "; override=" + prefs.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areGlobalOptionsOverriden()));
+
         if (key == null || SimpleValueNames.EXPAND_TABS.equals(key)) {
-            boolean value = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, true);
+            boolean value = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, getDefBoolean(SimpleValueNames.EXPAND_TABS, true));
             if (value != cbExpandTabsToSpaces.isSelected()) {
                 cbExpandTabsToSpaces.setSelected(value);
             }
@@ -175,7 +210,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
         
         if (key == null || SimpleValueNames.INDENT_SHIFT_WIDTH.equals(key)) {
-            int nue = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, 4);
+            int nue = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, getDefInt(SimpleValueNames.INDENT_SHIFT_WIDTH, 4));
             if (nue != (Integer) sNumberOfSpacesPerIndent.getValue()) {
                 sNumberOfSpacesPerIndent.setValue(nue);
             }
@@ -183,7 +218,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
         
         if (key == null || SimpleValueNames.SPACES_PER_TAB.equals(key)) {
-            int nue = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+            int nue = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefInt(SimpleValueNames.SPACES_PER_TAB, 4));
             if (nue != (Integer) sNumberOfSpacesPerIndent.getValue()) {
                 sNumberOfSpacesPerIndent.setValue(nue);
             }
@@ -191,7 +226,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
         
         if (key == null || SimpleValueNames.TAB_SIZE.equals(key)) {
-            int nue = prefs.getInt(SimpleValueNames.TAB_SIZE, 8);
+            int nue = prefs.getInt(SimpleValueNames.TAB_SIZE, getDefInt(SimpleValueNames.TAB_SIZE, 8));
             if (nue != (Integer) sTabSize.getValue()) {
                 sTabSize.setValue(nue);
             }
@@ -199,7 +234,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
 
         if (key == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(key)) {
-            int nue = prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
+            int nue = prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, getDefInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80));
             if (nue != (Integer) sRightMargin.getValue()) {
                 sRightMargin.setValue(nue);
             }
@@ -207,11 +242,20 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
 
         if (showOverrideGlobalOptions) {
-            if (key == null || SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS.equals(key)) {
-                boolean nue = prefs.getBoolean(SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false);
+            if (key == null || FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS.equals(key)) {
+                boolean nue = prefs.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areGlobalOptionsOverriden());
                 if (nue != cbOverrideGlobalOptions.isSelected()) {
                     cbOverrideGlobalOptions.setSelected(nue);
                 }
+                
+                if (!nue) {
+                    prefs.putBoolean(SimpleValueNames.EXPAND_TABS, allLangPrefs.getBoolean(SimpleValueNames.EXPAND_TABS, true));
+                    prefs.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, allLangPrefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, 4));
+                    prefs.putInt(SimpleValueNames.SPACES_PER_TAB, allLangPrefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4));
+                    prefs.putInt(SimpleValueNames.TAB_SIZE, allLangPrefs.getInt(SimpleValueNames.TAB_SIZE, 4));
+                    prefs.putInt(SimpleValueNames.TEXT_LIMIT_WIDTH, allLangPrefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80));
+                }
+                
                 needsRefresh = true;
                 cbExpandTabsToSpaces.setEnabled(nue);
                 lNumberOfSpacesPerIndent.setEnabled(nue);
@@ -222,12 +266,46 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 sRightMargin.setEnabled(nue);
             }
         }
-        
+
         if (needsRefresh) {
             preview.refreshPreview();
         }
     }
 
+    // just copy the values over to prefs
+    private void allLangPrefsChange(PreferenceChangeEvent evt) {
+        String key = evt == null ? null : evt.getKey();
+
+//        System.out.println("~~~ allLangPrefsChange: key=" + key
+//                + (key == null ? "" : " prefs(" + key + ")=" + prefs.get(key, null)
+//                + ", allLangPrefs(" + key + ")=" + allLangPrefs.get(key, null))
+//                + "; override=" + prefs.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areGlobalOptionsOverriden()));
+        
+        if (prefs.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areGlobalOptionsOverriden())) {
+            // ignore allLangPrefs changes when we are actually overriding the all languages values
+            return;
+        }
+
+        if (key == null || SimpleValueNames.EXPAND_TABS.equals(key)) {
+            prefs.putBoolean(SimpleValueNames.EXPAND_TABS, allLangPrefs.getBoolean(SimpleValueNames.EXPAND_TABS, true));
+        }
+        
+        if (key == null || SimpleValueNames.INDENT_SHIFT_WIDTH.equals(key)) {
+            prefs.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, allLangPrefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, 4));
+        }
+        
+        if (key == null || SimpleValueNames.SPACES_PER_TAB.equals(key)) {
+            prefs.putInt(SimpleValueNames.SPACES_PER_TAB, allLangPrefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4));
+        }
+        
+        if (key == null || SimpleValueNames.TAB_SIZE.equals(key)) {
+            prefs.putInt(SimpleValueNames.TAB_SIZE, allLangPrefs.getInt(SimpleValueNames.TAB_SIZE, 4));
+        }
+
+        if (key == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(key)) {
+            prefs.putInt(SimpleValueNames.TEXT_LIMIT_WIDTH, allLangPrefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80));
+        }
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -369,6 +447,29 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
     }
 
+    private boolean areGlobalOptionsOverriden() {
+        EditorSettingsStorage<String, TypedValue> storage = EditorSettingsStorage.<String, TypedValue>get("Preferences"); //NOI18N
+        try {
+            Map<String, TypedValue> mimePathLocalPrefs = storage.load(mimePath, null, false);
+            return !mimePathLocalPrefs.containsKey(SimpleValueNames.EXPAND_TABS) ||
+                !mimePathLocalPrefs.containsKey(SimpleValueNames.INDENT_SHIFT_WIDTH) ||
+                !mimePathLocalPrefs.containsKey(SimpleValueNames.SPACES_PER_TAB) ||
+                !mimePathLocalPrefs.containsKey(SimpleValueNames.TAB_SIZE) ||
+                !mimePathLocalPrefs.containsKey(SimpleValueNames.TEXT_LIMIT_WIDTH);
+        } catch (IOException ioe) {
+            LOG.log(Level.WARNING, null, ioe);
+            return false;
+        }
+    }
+
+    private boolean getDefBoolean(String key, boolean def) {
+        return allLangPrefs != null ? allLangPrefs.getBoolean(key, def) : def;
+    }
+
+    private int getDefInt(String key, int def) {
+        return allLangPrefs != null ? allLangPrefs.getInt(key, def) : def;
+    }
+
     private static class IndentationPreview implements PreviewProvider {
 
         private final Preferences prefs;
@@ -415,11 +516,6 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             pane.setText(previewText);
             
             BaseDocument doc = (BaseDocument) pane.getDocument();
-            // This is here solely for the purpose of previewing changes in formatting settings
-            // in Tools-Options. This is NOT, repeat NOT, to be used by anybody else!
-            // The name of this property is also hardcoded in editor.indent/.../CodeStylePreferences.java
-            doc.putProperty("Tools-Options->Editor->Formatting->Preview - Preferences", prefs); //NOI18N
-            
             Reformat reformat = Reformat.get(doc);
             reformat.lock();
             try {

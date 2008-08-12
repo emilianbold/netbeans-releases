@@ -54,6 +54,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -67,6 +68,8 @@ import org.openide.util.WeakListeners;
  */
 public final class FormattingPanelController extends OptionsPanelController implements CustomizerSelector.PreferencesFactory, PreferenceChangeListener, NodeChangeListener {
 
+    public static final String OVERRIDE_GLOBAL_FORMATTING_OPTIONS = "FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS"; //NOI18N
+
     // ------------------------------------------------------------------------
     // OptionsPanelController implementation
     // ------------------------------------------------------------------------
@@ -75,41 +78,91 @@ public final class FormattingPanelController extends OptionsPanelController impl
     }
 
     public void update() {
-        LOG.fine("update"); //NOI18N
-        destroyPreferences();
-        selector = new CustomizerSelector(this);
-        panel.setSelector(selector);
-        notifyChanged(false);
-    }
-    
-    public synchronized void applyChanges() {
-        LOG.fine("applyChanges"); //NOI18N
-        for(String mimeType : mimeTypePreferences.keySet()) {
-            ProxyPreferences pp = mimeTypePreferences.get(mimeType);
-            try {
-                LOG.fine("    flushing pp for '" + mimeType + "'"); //NOI18N
-                pp.flush();
-            } catch (BackingStoreException ex) {
-                LOG.log(Level.WARNING, "Can't flush preferences for '" + mimeType + "'", ex); //NOI18N
-            }
+        boolean fire;
+        
+        synchronized (this) {
+            LOG.fine("update"); //NOI18N
+            destroyPreferences();
+            selector = new CustomizerSelector(this);
+            panel.setSelector(selector);
+            fire = changed;
+            changed = false;
         }
         
-        notifyChanged(false);
+        if (fire) {
+            pcs.firePropertyChange(PROP_CHANGED, true, false);
+        }
     }
     
-    public synchronized void cancel() {
-        LOG.fine("cancel"); //NOI18N
-        destroyPreferences();
-        panel.setSelector(null);
-        notifyChanged(false);
+    public void applyChanges() {
+        boolean fire;
+        
+        synchronized (this) {
+            LOG.fine("applyChanges"); //NOI18N
+            for(String mimeType : mimeTypePreferences.keySet()) {
+                ProxyPreferences pp = mimeTypePreferences.get(mimeType);
+
+                pp.silence();
+
+                if (mimeType.length() > 0) {
+                    assert pp.get(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) != null;
+                    if (!pp.getBoolean(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false)) {
+                        // remove the basic settings if a language is not overriding the 'all languages' values
+                        pp.remove(SimpleValueNames.EXPAND_TABS);
+                        pp.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
+                        pp.remove(SimpleValueNames.SPACES_PER_TAB);
+                        pp.remove(SimpleValueNames.TAB_SIZE);
+                        pp.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
+                    }
+                    pp.remove(OVERRIDE_GLOBAL_FORMATTING_OPTIONS);
+                } else {
+                    assert pp.get(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) == null;
+                }
+                
+                try {
+                    LOG.fine("    flushing pp for '" + mimeType + "'"); //NOI18N
+                    pp.flush();
+                } catch (BackingStoreException ex) {
+                    LOG.log(Level.WARNING, "Can't flush preferences for '" + mimeType + "'", ex); //NOI18N
+                }
+            }
+            
+            destroyPreferences();
+            panel.setSelector(null);
+            
+            fire = changed;
+            changed = false;
+        }
+        
+        if (fire) {
+            pcs.firePropertyChange(PROP_CHANGED, true, false);
+        }
+    }
+    
+    public void cancel() {
+        boolean fire;
+        
+        synchronized (this) {
+            LOG.fine("cancel"); //NOI18N
+            destroyPreferences();
+            panel.setSelector(null);
+            fire = changed;
+            changed = false;
+        }
+        
+        if (fire) {
+            pcs.firePropertyChange(PROP_CHANGED, true, false);
+        }
     }
     
     public boolean isValid() {
         return true;
     }
     
-    public synchronized boolean isChanged() {
-        return changed;
+    public boolean isChanged() {
+        synchronized (this) {
+            return changed;
+        }
     }
     
     public HelpCtx getHelpCtx() {
@@ -186,8 +239,18 @@ public final class FormattingPanelController extends OptionsPanelController impl
     private boolean changed = false;
 
     private void notifyChanged(boolean changed) {
-        if (this.changed != changed) {
-            this.changed = changed;
+        boolean fire;
+        
+        synchronized (this) {
+            if (this.changed != changed) {
+                this.changed = changed;
+                fire = true;
+            } else {
+                fire = false;
+            }
+        }
+        
+        if (fire) {
             pcs.firePropertyChange(PROP_CHANGED, !changed, changed);
         }
     }

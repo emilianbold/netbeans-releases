@@ -104,19 +104,6 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        <change id="Adding.override.global.formatting.options">
-            <summary>Adding SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS</summary>
-            <version major="1" minor="22"/>
-            <date day="5" month="8" year="2008"/>
-            <author login="vstejskal"/>
-            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no"/>
-            <description>
-            <p>
-                Adding new constant <code>SimpleValueNames.OVERRIDE_GLOBAL_FORMATTING_OPTIONS</code>.
-            </p>
-            </description>
-        </change>
-        
         <change id="Adding.thick.line.caret">
             <summary>Adding SimpleValueNames.THICK_CARET_WIDTH</summary>
             <version major="1" minor="21"/>

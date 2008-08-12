@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.openide.util.Lookup;
@@ -102,6 +103,12 @@ public final class CustomizerSelector {
         }
     }
 
+    public synchronized Preferences getCustomizerPreferences(PreferencesCustomizer c) {
+        Preferences prefs = c2p.get(c);
+        assert prefs != null;
+        return prefs;
+    }
+
     public synchronized Collection<? extends String> getMimeTypes() {
         if (mimeTypes == null) {
             mimeTypes = new HashSet<String>();
@@ -147,6 +154,7 @@ public final class CustomizerSelector {
 
     private Set<String> mimeTypes = null;
     private final Map<String, List<? extends PreferencesCustomizer>> allCustomizers = new HashMap<String, List<? extends PreferencesCustomizer>>();
+    private final Map<PreferencesCustomizer, Preferences> c2p = new HashMap<PreferencesCustomizer, Preferences>();
     
     private List<? extends PreferencesCustomizer> getCustomizersFor(String mimeType) {
         List<? extends PreferencesCustomizer> list = allCustomizers.get(mimeType);
@@ -165,17 +173,22 @@ public final class CustomizerSelector {
             Collection<? extends PreferencesCustomizer.Factory> factories = l.lookupAll(PreferencesCustomizer.Factory.class);
 
             for(PreferencesCustomizer.Factory f : factories) {
-                Preferences pref = pf.getPreferences(mimeType);
-                PreferencesCustomizer c = f.create(pref);
+                Preferences prefs = pf.getPreferences(mimeType);
+                PreferencesCustomizer c = f.create(prefs);
 
                 if (c.getId().equals("tabs-and-indents")) { //NOI18N
-                    c = new IndentationPanelController(pref, c);
+                    Preferences allLangPrefs = pf.getPreferences(""); //NOI18N
+                    c = new IndentationPanelController(MimePath.parse(mimeType), prefs, allLangPrefs, c);
                 }
 
                 list.add(c);
+                c2p.put(c, prefs);
             }
         } else {
-            list.add(new IndentationPanelController(pf.getPreferences(mimeType)));
+            Preferences prefs = pf.getPreferences(mimeType);
+            PreferencesCustomizer c = new IndentationPanelController(prefs);
+            list.add(c);
+            c2p.put(c, prefs);
         }
         
         return list;

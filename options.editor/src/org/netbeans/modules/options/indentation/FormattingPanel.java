@@ -59,6 +59,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
@@ -171,6 +172,13 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
             if (c instanceof PreviewProvider) {
                 previewComponent = ((PreviewProvider) c).getPreviewComponent();
                 previewComponent.setDoubleBuffered(true);
+                if (previewComponent instanceof JTextComponent) {
+                    Document doc = ((JTextComponent) previewComponent).getDocument();
+                    // This is here solely for the purpose of previewing changes in formatting settings
+                    // in Tools-Options. This is NOT, repeat NOT, to be used by anybody else!
+                    // The name of this property is also hardcoded in editor.indent/.../CodeStylePreferences.java
+                    doc.putProperty("Tools-Options->Editor->Formatting->Preview - Preferences", selector.getCustomizerPreferences(c)); //NOI18N
+                }
             } else {
                 JLabel noPreviewLabel = new JLabel(NbBundle.getMessage(FormattingPanel.class, "MSG_no_preview_available")); //NOI18N
                 noPreviewLabel.setOpaque(true);

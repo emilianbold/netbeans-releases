@@ -49,19 +49,6 @@ package org.netbeans.api.editor.settings;
 public final class SimpleValueNames {
 
     /**
-     * Determines if a user wishes to override global formatting settings for
-     * a given mime type. It only makes sense to set this for top level
-     * mime types. If this setting is set to <code>true</code> for a certain mime type
-     * then TAB_SIZE, EXPAND_TABS, SPACES_PER_TAB, INDENT_SHIFT_WIDTH,
-     * TEXT_LIMIT_WIDTH settings can be overriden for that mime type. Otherwise
-     * these settings are read from the 'All Languages' storage (ie. MimePath.EMPTY).
-     * 
-     * Values: java.lang.Boolean instances
-     * @since 1.22
-     */
-    public static final String OVERRIDE_GLOBAL_FORMATTING_OPTIONS = "override-global-formatting-options"; //NOI18N
-    
-    /**
      * Number of spaces to draw when the '\t' character
      * is found in the text. Better said when the drawing-engine
      * finds a '\t' character it computes the next multiple
