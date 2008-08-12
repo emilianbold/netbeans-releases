@@ -44,7 +44,6 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.*;
 import javax.swing.Timer;
 import javax.swing.SwingUtilities;
@@ -126,23 +125,20 @@ import org.openide.text.Line;
 public class ActionManager {
     
     private static Map<Project,ActionManager> ams;
-    private static Map<ActionManager, Project> reverseams;
     
-    private static ActionManager emptyActionManager = new ActionManager(null);
+    private static ActionManager emptyActionManager = new ActionManager(null, null);
 
     public static synchronized ActionManager getActionManager(FileObject fileInProject) {
         if(ams == null) {
             ams = new HashMap<Project,ActionManager>();
-            reverseams = new HashMap<ActionManager,Project>();
         }
         Project proj = getProject(fileInProject);
         ActionManager am = ams.get(proj);
         if(am == null && AppFrameworkSupport.isFrameworkEnabledProject(fileInProject)) {
             ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
             FileObject root = cp.findOwnerRoot(fileInProject);
-            am = new ActionManager(root);
+            am = new ActionManager(proj, root);
             ams.put(proj,am); // PENDING never removed, this is memory leak!!!
-            reverseams.put(am,proj);
             am = ams.get(proj);
         }
         return am;
@@ -172,7 +168,6 @@ public class ActionManager {
             ActionManager am = ams.get(p);
             am.rescanTimer.stop();
             ams.remove(p);
-            reverseams.remove(am);
         }
     }
     
@@ -236,9 +231,11 @@ public class ActionManager {
     private List<ActionChangedListener> acls;
     // the root object of this ActionManager's project
     private FileObject root;
+    // the ActionManager's project
+    private Project project;
     
     public Project getProject() {
-        return reverseams.get(this);
+        return project;
     }
     
     public FileObject getApplicationClassFile() {
@@ -247,7 +244,8 @@ public class ActionManager {
     }
     
     /** Creates a new instance of ActionManager */
-    private ActionManager(FileObject root) {
+    private ActionManager(Project project, FileObject root) {
+        this.project = project;
         this.root = root;
         actionList = new ArrayList<ProxyAction>();
         pcls = new ArrayList<PropertyChangeListener>();
