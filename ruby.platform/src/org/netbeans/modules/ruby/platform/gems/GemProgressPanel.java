@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,12 +40,13 @@
  */
 package org.netbeans.modules.ruby.platform.gems;
 
+import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.swing.SwingUtilities;
+import javax.swing.JPanel;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -58,21 +59,20 @@ import org.openide.util.Exceptions;
 /**
  * @author  Tor Norbye
  */
-public class GemProgressPanel extends javax.swing.JPanel {
+final class GemProgressPanel extends JPanel {
     
-    private InputHandler inputHandler;
+    private final InputHandler inputHandler;
             
-    /** Creates new form GemProgressPanel */
-    public GemProgressPanel(String message) {
+    GemProgressPanel(String message) {
         initComponents();
         messageLabel.setText(message);
         inputHandler = new InputHandler();
         inputHandler.attach(outputArea);
     }
 
-    public void appendOutput(final String line) {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
+    void appendOutput(final String line) {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     appendOutput(line);
                 }
@@ -94,14 +94,18 @@ public class GemProgressPanel extends javax.swing.JPanel {
     }
 
     
-    public void done(String message) {
-        messageLabel.setText(message);
-        progressBar.setIndeterminate(false);
-        progressBar.getModel().setValue(progressBar.getModel().getMaximum());
-        outputArea.setEditable(false);
+    void done(String message) {
+        if (!EventQueue.isDispatchThread()) {
+            throw new AssertionError("#done must be called from EDT");
+        }
+        if (this.isShowing()) {
+            messageLabel.setText(message);
+            progressBar.setIndeterminate(false);
+            progressBar.getModel().setValue(progressBar.getModel().getMaximum());
+            outputArea.setEditable(false);
+        }
         inputHandler.detach();
     }
-    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -185,7 +189,7 @@ public class GemProgressPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void outputToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputToggleActionPerformed
+    private void outputToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_outputToggleActionPerformed
         if (outputToggle.isSelected()) {
             detailsPanel.add(detailsScrollPane, java.awt.BorderLayout.CENTER);
         } else {
@@ -196,7 +200,7 @@ private void outputToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         revalidate();
         validate();
         repaint();
-}//GEN-LAST:event_outputToggleActionPerformed
+    }//GEN-LAST:event_outputToggleActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -208,7 +212,7 @@ private void outputToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JProgressBar progressBar;
     // End of variables declaration//GEN-END:variables
     
-    public void setProcessInput(OutputStream processInput) {
+    void setProcessInput(OutputStream processInput) {
         this.processInput = processInput;
     }
 
