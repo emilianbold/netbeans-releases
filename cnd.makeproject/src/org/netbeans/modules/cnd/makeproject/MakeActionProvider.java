@@ -277,7 +277,7 @@ public class MakeActionProvider implements ActionProvider {
             res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
             if (res == JOptionPane.YES_OPTION) {
                 // start validation phase
-                record.validate();
+                record.validate(true);
             }
         } else if (record.isDeleted()) {
             message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getName());
@@ -285,9 +285,9 @@ public class MakeActionProvider implements ActionProvider {
             if (res == JOptionPane.YES_OPTION) {
                 ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
                 assert registry != null;
-                registry.addServer(record.getName(), false);
+                registry.addServer(record.getName(), false, true);
                 // start validation phase
-                record.validate();
+                record.validate(true);
             }
             
         }
@@ -880,7 +880,7 @@ public class MakeActionProvider implements ActionProvider {
             assert serverList != null;
             ServerRecord record = serverList.get(hkey);
             assert record != null;
-            record.validate();
+            record.validate(false);
             if (!record.isOnline()) {
                 lastValidation = false;
                 runBTA = true;
