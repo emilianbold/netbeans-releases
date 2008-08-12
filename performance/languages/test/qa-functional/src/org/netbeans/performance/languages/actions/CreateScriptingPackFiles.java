@@ -158,7 +158,10 @@ public class CreateScriptingPackFiles extends org.netbeans.modules.performance.u
             fail("Cannot find and select project root node");
         }
         
+        // Workaround for issue 143497
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         
         // create exactly (full match) and case sensitively comparing comparator
         Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);

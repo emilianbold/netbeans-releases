@@ -37,28 +37,20 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.java.editor.suites;
+package org.netbeans.modules.web.client.javascript.debugger.filesystem;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.java.editor.actions.JavaEditActionsTest;
-import org.netbeans.test.java.editor.actions.JavaNavigationActionsTest;
-import org.netbeans.test.java.editor.smart_bracket.JavaSmartBracketTest;
-import org.netbeans.test.java.editor.smart_enter.SmartEnterTest;
+import java.nio.charset.Charset;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@SUN.Com
+ * @author jdeva
  */
-public class EditorNavigationSuite {
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(JavaEditActionsTest.class)
-                .addTest(JavaNavigationActionsTest.class,"testStandardNavigationActions")
-                .addTest(JavaSmartBracketTest.class)
-                .addTest(SmartEnterTest.class)
-                .addTest(JavaEditActionsTest.class)
-                .clusters(".*").enableModules(".*"));
-    }
+public class URLFileObjectFileEncodingQueryImpl extends FileEncodingQueryImplementation {
 
+    @Override
+    public Charset getEncoding(FileObject file) {
+        return (file instanceof URLFileObject) ? Charset.forName("UTF-8") : null;    //NOI18N
+    }
 }

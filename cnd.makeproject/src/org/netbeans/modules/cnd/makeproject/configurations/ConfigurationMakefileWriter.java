@@ -635,6 +635,12 @@ public class ConfigurationMakefileWriter {
         bw.write("# Macros\n"); // NOI18N
         bw.write("TOP=" + "`pwd`" + "\n"); // NOI18N
         bw.write("TMPDIR=" + tmpdir + "\n"); // NOI18N
+        String projectOutput = conf.getOutputValue();
+        if (projectOutput == null || projectOutput.length() == 0) {
+            projectOutput = "MissingOutputInProject"; // NOI18N
+        }
+        bw.write("OUTPUT_PATH=" + projectOutput + "\n"); // NOI18N
+        bw.write("OUTPUT_BASENAME=" + IpeUtils.getBaseName(projectOutput) + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Functions\n"); // NOI18N
