@@ -109,8 +109,8 @@ public class Source{
             return enc != null ? Encoding.valueOf(enc.toUpperCase()) : null;
         }
 
-        public String getSourceCode() {
-            return new String(Message.getDecodedBytes(getEncoding(), getNodeValue(getNode())));
+        public byte[] getSourceCode() {
+            return Message.getDecodedBytes(getEncoding(), getNodeValue(getNode()));
         }
     }
 }
