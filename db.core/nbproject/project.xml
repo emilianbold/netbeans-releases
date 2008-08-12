@@ -224,6 +224,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.db.mysql</friend>
+                <friend>org.netbeans.modules.db.mysql.sakila</friend>
                 <friend>org.netbeans.modules.db.sql.editor</friend>
                 <friend>org.netbeans.modules.edm.editor</friend>
                 <friend>org.netbeans.modules.etl.editor</friend>
