@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,53 +31,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.client.tools.internetexplorer;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.logging.Level;
+package org.netbeans.modules.web.client.javascript.debugger.filesystem;
 
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
-import org.netbeans.modules.web.client.tools.common.launcher.Utils;
-import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSAbstractExternalDebugger;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.Exceptions;
+import java.nio.charset.Charset;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Sandip V. Chitale <sandipchitale@netbeans.org>, jdeva
+ * @author jdeva
  */
-public class IEJSDebugger extends JSAbstractExternalDebugger {
-
-    public IEJSDebugger(URI uri, HtmlBrowser.Factory browser) {
-        super(uri, browser);
-    }
+public class URLFileObjectFileEncodingQueryImpl extends FileEncodingQueryImplementation {
 
     @Override
-    protected void launchImpl(int port) {
-        LaunchDescriptor launchDescriptor = new LaunchDescriptor(getBrowserExecutable());
-        launchDescriptor.setURI(Utils.getDebuggerLauncherURI(port, getID()));
-        try {
-            Launcher.launch(launchDescriptor);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }        
-    }
-
-    public String getID() {
-        if (ID == null) {
-            ID = IEJSDebuggerConstants.NETBEANS_IE_DEBUGGER + "-" + getSequenceId(); // NOI18N
-        }
-        return ID;
+    public Charset getEncoding(FileObject file) {
+        return (file instanceof URLFileObject) ? Charset.forName("UTF-8") : null;    //NOI18N
     }
 }
