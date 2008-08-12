@@ -451,7 +451,7 @@ public final class ColorModel {
                 }
                 if (exampleFile != null) {
                     if (exampleFile.getMIMEType().equals("content/unknown")) { //NOI18N
-                        exampleMimeType = "text/x-java"; //NOI18N
+                        exampleMimeType = "text/x-all-languages"; //NOI18N
                     } else {
                         exampleMimeType = exampleFile.getMIMEType();
                     }
