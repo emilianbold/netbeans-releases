@@ -372,6 +372,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 if (!projectRoot.exists()) {
                     project = createProject(projectName, getProjectType(), getJavaEEversion());
                 } else {
+                    openProjects(projectRoot.getAbsolutePath());
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(projectRoot));
                     assertNotNull("FO cannot be null", fo); //NOI18N
                     project = ProjectManager.getDefault().findProject(fo);
