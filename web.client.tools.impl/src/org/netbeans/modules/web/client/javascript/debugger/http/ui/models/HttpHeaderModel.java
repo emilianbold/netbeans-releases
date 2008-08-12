@@ -158,7 +158,7 @@ public abstract class HttpHeaderModel implements TableModel, TreeModel, NodeMode
         return null;
     }
     
-    private static final class ValueColumn extends ColumnModel {
+    private static final class ValueColumn extends AbstractColumnModel {
 
         @Override
         public String getID() {
@@ -174,6 +174,12 @@ public abstract class HttpHeaderModel implements TableModel, TreeModel, NodeMode
         public Class getType() {
             return String.class;
         }
+
+        @Override
+        public int getColumnWidth() {
+            return super.getColumnWidth();
+        }
+        
     }
 
     private void fireModelChange() {

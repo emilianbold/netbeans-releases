@@ -249,6 +249,7 @@ final class HttpMonitorTopComponent extends TopComponent {
             public void run() {
                 detailsSplitPane.setDividerLocation(getDetailsDividerLoc());
                 httpMonitorSplitPane.setDividerLocation(getHttpMonitorDividerLoc());
+                
             }
         });
     }
