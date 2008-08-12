@@ -238,10 +238,10 @@ public class PackagingConfiguration {
         set.put(intNodeprop = new IntNodeProp(getType(), true, "PackageType", getString("PackageTypeName"), getString("PackageTypeHint"))); // NOI18N
         set.put(outputNodeProp = new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
         String[] texts = new String[]{"Files", getString("FilesName"), getString("FilesHint")}; // NOI18N
-        set.put(new BooleanNodeProp(getVerbose(), true, "Verbose", getString("VerboseName"), getString("VerboseHint"))); // NOI18N
         set.put(new PackagingNodeProp(this, makeConfiguration, texts)); // NOI18N
         set.put(toolNodeProp = new StringNodeProp(getTool(), getToolDefault(), "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
         set.put(optionsNodeProp = new StringNodeProp(getOptions(), getOptionsDefault(), "AdditionalOptions", getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"))); // NOI18N
+        set.put(new BooleanNodeProp(getVerbose(), true, "Verbose", getString("VerboseName"), getString("VerboseHint"))); // NOI18N
 
         sheet.put(set);
 
