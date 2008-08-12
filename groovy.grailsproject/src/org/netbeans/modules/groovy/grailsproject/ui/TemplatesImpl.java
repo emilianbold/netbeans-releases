@@ -83,34 +83,35 @@ public class TemplatesImpl implements PrivilegedTemplates  , RecommendedTemplate
     public String[] getPrivilegedTemplates() {
         SourceCategory sourceCategory = GrailsArtifacts.getCategoryForFolder(
                 project.getProjectDirectory(), sourceGroup.getRootFolder());
-        switch (sourceCategory) {
-            case CONFIGURATION:
-                return new String[] { GROOVY_CLASS };
-            case SCRIPTS:
-                return new String[] { GANT_SCRIPT, GROOVY_SCRIPT };
-            case DOMAIN:
-                return new String[] { DOMAIN_CLASS, GROOVY_CLASS };
-            case CONTROLLERS:
-                return new String[] { CONTROLLER, GROOVY_CLASS };
-            case TAGLIB:
-                return new String[] { TAG_LIB, GROOVY_CLASS };
-            case INTEGRATION_TESTS:
-                return new String[] { INTEGRATION_TEST, GROOVY_CLASS };
-            case UNIT_TESTS:
-                return new String[] { UNIT_TEST, GROOVY_CLASS };
-            case SERVICES:
-                return new String[] { SERVICE, GROOVY_CLASS };
-            case UTIL:
-            case SRC_GROOVY:
-                return new String[] { GROOVY_CLASS, GROOVY_SCRIPT };
-            case VIEWS:
-            case WEBAPP:
-                return new String[] { GSP, FOLDER };
-            case MESSAGES:
-                return new String[] { PROPERTIES };
-            default:
-                return new String[] {};
+        if (sourceCategory != null) {
+            switch (sourceCategory) {
+                case GRAILSAPP_CONF:
+                    return new String[] { GROOVY_CLASS };
+                case SCRIPTS:
+                    return new String[] { GANT_SCRIPT, GROOVY_SCRIPT };
+                case GRAILSAPP_DOMAIN:
+                    return new String[] { DOMAIN_CLASS, GROOVY_CLASS };
+                case GRAILSAPP_CONTROLLERS:
+                    return new String[] { CONTROLLER, GROOVY_CLASS };
+                case GRAILSAPP_TAGLIB:
+                    return new String[] { TAG_LIB, GROOVY_CLASS };
+                case TEST_INTEGRATION:
+                    return new String[] { INTEGRATION_TEST, GROOVY_CLASS };
+                case TEST_UNIT:
+                    return new String[] { UNIT_TEST, GROOVY_CLASS };
+                case GRAILSAPP_SERVICES:
+                    return new String[] { SERVICE, GROOVY_CLASS };
+                case GRAILSAPP_UTILS:
+                case SRC_GROOVY:
+                    return new String[] { GROOVY_CLASS, GROOVY_SCRIPT };
+                case GRAILSAPP_VIEWS:
+                case WEBAPP:
+                    return new String[] { GSP, FOLDER };
+                case GRAILSAPP_I18N:
+                    return new String[] { PROPERTIES };
+            }
         }
+        return new String[] {};
     }
 
     public String[] getRecommendedTypes() {

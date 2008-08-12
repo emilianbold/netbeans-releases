@@ -73,7 +73,9 @@ public class GetArtifactNameStep implements  WizardDescriptor.Panel<WizardDescri
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx( GetArtifactNameStep.class        );
+        // I am returning name of this class + dot + grails command name, that is something that should
+        // be quite stable and independent
+        return new HelpCtx(GetArtifactNameStep.class.getName() + "." + cat.getCommand());
     }
 
     public void readSettings(WizardDescriptor settings) {
