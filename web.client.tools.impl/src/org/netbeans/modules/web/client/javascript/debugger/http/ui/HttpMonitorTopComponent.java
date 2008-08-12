@@ -296,11 +296,21 @@ final class HttpMonitorTopComponent extends TopComponent {
     }
 
     private double getHttpMonitorDividerLoc() {
-        return NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5);
+        double d = NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5);  
+        if ( d >= 1 || d <=0 ){
+            NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5);
+            d = 0.5;
+        }
+        return d;
     }
 
     private double getDetailsDividerLoc() {
-        return NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_DetailsSplitPane_DIVIDERLOC, 0.5);
+        double d = NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_DetailsSplitPane_DIVIDERLOC, 0.5);
+        if ( d >= 1 || d <=0 ){ 
+            NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, 0.5);
+            d = 0.5;
+        }
+        return d;
     }
 
     private void setHttpMonitorDividerLoc() {
