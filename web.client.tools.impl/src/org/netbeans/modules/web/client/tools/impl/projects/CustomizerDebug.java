@@ -182,11 +182,12 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
         });
 
         browserButtonGroup.add(firefoxRadioButton);
-        org.openide.awt.Mnemonics.setLocalizedText(firefoxRadioButton, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.text")); // NOI18N
+        firefoxRadioButton.setLabel(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.label")); // NOI18N
 
         browserButtonGroup.add(internetExplorerRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(internetExplorerRadioButton, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.text")); // NOI18N
         internetExplorerRadioButton.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.tooltip")); // NOI18N
+        internetExplorerRadioButton.setLabel(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(noSupportedBrowserLabel, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.noSupportedBrowserLabel.text")); // NOI18N
 
@@ -227,9 +228,9 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
 
         debugServerJCheckBox.getAccessibleContext().setAccessibleDescription("null");
         debugClientJCheckBox.getAccessibleContext().setAccessibleDescription("null");
-        firefoxRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACSN_FF_RadioButton")); // NOI18N
+        firefoxRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.text")); // NOI18N
         firefoxRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACSD_FF_RadioButton")); // NOI18N
-        internetExplorerRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACSN_IE_RadioButton")); // NOI18N
+        internetExplorerRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.text")); // NOI18N
         internetExplorerRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACSD_IE_RadioButton")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
