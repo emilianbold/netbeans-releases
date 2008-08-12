@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.api.utils;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Stack;
@@ -54,12 +55,16 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.netbeans.modules.cnd.loaders.CDataObject;
 import org.netbeans.modules.cnd.loaders.CoreElfObject;
+import org.netbeans.modules.cnd.loaders.ExeObject;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
+import org.netbeans.modules.cnd.loaders.OrphanedElfObject;
+import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -878,6 +883,38 @@ public class IpeUtils {
                     return true;
                 }
             }
+        }
+        return false;
+    }
+    
+    
+    /*
+     * Return true if file is an executable
+     */
+    public static boolean isExecutable(File file) {
+        FileObject fo = null;
+        
+        if (file.getName().endsWith(".exe")) { //NOI18N
+            return true;
+        }
+        
+        try {
+            fo = FileUtil.toFileObject(file.getCanonicalFile());
+        } catch (IOException e) {
+            return false;
+        }
+        
+        DataObject dataObject = null;
+        try {
+            dataObject = DataObject.find(fo);
+        } catch (DataObjectNotFoundException e) {
+            return false;
+        }
+        if (dataObject instanceof ExeObject || dataObject instanceof ShellDataObject) {
+            if (dataObject instanceof OrphanedElfObject || dataObject instanceof CoreElfObject) {
+                return false;
+            }
+            return true;
         }
         return false;
     }
