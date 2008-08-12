@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -240,7 +241,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
     public BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
         BaseDocument bufDoc = new BaseDocument(XMLKit.class, false);
         spacesPerTab = IndentUtils.indentLevelSize(doc);
-        doc.atomicLock();
+        ((AbstractDocument)doc).readLock();
         try {
             //buffer doc used as a worksheet
             bufDoc.insertString(0, doc.getText(0, doc.getLength()), null);
@@ -284,10 +285,11 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             compareAndMerge(doc, bufDoc);
         } catch (BadLocationException ble) {
             //ignore exception
+            ble.printStackTrace();
         } catch (IOException iox) {
-            //ignore exception
+           iox.printStackTrace();
         } finally {
-            doc.atomicUnlock();
+           ((AbstractDocument)doc).readUnlock();
         }
         return doc;
     }
@@ -460,7 +462,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         XDMModel m2 = new XDMModel(ms);
         m2.sync();        
         
-        DefaultElementIdentity eID = new DefaultElementIdentity();
+        DefaultElementIdentity eID = new XMLElementIdentity();
         DiffFinder diffEngine = new DiffFinder(eID);
         List<Difference> diffList = diffEngine.findDiff(m1.getDocument(), m2.getDocument());
         

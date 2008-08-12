@@ -44,6 +44,9 @@ package org.netbeans.modules.groovy.grailsproject;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -51,7 +54,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.modules.groovy.grailsproject.ui.wizards.GrailsArtifacts;
+import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -68,7 +71,10 @@ import org.openide.util.NbBundle;
  * @author Martin Adamek
  */
 public class GrailsSources extends FileChangeAdapter implements Sources {
-    
+
+    //  those are dirs in project root we already know and create specific source groups
+    private static final List KNOWN_FOLDERS = Arrays.asList( "grails-app", "web-app", "lib", "src", "test" ); // NOI18N
+
     private final FileObject projectDir;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
@@ -94,57 +100,44 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
     public SourceGroup[] getSourceGroups(String type) {
         if (Sources.TYPE_GENERIC.equals(type)) {
             return new SourceGroup[] {
-                new Group(SourceCategory.NONE, projectDir, projectDir.getName())
+                new Group(projectDir, projectDir.getName())
             };
         } else if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type)) {
             return new SourceGroup[] {
-                new Group(SourceCategory.SRC_GROOVY, projectDir.getFileObject("src/groovy"), NbBundle.getMessage(GrailsSources.class, "LBL_SrcGroovy")),
-                new Group(SourceCategory.SRC_JAVA, projectDir.getFileObject("src/java"), NbBundle.getMessage(GrailsSources.class, "LBL_SrcJava"))
+                new Group(projectDir.getFileObject("src/java"), NbBundle.getMessage(GrailsSources.class, "LBL_SrcJava"))
             };
-        } else if (type.startsWith(".")) {
-            return new SourceGroup[] {};
+        } else if (GroovySources.SOURCES_TYPE_GROOVY.equals(type)) {
+            return new SourceGroup[] {
+                createGroup(SourceCategory.GRAILSAPP_CONF, "LBL_grails-app_conf"),
+                createGroup(SourceCategory.GRAILSAPP_CONTROLLERS, "LBL_grails-app_controllers"),
+                createGroup(SourceCategory.GRAILSAPP_DOMAIN, "LBL_grails-app_domain"),
+                createGroup(SourceCategory.GRAILSAPP_SERVICES, "LBL_grails-app_services"),
+                createGroup(SourceCategory.GRAILSAPP_TAGLIB, "LBL_grails-app_taglib"),
+                createGroup(SourceCategory.GRAILSAPP_UTILS, "LBL_grails-app_utils"),
+                createGroup(SourceCategory.SCRIPTS, "LBL_scripts"),
+                createGroup(SourceCategory.SRC_GROOVY, "LBL_SrcGroovy"),
+                createGroup(SourceCategory.TEST_INTEGRATION, "LBL_IntegrationTests"),
+                createGroup(SourceCategory.TEST_UNIT, "LBL_UnitTests")
+            };
+        } else if (GroovySources.SOURCES_TYPE_GRAILS.equals(type)) {
+            return new SourceGroup[] {
+                createGroup(SourceCategory.LIB, "LBL_lib"),
+                createGroup(SourceCategory.GRAILSAPP_I18N, "LBL_grails-app_i18n"),
+                createGroup(SourceCategory.WEBAPP, "LBL_web-app"),
+                createGroup(SourceCategory.GRAILSAPP_VIEWS, "LBL_grails-app_views")
+            };
+        } else if (GroovySources.SOURCES_TYPE_GRAILS_UNKNOWN.equals(type)) {
+            List<SourceGroup> result = new ArrayList<SourceGroup>();
+            for (FileObject child : projectDir.getChildren()) {
+                if (child.isFolder() && !child.getName().startsWith(".") && !KNOWN_FOLDERS.contains(child.getName())) {
+                    String name = child.getName();
+                    result.add(new Group(child, Character.toUpperCase(name.charAt(0)) + name.substring(1)));
+                }
+            }
+            return result.toArray(new SourceGroup[result.size()]);
         }
+        return new SourceGroup[] {};
 
-        FileObject fileObject = projectDir.getFileObject(type);
-        if (fileObject == null) {
-            return new SourceGroup[] { new Group(SourceCategory.NONE, null, "") };
-        }
-
-        SourceCategory cat = GrailsArtifacts.getCategoryForFolder(projectDir, fileObject);
-        switch (cat) {
-            case CONFIGURATION:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_conf")) };
-            case CONTROLLERS:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_controllers")) };
-            case DOMAIN:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_domain")) };
-            case INTEGRATION_TESTS:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_IntegrationTests")) };
-            case LIB:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_lib")) };
-            case MESSAGES:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_i18n")) };
-            case SCRIPTS:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_scripts")) };
-            case SERVICES:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_services")) };
-            case SRC_GROOVY:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_SrcGroovy")) };
-            case SRC_JAVA:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_SrcJava")) };
-            case TAGLIB:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_taglib")) };
-            case UNIT_TESTS:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_UnitTests")) };
-            case UTIL:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_utils")) };
-            case VIEWS:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_views")) };
-            case WEBAPP:
-                return new SourceGroup[] { new Group(cat, fileObject, NbBundle.getMessage(GrailsSources.class, "LBL_web-app")) };
-            default:
-                return new SourceGroup[] { new Group(SourceCategory.NONE, projectDir.getFileObject(type), type) };
-        }
     }
     
     public void addChangeListener(ChangeListener listener) {
@@ -169,23 +162,21 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
     public void fileRenamed(FileRenameEvent fe) {
         changeSupport.fireChange();
     }
-    
+
+    private Group createGroup(SourceCategory SourceCategory, String label) {
+        return new Group(projectDir.getFileObject(SourceCategory.getRelativePath()), NbBundle.getMessage(GrailsSources.class, label));
+    }
+
     private final class Group implements SourceGroup {
         
         private final FileObject loc;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         private final String displayName;
-        private final SourceCategory category;
         
-        public Group(SourceCategory category, FileObject loc, String displayName) {
+        public Group(FileObject loc, String displayName) {
             this.loc = loc;
             this.displayName = displayName;
-            this.category = category;
         }
-        
-        public SourceCategory getSourceCategory(){
-            return category;
-            }
         
         public FileObject getRootFolder() {
             return loc;

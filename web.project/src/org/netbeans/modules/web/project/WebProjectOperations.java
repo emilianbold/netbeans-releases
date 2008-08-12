@@ -121,7 +121,7 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
         // If the persistence.xml.dir is different from the conf.dir,
         // then add it here
         FileObject persistenceXmlDir = project.getWebModule().getPersistenceXmlDir();
-        if (persistenceXmlDir != null && (confDir == null || !persistenceXmlDir.getPath().equals(confDir.getPath())))  {
+        if (persistenceXmlDir != null && (confDir == null || !FileUtil.toFile(persistenceXmlDir).equals(FileUtil.toFile(confDir))))  {
             files.add(persistenceXmlDir);
         }
         

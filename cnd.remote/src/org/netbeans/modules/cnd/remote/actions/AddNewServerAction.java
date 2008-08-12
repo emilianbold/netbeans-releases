@@ -68,7 +68,7 @@ public class AddNewServerAction extends NodeAction implements PropertyChangeList
             String entry = dlg.getLoginName() + '@' + dlg.getServerName();
             ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
             if (!registry.getRecords().contains(entry)) {
-                registry.addServer(entry, dlg.isDefault());
+                registry.addServer(entry, dlg.isDefault(), true);
             }
         }
     }

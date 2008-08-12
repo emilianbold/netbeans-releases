@@ -47,7 +47,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
@@ -167,7 +166,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
             // might be already initialized by non-wizard actions like Create View
             project = (GrailsProject) Templates.getProject(wizard);
         }
-        this.serverCommand = sourceCategory.command();
+        this.serverCommand = sourceCategory.getCommand();
 
         if(!GrailsRuntime.getInstance().isConfigured()) {
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 

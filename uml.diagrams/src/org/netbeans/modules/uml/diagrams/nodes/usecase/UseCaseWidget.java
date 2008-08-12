@@ -217,6 +217,7 @@ public class UseCaseWidget extends UMLNodeWidget
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
+        super.propertyChange(event);
         if (!event.getSource().equals(usecase))
         {
             return;
