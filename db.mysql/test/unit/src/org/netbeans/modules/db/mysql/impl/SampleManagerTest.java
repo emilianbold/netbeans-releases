@@ -71,7 +71,7 @@ public class SampleManagerTest extends TestBase {
     public void setUp() throws Exception {
         super.setUp();
         DatabaseConnection dbconn = getDatabaseConnection(true);
-        SQLExecutor.execute(dbconn, "DROP TABLE triptype");
+            SQLExecutor.execute(dbconn, "DROP TABLE triptype");
         SQLExecutor.execute(dbconn, "DROP TABLE customer");
         setUpProviders();
     }
