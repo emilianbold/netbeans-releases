@@ -69,12 +69,21 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
     protected CndLexer(LexerRestartInfo<CppTokenId> info) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
+        setState((Integer) info.state()); // last line in contstructor
     }
 
     public Object state() {
-        return null; // always in default state
+        return getState();
     }
 
+    protected final void setState(Integer state) {
+        this.lastTokenEndedByEscapedLine = state == null ? 0 : state.intValue();
+    }
+
+    protected final Integer getState() {
+        return lastTokenEndedByEscapedLine == 0 ? null : lastTokenEndedByEscapedLine;
+    }
+    
     protected final void backup(int n) {
         input.backup(n + escapedEatenChars);
         lastTokenEndedByEscapedLine = escapedEatenChars;
