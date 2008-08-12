@@ -685,11 +685,7 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
              List<IActivityNode> nodes = activity.getNodes();
              for(IActivityNode node : nodes)
              {
-                 if(node.getGroups().size() >= 1)
-                 {
-                     System.out.println("Ignore");
-                 }
-                 else
+                 if(node.getGroups().size() == 0)
                  {
                      retObj.add(node);
                  }
