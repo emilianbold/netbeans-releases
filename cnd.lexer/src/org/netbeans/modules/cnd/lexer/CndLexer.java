@@ -454,6 +454,11 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                         return finishWhitespace();
 
                     case EOF:
+                        if (isTokenSplittedByEscapedLine()) {
+                            backup(1);
+                            assert lastTokenEndedByEscapedLine > 0 : "lastTokenEndedByEscapedLine is " + lastTokenEndedByEscapedLine;
+                            break;
+                        }
                         return null;
 
                     default:
