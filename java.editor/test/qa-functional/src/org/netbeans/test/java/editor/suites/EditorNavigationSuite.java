@@ -54,10 +54,11 @@ public class EditorNavigationSuite {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(JavaEditActionsTest.class)
-                .addTest(JavaEditActionsTest.class)
-                .addTest(JavaNavigationActionsTest.class)
+                .addTest(JavaNavigationActionsTest.class,"testStandardNavigationActions")
                 .addTest(JavaSmartBracketTest.class)
-                .addTest(SmartEnterTest.class));
+                .addTest(SmartEnterTest.class)
+                .addTest(JavaEditActionsTest.class)
+                .clusters(".*").enableModules(".*"));
     }
 
 }
