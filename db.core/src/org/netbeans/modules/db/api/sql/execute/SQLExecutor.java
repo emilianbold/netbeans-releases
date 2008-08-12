@@ -41,8 +41,8 @@ package org.netbeans.modules.db.api.sql.execute;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -100,13 +100,16 @@ public class SQLExecutor {
     private static class SQLExecutionInfoImpl implements SQLExecutionInfo {
         private final boolean hasExceptions;
         private final List<Throwable> exceptions;
+        private final List<StatementExecutionInfo> infos;
 
         SQLExecutionInfoImpl(SQLExecutionResults results) {
             hasExceptions = results.hasExceptions();
 
             exceptions = new ArrayList<Throwable>();
+            infos = new ArrayList<StatementExecutionInfo>();
 
             for (SQLExecutionResult result : results.getResults()) {
+                infos.add(new StatementExecutionInfoImpl(result));
                 if (result.hasExceptions()) {
                     exceptions.addAll(result.getExceptions());
                 }
@@ -122,5 +125,30 @@ public class SQLExecutor {
             return exceptions;
         }
 
+        public List<StatementExecutionInfo> getStatementInfos() {
+            return infos;
+        }
+
     }
+
+    private static class StatementExecutionInfoImpl implements StatementExecutionInfo {
+        private SQLExecutionResult result;
+        public StatementExecutionInfoImpl(SQLExecutionResult result) {
+            this.result = result;
+        }
+
+        public String getSQL() {
+            return result.getStatementInfo().getSQL();
+        }
+
+        public boolean hasExceptions() {
+            return result.hasExceptions();
+        }
+
+        public Collection<Throwable> getExceptions() {
+            return result.getExceptions();
+        }
+
+    }
+
 }
