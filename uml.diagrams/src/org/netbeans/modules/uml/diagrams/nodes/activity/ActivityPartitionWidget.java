@@ -82,14 +82,13 @@ import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
-import org.netbeans.modules.uml.drawingarea.widgets.ContainerWithCompartments;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Thuy
  */
-public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeWidget,ContainerWithCompartments
+public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeWidget
 {
 
     private Scene scene;
