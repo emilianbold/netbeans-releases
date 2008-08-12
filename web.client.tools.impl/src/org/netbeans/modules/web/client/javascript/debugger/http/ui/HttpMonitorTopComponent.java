@@ -528,6 +528,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         org.openide.awt.Mnemonics.setLocalizedText(reqLabel, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.reqLabel.text")); // NOI18N
         httpReqPanel.add(reqLabel, java.awt.BorderLayout.NORTH);
 
+        reqHeaderPanel.setLayout(new java.awt.BorderLayout());
         reqHeaderPanel.add(createRequestView(), BorderLayout.CENTER);
         reqTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, " HttpMonitorTopComponent.headerPanel.TabConstraints.tabTitle"), reqHeaderPanel); // NOI18N
         reqHeaderPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, " HttpMonitorTopComponent.reqHeaderPanel.TabConstraints.tabAsc")); // NOI18N
@@ -556,6 +557,8 @@ final class HttpMonitorTopComponent extends TopComponent {
         httpResPanel.add(resLabel, java.awt.BorderLayout.NORTH);
 
         resTabbedPane.setName(""); // NOI18N
+
+        resHeaderPanel.setLayout(new java.awt.BorderLayout());
 
         resHeaderPanel.add(createResponseView(), BorderLayout.CENTER);
 
