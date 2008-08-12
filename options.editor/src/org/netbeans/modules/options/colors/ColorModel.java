@@ -109,6 +109,7 @@ public final class ColorModel {
     }
     
     public boolean isCustomProfile (String profile) {
+        if (!getProfiles ().contains (profile)) return true;
         return EditorSettings.getDefault().isCustomFontColorProfile (profile);
     }
     
