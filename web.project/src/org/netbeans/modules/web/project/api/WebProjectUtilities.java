@@ -290,12 +290,16 @@ public class WebProjectUtilities {
         if (createBluePrintsStruct) {
             ep.setProperty(WebProjectProperties.SRC_DIR, "${" + WebProjectProperties.SOURCE_ROOT + "}/" + DEFAULT_JAVA_FOLDER);
             ep.setProperty(WebProjectProperties.CONF_DIR, "${" + WebProjectProperties.SOURCE_ROOT + "}/" + DEFAULT_CONF_FOLDER);
+            // Default to conf.dir
+            ep.setProperty(WebProjectProperties.PERSISTENCE_XML_DIR, "${" + WebProjectProperties.SOURCE_ROOT + "}/" + DEFAULT_CONF_FOLDER);  
         } else {
             ep.setProperty(WebProjectProperties.SRC_DIR, DEFAULT_SRC_FOLDER);
         }
         
         if(createJakartaStructure) {
             ep.setProperty(WebProjectProperties.CONF_DIR, DEFAULT_CONF_FOLDER);
+            // Default to conf.dir
+            ep.setProperty(WebProjectProperties.PERSISTENCE_XML_DIR, DEFAULT_CONF_FOLDER);
         }
         
         ep.setProperty(WebProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);

@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsInitializer;
 import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
-import org.netbeans.modules.cnd.test.BaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -75,7 +74,7 @@ import org.openide.loaders.DataObject;
  * 
  * @author Vladimir Voskresensky
  */
-public abstract class ProjectBasedTestCase extends BaseTestCase {
+public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
 
     private TestModelHelper projectHelper = null;
     private List<String>    sysIncludes = Collections.<String>emptyList();
