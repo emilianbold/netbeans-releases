@@ -178,10 +178,10 @@ public class JaxWsNode extends AbstractNode implements
         content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
         if (service.getWsdlUrl() != null) {
             content.add(new RefreshServiceImpl());
-            content.add(new ConvertToRestCookieImpl(this));
         } else {
             content.add(new JaxWsGenWSDLImpl(project, serviceName));
         }
+        content.add(new ConvertToRestCookieImpl(this));
         OpenCookie cookie = new OpenCookie() {
 
             public void open() {
