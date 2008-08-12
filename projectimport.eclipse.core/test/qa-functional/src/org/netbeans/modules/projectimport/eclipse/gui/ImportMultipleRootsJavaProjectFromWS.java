@@ -40,31 +40,55 @@
 package org.netbeans.modules.projectimport.eclipse.gui;
 
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.WizardOperator;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class ImporterWizard  extends JellyTestCase {
-    private static final String menuPath = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File");
-    private static final String importMenuPath = Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.resources.Bundle","Menu/File/Import");
-    private static String menuRootString = menuPath+"|"+importMenuPath+"|";    
-    private static String menuString = menuRootString+Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_MenuItem");
-    public ImporterWizard(String testName) {
+
+public class ImportMultipleRootsJavaProjectFromWS extends ProjectImporterTestCase {
+
+    WizardOperator importWizard;
+    private static final String prjName = "MultipleSourceRoots";
+    
+    public ImportMultipleRootsJavaProjectFromWS(String testName) {
         super(testName);
     }
-
+    
     @Override
-    public void setUp() {
-        new ActionNoBlock(menuString, null).performMenu();
+    public void setUp() throws Exception {
+        super.setUp();
+        ExtractToWorkDir(getDataDir().getAbsolutePath(),"testdata.jar");
     }
 
-    public void testImporterWizard() {
-        String caption = Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.wizard.Bundle", "CTL_WizardTitle");
-        NbDialogOperator importWizard = new NbDialogOperator(caption);
-        importWizard.cancel();
-    }
+    public void testImportSimpleJavaProject() {        
+        importWizard = invokeImporterWizard();
+
+        selectProjectFromWS(importWizard,"testdata", prjName);
+
+        importWizard.finish();
+        
+        waitForProjectsImporting();
+
+        try {
+            NbDialogOperator issuesWindow = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "MSG_ImportIssues"));
+            issuesWindow.close();
+        } catch (Exception e) {
+            // ignore 
+        }
+   
+        validateProjectRootNode(prjName);
+        validateProjectTestLibNode(prjName);        
+        validateProjectSrcNode(prjName,"source1");
+        validateProjectSrcNode(prjName,"source2");
+        validateProjectSrcNode(prjName,"source3");
+        
+        validateProjectTestNode(prjName, "test1");
+        validateProjectTestNode(prjName, "test2");
+        validateProjectTestNode(prjName, "test3");
+
+      }
+
 }
