@@ -1783,6 +1783,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 shtab.put(path, new ShareInfo(path, addr));
             }
         } else {
+            for (String line : info.split("\\\\n")) {
+                if (line.charAt(0) == '0') {
+                    String[] s = line.split("\\s+", 4);
+                    shtab.put(s[3], new ShareInfo(s[3], s[0]));
+                }
+            }
         }
         return shtab;
     }
