@@ -69,7 +69,7 @@ public class ServerNodeProvider implements NodeProvider {
     
     public static synchronized ServerNodeProvider getDefault() {
         // Issue 134577 - getDefault() is called by Lookup. If we try to
-        // get the DatabaseServer implementation here, we cause
+        // get the DatabaseServer or Installation implementations here, we cause
         // deadlocks, as this lookup will wait until the lookup calling
         // getDefault() completes, which will never happen.
         //
@@ -82,10 +82,6 @@ public class ServerNodeProvider implements NodeProvider {
         return DEFAULT;
     }
     
-    private ServerNodeProvider() {
-        findAndRegisterMySQL();
-    }
-
     /**
      * Try to find MySQL on the local machine, and if it can be found,
      * register a connection and the MySQL server node in the Database
@@ -146,6 +142,10 @@ public class ServerNodeProvider implements NodeProvider {
     }
     
     public List<Node> getNodes() {
+        if (! options.isProviderRegistered() && ! options.isProviderRemoved()) {
+            findAndRegisterMySQL();
+        }
+        
         checkNodeArray();
         
         if ( options.isProviderRegistered() ) {
