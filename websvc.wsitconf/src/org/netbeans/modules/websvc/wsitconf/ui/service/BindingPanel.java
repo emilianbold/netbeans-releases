@@ -78,6 +78,7 @@ import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.AdvancedSecurityPanel;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KerberosConfigPanel;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AddressingModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMSequenceBinding;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
@@ -151,6 +152,7 @@ public class BindingPanel extends SectionInnerPanel {
         jSeparator4.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         cfgVersionLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         cfgVersionCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        addrChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
 
         inSync = true;
         for (ConfigVersion cfgVersion : ConfigVersion.values()) {
@@ -168,6 +170,7 @@ public class BindingPanel extends SectionInnerPanel {
         addImmediateModifier(tcpChBox);
         addImmediateModifier(fiChBox);
         addImmediateModifier(devDefaultsChBox);
+        addImmediateModifier(addrChBox);
 
         sync();
 
@@ -215,6 +218,9 @@ public class BindingPanel extends SectionInnerPanel {
 
         ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(binding);
         cfgVersionCombo.setSelectedItem(configVersion);
+
+        boolean addrEnabled = AddressingModelHelper.isAddressingEnabled(binding);
+        setChBox(addrChBox, addrEnabled);
 
         boolean mtomEnabled = TransportModelHelper.isMtomEnabled(binding);
         setChBox(mtomChBox, mtomEnabled);
@@ -313,6 +319,17 @@ public class BindingPanel extends SectionInnerPanel {
             if (tcpChBox.isSelected() != tcp) {
                 boolean jsr109 = isJsr109Supported();
                 TransportModelHelper.enableTCP(service, isFromJava, binding, project, tcpChBox.isSelected(), jsr109);
+            }
+        }
+
+        if (source.equals(addrChBox)) {
+            boolean addr = AddressingModelHelper.isAddressingEnabled(binding);
+            if (addrChBox.isSelected() != addr) {
+                if (addrChBox.isSelected()) { 
+                    AddressingModelHelper.getInstance(getUserExpectedConfigVersion()).enableAddressing(binding);
+                } else {
+                    AddressingModelHelper.disableAddressing(binding);
+                }
             }
         }
 
@@ -536,6 +553,8 @@ public class BindingPanel extends SectionInnerPanel {
             trustButton.setEnabled(secSelected && trustStoreConfigRequired && !defaults);
             kerberosCfgButton.setEnabled(secSelected && kerberosConfigRequired && !defaults);
 
+            addrChBox.setEnabled(!relSelected && !secSelected && !mtomChBox.isSelected());
+
         } else { // no wsit fun, there's access manager security selected
             profileComboLabel.setEnabled(false);
             profileCombo.setEnabled(false);
@@ -551,6 +570,7 @@ public class BindingPanel extends SectionInnerPanel {
             profileInfoField.setEnabled(true);
             profileInfoField.setForeground(RED);
             profileInfoField.setText(NbBundle.getMessage(BindingPanel.class, "TXT_AMSecSelected"));
+            addrChBox.setEnabled(false);
         }
     }
 
@@ -597,6 +617,8 @@ public class BindingPanel extends SectionInnerPanel {
         cfgVersionLabel = new javax.swing.JLabel();
         cfgVersionCombo = new javax.swing.JComboBox();
         jSeparator4 = new javax.swing.JSeparator();
+        addrChBox = new javax.swing.JCheckBox();
+        jSeparator5 = new javax.swing.JSeparator();
 
         addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -701,6 +723,8 @@ public class BindingPanel extends SectionInnerPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cfgVersionLabel, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_versionChBox")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(addrChBox, org.openide.util.NbBundle.getMessage(BindingPanel.class, "LBL_Section_Service_addrChBox")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -708,6 +732,7 @@ public class BindingPanel extends SectionInnerPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(addrChBox)
                     .add(jSeparator4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(cfgVersionLabel)
@@ -760,7 +785,8 @@ public class BindingPanel extends SectionInnerPanel {
                         .add(stsChBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(stsConfigButton))
-                    .add(fiChBox))
+                    .add(fiChBox)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -817,6 +843,10 @@ public class BindingPanel extends SectionInnerPanel {
                 .add(tcpChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(fiChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(addrChBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -975,6 +1005,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
 }//GEN-LAST:event_kerberosCfgButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox addrChBox;
     private javax.swing.JComboBox cfgVersionCombo;
     private javax.swing.JLabel cfgVersionLabel;
     private javax.swing.JCheckBox devDefaultsChBox;
@@ -984,6 +1015,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JSeparator jSeparator5;
     private javax.swing.JButton kerberosCfgButton;
     private javax.swing.JButton keyButton;
     private javax.swing.JCheckBox mtomChBox;
