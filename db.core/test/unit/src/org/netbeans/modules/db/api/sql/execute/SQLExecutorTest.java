@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.db.api.sql.execute;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -257,6 +259,64 @@ public class SQLExecutorTest extends TestBase {
             "END";
 
         checkExecution(SQLExecutor.execute(dbconn, sql));
+    }
+    
+    public void testNewLines() throws Exception {
+        if (! isMySQL()) {
+            return;
+        }
+
+        // In order for stored procs to be readable when querying them in the
+        // database, we have to properly propagate newlines.
+        SQLExecutor.execute(dbconn, "DROP FUNCTION inventory_held_by_customer");
+
+        String sql =
+            "DELIMITER $$\n" +
+            "CREATE FUNCTION inventory_held_by_customer(p_inventory_id INT) RETURNS INT\n" +
+            "READS SQL DATA\n" +
+            "BEGIN\n" +
+              "  DECLARE v_customer_id INT; # Testing comment in this context\n" +
+              "  DECLARE EXIT HANDLER FOR NOT FOUND RETURN NULL; # Another comment\n" +
+              "  SELECT customer_id INTO v_customer_id\n" +
+              "  FROM rental\n" +
+              "  WHERE return_date IS NULL\n" +
+              "  AND inventory_id = p_inventory_id;\n" +
+              "  RETURN v_customer_id;\n" +
+            "END$$\n" +
+            "DELIMITER ;\n";
+
+        String body = "BEGIN\n" +
+            "  DECLARE v_customer_id INT; \n" +
+            "  DECLARE EXIT HANDLER FOR NOT FOUND RETURN NULL; \n" +
+            "  SELECT customer_id INTO v_customer_id\n" +
+            "  FROM rental\n" +
+            "  WHERE return_date IS NULL\n" +
+            "  AND inventory_id = p_inventory_id;\n" +
+            "  RETURN v_customer_id;\n" +
+            "END";
+
+        SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
+        String resultingSQL = info.getStatementInfos().get(0).getSQL();
+        if ( ! resultingSQL.contains(body)) {
+            System.err.println("Resulting SQL did not contain body - check for newlines:\n" +
+                    resultingSQL);
+            fail();
+        }
+        checkExecution(info);
+
+        Connection conn = dbconn.getJDBCConnection();
+        ResultSet rs = conn.createStatement().executeQuery("show create function inventory_held_by_customer");
+        assertTrue(rs.next());
+        String functionText = rs.getString("Create Function");
+        assertNotNull(functionText);
+
+        //It looks like the JDBC driver strips off the newlines.  How convenient - it
+        // makes the function text completely unreadable when querying the database
+        String bodyNoNewlines = body.replace("\n", " ");
+        if (! functionText.contains(bodyNoNewlines)) {
+            System.err.println("Function text did not contain body (it is likely that newlines did not match): \n" + functionText);
+            fail();
+        }
     }
 
 }
