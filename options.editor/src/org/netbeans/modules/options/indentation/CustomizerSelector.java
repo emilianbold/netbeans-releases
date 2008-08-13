@@ -116,7 +116,9 @@ public final class CustomizerSelector {
 
             // filter out mime types that don't supply customizers
             for(String mimeType : EditorSettings.getDefault().getAllMimeTypes()) {
-                if (!getCustomizers(mimeType).isEmpty()) {
+                Lookup l = Lookups.forPath(FOLDER + mimeType);
+                Collection<? extends PreferencesCustomizer.Factory> factories = l.lookupAll(PreferencesCustomizer.Factory.class);
+                if (!factories.isEmpty()) {
                     mimeTypes.add(mimeType);
                 }
             }
