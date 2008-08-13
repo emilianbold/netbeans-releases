@@ -70,6 +70,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -252,19 +253,26 @@ public class SenderVouchesProfile extends ProfileBase
     }
     
     private String getSamlVersion(Binding serviceBinding) {
+        ConfigVersion cfgVersion = PolicyModelHelper.getConfigVersion(serviceBinding);
         WSDLComponent topSecBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(serviceBinding);
         WSDLComponent protTokenKind = SecurityTokensModelHelper.getTokenElement(topSecBinding, ProtectionToken.class);
         WSDLComponent protToken = SecurityTokensModelHelper.getTokenTypeElement(protTokenKind);
         
+        int suppTokenType = SecurityTokensModelHelper.SIGNED_ENCRYPTED;
+        if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+            suppTokenType = SecurityTokensModelHelper.SIGNED_SUPPORTING;
+        }
+
         WSDLComponent tokenKind = null;
         boolean secConv = (protToken instanceof SecureConversationToken);
         
         if (secConv) {
             WSDLComponent bootPolicy = SecurityTokensModelHelper.getTokenElement(protToken, BootstrapPolicy.class);
             Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
-            tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            
+            tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, suppTokenType);
         } else {
-            tokenKind = SecurityTokensModelHelper.getSupportingToken(serviceBinding, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            tokenKind = SecurityTokensModelHelper.getSupportingToken(serviceBinding, suppTokenType);
         }
 
         WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
