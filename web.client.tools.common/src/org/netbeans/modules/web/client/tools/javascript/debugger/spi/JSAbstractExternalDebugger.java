@@ -55,6 +55,7 @@ import org.netbeans.modules.web.client.tools.common.dbgp.DebuggerServer;
 import org.netbeans.modules.web.client.tools.common.dbgp.Feature;
 import org.netbeans.modules.web.client.tools.common.dbgp.HttpMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.Message;
+import org.netbeans.modules.web.client.tools.common.dbgp.ResponseMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.SourcesMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status.StatusResponse;
 import org.netbeans.modules.web.client.tools.common.dbgp.StreamMessage;
@@ -312,7 +313,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         DebuggerProxy proxy;
 
         HttpMessageHandler(DebuggerProxy proxy, String id) {
-            super("Http Mesasge Handler");  //NOI18N
+            super("Http Message Handler");  //NOI18N
             this.setDaemon(true);
             this.proxy = proxy;
         }
@@ -320,7 +321,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         @Override
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
-            while (proxy.isActive()) {
+            while (proxy.isHttpQueueActive()) {
                 Message message = getNextMessage();
                 if (message != null) {
                     handle(message);
@@ -328,7 +329,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
             }
             Log.getLogger().log(Level.FINEST, "Ending " + getName());   //NOI18N
         }
-
+        
         private Message getNextMessage() {
             return  proxy.getHttpMessage();
         }
@@ -337,6 +338,8 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
             // Spontaneous messages
             if (message instanceof HttpMessage) {
                 handleHttpMessage((HttpMessage) message);
+                return;
+            } else if (message instanceof ResponseMessage) {
                 return;
             } else {
                 Logger.getLogger(this.getName()).info("Something Seems Wrong");
@@ -358,7 +361,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         @Override
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
-            while (proxy.isActive()) {
+            while (proxy.isSuspensionQueueActive()) {
                 Message message = getNextMessage();
                 if (message != null) {
                     handle(message);
