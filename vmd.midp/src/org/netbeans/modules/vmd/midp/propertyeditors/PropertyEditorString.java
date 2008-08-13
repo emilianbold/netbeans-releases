@@ -361,15 +361,23 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     }
     @Override
     public boolean executeInsideWriteTransaction() {
-        if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
+        if (component == null || component.get() == null)
+            return true;
+        final DesignComponent component_ = component.get();
+        DesignComponent connector = MidpDatabindingSupport.getConnector(component_, getPropertyNames().get(0));
+        if (databindingElement != null && connector != null) {
             return false;
         }
-        return super.executeInsideWriteTransaction();
+        return super.isExecuteInsideWriteTransactionUsed();
     }
     
     @Override
     public boolean isExecuteInsideWriteTransactionUsed() {
-        if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
+        if (component == null || component.get() == null)
+            return false;
+        final DesignComponent component_ = component.get();
+        DesignComponent connector = MidpDatabindingSupport.getConnector(component_, getPropertyNames().get(0));
+        if (databindingElement != null && connector != null) {
             return true;
         }
         return super.isExecuteInsideWriteTransactionUsed();
