@@ -47,9 +47,15 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -66,8 +72,12 @@ import org.openide.util.NbBundle;
  *
  * @author Dusan Balek
  */
-public class FormattingCustomizerPanel extends javax.swing.JPanel implements ActionListener {
+public final class FormattingCustomizerPanel extends javax.swing.JPanel implements ActionListener {
     
+    // ------------------------------------------------------------------------
+    // ProjectCustomizer.CompositeCategoryProvider implementation
+    // ------------------------------------------------------------------------
+
     public static class Factory implements ProjectCustomizer.CompositeCategoryProvider {
  
         private static final String CATEGORY_FORMATTING = "Formatting"; // NOI18N
@@ -84,29 +94,23 @@ public class FormattingCustomizerPanel extends javax.swing.JPanel implements Act
             category.setStoreListener(customizerPanel);
             return customizerPanel;
         }
-    }
+    } // End of Factory class
     
-    private static final String GLOBAL_OPTIONS_CATEGORY = "Editor/Formating"; //NOI18N
+    // ------------------------------------------------------------------------
+    // ActionListener implementation
+    // ------------------------------------------------------------------------
 
-    private final FormattingPanelController controller;    
-    private final JComponent customizerComponent;
-    private final Preferences preferences;
-    
-    /** Creates new form CodeStyleCustomizerPanel */
-    private FormattingCustomizerPanel(Lookup context) {
-        controller = new FormattingPanelController();
-        customizerComponent = controller.getComponent(context);
-        initComponents();
-        customizerPanel.add(customizerComponent, BorderLayout.CENTER);
-        controller.update();
-        preferences = ProjectUtils.getPreferences(context.lookup(Project.class), IndentUtils.class, true).node(FormattingPanelController.CODE_STYLE_PROFILE);
-        String profile = preferences.get(FormattingPanelController.USED_PROFILE, FormattingPanelController.DEFAULT_PROFILE);
-        if (FormattingPanelController.DEFAULT_PROFILE.equals(profile))
-            globalButton.doClick();
-        else
-            projectButton.doClick();
+    // this is called when OK button is clicked to store the controlled preferences
+    public void actionPerformed(ActionEvent e) {
+        String profile = globalButton.isSelected() ? DEFAULT_PROFILE : PROJECT_PROFILE;
+        pf.getPreferences("").parent().put(USED_PROFILE, profile); //NOI18N
+        pf.applyChanges();
     }
 
+    // ------------------------------------------------------------------------
+    // private implementation
+    // ------------------------------------------------------------------------
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -189,12 +193,12 @@ public class FormattingCustomizerPanel extends javax.swing.JPanel implements Act
 
 private void globalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_globalButtonActionPerformed
     loadButton.setEnabled(false);
-    setEnabled(customizerComponent, false);
+    setEnabled(panel, false);
 }//GEN-LAST:event_globalButtonActionPerformed
 
 private void projectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectButtonActionPerformed
     loadButton.setEnabled(true);
-    setEnabled(customizerComponent, true);
+    setEnabled(panel, true);
 }//GEN-LAST:event_projectButtonActionPerformed
 
 private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButtonActionPerformed
@@ -224,11 +228,35 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private javax.swing.JRadioButton projectButton;
     // End of variables declaration//GEN-END:variables
 
-    public void actionPerformed(ActionEvent e) {
-        String profile = globalButton.isSelected() ? FormattingPanelController.DEFAULT_PROFILE
-                : FormattingPanelController.PROJECT_PROFILE;
-        preferences.put(FormattingPanelController.USED_PROFILE, profile);
-        controller.applyChanges();
+    private static final Logger LOG = Logger.getLogger(FormattingCustomizerPanel.class.getName());
+    
+    private static final String GLOBAL_OPTIONS_CATEGORY = "Editor/Formating"; //NOI18N
+    private static final String CODE_STYLE_PROFILE = "CodeStyle"; // NOI18N
+    private static final String DEFAULT_PROFILE = "default"; // NOI18N
+    private static final String PROJECT_PROFILE = "project"; // NOI18N
+    private static final String USED_PROFILE = "usedProfile"; // NOI18N
+    
+    private final ProjectPreferencesFactory pf;
+    private final CustomizerSelector selector;
+    private final FormattingPanel panel;
+    
+    /** Creates new form CodeStyleCustomizerPanel */
+    private FormattingCustomizerPanel(Lookup context) {
+        this.pf = new ProjectPreferencesFactory(context.lookup(Project.class));
+        this.selector = new CustomizerSelector(pf);
+        this.panel = new FormattingPanel();
+        this.panel.setSelector(selector);
+
+        initComponents();
+        customizerPanel.add(panel, BorderLayout.CENTER);
+        
+        Preferences prefs = pf.getPreferences("").parent(); //NOI18N
+        String profile = prefs.get(USED_PROFILE, DEFAULT_PROFILE);
+        if (DEFAULT_PROFILE.equals(profile)) {
+            globalButton.doClick();
+        } else {
+            projectButton.doClick();
+        }
     }
     
     private void setEnabled(Component component, boolean enabled) {
@@ -238,4 +266,87 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                 setEnabled(c, enabled);
         }
     }
+
+    private static final class ProjectPreferencesFactory implements CustomizerSelector.PreferencesFactory {
+
+        public ProjectPreferencesFactory(Project project) {
+            this.project = project;
+        }
+
+        public synchronized Preferences getPreferences(String mimeType) {
+            ProxyPreferences prefs = mimeTypePreferences.get(mimeType);
+
+            if (prefs == null) {
+                if (projectPrefs == null) {
+                    Preferences p = ProjectUtils.getPreferences(project, IndentUtils.class, true);
+                    projectPrefs = ProxyPreferences.get(p);
+                }
+                prefs = (ProxyPreferences) projectPrefs.node(mimeType).node(CODE_STYLE_PROFILE).node(PROJECT_PROFILE);
+                mimeTypePreferences.put(mimeType, prefs);
+            }
+
+            return prefs;
+        }
+
+        public synchronized void applyChanges() {
+            for(String mimeType : mimeTypePreferences.keySet()) {
+                if (mimeType.length() == 0) {
+                    continue;
+                }
+
+                ProxyPreferences pp = mimeTypePreferences.get(mimeType);
+                pp.silence();
+
+                assert pp.get(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) != null;
+                if (!pp.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false)) {
+                    // remove the basic settings if a language is not overriding the 'all languages' values
+                    pp.remove(SimpleValueNames.EXPAND_TABS);
+                    pp.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
+                    pp.remove(SimpleValueNames.SPACES_PER_TAB);
+                    pp.remove(SimpleValueNames.TAB_SIZE);
+                    pp.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
+                }
+                pp.remove(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS);
+                
+                try {
+                    LOG.fine("Flushing pp for '" + mimeType + "'"); //NOI18N
+                    pp.flush();
+                } catch (BackingStoreException ex) {
+                    LOG.log(Level.WARNING, "Can't flush preferences for '" + mimeType + "'", ex); //NOI18N
+                }
+            }
+
+            // flush the root prefs
+            ProxyPreferences pp = mimeTypePreferences.get("");
+            if (pp != null) {
+                assert pp.get(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) == null;
+                pp.silence();
+
+                try {
+                    LOG.fine("Flushing root pp"); //NOI18N
+                    pp.parent().flush();
+                } catch (BackingStoreException ex) {
+                    LOG.log(Level.WARNING, "Can't flush project codestyle root preferences", ex); //NOI18N
+                }
+            }
+            
+            projectPrefs.destroy();
+            projectPrefs = null;
+        }
+
+        public boolean isKeyOverridenForMimeType(String key, String mimeType) {
+            Preferences p = ProjectUtils.getPreferences(project, IndentUtils.class, true).node(CODE_STYLE_PROFILE);
+            p = p.node(mimeType);
+            return p.get(key, null) != null;
+        }
+
+        // --------------------------------------------------------------------
+        // private implementation
+        // --------------------------------------------------------------------
+
+        private final Project project;
+        private final Map<String, ProxyPreferences> mimeTypePreferences = new HashMap<String, ProxyPreferences>();
+        private ProxyPreferences projectPrefs;
+
+    } // End of ProjectPreferencesFactory class
 }
