@@ -519,8 +519,11 @@ public final class ColorModel {
             languageToMimeType = new HashMap<String, String>();
             Set<String> mimeTypes = EditorSettings.getDefault().getMimeTypes();
             for(String mimeType : mimeTypes) {
-                languageToMimeType.put(
-                    EditorSettings.getDefault().getLanguageName(mimeType),
+                String name = EditorSettings.getDefault().getLanguageName (mimeType);
+                if (name.equals (mimeType))
+                    continue;
+                languageToMimeType.put (
+                    name,
                     mimeType
                 );
             }
