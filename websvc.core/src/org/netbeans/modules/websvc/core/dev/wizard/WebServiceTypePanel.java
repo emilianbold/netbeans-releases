@@ -303,7 +303,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         
         if (getServiceType() == WizardProperties.ENCAPSULATE_SESSION_BEAN &&
             jTextFieldDelegate.getText().length() == 0) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceTypePanel.class, "LBL_SelectOneEJB")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(WebServiceTypePanel.class, "LBL_SelectOneEJB")); //NOI18N
             return false;        
         }
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
