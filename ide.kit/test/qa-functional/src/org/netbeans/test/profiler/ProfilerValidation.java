@@ -132,17 +132,18 @@ public class ProfilerValidation extends JellyTestCase {
 
     /** Test Profiler Menus. */
     public void testProfilerMenus(){
+        String ProfileMenu = org.netbeans.jellytools.Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE, "Menu/Profile"); //"Profile"
         //Profile|Profile Project
-        new ActionNoBlock("Profile|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
+        new ActionNoBlock(ProfileMenu + "|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
                                         "LBL_ProfileMainProjectAction"), null).isEnabled();
         //Profile|Attach Profiler...
-        new ActionNoBlock("Profile|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
+        new ActionNoBlock(ProfileMenu + "|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
                                         "LBL_AttachMainProjectAction"), null).isEnabled();
         //Profile|Take Snapshot of Collected Results
-        new ActionNoBlock("Profile|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
+        new ActionNoBlock(ProfileMenu + "|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
                                         "LBL_TakeSnapshotAction"), null).isEnabled();
         //Profile|Stop Profiling Session
-        new ActionNoBlock("Profile|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
+        new ActionNoBlock(ProfileMenu + "|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
                                         "LBL_StopAction"), null).isEnabled();
         
     }
@@ -152,10 +153,10 @@ public class ProfilerValidation extends JellyTestCase {
         new OptionsViewAction().performMenu();
         
         OptionsOperator options = new OptionsOperator();
-        options.selectCategory("Miscellaneous");        
+        options.selectMiscellaneous();// "Miscellaneous"
         
         JTabbedPaneOperator tabbedPane = new JTabbedPaneOperator(options);
-        tabbedPane.selectPage("Profiler");
+        tabbedPane.selectPage( Bundle.getStringTrimmed("org.netbeans.modules.profiler.options.Bundle", "ProfilerOptionsCategory_Title") ); //"Profiler"
 
         JLabelOperator javaPlatform = new JLabelOperator(options, Bundle.getStringTrimmed(PROFILER_UI_PANELS_BUNDLE,
                                                                 "ProfilerOptionsPanel_JavaPlatformLabelText")); //"Profiler Java Platform"
@@ -179,8 +180,8 @@ public class ProfilerValidation extends JellyTestCase {
         JButtonOperator reset = new JButtonOperator(options, Bundle.getStringTrimmed(PROFILER_UI_PANELS_BUNDLE,
                                                                 "ProfilerOptionsPanel_ResetButtonName") ); //"Reset"
         
-        new JButtonOperator(options, "OK").push();
-        
+        options.btOK().push(); //new JButtonOperator(options, "OK").push();
+        java.util.logging.Logger.getLogger("global").log( java.util.logging.Level.SEVERE, "ok pushed" );
     }    
     
     /** Create project to be tested. */

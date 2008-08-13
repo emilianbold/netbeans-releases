@@ -41,6 +41,7 @@ package org.netbeans.modules.options;
 
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -50,6 +51,8 @@ import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -78,6 +81,13 @@ public class TabbedController extends OptionsPanelController {
 
     /** pane with sub-panels */
     private JTabbedPane pane;
+    /** PropertyChangeSupport and listener to fire changes when switching tabs. */
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final ChangeListener tabbedPaneChangeListener = new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+            pcs.firePropertyChange(OptionsPanelController.PROP_HELP_CTX, null, null);
+        }
+    };
 
     /**
      * Creates new instance
@@ -141,6 +151,7 @@ public class TabbedController extends OptionsPanelController {
                 pane.add( controllers2Options.get(c).getDisplayName(), comp);
                 component2Option.put(comp, c);
             }
+            pane.addChangeListener(tabbedPaneChangeListener);
         }
         return pane;
     }
@@ -160,10 +171,18 @@ public class TabbedController extends OptionsPanelController {
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
+        pcs.addPropertyChangeListener(l);
+        for (OptionsPanelController c : getControllers()) {
+            c.addPropertyChangeListener(l);
+        }
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
+        pcs.removePropertyChangeListener(l);
+        for (OptionsPanelController c : getControllers()) {
+            c.removePropertyChangeListener(l);
+        }
     }
 
 
@@ -192,6 +211,7 @@ public class TabbedController extends OptionsPanelController {
             for (Lookup.Item<AdvancedOption> item : options.allItems()) {
                 AdvancedOption o = item.getInstance();
                 OptionsPanelController c = o.create();
+                if (c == null) continue;
                 String id = item.getId().substring(item.getId().lastIndexOf('/') + 1);
                 id2Controller.put(id, c);
                 controllers2Options.put(c, o);

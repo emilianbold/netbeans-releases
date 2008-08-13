@@ -103,6 +103,12 @@ public class ProcessesNodeModel implements NodeModel {
             }
         }
         
+        if (object instanceof ProcessesTreeModel.NoPropertiesDataMarker) {
+            return NbBundle.getMessage(
+                    ProcessesNodeModel.class, 
+                    "LBL_No_Properties_Data_Name"); // NOI18N
+        }
+        
         if (object instanceof ProcessesTreeModel.WaitingMessagesWrapper) {
             return NbBundle.getMessage(
                     ProcessesNodeModel.class, 
@@ -152,6 +158,12 @@ public class ProcessesNodeModel implements NodeModel {
                 return "{" + name.getNamespaceURI() + "} " + 
                         name.getLocalPart();
             }
+        }
+        
+        if (object instanceof ProcessesTreeModel.NoPropertiesDataMarker) {
+            return NbBundle.getMessage(
+                    ProcessesNodeModel.class, 
+                    "LBL_No_Properties_Data_Tooltip"); // NOI18N
         }
         
         if (object instanceof Fault) {
@@ -204,6 +216,10 @@ public class ProcessesNodeModel implements NodeModel {
         }
         
         if (object instanceof CorrelationSet.Property) {
+            return PROCESS_ICON;
+        }
+        
+        if (object instanceof ProcessesTreeModel.NoPropertiesDataMarker) {
             return PROCESS_ICON;
         }
         

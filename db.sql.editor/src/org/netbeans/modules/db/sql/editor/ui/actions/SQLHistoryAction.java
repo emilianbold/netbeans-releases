@@ -40,13 +40,15 @@
 package org.netbeans.modules.db.sql.editor.ui.actions;
 
 import org.netbeans.modules.db.api.sql.execute.SQLExecution;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author test
+ * @author jbaker
  */
 public class SQLHistoryAction extends SQLExecutionBaseAction {
     private static final String ICON_PATH = "org/netbeans/modules/db/sql/editor/resources/sql_history_16.png"; // NOI18N
@@ -60,17 +62,18 @@ public class SQLHistoryAction extends SQLExecutionBaseAction {
         return NbBundle.getMessage(SQLHistoryAction.class, "LBL_SQLHistoryAction");
     }
 
-    @Override
-    protected boolean enable(SQLExecution sqlExecution) {
+    protected void actionPerformed(SQLExecution sqlExecution) {
         FileObject databaseDir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
-        if (databaseDir == null) {    
-            return false;
+        if (databaseDir == null || databaseDir.getChildren().length == 0) {    
+            notifyNoSQLExecuted();
         } else {
-            return true;
+            sqlExecution.showHistory();
         }
     }
-
-    protected void actionPerformed(SQLExecution sqlExecution) {
-        sqlExecution.showHistory();
+    
+    public static void notifyNoSQLExecuted() {
+        String message = NbBundle.getMessage(SQLExecutionBaseAction.class, "LBL_NoSQLExecuted");
+        NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
+        DialogDisplayer.getDefault().notify(desc);
     }
 }

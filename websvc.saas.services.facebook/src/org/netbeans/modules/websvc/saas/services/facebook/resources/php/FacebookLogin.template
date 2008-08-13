@@ -18,7 +18,7 @@
     } else {
         $authToken = $_GET['auth_token'];
         $apiKey = FacebookSocialNetworkingServiceAuthenticator::getApiKey();
-        printf("<a href=\"http://www.facebook.com/login.php?api_key=".$apiKey."&v=1.0&auth_token=".$authToken."\">Facebook Login</a>");
+        printf("<a href=\"http://www.facebook.com/login.php?api_key=".$apiKey."&v=1.0\">Facebook Login</a>");
     }
     printf("</body>");
     printf("</html>");

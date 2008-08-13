@@ -163,25 +163,10 @@ public class SourceUtils {
      * @return the type declaration within which this member or constructor
      * is declared, or null if there is none
      * @throws IllegalArgumentException if the provided element is a package element
+     * @deprecated use {@link ElementUtilities#enclosingTypeElement(javax.lang.model.element.Element)}
      */
-    public static TypeElement getEnclosingTypeElement( Element element ) throws IllegalArgumentException {
-        
-	if( element.getKind() == ElementKind.PACKAGE ) {
-	    throw new IllegalArgumentException();
-	}
-
-        element = element.getEnclosingElement();
-
-        if (element.getKind() == ElementKind.PACKAGE) {
-            //element is a top level class, returning null according to the contract:
-            return null;
-        }
-        
-	while(element != null && !(element.getKind().isClass() || element.getKind().isInterface())) {
-	    element = element.getEnclosingElement();
-	}
-        
-	return (TypeElement)element;
+    public static @Deprecated TypeElement getEnclosingTypeElement( Element element ) throws IllegalArgumentException {
+        return ElementUtilities.enclosingTypeElementImpl(element);
     }
     
     public static TypeElement getOutermostEnclosingTypeElement( Element element ) {

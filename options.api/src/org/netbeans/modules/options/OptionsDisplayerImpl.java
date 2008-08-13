@@ -97,7 +97,7 @@ public class OptionsDisplayerImpl {
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
         // 91106 - listen to default FS changes to update Advanced Options button
-        Repository.getDefault().getDefaultFileSystem().getRoot().addFileChangeListener(new AdvancedOptionsListener());
+        Repository.getDefault().getDefaultFileSystem().addFileChangeListener(new AdvancedOptionsListener());
     }
     
     public boolean isOpen() {

@@ -175,10 +175,10 @@ public final class Utilities {
      */
     public static final int OS_FREEBSD = OS_OTHER << 1;
     
-    /** Operating system is Windows Vista
+    /** Operating system is Windows Vista.
      * @since 7.17
      */
-    private static final int OS_WINVISTA = OS_FREEBSD << 1;
+    public static final int OS_WINVISTA = OS_FREEBSD << 1;
 
     /** A mask for Windows platforms. */
     public static final int OS_WINDOWS_MASK = OS_WINNT | OS_WIN95 | OS_WIN98 | OS_WIN2000 | OS_WINVISTA | OS_WIN_OTHER;

@@ -84,7 +84,7 @@ public class ToggleCommentAction extends ExtKit.ToggleCommentAction {
             }
             final TokenSequence ts = th.tokenSequence();
             final boolean isCommented = true;
-            doc.runAtomic (new Runnable () {
+            doc.runAtomicAsUser (new Runnable () {
                 public void run () {
                     try {
                         if (caret.isSelectionVisible()) {

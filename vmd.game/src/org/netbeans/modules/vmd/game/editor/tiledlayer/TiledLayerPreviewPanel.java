@@ -64,6 +64,7 @@ public class TiledLayerPreviewPanel extends JComponent implements TiledLayerList
         this.tiledLayer = tl;
         this.addComponentListener(new ComponentAdapter() {
 
+            @Override
             public void componentResized(ComponentEvent e) {
                 TiledLayerPreviewPanel.this.repaint();
             }
@@ -91,6 +92,7 @@ public class TiledLayerPreviewPanel extends JComponent implements TiledLayerList
         this.repaint();
     }
 
+    @Override
     protected void paintComponent(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics;
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -159,7 +161,7 @@ public class TiledLayerPreviewPanel extends JComponent implements TiledLayerList
     }
 
     private void tiledLayerChangedVisualy() {
-        this.repaint();
+        this.refresh();
     }
 
 }

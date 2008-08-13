@@ -133,6 +133,11 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
             }
         }
         else if (type == NewJavaFileWizardIterator.TYPE_PKG_INFO) {
+            //Change in firing order caused that isValid is called before readSettings completed => no targetName available
+            if (gui.getTargetName() == null) {
+                setInfoMessage("INFO_JavaTargetChooser_ProvideClassName");
+                return false;
+            }
             assert "package-info".equals( gui.getTargetName() );        //NOI18N
             if ( !isValidPackageName( gui.getPackageName() ) ) {
                 setErrorMessage( "ERR_JavaTargetChooser_InvalidPackage" );
@@ -180,7 +185,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         
         if (type != NewJavaFileWizardIterator.TYPE_PACKAGE && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion)<=0) { 
             if(isValidPackageRequired){
-                setErrorMessage( "ERR_JavaTargetChooser_CantUseDefaultPackage" );
+                setInfoMessage( "ERR_JavaTargetChooser_CantUseDefaultPackage" );
                 return false;
             }
             //Only warning, display it only if everything else is OK.

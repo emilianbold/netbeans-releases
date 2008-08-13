@@ -45,7 +45,7 @@ public final class CreateViewAction extends NodeAction {
         WizardDescriptor wiz =  null;
 
         String artifactName = dataObject.getPrimaryFile().getName();
-        NewArtifactWizardIterator it = new NewArtifactWizardIterator(project, SourceCategory.VIEWS, artifactName);
+        NewArtifactWizardIterator it = new NewArtifactWizardIterator(project, SourceCategory.GRAILSAPP_VIEWS, artifactName);
 
         wiz = new WizardDescriptor(it);
 

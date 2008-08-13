@@ -691,7 +691,7 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
             // Deselect everything
             m_Diagram.selectAll(false);
             //m_Diagram.setLayoutStyleSilently(ILayoutKind.LK_SEQUENCEDIAGRAM_LAYOUT);
-            ((SQDDiagramEngineExtension) scene.getEngine()).layout();      
+            ((SQDDiagramEngineExtension) scene.getEngine()).layout(false);
             // Force everything to draw
             //m_Diagram.fitInWindow();
         }

@@ -199,11 +199,11 @@ public class HttpMonitorPreferences {
 
 
 
-   public void addPreferencesChangeListener(PreferenceChangeListener listener) {
+   public void addPreferenceChangeListener(PreferenceChangeListener listener) {
         getPreferences().addPreferenceChangeListener(listener);
     }
 
-    public void removePreferencesChangeListener(PreferenceChangeListener listener) {
+    public void removePreferenceChangeListener(PreferenceChangeListener listener) {
         getPreferences().removePreferenceChangeListener(listener);
     }
 

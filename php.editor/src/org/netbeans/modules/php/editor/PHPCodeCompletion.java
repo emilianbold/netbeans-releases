@@ -48,6 +48,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -109,23 +110,21 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
     private static final List<String> INVALID_PROPOSALS_FOR_CLS_MEMBERS =
             Arrays.asList(new String[] {"__construct","__destruct"});//NOI18N
-    //TODO: complete list that should be offered
-    private static final List<String> METHOD_NAME_PROPOSALS =
-            Arrays.asList(new String[] {/*"__call()", "__clone()", */"__construct()",//NOI18N
-            "__destruct()"/*,  "__get()", "__set()", "__set_state()",//NOI18N
-            "__sleep()", "__toString()", "__unset()", "__wakeup()"*/
-    });
+    
     private static final List<String> CLASS_CONTEXT_KEYWORD_PROPOSAL =
             Arrays.asList(new String[] {"abstract","const","function", "private",
             "protected", "public", "static", "var"});//NOI18N
     private static final List<String> INHERITANCE_KEYWORDS =
             Arrays.asList(new String[] {"extends","implements"});//NOI18N
     private static final List<PHPTokenId[]> NONE_TOKENCHAINS = Arrays.asList(
-        new PHPTokenId[]{PHPTokenId.PHP_CLASS},
-        new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE},
-         new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE},
-         new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE}         
-        );
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS},
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE});
     private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_NEW},
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
@@ -229,7 +228,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         "__LINE__", "array()", "class", "const", "continue", "die()", "echo()", "empty()", "endif",
         "eval()", "exit()", "for", "foreach", "function", "global", "if",
         "include()", "include_once()", "isset()", "list()", "new",
-        "print()", "require()", "require_once()", "return()", "static",
+        "print()", "require()", "require_once()", "return", "static",
         "switch", "unset()", "use", "var", "while",
         "__FUNCTION__", "__CLASS__", "__METHOD__", "final", "php_user_filter",
         "interface", "implements", "extends", "public", "private",
@@ -239,6 +238,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private final static String[] PHP_CLASS_KEYWORDS = {
         "$this->", "self::", "parent::"
     };
+
+    private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
+            Arrays.asList(' ', '=', ';', '+', '-', '*', '/',
+                '%', '(', ')', '[', ']', '{', '}')); 
 
     private boolean caseSensitive;
     private NameKind nameKind;
@@ -299,6 +302,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     && tokenIdOffset != caretOffset) {
                 return CompletionContext.METHOD_NAME;
             }
+            return CompletionContext.NONE;
+        } else if (acceptTokenChains(tokenSequence, FUNCTION_TOKENCHAINS)
+                || acceptTokenChains(tokenSequence, FUNCTION_TOKENCHAINS_CONDITIONAL)){
+            // ordinary (non-method) function name
             return CompletionContext.NONE;
         }
         return CompletionContext.EXPRESSION;
@@ -499,7 +506,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteMethodName(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
-        for (String keyword : METHOD_NAME_PROPOSALS) {
+        for (String keyword : PredefinedSymbols.MAGIC_METHODS) {
             if (keyword.startsWith(request.prefix)) {
                 proposals.add(new PHPCompletionItem.SpecialFunctionItem(keyword, request));
             }
@@ -778,8 +785,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             String namePrefix, String localFileURL, String type) {
 
         String varName = CodeUtils.extractVariableName(var);
+        String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
 
-        if (isPrefix(varName, namePrefix)) {
+        if (isPrefix(varName, namePrefix) && !PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
             IndexedConstant ic = new IndexedConstant(varName, null,
                     null, localFileURL, var.getStartOffset(), 0, type);
 
@@ -1079,6 +1087,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             return QueryType.NONE;
         }
         char lastChar = typedText.charAt(typedText.length() - 1);
+
+        if (AUTOPOPUP_STOP_CHARS.contains(Character.valueOf(lastChar))){
+            return QueryType.STOP;
+        }
+
         Document document = component.getDocument();
         TokenHierarchy th = TokenHierarchy.get(document);
         TokenSequence<PHPTokenId> ts = th.tokenSequence(PHPTokenId.language());
@@ -1091,6 +1104,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     || t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$'
                     || t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$'
                     || t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
+                return QueryType.ALL_COMPLETION;
+                // magic methods
+            } else if (lastChar == '_' && acceptTokenChains(ts, FUNCTION_TOKENCHAINS)) {
                 return QueryType.ALL_COMPLETION;
             }
 

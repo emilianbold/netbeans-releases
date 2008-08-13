@@ -89,13 +89,13 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     }
 
     private static RemotePathMap getRemotePathMap(String hkey) {
-        return (RemotePathMap) RemotePathMap.getMapper(hkey);
+        return RemotePathMap.getMapper(hkey);
     }
 
     private void initTableModel(String hkey) {
         DefaultTableModel tableModel = cache.get(hkey);
         if (tableModel == null) {
-            RemotePathMap pm = getRemotePathMap(hkey);
+            Map<String, String> pm = getRemotePathMap(hkey).getMap();
             tableModel = new DefaultTableModel(0, 2);
             for (String local : pm.keySet()) {
                 tableModel.addRow(new String[]{local, pm.get(local)});

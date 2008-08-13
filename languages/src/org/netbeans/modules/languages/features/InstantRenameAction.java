@@ -252,7 +252,7 @@ public class InstantRenameAction extends BaseAction {
             task = requestProcessor.post (new Runnable () {
                 public void run () {
                     document.removeDocumentListener (RenameImplementation.this);
-                    document.runAtomic (new Runnable () {
+                    document.runAtomicAsUser (new Runnable () {
                         public void run () {
                             Iterator<Element> it = elements.iterator ();
                             try {

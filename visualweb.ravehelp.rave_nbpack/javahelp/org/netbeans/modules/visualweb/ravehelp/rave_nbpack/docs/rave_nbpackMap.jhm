@@ -638,7 +638,6 @@
 	<mapID target="tagfile_create" url="web/create/tag/tagfile/tagfile_create.html"/>
 	<mapID target="taghandler_create" url="web/create/tag/taghandler/taghandler_create.html"/>
 	<mapID target="taghandler_edit" url="web/create/tag/taghandler/taghandler_edit.html"/>
-	<mapID target="taglib_create_separate" url="web/create/tag/taglib/taglib_create_separate.html"/>
 	<mapID target="tld_create" url="web/create/tag/tld/tld_create.html"/>
 	<mapID target="tld_edit" url="web/create/tag/tld/tld_edit.html"/>
 	<mapID target="webapps_idesupport" url="web/about/webapps_idesupport.html"/>

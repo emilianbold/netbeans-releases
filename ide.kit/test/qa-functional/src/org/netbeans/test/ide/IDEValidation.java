@@ -50,6 +50,8 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -114,6 +116,7 @@ import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
 
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -1411,15 +1414,19 @@ public class IDEValidation extends JellyTestCase {
         }
     }
 
-    public void testInitGCProjects() throws Exception {
+    public void testInitGC() throws Exception {
         WatchProjects.initialize();
+        Log.enableInstances(Logger.getLogger("TIMER"), "TextDocument", Level.FINEST);
     }
     
+    public void testGCDocuments() throws Exception {
+        WatchProjects.assertTextDocuments();
+    }
     
     public void testGCProjects() throws Exception {
         WatchProjects.assertProjects();
     }
-
+    
     public void testBlacklistedClassesHandler() throws Exception {
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getBlacklistedClassesHandler();
         assertNotNull("BlacklistedClassesHandler should be available", bcHandler);

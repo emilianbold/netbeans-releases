@@ -90,6 +90,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test142051_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue142051.php", "echo \"Name2: \".$user2->^", false);
     }
+    
+    public void test140633() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue140633.php", "echo $_COOKI^", false);
+    }
 
     // #136092 Code completion doesn't show reference parameters
     public void test136092_withoutReference() throws Exception {
@@ -135,6 +139,16 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136188_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v2->^", false);
     }
+    
+    //#137033: Code completion for class identifier
+    public void test137033_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue137033.php", "class a^", false);
+    }
+    
+    public void test137033_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue137033.php", "interface a^", false);
+    }
+    
     public void test136188_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v3->^", false);
     }

@@ -56,13 +56,11 @@ public class MacroUsagesTest extends SemanticHighlightingTestBase {
     }
 
     public void testMacroUsages() throws Exception {
-        String source = "macros.cc"; // NOI18N
-        performTest(source, source + ".dat", source + ".err"); // NOI18N
+        performTest("macros.cc"); // NOI18N
     }
 
     public void testMacroUsagesWithKeywords() throws Exception {
-        String source = "keyword.cc"; // NOI18N
-        performTest(source, source + ".dat", source + ".err"); // NOI18N
+        performTest("keyword.cc"); // NOI18N
     }
 
     protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {

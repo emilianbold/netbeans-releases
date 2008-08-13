@@ -274,7 +274,7 @@ public class LockForFile extends FileLock {
     public void releaseLock() {
         LockForFile.deregisterLock(this);
         super.releaseLock();
-        BaseFileObj fo = (BaseFileObj) FileUtil.toFileObject(file);
+        BaseFileObj fo = (BaseFileObj) FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (fo != null) {
             fo.getProvidedExtensions().fileUnlocked(fo);
         }

@@ -110,6 +110,7 @@ public class SearchRevisionsOperator extends NbDialogOperator {
     /** Tries to find "OK" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btOK() {
         if (_btOK==null) {
             _btOK = new JButtonOperator(this, "OK");
@@ -120,6 +121,7 @@ public class SearchRevisionsOperator extends NbDialogOperator {
     /** Tries to find "Cancel" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btCancel() {
         if (_btCancel==null) {
             _btCancel = new JButtonOperator(this, "Cancel");
@@ -130,6 +132,7 @@ public class SearchRevisionsOperator extends NbDialogOperator {
     /** Tries to find "Help" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btHelp() {
         if (_btHelp==null) {
             _btHelp = new JButtonOperator(this, "Help");
@@ -182,24 +185,28 @@ public class SearchRevisionsOperator extends NbDialogOperator {
 
     /** clicks on "List" JButton
      */
+    @Override
     public void list() {
         btList().push();
     }
 
     /** clicks on "OK" JButton
      */
+    @Override
     public void ok() {
         btOK().push();
     }
 
     /** clicks on "Cancel" JButton
      */
+    @Override
     public void cancel() {
         btCancel().push();
     }
 
     /** clicks on "Help" JButton
      */
+    @Override
     public void help() {
         btHelp().push();
     }
