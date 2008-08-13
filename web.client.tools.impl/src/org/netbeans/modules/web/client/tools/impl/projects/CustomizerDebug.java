@@ -87,6 +87,11 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
             Preferences prefs = NbPreferences.forModule(DebugConstants.class);
             String testSet = prefs.get(DebugConstants.CLIENT_DEBUG, null);
             
+            String defBrowser = (ffBrowserSupported || !ieBrowserSupported) ? 
+                WebClientToolsProjectUtils.Browser.FIREFOX.name() : WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name();
+
+            globalBrowser = WebClientToolsProjectUtils.Browser.valueOf(prefs.get(DebugConstants.BROWSER, defBrowser));
+            
             // looks strange, but the 'debug client-side' dialog when Debug is invoked
             // shouldn't be forced to not appear by this automatic action
             boolean useGlobal = !prefs.getBoolean(DebugConstants.DISPLAY_CONFIG, true);
@@ -95,11 +100,6 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
                 if (!clientDebug) {
                     serverDebug = true;
                 }
-
-                String defBrowser = (ffBrowserSupported || !ieBrowserSupported) ? 
-                    WebClientToolsProjectUtils.Browser.FIREFOX.name() : WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name();
-
-                globalBrowser = WebClientToolsProjectUtils.Browser.valueOf(prefs.get(DebugConstants.BROWSER, defBrowser));
             }
         }
         
