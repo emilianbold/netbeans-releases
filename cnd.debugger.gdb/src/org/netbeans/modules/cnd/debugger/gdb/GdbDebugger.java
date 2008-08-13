@@ -251,7 +251,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory().replace("\\", "/") + "/");  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
-            conType = pae.getProfile().getConsoleType().getValue();
+            conType = hkey.equals(CompilerSetManager.LOCALHOST) ?
+                pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
             platform = ((MakeConfiguration) pae.getConfiguration()).getPlatform().getValue();
             if (platform != PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
                     pae.getID() != DEBUG_ATTACH) {
