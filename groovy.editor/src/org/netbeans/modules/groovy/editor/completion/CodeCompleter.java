@@ -119,7 +119,6 @@ import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -950,8 +949,19 @@ public class CodeCompleter implements CodeCompletionHandler {
                 continue;
             }
 
-            if (field.getName().startsWith(request.prefix)) {
-                proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, fieldTypeAsString));
+            // If we are dealing with GStrings, the prefix is prefixed ;-)
+            // ... with the dollar sign $ See # 143295
+
+            int anchorShift = 0;
+            String fieldName = request.prefix;
+            
+            if(request.prefix.startsWith("$")) {
+                fieldName = request.prefix.substring(1);
+                anchorShift = 1;
+                }
+            
+            if (field.getName().startsWith(fieldName)) {
+                proposals.add(new FieldItem(field.getName(), anchor + anchorShift, request, javax.lang.model.element.ElementKind.FIELD, fieldTypeAsString));
             }
 
         }
