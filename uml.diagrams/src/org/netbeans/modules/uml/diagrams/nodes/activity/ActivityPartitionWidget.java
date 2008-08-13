@@ -127,6 +127,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         }
 
         setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
     }
 
     private Widget createActivityPartitionView(IActivityPartition partitionElement)
