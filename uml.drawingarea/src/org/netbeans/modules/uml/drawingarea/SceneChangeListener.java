@@ -72,7 +72,6 @@ public class SceneChangeListener extends ObjectSceneListenerAdapter {
 
     @Override
     public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState previousState, ObjectState newState) {
-        System.out.println("Hello State Changed");
     }
 
 }
