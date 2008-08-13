@@ -102,7 +102,7 @@ public class BreakpointsTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(BreakpointsTest.class).addTest(
-                    "testLineBreakpointCreation",
+                    "testLineBreakpointCreation",/*
                     "testLineBreakpointFunctionality",
                     "testLineBreakpointFunctionalityAfterContinue",
                     "testLineBreakpointFunctionalityInStaticMethod",
@@ -113,7 +113,7 @@ public class BreakpointsTest extends JellyTestCase {
                     "testConditionalLineBreakpointFunctionality",
                     "testLineBreakpointActions",
                     "testLineBreakpointsValidation",
-                    //"testLineBreakpointsHitCount",
+                    "testLineBreakpointsHitCount",
 
                     "testMethodBreakpointPrefilledConstructor",
                     "testMethodBreakpointPrefilledMethod",
@@ -123,7 +123,7 @@ public class BreakpointsTest extends JellyTestCase {
                     "testMethodBreakpointFunctionalityOnAllMethods",
                     "testMethodBreakpointFunctionalityOnExit",
                     "testConditionalMethodBreakpointFunctionality",
-                    "testMethodBreakpointsValidation",
+                    "testMethodBreakpointsValidation",*/
 
                     "testClassBreakpointPrefilledInClass",
                     "testClassBreakpointPrefilledInInitializer",
@@ -133,7 +133,7 @@ public class BreakpointsTest extends JellyTestCase {
                     "testClassBreakpointCreation",
                     "testClassBreakpointFunctionalityOnPrimaryClass",
                     "testClassBreakpointFunctionalityOnSecondClass",
-                    "testClassBreakpointFunctionalityWithFilter",
+                    "testClassBreakpointFunctionalityWithFilter"/*,
 
                     "testFieldBreakpointPrefilledValues",
                     "testFieldBreakpointCreation",
@@ -144,13 +144,13 @@ public class BreakpointsTest extends JellyTestCase {
 
                     "testThreadBreakpointCreation",
                     "testThreadBreakpointFunctionality",
-                    "testThreadBreakpointFunctionalityHitCount",
+                    "testThreadBreakpointFunctionalityHitCount"/*,
 
                     "testExceptionBreakpointCreation",
                     "testExceptionBreakpointFunctionality",
                     "testExceptionBreakpointMatchClasses",
                     "testExceptionBreakpointExcludeClasses",
-                    "testExceptionBreakpointHitCount"/*,
+                    "testExceptionBreakpointHitCount",
                     "testConditionalExceptionBreakpoint" */
                 )
             .enableModules(".*").clusters(".*"));
