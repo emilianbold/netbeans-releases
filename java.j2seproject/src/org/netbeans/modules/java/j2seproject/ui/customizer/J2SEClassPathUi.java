@@ -458,6 +458,7 @@ public class J2SEClassPathUi {
                     new String[] {"ZIP","JAR"} ) );                                                                 // NOI18N 
                 File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder(); 
                 chooser.setCurrentDirectory (curDir);
+                chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage( J2SEClassPathUi.class, "LBL_AddJar_DialogTitle" ));
                 int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( list ) ); // Sow the chooser
                 
                 if ( option == JFileChooser.APPROVE_OPTION ) {

@@ -10,7 +10,7 @@
 	<mapID target="nbruby_ruby_quickref" url="ruby_quickref.html"/>
 	<mapID target="nbruby_ruby_quickref_toclink" url="ruby_quickref.html#toclink"/>
     <mapID target="nbruby_rubyoptions" url="rubyoptions.html"/>       
-    <mapID target="org.netbeans.modules.ruby.railsprojects.RailsProjectOption" url="rubyoptions.html"/>       
+    <mapID target="netbeans.optionsDialog.advanced.ruby" url="rubyoptions.html"/>       
 	<mapID target="org.netbeans.modules.ruby.javaint.CustomizerLibraries" url="rubyprojprops-javaoptions.html"/>
 	<mapID target="org.netbeans.modules.ruby.platform.RubyPlatformCustomizer" url="platformmanager.html"/>
 	<mapID target="org.netbeans.modules.ruby.railsprojects.plugins.InstallationSettingsPanel" url="plugininstallsettingsdialog.html"/>

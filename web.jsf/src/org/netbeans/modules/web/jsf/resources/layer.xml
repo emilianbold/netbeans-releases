@@ -79,17 +79,16 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+
     <folder name="Editors">
         <folder name="text">
-            <folder name="xml">
+            <folder name="x-jsf+xml">
                 <folder name="HyperlinkProviders">
                     <file name="JSFConfigHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.jsf.editor.JSFConfigHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
                 </folder>
-            </folder>
-            <folder name="x-jsf+xml">
                 <folder name="Popup"> 
                     <file name="org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance">
                         <attr name="position" intvalue="3500"/>

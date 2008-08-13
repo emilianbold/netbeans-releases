@@ -45,6 +45,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
@@ -191,6 +193,8 @@ public abstract class AbstractRefactoring {
      * were found.
      */
     public final Problem prepare(RefactoringSession session) {
+        long time = System.currentTimeMillis();
+
         Problem p = null;
         boolean checkCalled = false;
         if (currentState < PARAMETERS_CHECK) {
@@ -199,7 +203,14 @@ public abstract class AbstractRefactoring {
         }
         if (p != null && p.isFatal())
             return p;
-        return pluginsPrepare(checkCalled?p:null, session);
+
+        p =  pluginsPrepare(checkCalled?p:null, session);
+        Logger timer = Logger.getLogger("TIMER.RefactoringPrepare");
+        if (timer.isLoggable(Level.FINE)) {
+            time = System.currentTimeMillis() - time;
+            timer.log(Level.FINE, "refactoring.prepare", new Object[] { this, time } );
+        }
+        return p;
     }
     
     /**
