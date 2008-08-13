@@ -37,34 +37,61 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.projectimport.eclipse;
+package org.netbeans.modules.projectimport.eclipse.gui;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportJavaVersion;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportMultipleRootsJavaProjectFromWS;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportProjectWithTransitiveDeps;
-import org.netbeans.modules.projectimport.eclipse.gui.ImporterMenu;
-import org.netbeans.modules.projectimport.eclipse.gui.ImporterWizard;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleJavaProjectFromWS;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleWebProjectFromWS;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.TimeoutExpiredException;
 
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author Administrator
  */
-public class ImporterTest {
-
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ImporterMenu.class).
-                addTest(ImporterWizard.class).
-		addTest(ImportSimpleJavaProjectFromWS.class).
-                addTest(ImportSimpleWebProjectFromWS.class).
-                addTest(ImportMultipleRootsJavaProjectFromWS.class).
-                addTest(ImportJavaVersion.class).
-                addTest(ImportProjectWithTransitiveDeps.class).
-                enableModules(".*").clusters(".*").
-                gui(true).reuseUserDir(true));
+public class ImportProjectWithTransitiveDeps  extends ProjectImporterTestCase {
+    WizardOperator importWizard;    
+    public ImportProjectWithTransitiveDeps(String testName) {
+        super(testName);
+    }
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        ExtractToWorkDir(getDataDir().getAbsolutePath(),"testdata.jar");
+    }
+    public void testImportProjectWithTransitiveDeps() {
+        importProject("TransitiveDepC_A_B");
+        validate();
+        validateLibrary("TransitiveDepC_A_B", "TransitiveDepA_B");
+        validateLibrary("TransitiveDepC_A_B", "TransitiveDepB");
+    }
+    private void validate() {
+        pto = new ProjectsTabOperator();
+        ProjectRootNode projectRoot = null;
+        try {
+            pto.getProjectRootNode("TransitiveDepC_A_B");
+            pto.getProjectRootNode("TransitiveDepA_B");
+            pto.getProjectRootNode("TransitiveDepB");
+            
+        } catch(TimeoutExpiredException tex) {
+            fail("No root or dependent projects loaded");
+        }
+        
     }
 
+    private void importProject(String projectName) {
+        importWizard = invokeImporterWizard();
+        selectProjectFromWS(importWizard,"testdata", projectName);
+        importWizard.finish();
+
+        waitForProjectsImporting();
+
+        try {
+            NbDialogOperator issuesWindow = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "MSG_ImportIssues"));
+            issuesWindow.close();
+        } catch (Exception e) {
+            // ignore 
+        }        
+    }
 }
