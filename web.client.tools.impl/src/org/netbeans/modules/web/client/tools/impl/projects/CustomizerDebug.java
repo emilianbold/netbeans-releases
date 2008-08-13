@@ -182,6 +182,7 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
         });
 
         browserButtonGroup.add(firefoxRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(firefoxRadioButton, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.text")); // NOI18N
         firefoxRadioButton.setLabel(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.label")); // NOI18N
 
         browserButtonGroup.add(internetExplorerRadioButton);
@@ -199,7 +200,7 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
                 .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 650, Short.MAX_VALUE)
                 .add(22, 22, 22))
             .add(layout.createSequentialGroup()
-                .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 656, Short.MAX_VALUE)
+                .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 661, Short.MAX_VALUE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(24, 24, 24)
