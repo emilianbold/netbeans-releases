@@ -93,6 +93,8 @@ final class CodeTemplatesModel {
             
             // Add the language and its mime type to the map
             String language = EditorSettings.getDefault().getLanguageName(mimeType);
+            if (language.equals (mimeType))
+                continue;
             languages.add(language);
             Collections.sort(languages);
             languageToMimeType.put(language, mimeType);

@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.web.client.javascript.debugger.api;
 
-import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -60,10 +59,10 @@ import org.netbeans.api.debugger.DebuggerEngine.Destructor;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.NbJSDebuggerConstants;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
+import org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil;
 import org.netbeans.modules.web.client.tools.common.dbgp.Feature;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLContentProvider;
 //import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLContentProviderImpl;
@@ -83,6 +82,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSSource;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSBreakpointImpl;
+import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSFactory;
 import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSDebuggerFactory;
 import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSDebuggerFactoryLookup;
 import org.netbeans.modules.web.client.javascript.debugger.models.NbJSPreferences;
@@ -198,6 +198,7 @@ public final class NbJSDebugger {
                 } catch (RuntimeException re) {
                     Log.getLogger().log(Level.INFO, re.getMessage(), re);
                 }
+                openEditorsForWindows();
             }
         }
     }
@@ -277,19 +278,17 @@ public final class NbJSDebugger {
 
         // Add DebuggerManagerListener
         debuggerManagerListener = new DebuggerManagerListenerImpl();
-        DebuggerManager.getDebuggerManager().addDebuggerListener(WeakListeners.create(
-                DebuggerManagerListener.class,
-                debuggerManagerListener,
-                DebuggerManager.getDebuggerManager()));
+        DebuggerManager.getDebuggerManager().addDebuggerListener(debuggerManagerListener);
 
         preferenceChangeListener = new PreferenceChangeListenerImpl();
-        NbJSPreferences.getInstance().addPreferencesChangeListener(WeakListeners.create(
+        NbJSPreferences nbJSPreferences = NbJSPreferences.getInstance();
+        nbJSPreferences.addPreferenceChangeListener(WeakListeners.create(
                 PreferenceChangeListener.class,
                 preferenceChangeListener,
-                this.debugger));
+                nbJSPreferences));
 
         propertyChangeListener = new PropertyChangeListenerImpl();
-        this.debugger.addPropertyChangeListener(WeakListeners.propertyChange(propertyChangeListener, debugger));
+        this.debugger.addPropertyChangeListener(WeakListeners.propertyChange(propertyChangeListener, this.debugger));
         
 
         breakpointPropertyChangeListener = new BreakpointPropertyChangeListener();
@@ -400,7 +399,7 @@ public final class NbJSDebugger {
     // State
     private JSDebuggerState state = JSDebuggerState.NOT_CONNECTED;
 
-    public JSDebuggerState getState() {
+    public synchronized JSDebuggerState getState() {
         return state;
     }
 
@@ -416,7 +415,7 @@ public final class NbJSDebugger {
     }
 
 
-    void setState(JSDebuggerState state) {
+    synchronized void setState(JSDebuggerState state) {
         this.state = state;
         if (state == JSDebuggerState.STARTING_INIT) {
             // Set the initial feature set
@@ -453,6 +452,11 @@ public final class NbJSDebugger {
                 new JSDebuggerEvent(NbJSDebugger.this, this.state);
         fireJSDebuggerEvent(resourcedDebuggerEvent);
         if (state.getState() == JSDebuggerState.State.DISCONNECTED) {
+            if (debuggerManagerListener != null) {
+                DebuggerManager.getDebuggerManager().removeDebuggerListener(debuggerManagerListener);
+                debuggerManagerListener = null;
+            }
+            
             if (console != null) {
                 console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_CLOSE_JAVASCRIPT_DEBUGGER"));
                 console.closeInputOutput();
@@ -570,7 +574,7 @@ public final class NbJSDebugger {
         if (debugger != null) {
             return debugger.getWindows();
         }
-        return new JSWindow[0];
+        return JSWindow.EMPTY_ARRAY;
     }
 
     // Sources
@@ -751,5 +755,15 @@ public final class NbJSDebugger {
      */
     public URI getURI() {
         return uri;
+    }
+    
+    private void openEditorsForWindows() {
+        JSWindow[] windows = getWindows();
+        // Now open the editor for top level windows
+        for (JSWindow window : windows) {
+            String strURI = window.getURI();
+            JSSource source = JSFactory.createJSSource(strURI);
+            NbJSEditorUtil.openFileObject(getFileObjectForSource(source)); 
+        }
     }
 }

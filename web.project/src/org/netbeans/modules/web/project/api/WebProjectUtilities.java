@@ -221,7 +221,7 @@ public class WebProjectUtilities {
         //create default manifest
         if(confFolderFO != null) {
             String manifestText = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + "MANIFEST.MF")); //NOI18N
-            FileObject manifest = FileUtil.createData(confFolderFO, "MANIFEST"); //NOI18N
+            FileObject manifest = FileUtil.createData(confFolderFO, "MANIFEST.MF"); //NOI18N
             FileLock lock = manifest.lock();
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(manifest.getOutputStream(lock)));
             try {
@@ -297,6 +297,8 @@ public class WebProjectUtilities {
         if(createJakartaStructure) {
             ep.setProperty(WebProjectProperties.CONF_DIR, DEFAULT_CONF_FOLDER);
         }
+        // Default to conf.dir
+        ep.setProperty(WebProjectProperties.PERSISTENCE_XML_DIR, "${"+WebProjectProperties.CONF_DIR+"}"); //NOI18N
         
         ep.setProperty(WebProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
         ep.setProperty(WebProjectProperties.LIBRARIES_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/" + WEB_INF + "/lib"); //NOI18N
@@ -589,8 +591,19 @@ public class WebProjectUtilities {
             // if no conf directory was found, create default directory (#82147)
             projectDir.createFolder(DEFAULT_CONF_FOLDER);
             ep.setProperty(WebProjectProperties.CONF_DIR, DEFAULT_CONF_FOLDER);
-        } else
+        } else {
             ep.setProperty(WebProjectProperties.CONF_DIR, confDir); //NOI18N
+        }
+        // Default to conf.dir
+        ep.setProperty(WebProjectProperties.PERSISTENCE_XML_DIR, "${"+WebProjectProperties.CONF_DIR+"}"); //NOI18N
+        
+        // #142164: try to find persistence.xml under project's source roots - that's where Eclipse stores is by default
+        for (int i=0; i<sourceFolders.length; i++) {
+            if (new File(sourceFolders[i], "META-INF"+File.separatorChar+"persistence.xml").exists()) { //NOI18N
+                ep.setProperty(WebProjectProperties.PERSISTENCE_XML_DIR, "${src.dir}" + (i == 0 ? "" : Integer.toString(i+1))+"/META-INF"); //NOI18N
+                break;
+            }
+        }
         
         //create resource.dir property, by default set to "setup"
         //(it would be nice to have a possibily to set this property in the wizard)

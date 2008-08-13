@@ -68,6 +68,7 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.IStructuredClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
@@ -858,7 +859,7 @@ catch (IOException ex) {
       
       ETList < INamedElement > ownedElements = getOwnedElements(pOwnerElement);
       if ((ownedElements != null) && 
-          !(pOwnerElement instanceof IClassifier) && 
+          !(pOwnerElement instanceof IStructuredClassifier) && 
           !(pOwnerElement instanceof IBehavioralFeature))
       {
          ETArrayList<IElement> elements = new ETArrayList<IElement>(ownedElements.size());
@@ -866,43 +867,45 @@ catch (IOException ex) {
          ETList < IElement > validElems = validateElementsForDiagram(pDiagram, elements);
          if (validElems != null)
          {
-            int count = validElems.size();
-            if (count > 0)
-            {
-               if (pOwnerElement instanceof IInteraction || pOwnerElement instanceof IActivity || pOwnerElement instanceof IStateMachine)
-               {
-                  pElements.remove(pOwnerElement);
-               }
-               else
-               {
-                  //ask the user
-                  IQuestionDialog dialog = new SwingQuestionDialogImpl();
-                  String title = loadString("IDS_DEPTHDIALOGTITLE");
-                  String message = loadString("IDS_DEPTHDIALOGMSG");
-                  dialog.setDefaultButton(IQuestionDialog.IDOK);
-                  QuestionResponse result = dialog.displaySimpleQuestionDialogWithCheckbox(MessageDialogKindEnum.SQDK_YESNO, MessageIconKindEnum.EDIK_ICONWARNING, message, "", title, MessageResultKindEnum.SQDRK_RESULT_YES, false);
-                  
-                  if (result.getResult() == MessageResultKindEnum.SQDRK_RESULT_NO)
-                  {
+             // IZ 139502 We should always remove theses objects from the list, 
+             // since they are not model elements that have presentation.
+             if (pOwnerElement instanceof IInteraction || 
+                 pOwnerElement instanceof IActivity || 
+                 pOwnerElement instanceof IStateMachine)
+             {
+                 pElements.remove(pOwnerElement);
+             }
+
+             int count = validElems.size();
+             if (count > 0)
+             {
+                 //ask the user
+                 IQuestionDialog dialog = new SwingQuestionDialogImpl();
+                 String title = loadString("IDS_DEPTHDIALOGTITLE");
+                 String message = loadString("IDS_DEPTHDIALOGMSG");
+                 dialog.setDefaultButton(IQuestionDialog.IDOK);
+                 QuestionResponse result = dialog.displaySimpleQuestionDialogWithCheckbox(MessageDialogKindEnum.SQDK_YESNO, MessageIconKindEnum.EDIK_ICONWARNING, message, "", title, MessageResultKindEnum.SQDRK_RESULT_YES, false);
+
+                 if (result.getResult() == MessageResultKindEnum.SQDRK_RESULT_NO)
+                 {
                      // Don't include the child elements
                      count = 0;
-                  }
-                  else
-                  {
+                 }
+                 else
+                 {
                      // Remove the owner so we don't get so many nested links, if that owner
                      // is an IPackage
                      if (pOwnerElement instanceof IPackage)
                      {
-                        pElements.remove(pOwnerElement);
+                         pElements.remove(pOwnerElement);
                      }
-                  }
-               }
+                 }
 
-               for (int i = 0; i < count; i++)
-               {
-                  pElements.add(validElems.get(i));
-               }
-            }
+                 for (int i = 0; i < count; i++)
+                 {
+                     pElements.add(validElems.get(i));
+                 }
+             }
          }
       }
       return pElements;
@@ -1240,7 +1243,7 @@ catch (IOException ex) {
          // Deselect everything
          pDiagram.selectAll(false);
          
-         engine.layout();
+         engine.layout(true);
          
 //         // Set the default mode to be selection
 //         // TODO: Do we still need to set the mode to perform layout.

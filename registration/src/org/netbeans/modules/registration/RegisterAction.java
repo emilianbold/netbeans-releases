@@ -78,6 +78,8 @@ public class RegisterAction extends CallableSystemAction implements ActionListen
         //registerNow.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNow"));
         Mnemonics.setLocalizedText(registerNow, NbBundle.getMessage(
                 RegisterAction.class, "LBL_RegisterNow"));
+        registerNow.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(RegisterAction.class,"ACSN_RegisterNow"));
         registerNow.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(RegisterAction.class,"ACSD_RegisterNow"));
         
@@ -86,6 +88,8 @@ public class RegisterAction extends CallableSystemAction implements ActionListen
         //registerLater.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterLater"));
         Mnemonics.setLocalizedText(registerLater, NbBundle.getMessage(
                 RegisterAction.class, "LBL_RegisterLater"));
+        registerLater.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(RegisterAction.class,"ACSN_RegisterLater"));
         registerLater.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(RegisterAction.class,"ACSD_RegisterLater"));
         
@@ -94,6 +98,8 @@ public class RegisterAction extends CallableSystemAction implements ActionListen
         //registerNever.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNever"));
         Mnemonics.setLocalizedText(registerNever, NbBundle.getMessage(
                 RegisterAction.class, "LBL_RegisterNever"));
+        registerNever.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(RegisterAction.class,"ACSN_RegisterNever"));
         registerNever.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(RegisterAction.class,"ACSD_RegisterNever"));
     }

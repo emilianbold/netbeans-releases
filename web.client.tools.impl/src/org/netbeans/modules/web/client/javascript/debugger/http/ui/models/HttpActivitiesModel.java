@@ -96,7 +96,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         this.debugger = debugger;
         debugger.addJSHttpMessageEventListener(
                 WeakListeners.create( JSHttpMessageEventListener.class, httpMessageEventListener, this));
-        httpMonitorPreferences.addPreferencesChangeListener(
+        httpMonitorPreferences.addPreferenceChangeListener(
                 WeakListeners.create( PreferenceChangeListener.class,   preferenceChangeListener, this));
     }
 
@@ -357,7 +357,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         return null;
     }
 
-    private static final class MethodColumn extends ColumnModel {        
+    private static final class MethodColumn extends AbstractColumnModel {        
 
         @Override
         public String getID() {
@@ -389,7 +389,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
 
     }
 
-    private static final class SentColumn extends ColumnModel {
+    private static final class SentColumn extends AbstractColumnModel {
 
         @Override
         public String getID() {
@@ -407,7 +407,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         }
     }
 
-    private static final class ResponseColumn extends ColumnModel {
+    private static final class ResponseColumn extends AbstractColumnModel {
 
         @Override
         public String getID() {

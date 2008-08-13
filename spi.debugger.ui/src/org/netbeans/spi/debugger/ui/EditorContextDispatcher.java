@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 
@@ -517,10 +518,16 @@ public final class EditorContextDispatcher {
                 Collection<? extends EditorCookie> ecs = resEditorCookie.allInstances();
                 EditorCookie newEditor;
                 synchronized (EditorContextDispatcher.this) {
+                    if (currentEditorCookie instanceof EditorCookie.Observable) {
+                        ((EditorCookie.Observable) currentEditorCookie).removePropertyChangeListener(this);
+                    }
                     if (ecs.size() == 0) {
                         currentEditorCookie = null;
                     } else {
                         currentEditorCookie = ecs.iterator().next();
+                    }
+                    if (currentEditorCookie instanceof EditorCookie.Observable) {
+                        ((EditorCookie.Observable) currentEditorCookie).addPropertyChangeListener(this);
                     }
                     newEditor = currentEditorCookie;
                     if (currentFile != null) {
@@ -543,44 +550,59 @@ public final class EditorContextDispatcher {
             if (type == TopComponent.class) {
                 if (propertyName.equals(TopComponent.Registry.PROP_ACTIVATED)) {
                     TopComponent newComponnet = (TopComponent) evt.getNewValue();
-                    JEditorPane oldEditor;
-                    JEditorPane newEditor;
-                    String MIMEType = null;
-                    synchronized (EditorContextDispatcher.this) {
-                        boolean isSetPane = false;
-                        oldEditor = currentOpenedPane;
-                        if (currentEditorCookie != null && newComponnet != null) {
-                            JEditorPane[] openedPanes = currentEditorCookie.getOpenedPanes();
-                            if (openedPanes != null && openedPanes.length >= 1) {
-                                for (JEditorPane openedPane : openedPanes) {
-                                    if (newComponnet.isAncestorOf(openedPane)) {
-                                        //System.err.println("\n"+newComponnet+".isAncestorOf("+openedPane+")\n");
-                                        currentOpenedPane = openedPane;
-                                        isSetPane = true;
-                                        break;
-                                    }
+                    updateCurrentOpenedPane(newComponnet, null);
+                }
+            }
+            if (evt.getSource() instanceof EditorCookie.Observable) {
+                final Object source = evt.getSource();
+                SwingUtilities.invokeLater(new Runnable() {
+                    // getOpenedPanes() MUST be called on AWT.
+                    public void run() {
+                        updateCurrentOpenedPane(TopComponent.getRegistry().getActivated(), source);
+                    }
+                });
+            }
+        }
+
+        private void updateCurrentOpenedPane(TopComponent activeComponnet, Object source) {
+            JEditorPane oldEditor = null;
+            JEditorPane newEditor = null;
+            String MIMEType = null;
+            synchronized (EditorContextDispatcher.this) {
+                boolean isSetPane = false;
+                if ((source == null || source == currentEditorCookie)) {
+                    oldEditor = currentOpenedPane;
+                    if (currentEditorCookie != null && activeComponnet != null) {
+                        JEditorPane[] openedPanes = currentEditorCookie.getOpenedPanes();
+                        if (openedPanes != null && openedPanes.length >= 1) {
+                            for (JEditorPane openedPane : openedPanes) {
+                                if (activeComponnet.isAncestorOf(openedPane)) {
+                                    //System.err.println("\n"+newComponnet+".isAncestorOf("+openedPane+")\n");
+                                    currentOpenedPane = openedPane;
+                                    isSetPane = true;
+                                    break;
                                 }
                             }
                         }
-                        if (!isSetPane) {
-                            currentOpenedPane = null;
-                        }
-                        newEditor = currentOpenedPane;
-                        if (currentFile != null) {
-                            MIMEType = currentFile.getMIMEType();
-                            if (newEditor != null) {
-                                mostRecentOpenedPaneRef = new WeakReference(newEditor);
-                                mostRecentFileRef = new WeakReference(currentFile);
-                            }
-                        } else {
-                            MIMEType = null;
-                        }
-                        //System.err.println("\nCurrent Opened Pane = "+currentOpenedPane+", currentFile = "+currentFile+"\n");
                     }
-                    if (oldEditor != newEditor) {
-                        refreshProcessor.post(new EventFirer(PROP_EDITOR, oldEditor, newEditor, MIMEType));
+                    if (!isSetPane && source == null) {
+                        currentOpenedPane = null;
                     }
+                    newEditor = currentOpenedPane;
+                    if (currentFile != null) {
+                        MIMEType = currentFile.getMIMEType();
+                        if (newEditor != null) {
+                            mostRecentOpenedPaneRef = new WeakReference(newEditor);
+                            mostRecentFileRef = new WeakReference(currentFile);
+                        }
+                    } else {
+                        MIMEType = null;
+                    }
+                    //System.err.println("\nCurrent Opened Pane = "+currentOpenedPane+", currentFile = "+currentFile+"\n");
                 }
+            }
+            if (oldEditor != newEditor) {
+                refreshProcessor.post(new EventFirer(PROP_EDITOR, oldEditor, newEditor, MIMEType));
             }
         }
         

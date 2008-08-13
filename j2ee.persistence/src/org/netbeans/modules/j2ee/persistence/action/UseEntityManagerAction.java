@@ -115,7 +115,7 @@ public final class UseEntityManagerAction extends NodeAction {
         // This check was motivated by issue 139333 - The Use Entity Manager action 
         // breaks from left to right if the javax.persistence.EntityManager class is missing
         FileObject target = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
-        ClassPath cp = ClassPath.getClassPath(target, ClassPath.EXECUTE);
+        ClassPath cp = ClassPath.getClassPath(target, ClassPath.COMPILE);
         if(cp == null) {
             return false;
         }

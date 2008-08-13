@@ -70,9 +70,14 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
     private Set<Token> usages;
     private Element toFind;
     private Document doc;
+    private boolean instantRename;
     
-    /** Creates a new instance of FindLocalUsagesQuery */
     public FindLocalUsagesQuery() {
+        this(false);
+    }
+
+    public FindLocalUsagesQuery(boolean instantRename) {
+        this.instantRename = instantRename;
     }
     
     public Set<Token> findUsages(Element element, CompilationInfo info, Document doc) {
@@ -146,6 +151,10 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
 
     @Override
     public Void visitNewClass(NewClassTree node, Stack<Tree> p) {
+        if (instantRename) {
+            return super.visitNewClass(node, p);
+        }
+        
         Element el = info.getTrees().getElement(getCurrentPath());
 
         if (toFind.equals(el) && node.getIdentifier() != null) {
@@ -154,6 +163,10 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
             if (t != null)
                 usages.add(t);
 
+            return null;
+        }
+
+        if (el != null && toFind.equals(el.getEnclosingElement())) {
             return null;
         }
         

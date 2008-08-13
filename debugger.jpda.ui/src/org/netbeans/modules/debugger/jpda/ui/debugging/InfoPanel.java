@@ -147,20 +147,7 @@ public class InfoPanel extends javax.swing.JPanel {
                 if (threadToMenuItem.get(thread) != null) {
                     return;
                 }
-                String displayName;
-                try {
-                    displayName = DebuggingNodeModel.getDisplayName(thread, false);
-                } catch (UnknownTypeException e) {
-                    displayName = thread.getName();
-                }
-                Image image = Utilities.loadImage(DebuggingNodeModel.getIconBase(thread));
-                Icon icon = image != null ? new ImageIcon(image) : null;
-                JMenuItem item = new JMenuItem(displayName, icon);
-                item.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        thread.makeCurrent();
-                    }
-                });
+                JMenuItem item = createMenuItem(thread);
                 threadToMenuItem.put(thread, item);
                 arrowMenu.add(item);
                 setHitsText(newHitsCount);
@@ -171,6 +158,45 @@ public class InfoPanel extends javax.swing.JPanel {
         });
     }
 
+    void setBreakpointHits(final List<JPDAThread> hits) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                arrowMenu.removeAll();
+                threadToMenuItem.clear();
+                for (JPDAThread thread : hits) {
+                    JMenuItem item = createMenuItem(thread);
+                    threadToMenuItem.put(thread, item);
+                    arrowMenu.add(item);
+                }
+                if (hits.size() == 0) {
+                    hideHitsPanel();
+                } else {
+                    setHitsText(hits.size());
+                    showHitsPanel();
+                }
+            }
+        });
+    }
+    
+    private JMenuItem createMenuItem(final JPDAThread thread) {
+        String displayName;
+        try {
+            displayName = DebuggingNodeModel.getDisplayName(thread, false);
+        } catch (UnknownTypeException e) {
+            displayName = thread.getName();
+        }
+        Image image = Utilities.loadImage(DebuggingNodeModel.getIconBase(thread));
+        Icon icon = image != null ? new ImageIcon(image) : null;
+        JMenuItem item = new JMenuItem(displayName, icon);
+        item.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                thread.makeCurrent();
+            }
+        });
+        return item;
+    }
+    
     private void setHitsText(int hitsNumber) {
         String text;
         if (hitsNumber == 1) {

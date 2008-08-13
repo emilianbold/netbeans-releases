@@ -32,4 +32,5 @@ made subject to such option by the copyright holder.
 	<mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerSources" url="customize-project-sources.html"/>
 	<mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerRun" url="customize-project-run-configuration.html"/>
 	<mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpIncludePath" url="customize-project-include-path.html"/>
+	<mapID target="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" url="findUsages-CSH.html"/>
 </map>

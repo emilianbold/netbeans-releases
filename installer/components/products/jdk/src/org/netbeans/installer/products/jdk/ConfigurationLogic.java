@@ -355,7 +355,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         return results;
     }
-    
+    private boolean isJDK6U10orLater() {
+        return getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0_10"));
+    }
+            
     private ExecutionResults runJREInstallerWindows(File jreInstaller, Progress progress) throws InstallationException {
         progress.setDetail(PROGRESS_DETAIL_RUNNING_JRE_INSTALLER);
         final String [] command ;
@@ -387,7 +390,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         
         final File location = new File(parseString("$E{ProgramFiles}"),
-                "Java\\jre" + getProduct().getVersion().toJdkStyle());
+                "Java\\jre" + (isJDK6U10orLater() ? "6" : getProduct().getVersion().toJdkStyle()));
         LogManager.log("... JRE installation location (default) : " + location);
         try {
             SystemUtils.setEnvironmentVariable("TEMP",
@@ -485,6 +488,17 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
      * @return null if jre.msi file for given JRE version is not found
      */
     private File findJREWindowsInstaller() {
+        if (isJDK6U10orLater()) {
+            // Starting with JDK6U10, jre.msi is located at the JDK installation directory
+            File jreInstallerFile = new File(
+                    getProduct().getInstallationLocation(), JRE_MSI_NAME);
+            if (!jreInstallerFile.exists()) {
+                LogManager.log("... JRE installer doesn`t exist : " + jreInstallerFile);
+                return null;
+            }
+            return jreInstallerFile;
+        }
+        
         File baseImagesDir  = new File(parseString("$E{CommonProgramFiles}"),
                 "Java\\Update\\Base Images");
         if (!baseImagesDir.exists()) {
@@ -543,6 +557,17 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
      * @return null if javadb.msi file for given JRE version is not found
      */
     private File findJavaDBWindowsInstaller() {
+        if (isJDK6U10orLater()) {
+            // Starting with JDK6U10, javadb.msi is located at the JDK installation directory
+            File javadbInstallerFile = new File(
+                    getProduct().getInstallationLocation(), JAVADB_MSI_NAME);
+            if (!javadbInstallerFile.exists()) {
+                LogManager.log("... JavaDB installer doesn`t exist : " + javadbInstallerFile);
+                return null;
+            }
+            return javadbInstallerFile;
+        }
+
         File baseImagesDir  = new File(parseString("$E{CommonProgramFiles}"),
                 "Java\\Update\\Base Images");
         if (!baseImagesDir.exists()) {
@@ -650,11 +675,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             if(key.startsWith("{")) {//all IS-based JDK installations start with this string
                 if(reg.valueExists(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key, "DisplayIcon") &&
                         reg.valueExists(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key,"UninstallString")) {
-                    // this value is created by JDK installer
+                    // this value is created by JDK/JRE installer
                     final String icon = reg.getStringValue(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key, "DisplayIcon");
                     if(icon.endsWith("\\bin\\javaws.exe") && icon.startsWith(location.getAbsolutePath())) {
                         String uninstallString = reg.getStringValue(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key,"UninstallString");
                         int index = uninstallString.indexOf("/I{");
+                        if(index==-1) {
+                            index = uninstallString.indexOf("/X{");
+                        }
                         if(index!=-1) {
                             uninstallString = uninstallString.substring(index+2);
                             if(uninstallString.indexOf("}")!=-1) {
@@ -677,10 +705,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         for(String key : keyNames) {
             if(key.startsWith("{")) {//all IS-based JavaDB installations start with this string
                 if(reg.valueExists(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key, "InstallSource") &&
-                        reg.valueExists(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key,"UninstallString")) {
-                    // this value is created by JDK installer
-                    final File source = new File(reg.getStringValue(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key, "InstallSource"));
-                    if(source.equals(location)) {
+                        reg.valueExists(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key,"UninstallString") &&
+                        reg.valueExists(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key,"URLInfoAbout")) {
+                    // this value is created by JavaDB installer
+                    final String urlAbout = reg.getStringValue(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key, "URLInfoAbout");
+                    final File source = new File(reg.getStringValue(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key, "InstallSource"));                    
+                    if(source.equals(location) && urlAbout.equals("http://developers.sun.com/javadb/")) {
                         String uninstallString = reg.getStringValue(HKLM, utils.UNINSTALL_KEY + reg.SEPARATOR + key,"UninstallString");
                         int index = uninstallString.indexOf("/X{");
                         if(index!=-1) {
@@ -766,7 +796,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     progressThread.finish();
                 }
             } else {
-                LogManager.log("... cannot fing JDK in the uninstall section");
+                LogManager.log("... cannot fing JRE in the uninstall section");
             }
             
         } catch (NativeException e) {

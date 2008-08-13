@@ -109,6 +109,28 @@ public class GeneralXMLTest extends JellyTestCase {
       public int result;
       public String error;
       public String checker;
+      public int timeout;
+      
+      public CImportClickData(
+          boolean _inshort,
+          int _row,
+          int _col,
+          int _count,
+          int _result,
+          String _error,
+          String _checker,
+          int _timeout
+        )
+      {
+        inshort = _inshort;
+        row = _row;
+        col = _col;
+        count = _count;
+        result = _result;
+        error = _error;
+        checker = _checker;
+        timeout = _timeout;
+      }
       
       public CImportClickData(
           boolean _inshort,
@@ -120,13 +142,16 @@ public class GeneralXMLTest extends JellyTestCase {
           String _checker
         )
       {
-        inshort = _inshort;
-        row = _row;
-        col = _col;
-        count = _count;
-        result = _result;
-        error = _error;
-        checker = _checker;
+        this(
+            _inshort,
+            _row,
+            _col,
+            _count,
+            _result,
+            _error,
+            _checker,
+            750
+        );
       }
     }
 
@@ -262,7 +287,8 @@ public class GeneralXMLTest extends JellyTestCase {
         int col,
         int count,
         int result,
-        String error
+        String error,
+        int iTimeout
       )
     {
       // Normal version
@@ -284,7 +310,7 @@ public class GeneralXMLTest extends JellyTestCase {
       table.releaseMouse( pt.x, pt.y );
       */
 
-      try { Thread.sleep( 750 ); } catch( InterruptedException ex ) { }
+      Sleep( iTimeout );//try { Thread.sleep( 750 ); } catch( InterruptedException ex ) { }
       int iRows = table.getRowCount( );
       if( result != iRows )
         fail( error + iRows );
@@ -335,8 +361,16 @@ public class GeneralXMLTest extends JellyTestCase {
 
       for( CImportClickData cli : aimpData )
       {
-        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
-        ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error );
+        Sleep( 1000 );
+        ExpandByClicks(
+            jto,
+            cli.row,
+            cli.col,
+            cli.count, 
+            cli.result,
+            cli.error,
+            cli.timeout
+          );
       }
 
       JButtonOperator jOk = new JButtonOperator( jBrowser, "OK" );
@@ -360,7 +394,6 @@ public class GeneralXMLTest extends JellyTestCase {
           sApplication + "|Source Packages|" + sApplication + "|newXMLDocument.xml"
         );
       prn.select( );
-     
     }
 
     public void SimpleGenerateInternal(

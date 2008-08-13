@@ -68,6 +68,8 @@ public class CompilerSetScriptManager implements ScriptManager {
         this.support = support;
     }
 
+    private static int emulateFailure = Integer.getInteger("cnd.remote.failure", 0);
+
     public void runScript() {
         if (!support.isFailedOrCancelled()) {
             ChannelExec channel = (ChannelExec) support.getChannel();
@@ -79,6 +81,14 @@ public class CompilerSetScriptManager implements ScriptManager {
                 InputStream is = channel.getInputStream();
                 in = new BufferedReader(new InputStreamReader(is));
                 out = new StringWriter();
+
+                if (emulateFailure>0) {
+                    log.warning("CSSM.runScript: failure emulation [" + emulateFailure + "]"); // NOI18N
+                    support.setFailed("failure emulation in CompilerSetScriptManager"); // NOI18N
+                    emulateFailure--;
+                    return;
+                }
+
 
                 String line;
                 platform = in.readLine();

@@ -52,6 +52,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
@@ -130,9 +131,11 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
 
     public void runAllTests(Project project, boolean debug) {
         List<String> additionalArgs = new ArrayList<String>();
-        additionalArgs.add("-d"); //NOI18N
-        FileObject testFolder = project.getProjectDirectory().getFileObject("test/"); //NOI18N
-        additionalArgs.add(FileUtil.toFile(testFolder).getAbsolutePath());
+        RubyBaseProject baseProject = project.getLookup().lookup(RubyBaseProject.class);
+        for (FileObject testDir : baseProject.getTestSourceRootFiles()) {
+            additionalArgs.add("-d"); //NOI18N
+            additionalArgs.add(FileUtil.toFile(testDir).getAbsolutePath());
+        }
 
         String name = ProjectUtils.getInformation(project).getDisplayName();
 
@@ -170,8 +173,8 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
             return;
         }
         TestExecutionManager.getInstance().reset();
-        // this takes care of loading our custom TestTask, which in turn passes 
-        // the custom test runner as an option for the task. This is needed since 
+        // this takes care of loading our custom TestTask, which in turn passes
+        // the custom test runner as an option for the task. This is needed since
         // the test run is forked to a different process (by Rake::TestTask) than rake itself
         task.addRakeParameters("-r " + getScript(RUNNER_SCRIPT_NAME).getAbsolutePath()); //NOI18N
         FileLocator locator = project.getLookup().lookup(FileLocator.class);

@@ -191,23 +191,24 @@ public class ExtensionsSettings {
     private static CndExtensionList arrayToExtensionList(String[] ar) {
         return new CndExtensionList(ar);
     }
-    public static final String HEADER = "CndHeader";
-    public static final String C_FILE = "CndCFile";
-    public static final String CPP_FILE = "CndCppFile";
-    public static final String MAKEFILE = "CndMakefile";
-    public static final String SHELL = "CndShellFile";
-    public static final String FORTRAN = "CndFortranFile";
-    public static final String ASM = "CndAsmFile";
+    public static final String HEADER = "CndHeader"; //NOI18N
+    public static final String C_FILE = "CndCFile"; //NOI18N
+    public static final String CPP_FILE = "CndCppFile"; //NOI18N
+    public static final String MAKEFILE = "CndMakefile"; //NOI18N
+    public static final String SHELL = "CndShellFile"; //NOI18N
+    public static final String FORTRAN = "CndFortranFile"; //NOI18N
+    public static final String ASM = "CndAsmFile"; //NOI18N
+
     private static final Map<String, String[]> defaultExtensions = new HashMap<String, String[]>();
     
     static {
-        defaultExtensions.put(HEADER, new String[]{"h", "H", "hpp", "hxx", "SUNWCCh", "tcc"});
-        defaultExtensions.put(C_FILE, new String[]{"c", "i", "m"});
-        defaultExtensions.put(CPP_FILE, new String[]{"cpp", "cc", "c++", "cxx", "C", "mm"});
-        defaultExtensions.put(MAKEFILE, new String[]{"mk"});
-        defaultExtensions.put(ASM, new String[]{"s", "as", "asm"});
-        defaultExtensions.put(SHELL, new String[]{"bash", "csh", "ksh", "sh", "zsh", "bat", "cmd"});
-        defaultExtensions.put(FORTRAN, new String[]{"f", "F", "f90", "F90", "f95", "F95", "f03", "F03", "for", "il", "mod"});
+        defaultExtensions.put(HEADER, new String[]{"h", "H", "hpp", "hxx", "SUNWCCh", "tcc"}); //NOI18N
+        defaultExtensions.put(C_FILE, new String[]{"c", "i", "m"}); //NOI18N
+        defaultExtensions.put(CPP_FILE, new String[]{"cpp", "cc", "c++", "cxx", "C", "mm"}); //NOI18N
+        defaultExtensions.put(MAKEFILE, new String[]{"mk"}); //NOI18N
+        defaultExtensions.put(ASM, new String[]{"s", "as", "asm"}); //NOI18N
+        defaultExtensions.put(SHELL, new String[]{"bash", "csh", "ksh", "sh", "zsh", "bat", "cmd"}); //NOI18N
+        defaultExtensions.put(FORTRAN, new String[]{"f", "F", "f90", "F90", "f95", "F95", "f03", "F03", "for", "il", "mod"}); //NOI18N
     }
 
     private static String[] getCndDefaultExtensions(String id) {

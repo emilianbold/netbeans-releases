@@ -1073,7 +1073,7 @@ public class BaseKit extends DefaultEditorKit {
                         LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
                     }
                     
-                    doc.runAtomic (new Runnable () {
+                    doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try {
@@ -1180,7 +1180,7 @@ public class BaseKit extends DefaultEditorKit {
                 final Formatter formatter = doc.getFormatter();
                 formatter.indentLock();
                 try {
-                    doc.runAtomic (new Runnable () {
+                    doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try {
@@ -1242,7 +1242,7 @@ public class BaseKit extends DefaultEditorKit {
                 final Formatter formatter = doc.getFormatter();
                 formatter.indentLock();
                 try {
-                    doc.runAtomic (new Runnable () {
+                    doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try{
@@ -1281,7 +1281,7 @@ public class BaseKit extends DefaultEditorKit {
 
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -1493,7 +1493,7 @@ public class BaseKit extends DefaultEditorKit {
 		final int dot = caret.getDot();
 		final int mark = caret.getMark();
 
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                     DocumentUtilities.setTypingModification(doc, true);
 
@@ -1597,7 +1597,7 @@ public class BaseKit extends DefaultEditorKit {
                 }
                 
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                     DocumentUtilities.setTypingModification(doc, true);
                     try {
@@ -1683,7 +1683,7 @@ public class BaseKit extends DefaultEditorKit {
                     formatter.reformatLock();
                 }
                 try {
-                    doc.runAtomic (new Runnable () {
+                    doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -2477,7 +2477,7 @@ public class BaseKit extends DefaultEditorKit {
             if (target != null) {
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {

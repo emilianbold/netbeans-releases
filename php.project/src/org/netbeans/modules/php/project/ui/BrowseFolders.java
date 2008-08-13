@@ -59,6 +59,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.util.NbBundle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -84,6 +85,7 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
 
     static final Comparator<FileObject> FILE_OBJECT_COMAPARTOR = new BrowseFolders.FileObjectComparator();
     private static final JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
+    private static final String NB_PROJECT_DIR = "nbproject"; // NOI18N
 
     private final ExplorerManager manager;
     private final SourceGroup[] folders;
@@ -301,7 +303,9 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
                 keys = new ArrayList<Key>(children.length);
                 if (BrowseFolders.this.target == org.openide.loaders.DataFolder.class) {
                     for (FileObject file : children) {
-                        if (file.isFolder() && group.contains(file)) {
+                        if (file.isFolder()
+                                && isVisible(file)
+                                && group.contains(file)) {
                             keys.add(new Key(file, group));
                         }
                     }
@@ -309,7 +313,8 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
                     List<Key> dirs = new ArrayList<Key>(children.length);
                     List<Key> files = new ArrayList<Key>(children.length);
                     for (FileObject file : children) {
-                        if (!group.contains(file)) {
+                        if (!isVisible(file)
+                                || !group.contains(file)) {
                             continue;
                         }
                         if (file.isFolder()) {
@@ -323,6 +328,14 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
                 }
             }
             return keys;
+        }
+
+        private boolean isVisible(FileObject fo) {
+            assert fo != null;
+            if (fo.getNameExt().equals(NB_PROJECT_DIR)) {
+                return false;
+            }
+            return VisibilityQuery.getDefault().isVisible(fo);
         }
 
         private final class Key {

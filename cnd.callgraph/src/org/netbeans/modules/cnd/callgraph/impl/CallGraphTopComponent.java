@@ -92,6 +92,7 @@ public final class CallGraphTopComponent extends TopComponent {
         pop.add(new CloseAllButCurrent());
         listener = new PopupListener();
         closeL = new CloseListener();
+        setFocusCycleRoot(true);
     }
 
     public void setModel(CallModel model, CallGraphUI graphUI) {
@@ -210,6 +211,37 @@ public final class CallGraphTopComponent extends TopComponent {
     // TODO add custom code on component opening
     }
 
+    @Override
+    protected void componentActivated() {
+        super.componentActivated();
+        requestActive();
+    }
+
+    @Override
+    public void requestActive() {
+        super.requestActive();
+        CallGraphPanel graph = getCurrentCallGraphPanel();
+        if (graph != null) {
+            graph.requestFocus();
+            graph.requestFocusInWindow();
+        }
+    }
+
+    private CallGraphPanel getCurrentCallGraphPanel(){
+        if (getComponentCount() > 0) {
+            Component comp = getComponent(0);
+            if (comp instanceof JTabbedPane) {
+                comp = ((JTabbedPane)comp).getSelectedComponent();
+                if (comp instanceof CallGraphPanel) {
+                    return (CallGraphPanel) comp;
+                }
+            } else if (comp instanceof CallGraphPanel) {
+                    return (CallGraphPanel) comp;
+            }
+        }
+        return null;
+    }
+    
     @Override
     public void componentClosed() {
         if (getComponentCount() == 0) {

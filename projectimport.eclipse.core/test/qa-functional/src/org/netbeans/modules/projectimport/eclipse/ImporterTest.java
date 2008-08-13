@@ -39,30 +39,32 @@
 
 package org.netbeans.modules.projectimport.eclipse;
 
+import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.projectimport.eclipse.gui.ImportJavaVersion;
+import org.netbeans.modules.projectimport.eclipse.gui.ImportMultipleRootsJavaProjectFromWS;
+import org.netbeans.modules.projectimport.eclipse.gui.ImportProjectWithTransitiveDeps;
+import org.netbeans.modules.projectimport.eclipse.gui.ImporterMenu;
+import org.netbeans.modules.projectimport.eclipse.gui.ImporterWizard;
+import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleJavaProjectFromWS;
+import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleWebProjectFromWS;
+
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class ImporterTest  /*extends NbTestCase */ {
-    /*	
-    public ImporterTest(String name) {
-        super(name);
-    }
-    */
-    public static NbTestSuite suite() {
-	NbTestSuite suite = new NbTestSuite("Eclipse Importer UI functional tests");
-        System.setProperty("suitename", "org.netbeans.modules.projectimport.eclipse.ImporterTest");
+public class ImporterTest {
 
-	suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(
-                org.netbeans.modules.projectimport.eclipse.gui.ImporterMenu.class)
-        .addTest(org.netbeans.modules.projectimport.eclipse.gui.ImporterWizard.class)
-	.enableModules(".*").clusters(".*").gui(true).reuseUserDir(true)));
-	return suite;
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ImporterMenu.class).
+                addTest(ImporterWizard.class).
+		addTest(ImportSimpleJavaProjectFromWS.class).
+                addTest(ImportSimpleWebProjectFromWS.class).
+                addTest(ImportMultipleRootsJavaProjectFromWS.class).
+                addTest(ImportJavaVersion.class).
+                addTest(ImportProjectWithTransitiveDeps.class).
+                enableModules(".*").clusters(".*").
+                gui(true).reuseUserDir(true));
     }
 
-    public void testCheckMenus() {
-    }
-    
 }

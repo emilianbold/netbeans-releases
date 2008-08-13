@@ -47,6 +47,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.StyledDocument;
 
 import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.util.Utilities;
@@ -164,10 +165,13 @@ public class Utils {
      */
     private static EditorCookie getCurrentEditorCookie () {
         Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
-        if ( (nodes == null) ||
-             (nodes.length != 1) ) return null;
-        Node n = nodes [0];
-        return (EditorCookie) n.getCookie (
+        if ((nodes == null) || (nodes.length != 1)) return null;
+        Node node = nodes [0];
+        DataObject dob = (DataObject) node.getLookup().lookup (DataObject.class);
+        if (dob != null && !dob.isValid()) {
+            return null;
+        }
+        return (EditorCookie) node.getCookie (
             EditorCookie.class
         );
     }

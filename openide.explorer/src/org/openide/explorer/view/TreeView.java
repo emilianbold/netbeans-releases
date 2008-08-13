@@ -275,6 +275,11 @@ public abstract class TreeView extends JScrollPane {
 
     @Override
     public void updateUI() {
+        Set<Object> tmp = visHolder;
+        if (tmp != null) {
+            tmp.clear();
+        }
+
         super.updateUI();
 
         //On GTK L&F, the viewport border must be set to empty (not null!) or we still get border buildup

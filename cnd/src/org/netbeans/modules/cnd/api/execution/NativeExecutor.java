@@ -62,19 +62,21 @@ import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 public class NativeExecutor implements Runnable {
-    private ArrayList listeners = new ArrayList();
+    private final ArrayList<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
     
-    private String runDir;
-    private String executable;
-    private String arguments;
-    private String[] envp;
-    private String tabName;
-    private String actionName;
+    private final String runDir;
+    private final String executable;
+    private final String arguments;
+    private final String[] envp;
+    private final String tabName;
+    private final String actionName;
+    private final boolean parseOutputForErrors;
+    private final boolean showInput;
+    private final String host;
+    private final boolean unbuffer;
+    
     private String rcfile;
-    private boolean parseOutputForErrors;
-    private boolean showInput;
     private NativeExecution nativeExecution;
-    private String host;
     
     /** @deprecated This variable was added for an obsolete module... */
     private boolean showHeader = true;
@@ -98,7 +100,8 @@ public class NativeExecutor implements Runnable {
             String tabName,
             String actionName,
             boolean parseOutputForErrors,
-            boolean showInput) {
+            boolean showInput,
+            boolean unbuffer) {
         this.host = host;
         this.runDir = runDir;
         this.executable = executable;
@@ -108,10 +111,11 @@ public class NativeExecutor implements Runnable {
         this.actionName = actionName;
         this.parseOutputForErrors = parseOutputForErrors;
         this.showInput = showInput;
+        this.unbuffer = unbuffer;
     }
     
     /** targets may be null to indicate default target */
-    @Deprecated
+    /*@Deprecated*/
     public NativeExecutor(
             String runDir,
             String executable,
@@ -121,11 +125,11 @@ public class NativeExecutor implements Runnable {
             String actionName,
             boolean parseOutputForErrors,
             boolean showInput) {
-        this(CompilerSetManager.LOCALHOST, runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput);
+        this(CompilerSetManager.LOCALHOST, runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput, false);
     }
     
     /** targets may be null to indicate default target */
-    @Deprecated
+    /*@Deprecated
     public NativeExecutor(
             String runDir,
             String executable,
@@ -135,17 +139,17 @@ public class NativeExecutor implements Runnable {
             String actionName,
             boolean parseOutputForErrors) {
         this(runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, false);
-    }
+    }*/
     
     /**
      * @deprecated Added for an obsolete Mobility module and (I think) no longer used
      */
-    public NativeExecutor(String runDir, String executable, String arguments, String[] envp, String tabName,
+    /*public NativeExecutor(String runDir, String executable, String arguments, String[] envp, String tabName,
             String actionName, boolean parseOutputForErrors, boolean showInput, boolean showHeader, boolean showFooter ) {
         this( runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput );
         this.showHeader = showHeader;
         this.showFooter = showFooter;
-    }
+    }*/
     
     /** Start it going. */
     public ExecutorTask execute() throws IOException {
@@ -215,7 +219,8 @@ public class NativeExecutor implements Runnable {
                     arguments,
                     envp,
                     out,
-		    showInput ? io.getIn() : null);
+		    showInput ? io.getIn() : null,
+                    unbuffer);
         } catch (ThreadDeath td) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
             executionFinished(-1);
@@ -301,15 +306,14 @@ public class NativeExecutor implements Runnable {
     }
     
     public void removeExecutionListener(ExecutionListener l) {
-        listeners.remove(listeners.indexOf(l));
+        listeners.remove(l);
     }
     
     /**
      * Send a ExecutionEvent to each executionStarted method
      */
     private void fireExecutionStarted() {
-        for (int i = 0; i < listeners.size(); i++) {
-            ExecutionListener listener = (ExecutionListener) listeners.get(i);
+        for (ExecutionListener listener : listeners) {
             listener.executionStarted();
         }
     }
@@ -318,8 +322,7 @@ public class NativeExecutor implements Runnable {
      * Send a ExecutionEvent to each executionFinished method
      */
     private void fireExecutionFinished(int rc) {
-        for (int i = 0; i < listeners.size(); i++) {
-            ExecutionListener listener = (ExecutionListener) listeners.get(i);
+        for (ExecutionListener listener : listeners) {
             listener.executionFinished(rc);
         }
     }
