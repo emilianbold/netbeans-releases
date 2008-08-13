@@ -94,7 +94,7 @@ public class PersistenceManager {
                         if (hasContainerWidgetAsParent(nWidget) || nWidget instanceof SubWidget) {
                         //do nothing..
                         // do not write now.. this node will be written as a part of its container
-                            System.out.println(" Parent is a container widget ");
+//                            System.out.println(" Parent is a container widget ");
                         } else {
                             ((DiagramNodeWriter) nWidget).save(nWriter);
                         }

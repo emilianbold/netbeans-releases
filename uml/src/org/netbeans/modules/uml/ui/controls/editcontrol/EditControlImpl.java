@@ -402,12 +402,8 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
              }
           });
 
-          m_Field.addInputMethodListener(this);
       }
-      else
-      {
-          m_Field.getDocument().addDocumentListener(new EditControlDocumentListener(getAssociatedParent()));
-      }
+      m_Field.addInputMethodListener(this);
    }
 
    private void handleTypedKey(KeyEvent e)
@@ -1110,7 +1106,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
            JTextArea field = new JTextArea();
            field.setLineWrap(true);
            field.setWrapStyleWord(true);
-           field.setDocument(doc);
+           //field.setDocument(doc);
            m_Field = field;
 
            //Fix 132234
@@ -1159,9 +1155,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
             handleHint();
          }
       });
-      //setLayout(new BorderLayout());
-      //add(m_Field, BorderLayout.CENTER);
-      //m_Panel.add(m_Button);
+      
       m_Button.setBounds(0, 0, 15, 3);
       setOpaque(false);
       add(m_Panel, BorderLayout.SOUTH);

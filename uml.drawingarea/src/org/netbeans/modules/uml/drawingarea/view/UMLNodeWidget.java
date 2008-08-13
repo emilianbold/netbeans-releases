@@ -322,6 +322,11 @@ public abstract class UMLNodeWidget extends Widget
         this.resizable = resizable;
     }
     
+    public boolean isResizable()
+    {
+        return resizable;
+    }
+    
     @Override
     protected void notifyStateChanged(ObjectState previousState, ObjectState state)
     {
@@ -330,7 +335,7 @@ public abstract class UMLNodeWidget extends Widget
 
         if (select && !wasSelected)
         {
-            if (!resizable)
+            if (!isResizable())
             {
                 setBorder(UMLWidget.NON_RESIZABLE_BORDER);
                 return;

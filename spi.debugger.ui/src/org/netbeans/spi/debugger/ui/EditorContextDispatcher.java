@@ -594,6 +594,9 @@ public final class EditorContextDispatcher {
                         if (newEditor != null) {
                             mostRecentOpenedPaneRef = new WeakReference(newEditor);
                             mostRecentFileRef = new WeakReference(currentFile);
+                            if (currentEditorCookie != null) {
+                                mostRecentEditorCookieRef = new WeakReference(currentEditorCookie);
+                            }
                         }
                     } else {
                         MIMEType = null;

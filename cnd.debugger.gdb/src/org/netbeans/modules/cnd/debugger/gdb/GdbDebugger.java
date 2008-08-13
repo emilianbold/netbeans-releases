@@ -287,10 +287,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (pae.getID() == DEBUG_ATTACH) {
                 String pgm = null;
                 boolean isSharedLibrary = false;
+                final String path = getFullPath(runDirectory, pae.getExecutable());
+
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 if (((MakeConfiguration) pae.getConfiguration()).isDynamicLibraryConfiguration()) {
                     pgm = getExePath(programPID);
+                    gdb.file_exec_and_symbols(pgm);
                     isSharedLibrary = true;
+                } else {
+                    gdb.file_exec_and_symbols(path);
                 }
                 CommandBuffer cb = new CommandBuffer(gdb);
                 gdb.target_attach(cb, Long.toString(programPID));
@@ -314,7 +319,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         }
                     });
                 } else {
-                    final String path = getFullPath(runDirectory, pae.getExecutable());
                     if (isSharedLibrary) {
                         if (platform == PlatformTypes.PLATFORM_MACOSX && pgm == null) {
                             pgm = getMacExePath();
@@ -874,14 +878,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 firePropertyChange(PROP_KILLTERM, true, false);
             }
             if (gdb != null) {
+                ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                 if (state.equals(STATE_RUNNING)) {
-                    ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                     gdb.exec_interrupt();
-                    if (pae.getID() == DEBUG_ATTACH) {
-                        gdb.target_detach();
-                    } else {
+                    if (pae.getID() != DEBUG_ATTACH) {
                         gdb.exec_abort();
                     }
+                }
+                if (pae.getID() == DEBUG_ATTACH) {
+                    gdb.target_detach();
                 }
                 gdb.gdb_exit();
                 gdb.getProxyEngine().finish();
