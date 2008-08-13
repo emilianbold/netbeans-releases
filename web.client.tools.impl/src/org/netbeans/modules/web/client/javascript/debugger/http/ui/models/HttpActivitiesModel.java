@@ -96,7 +96,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
         this.debugger = debugger;
         debugger.addJSHttpMessageEventListener(
                 WeakListeners.create( JSHttpMessageEventListener.class, httpMessageEventListener, this));
-        httpMonitorPreferences.addPreferencesChangeListener(
+        httpMonitorPreferences.addPreferenceChangeListener(
                 WeakListeners.create( PreferenceChangeListener.class,   preferenceChangeListener, this));
     }
 
