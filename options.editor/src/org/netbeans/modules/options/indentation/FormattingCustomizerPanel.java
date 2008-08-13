@@ -47,12 +47,15 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -100,7 +103,7 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
     // this is called when OK button is clicked to store the controlled preferences
     public void actionPerformed(ActionEvent e) {
         String profile = globalButton.isSelected() ? DEFAULT_PROFILE : PROJECT_PROFILE;
-        pf.getPreferences("").put(USED_PROFILE, profile); //NOI18N
+        pf.getPreferences("").parent().put(USED_PROFILE, profile); //NOI18N
         pf.applyChanges();
     }
 
@@ -247,7 +250,7 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         initComponents();
         customizerPanel.add(panel, BorderLayout.CENTER);
         
-        Preferences prefs = pf.getPreferences(""); //NOI18N
+        Preferences prefs = pf.getPreferences("").parent(); //NOI18N
         String profile = prefs.get(USED_PROFILE, DEFAULT_PROFILE);
         if (DEFAULT_PROFILE.equals(profile)) {
             globalButton.doClick();
@@ -266,29 +269,84 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
 
     private static final class ProjectPreferencesFactory implements CustomizerSelector.PreferencesFactory {
 
-        private final Project project;
-        private ProxyPreferences codeStylePrefs;
-
         public ProjectPreferencesFactory(Project project) {
             this.project = project;
         }
 
         public synchronized Preferences getPreferences(String mimeType) {
-            if (codeStylePrefs == null) {
-                Preferences p = ProjectUtils.getPreferences(project, IndentUtils.class, true).node(CODE_STYLE_PROFILE);
-                codeStylePrefs = ProxyPreferences.get(p);
+            ProxyPreferences prefs = mimeTypePreferences.get(mimeType);
+
+            if (prefs == null) {
+                if (projectPrefs == null) {
+                    Preferences p = ProjectUtils.getPreferences(project, IndentUtils.class, true);
+                    projectPrefs = ProxyPreferences.get(p);
+                }
+                prefs = (ProxyPreferences) projectPrefs.node(mimeType).node(CODE_STYLE_PROFILE).node(PROJECT_PROFILE);
+                mimeTypePreferences.put(mimeType, prefs);
             }
-            return codeStylePrefs.node(mimeType);
+
+            return prefs;
         }
 
         public synchronized void applyChanges() {
-            try {
-                codeStylePrefs.flush();
-            } catch (BackingStoreException ex) {
-                LOG.log(Level.WARNING, null, ex);
+            for(String mimeType : mimeTypePreferences.keySet()) {
+                if (mimeType.length() == 0) {
+                    continue;
+                }
+
+                ProxyPreferences pp = mimeTypePreferences.get(mimeType);
+                pp.silence();
+
+                assert pp.get(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) != null;
+                if (!pp.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false)) {
+                    // remove the basic settings if a language is not overriding the 'all languages' values
+                    pp.remove(SimpleValueNames.EXPAND_TABS);
+                    pp.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
+                    pp.remove(SimpleValueNames.SPACES_PER_TAB);
+                    pp.remove(SimpleValueNames.TAB_SIZE);
+                    pp.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
+                }
+                pp.remove(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS);
+                
+                try {
+                    LOG.fine("Flushing pp for '" + mimeType + "'"); //NOI18N
+                    pp.flush();
+                } catch (BackingStoreException ex) {
+                    LOG.log(Level.WARNING, "Can't flush preferences for '" + mimeType + "'", ex); //NOI18N
+                }
             }
-            codeStylePrefs.destroy();
-            codeStylePrefs = null;
+
+            // flush the root prefs
+            ProxyPreferences pp = mimeTypePreferences.get("");
+            if (pp != null) {
+                assert pp.get(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) == null;
+                pp.silence();
+
+                try {
+                    LOG.fine("Flushing root pp"); //NOI18N
+                    pp.parent().flush();
+                } catch (BackingStoreException ex) {
+                    LOG.log(Level.WARNING, "Can't flush project codestyle root preferences", ex); //NOI18N
+                }
+            }
+            
+            projectPrefs.destroy();
+            projectPrefs = null;
         }
+
+        public boolean isKeyOverridenForMimeType(String key, String mimeType) {
+            Preferences p = ProjectUtils.getPreferences(project, IndentUtils.class, true).node(CODE_STYLE_PROFILE);
+            p = p.node(mimeType);
+            return p.get(key, null) != null;
+        }
+
+        // --------------------------------------------------------------------
+        // private implementation
+        // --------------------------------------------------------------------
+
+        private final Project project;
+        private final Map<String, ProxyPreferences> mimeTypePreferences = new HashMap<String, ProxyPreferences>();
+        private ProxyPreferences projectPrefs;
+
     } // End of ProjectPreferencesFactory class
 }

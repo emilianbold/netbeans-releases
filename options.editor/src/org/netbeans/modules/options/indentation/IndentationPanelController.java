@@ -65,15 +65,16 @@ public final class IndentationPanelController implements PreferencesCustomizer, 
     private static final Logger LOG = Logger.getLogger(IndentationPanelController.class.getName());
     
     public IndentationPanelController(Preferences prefs) {
-        this(MimePath.EMPTY, prefs, null, null);
+        this(MimePath.EMPTY, null, prefs, null, null);
     }
     
-    public IndentationPanelController(MimePath mimePath, Preferences prefs, Preferences allLangPrefs, PreferencesCustomizer delegate) {
+    public IndentationPanelController(MimePath mimePath, CustomizerSelector.PreferencesFactory prefsFactory, Preferences prefs, Preferences allLangPrefs, PreferencesCustomizer delegate) {
         assert mimePath != null;
         assert prefs != null;
         assert (allLangPrefs == null && delegate == null) || (allLangPrefs != null && delegate != null);
         assert delegate == null || delegate instanceof PreviewProvider;
         this.mimePath = mimePath;
+        this.prefsFactory = prefsFactory;
         this.preferences = prefs;
         this.allLanguagesPreferences = allLangPrefs;
         this.delegate = delegate;
@@ -94,14 +95,14 @@ public final class IndentationPanelController implements PreferencesCustomizer, 
                 indentationPanel.setName(delegateComp.getName());
 
                 // then create and initialize IndentationPanel
-                indentationPanel.add(new IndentationPanel(mimePath, preferences, allLanguagesPreferences, (PreviewProvider) delegate));
+                indentationPanel.add(new IndentationPanel(mimePath, prefsFactory, preferences, allLanguagesPreferences, (PreviewProvider) delegate));
                 indentationPanel.add(delegateComp);
 
                 JPanel spacer = new JPanel();
                 spacer.setPreferredSize(new Dimension(10, Integer.MAX_VALUE));
                 indentationPanel.add(spacer);
             } else {
-                indentationPanel = new IndentationPanel(mimePath, preferences, null, null);
+                indentationPanel = new IndentationPanel(mimePath, prefsFactory, preferences, null, null);
             }
         }
         return indentationPanel;
@@ -148,6 +149,7 @@ public final class IndentationPanelController implements PreferencesCustomizer, 
     // ------------------------------------------------------------------------
 
     private final MimePath mimePath;
+    private final CustomizerSelector.PreferencesFactory prefsFactory;
     private final Preferences allLanguagesPreferences;
     private final Preferences preferences;
     private final PreferencesCustomizer delegate;

@@ -42,6 +42,7 @@ package org.netbeans.modules.options.indentation;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -54,7 +55,10 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
+import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -201,6 +205,17 @@ public final class FormattingPanelController extends OptionsPanelController impl
             LOG.fine("getPreferences(" + mimeType + ")"); //NOI18N
         }
         return pp;
+    }
+
+    public boolean isKeyOverridenForMimeType(String key, String mimeType) {
+        EditorSettingsStorage<String, TypedValue> storage = EditorSettingsStorage.<String, TypedValue>get("Preferences"); //NOI18N
+        try {
+            Map<String, TypedValue> mimePathLocalPrefs = storage.load(MimePath.parse(mimeType), null, false);
+            return mimePathLocalPrefs.containsKey(key);
+        } catch (IOException ioe) {
+            LOG.log(Level.WARNING, null, ioe);
+            return false;
+        }
     }
 
     // ------------------------------------------------------------------------

@@ -138,6 +138,7 @@ public final class CustomizerSelector {
 
     public interface PreferencesFactory {
         Preferences getPreferences(String mimeType);
+        boolean isKeyOverridenForMimeType(String key, String mimeType);
     }
 
     // ------------------------------------------------------------------------
@@ -178,7 +179,7 @@ public final class CustomizerSelector {
 
                 if (c.getId().equals("tabs-and-indents")) { //NOI18N
                     Preferences allLangPrefs = pf.getPreferences(""); //NOI18N
-                    c = new IndentationPanelController(MimePath.parse(mimeType), prefs, allLangPrefs, c);
+                    c = new IndentationPanelController(MimePath.parse(mimeType), pf, prefs, allLangPrefs, c);
                 }
 
                 list.add(c);

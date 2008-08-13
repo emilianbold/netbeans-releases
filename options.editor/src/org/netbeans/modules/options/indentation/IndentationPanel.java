@@ -48,7 +48,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -68,8 +67,6 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
-import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.openide.awt.Mnemonics;
 import org.openide.text.CloneableEditorSupport;
@@ -87,6 +84,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     private static final Logger LOG = Logger.getLogger(IndentationPanel.class.getName());
 
     private final MimePath mimePath;
+    private final CustomizerSelector.PreferencesFactory prefsFactory;
     private final Preferences allLangPrefs;
     private final Preferences prefs;
     private final PreviewProvider preview;
@@ -95,8 +93,9 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     /** 
      * Creates new form IndentationPanel.
      */
-    public IndentationPanel(MimePath mimePath, Preferences prefs, Preferences allLangPrefs, PreviewProvider preview) {
+    public IndentationPanel(MimePath mimePath, CustomizerSelector.PreferencesFactory prefsFactory, Preferences prefs, Preferences allLangPrefs, PreviewProvider preview) {
         this.mimePath = mimePath;
+        this.prefsFactory = prefsFactory;
         this.prefs = prefs;
         this.prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
 
@@ -448,18 +447,12 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     }
 
     private boolean areGlobalOptionsOverriden() {
-        EditorSettingsStorage<String, TypedValue> storage = EditorSettingsStorage.<String, TypedValue>get("Preferences"); //NOI18N
-        try {
-            Map<String, TypedValue> mimePathLocalPrefs = storage.load(mimePath, null, false);
-            return !mimePathLocalPrefs.containsKey(SimpleValueNames.EXPAND_TABS) ||
-                !mimePathLocalPrefs.containsKey(SimpleValueNames.INDENT_SHIFT_WIDTH) ||
-                !mimePathLocalPrefs.containsKey(SimpleValueNames.SPACES_PER_TAB) ||
-                !mimePathLocalPrefs.containsKey(SimpleValueNames.TAB_SIZE) ||
-                !mimePathLocalPrefs.containsKey(SimpleValueNames.TEXT_LIMIT_WIDTH);
-        } catch (IOException ioe) {
-            LOG.log(Level.WARNING, null, ioe);
-            return false;
-        }
+        String mimeType = mimePath.getPath();
+        return prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.EXPAND_TABS, mimeType) ||
+            prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.INDENT_SHIFT_WIDTH, mimeType) ||
+            prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.SPACES_PER_TAB, mimeType) ||
+            prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TAB_SIZE, mimeType) ||
+            prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.TEXT_LIMIT_WIDTH, mimeType);
     }
 
     private boolean getDefBoolean(String key, boolean def) {

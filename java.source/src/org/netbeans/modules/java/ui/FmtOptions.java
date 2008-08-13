@@ -65,13 +65,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.source.CodeStyle;
 import static org.netbeans.api.java.source.CodeStyle.*;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
@@ -254,30 +250,30 @@ public class FmtOptions {
         return defaults.get(key);
     }
     
-    public static boolean getGlobalExpandTabToSpaces() {
-        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
-        return prefs.getBoolean(SimpleValueNames.EXPAND_TABS, getDefaultAsBoolean(expandTabToSpaces));
-    }
-    
-    public static int getGlobalTabSize() {
-        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.TAB_SIZE, getDefaultAsInt(tabSize));
-    }
-    
-    public static int getGlobalSpacesPerTab() {
-        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefaultAsInt(spacesPerTab));
-    }
-
-    public static int getGlobalIndentSize() {
-        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
-    }
-
-    public static int getGlobalRightMargin() {
-        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, getDefaultAsInt(rightMargin));
-    }
+//    public static boolean getGlobalExpandTabToSpaces() {
+//        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+//        return prefs.getBoolean(SimpleValueNames.EXPAND_TABS, getDefaultAsBoolean(expandTabToSpaces));
+//    }
+//
+//    public static int getGlobalTabSize() {
+//        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+//        return prefs.getInt(SimpleValueNames.TAB_SIZE, getDefaultAsInt(tabSize));
+//    }
+//
+//    public static int getGlobalSpacesPerTab() {
+//        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+//        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefaultAsInt(spacesPerTab));
+//    }
+//
+//    public static int getGlobalIndentSize() {
+//        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+//        return prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
+//    }
+//
+//    public static int getGlobalRightMargin() {
+//        Preferences prefs = MimeLookup.getLookup(JAVA).lookup(Preferences.class);
+//        return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, getDefaultAsInt(rightMargin));
+//    }
     
     public static boolean isInteger(String optionID) {
         String value = defaults.get(optionID);
@@ -290,16 +286,6 @@ public class FmtOptions {
         }
     }
     
-    public static Preferences getPreferences(Project project) {
-        if (project != null) {
-            Preferences root = ProjectUtils.getPreferences(project, IndentUtils.class, true).node(CODE_STYLE_PROFILE);
-            String profile = root.get(usedProfile, DEFAULT_PROFILE);
-            if (PROJECT_PROFILE.equals(profile))
-                return root.node(PROJECT_PROFILE).node(JAVA_MIME_TYPE); //NOI18N
-        }
-        return MimeLookup.getLookup(JAVA_MIME_TYPE).lookup(Preferences.class);
-    }
-
     // Private section ---------------------------------------------------------
     
     private static final String TRUE = "true";      // NOI18N
