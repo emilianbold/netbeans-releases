@@ -101,14 +101,14 @@ public final class WatchProjects {
     private static void cleanWellKnownStaticFields() throws Exception {
         Object o;
         
-        resetJTreeUIs(Frame.getFrames());
+//        resetJTreeUIs(Frame.getFrames());
 
         tryCloseNavigator();
 
         StringSelection ss = new StringSelection("");
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
         Toolkit.getDefaultToolkit().getSystemSelection().setContents(ss, ss);
-
+/*
         for (Frame f : Frame.getFrames()) {
             f.setVisible(false);
         }
@@ -118,27 +118,28 @@ public final class WatchProjects {
         empty.pack();
         empty.setVisible(true);
         empty.requestFocusInWindow();
-
+*/
+        
         clearField("sun.awt.im.InputContext", "previousInputMethod");
         clearField("sun.awt.im.InputContext", "inputMethodWindowContext");
         clearField("sun.awt.im.CompositionAreaHandler", "compositionAreaOwner");
 //        clearField("sun.awt.AppContext", "mainAppContext");
-        clearField("org.netbeans.modules.beans.BeanPanel", "INSTANCE");
+//        clearField("org.netbeans.modules.beans.BeanPanel", "INSTANCE");
         clearField("java.awt.KeyboardFocusManager", "focusedWindow");
         clearField("java.awt.KeyboardFocusManager", "activeWindow");
         clearField("java.awt.KeyboardFocusManager", "focusOwner");
         clearField("java.awt.KeyboardFocusManager", "permanentFocusOwner");
-        clearField("org.netbeans.jemmy.EventTool", "listenerSet");
+//        clearField("org.netbeans.jemmy.EventTool", "listenerSet");
         clearField("sun.awt.X11.XKeyboardFocusManagerPeer", "currentFocusOwner");
         clearField("sun.awt.X11.XKeyboardFocusManagerPeer", "currentFocusedWindow");
-        clearField("org.netbeans.modules.java.navigation.CaretListeningFactory", "INSATNCE");
-        clearField("org.netbeans.modules.editor.hints.HintsUI", "INSTANCE");
+//        clearField("org.netbeans.modules.java.navigation.CaretListeningFactory", "INSATNCE");
+//        clearField("org.netbeans.modules.editor.hints.HintsUI", "INSTANCE");
 //        clearField("org.netbeans.modules.websvc.core.ProjectWebServiceView", "views");
-        clearField("org.netbeans.api.java.source.support.OpenedEditors", "DEFAULT");
-        clearField("org.netbeans.spi.palette.PaletteSwitch", "theInstance");
-        clearField("org.netbeans.core.NbMainExplorer$MainTab", "lastActivated");
-        clearField("org.netbeans.core.NbMainExplorer$MainTab", "DEFAULT");
-
+//        clearField("org.netbeans.api.java.source.support.OpenedEditors", "DEFAULT");
+//        clearField("org.netbeans.spi.palette.PaletteSwitch", "theInstance");
+//        clearField("org.netbeans.core.NbMainExplorer$MainTab", "lastActivated");
+//        clearField("org.netbeans.core.NbMainExplorer$MainTab", "DEFAULT");
+/*
         o = getFieldValue("org.netbeans.api.java.source.JavaSource", "toRemove");
         if (o instanceof Collection) {
             Collection c = (Collection) o;
@@ -149,7 +150,7 @@ public final class WatchProjects {
             Collection c = (Collection) o;
             c.clear();
         }
-
+*/
         clearField("sun.awt.im.InputContext", "previousInputMethod");
         clearField("sun.awt.im.InputContext", "inputMethodWindowContext");
     }

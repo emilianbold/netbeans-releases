@@ -1196,8 +1196,16 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             if (ref.get() == null) {
                 return;
             }
-            System.gc();
-            System.runFinalization();
+            try {
+                System.gc();
+            } catch (OutOfMemoryError error) {
+                // OK
+            }
+            try {
+                System.runFinalization();
+            } catch (OutOfMemoryError error) {
+                // OK
+            }
             try {
                 alloc.add(new byte[size]);
                 size = (int)(((double)size) * 1.3);
@@ -1216,6 +1224,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             str = findRefsFromRoot(ref.get(), rootsHint);
         } catch (Exception e) {
             throw new AssertionFailedErrorException(e);
+        } catch (OutOfMemoryError err) {
+            // OK
         }
         fail(text + ":\n" + str);
     }
