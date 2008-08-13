@@ -1,9 +1,9 @@
 Name: Apache Lucene
-Version: 2.2.0
+Version: 2.3.2
 Description: Java-based indexing and search technology
 License: Apache-2.0
 Origin: http://lucene.apache.org/
-Files: lucene-core-2.2.0.jar
+Files: lucene-core-2.3.2.jar
 Source: http://svn.apache.org/repos/asf/lucene/java/trunk
 OSR: 6381
 
