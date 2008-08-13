@@ -132,7 +132,8 @@ public class SenderVouchesProfile extends ProfileBase
     
     @Override
     public boolean isProfileSupported(Project p, WSDLComponent component, boolean sts) {
-        return true;
+        ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(component);
+        return ConfigVersion.CONFIG_1_3.equals(configVersion);
     }
 
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
