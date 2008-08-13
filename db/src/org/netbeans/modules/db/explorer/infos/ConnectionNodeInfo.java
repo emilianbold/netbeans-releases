@@ -392,7 +392,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             setReadOnly(false);
             connect("GenericDatabaseSystem"); //NOI18N
         } catch (Exception e) {
-            throw new DatabaseException(e.getMessage());
+            throw new DatabaseException(e.getMessage(), e);
         }
     }
     

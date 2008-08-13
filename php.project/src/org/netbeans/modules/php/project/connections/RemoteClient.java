@@ -80,6 +80,7 @@ public class RemoteClient implements Cancellable {
     private static final Logger LOGGER = Logger.getLogger(RemoteClient.class.getName());
     private static final String NB_METADATA_DIR = "nbproject"; // NOI18N
     private static final String[] IGNORED_REMOTE_DIRS = new String[] {".", ".."}; // NOI18N
+    private static final int TRIES_TO_TRANSFER = 3; // number of tries if file download/upload fails
 
     // store not provided passwords in memory only
     private static final Map<Integer, String> PASSWORDS = new HashMap<Integer, String>();
@@ -339,10 +340,23 @@ public class RemoteClient implements Cancellable {
             // XXX lock the file?
             InputStream is = new FileInputStream(new File(baseLocalDir, file.getRelativePath(true)));
             try {
-                if (ftpClient.storeFile(fileName, is)) {
+                boolean success = false;
+                for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
+                    if (ftpClient.storeFile(fileName, is)) {
+                        success = true;
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format("The %d. attempt to upload '%s' was successful", i, file.getRelativePath()));
+                        }
+                        break;
+                    } else if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("The %d. attempt to upload '%s' was NOT successful", i, file.getRelativePath()));
+                    }
+                }
+                if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
                     transferFailed(transferInfo, file, getFailureMessage(fileName, true));
+                    ftpClient.deleteFile(fileName);
                 }
             } finally {
                 is.close();
@@ -511,10 +525,23 @@ public class RemoteClient implements Cancellable {
             // XXX lock the file?
             OutputStream os = new FileOutputStream(localFile);
             try {
-                if (ftpClient.retrieveFile(file.getName(), os)) {
+                boolean success = false;
+                for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
+                    if (ftpClient.retrieveFile(file.getName(), os)) {
+                        success = true;
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.fine(String.format("The %d. attempt to download '%s' was successful", i, file.getRelativePath()));
+                        }
+                        break;
+                    } else if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("The %d. attempt to download '%s' was NOT successful", i, file.getRelativePath()));
+                    }
+                }
+                if (success) {
                     transferSucceeded(transferInfo, file);
                 } else {
                     transferFailed(transferInfo, file, getFailureMessage(file.getName(), false));
+                    localFile.delete();
                 }
             } finally {
                 os.close();

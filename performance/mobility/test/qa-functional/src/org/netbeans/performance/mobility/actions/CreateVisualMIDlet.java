@@ -48,9 +48,9 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.performance.mobility.window.MIDletEditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import java.io.File;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
@@ -100,7 +100,10 @@ public class CreateVisualMIDlet extends PerformanceTestCase {
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
         pNode.select();
 
+        // Workaround for issue 143497
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         wizard.selectCategory("MIDP"); //NOI18N
         wizard.selectFileType("Visual MIDlet"); //NOI18N
         wizard.next();

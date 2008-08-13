@@ -208,7 +208,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 else {
                     // Regular file
                     String perm;
-                    if (isExecutable(files[i])) {
+                    if (IpeUtils.isExecutable(files[i])) {
                         perm = packagingFilesOuterPanel.getDirPermTextField().getText();
                     }
                     else {
@@ -225,34 +225,6 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 }
             }
         }
-    }
-    
-    private boolean isExecutable(File file) {
-        FileObject fo = null;
-        
-        if (file.getName().endsWith(".exe")) { //NOI18N
-            return true;
-        }
-        
-        try {
-            fo = FileUtil.toFileObject(file.getCanonicalFile());
-        } catch (IOException e) {
-            return false;
-        }
-        
-        DataObject dataObject = null;
-        try {
-            dataObject = DataObject.find(fo);
-        } catch (DataObjectNotFoundException e) {
-            return false;
-        }
-        if (dataObject instanceof ExeObject || dataObject instanceof ShellDataObject) {
-            if (dataObject instanceof OrphanedElfObject || dataObject instanceof CoreElfObject) {
-                return false;
-            }
-            return true;
-        }
-        return false;
     }
     
     class AddFilesButtonAction implements java.awt.event.ActionListener {
@@ -346,7 +318,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
                         topFolder += "/"; // NOI18N
                     }
                     String perm;
-                    if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || isExecutable(files[i])) { //NOI18N
+                    if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || IpeUtils.isExecutable(files[i])) { //NOI18N
                         perm = packagingFilesOuterPanel.getDirPermTextField().getText();
                     }
                     else {
@@ -551,20 +523,20 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 return label;
                 
             } else if (col == 2) {
-                if (elem.getType() == FileElement.FileType.DIRECTORY) {
-                    return label; // Already set to blank
-                }
-                if (elem.getType() == FileElement.FileType.SOFTLINK) {
-                    return label; // OK
-                }
-                if (!isSelected) {
-                    label = new JLabel();
-                }
-                File file = new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom()));
-                if (!isSelected && !file.exists()) {
-                    label.setForeground(Color.RED);
-                }
-                label.setText(elem.getFrom());
+//                if (elem.getType() == FileElement.FileType.DIRECTORY) {
+//                    return label; // Already set to blank
+//                }
+//                if (elem.getType() == FileElement.FileType.SOFTLINK) {
+//                    return label; // OK
+//                }
+//                if (!isSelected) {
+//                    label = new JLabel();
+//                }
+//                File file = new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom()));
+//                if (!isSelected && !file.exists()) {
+//                    label.setForeground(Color.RED);
+//                }
+//                label.setText(elem.getFrom());
             }
 //            else {
 //                label.setText(elem.getTo());

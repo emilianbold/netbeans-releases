@@ -191,19 +191,27 @@ public class PersistenceManager {
     public DesignerScene loadDiagram(String fileName, 
                                      UMLDiagramTopComponent topComp, 
                                      boolean groupEdges) {
-
-//        LoadDiagram loadDiag = new LoadDiagram(fileName, topComp);
-        DiagramLoader diagLoader = new DiagramLoader(fileName, topComp, groupEdges);
-        //get the diagram info - diagramName, diagramType, and owner
-        long start = System.currentTimeMillis();
-        //set to diagramLoading mode
-        PersistenceUtil.setDiagramLoading(true);
-        DesignerScene scene = diagLoader.openDiagram();
-        //done with diagramLoading.. unset the mode
-        PersistenceUtil.setDiagramLoading(false);
-        float elapsedTimeSec = (System.currentTimeMillis() - start) / 1000F;
-        System.err.println(" !!!!!!!!!!!!!!!!!!!! Total time to load the diagram : " +elapsedTimeSec);
-
+        DesignerScene scene = null;
+        try
+        {
+            DiagramLoader diagLoader = new DiagramLoader(fileName, topComp, groupEdges);
+            long start = System.currentTimeMillis();
+            //set to diagramLoading mode
+            PersistenceUtil.setDiagramLoading(true);
+            scene = diagLoader.openDiagram();
+            //done with diagramLoading.. unset the mode
+            PersistenceUtil.setDiagramLoading(false);
+            float elapsedTimeSec = (System.currentTimeMillis() - start) / 1000F;
+            System.err.println(" !!!!!!!!!!!!!!!!!!!! Total time to load the diagram : " + elapsedTimeSec);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            PersistenceUtil.setDiagramLoading(false);
+        }
         return scene;
     }
 }

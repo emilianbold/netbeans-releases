@@ -115,7 +115,7 @@ public class NativeExecutor implements Runnable {
     }
     
     /** targets may be null to indicate default target */
-    /*@Deprecated
+    /*@Deprecated*/
     public NativeExecutor(
             String runDir,
             String executable,
@@ -125,8 +125,8 @@ public class NativeExecutor implements Runnable {
             String actionName,
             boolean parseOutputForErrors,
             boolean showInput) {
-        this(CompilerSetManager.LOCALHOST, runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput);
-    }*/
+        this(CompilerSetManager.LOCALHOST, runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput, false);
+    }
     
     /** targets may be null to indicate default target */
     /*@Deprecated

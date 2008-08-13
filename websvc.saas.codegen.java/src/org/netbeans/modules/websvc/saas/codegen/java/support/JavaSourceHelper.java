@@ -64,6 +64,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
@@ -206,8 +207,9 @@ public class JavaSourceHelper {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     ExpressionTree packageTree = controller.getCompilationUnit().getPackageName();
-                    if(packageTree != null)
+                    if (packageTree != null) {
                         packageName[0] = packageTree.toString();
+                    }
                 }
             }, true);
         } catch (IOException ex) {
@@ -527,7 +529,7 @@ public class JavaSourceHelper {
     public static ClassTree addMethod(WorkingCopy copy, ClassTree tree, Modifier[] modifiers, String[] annotations, Object[] annotationAttrs, String name, Object returnType, String[] parameters, Object[] paramTypes, Object[] paramAnnotationsArray, Object[] paramAnnotationAttrsArray, String bodyText, String comment) {
         return addMethod(copy, tree, modifiers, annotations, annotationAttrs, name, returnType, parameters, paramTypes, paramAnnotationsArray, paramAnnotationAttrsArray, null, bodyText, comment);
     }
-        
+
     public static ClassTree addMethod(WorkingCopy copy, ClassTree tree, Modifier[] modifiers, String[] annotations, Object[] annotationAttrs, String name, Object returnType, String[] parameters, Object[] paramTypes, Object[] paramAnnotationsArray, Object[] paramAnnotationAttrsArray, Object[] throwList, String bodyText, String comment) {
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifiersTree = createModifiersTree(copy, modifiers, annotations, annotationAttrs);
@@ -562,7 +564,7 @@ public class JavaSourceHelper {
         }
 
         List<ExpressionTree> throwsExpressions = createThrowTrees(copy, throwList);
-            
+
         MethodTree methodTree = maker.Method(modifiersTree, name, returnTypeTree, Collections.<TypeParameterTree>emptyList(), paramTrees, throwsExpressions, bodyText, null);
 
         if (comment != null) {
@@ -580,11 +582,16 @@ public class JavaSourceHelper {
 
     private static Tree createTypeTree(WorkingCopy copy, Object type) {
         if (type instanceof String) {
-            TypeElement element = copy.getElements().getTypeElement((String) type);
-            if (element != null) {
-                return copy.getTreeMaker().QualIdent(element);
+            String typeString = (String) type;
+            if (typeString.indexOf("<") != -1) {
+                return createParameterizedTypeTree(copy, typeString);
             } else {
-                return copy.getTreeMaker().Identifier((String) type);
+                TypeElement element = copy.getElements().getTypeElement(typeString);
+                if (element != null) {
+                    return copy.getTreeMaker().QualIdent(element);
+                } else {
+                    return copy.getTreeMaker().Identifier(typeString);
+                }
             }
         } else {
             return (Tree) type;
@@ -593,6 +600,20 @@ public class JavaSourceHelper {
 
     public static Tree createIdentifierTree(WorkingCopy copy, String value) {
         return copy.getTreeMaker().Identifier(value);
+    }
+
+    private static Tree createParameterizedTypeTree(WorkingCopy copy, String parameterizedType) {
+        int left = parameterizedType.indexOf("<");
+        int right = parameterizedType.lastIndexOf(">");
+        String genericType = parameterizedType.substring(0, left);
+        String types = parameterizedType.substring(left + 1, right);
+        StringTokenizer tokenizer = new StringTokenizer(types, ",");
+        String[] typeArgs = new String[tokenizer.countTokens()];
+        int count = 0;
+        while (tokenizer.hasMoreTokens()) {
+            typeArgs[count++] = tokenizer.nextToken();
+        }
+        return createParameterizedTypeTree(copy, genericType, typeArgs);
     }
 
     public static Tree createParameterizedTypeTree(WorkingCopy copy, String type, String[] typeArgs) {
@@ -629,7 +650,6 @@ public class JavaSourceHelper {
 
             for (int i = 0; i < annotations.length; i++) {
                 String annotation = annotations[i];
-
                 List<ExpressionTree> expressionTrees = Collections.<ExpressionTree>emptyList();
 
                 if (annotationAttrs != null) {
@@ -646,7 +666,9 @@ public class JavaSourceHelper {
                     }
                 }
 
-                annotationTrees.add(maker.Annotation(maker.Identifier(annotation), expressionTrees));
+                //annotationTrees.add(maker.Annotation(maker.Identifier(annotation), expressionTrees));
+                TypeElement element = copy.getElements().getTypeElement(annotation);
+                annotationTrees.add(maker.Annotation(maker.QualIdent(element), expressionTrees));
             }
         } else {
             annotationTrees = Collections.<AnnotationTree>emptyList();
@@ -654,7 +676,7 @@ public class JavaSourceHelper {
 
         return annotationTrees;
     }
-    
+
     private static List<ExpressionTree> createThrowTrees(WorkingCopy copy, Object[] throwList) {
         TreeMaker maker = copy.getTreeMaker();
         List<ExpressionTree> throwTrees = Collections.<ExpressionTree>emptyList();
@@ -794,8 +816,9 @@ public class JavaSourceHelper {
         }
         return false;
     }
-    
+
     public static TypeElement getXmlRepresentationClass(TypeElement typeElement, String defaultSuffix) {
+
         List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
         for (ExecutableElement method : methods) {
             List<? extends AnnotationMirror> anmirs = method.getAnnotationMirrors();
@@ -813,7 +836,7 @@ public class JavaSourceHelper {
         }
         return null;
     }
-    
+
     public static TypeElement getTypeElement(JavaSource source) throws IOException {
         final TypeElement[] results = new TypeElement[1];
 
@@ -1029,25 +1052,27 @@ public class JavaSourceHelper {
         }
         return current;
     }
-    
-    public static boolean isContainsConstuctor(JavaSource source, 
+
+    public static boolean isContainsConstuctor(JavaSource source,
             final String[] paramNames, final Object[] paramTypes) {
         String sign = createMethodSignature("", paramTypes);
         List<MethodTree> methods = getAllConstuctors(source);
-        for(MethodTree m: methods) {
-            if(sign.equals(createMethodSignature(m, false)))
+        for (MethodTree m : methods) {
+            if (sign.equals(createMethodSignature(m, false))) {
                 return true;
+            }
         }
         return false;
     }
-    
-    public static boolean isContainsMethod(JavaSource source, final String methodName, 
+
+    public static boolean isContainsMethod(JavaSource source, final String methodName,
             final String[] paramNames, final Object[] paramTypes) {
         String sign = createMethodSignature(methodName, paramTypes);
         List<MethodTree> methods = getAllMethods(source);
-        for(MethodTree m: methods) {
-            if(sign.equals(createMethodSignature(m)))
+        for (MethodTree m : methods) {
+            if (sign.equals(createMethodSignature(m))) {
                 return true;
+            }
         }
         return false;
     }
@@ -1055,7 +1080,7 @@ public class JavaSourceHelper {
     public static void getAvailableFieldSignature(JavaSource source,
             Map<String, String> map) {
         List<VariableTree> fields = getAllFields(source);
-        for(VariableTree v: fields) {
+        for (VariableTree v : fields) {
             map.put(createFieldSignature(v), v.getName().toString());
         }
     }
@@ -1063,67 +1088,71 @@ public class JavaSourceHelper {
     public static void getAvailableConstructorSignature(JavaSource source,
             Map<String, String> map) {
         List<MethodTree> constructors = getAllConstuctors(source);
-        for(MethodTree c: constructors) {
+        for (MethodTree c : constructors) {
             map.put(createMethodSignature(c, true), c.getName().toString());
         }
     }
-    
+
     public static void getAvailableMethodSignature(JavaSource source,
             Map<String, String> map) {
         List<MethodTree> methods = getAllMethods(source);
-        for(MethodTree m: methods) {
+        for (MethodTree m : methods) {
             map.put(createMethodSignature(m), m.getName().toString());
         }
     }
-    
+
     public static String createFieldSignature(Object type, String name) {
-        return getShortTypeName(type.toString())+" "+name;
+        return getShortTypeName(type.toString()) + " " + name;
     }
-    
+
     public static String createFieldSignature(VariableTree v) {
-        return getShortTypeName(v.getType().toString())+" "+v.getName();
+        return getShortTypeName(v.getType().toString()) + " " + v.getName();
     }
-    
+
     public static String createMethodSignature(MethodTree m, boolean skipName) {
         String sign = "";
-        if(!skipName)
+        if (!skipName) {
             sign += m.getName();
+        }
         sign += "(";
-        if(m.getParameters() != null) {
-            for(VariableTree p:m.getParameters()) {
-                sign += getShortTypeName(p.getType())+",";
+        if (m.getParameters() != null) {
+            for (VariableTree p : m.getParameters()) {
+                sign += getShortTypeName(p.getType()) + ",";
             }
-            if(m.getParameters().size() > 0)
-                sign = sign.substring(0, sign.length()-1);
+            if (m.getParameters().size() > 0) {
+                sign = sign.substring(0, sign.length() - 1);
+            }
         }
         sign += ")";
         return sign;
     }
-    
+
     public static String createMethodSignature(MethodTree m) {
         return createMethodSignature(m, false);
     }
-    
+
     public static String createMethodSignature(String name, Object[] paramTypes) {
-        String sign = name+"(";
-        if(paramTypes != null) {
-            for(Object p:paramTypes) {
-                sign += getShortTypeName(p)+",";
+        String sign = name + "(";
+        if (paramTypes != null) {
+            for (Object p : paramTypes) {
+                sign += getShortTypeName(p) + ",";
             }
-            if(paramTypes.length > 0)
-                sign = sign.substring(0, sign.length()-1);
+            if (paramTypes.length > 0) {
+                sign = sign.substring(0, sign.length() - 1);
+            }
         }
         sign += ")";
         return sign;
     }
-    
+
     public static String getShortTypeName(Object type) {
         String shortName = type.toString();
-        if(shortName.contains("."))
-            shortName = shortName.substring(shortName.lastIndexOf(".")+1);
+        if (shortName.contains(".")) {
+            shortName = shortName.substring(shortName.lastIndexOf(".") + 1);
+        }
         return shortName;
     }
-    
+
     public static String findUri(JavaSource rSrc) {
         String path = null;
         List<? extends AnnotationMirror> annotations = JavaSourceHelper.getClassAnnotations(rSrc);
@@ -1135,14 +1164,15 @@ public class JavaSourceHelper {
         }
         return path;
     }
-    
+
     public static String getValueFromAnnotation(AnnotationMirror annotation) {
         return getValueFromAnnotation(annotation.getElementValues().values().toString());
     }
-    
+
     public static String getValueFromAnnotation(String value) {
-        if (value.indexOf("\"") != -1)
+        if (value.indexOf("\"") != -1) {
             value = value.substring(value.indexOf("\"") + 1, value.lastIndexOf("\""));
+        }
         return value;
     }
 }

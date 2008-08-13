@@ -211,8 +211,10 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         String frame = null;
         if (t.isSuspended () && (t.getStackDepth () > 0)) {
             try { 
-                CallStackFrame sf = t.getCallStack (0, 1) [0];
-                frame = CallStackNodeModel.getCSFName (null, sf, showPackageNames);
+                CallStackFrame[] sf = t.getCallStack (0, 1);
+                if (sf.length > 0) {
+                    frame = CallStackNodeModel.getCSFName (null, sf[0], showPackageNames);
+                }
             } catch (AbsentInformationException e) {
             }
         }

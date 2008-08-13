@@ -374,7 +374,7 @@ public class CompilerSetManager {
         assert record != null;
 
         log.warning("CSM.initRemoteCompilerSets for " + key + " [" + state + "]");
-        record.validate();
+        record.validate(false);
         if (record.isOnline()) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {

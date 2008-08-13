@@ -134,11 +134,21 @@ public class ProjectBridge {
     }
 
     /**
-     * Store used extensions in the project
-     * @param usedExtension list of new extensions
+     * Check needed header extensions and store list in the NB/project properties.
+     * @param needAdd list of needed extensions of header files.
      */
-    public void addExtensions(Set<String> usedExtension) {
-        makeConfigurationDescriptor.addAdditionalExtensions(usedExtension);
+    public void checkForNewExtensions(Set<String> needAdd){
+        Set<String> extensions = new HashSet<String>();
+        for(String name : needAdd){
+            int i = name.lastIndexOf('.');
+            if (i > 0){
+                String extension = name.substring(i+1);
+                if (extension.length()>0) {
+                    extensions.add(extension);
+                }
+            }
+        }
+        makeConfigurationDescriptor.addAdditionalHeaderExtensions(extensions);
     }
     
     private Item findByCanonicalName(String path){
