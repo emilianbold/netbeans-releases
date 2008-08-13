@@ -172,7 +172,16 @@ public class ConfigurationDescriptorProvider {
                     default:
                         type = "UNKNOWN"; // NOI18N
                 }
-                CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+                String host;
+                CompilerSet compilerSet;
+                if (makeConfiguration.getDevelopmentHost().isLocalhost()) {
+                    host = "LOCAL"; // NOI18N
+                    compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+                } else {
+                    host = "REMOTE"; // NOI18N
+                    // do not force creation of compiler sets
+                    compilerSet = null;
+                }
                 String flavor;
                 String[] families;
                 if (compilerSet != null) {
@@ -194,13 +203,7 @@ public class ConfigurationDescriptorProvider {
                         }
                     }
                     family = buffer.toString();
-                }
-                String host;
-                if (makeConfiguration.getDevelopmentHost().isLocalhost()) {
-                    host = "LOCAL"; // NOI18N
-                } else {
-                    host = "REMOTE"; // NOI18N
-                }
+                }                
                 String platform;
                 if (Platforms.getPlatform(makeConfiguration.getCompilerSet().getPlatform()) != null) {
                     platform = Platforms.getPlatform(makeConfiguration.getCompilerSet().getPlatform()).getName();
