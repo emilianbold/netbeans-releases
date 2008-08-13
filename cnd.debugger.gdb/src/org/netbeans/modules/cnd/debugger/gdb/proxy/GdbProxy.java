@@ -663,10 +663,6 @@ public class GdbProxy implements GdbMiDefinitions {
         return engine.sendCommand(cb, "whatis " + symbol); // NOI18N
     }
 
-    public int enable_timings(boolean enable) {
-        return engine.sendCommand("-enable-timings " + (enable ? "yes" : "no")); // NOI18N
-    }
-
     /**
      * Send "-gdb-exit" to the debugger
      * This command forces gdb to exit immediately.
