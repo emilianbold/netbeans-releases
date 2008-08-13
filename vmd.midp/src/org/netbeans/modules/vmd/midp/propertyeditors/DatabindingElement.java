@@ -92,12 +92,15 @@ public final class DatabindingElement implements PropertyEditorElement {
     public JComponent getCustomEditorComponent() {
         if (customEditor == null) {
             customEditor = new DatabindingElementUI(propertyEditor, radioButton);
+            radioButton.setSelected(false);
             if (component != null) {
                 customEditor.updateComponent(component.get());
             }
         }
         return customEditor;
     }
+    
+    
 
     public JRadioButton getRadioButton() {
         if (radioButton == null) {

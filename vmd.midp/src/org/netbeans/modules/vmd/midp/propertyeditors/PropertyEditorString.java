@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -120,7 +121,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         initComponents();
 
         if (databinding) {
-            Map<PropertyEditorElement, Integer> elements = new HashMap<PropertyEditorElement, Integer>(2);
+            LinkedHashMap<PropertyEditorElement, Integer> elements = new LinkedHashMap<PropertyEditorElement, Integer>(2);
             databindingElement = new DatabindingElement(this);
             elements.put(this, null);
             elements.put(databindingElement, new Integer(-1));
@@ -360,15 +361,23 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     }
     @Override
     public boolean executeInsideWriteTransaction() {
-        if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
+        if (component == null || component.get() == null)
+            return true;
+        final DesignComponent component_ = component.get();
+        DesignComponent connector = MidpDatabindingSupport.getConnector(component_, getPropertyNames().get(0));
+        if (databindingElement != null && connector != null) {
             return false;
         }
-        return super.executeInsideWriteTransaction();
+        return super.isExecuteInsideWriteTransactionUsed();
     }
     
     @Override
     public boolean isExecuteInsideWriteTransactionUsed() {
-        if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
+        if (component == null || component.get() == null)
+            return false;
+        final DesignComponent component_ = component.get();
+        DesignComponent connector = MidpDatabindingSupport.getConnector(component_, getPropertyNames().get(0));
+        if (databindingElement != null && connector != null) {
             return true;
         }
         return super.isExecuteInsideWriteTransactionUsed();

@@ -231,20 +231,19 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
     }
 
     @Override
-    public void reformat(Context context, int startOffset, int endOffset)
+    public void reformat(Context context, final int startOffset, final int endOffset)
             throws BadLocationException {
-        BaseDocument doc = (BaseDocument) context.document();        
-        doc = doReformat(doc, startOffset, endOffset);
+       final BaseDocument doc = (BaseDocument) context.document();
+       doc.render(new Runnable() {
+           public void run() {
+               doReformat(doc, startOffset, endOffset);            }
+       }); 
         
     }
     
     public BaseDocument doReformat(BaseDocument doc, int startOffset, int endOffset) {
-        BaseDocument bufDoc = new BaseDocument(XMLKit.class, false);
         spacesPerTab = IndentUtils.indentLevelSize(doc);
-        ((AbstractDocument)doc).readLock();
         try {
-            //buffer doc used as a worksheet
-            bufDoc.insertString(0, doc.getText(0, doc.getLength()), null);
             List<TokenElement> tags = getTags(doc, startOffset, endOffset);
             for (int i = tags.size() - 1; i >= 0; i--) {
                 TokenElement tag = tags.get(i);
@@ -267,29 +266,25 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                         lineStr = lineStr.substring(0, ndx);
                         int ndx2 = lineStr.lastIndexOf("<" + tagName.substring(2) );
                         if (ndx2 == -1) {//no start found in this line, so indent this tag
-                            changePrettyText(bufDoc, tag, so);
+                            changePrettyText(doc, tag, so);
                         } else {
                             lineStr = lineStr.substring(ndx2 + 1);
                             ndx2 = lineStr.indexOf("<");
                             if (ndx2 != -1) {//indent this tag if it contains another tag
-                                changePrettyText(bufDoc, tag, so);
+                                changePrettyText(doc, tag, so);
                             }
                         }
                     }
                 } else {
-                    changePrettyText(bufDoc, tag, so);
+                    changePrettyText(doc, tag, so);
                 }
-            }
-            //Now do the actual replacement in the document with the pretty text
-            //doc.replace(0, doc.getLength(), bufDoc.getText(0, bufDoc.getLength()), null);
-            compareAndMerge(doc, bufDoc);
+            }            
         } catch (BadLocationException ble) {
             //ignore exception
-            ble.printStackTrace();
         } catch (IOException iox) {
-           iox.printStackTrace();
+           //ignore exception
         } finally {
-           ((AbstractDocument)doc).readUnlock();
+           //((AbstractDocument)doc).readUnlock();
         }
         return doc;
     }
@@ -451,22 +446,5 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         }
     }
     
-    protected void compareAndMerge(Document d1, Document d2) throws IOException {
-        Lookup lookup = Lookups.singleton(d1);
-        ModelSource ms = new ModelSource(lookup, true);
-        XDMModel m1 = new XDMModel(ms);
-        m1.sync();
-        
-        lookup = Lookups.singleton(d2);
-        ms = new ModelSource(lookup, true);
-        XDMModel m2 = new XDMModel(ms);
-        m2.sync();        
-        
-        DefaultElementIdentity eID = new XMLElementIdentity();
-        DiffFinder diffEngine = new DiffFinder(eID);
-        List<Difference> diffList = diffEngine.findDiff(m1.getDocument(), m2.getDocument());
-        
-        m1.mergeDiff(diffList);
-        m1.flush();
-    }
+   
 }

@@ -449,6 +449,10 @@ public class StrutsConfigUtilities {
     
     public static MessageResources getDefatulMessageResource(FileObject dd){
         FileObject [] files = getConfigFilesFO(dd);
+        if (files == null) {
+            return null;
+        }
+
         MessageResources resource = null;
         int index = 0;
         DataObject configDO;

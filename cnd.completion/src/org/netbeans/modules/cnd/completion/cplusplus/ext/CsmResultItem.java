@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
 import java.util.Iterator;
-import org.netbeans.editor.Settings;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -68,19 +67,19 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -93,6 +92,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
@@ -1008,13 +1008,11 @@ public abstract class CsmResultItem
                             text = getItemText();
                             boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
                             boolean addClosingParen = false;
-                            Formatter f = doc.getFormatter();
-                            if (f instanceof ExtFormatter) {
-                                Object o = ((ExtFormatter) f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
-                                o = Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
-                                if ((o instanceof Boolean) && ((Boolean) o).booleanValue()) {
-                                    addClosingParen = true;
-                                }
+
+                            String mimeType = CsmCompletionUtils.getMimeType(doc);
+                            if (mimeType != null) {
+                                Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+                                addClosingParen = prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
                             }
 
                             if (addParams) {
