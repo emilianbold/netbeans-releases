@@ -39,12 +39,18 @@
 
 package org.netbeans.modules.editor.indent;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -74,12 +80,12 @@ public final class ProxyPreferences extends AbstractPreferences {
 
     @Override
     protected void removeSpi(String key) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
     }
 
     @Override
     protected void removeNodeSpi() throws BackingStoreException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
     }
 
     @Override
@@ -123,11 +129,55 @@ public final class ProxyPreferences extends AbstractPreferences {
     // private implementation
     // -----------------------------------------------------------------------
 
+    private static final Logger LOG = Logger.getLogger(ProxyPreferences.class.getName());
+    
     private final Preferences [] delegates;
+    private final PreferenceChangeListener [] prefTrackers;
 
     private ProxyPreferences(String name, ProxyPreferences parent, Preferences... delegates) {
         super(parent, name); //NOI18N
         assert delegates.length > 0 : "There must be at least one delegate"; //NOI18N
         this.delegates = delegates;
+        this.prefTrackers = new PreferenceChangeListener[delegates.length];
+
+        for(int i = 0; i < delegates.length; i++) {
+            prefTrackers[i] = new PrefTracker(i);
+            delegates[i].addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefTrackers[i], delegates[i]));
+        }
     }
+
+    private void firePrefChange(String key, String newValue) {
+        try {
+            Method m = AbstractPreferences.class.getDeclaredMethod("enqueuePreferenceChangeEvent", String.class, String.class); //NOI18N
+            m.setAccessible(true);
+            m.invoke(this, key, newValue);
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, null, e);
+        }
+    }
+    
+    private class PrefTracker implements PreferenceChangeListener {
+
+        private final int delegateIdx;
+
+        public PrefTracker(int idx) {
+            this.delegateIdx = idx;
+        }
+        
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            synchronized (ProxyPreferences.this.lock) {
+                if (evt.getKey() != null) {
+                    for(int i = delegates.length - 1; i > delegateIdx; i--) {
+                        if (delegates[i].get(evt.getKey(), null) != null) {
+                            // ignore
+                            return;
+                        }
+                    }
+                }
+            }
+
+            firePrefChange(evt.getKey(), evt.getNewValue());
+        }
+
+    } // End of PrefTracker class
 }
