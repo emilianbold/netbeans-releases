@@ -182,23 +182,23 @@ public class GlassFishV2JaxWsStack implements WSStackImplementation<JaxWs> {
             try {
                 if (wsToolsJar.exists()) { // WSIT installed on top
                     return new URL[] {
-                        wsToolsJar.toURL(),     // NOI18N
-                        new File(root, WEBSERVICES_RT_JAR).toURL(),           // NOI18N
-                        new File(root, TOOLS_JAR).toURL(),      //NOI18N
-                        new File(root, JSTL_JAR).toURL(),       //NOI18N
-                        new File(root, JAVA_EE_JAR).toURL(),    //NOI18N
-                        new File(root, APPSERV_WS_JAR).toURL(), //NOI18N
-                        new File(root, MAIL_JAR).toURL(),       //NOI18N
-                        new File(root, ACTIVATION_JAR).toURL()  //NOI18N
+                        wsToolsJar.toURI().toURL(),     // NOI18N
+                        new File(root, WEBSERVICES_RT_JAR).toURI().toURL(),           // NOI18N
+                        new File(root, TOOLS_JAR).toURI().toURL(),      //NOI18N
+                        new File(root, JSTL_JAR).toURI().toURL(),       //NOI18N
+                        new File(root, JAVA_EE_JAR).toURI().toURL(),    //NOI18N
+                        new File(root, APPSERV_WS_JAR).toURI().toURL(), //NOI18N
+                        new File(root, MAIL_JAR).toURI().toURL(),       //NOI18N
+                        new File(root, ACTIVATION_JAR).toURI().toURL()  //NOI18N
                     };
                 } else {                                                // regular appserver
                     return new URL[] {
-                        new File(root, TOOLS_JAR).toURL(),        //NOI18N
-                        new File(root, JSTL_JAR).toURL(),         //NOI18N
-                        new File(root, JAVA_EE_JAR).toURL(),      //NOI18N
-                        new File(root, APPSERV_WS_JAR).toURL(),   //NOI18N
-                        new File(root, MAIL_JAR).toURL(),         //NOI18N
-                        new File(root, ACTIVATION_JAR).toURL()    //NOI18N
+                        new File(root, TOOLS_JAR).toURI().toURL(),        //NOI18N
+                        new File(root, JSTL_JAR).toURI().toURL(),         //NOI18N
+                        new File(root, JAVA_EE_JAR).toURI().toURL(),      //NOI18N
+                        new File(root, APPSERV_WS_JAR).toURI().toURL(),   //NOI18N
+                        new File(root, MAIL_JAR).toURI().toURL(),         //NOI18N
+                        new File(root, ACTIVATION_JAR).toURI().toURL()    //NOI18N
                     };
                 }
             } catch (MalformedURLException ex) {

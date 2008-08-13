@@ -184,5 +184,10 @@ public class ModuleItem extends UpdateItemImpl {
     void setModuleNotification (String notification) {
         this.moduleNotification = notification;
     }
+
+    @Override
+    public void setUpdateLicenseImpl (UpdateLicenseImpl licenseImpl) {
+        this.licenseImpl = licenseImpl;
+    }
     
 }

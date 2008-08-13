@@ -57,7 +57,6 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
@@ -267,11 +266,6 @@ public abstract class Command {
     protected boolean isScriptSelected() {
         String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
         return PhpProjectProperties.RunAsType.SCRIPT.name().equals(runAs);
-    }
-
-    protected String getPhpInterpreter() {
-        String retval = PhpOptions.getInstance().getPhpInterpreter();
-        return (retval != null && retval.length() >  0) ? retval.trim() : null;
     }
 
     protected boolean isRemoteConfigSelected() {

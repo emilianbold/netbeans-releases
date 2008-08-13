@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
@@ -57,13 +56,11 @@ public class InactiveCodeTest extends SemanticHighlightingTestBase {
     }
 
     public void testElifCluster() throws Exception {
-        String source = "elif.cc"; // NOI18N
-        performTest(source, source + ".dat", source + ".err"); // NOI18N
+        performTest("elif.cc"); // NOI18N
     }
 
     public void testDefines() throws Exception {
-        String source = "defines.c"; // NOI18N
-        performTest(source, source + ".dat", source + ".err"); // NOI18N
+        performTest("defines.c"); // NOI18N
     }
 
     protected List<CsmOffsetable> getBlocks(FileImpl testFile,int offset) {

@@ -46,7 +46,6 @@ import java.net.URL;
 
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.modules.web.client.tools.common.dbgp.Feature;
-import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSCallStackFrameImpl;
 import org.openide.awt.HtmlBrowser;
 
 /**

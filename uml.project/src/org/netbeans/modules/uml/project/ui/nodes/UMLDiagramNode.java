@@ -149,7 +149,8 @@ public class UMLDiagramNode extends UMLElementNode
     @Override
     public boolean canCopy()
     {
-        return false;
+        return true;
+//        return false;
     }
     
     
@@ -213,6 +214,7 @@ public class UMLDiagramNode extends UMLElementNode
         return mDiagramType;
     }
     
+    @Override
     public Transferable clipboardCopy()
     throws IOException
     {
@@ -241,6 +243,7 @@ public class UMLDiagramNode extends UMLElementNode
     }
     
     
+    @Override
     public Action getPreferredAction()
     {
         // disable double click open action for those unsupported diagram types for 6.5 M1
@@ -254,6 +257,7 @@ public class UMLDiagramNode extends UMLElementNode
     }
     
     
+    @Override
     public Action[] getActions(boolean context)
     {
         ArrayList<Action> actions = new ArrayList <Action>();
@@ -279,7 +283,7 @@ public class UMLDiagramNode extends UMLElementNode
         actions.add(null);
         addContextMenus(actions);
         actions.add(null);
-        actions.add(SystemAction.get(PropertiesAction.class));;
+        actions.add(SystemAction.get(PropertiesAction.class));
 
         Action[] retVal = new Action[actions.size()];
         actions.toArray(retVal);
@@ -310,6 +314,7 @@ public class UMLDiagramNode extends UMLElementNode
         }
     }
     
+    @Override
     public boolean equals(Object obj)
     {
         boolean retVal = false;
@@ -371,6 +376,7 @@ public class UMLDiagramNode extends UMLElementNode
         return retVal;
     }
     
+    @Override
     public String getType()
     {
         return mDiagramType;

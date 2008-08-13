@@ -1,9 +1,10 @@
 <?php
     include_once "__NAME__Profile.php";
 
-    define("_RETURN_URL", "__GROUP___return_url");
-    define("_USERNAME", "__GROUP___username");
-    define("_PASSWORD", "__GROUP___password");
+    define("_ATTR_PREFIX", "__NAME__");
+    define("_RETURN_URL", "__GROUP__return_url");
+    define("_USERNAME", "__GROUP__username");
+    define("_PASSWORD", "__GROUP__password");
     define("_EXPIRE", "3600");
     
     class __NAME__ {
@@ -12,13 +13,12 @@
         private static $useAppUsernamePassword;
         private static $appUsername;
         private static $appPassword;
-        private static $ATTR_PREFIX = "__NAME__";
         private static $LOGIN_URL;
 
         public static function init() {
             if(self::$inited)
               return;
-            self::$LOGIN_URL = "__GROUP__/".str_replace("Authenticator", "Login", self::$ATTR_PREFIX).".php";
+            self::$LOGIN_URL = "__GROUP__/".str_replace("Authenticator", "Login", _ATTR_PREFIX).".php";
 
             self::$appUsername = __NAME__Profile::getUsername();
             self::$appPassword = __NAME__Profile::getPassword();
@@ -41,11 +41,12 @@
                 $sessionPassword = self::getSession(_PASSWORD);
                 if ($sessionUsername == null || strlen($sessionUsername) == 0 ||
                     $sessionPassword == null || strlen($sessionPassword) == 0) {
-                    self::saveSession(_RETURN_URL, $_SERVER['REQUEST_URI']);
                     self::doRedirect(self::$LOGIN_URL."?rUrl=".$_SERVER['REQUEST_URI']);
                     exit(0);
                 } else {
-                    $returnUrl = self::getSession("_return_url");
+                    self::saveSession(_USERNAME, $sessionUsername);
+                    self::saveSession(_PASSWORD, $sessionPassword);
+                    $returnUrl = self::getSession(_RETURN_URL);
                     if ($returnUrl != null) {
                         self::deleteSession(_RETURN_URL);
                         self::doRedirect($returnUrl);
@@ -53,6 +54,15 @@
                     }
                 }
             }
+        }
+        
+        private static function sessionInit() {
+            session_start();
+            $_SESSION = array();
+            if (isset($_COOKIE[session_name()])) {
+                setcookie(session_name(), '', time()-42000, '/');
+            }
+            session_destroy();
         }
         
         public static function getSession($name) {
@@ -66,7 +76,7 @@
             setcookie($name, $value, time() + _EXPIRE, "/");
             $_SESSION[$name] = $value;
         }
-        
+
         public static function deleteSession($name) {
             setcookie($name, "", time() - _EXPIRE, "/");
             $_SESSION[$name] = null;

@@ -47,6 +47,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.AbstractList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -61,6 +62,7 @@ import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.php.project.PhpInterpreter;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,7 +76,6 @@ import org.openide.util.Utilities;
  * @author Tomas Mysik
  */
 public final class Utils {
-
     // protocol://[user[:password]@]domain[:port]/rel/path?query#anchor
     public static final String URL_REGEXP = "^https?://([^/?#: ]+(:[^/?#: ]+)?@)?[^/?#: ]+(:\\d+)?/[^?# ]*(\\?[^#]*)?(#\\w*)?$"; // NOI18N
     private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
@@ -139,6 +140,39 @@ public final class Utils {
         localServerComboBoxModel.addElement(localServer);
         localServerComboBox.setSelectedItem(localServer);
         return newLocation;
+    }
+
+    public static void browsePhpInterpreter(Component parent, JTextField textField) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle(NbBundle.getMessage(Utils.class, "LBL_SelectPhpInterpreter"));
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setCurrentDirectory(LastUsedFolders.getOptionsInterpreter());
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
+            File phpInterpreter = FileUtil.normalizeFile(chooser.getSelectedFile());
+            LastUsedFolders.setOptionsInterpreter(phpInterpreter);
+            textField.setText(phpInterpreter.getAbsolutePath());
+        }
+    }
+
+    // input can be with parameters e.g. "/usr/bin/php -q"
+    public static String validatePhpInterpreter(String command) {
+        assert command != null;
+        if (command.trim().length() == 0) {
+            return NbBundle.getMessage(Utils.class, "MSG_NoPhpInterpreter");
+        }
+
+        PhpInterpreter phpInterpreter = new PhpInterpreter(command);
+        File file = new File(phpInterpreter.getInterpreter());
+        if (!file.isAbsolute()) {
+            return NbBundle.getMessage(Utils.class, "MSG_PhpNotAbsolutePath");
+        }
+        if (!file.isFile()) {
+            return NbBundle.getMessage(Utils.class, "MSG_PhpNotFile");
+        }
+        if (!file.canRead()) {
+            return NbBundle.getMessage(Utils.class, "MSG_PhpCannotRead");
+        }
+        return null;
     }
 
     public static List getAllItems(final JComboBox comboBox) {

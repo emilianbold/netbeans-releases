@@ -51,7 +51,5 @@ public interface CompositeWidget
     public boolean isHorizontalLayout();
     
     public void removeCompartment(CompartmentWidget widget);
-    
-    public void notifyCompartmentWidgetAdded();
-    
+        
 }

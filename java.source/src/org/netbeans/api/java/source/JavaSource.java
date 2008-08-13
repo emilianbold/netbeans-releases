@@ -1851,7 +1851,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     private static class EditorRegistryListener implements CaretListener, PropertyChangeListener {
                         
         private Request request;
-        private JTextComponent lastEditor;
+        private Reference<JTextComponent> lastEditorRef;
         
         public EditorRegistryListener () {
             EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
@@ -1864,6 +1864,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 
         public void editorRegistryChanged() {
             final JTextComponent editor = EditorRegistry.lastFocusedComponent();
+            final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
             if (lastEditor != editor) {
                 if (lastEditor != null) {
                     lastEditor.removeCaretListener(this);
@@ -1877,15 +1878,16 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         js.k24 = false;
                     }                   
                 }
-                lastEditor = editor;
-                if (lastEditor != null) {                    
-                    lastEditor.addCaretListener(this);
-                    lastEditor.addPropertyChangeListener(this);
+                lastEditorRef = new WeakReference<JTextComponent>(editor);
+                if (editor != null) {
+                    editor.addCaretListener(this);
+                    editor.addPropertyChangeListener(this);
                 }
             }
         }
         
         public void caretUpdate(CaretEvent event) {
+            final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
             if (lastEditor != null) {
                 Document doc = lastEditor.getDocument();
                 if (doc != null) {
@@ -1898,6 +1900,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
 
         public void propertyChange(final PropertyChangeEvent evt) {
+            final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
             String propName = evt.getPropertyName();
             if ("completion-active".equals(propName)) {
                 JavaSource js = null;

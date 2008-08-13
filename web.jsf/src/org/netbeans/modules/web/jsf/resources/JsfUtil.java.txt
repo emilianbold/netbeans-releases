@@ -78,23 +78,19 @@ public class JsfUtil {
         return converter.getAsString(FacesContext.getCurrentInstance(), null, object);
     }
     
-    public static String getAsString(Object object) {
-        if (object instanceof Collection<?>) {
-            Collection<?> collection = (Collection<?>)object;
-            if (collection.size() == 0) {
-                return "(No Items)";
-            }
-            StringBuffer sb = new StringBuffer();
-            int i = 0;
-            for (Object item : collection) {
-                if (i > 0) {
-                    sb.append("<br />");
-                }
-                sb.append(item);
-                i++;
-            }
-            return sb.toString();
+    public static String getCollectionAsString(Collection<?> collection) {
+        if (collection == null || collection.size() == 0) {
+            return "(No Items)";
         }
-        return String.valueOf(object);
+        StringBuffer sb = new StringBuffer();
+        int i = 0;
+        for (Object item : collection) {
+            if (i > 0) {
+                sb.append("<br />");
+            }
+            sb.append(item);
+            i++;
+        }
+        return sb.toString();
     }
 }

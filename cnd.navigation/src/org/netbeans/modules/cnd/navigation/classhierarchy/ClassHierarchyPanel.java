@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.navigation.services.HierarchyFactory;
 import org.netbeans.modules.cnd.navigation.services.HierarchyModel;
+import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -256,6 +257,7 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         add(toolBar, gridBagConstraints);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("SplitPane.shadow")));
+        jPanel2.setFocusable(false);
         jPanel2.setMinimumSize(new java.awt.Dimension(1, 1));
         jPanel2.setPreferredSize(new java.awt.Dimension(1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -263,6 +265,8 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jPanel2, gridBagConstraints);
+
+        hierarchyPane.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -412,10 +416,10 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     private class RefreshAction extends AbstractAction implements Presenter.Popup {
         private JMenuItem menuItem;
         public RefreshAction() {
-            putValue(Action.NAME, NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.refreshButton.toolTipText")); //NOI18N
+            putValue(Action.NAME, NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.refreshButton.menuText")); //NOI18N
             putValue(Action.SMALL_ICON, refreshButton.getIcon());
-            menuItem = new JMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -432,8 +436,8 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         public SubTypeAction() {
             putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.SUB_TYPES)); //NOI18N
             putValue(Action.SMALL_ICON, subtypeButton.getIcon());
-            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JRadioButtonMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
         public void actionPerformed(ActionEvent e) {
@@ -451,8 +455,8 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         public SuperTypeAction() {
             putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.SUPER_TYPES));
             putValue(Action.SMALL_ICON, supertypeButton.getIcon());
-            menuItem = new JRadioButtonMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JRadioButtonMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
         public void actionPerformed(ActionEvent e) {
@@ -470,8 +474,8 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         public DirectOnlyAction() {
             putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.DIRECT_ONLY));
             putValue(Action.SMALL_ICON, getButtonIcon(ClassHierarchyPanel.DIRECT_ONLY));
-            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JCheckBoxMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
         public void actionPerformed(ActionEvent e) {
@@ -489,8 +493,8 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         public TreeAction() {
             putValue(Action.NAME, getButtonTooltip(ClassHierarchyPanel.TREE));
             putValue(Action.SMALL_ICON, getButtonIcon(ClassHierarchyPanel.TREE));
-            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME)); 
-            menuItem.setAction(this);
+            menuItem = new JCheckBoxMenuItem(this); 
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
         }
  
         public void actionPerformed(ActionEvent e) {
@@ -569,16 +573,16 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
         String path = null;
         switch (kind){
         case SUB_TYPES:
-            path = "ClassHierarchyPanel.subtypeButton.toolTipText"; // NOI18N
+            path = "ClassHierarchyPanel.subtypeButton.menuText"; // NOI18N
             break;
         case SUPER_TYPES:
-            path = "ClassHierarchyPanel.supertypeButton.toolTipText"; // NOI18N
+            path = "ClassHierarchyPanel.supertypeButton.menuText"; // NOI18N
             break;
         case DIRECT_ONLY:
-            path = "ClassHierarchyPanel.directOnlyButton.toolTipText"; // NOI18N
+            path = "ClassHierarchyPanel.directOnlyButton.menuText"; // NOI18N
             break;
         case TREE:
-            path = "ClassHierarchyPanel.treeButton.toolTipText"; // NOI18N
+            path = "ClassHierarchyPanel.treeButton.menuText"; // NOI18N
             break;
         }
         return org.openide.util.NbBundle.getMessage(getClass(), path);

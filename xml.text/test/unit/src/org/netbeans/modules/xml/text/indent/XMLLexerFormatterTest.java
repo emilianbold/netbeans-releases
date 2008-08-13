@@ -58,6 +58,7 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         suite.addTest(new XMLLexerFormatterTest("testFormat"));
         suite.addTest(new XMLLexerFormatterTest("testFormatSubsection"));
         suite.addTest(new XMLLexerFormatterTest("testFormatForTab"));
+       // suite.addTest(new XMLLexerFormatterTest("testFormatTime"));
         return suite;
     }
     
@@ -96,4 +97,16 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         assert(compare(formattedDoc, outputDoc));
     }
     
+      
+    public void testFormatTime() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/1998stats.xml");
+        //format the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        long t1 = System.currentTimeMillis();
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        long t2 = System.currentTimeMillis();
+        long timeElapsed = t2-t1;
+        System.out.println("Time take to format(ms):: " +timeElapsed);
+        
+    }
 }

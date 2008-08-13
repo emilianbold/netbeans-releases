@@ -191,7 +191,12 @@ NetBeans.Constants = {
     get ServerSocketListenerIF() { return Components.interfaces.nsIServerSocketListener; },
 
     get CachingChannelIF() { return Components.interfaces.nsICachingChannel; },
+    
+    // Convertor
+    get ScriptableUnicodeConverterCID() { return '@mozilla.org/intl/scriptableunicodeconverter'; },
 
+    get ScriptableUnicodeConverterIF() { return Components.interfaces.nsIScriptableUnicodeConverter; },
+    
     // JavaScript debugger
     get jsdIDebuggerServiceCID() { return '@mozilla.org/js/jsd/debugger-service;1'; },
 

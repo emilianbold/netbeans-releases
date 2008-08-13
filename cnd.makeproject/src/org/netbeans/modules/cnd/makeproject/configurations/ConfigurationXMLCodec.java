@@ -250,6 +250,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentLinkerConfiguration = ((MakeConfiguration)currentConf).getLinkerConfiguration();
         } else if (element.equals(PACK_ELEMENT)) {
             currentPackagingConfiguration = ((MakeConfiguration)currentConf).getPackagingConfiguration();
+            currentPackagingConfiguration.getFiles().getValue().clear();
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration)currentConf).getArchiverConfiguration();
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
@@ -642,12 +643,15 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     private MakeConfiguration createNewConfiguration(FileObject projectDirectory, String value, int confType) {
-        MakeConfiguration makeConfiguration = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), getString(value), confType);
+        String host;
         // here we need to handle tags added between version.
-        // becase such tags will not be handled in "endElement" callbacks
+        // becase such tags will not be handled in "endElement" callbacks        
         if (descriptorVersion < 46) {
-            makeConfiguration.getDevelopmentHost().setValue(CompilerSetManager.LOCALHOST);
+            host = CompilerSetManager.LOCALHOST;
+        } else {
+            host = CompilerSetManager.getDefaultDevelopmentHost();
         }
+        MakeConfiguration makeConfiguration = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), getString(value), confType, host);
         return makeConfiguration;
     }
     

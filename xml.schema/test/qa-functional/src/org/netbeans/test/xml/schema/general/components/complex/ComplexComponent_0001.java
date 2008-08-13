@@ -52,17 +52,6 @@ import org.netbeans.jellytools.TopComponentOperator;
 
 public class ComplexComponent_0001 extends ComplexComponent {
     
-    static final String [] m_aTestMethods = {
-        "OpenSchema",
-        "CheckProperties",
-        "CheckingIDProperty",
-        "CheckingNameProperty",
-        "CheckingAbstractProperty",
-        "CheckingMixedContentProperty",
-        "CheckingDerivationsProperty",
-        "CheckingSubstitutionsProperty",
-      };
-
     String sPathInTree = "Complex Types|ComplexType-0";
 
     String[] asProperties =
@@ -95,18 +84,6 @@ public class ComplexComponent_0001 extends ComplexComponent {
     public ComplexComponent_0001(String arg0) {
         super(arg0);
     }
-
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(ComplexComponent_0001.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new ComplexComponent_0001(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
 
     public static Test suite( )
     {
@@ -278,6 +255,7 @@ public class ComplexComponent_0001 extends ComplexComponent {
     {
       startTest( );
 
+      /*
       String[] data =
       {
         "<xsd:complexType name=\"ComplexType-0\">~<xsd:complexType name=\"ComplexType-0\" block=\"#all\">~" + sPathInTree + "~Prohibited Substitutions (Block)|#all",
@@ -309,6 +287,7 @@ public class ComplexComponent_0001 extends ComplexComponent {
         " block=\"restriction substitution extension\"~~" + sPathInTree + "~Prohibited Substitutions (Block)|| ",
       };
       CheckProperty( data2 );
+      */
 
       endTest( );
     }

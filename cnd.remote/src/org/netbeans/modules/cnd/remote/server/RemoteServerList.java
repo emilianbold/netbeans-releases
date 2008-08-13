@@ -100,7 +100,7 @@ public class RemoteServerList implements ServerList {
         addServer(CompilerSetManager.LOCALHOST, false);
         if (slist != null) {
             for (String hkey : slist.split(",")) { // NOI18N
-                addServer(hkey, false);
+                addServer(hkey, false, true);
             }
         }
         refresh();
@@ -113,7 +113,7 @@ public class RemoteServerList implements ServerList {
      * @return A RemoteServerRecord for hkey
      */
     public synchronized ServerRecord get(String hkey) {
-        
+
         // Search the active server list
 	for (RemoteServerRecord record : items) {
             if (hkey.equals(record.getName())) {
@@ -157,7 +157,12 @@ public class RemoteServerList implements ServerList {
         return sa;
     }
     
-    public synchronized void addServer(final String name, boolean asDefault) {
+    private void addServer(final String name, boolean asDefault) {
+        addServer(name, asDefault, true);
+    }
+
+
+    public synchronized void addServer(final String name, boolean asDefault, boolean connect) {
         RemoteServerRecord record = null;
         
         // First off, check if we already have this record
@@ -180,8 +185,9 @@ public class RemoteServerList implements ServerList {
         }
         
         if (record == null) {
-            record = new RemoteServerRecord(name);
+            record = new RemoteServerRecord(name, connect);
         } else {
+            record.setDeleted(false);
             unlisted.remove(record);
         }
         items.add(record);
@@ -189,9 +195,7 @@ public class RemoteServerList implements ServerList {
             defaultIndex = items.size() - 1;
         }
         refresh();
-        // TODO: this should follow toolchain loading
-        // SystemIncludesUtils.load(record);
-        
+
         // Register the new server
         // TODO: Save the state as well as name. On restart, only try connecting to
         // ONLINE hosts.
@@ -229,11 +233,14 @@ public class RemoteServerList implements ServerList {
     }
     
     public synchronized void clear() {
+        for (RemoteServerRecord record : items) {
+            record.setDeleted(true);
+        }
         getPreferences().remove(REMOTE_SERVERS);
         unlisted.addAll(items);
         items.clear();
     }
-    
+
     private void removeFromPreferences(String hkey) {
         StringBuilder sb = new StringBuilder();
         
@@ -281,7 +288,8 @@ public class RemoteServerList implements ServerList {
     public synchronized RemoteServerRecord getLocalhostRecord() {
         return items.get(0);
     }
-    
+
+    //TODO: why this is here?
     public boolean isValidExecutable(String hkey, String path) {
         if (path == null || path.length() == 0) {
             return false;
@@ -327,6 +335,6 @@ public class RemoteServerList implements ServerList {
     private Preferences getPreferences() {
         return NbPreferences.forModule(RemoteServerList.class);
     }
-    
+
     
 }

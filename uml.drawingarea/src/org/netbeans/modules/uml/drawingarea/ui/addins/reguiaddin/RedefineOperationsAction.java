@@ -48,6 +48,7 @@
 package org.netbeans.modules.uml.drawingarea.ui.addins.reguiaddin;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 //import org.netbeans.modules.uml.regui.*;
 import org.netbeans.modules.uml.drawingarea.actions.SceneCookieAction;
@@ -91,16 +92,19 @@ public class RedefineOperationsAction extends SceneCookieAction
 			
 			if (element != null)
 			{
-				 if (element.getElementType().equals("Class") || // NOI18N
-				     element.getElementType().equals("Interface") || // NOI18N
-                                     element.getElementType().equals("Enumeration")) // NOI18N
+                            String elementType = element.getElementType();
+                             if (elementType.equals("Class") || // NOI18N
+                                 elementType.equals("Interface") || // NOI18N
+                                 elementType.equals("Enumeration") ||
+                                 elementType.equals("DerivationClassifier")) // NOI18N
+
+                             {
+                                 DesignerScene scene = nodes[0].getLookup().lookup(DesignerScene.class);
+                                 if((scene != null) && scene.isReadOnly() == false)
                                  {
-                                     DesignerScene scene = nodes[0].getLookup().lookup(DesignerScene.class);
-                                     if((scene != null) && scene.isReadOnly() == false)
-                                     {
-                                         retVal = true;
-                                     }
+                                     retVal = true;
                                  }
+                             }
 			}
 		}
 		
@@ -129,6 +133,12 @@ public class RedefineOperationsAction extends SceneCookieAction
 		final ETArrayList < IElement > elements = new ETArrayList<IElement>();
 		IElement element = (IElement)nodes[0].getCookie(IElement.class);
 		
+                if (element instanceof IDerivationClassifier)
+                {
+                    IDerivationClassifier classifier = (IDerivationClassifier) element;
+                    element = classifier.getTemplate();
+                }
+                
 		if (element != null)
 		{
 			elements.add(element);
