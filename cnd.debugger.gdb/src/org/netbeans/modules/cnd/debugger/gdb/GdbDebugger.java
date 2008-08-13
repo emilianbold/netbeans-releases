@@ -65,8 +65,10 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -94,6 +96,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -192,13 +195,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private InputOutput iotab;
     private boolean firstOutput;
     private boolean dlopenPending;
-    private String lastShare;
     private int shareToken;
     private final Disassembly disassembly;
     private GdbBreakpoint currentBreakpoint = null;
     private String hkey;
     private int platform;
     private PathMap pathMap;
+    private Map<String, ShareInfo> shareTab;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -222,6 +225,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
         threadsViewInit();
         this.disassembly = new Disassembly(this);
+        shareTab = null;
     }
 
     public ContextProvider getLookup() {
@@ -282,12 +286,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.enable_timings(false);
             if (pae.getID() == DEBUG_ATTACH) {
                 String pgm = null;
+                boolean isSharedLibrary = false;
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 if (((MakeConfiguration) pae.getConfiguration()).isDynamicLibraryConfiguration()) {
                     pgm = getExePath(programPID);
-//                    if (pgm != null) {
-//                        gdb.file_exec_and_symbols(pgm); // Should this be file_symbolfile() ?
-//                    }
+                    isSharedLibrary = true;
                 }
                 CommandBuffer cb = new CommandBuffer(gdb);
                 gdb.target_attach(cb, Long.toString(programPID));
@@ -312,12 +315,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     });
                 } else {
                     final String path = getFullPath(runDirectory, pae.getExecutable());
-                    
-                    if (platform == PlatformTypes.PLATFORM_MACOSX && pgm == null) {
-                        pgm = getMacExePath();
-                    }
-                    if (pgm != null) {
-                        gdb.file_symbol_file(pgm);
+                    if (isSharedLibrary) {
+                        if (platform == PlatformTypes.PLATFORM_MACOSX && pgm == null) {
+                            pgm = getMacExePath();
+                        }
+                        if (pgm != null) {
+                            gdb.file_symbol_file(pgm);
+                        }
                     }
 
                     // 1) see if path was explicitly loaded by target_attach (this is system dependent)
@@ -328,7 +332,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                                 gdb.file_symbol_file(path);
                             }
                             setLoading();
-                        } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
+                        } else if (isSharedLibrary && platform == PlatformTypes.PLATFORM_MACOSX) {
                             cb = new CommandBuffer(gdb);
                             gdb.info_share(cb);
                             cb.waitForCompletion();
@@ -782,7 +786,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     private String getMacDylibAddress(String path, String info) {
         String line;
-        int start = 0;
+        int start = info.startsWith("shlib-info=") ? 11 : 0;
         int next = info.indexOf(",shlib-info="); // NOI18N
         
         while ((line = info.substring(start, next > 0 ? next : info.length())) != null) {
@@ -1027,14 +1031,14 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.done();
             }
         } else if (msg.startsWith("^done,shlib-info=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
-            String info = msg.substring(17);
+            String info = msg.substring(6);
             cb = gdb.getCommandBuffer(itok);
             if (cb != null) {
                 cb.append(info);
                 cb.done();
                 if (token == shareToken) {
-                    lastShare = info;
-                    if (lastShare.contains("GdbHelper")) { // NOI18N
+                    shareTab = createShareTab(info);
+                    if (shareTab.containsKey("GdbHelper")) { // NOI18N
                         ProjectActionEvent pae;
                         pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                         int conType = pae.getProfile().getConsoleType().getValue();
@@ -1058,8 +1062,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (cb != null) {
                 cb.done();
                 if (token == shareToken) {
-                    lastShare = cb.toString();
-                    if (lastShare.contains("GdbHelper")) { // NOI18N
+                    shareTab = createShareTab(cb.toString());
+                    if (shareTab.containsKey("GdbHelper")) { // NOI18N
                         ProjectActionEvent pae;
                         pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                         int conType = pae.getProfile().getConsoleType().getValue();
@@ -1123,7 +1127,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         breakpoint.getBreakpoint().disable();
                     }
                 }
-            } else if (pendingBreakpointMap.remove(token) != null) {
+            } else if (pendingBreakpointMap.containsKey(token)) {
+                BreakpointImpl breakpoint = pendingBreakpointMap.remove(token);
+                if (platform == PlatformTypes.PLATFORM_MACOSX && breakpoint != null) {
+                    breakpoint.addError(msg);
+                    breakpoint.completeValidation(null);
+                }
                 if (pendingBreakpointMap.isEmpty() && state.equals(STATE_LOADING)) {
                     setReady();
                 }
@@ -1749,6 +1758,35 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             setStopped();
         }
     }
+    
+    private Map<String, ShareInfo> createShareTab(String info) {
+        Map<String, ShareInfo> shtab = new HashMap<String, ShareInfo>();
+        String path, addr;
+        
+        if (platform == PlatformTypes.PLATFORM_MACOSX) {
+            Map<String, String> map;
+            int start = 0;
+            int next
+                    ;
+            while ((next = info.indexOf("shlib-info=", start + 1)) > 0) {
+                map = GdbUtils.createMapFromString(info.substring(start + 12, next - 2));
+                path = map.get("path");
+                addr = map.get("dyld-addr");
+                if (path != null && addr != null) {
+                    shtab.put(path, new ShareInfo(path, addr));
+                }
+                start = next;
+            }
+            map = GdbUtils.createMapFromString(info.substring(start + 12, info.length() - 1));
+            path = map.get("path");
+            addr = map.get("dyld-addr");
+            if (path != null && addr != null) {
+                shtab.put(path, new ShareInfo(path, addr));
+            }
+        } else {
+        }
+        return shtab;
+    }
 
     /**
      * Compare the current set of shared libraries with the previous set. Run in a
@@ -1761,17 +1799,20 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 CommandBuffer cb = new CommandBuffer(gdb);
                 gdb.info_share(cb);
                 String share = cb.waitForCompletion();
-                if (share.length() > 0 && !share.equals(lastShare)) {
-                    if (share.length() > lastShare.length()) {
-                        // dlopened a shared library
-                        log.fine("GD.checkSharedLibs: Added a shared library");
-                        firePropertyChange(PROP_SHARED_LIB_LOADED, lastShare, share);
-                        lastShare = share;
-                    } else {
-                        // dlclosed a shared library
-                        log.fine("GD.checkSharedLibs: Closed a shared library");
+                Map<String, ShareInfo> nuTab = createShareTab(share);
+                if (nuTab.size() > shareTab.size()) {
+                    // dlopened a shared library
+                    log.fine("GD.checkSharedLibs: Added a shared library");
+                    ShareInfo si = getNewShareInfo(nuTab);
+                    if (si.isMatchingProject()) {
+                        gdb.environment_directory(si.getSourceDirectories());
                     }
+                    firePropertyChange(PROP_SHARED_LIB_LOADED, null, si.getPath());
+                } else {
+                    // dlclosed a shared library
+                    log.fine("GD.checkSharedLibs: Closed a shared library");
                 }
+                shareTab = nuTab;
                 if (lastGo == LAST_GO_WAS_CONTINUE) {
                     gdb.exec_continue();
                 } else {
@@ -1779,6 +1820,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             }
         });
+    }
+    
+    private ShareInfo getNewShareInfo(Map<String, ShareInfo> map) {
+        for (String path : map.keySet()) {
+            if (!shareTab.containsKey(path)) {
+                return map.get(path);
+            }
+        }
+        assert false : "No new shared library found";
+        return null;
     }
 
     /**
@@ -2333,9 +2384,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public String getBestPath(String path) {
         path = pathMap.getRemotePath(path);
-        if (path.indexOf(' ') == -1 && platform == PlatformTypes.PLATFORM_MACOSX) {
-            return path;
-        } else if (path.startsWith(runDirectory)) {
+        if (path.startsWith(runDirectory)) {
             return (path.substring(runDirectory.length()));
         } else {
             int pos = path.lastIndexOf('/');
@@ -2499,5 +2548,70 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private boolean isAttaching() {
         ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
         return pae.getID() == DEBUG_ATTACH;
+    }
+    
+    public class ShareInfo {
+        
+        private String path;
+        private String addr;
+        private List<String> sourceDirs;
+        private Project project;
+        
+        public ShareInfo(String path, String addr) {
+            this.path = path;
+            this.addr = addr;
+            sourceDirs = null;
+            project = null;
+        }
+        
+        public String getPath() {
+            return path;
+        }
+        
+        public String getAddress() {
+            return addr;
+        }
+        
+        public List<String> getSourceDirectories() {
+            if (sourceDirs == null) {
+                sourceDirs = new ArrayList<String>();
+
+                if (project != null) {
+                    NativeProject nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
+                    if (nativeProject != null) {
+                        sourceDirs.add(nativeProject.getProjectRoot());
+                        for (String dir : nativeProject.getSourceRoots()) {
+                            sourceDirs.add(dir);
+                        }
+                    }
+                    
+                }
+            }
+            return sourceDirs;
+        }
+        
+        public boolean isMatchingProject() {
+            Object o;
+            MakeConfiguration conf;
+            
+            for (Project proj : OpenProjects.getDefault().getOpenProjects()) {
+                ProjectConfigurationProvider pcp = (ProjectConfigurationProvider) proj.getLookup().lookup(ProjectConfigurationProvider.class);
+                if (pcp != null) {
+                    o = pcp.getActiveConfiguration();
+                    if (o instanceof MakeConfiguration) {
+                        conf = (MakeConfiguration) o;
+                        if (conf.isDynamicLibraryConfiguration()) {
+                            String proot = FileUtil.getFileDisplayName(proj.getProjectDirectory());
+                            String output = proot + "/" + conf.getLinkerConfiguration().getOutputValue();
+                            if (output.equals(path)) {
+                                this.project = proj;
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
     }
 }

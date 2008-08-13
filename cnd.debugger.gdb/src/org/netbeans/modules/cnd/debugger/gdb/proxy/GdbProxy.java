@@ -53,6 +53,7 @@ package org.netbeans.modules.cnd.debugger.gdb.proxy;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -199,11 +200,36 @@ public class GdbProxy implements GdbMiDefinitions {
      */
     public int environment_directory(String dir) {
         double ver = debugger.getGdbVersion();
-        if (ver > 6.3) {
+        if (ver > 6.3 || debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
             return engine.sendCommand("-environment-directory  \"" + dir + "\""); // NOI18N
         } else {
             return engine.sendCommand("directory \"" + dir + "\""); // NOI18N
         }
+    }
+
+    /**
+     * Set the runtime directory. Note that this method may get called before we have
+     * gdb's version. Thats why we check that its greater than 6.3. This way, if we
+     * don't have the version we fallback to the non-mi command.
+     *
+     * @param path The directory we want to run from
+     */
+    public int environment_directory(List<String> dirs) {
+        StringBuilder cmd = new StringBuilder();
+        double ver = debugger.getGdbVersion();
+        
+        assert dirs.size() > 0;
+        if (ver > 6.3 || debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+            cmd.append("-environment-directory"); // NOI18N
+        } else {
+            cmd.append("directory"); // NOI18N
+        }
+        for (String dir : dirs) {
+            cmd.append(" \""); // NOI18N
+            cmd.append(dir);
+            cmd.append("\""); // NOI18N
+        }
+        return engine.sendCommand(cmd.toString());
     }
 
     /**
