@@ -55,6 +55,19 @@ public class CndMIMEResolver extends MIMEResolver {
         //System.err.println("called CndMIMEResolver.CndMIMEResolver()");
     }
     
+    public static boolean isHeaderExtension(String ext){
+        return ExtensionsSettings.isRegistered(ext, ExtensionsSettings.HEADER);
+    }
+    
+    public static boolean isMimeTypeExtension(String mineType, String ext){
+        if (MIMENames.C_MIME_TYPE.equals(mineType)){
+            return ExtensionsSettings.isRegistered(ext, ExtensionsSettings.C_FILE);
+        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mineType)){
+            return ExtensionsSettings.isRegistered(ext, ExtensionsSettings.CPP_FILE);
+        }
+        return false;
+    }
+    
     /**
      * Resolves FileObject and returns recognized MIME type
      * @param fo is FileObject which should be resolved

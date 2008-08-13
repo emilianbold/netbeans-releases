@@ -70,6 +70,7 @@ public final class PrimitivePropertySupport extends DefaultPropertySupport {
             if (propertyEditor.canEditAsText() != null)
                 setValue("canEditAsText", propertyEditor.canEditAsText()); //NOI18N
         }
+        
         String propertyName = getDesignPropertyDescriptor().getPropertyNames().iterator().next();
         final GroupValue tempValue = new GroupValue(Collections.singletonList(propertyName));
         tempValue.putValue(propertyName, value);
