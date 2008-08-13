@@ -82,11 +82,9 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
 
     private static Image PACKAGE_BADGE = Utilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/packageBadge.gif"); // NOI18N
     private final SourceGroup g;
-    GrailsProject project;
 
     public TreeRootNode(SourceGroup g, GrailsProject project) {
         this(DataFolder.findFolder(g.getRootFolder()), g, project);
-        this.project = project;
         String pathName = g.getName();
         setShortDescription(pathName.substring(project.getProjectDirectory().getPath().length() + 1));
     }

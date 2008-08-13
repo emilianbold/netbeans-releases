@@ -50,6 +50,27 @@ import java.util.List;
  * @author David Van Couvering
  */
 public interface SQLExecutionInfo {
+    /**
+     * Determine if any statements had exceptions
+     *
+     * @return true if any statement executed had exceptions
+     */
     public boolean hasExceptions();
+
+    /**
+     * Get all exceptions for all statements.  This is useful for quickly
+     * reporting all exceptions.  Use getStatementInfos() for more complete
+     * information about each statement
+     *
+     * @return the list of all exceptions encountered when executing the SQL, or
+     * an empty list if none were encountered
+     */
     public List<? extends Throwable> getExceptions();
+
+    /**
+     * Get the list of information about the statements that were executed
+     *
+     * @return list of information about statements executed
+     */
+    public List<StatementExecutionInfo> getStatementInfos();
 }

@@ -297,9 +297,11 @@ public class StateWidget extends UMLNodeWidget
         createSubMachineStateView(state);
         nameWidget.showAllWidgets();
 
+        String unnamed = NbBundle.getMessage (org.netbeans.modules.uml.common.Util.class, "UNNAMED");
+        
         // create dummy procedure
         IProcedure pro = (IProcedure) Util.retrieveModelElement("Procedure");
-        pro.setName("unnamed");
+        pro.setName(unnamed);
 
         eventsWidget.removeChildren();
         entryWidget = new EntryEventWidget(getScene(), pro);
@@ -308,7 +310,7 @@ public class StateWidget extends UMLNodeWidget
         // create dummy transition
         ITransition transition = (ITransition) Util.retrieveModelElement("Transition");
         transition.setIsInternal(true);
-        transition.setName("Unnamed");
+        transition.setName(unnamed);
         transition.setContainer(state.getFirstContent());
 
         TransitionWidget w = new TransitionWidget.IncomingTransitionWidget(scene, transition);

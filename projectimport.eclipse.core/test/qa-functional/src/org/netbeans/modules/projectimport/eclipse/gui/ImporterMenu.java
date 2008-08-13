@@ -41,43 +41,25 @@
 
 package org.netbeans.modules.projectimport.eclipse.gui;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.junit.NbTestSuite;
 
 public class ImporterMenu extends JellyTestCase {
-    private static String menuRootString = "File"+"|"+"Import Project"+"|";
-    private JMenuBarOperator menuBar;
-    private MainWindowOperator mvo = MainWindowOperator.getDefault();
+    private static final String menuPath = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File");
+    private static final String importMenuPath = Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.resources.Bundle","Menu/File/Import");
+    private static String menuRootString = menuPath+"|"+importMenuPath+"|";
+   
     public ImporterMenu(String testName) {
      super(testName);
     }
-    public static NbTestSuite suite() {
-	NbTestSuite suite = new NbTestSuite();
-	suite.addTest(new ImporterMenu("testImporterMenuImport"));
-	suite.addTest(new ImporterMenu("testImporterMenuSync"));
-	return suite;
-    }
-    /** Setup before every test case. */
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        menuBar = new JMenuBarOperator(mvo);
-    }
-
-    /** Clean up after every test case. */
-    @Override
-    public void tearDown() {
-    }
 
     public void testImporterMenuImport() {
-        String menuItemString = menuRootString+org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_MenuItem");
+        String menuItemString = menuRootString+Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_MenuItem");
 	checkMenuItem(menuItemString);
     }
     public void testImporterMenuSync() {
-        String menuItemString = menuRootString+org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_SynchronizeMenuItem");
+        String menuItemString = menuRootString+Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_SynchronizeMenuItem");
 	checkMenuItem(menuItemString);
     }
 
