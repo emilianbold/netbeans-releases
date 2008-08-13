@@ -71,11 +71,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -334,21 +331,6 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //					    classDisplayOffset);
 //	}
 //	return result;
-    }
-
-    // ================= help methods for sorting csm results =================
-    protected static boolean isCaseSensitive(Class kitClass) {
-        boolean b = SettingsUtil.getBoolean(kitClass,
-            ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-            ExtSettingsDefaults.defaultCompletionCaseSensitive);
-        return b;
-    }
-
-    protected static boolean isNaturalSort(Class kitClass) {
-        boolean b = SettingsUtil.getBoolean(kitClass,
-            ExtSettingsNames.COMPLETION_NATURAL_SORT,
-            ExtSettingsDefaults.defaultCompletionNaturalSort);
-        return b;
     }
 
     // ================= help methods to generate CsmCompletionResult ==========
