@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -60,7 +60,6 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.ide.WatchProjects;
 
 /**
@@ -75,7 +74,7 @@ public class RubyValidation extends JellyTestCase {
                 "testRunRubyFile",
                 "testCreateRailsProject",
                 "testRailsGenerate",
-                "testIrbShell",
+                "testIrbShell", // TODO: does not work due to issue 137398
     };
 
     /** Need to be defined because of JUnit */
@@ -136,7 +135,8 @@ public class RubyValidation extends JellyTestCase {
     public void testIrbShell() {
         String irbItem = Bundle.getStringTrimmed("org.netbeans.modules.ruby.rubyproject.Bundle", "CTL_IrbAction");
         String irbTitle = Bundle.getString("org.netbeans.modules.ruby.rubyproject.Bundle", "CTL_IrbTopComponent");
-        new Action("Window|Other|" + irbItem, null).perform();
+        ProjectRootNode projectRootNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_RAILS_PROJECT_NAME);
+        new ActionNoBlock(null, irbItem).perform(projectRootNode);
         new OutputTabOperator(irbTitle).close();
     }   
 
@@ -150,6 +150,8 @@ public class RubyValidation extends JellyTestCase {
      * - wait classpath scanning finished
      */
     public void testCreateRubyProject() {
+        //workaround for 142928
+        NewProjectWizardOperator.invoke().cancel();
         // create new web application project
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         // "Ruby"
@@ -163,8 +165,8 @@ public class RubyValidation extends JellyTestCase {
         npnlso.txtProjectName().setText(SAMPLE_RUBY_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
         npnlso.finish();
-        // wait project appear in projects view
-        // wait 30 second
+            // wait project appear in projects view
+            // wait 30 second
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_RUBY_PROJECT_NAME);
         // wait classpath scanning finished

@@ -39,38 +39,39 @@
 
 package org.netbeans.modules.websvc.core.jaxwsstack;
 
-import org.netbeans.modules.websvc.serverapi.spi.*;
-import java.io.File;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
-import org.netbeans.modules.websvc.serverapi.api.WSStack;
-import org.netbeans.modules.websvc.serverapi.api.WSUriDescriptor;
+import java.net.URL;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.api.WSTool;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.spi.*;
 
 /**
  *
  * @author mkuchtiak
  */
-public abstract class AbstractJaxWsStack implements WSStackSPI {  
+public abstract class AbstractJaxWsStack implements WSStackImplementation<JaxWs> {  
+    private JaxWs jaxWs;
     
-    public String getName() {
-        return WSStack.STACK_JAX_WS;
+    protected AbstractJaxWsStack() {
+        jaxWs = new JaxWs(getUriDescriptor());
     }
     
-    public Set<String> getSupportedTools() {
-        Set<String> supportedTools = new HashSet<String>();
-        supportedTools.add(WSStack.TOOL_WSGEN);
-        supportedTools.add(WSStack.TOOL_WSIMPORT);
-        return supportedTools;
+    public JaxWs get() {
+        return jaxWs;
+    }
+    
+    public WSTool getWSTool(WSStack.Tool toolId) {
+        if (toolId == JaxWs.Tool.WSIMPORT) {
+            return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSIMPORT));
+        } else if (toolId == JaxWs.Tool.WSGEN) {
+            return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSGEN));
+        } else {
+            return null;
+        }
     }
 
-    public File[] getToolClassPathEntries(String toolName) {
-        return new File[]{};
-    }
-
-    public WSUriDescriptor getServiceUriDescriptor() {
-         return new WSUriDescriptor() {
+    public JaxWs.UriDescriptor getUriDescriptor() {
+         return new JaxWs.UriDescriptor() {
 
             public String getServiceUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
                 return applicationRoot+"/"+serviceName; //NOI18N
@@ -87,9 +88,30 @@ public abstract class AbstractJaxWsStack implements WSStackSPI {
              
          };
     }
+    
+    public boolean isFeatureSupported(WSStack.Feature feature) {
+        if (feature == JaxWs.Feature.TESTER_PAGE) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    private class JaxWsTool implements WSToolImplementation {
+        JaxWs.Tool tool;
+        JaxWsTool(JaxWs.Tool tool) {
+            this.tool = tool;
+        }
 
-    public Set<WSStackFeature> getServiceFeatures() {
-        return Collections.<WSStackFeature>singleton(WSStackFeature.TESTER_PAGE);
+        public String getName() {
+            return tool.getName();
+        }
+
+        public URL[] getLibraries() {
+            
+            return new URL[0];
+        }
+        
     }
 
 }

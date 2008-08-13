@@ -1991,6 +1991,8 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
                 case SEMICOLON:
+                case LBRACE:
+                case RBRACE:
                     pushExp(CsmCompletionExpression.createEmptyVariable(
                         bufferStartPos + bufferOffsetDelta + offset));
                     errorState = false;

@@ -51,7 +51,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -118,6 +117,7 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * A NetBeans module project.
@@ -190,14 +190,11 @@ public final class NbModuleProject implements Project {
             // Special hack for core - ignore core/javahelp
             sourcesHelper.addTypedSourceRoot("javahelp", SOURCES_TYPE_JAVAHELP, NbBundle.getMessage(NbModuleProject.class, "LBL_javahelp_packages"), null, null);
         }
-        Iterator it = getExtraCompilationUnits().entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
-            Element ecu = (Element) entry.getValue();
-            Element pkgrootEl = Util.findElement(ecu, "package-root", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+        for (Map.Entry<FileObject,Element> entry : getExtraCompilationUnits().entrySet()) {
+            Element pkgrootEl = Util.findElement(entry.getValue(), "package-root", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
             String pkgrootS = Util.findText(pkgrootEl);
-            FileObject pkgroot = (FileObject) entry.getKey();
-            sourcesHelper.addTypedSourceRoot(pkgrootS, JavaProjectConstants.SOURCES_TYPE_JAVA, /* XXX should schema incl. display name? */pkgroot.getNameExt(), null, null);
+            sourcesHelper.addTypedSourceRoot(pkgrootS, JavaProjectConstants.SOURCES_TYPE_JAVA,
+                    /* XXX should schema incl. display name? */entry.getKey().getNameExt(), null, null);
         }
         // #56457: support external source roots too.
         ProjectManager.mutex().postWriteRequest(new Runnable() {
@@ -205,9 +202,21 @@ public final class NbModuleProject implements Project {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
+        lookup = new LazyLookup(new Info(), aux, helper, fileBuilt, sourcesHelper); //NOI18N
+    }
+    
+    public @Override String toString() {
+        return "NbModuleProject[" + getProjectDirectory() + "]"; // NOI18N
+    }
+    
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    private Lookup createLookup(ProjectInformation info, AuxiliaryConfiguration aux, AntProjectHelper helper, FileBuiltQueryImplementation fileBuilt, final SourcesHelper sourcesHelper) {
         Lookup baseLookup = Lookups.fixed(
             this,
-            new Info(),
+            info,
             aux,
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
@@ -242,17 +251,44 @@ public final class NbModuleProject implements Project {
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             new TemplateAttributesProvider(getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG),
             new FileEncodingQueryImpl());
-        lookup = LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
+        return  LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
     }
-    
-    public @Override String toString() {
-        return "NbModuleProject[" + getProjectDirectory() + "]"; // NOI18N
-    }
-    
-    public Lookup getLookup() {
-        return lookup;
-    }
-    
+
+ 
+
+ // in 6.5 the ProjectInformation icon is used in project open dialog.
+   // however we don't want this call to initiate the comple lookup of the project
+   //as that's time consuming and suboptimal to do for all projects in the filechooser.
+   private class LazyLookup extends ProxyLookup {
+       AuxiliaryConfiguration aux;
+       AntProjectHelper helper;
+       FileBuiltQueryImplementation fileBuilt;
+       SourcesHelper sourcesHelper;
+       private ProjectInformation info;
+       private Lookup lookup;
+       boolean initialized = false;
+       LazyLookup(ProjectInformation info, AuxiliaryConfiguration aux, AntProjectHelper helper, FileBuiltQueryImplementation fileBuilt, final SourcesHelper sourcesHelper) {
+           setLookups(Lookups.fixed(info));
+           this.aux = aux;
+           this.helper = helper;
+           this.fileBuilt = fileBuilt;
+           this.sourcesHelper = sourcesHelper;
+           this.info = info;
+       }
+
+       @Override
+       protected synchronized void beforeLookup(Template<?> template) {
+           if (!initialized &&
+               (! (ProjectInformation.class.equals(template.getType())))) {
+               initialized = true;
+               lookup = createLookup(info, aux, helper, fileBuilt, sourcesHelper);
+               setLookups(lookup);
+           }
+           super.beforeLookup(template);
+       }
+   }
+
+
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }

@@ -94,7 +94,8 @@ final class FilesSet implements Set<FileObject> {
 
                 synchronized ( mymdo.synchObjectSecondary() ) {
                     // cleans up invalid entries
-                    mymdo.secondaryEntries();
+                    Object res = mymdo.secondaryEntries(false);
+                    assert res == null;
                     primaryFile = mymdo.getPrimaryFile();
                     secondary = mymdo.getSecondary();
                 }

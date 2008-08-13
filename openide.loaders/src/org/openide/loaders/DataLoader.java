@@ -371,7 +371,10 @@ public abstract class DataLoader extends SharedClassObject implements DataObject
                 recognized.add(fo);
             }
         }
-        return findDataObject(fo, new Rec());
+        RecognizedFiles rec =
+            recognized == DataLoaderPool.emptyDataLoaderRecognized ? DataLoaderPool.emptyDataLoaderRecognized : new Rec();
+
+        return findDataObject(fo, rec);
     }
     
     /** Find a data object appropriate to the given file object--the meat of this class.

@@ -43,8 +43,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,6 +77,10 @@ import org.openide.util.Utilities;
 // TODO more appropriate would be getDefault and forProject
 public final class GrailsRuntime {
 
+    private static final Logger LOGGER = Logger.getLogger(GrailsRuntime.class.getName());
+
+    private static final Set<String> GUARDED_COMMANDS = new HashSet<String>();
+
     static {
         GrailsInstance.Accessor.DEFAULT = new GrailsInstance.Accessor() {
 
@@ -82,9 +89,9 @@ public final class GrailsRuntime {
                 return runtime.getVersion();
             }
         };
-    }
 
-    private static final Logger LOGGER = Logger.getLogger(GrailsRuntime.class.getName());
+        Collections.addAll(GUARDED_COMMANDS, "run-app", "shell"); //NOI18N
+    }
 
     private static GrailsRuntime instance;
 
@@ -397,7 +404,7 @@ public final class GrailsRuntime {
 
             // FIXME fix this hack - needed for proper process tree kill
             // see KillableProcess
-            if (Utilities.isWindows() && !"create-app".equals(descriptor.getName())) { // NOI18N
+            if (Utilities.isWindows() && GUARDED_COMMANDS.contains(descriptor.getName())) {
                 command.append(" ").append("REM NB:" // NOI18N
                         +  descriptor.getDirectory().getAbsolutePath());
             }

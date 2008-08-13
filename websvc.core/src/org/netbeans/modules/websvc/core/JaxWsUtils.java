@@ -97,7 +97,8 @@ import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.websvc.serverapi.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.ErrorManager;
@@ -121,7 +122,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
-import org.netbeans.modules.websvc.serverapi.api.WSStackFeature;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -521,9 +521,9 @@ public class JaxWsUtils {
             if (serverInstance != null) {
                 try {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstance).getJ2eePlatform();
-                    WSStack wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+                    WSStack wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
                     if (wsStack != null) {
-                        jsr109Supported =  isJsr109Supported(wsStack, project);
+                        jsr109Supported =  wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
                         
                     }
                 } catch (InstanceRemovedException ex) {
@@ -1327,10 +1327,6 @@ public class JaxWsUtils {
             }
         }
         return false;
-    }
-    
-    private static boolean isJsr109Supported(WSStack wsStack, Project project) {
-        return wsStack.getServiceFeatures().contains(WSStackFeature.JSR_109);
     }
     
 }

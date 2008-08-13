@@ -170,6 +170,10 @@ Other|Move Insertion Point to Top
 Other|Move Selection else Line down
 Other|Move Selection else Line up
 Other|Navigate to Next Occurrence
+Other|Navigate to Next Occurrence
+Other|Navigate to Next Occurrence
+Other|Navigate to Previous Occurrence
+Other|Navigate to Previous Occurrence
 Other|Navigate to Previous Occurrence
 Other|Page Down
   PAGE_DOWN
@@ -231,7 +235,7 @@ Other|Toggle Toolbar
 Other|Toggle Typing Mode
   INSERT
 Refactor|Change Method Parameters...
-Refactor|Convert Anonymous to Inner...
+Refactor|Convert Anonymous to Member...
 Refactor|Copy...
 Refactor|Encapsulate Fields...
 Refactor|Extract Interface...

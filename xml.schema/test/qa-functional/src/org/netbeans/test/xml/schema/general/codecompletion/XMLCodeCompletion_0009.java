@@ -100,6 +100,11 @@ public class XMLCodeCompletion_0009 extends XMLCodeCompletion {
       ProjectRootNode prn = pto.getProjectRootNode( TEST_JAVA_APP_NAME );
       prn.select( );
 
+      // Workaround for MacOS platform
+      // TODO : check platform
+      // TODO : remove after normal issue fix
+      NewFileWizardOperator.invoke().cancel( );
+
       NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke( );
       opNewFileWizard.selectCategory( "Persistence" );
       opNewFileWizard.selectFileType( "Persistence Unit" );

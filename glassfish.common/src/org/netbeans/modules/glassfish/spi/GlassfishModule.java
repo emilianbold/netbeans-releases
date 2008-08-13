@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeListener;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -140,6 +141,17 @@ public interface GlassfishModule {
      *   completed (or failed).
      */
     public Future<OperationState> startServer(OperationStateListener stateListener);
+
+    /**
+     * Start the server with a specific JDK.
+     * 
+     * @param stateListener listener to listen message describing the startup 
+     *   process as it progresses.  Can be null.
+     * 
+     * @return Future instance that finishes when the server startup has
+     *   completed (or failed).
+     */
+    public Future<OperationState> startServer(OperationStateListener stateListener,FileObject jdkRoot, String[] jvmArgs);
 
     /**
      * Stop the server.

@@ -174,32 +174,34 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             Identifier name = cldec.getName();
             OffsetRange or = new OffsetRange(name.getStartOffset(), name.getEndOffset());
             highlights.put(or, ColoringAttributes.CLASS_SET);
-            cldec.getBody().accept(this);
+            if (cldec.getBody() != null) {
+                cldec.getBody().accept(this);
 
-            // find all usages in the method bodies
-            for (Block block : needToScan) {
-                block.accept(this);
-            }
-            // are there unused private fields?
-            for (IdentifierColoring item : privateFieldsUsed.values()) {
-                or = new OffsetRange(item.identifier.getStartOffset(), item.identifier.getEndOffset());
-                if (item.coloring.contains(ColoringAttributes.STATIC)) {
-                    highlights.put(or, UNUSED_STATIC_FIELD_SET);
+                // find all usages in the method bodies
+                for (Block block : needToScan) {
+                    block.accept(this);
                 }
-                else {
-                    highlights.put(or, UNUSED_FIELD_SET);
-                }
-                
-            }
+                // are there unused private fields?
+                for (IdentifierColoring item : privateFieldsUsed.values()) {
+                    or = new OffsetRange(item.identifier.getStartOffset(), item.identifier.getEndOffset());
+                    if (item.coloring.contains(ColoringAttributes.STATIC)) {
+                        highlights.put(or, UNUSED_STATIC_FIELD_SET);
+                    }
+                    else {
+                        highlights.put(or, UNUSED_FIELD_SET);
+                    }
 
-            // are there unused private methods?
-            for(IdentifierColoring item : privateMethod.values()) {
-                or = new OffsetRange(item.identifier.getStartOffset(), item.identifier.getEndOffset());
-                if (item.coloring.contains(ColoringAttributes.STATIC)) {
-                    highlights.put(or, UNUSED_STATIC_METHOD_SET);
                 }
-                else {
-                    highlights.put(or, UNUSED_METHOD_SET);
+
+                // are there unused private methods?
+                for(IdentifierColoring item : privateMethod.values()) {
+                    or = new OffsetRange(item.identifier.getStartOffset(), item.identifier.getEndOffset());
+                    if (item.coloring.contains(ColoringAttributes.STATIC)) {
+                        highlights.put(or, UNUSED_STATIC_METHOD_SET);
+                    }
+                    else {
+                        highlights.put(or, UNUSED_METHOD_SET);
+                    }
                 }
             }
         }

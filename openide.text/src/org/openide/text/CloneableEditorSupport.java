@@ -1249,6 +1249,17 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
         return documentStatus != DOCUMENT_NO;
     }
+    
+    /** Test whether the document is ready.
+    * @return <code>true</code> if document is ready
+    */
+    private boolean isDocumentReady() {
+        CloneableEditorSupport redirect = CloneableEditorSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            return redirect.isDocumentReady();
+        }
+        return documentStatus == DOCUMENT_READY;
+    }
 
     /**
     * Set the MIME type for the document.
@@ -2945,21 +2956,30 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         public java.lang.String getUndoOrRedoPresentationName() {
-            final StyledDocument myDoc = support.getDocument();
-
-            return new RenderUndo(8, myDoc).stringResult;
+            if (support.isDocumentReady()) {
+                final StyledDocument myDoc = support.getDocument();
+                return new RenderUndo(8, myDoc).stringResult;
+            } else {
+                return "";
+            }
         }
 
         public java.lang.String getRedoPresentationName() {
-            final StyledDocument myDoc = support.getDocument();
-
-            return new RenderUndo(9, myDoc).stringResult;
+            if (support.isDocumentReady()) {
+                final StyledDocument myDoc = support.getDocument();
+                return new RenderUndo(9, myDoc).stringResult;
+            } else {
+                return "";
+            }
         }
 
         public java.lang.String getUndoPresentationName() {
-            final StyledDocument myDoc = support.getDocument();
-
-            return new RenderUndo(10, myDoc).stringResult;
+            if (support.isDocumentReady()) {
+                final StyledDocument myDoc = support.getDocument();
+                return new RenderUndo(10, myDoc).stringResult;
+            } else {
+                return "";
+            }
         }
 
         public void undoOrRedo() throws javax.swing.undo.CannotUndoException, javax.swing.undo.CannotRedoException {

@@ -40,6 +40,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bpel.debugger.api.AttachingCookie;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 
@@ -67,16 +68,12 @@ public class BpelConnectPanel extends JPanel implements Controller {
         mHostField = new JTextField(getSavedHost());
         String hostLabel = 
             NbBundle.getMessage(BpelConnectPanel.class, "CTL_Host");
-        char hostMnemonic = 
-            NbBundle.getMessage(BpelConnectPanel.class, "CTL_Host_mnemonic").charAt(0);
-        addSettingUI(hostLabel, mHostField, hostMnemonic);
+        addSettingUI(hostLabel, mHostField);
 
         mPortField = new JTextField(getSavedPort());
         String portLabel = 
             NbBundle.getMessage(BpelConnectPanel.class, "CTL_Port");
-        char portMnemonic = 
-            NbBundle.getMessage(BpelConnectPanel.class, "CTL_Port_mnemonic").charAt(0);
-        addSettingUI(portLabel, mPortField, portMnemonic);
+        addSettingUI(portLabel, mPortField);
 
         // Create an empty panel that resizes vertically so that
         // other elements have fix height:
@@ -114,12 +111,12 @@ public class BpelConnectPanel extends JPanel implements Controller {
         return true;
     }
 
-    private void addSettingUI(String label, JTextField tfParam, char mnemonic) {
+    private void addSettingUI(String label, JTextField tfParam) {
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(6, 0, 0, 3);
         c.anchor = GridBagConstraints.WEST;
         JLabel iLabel = new JLabel(label);
-        iLabel.setDisplayedMnemonic(mnemonic);
+        Mnemonics.setLocalizedText(iLabel, label);
         iLabel.setToolTipText(label);
         add(iLabel, c);
         iLabel.setLabelFor(tfParam);
