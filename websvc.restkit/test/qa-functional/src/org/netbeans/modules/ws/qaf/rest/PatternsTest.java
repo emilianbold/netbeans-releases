@@ -102,23 +102,6 @@ public class PatternsTest extends RestTestBase {
         }
 
         /**
-         * Method for getting correct index of the resource name txt field in the new RESTful
-         * web service from patterns wizard for given type of the resource
-         *
-         * @return index of the resource name txt field
-         */
-        public int getResourceNameTxtIndex() {
-            switch (this) {
-                case Singleton:
-                    return 4;
-                case ContainerItem:
-                case CcContainerItem:
-                    return 1;
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
-        }
-
-        /**
          * Method for getting correct index of the resource class name txt field
          * in the new RESTful web service from patterns wizard for given type
          * of the resource
@@ -128,7 +111,7 @@ public class PatternsTest extends RestTestBase {
         public int getResourceClassNameTxtIndex() {
             switch (this) {
                 case Singleton:
-                    return 3;
+                    return 4;
                 case ContainerItem:
                 case CcContainerItem:
                     return 2;
@@ -137,16 +120,16 @@ public class PatternsTest extends RestTestBase {
         }
 
         /**
-         * Method for getting correct index of the resource URI template txt field
+         * Method for getting correct index of the resource Path txt field
          * in the new RESTful web service from patterns wizard for given type
          * of the resource
          *
-         * @return index of the resource URI template txt field
+         * @return index of the resource Path txt field
          */
-        public int getResourceURITemplateTxtIndex() {
+        public int getResourcePathTxtIndex() {
             switch (this) {
                 case Singleton:
-                    return 2;
+                    return 3;
                 case ContainerItem:
                 case CcContainerItem:
                     return 5;
@@ -173,13 +156,13 @@ public class PatternsTest extends RestTestBase {
         }
 
         /**
-         * Method for getting correct index of the container resource URI template txt field
+         * Method for getting correct index of the container resource Path txt field
          * in the new RESTful web service from patterns wizard for given type
          * of the resource
          *
-         * @return index of the container resource URI template txt field
+         * @return index of the container resource Path txt field
          */
-        public int getContainerResourceURITemplateTxtIndex() {
+        public int getContainerResourcePathTxtIndex() {
             switch (this) {
                 case Singleton:
                     return -1;
@@ -198,14 +181,7 @@ public class PatternsTest extends RestTestBase {
          * @return index of the Mime-Type combo box
          */
         public int getResourceMimeTypeJComboIndex() {
-            switch (this) {
-                case Singleton:
-                    return 2;
-                case ContainerItem:
-                case CcContainerItem:
-                    return 2;
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
+            return 2;
         }
 
         /**
@@ -218,7 +194,7 @@ public class PatternsTest extends RestTestBase {
         public int getRepresentationClassTxtIndex() {
             switch (this) {
                 case Singleton:
-                    return 5;
+                    return 2;
                 case ContainerItem:
                 case CcContainerItem:
                     return 6;
@@ -234,14 +210,7 @@ public class PatternsTest extends RestTestBase {
          * @return index of the container resource class select button
          */
         public int getRepresentationClassSelectIndex() {
-            switch (this) {
-                case Singleton:
-                    return 2;
-                case ContainerItem:
-                case CcContainerItem:
-                    return 3;
-            }
-            throw new AssertionError("Unknown type: " + this); //NOI18N
+            return 3;
         }
 
         /**
@@ -419,12 +388,8 @@ public class PatternsTest extends RestTestBase {
         jcbo.typeText(getRestPackage());
         if (name != null) {
             //we're not using Defs when name != null !!!
-            //set resource name
-            JTextFieldOperator jtfo = new JTextFieldOperator(wo, pattern.getResourceNameTxtIndex());
-            jtfo.clearText();
-            jtfo.typeText(name + "Rs"); //NOI18N
             //set resource class name
-            jtfo = new JTextFieldOperator(wo, pattern.getResourceClassNameTxtIndex());
+            JTextFieldOperator jtfo = new JTextFieldOperator(wo, pattern.getResourceClassNameTxtIndex());
             jtfo.clearText();
             jtfo.typeText(name + "Cl"); //NOI18N
             //set mimeType
@@ -446,21 +411,21 @@ public class PatternsTest extends RestTestBase {
                 nbo.ok();
             }
             if (Pattern.Singleton.equals(pattern)) {
-                //set resource URI template
-                jtfo = new JTextFieldOperator(wo, pattern.getResourceURITemplateTxtIndex());
+                //set resource Path
+                jtfo = new JTextFieldOperator(wo, pattern.getResourcePathTxtIndex());
                 jtfo.clearText();
                 jtfo.typeText(name + "URI"); //NOI18N
             } else {
-                //set resource URI template
-                jtfo = new JTextFieldOperator(wo, pattern.getResourceURITemplateTxtIndex());
+                //set resource Path
+                jtfo = new JTextFieldOperator(wo, pattern.getResourcePathTxtIndex());
                 jtfo.clearText();
                 jtfo.typeText("{" + name + "URI}"); //NOI18N
                 //set container resource class name
                 jtfo = new JTextFieldOperator(wo, pattern.getContainerResourceClassNameTxtIndex());
                 jtfo.clearText();
                 jtfo.typeText(name + "CClass"); //NOI18N
-                //set container resource URI template
-                jtfo = new JTextFieldOperator(wo, pattern.getContainerResourceURITemplateTxtIndex());
+                //set container resource Path
+                jtfo = new JTextFieldOperator(wo, pattern.getContainerResourcePathTxtIndex());
                 jtfo.clearText();
                 jtfo.typeText("/" + name + "ContainerURI"); //NOI18N
                 //set container resource representation class

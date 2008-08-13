@@ -243,6 +243,10 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         Project project = Templates.getProject(wiz);
         final MetadataModelReadHelper<EntityMappingsMetadata, Set<Entity>> readHelper;
         EntityClassScope entityClassScope = EntityClassScope.getEntityClassScope(project.getProjectDirectory());
+        if(entityClassScope == null) {
+            return;
+        }
+           
         MetadataModel<EntityMappingsMetadata> entityMappingsModel = entityClassScope.getEntityMappingsModel(true);
         readHelper = MetadataModelReadHelper.create(entityMappingsModel, new MetadataModelAction<EntityMappingsMetadata, Set<Entity>>() {
             public Set<Entity> run(EntityMappingsMetadata metadata) {

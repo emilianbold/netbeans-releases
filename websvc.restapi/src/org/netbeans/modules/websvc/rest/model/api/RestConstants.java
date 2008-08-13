@@ -62,9 +62,9 @@ public class RestConstants {
     
     public static final String DELETE_ANNOTATION = "DELETE";   //NOI18N
     
-    public static final String PRODUCE_MIME_ANNOTATION = "ProduceMime"; //NOI18N
+    public static final String PRODUCE_MIME_ANNOTATION = "Produces"; //NOI18N
     
-    public static final String CONSUME_MIME_ANNOTATION = "ConsumeMime"; //NOI18N
+    public static final String CONSUME_MIME_ANNOTATION = "Consumes"; //NOI18N
     
     public static final String SINGLETON_ANNOTATION = "Singleton";     //NOI18N
     

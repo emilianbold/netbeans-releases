@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.railsprojects.ui.customizer;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -80,17 +81,14 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-/**
- * @author Petr Hrebejk
- */
 public class RailsProjectProperties extends SharedRubyProjectProperties {
+    
     public static final String RAILS_PORT = "rails.port"; // NOI18N
     public static final String RAILS_SERVERTYPE = "rails.servertype"; // NOI18N
     public static final String RAILS_ENV = "rails.env"; // NOI18N
     
     // Special properties of the project
     //public static final String Ruby_PROJECT_NAME = "rails.project.name"; // NOI18N
-    public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
     
     // Properties stored in the PROJECT.PROPERTIES    
     // TODO - nuke me!
@@ -119,7 +117,17 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
                     
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
+    public static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
     
+    /** All per-configuration properties to be stored. */
+    private static final String[] CONFIG_PROPS = {
+        RAILS_PORT, RAILS_SERVERTYPE, RAKE_ARGS, RAILS_ENV,
+        MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS
+    };
+    
+    /** Private per-configuration properties. */
+    private static final String[] PRIVATE_PROPS = { RAILS_PORT, RAILS_ENV, RAKE_ARGS, APPLICATION_ARGS, RAILS_SERVERTYPE };
+
 //    ButtonModel NO_DEPENDENCIES_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
     
@@ -335,7 +343,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     }
 
     public static void storePlatform(final EditableProperties ep, final RubyPlatform platform) {
-        ep.setProperty("platform.active", platform.getID()); // NOI18N
+        ep.setProperty(PLATFORM_ACTIVE, platform.getID());
     }
 
     RubyInstance getServer() {
@@ -358,10 +366,10 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         this.railsEnvironment = railsEnvironment;
     }
     
-    
-    /**
-     * A mess.
-     */
+    private static boolean isPrivateConfigProperty(final String prop) {
+        return Arrays.asList(PRIVATE_PROPS).contains(prop);
+    }
+
     Map<String/*|null*/,Map<String,String>> readRunConfigs() {
         Map<String,Map<String,String>> m = new TreeMap<String,Map<String,String>>(new Comparator<String>() {
             public int compare(String s1, String s2) {
@@ -369,8 +377,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
             }
         });
         Map<String,String> def = new TreeMap<String,String>();
-        for (String prop : new String[] { RAILS_PORT, RAILS_SERVERTYPE, RAKE_ARGS, RAILS_ENV,
-                MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS/*, RUN_WORK_DIR*/}) {
+        for (String prop : CONFIG_PROPS) {
             String v = updateHelper.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
             if (v == null) {
                 v = updateHelper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
@@ -379,6 +386,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
                 def.put(prop, v);
             }
         }
+        def.put(PLATFORM_ACTIVE, getPlatform().getID());
         m.put(null, def);
         FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
         if (configs != null) {
@@ -406,20 +414,13 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         return m;
     }
 
-    /**
-     * A royal mess.
-     */
     void storeRunConfigs(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs,
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {RAILS_PORT, RAILS_SERVERTYPE, RAKE_ARGS, RAILS_ENV,
-                MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS/*, RUN_WORK_DIR*/}) {
+        for (String prop : CONFIG_PROPS) {
             String v = def.get(prop);
-            EditableProperties ep = (prop.equals(RAILS_PORT) ||
-                    prop.equals(RAKE_ARGS) ||
-                    prop.equals(APPLICATION_ARGS)/* || prop.equals(RUN_WORK_DIR)*/) ?
-                privateProperties : projectProperties;
+            EditableProperties ep = isPrivateConfigProperty(prop) ? privateProperties : projectProperties;
             if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                 if (v != null && v.length() > 0) {
                     ep.setProperty(prop, v);
@@ -444,10 +445,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
             for (Map.Entry<String,String> entry2 : c.entrySet()) {
                 String prop = entry2.getKey();
                 String v = entry2.getValue();
-                String path = (prop.equals(RAILS_PORT) || 
-                    prop.equals(RAKE_ARGS) || prop.equals(RAILS_ENV) ||
-                    prop.equals(RAILS_SERVERTYPE) || prop.equals(APPLICATION_ARGS) /* || prop.equals(RUN_WORK_DIR)*/) ?
-                    privatePath : sharedPath;
+                String path = isPrivateConfigProperty(prop) ? privatePath : sharedPath;
                 EditableProperties ep = updateHelper.getProperties(path);
                 if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                     if (v != null && (v.length() > 0 || (def.get(prop) != null && def.get(prop).length() > 0))) {

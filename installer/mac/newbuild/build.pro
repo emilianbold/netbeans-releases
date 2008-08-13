@@ -58,8 +58,9 @@
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 
     <property name="mpkg.name_nb_mysql" value="NetBeans IDE with MySQL"/> 
-    <property name="mysql_10.5.pkg.name" value="mysql-5.0.51a-osx10.5-x86"/>
-    <property name="mysql_10.4.pkg.name" value="mysql-5.0.51a-osx10.4-i686"/>
+    <property name="mysql.version"      value="5.0.67"/>
+    <property name="mysql_10.5.pkg.name" value="mysql-5.0.67-osx10.5-x86"/>
+    <property name="mysql_10.4.pkg.name" value="mysql-5.0.67-osx10.4-i686"/>
     <property name="mysql_10.5.dmg.name" value="netbeans-6.5-mysql-macosx10.5-x86"/>
     <property name="mysql_10.4.dmg.name" value="netbeans-6.5-mysql-macosx10.4-x86"/>
     <property name="mysql_startup.pkg.name" value="MySQLStartupItem"/>
@@ -68,7 +69,6 @@
     <property name="mysql_10.5.location" value="${binary_cache_host}/mysql/${mysql_10.5.pkg.name}.dmg"/>
     <property name="mysql_10.4.location" value="${binary_cache_host}/mysql/${mysql_10.4.pkg.name}.dmg"/>
     <property name="mysql.install.dir" value="/usr/local/mysql"/>
-    <property name="mysql_prefPane.location" value="${binary_cache_host}/mysql/MySQL.prefPane-leopardfix.zip"/>
     <property name="mysql_connector.location" value="${binary_cache_host}/mysql/${mysql_connector.name}.jar"/>   
     <property name="mysql_license.name" value="NB_GF_MySQL.txt"/>   
     <property name="mysql_readme.name" value="NB_GF_MySQL_Bundle_Thirdparty_license_readme.txt"/>

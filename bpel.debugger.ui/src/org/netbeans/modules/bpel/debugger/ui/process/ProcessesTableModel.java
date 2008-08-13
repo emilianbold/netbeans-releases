@@ -131,6 +131,10 @@ public class ProcessesTableModel implements TableModel {
                 return "";
             }
             
+            if (object instanceof ProcessesTreeModel.NoPropertiesDataMarker) {
+                return "";
+            }
+            
             if (object instanceof ProcessesTreeModel.WaitingMessagesWrapper) {
                 return "";
             }
@@ -196,6 +200,10 @@ public class ProcessesTableModel implements TableModel {
                 }
             }
             
+            if (object instanceof ProcessesTreeModel.NoPropertiesDataMarker) {
+                return "";
+            }
+            
             if (object instanceof ProcessesTreeModel.WaitingMessagesWrapper) {
                 return "";
             }
@@ -249,6 +257,10 @@ public class ProcessesTableModel implements TableModel {
             
             if (object instanceof CorrelationSet.Property) {
                 return ((CorrelationSet.Property) object).getValue();
+            }
+            
+            if (object instanceof ProcessesTreeModel.NoPropertiesDataMarker) {
+                return "";
             }
             
             if (object instanceof ProcessesTreeModel.WaitingMessagesWrapper) {

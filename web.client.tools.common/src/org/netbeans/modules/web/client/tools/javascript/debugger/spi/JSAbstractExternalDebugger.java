@@ -38,9 +38,12 @@
  */
 package org.netbeans.modules.web.client.tools.javascript.debugger.spi;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -57,7 +60,6 @@ import org.netbeans.modules.web.client.tools.common.dbgp.Status.StatusResponse;
 import org.netbeans.modules.web.client.tools.common.dbgp.StreamMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.UnsufficientValueException;
 import org.netbeans.modules.web.client.tools.common.dbgp.WindowsMessage;
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSBreakpoint;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerConsoleEvent;
@@ -260,6 +262,20 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
     protected JSProperty[] getPropertiesImpl(JSCallStackFrame callStackFrame, String fullName) {
         return DbgpUtils.getJSProperties(callStackFrame, proxy.getProperty(fullName, callStackFrame.getDepth()));
     }
+    
+    protected InputStream getInputStreamForURLImpl(URL url) {
+        if (proxy != null && url != null) {
+            try {
+                byte[] bytes = proxy.getSource(url.toURI());
+                if (bytes != null) {
+                    return new ByteArrayInputStream(bytes);
+                }
+            } catch (URISyntaxException use) {
+                Log.getLogger().log(Level.INFO, use.getMessage(), use);
+            }
+        }
+        return null;
+    }    
 
     private void handleSourcesMessage(SourcesMessage sourcesMessage) {
         setSources(JSFactory.getJSSources(sourcesMessage.getSources()));

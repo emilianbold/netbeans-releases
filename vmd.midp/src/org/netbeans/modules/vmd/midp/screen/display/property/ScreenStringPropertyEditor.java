@@ -51,6 +51,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
+import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 
 /**
  * @author David Kaspar
@@ -122,6 +123,7 @@ public class ScreenStringPropertyEditor implements ScreenPropertyEditor {
                 public void run() {
                     PropertyValue value = MidpTypes.createStringValue(getText());
                     resolveRelatedComponent (property).writeProperty(propertyName, value);
+                    MidpDatabindingSupport.removeUnusedConnector(property.getRelatedComponent(), propertyName);
                 }
             });
             PopupUtil.hidePopup();

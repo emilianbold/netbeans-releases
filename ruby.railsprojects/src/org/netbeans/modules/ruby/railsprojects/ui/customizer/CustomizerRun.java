@@ -53,7 +53,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -72,6 +71,7 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory.PlatformChangeListener;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
@@ -88,18 +88,16 @@ import org.openide.util.Utilities;
 
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
-    private RailsProject project;
+    private final RailsProject project;
     private String originalEncoding;
     private boolean notified;
     
-    private JTextField[] data;
-    private JLabel[] dataLabels;
-    private String[] keys;
-    private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
-    RailsProjectProperties uiProperties;
-    private PlatformChangeListener platformListener;
+    private final JTextField[] configFields;
+    private final String[] configPropsKeys;
     
-    private static final Logger LOGGER = Logger.getLogger(CustomizerRun.class.getName());
+    private final Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
+    private final RailsProjectProperties uiProperties;
+    private PlatformChangeListener platformListener;
     
     public CustomizerRun( RailsProjectProperties uiProperties ) {
         this.uiProperties = uiProperties;
@@ -109,20 +107,20 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         
         configs = uiProperties.RUN_CONFIGS;
         
-        data = new JTextField[] {
+        configFields = new JTextField[] {
             portField,
             rakeTextField
         };
-        dataLabels = new JLabel[] {
+        JLabel[] configLabels = new JLabel[] {
             portLabel,
             rakeLabel
         };
-        keys = new String[] {
+        configPropsKeys = new String[] {
             RailsProjectProperties.RAILS_PORT,
             RailsProjectProperties.RAKE_ARGS
 //            RailsProjectProperties.RAILS_ENV
         };
-        assert data.length == keys.length;
+        assert configFields.length == configPropsKeys.length;
         
         configChanged(uiProperties.activeConfig);
         
@@ -147,10 +145,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             }
         });
         
-        for (int i = 0; i < data.length; i++) {
-            final JTextField field = data[i];
-            final String prop = keys[i];
-            final JLabel label = dataLabels[i];
+        for (int i = 0; i < configFields.length; i++) {
+            final JTextField field = configFields[i];
+            final String prop = configPropsKeys[i];
+            final JLabel label = configLabels[i];
             field.getDocument().addDocumentListener(new DocumentListener() {
                 Font basefont = label.getFont();
                 Font boldfont = basefont.deriveFont(Font.BOLD);
@@ -165,10 +163,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 }
                 public void changedUpdate(DocumentEvent e) {}
                 void changed() {
-                    String config = (String) configCombo.getSelectedItem();
-                    if (config.length() == 0) {
-                        config = null;
-                    }
+                    String config = getSelectedConfig();
                     String v = field.getText();
                     if (v != null && config != null && v.equals(configs.get(null).get(prop))) {
                         // default value, do not store as such
@@ -179,10 +174,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 }
                 void updateFont() {
                     String v = field.getText();
-                    String config = (String) configCombo.getSelectedItem();
-                    if (config.length() == 0) {
-                        config = null;
-                    }
+                    String config = getSelectedConfig();
                     String def = configs.get(null).get(prop);
                     label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? boldfont : basefont);
                 }
@@ -265,7 +257,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         super.addNotify();
         platformListener = new PlatformChangeListener() {
             public void platformChanged() {
-                uiProperties.setPlatform(((RubyPlatform) platforms.getSelectedItem()));
+                RubyPlatform platform = (RubyPlatform) platforms.getSelectedItem();
+                uiProperties.setPlatform(platform);
+                configs.get(getSelectedConfig()).put(RailsProjectProperties.PLATFORM_ACTIVE, platform.getID());
             }
         };
         PlatformComponentFactory.addPlatformChangeListener(platforms, platformListener);
@@ -291,6 +285,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         }
 
         this.uiProperties.putAdditionalProperty(RailsProjectProperties.SOURCE_ENCODING, encName);
+    }
+
+    private String getSelectedConfig() {
+        String config = (String) configCombo.getSelectedItem();
+        if (config.length() == 0) {
+            config = null;
+        }
+        return config;
     }
 
     public HelpCtx getHelpCtx() {
@@ -511,7 +513,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 }//GEN-LAST:event_portFieldActionPerformed
 
     private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
-        String config = (String) configCombo.getSelectedItem();
+        String config = getSelectedConfig();
         assert config != null;
         configs.put(config, null);
         configChanged(null);
@@ -543,10 +545,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_configNewActionPerformed
 
     private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
-        String config = (String) configCombo.getSelectedItem();
-        if (config.length() == 0) {
-            config = null;
-        }
+        String config = getSelectedConfig();
         configChanged(config);
         uiProperties.activeConfig = config;
     }//GEN-LAST:event_configComboActionPerformed
@@ -582,7 +581,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 return label != null ? label : c;
             }
         });
-        for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
+        for (Map.Entry<String, Map<String, String>> entry : configs.entrySet()) {
             String config = entry.getKey();
             if (config != null && entry.getValue() != null) {
                 alphaConfigs.add(config);
@@ -593,17 +592,22 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         }
         configCombo.setModel(model);
         configCombo.setSelectedItem(activeConfig != null ? activeConfig : "");
-        Map<String,String> m = configs.get(activeConfig);
+        Map<String,String> active = configs.get(activeConfig);
         Map<String,String> def = configs.get(null);
-        if (m != null) {
-            for (int i = 0; i < data.length; i++) {
-                String v = m.get(keys[i]);
+        if (active != null) {
+            for (int i = 0; i < configFields.length; i++) {
+                String v = active.get(configPropsKeys[i]);
                 if (v == null) {
                     // display default value
-                    v = def.get(keys[i]);
+                    v = def.get(configPropsKeys[i]);
                 }
-                data[i].setText(v);
+                configFields[i].setText(v);
             }
+            String activePlatformID = active.get(RailsProjectProperties.PLATFORM_ACTIVE);
+            if (activePlatformID == null) {
+                activePlatformID = def.get(RailsProjectProperties.PLATFORM_ACTIVE);
+            }
+            platforms.setSelectedItem(RubyPlatformManager.getPlatformByID(activePlatformID));
         } // else ??
         configDel.setEnabled(activeConfig != null);
     }

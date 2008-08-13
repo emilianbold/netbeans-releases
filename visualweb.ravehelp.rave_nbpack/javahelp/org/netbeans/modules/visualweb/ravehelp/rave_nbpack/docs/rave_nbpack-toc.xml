@@ -194,7 +194,7 @@
 				<tocitem text="About Tag Libraries" target="about_taglib" />
 				<tocitem text="About the JSTL" target="about_jstl" />
 			
-				</tocitem>
+			
 				<tocitem text="Tag Library Descriptors">
 					<tocitem text="About Tag Library Descriptors" target="about_tld" />
 					<tocitem text="Creating a Tag Library Descriptor" target="tld_create" />

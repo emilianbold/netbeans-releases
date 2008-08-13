@@ -65,8 +65,6 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionOperand;
 import org.netbeans.modules.uml.diagrams.Util;
 import org.netbeans.modules.uml.diagrams.nodes.LabeledWidget;
 import org.netbeans.modules.uml.diagrams.nodes.MovableLabelWidget;
-import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
-import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
@@ -321,6 +319,10 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
                         label.addPersistenceProperty(UMLNodeWidget.GRANDPARENTLOCATION, cf.getPreferredLocation());
                     }
                     label.setPreferredLocation(nodeLabel.getPosition());
+                }
+                else if (nodeLabel.getPosition() == null) //we need default location for TSLoading
+                {
+                    label.addPersistenceProperty(UMLNodeWidget.GRANDPARENTLOCATION, UMLNodeWidget.DEFAULT);
                 }
                 label.refresh(false);
             }

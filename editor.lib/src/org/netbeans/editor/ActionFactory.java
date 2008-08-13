@@ -118,7 +118,7 @@ public class ActionFactory {
                 }
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -210,7 +210,7 @@ public class ActionFactory {
 
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -247,7 +247,7 @@ public class ActionFactory {
 
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -286,7 +286,7 @@ public class ActionFactory {
 
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -336,7 +336,7 @@ public class ActionFactory {
 
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -372,7 +372,7 @@ public class ActionFactory {
                     return;
                 }
                 final BaseDocument doc = (BaseDocument) target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -468,7 +468,7 @@ public class ActionFactory {
                     return;
                 }
                 final BaseDocument doc = (BaseDocument) target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -565,7 +565,7 @@ public class ActionFactory {
                     return;
                 }
                 final BaseDocument doc = (BaseDocument) target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -652,7 +652,7 @@ public class ActionFactory {
                     return;
                 }
                 final BaseDocument doc = (BaseDocument) target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -742,7 +742,7 @@ public class ActionFactory {
                 }
 
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -827,7 +827,7 @@ public class ActionFactory {
             final int len = command.length;
 
             final BaseDocument doc = (BaseDocument)target.getDocument();
-            doc.runAtomic (new Runnable () {
+            doc.runAtomicAsUser (new Runnable () {
                 public void run () {
                     try {
                         for( int i = 0; i < len; i++ ) {
@@ -1337,7 +1337,7 @@ public class ActionFactory {
                 final String s = editorUI.getWordMatch().getMatchWord(dotPos, direction);
                 final String prevWord = editorUI.getWordMatch().getPreviousWord();
                 if (s != null) {
-                    doc.runAtomic (new Runnable () {
+                    doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try {
@@ -1386,7 +1386,7 @@ public class ActionFactory {
 
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = Utilities.getDocument(target);
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
                         try {
@@ -1435,7 +1435,7 @@ public class ActionFactory {
 
                 final Formatter formatter = doc.getFormatter();
                 formatter.reformatLock();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         try {
                             int caretLine = Utilities.getLineOffset(doc, caret.getDot());
@@ -1552,7 +1552,7 @@ public class ActionFactory {
                 final Formatter formatter = doc.getFormatter();
                 formatter.reformatLock();
                 try {
-                    doc.runAtomic (new Runnable () {
+                    doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             try {
 
@@ -2230,7 +2230,7 @@ public class ActionFactory {
             final BaseDocument doc = (BaseDocument)target.getDocument();
             final Formatter formatter = doc.getFormatter();
             formatter.indentLock();
-            doc.runAtomic (new Runnable () {
+            doc.runAtomicAsUser (new Runnable () {
                 public void run () {
                     try {
                         //target.replaceSelection(""); //NOI18N -fix of issue #52485
@@ -2285,7 +2285,7 @@ public class ActionFactory {
             
             final BaseDocument doc = (BaseDocument)target.getDocument();
             
-            doc.runAtomic (new Runnable () {
+            doc.runAtomicAsUser (new Runnable () {
                 public void run () {
                 DocumentUtilities.setTypingModification(doc, true);
                 try {

@@ -383,7 +383,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         );
         libsPanelLayout.setVerticalGroup(
             libsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 342, Short.MAX_VALUE)
+            .add(0, 350, Short.MAX_VALUE)
         );
 
         jLabel2.setLabelFor(libsPanel);
@@ -419,7 +419,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(libraryLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
                                     .add(libraryName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)))
-                            .add(properties, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
+                            .add(properties, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
                 .addContainerGap())
         );
@@ -452,6 +452,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         libsPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_libsPanel")); // NOI18N
         properties.getAccessibleContext().setAccessibleName(bundle.getString("AN_LibrariesCustomizerProperties")); // NOI18N
         properties.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_LibrariesCustomizerProperties")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription("Edit Library");
         libraryLocation.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_LibraryLocation")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(bundle.getString("AD_LibrariesCustomizer")); // NOI18N

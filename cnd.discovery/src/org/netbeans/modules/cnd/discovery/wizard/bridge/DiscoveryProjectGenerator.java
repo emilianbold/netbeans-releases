@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.discovery.wizard.bridge;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,14 +58,9 @@ import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.checkedtree.AbstractRoot;
 import org.netbeans.modules.cnd.discovery.wizard.checkedtree.UnusedFactory;
-import org.netbeans.modules.cnd.discovery.wizard.tree.FileSystemFactory;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -198,7 +192,7 @@ public class DiscoveryProjectGenerator {
             }
         }
         if (needAdd.size()>0) {
-            addNewExtension(needAdd);
+            projectBridge.checkForNewExtensions(needAdd);
             AbstractRoot additional = UnusedFactory.createRoot(needAdd);
             addAdditionalFolder(folder, additional);
         }
@@ -232,52 +226,6 @@ public class DiscoveryProjectGenerator {
         }
     }
 
-    private void addNewExtension(Set<String> needAdd){
-        Set<String> headerExtension = FileSystemFactory.getHeaderSuffixes();
-        Set<String> sourceExtension = FileSystemFactory.getSourceSuffixes();
-        Set<String> usedExtension = FileSystemFactory.createExtensionSet();
-        for(String name : needAdd){
-            name = name.replace('\\','/');
-            int i = name.lastIndexOf('/');
-            if (i >= 0){
-                name = name.substring(i);
-            }
-            i = name.lastIndexOf('.');
-            if (i > 0){
-                String extension = name.substring(i+1);
-                if (extension.length()>0) {
-                    if (!headerExtension.contains(extension) && !sourceExtension.contains(extension)){
-                        usedExtension.add(extension);
-                    }
-                }
-            }
-        }
-        if (usedExtension.size()>0 && addNewExtensionDialog(usedExtension)){
-            // add unknown extensin to HDataLoader
-            projectBridge.addExtensions(usedExtension);
-        }
-    }
-    
-    private boolean addNewExtensionDialog(Set<String> usedExtension) {
-        String message = getString("ADD_EXTENSION_QUESTION"+(usedExtension.size()==1?"":"S")); // NOI18N
-        StringBuilder extensions = new StringBuilder();
-        for(String ext : usedExtension){
-            if (extensions.length()>0){
-                extensions.append(',');
-            }
-            extensions.append(ext);
-        }
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(
-                MessageFormat.format(message, new Object[]{extensions.toString()}),
-                getString("ADD_EXTENSION_DIALOG_TITLE"+(usedExtension.size()==1?"":"S")), // NOI18N
-                NotifyDescriptor.YES_NO_OPTION); 
-        return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION;
-    }
-
-    private String getString(String key) {
-        return NbBundle.getBundle(DiscoveryProjectGenerator.class).getString(key);
-    }
-    
     private void addAdditionalFolder(Folder folder, AbstractRoot used){
         String name = used.getName();
         Folder added = folder.findFolderByName(name);
