@@ -519,7 +519,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                                 + ", indentLevelSize=" + IndentUtils.indentLevelSize(doc) //NOI18N
                                 + ", tabSize=" + IndentUtils.tabSize(doc) //NOI18N
                                 + ", mimeType='" + doc.getProperty("mimeType") + "'" //NOI18N
-                                + ", doc=" + doc); //NOI18N
+                                + ", doc=" + s2s(doc)); //NOI18N
                     }
                     reformat.reformat(0, doc.getLength());
                 } catch (BadLocationException ble) {
@@ -534,4 +534,8 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
 
     } // End of IndentationPreview class
+
+    private static String s2s(Object o) {
+        return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
+    }
 }
