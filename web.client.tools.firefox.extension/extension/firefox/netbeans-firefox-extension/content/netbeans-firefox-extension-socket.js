@@ -84,7 +84,7 @@
             }
 
             if (data instanceof XML) {
-                data = '<?xml version="1.0" ?>' + data.toXMLString();
+                data = NetBeans.Utils.convertUnicodeToUTF8('<?xml version="1.0" ?>' + data.toXMLString());
             } else {
                 // DBGP expects only XML messages back from the debugger
                 return;
