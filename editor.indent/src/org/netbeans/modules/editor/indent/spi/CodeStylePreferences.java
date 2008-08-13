@@ -103,7 +103,7 @@ public final class CodeStylePreferences {
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     private static final String PROJECT_PROFILE = "project"; // NOI18N
 
-    private static final Map<FileObject, CodeStylePreferences> cache = new WeakHashMap<FileObject, CodeStylePreferences>();
+    private static final Map<Object, CodeStylePreferences> cache = new WeakHashMap<Object, CodeStylePreferences>();
     
     private final String mimeType;
     private final Reference<Document> refDoc;
@@ -127,25 +127,25 @@ public final class CodeStylePreferences {
     
     private static CodeStylePreferences get(Object obj, String mimeType) {
         synchronized (cache) {
-            Document doc;
-            FileObject file;
-            
-            if (obj instanceof FileObject) {
-                doc = null;
-                file = (FileObject) obj;
-            } else {
-                doc = (Document) obj;
-                file = findFileObject(doc);
-            }
-            
-            CodeStylePreferences csp = cache.get(file);
+            CodeStylePreferences csp = cache.get(obj);
             if (csp == null) {
+                Document doc;
+                FileObject file;
+
+                if (obj instanceof FileObject) {
+                    doc = null;
+                    file = (FileObject) obj;
+                } else {
+                    doc = (Document) obj;
+                    file = findFileObject(doc);
+                }
+
                 csp = new CodeStylePreferences(
                         findProjectPreferences(file), 
                         mimeType, 
-                        new WeakReference<Document>(doc),
+                        doc == null ? null : new WeakReference<Document>(doc),
                         file == null ? "no file" : file.getPath()); //NOI18N
-                cache.put(file, csp);
+                cache.put(obj, csp);
             }
 
             return csp;
@@ -178,7 +178,7 @@ public final class CodeStylePreferences {
         
         this.globalPrefs = MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
 
-        LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences"); //NOI18N
+        LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences; doc=" + s2s(refDoc.get())); //NOI18N
     }
     
     private static final Preferences findProjectPreferences(FileObject file) {
@@ -200,5 +200,9 @@ public final class CodeStylePreferences {
         } else {
             return null;
         }
+    }
+
+    private static String s2s(Object o) {
+        return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
     }
 }
