@@ -44,11 +44,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.Element;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -64,13 +61,6 @@ import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
 import org.netbeans.modules.xml.text.folding.TokenElement;
 import org.netbeans.modules.xml.text.folding.TokenElement.TokenType;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
-import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xdm.XDMModel;
-import org.netbeans.modules.xml.xdm.diff.DefaultElementIdentity;
-import org.netbeans.modules.xml.xdm.diff.DiffFinder;
-import org.netbeans.modules.xml.xdm.diff.Difference;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  * New XML formatter based on Lexer APIs.
