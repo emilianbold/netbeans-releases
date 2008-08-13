@@ -302,8 +302,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 objectReference = evaluationContext.getFrame().thisObject();
                 type = evaluationContext.getFrame().location().declaringType();
                 if (enclosingClass != null) {
-                    ReferenceType dt = findEnclosingType(type, enclosingClass);
-                    if (dt != null) type = dt;
+                     ReferenceType enclType = findEnclosingType(type, enclosingClass);
+                     if (enclType != null) {
+                         ObjectReference enclObject = findEnclosingObject(arg0, objectReference, enclType, null, methodName);
+                         if (enclObject != null) type = enclObject.referenceType();
+                     }
                 }
             }
             if (objectReference == null) {
@@ -1282,11 +1285,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 ObjectReference thisObject = evaluationContext.getFrame().thisObject();
                 if (thisObject != null) {
                     if (field.isPrivate()) {
-                        ObjectReference to = findEnclosedObject(thisObject, declaringType);
+                        ObjectReference to = findEnclosingObject(arg0, thisObject,declaringType, field.name(), null);
                         if (to != null) thisObject = to;
                     } else {
                         if (!instanceOf(thisObject.referenceType(), declaringType)) {
-                            ObjectReference to = findEnclosedObject(thisObject, declaringType);
+                            ObjectReference to = findEnclosingObject(arg0, thisObject,declaringType, field.name(), null);
                             if (to != null) thisObject = to;
                         }
                     }
@@ -1395,9 +1398,19 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return false;
     }
     
-    private ObjectReference findEnclosedObject(ObjectReference object, ReferenceType type) {
+    private ObjectReference findEnclosingObject(Tree arg0,ObjectReference object, ReferenceType type, String fieldName, String methodName) {
         if (instanceOf(object.referenceType(), type)) {
             return object;
+        }
+        if (((ReferenceType) object.type()).isStatic()) {
+            // instance fields/methods can not be accessed from static context.
+            if (fieldName != null) {
+                Assert2.error(arg0, "accessInstanceVariableFromStaticContext", fieldName);
+            }
+            if (methodName != null) {
+                Assert2.error(arg0, "invokeInstanceMethodAsStatic", methodName);
+            }
+            return null;
         }
         Field outerRef = null;
         for (int i = 0; i < 9; i++) {
@@ -1406,7 +1419,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (outerRef == null) return null;
         object = (ObjectReference) object.getValue(outerRef);
-        return findEnclosedObject(object, type);
+        return findEnclosingObject(arg0, object,type, fieldName, methodName);
     }
 
     @Override
@@ -2357,11 +2370,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             } else {
                 if (type != null) {
                     if (method.isPrivate()) {
-                        ObjectReference to = findEnclosedObject(objectReference, type);
+                        ObjectReference to = findEnclosingObject(arg0, objectReference,type, null, method.name());
                         if (to != null) objectReference = to;
                     } else {
                         if (!instanceOf(objectReference.referenceType(), type)) {
-                            ObjectReference to = findEnclosedObject(objectReference, type);
+                            ObjectReference to = findEnclosingObject(arg0, objectReference,type, null, method.name());
                             if (to != null) objectReference = to;
                         }
                     }

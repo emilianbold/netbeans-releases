@@ -172,6 +172,11 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.bpel.mapper</friend>
                 <friend>org.netbeans.modules.bpel.search</friend>
                 <friend>org.netbeans.modules.bpel.xpath</friend>
+                <friend>org.netbeans.modules.soa.ui</friend>
+                <friend>org.netbeans.modules.soa.ui01</friend>
+                <friend>org.netbeans.modules.xml.search</friend>
+                <friend>org.netbeans.modules.xml.search01</friend>
+                <friend>org.netbeans.modules.wlm.editor</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.encoder.ui.basic</friend>
                 <friend>org.netbeans.modules.iep.editor</friend>

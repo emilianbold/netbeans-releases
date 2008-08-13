@@ -20,7 +20,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.persistence</code-name-base>
                     <run-dependency>
-                        <specification-version>1.5.1</specification-version>
+                        <specification-version>1.5.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

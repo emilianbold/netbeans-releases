@@ -185,8 +185,9 @@ public class MapperSwingTreeModel implements ExtTreeModel<MapperTreeNode>,
             TreeItemInfoProvider infoProvider =
                     mSourceModel.getTreeItemInfoProvider();
             if (infoProvider != null) {
-                Object dataObject = mNode.getDataObject();
-                toolTipText = infoProvider.getToolTipText(dataObject);
+                RestartableIterator<Object> dataObjectPathItr = 
+                getDataObjectsPathIterator(mNode);
+                toolTipText = infoProvider.getToolTipText(dataObjectPathItr);
             }
         }
         return toolTipText;

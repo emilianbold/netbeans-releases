@@ -157,7 +157,8 @@ public class PartnerLinkTreeExtModel
         return null;
     }
 
-    public String getToolTipText(Object treeItem) {
+    public String getToolTipText(RestartableIterator<Object> dataObjectPathItr) {
+        Object treeItem = dataObjectPathItr.next();
         if (treeItem instanceof Roles) {
             return ((Roles)treeItem).toString();
         }

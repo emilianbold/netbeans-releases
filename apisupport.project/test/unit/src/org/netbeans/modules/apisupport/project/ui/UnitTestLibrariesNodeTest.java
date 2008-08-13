@@ -81,7 +81,7 @@ public class UnitTestLibrariesNodeTest extends TestBase {
             nc++;
         }
 
-        Node libs = new UnitTestLibrariesNode(p);
+        Node libs = new UnitTestLibrariesNode(UNIT, p);
         assertNotNull("have the Libraries node", libs);
         assertEquals("nc node", nc, libs.getChildren().getNodes(true).length);
         
@@ -104,7 +104,7 @@ public class UnitTestLibrariesNodeTest extends TestBase {
     public void testActions() throws Exception{
         Lookup.getDefault().lookup(ModuleInfo.class);
         NbModuleProject p = generateStandaloneModule("module");
-        Node libs = new UnitTestLibrariesNode(p);
+        Node libs = new UnitTestLibrariesNode(UNIT, p);
         assertNotNull("have the Libraries node", libs);
         //test removedep action
         addTestDependency(p);

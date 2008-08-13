@@ -172,6 +172,7 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
             String msg = NbBundle.getMessage(JAXBWizardIterator.class, 
                     "MSG_ErrorReadingSchema");//NOI18N
             wiz.putProperty(JAXBWizModuleConstants.WIZ_ERROR_MSG, msg); 
+            project.getProjectDirectory().getFileSystem().refresh(true);
             throw new IOException(msg);
         }
         
