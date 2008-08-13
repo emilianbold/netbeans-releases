@@ -43,6 +43,7 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportJavaVersion;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportMultipleRootsJavaProjectFromWS;
+import org.netbeans.modules.projectimport.eclipse.gui.ImportProjectWithTransitiveDeps;
 import org.netbeans.modules.projectimport.eclipse.gui.ImporterMenu;
 import org.netbeans.modules.projectimport.eclipse.gui.ImporterWizard;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleJavaProjectFromWS;
@@ -61,6 +62,7 @@ public class ImporterTest {
                 addTest(ImportSimpleWebProjectFromWS.class).
                 addTest(ImportMultipleRootsJavaProjectFromWS.class).
                 addTest(ImportJavaVersion.class).
+                addTest(ImportProjectWithTransitiveDeps.class).
                 enableModules(".*").clusters(".*").
                 gui(true).reuseUserDir(true));
     }

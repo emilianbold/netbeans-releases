@@ -1211,12 +1211,12 @@
             // transmit them in UTF-8 - the default XML encoding.
             // We may need to convert the source text to UTF-8
             // here using nsIScriptableUnicodeConverter service.
-            data = NetBeans.Utils.convertUnicodeToUTF8(data.join("\n"));
+            data = data.join("\n");
 
             var sourceResponse =
-              <response command="source" encoding="base64"
+              <response command="source" encoding="none"
                   success="1"
-                  transaction_id={transaction_id}>{window.btoa(data)}</response>;
+                  transaction_id={transaction_id}>{data}</response>;
             socket.send(sourceResponse);
         } else {
             var sourceResponse =
@@ -2035,7 +2035,7 @@
     }
 
     /**
-     * @param  jsdIValue variable
+     * @param variable
      **/
     function getPropertiesArray(variable)
     {
@@ -2146,7 +2146,7 @@
             case TYPE_BOOLEAN:
                 val.type = "boolean";
                 val.displayType  = CONST_TYPE_BOOLEAN;
-                val.displayValue = value.stringValue;
+                val.displayValue = value.getWrappedValue();
                 break;
             case TYPE_INT:
                 val.type = "int";
@@ -2161,8 +2161,7 @@
             case TYPE_STRING:
                 val.type = "string";
                 val.displayType  = CONST_TYPE_STRING;
-                strval = value.stringValue;
-                val.displayValue = strval.quote();
+                val.displayValue = "\"" + value.getWrappedValue() + "\""
                 break;
             case TYPE_FUNCTION:
             case TYPE_OBJECT:
@@ -2177,6 +2176,8 @@
                 {
                     case "Function":
                         val.displayType  = (value.isNative ? CONST_NATIVE_FUNCTION : CONST_SCRIPT_FUNCTION );
+                        // Use value.getWrappedValue() instead of value.stringValue to get
+                        // the unicode chars
                         val.displayValue = value.getWrappedValue().toString();
                         break;
 
@@ -2185,14 +2186,18 @@
                         if (value.jsConstructor) {
                             val.displayType = value.jsConstructor.jsFunctionName;
                         }
-                        val.displayValue = value.stringValue;
+                        // Use value.getWrappedValue() instead of value.stringValue to get
+                        // the unicode chars
+                        val.displayValue = value.getWrappedValue();
                         if ( val.displayValue == 'null' ) {
                             NetBeans.Logger.log('!null value was found','err');
                         }
                         break;
 
                     case "String":
-                        strval = value.stringValue;
+                        // Use value.getWrappedValue() instead of value.stringValue to get
+                        // the unicode chars
+                        strval = value.getWrappedValue();
                         val.displayValue = strval.quote();
                         break;
 
@@ -2205,7 +2210,9 @@
 
                     case "Number":
                     case "Boolean":
-                        val.displayValue = value.stringValue;
+                        // Use value.getWrappedValue() instead of value.stringValue to get
+                        // the unicode chars
+                        val.displayValue = value.getWrappedValue();
                         break;
 
                     default:
