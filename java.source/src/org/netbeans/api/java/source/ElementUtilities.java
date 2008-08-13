@@ -127,6 +127,10 @@ public final class ElementUtilities {
      * @throws IllegalArgumentException if the provided element is a package element
      */
     public TypeElement enclosingTypeElement( Element element ) throws IllegalArgumentException {
+        return enclosingTypeElementImpl(element);
+    }
+    
+    static TypeElement enclosingTypeElementImpl( Element element ) throws IllegalArgumentException {
 	
 	if( element.getKind() == ElementKind.PACKAGE ) {
 	    throw new IllegalArgumentException();
