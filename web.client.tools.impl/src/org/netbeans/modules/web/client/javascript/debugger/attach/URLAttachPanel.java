@@ -55,6 +55,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
+import org.netbeans.modules.web.client.tools.impl.DebugConstants;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
@@ -104,7 +105,8 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
         ffBrowserSupported = WebClientToolsProjectUtils.isFirefoxSupported();
 
         if (ieBrowserSupported && ffBrowserSupported) {
-            String browser = preferences.get(BROWSER, WebClientToolsProjectUtils.Browser.FIREFOX.name());
+            String globalBrowser = preferences.get(DebugConstants.BROWSER, WebClientToolsProjectUtils.Browser.FIREFOX.name());
+            String browser = preferences.get(BROWSER, globalBrowser);
             firefoxRadioButton.setSelected(WebClientToolsProjectUtils.Browser.valueOf(browser) == WebClientToolsProjectUtils.Browser.FIREFOX);
             internetExplorerRadioButton.setSelected(WebClientToolsProjectUtils.Browser.valueOf(browser) == WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER);
         } else if (!ieBrowserSupported && !ffBrowserSupported) {

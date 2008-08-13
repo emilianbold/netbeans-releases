@@ -37,27 +37,12 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.xml.text.indent;
-
-import org.netbeans.modules.xml.xdm.diff.DefaultElementIdentity;
+package org.netbeans.modules.uml.drawingarea.widgets;
 
 /**
- *
- * @author Sonali
+ * marker interface
+ * @author Sheryl Su
  */
-public class XMLElementIdentity extends DefaultElementIdentity {
-    
-      
-    protected boolean compareElement(org.w3c.dom.Element n1, org.w3c.dom.Element n2, org.w3c.dom.Node parent1, org.w3c.dom.Document doc1, org.w3c.dom.Document doc2) {
-         String qName1 = n1.getLocalName();
-        String qName2 = n2.getLocalName();
-              
-        if ( qName1.intern() !=  qName2.intern() )
-            return false;
-             
-        if(parent1 == doc1) return true; //if root no need to compare other identifiers
-        
-        return compareAttr( n1, n2);
-    }
+public interface Container {
 
 }

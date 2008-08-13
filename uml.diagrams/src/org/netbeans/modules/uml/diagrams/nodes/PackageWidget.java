@@ -458,7 +458,7 @@ public class PackageWidget extends ContainerNode
                 totalHeight += childBounds.height;
             }
 
-            System.out.println("Total Height = " + totalHeight);
+//            System.out.println("Total Height = " + totalHeight);
             Rectangle bounds = widget.getClientArea();
             
             int y = (bounds.height / 2) - (totalHeight / 2);

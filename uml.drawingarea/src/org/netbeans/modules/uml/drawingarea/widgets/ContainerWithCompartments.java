@@ -43,7 +43,7 @@ package org.netbeans.modules.uml.drawingarea.widgets;
  *
  * @author sp153251
  */
-public interface ContainerWithCompartments {
+public interface ContainerWithCompartments extends Container {
     /**
      * need to export api to be used in import
      */

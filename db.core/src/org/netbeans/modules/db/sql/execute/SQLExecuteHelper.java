@@ -178,7 +178,6 @@ public final class SQLExecuteHelper {
         private static final int STATE_BLOCK_COMMENT = 4;
         private static final int STATE_MAYBE_END_BLOCK_COMMENT = 5;
         private static final int STATE_STRING = 6;
-        private static final int STATE_END_COMMENT = 7;
         
         private String sql;
         private int sqlLength;
@@ -255,8 +254,6 @@ public final class SQLExecuteHelper {
                     case STATE_LINE_COMMENT:
                         if (ch == '\n') {
                             state = STATE_MEANINGFUL_TEXT;
-                            // avoid appending the final \n to the result
-                            pos++;
                             continue;
                         } 
                         break;
