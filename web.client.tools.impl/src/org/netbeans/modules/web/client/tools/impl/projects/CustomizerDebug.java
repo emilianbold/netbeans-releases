@@ -183,12 +183,10 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
 
         browserButtonGroup.add(firefoxRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(firefoxRadioButton, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.text")); // NOI18N
-        firefoxRadioButton.setLabel(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.label")); // NOI18N
 
         browserButtonGroup.add(internetExplorerRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(internetExplorerRadioButton, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.text")); // NOI18N
         internetExplorerRadioButton.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.tooltip")); // NOI18N
-        internetExplorerRadioButton.setLabel(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(noSupportedBrowserLabel, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.noSupportedBrowserLabel.text")); // NOI18N
 
@@ -224,7 +222,7 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
                 .add(internetExplorerRadioButton)
                 .add(18, 18, 18)
                 .add(noSupportedBrowserLabel)
-                .addContainerGap(371, Short.MAX_VALUE))
+                .addContainerGap(375, Short.MAX_VALUE))
         );
 
         debugServerJCheckBox.getAccessibleContext().setAccessibleDescription("null");
