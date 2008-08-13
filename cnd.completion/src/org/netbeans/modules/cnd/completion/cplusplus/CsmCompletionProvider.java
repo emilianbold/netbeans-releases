@@ -54,12 +54,9 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
@@ -164,14 +161,14 @@ public class CsmCompletionProvider implements CompletionProvider {
             }
             return builder.toString();
         }
-        
+
         @Override
         protected void preQueryUpdate(JTextComponent component) {
             if (TRACE) System.err.println("preQueryUpdate" + getTestState());
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();
-            Class kitClass = Utilities.getKitClass(component);
-            caseSensitive = kitClass != null ? getCaseSensitive(kitClass) : false;
+            String mimeType = CsmCompletionUtils.getMimeType(component);
+            caseSensitive = mimeType != null ? CsmCompletionUtils.isCaseSensitive(mimeType) : false;
             if (creationCaretOffset > 0 && caretOffset >= creationCaretOffset) {
                 try {
                     if (isCppIdentifierPart(doc.getText(creationCaretOffset, caretOffset - creationCaretOffset))) {
@@ -224,12 +221,6 @@ public class CsmCompletionProvider implements CompletionProvider {
                 // need fake item
                 resultSet.addItem(lastItem);
             }
-        }
-
-        private boolean getCaseSensitive(Class kitClass) {
-            return SettingsUtil.getBoolean(kitClass,
-                    ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-                    ExtSettingsDefaults.defaultCompletionCaseSensitive);
         }
 
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
