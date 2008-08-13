@@ -210,11 +210,7 @@ public class NodeFactorySupport {
                 addKeys(list);
             }
             final Collection<NodeListKeyWrapper> ks = createKeys();
-            EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    setKeys(ks);
-                }
-            });
+            EventQueue.invokeLater(new RunnableImpl(this, ks));
         }
         
         //to be called under lock.
@@ -270,6 +266,23 @@ public class NodeFactorySupport {
                     setKeys(createKeys());
                 }
             });
+        }
+
+        private static class RunnableImpl implements Runnable {
+            private Collection<NodeListKeyWrapper> ks;
+            private DelegateChildren ch;
+
+
+            public RunnableImpl(DelegateChildren aThis, Collection<NodeListKeyWrapper> ks) {
+                this.ks = ks;
+                this.ch = aThis;
+            }
+
+            public void run() {
+                ch.setKeys(ks);
+                ch = null;
+                ks = null;
+            }
         }
     }
     

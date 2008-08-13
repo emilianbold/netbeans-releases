@@ -35,7 +35,7 @@
 
             $hasher =& new Crypt_HMAC($secret, "sha1");
             $signature = self::hex2b64($hasher->hash(self::getStringToSign($headers)));
-            return "AWS " . accessKey . ":" . $signature;
+            return "AWS " . $accessKey . ":" . $signature;
         }
 
         public static function getStringToSign($headers) {
@@ -52,11 +52,11 @@
             if ($date == null) $date = "";
 
             $stringToSign = $httpVerb . "\n" .
-            $contentMD5 . "\n" +
-            $contentType . "\n" +
-            $date + "\n" .
-            self::getCanonicalAmazonHeaders(headerMap) +
-            self::getCanonicalResource(headerMap);
+            $contentMD5 . "\n" .
+            $contentType . "\n" .
+            $date . "\n" .
+            self::getCanonicalAmazonHeaders($headers) .
+            self::getCanonicalResource($headers);
 
             return $stringToSign;
 
@@ -69,8 +69,8 @@
         private static function getCanonicalResource($headers) {
             $prefix = "";
             $bucket = $headers["Bucket"];
-            if ($bucket != null && strlen(bucket) > 0) {
-                $prefix = "/" + $bucket;
+            if ($bucket != null && strlen($bucket) > 0) {
+                $prefix = "/" . $bucket;
             }
 
             $suffix = "";
@@ -80,26 +80,26 @@
                 $uri = "/";
             }
 
-            $index = strpos($uri, "?");
-            if ($index != -1) {
-                $suffix += substr(uri, 0, index);
+            if (strpos($uri, "?") !== false) {
+                $index = strpos($uri, "?");
+                $suffix .= substr($uri, 0, $index);
 
-                $query = substr(uri, index);
+                $query = substr($uri, $index);
 
-                if (strpos($query, "?acl") >= 0) {
-                    $suffix += "?acl";
-                } else if (strpos($query, "?location") >= 0) {
-                    $suffix += "?location";
-                } else if (strpos($query, "?logging") >= 0) {
-                    $suffix += "?logging";
-                } else if (strpos($query, "?torrent") >= 0) {
-                    $suffix += "?torrent";
+                if (strpos($query, "?acl") !== false) {
+                    $suffix .= "?acl";
+                } else if (strpos($query, "?location") !== false) {
+                    $suffix .= "?location";
+                } else if (strpos($query, "?logging") !== false) {
+                    $suffix .= "?logging";
+                } else if (strpos($query, "?torrent") !== false) {
+                    $suffix .= "?torrent";
                 }
             } else {
-                $suffix += $uri;
+                $suffix .= $uri;
             }
 
-            return $prefix + $suffix;
+            return $prefix . $suffix;
         }
         private static function hex2b64($str) {
             $raw = '';

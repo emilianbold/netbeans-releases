@@ -169,11 +169,11 @@ public final class NbJSPreferences {
         PROPERTIES.PROP_HTTP_MONITOR_ENABLED.setBooleanPreferences(b);
     }
 
-    public void addPreferencesChangeListener(PreferenceChangeListener listener) {
+    public void addPreferenceChangeListener(PreferenceChangeListener listener) {
         getPreferences().addPreferenceChangeListener(listener);
     }
 
-    public void removePreferencesChangeListener(PreferenceChangeListener listener) {
+    public void removePreferenceChangeListener(PreferenceChangeListener listener) {
         getPreferences().removePreferenceChangeListener(listener);
     }
 

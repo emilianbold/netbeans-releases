@@ -70,6 +70,7 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -434,14 +435,14 @@ private void containerRepresentationClassChanged(java.awt.event.KeyEvent evt) {/
     private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resourceNameChanged
     String newName = resourceNameTextField.getText();
     if (! resourceClassNameOveridden) {
-        classTextField.setText(Util.deriveResourceClassName(newName));
+        classTextField.setText(findFreeClassName(newName));
     }
 //    if (! uriOveridden) {
 //        String currentUri = uriTextField.getText();
 //        uriTextField.setText(Util.deriveUri(newName, currentUri));
 //    }
     if (! containerClassNameOveridden) {
-        containerTextField.setText(Util.deriveContainerClassName(newName));
+        containerTextField.setText(findFreeClassName(newName));
     }
     if (! containerUriOveridden) {
         String newContainerName = Util.lowerFirstChar(newName);
@@ -654,40 +655,6 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
     public static final String DEFAULT_RESOURCE_NAME = "Item";
     
     public void read(WizardDescriptor settings) {
-        String value = (String) settings.getProperty(WizardProperties.ITEM_RESOURCE_NAME);
-        if (value == null || value.trim().length() == 0) { // first time
-            resourceNameTextField.setText(DEFAULT_RESOURCE_NAME);
-            String containerName = Util.pluralize(getResourceName());
-            String containerUri = "/" + Util.lowerFirstChar(containerName); //NOI18N
-            classTextField.setText(Util.deriveResourceClassName(getResourceName()));
-            if (isClientControlledPattern(settings)) {
-                uriTextField.setText("{name}"); //NOI18N
-            } else {
-                uriTextField.setText("{id}"); //NOI18N
-            }
-            containerTextField.setText(Util.deriveResourceClassName(containerName));
-            containerUriTextField.setText("/"+containerName);
-            representationClassTextField.setText(GenericResourceBean.
-                getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
-            containerRepresentationClassTextField.setText(GenericResourceBean.
-                getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
-        } else {
-            resourceNameTextField.setText(value);
-            classTextField.setText((String) settings.getProperty(WizardProperties.ITEM_RESOURCE_CLASS));
-            uriTextField.setText((String) settings.getProperty(WizardProperties.ITEM_RESOURCE_URI));
-            medaTypeComboBox.setSelectedItem(((MimeType[]) settings.getProperty(WizardProperties.ITEM_MIME_TYPES))[0]);
-            String[] types = (String[]) settings.getProperty(WizardProperties.ITEM_REPRESENTATION_TYPES);
-            if (types != null && types.length > 0) {
-                representationClassTextField.setText(types[0]);
-            }
-            containerTextField.setText((String) settings.getProperty(WizardProperties.CONTAINER_RESOURCE_CLASS));
-            containerUriTextField.setText((String) settings.getProperty(WizardProperties.CONTAINER_RESOURCE_URI));
-            types = (String[]) settings.getProperty(WizardProperties.CONTAINER_REPRESENTATION_TYPES);
-            if (types != null && types.length > 0) {
-                containerRepresentationClassTextField.setText(types[0]);
-            }
-        }
-        
         project = Templates.getProject(settings);
         FileObject targetFolder = Templates.getTargetFolder(settings);
         
@@ -711,6 +678,41 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
                }
             }
         }
+        
+           String value = (String) settings.getProperty(WizardProperties.ITEM_RESOURCE_NAME);
+        if (value == null || value.trim().length() == 0) { // first time
+            resourceNameTextField.setText(DEFAULT_RESOURCE_NAME);
+            String containerName = Util.pluralize(getResourceName());
+
+            classTextField.setText(findFreeClassName(getResourceName()));
+            if (isClientControlledPattern(settings)) {
+                uriTextField.setText("{name}"); //NOI18N
+            } else {
+                uriTextField.setText("{id}"); //NOI18N
+            }
+            containerTextField.setText(findFreeClassName(containerName));
+            containerUriTextField.setText("/"+containerName);
+            representationClassTextField.setText(GenericResourceBean.
+                getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
+            containerRepresentationClassTextField.setText(GenericResourceBean.
+                getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
+        } else {
+            resourceNameTextField.setText(value);
+            classTextField.setText((String) settings.getProperty(WizardProperties.ITEM_RESOURCE_CLASS));
+            uriTextField.setText((String) settings.getProperty(WizardProperties.ITEM_RESOURCE_URI));
+            medaTypeComboBox.setSelectedItem(((MimeType[]) settings.getProperty(WizardProperties.ITEM_MIME_TYPES))[0]);
+            String[] types = (String[]) settings.getProperty(WizardProperties.ITEM_REPRESENTATION_TYPES);
+            if (types != null && types.length > 0) {
+                representationClassTextField.setText(types[0]);
+            }
+            containerTextField.setText((String) settings.getProperty(WizardProperties.CONTAINER_RESOURCE_CLASS));
+            containerUriTextField.setText((String) settings.getProperty(WizardProperties.CONTAINER_RESOURCE_URI));
+            types = (String[]) settings.getProperty(WizardProperties.CONTAINER_REPRESENTATION_TYPES);
+            if (types != null && types.length > 0) {
+                containerRepresentationClassTextField.setText(types[0]);
+            }
+        }
+        
     }
     
     public void store(WizardDescriptor settings) {
@@ -747,6 +749,19 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
             }
             packageComboBox.setModel(model);
         }
+    }
+    
+    private String findFreeClassName(String uri) {
+        try {
+            FileObject folder = SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage());
+            if (folder != null) {
+                return FileUtil.findFreeFileName(folder, Util.deriveResourceClassName(uri), Constants.JAVA_EXT);
+            }
+        } catch (IOException ex) {
+            //OK just return null
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
     
     static boolean isClientControlledPattern(WizardDescriptor settings) {

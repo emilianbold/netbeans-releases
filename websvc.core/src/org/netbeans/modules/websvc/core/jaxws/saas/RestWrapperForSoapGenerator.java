@@ -40,6 +40,7 @@ package org.netbeans.modules.websvc.core.jaxws.saas;
 
 import com.sun.source.tree.ClassTree;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,30 +49,30 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsCodeGenerator;
-import org.netbeans.modules.websvc.core.jaxws.saas.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
-
-
 
 /**
  *
@@ -86,26 +87,54 @@ public class RestWrapperForSoapGenerator {
     private Project project;
     private Map<String, Class> primitiveTypes;
     public static final Modifier[] PUBLIC = new Modifier[]{Modifier.PUBLIC};
-    public static final String GET_ANNOTATION = "GET";   //NOI18N
-
     public static final String INDENT = "        ";
     public static final String INDENT_2 = "             ";
-    public static final String PRODUCE_MIME_ANNOTATION = "ProduceMime"; //NOI18N
+    public static final String APP_XML_MIME = "application/xml";
+    public static final String TEXT_PLAIN_MIME = "text/plain";
+    public static final String APP_JSON_MIMI = "application/json";
 
-    public static final String PATH_ANNOTATION = "Path"; //NOI18N
-
-    public static final String QUERY_PARAM_ANNOTATION = "QueryParam";       //NOI18N
-
-    public static final String DEFAULT_VALUE_ANNOTATION = "DefaultValue";       //NOI18N
-
+    private String[] ANNOTATIONS_GET = new String[]{
+        RestConstants.GET,
+        RestConstants.PRODUCE_MIME,
+        RestConstants.CONSUME_MIME,
+        RestConstants.PATH
+    };
+    private String[] ANNOTATIONS_POST = new String[]{
+        RestConstants.POST,
+        RestConstants.PRODUCE_MIME,
+        RestConstants.CONSUME_MIME,
+        RestConstants.PATH
+    };
+    private String[] ANNOTATIONS_PUT = new String[]{
+        RestConstants.PUT,
+        RestConstants.CONSUME_MIME,
+        RestConstants.PATH
+    };
+    private static final String JAVA_TRY =
+            "\ntry '{' // Call Web Service Operation\n"; //NOI18N
+    private static final String JAVA_SERVICE_DEF =
+            "   {0} {5} = new {0}();\n"; //NOI18N
+    private static final String JAVA_PORT_DEF =
+            "   {1} port = {5}.{2}();\n"; //NOI18N
+    private static final String JAVA_RESULT =
+            // "   {3}" + //NOI18N
+            // "   // TODO process result here\n" + //NOI18N
+            "   {3} result = port.{4}({6});\n"; //NOI18N
+    private static final String JAVA_VOID =
+            "   {3}" + //NOI18N
+            "   port.{4}({6});\n"; //NOI18N
+    private static final String JAVA_CATCH =
+            "'}' catch (Exception ex) '{'\n" + //NOI18N
+            "   // TODO handle custom exceptions here\n" + //NOI18N
+            "'}'\n"; //NOI18N
 
     public RestWrapperForSoapGenerator(WSService service, WSPort port,
-            WSOperation operation, FileObject targetFile) {
+            WSOperation operation, Project project, FileObject targetFile) {
         this.service = service;
         this.port = port;
         this.operation = operation;
         this.targetFile = targetFile;
-        this.project = FileOwnerQuery.getOwner(targetFile);
+        this.project = project;
     }
 
     public Set<FileObject> generate() throws IOException {
@@ -116,7 +145,17 @@ public class RestWrapperForSoapGenerator {
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
-                ClassTree modifiedJavaClass = addGetMethod("application/xml", returnType, workingCopy, javaClass);
+                TypeElement classElement = SourceUtils.getPublicTopLevelElement(workingCopy);
+                List<? extends AnnotationMirror> anns = classElement.getAnnotationMirrors();
+                String pathValue = javaClass.getSimpleName().toString().toLowerCase();
+                AnnotationMirror pathAnn = JavaSourceHelper.findAnnotation(anns, RestConstants.PATH + "(\"" + pathValue + "\")");
+                if (pathAnn == null) {
+                    addPathAnnotation(workingCopy, new String[]{javaClass.getSimpleName().toString().toLowerCase()});
+                }
+                if (getPrimitiveType(returnType) == null) {
+                    addQNameImport(workingCopy);
+                }
+                ClassTree modifiedJavaClass = addHttpMethod(returnType, workingCopy, javaClass);
                 workingCopy.rewrite(javaClass, modifiedJavaClass);
             }
 
@@ -129,6 +168,10 @@ public class RestWrapperForSoapGenerator {
         return new HashSet<FileObject>(Collections.EMPTY_LIST);
     }
 
+    private void addQNameImport(WorkingCopy copy) {
+        JavaSourceHelper.addImports(copy, new String[]{"javax.xml.namespace.QName"});
+    }
+
     public List<WSParameter> getOutputParameters() {
         ArrayList<WSParameter> params = new ArrayList<WSParameter>();
         for (WSParameter p : operation.getParameters()) {
@@ -139,14 +182,18 @@ public class RestWrapperForSoapGenerator {
         return params;
     }
 
-    private ClassTree addGetMethod(String mime, String returnType, WorkingCopy copy, ClassTree tree) throws IOException {
-        Modifier[] modifiers = PUBLIC;
-        String variableName = "result";  //name of variable that will be returned
+    private void addPathAnnotation(WorkingCopy copy, String[] path) {
+        JavaSourceHelper.addClassAnnotation(copy, new String[]{RestConstants.PATH_ANNOTATION}, path);
+    }
 
+    private String wrapInJaxbElement(String type) {
+        return "javax.xml.bind.JAXBElement<" + type + ">";
+    }
+
+    private ClassTree addHttpMethod(String returnType, WorkingCopy copy, ClassTree tree) throws IOException {
+        Modifier[] modifiers = PUBLIC;
         String retType = returnType;
         if (retType.equals("void")) {  //if return type is void, find out if there are Holder paramters
-
-
             List<WSParameter> parms = getOutputParameters();
             for (WSParameter parm : parms) {
                 if (parm.isHolder()) {//TODO pick the first one right now. 
@@ -156,67 +203,64 @@ public class RestWrapperForSoapGenerator {
                     int leftbracket = holderType.indexOf("<");
                     int rightbracket = holderType.lastIndexOf(">");
                     retType = holderType.substring(leftbracket + 1, rightbracket);
-                    variableName = parm.getName() + ".value";
+
                     break;
                 }
             }
+        } else if (getPrimitiveType(retType) != null) {
+            retType = "java.lang.String";
+        } else {  //find out if need to be wrapped in JAXBElement
+            retType = wrapInJaxbElement(retType);
         }
-        String[] annotations = new String[]{
-            GET_ANNOTATION,
-            PRODUCE_MIME_ANNOTATION,
-            PATH_ANNOTATION
-        };
-
-
-
-        Object[] annotationAttrs = new Object[]{
-            null,
-            "application/xml",
-            operation.getName() + "/"
-        };
-
-        if (returnType == null) {
-            returnType = String.class.getName();
-        }
-
-        String bodyText = getSOAPClientInvocation(retType, variableName);
 
         List<WSParameter> queryParams = operation.getParameters();
-        String[] parameters = getGetParamNames(queryParams);
-        Object[] paramTypes = getGetParamTypes(queryParams);
-        String[][] paramAnnotations = getGetParamAnnotations(queryParams);
-        Object[][] paramAnnotationAttrs = getGetParamAnnotationAttrs(queryParams);
+        String[] parameters = getHttpParamNames(queryParams);
+        String[] paramTypes = getHttpParamTypes(queryParams);
+        String[][] paramAnnotations = getHttpParamAnnotations(paramTypes);
+        Object[][] paramAnnotationAttrs = getHttpParamAnnotationAttrs(queryParams, paramTypes);
+
+        String[] methodAnnotations = getOperationAnnotations(retType, paramTypes);
+        Object[] methodAnnotationAttrs = getOperationAnnotationAttrs(operation.getName(), retType, paramTypes);
+        String bodyText = getSOAPClientInvocation(retType);
 
         String comment = "Invokes the SOAP method " + operation.getName() + "\n";
         for (String param : parameters) {
             comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);
         }
         comment += "@return an instance of " + retType;
-
+        int index  = methodAnnotations[0].lastIndexOf(".");
+        String methodPrefix = methodAnnotations[0].substring(index + 1).toLowerCase();
         return JavaSourceHelper.addMethod(copy, tree,
-                modifiers, annotations, annotationAttrs,
-                getMethodName(HttpMethodType.GET), retType, parameters, paramTypes,
+                modifiers, methodAnnotations, methodAnnotationAttrs,
+                getMethodName(methodPrefix), retType, parameters, paramTypes,
                 paramAnnotations, paramAnnotationAttrs,
                 bodyText, comment);      //NOI18N
 
     }
 
-    private String[] getGetParamTypes(List<WSParameter> queryParams) {
+    private String[] getHttpParamTypes(List<WSParameter> queryParams) {
         List<String> types = new ArrayList<String>();
         for (WSParameter queryParam : queryParams) {
+            String paramTypeName = queryParam.getTypeName();
             if (!queryParam.isHolder()) {
-                types.add(queryParam.getTypeName());
+                if (this.getPrimitiveType(paramTypeName) == null) {
+                    types.add(wrapInJaxbElement(paramTypeName));
+                }
+
+                types.add(paramTypeName);
             }
+
         }
         return types.toArray(new String[types.size()]);
     }
 
-    private String[] getGetParamNames(List<WSParameter> queryParams) {
+    private String[] getHttpParamNames(List<WSParameter> queryParams) {
         List<String> names = new ArrayList<String>();
         for (WSParameter queryParam : queryParams) {
             if (!queryParam.isHolder()) {
                 names.add(queryParam.getName());
             }
+
         }
         return names.toArray(new String[names.size()]);
     }
@@ -231,34 +275,33 @@ public class RestWrapperForSoapGenerator {
                 return null;
             }
         }
-
         if (type == Boolean.class) {
             return Boolean.FALSE;
         }
-
         if (type == Character.class) {
-            return new Character('\0');
+            return new Character(
+                    '\0');
         }
-
         return null;
     }
 
-    private String[][] getGetParamAnnotations(List<WSParameter> queryParams) {
+    private String[][] getHttpParamAnnotations(String[] paramTypeNames) {
         ArrayList<String[]> annos = new ArrayList<String[]>();
         String[] annotations = null;
-        for (WSParameter param : queryParams) {
-            Class type = getType(project, param.getTypeName());
-            if (generateDefaultValue(type) != null) {
-                annotations = new String[]{
-                            QUERY_PARAM_ANNOTATION,
-                            DEFAULT_VALUE_ANNOTATION
-                        };
-            } else {
-                annotations = new String[]{QUERY_PARAM_ANNOTATION};
+        if (!hasComplexTypes(paramTypeNames)) {
+            for (int i = 0; i < paramTypeNames.length; i++) {
+                Class type = getType(project, paramTypeNames[i]);
+                if (generateDefaultValue(type) != null) {
+                    annotations = new String[]{
+                                RestConstants.QUERY_PARAM,
+                                RestConstants.DEFAULT_VALUE
+                            };
+                } else {
+                    annotations = new String[]{RestConstants.QUERY_PARAM};
+                }
+                annos.add(annotations);
             }
-            annos.add(annotations);
         }
-
         return annos.toArray(new String[annos.size()][]);
     }
 
@@ -340,53 +383,40 @@ public class RestWrapperForSoapGenerator {
         return types.toArray(new Class[types.size()]);
     }
 
-    private Object[][] getGetParamAnnotationAttrs(List<WSParameter> queryParams) {
+    private Object[][] getHttpParamAnnotationAttrs(List<WSParameter> queryParams, String[] typeNames) {
         ArrayList<Object[]> attrs = new ArrayList<Object[]>();
 
         Object[] annotationAttrs = null;
 
-        for (WSParameter param : queryParams) {
-            Class type = getType(project, param.getTypeName());
-            Object defaultValue = this.generateDefaultValue(type);
-            if (generateDefaultValue(type) != null) {
-                annotationAttrs = new Object[]{
-                            param.getName(), defaultValue.toString()
-                        };
-            } else {
-                annotationAttrs = new Object[]{param.getName()};
+        if (!hasComplexTypes(typeNames)) {
+            for (WSParameter param : queryParams) {
+                Class type = getType(project, param.getTypeName());
+                Object defaultValue = this.generateDefaultValue(type);
+                if (generateDefaultValue(type) != null) {
+                    annotationAttrs = new Object[]{
+                                param.getName(), defaultValue.toString()
+                            };
+                } else {
+                    annotationAttrs = new Object[]{param.getName()};
+                }
+                attrs.add(annotationAttrs);
             }
-            attrs.add(annotationAttrs);
         }
-
         return attrs.toArray(new Object[attrs.size()][]);
     }
 
-    private String getMethodName(HttpMethodType methodType) {
+    private String getMethodName(String prefix) {
         String methodName = camelize(operation.getName(), true);
-        if (methodName.startsWith(methodType.prefix())) {
+        if (methodName.startsWith(prefix) ){
             return methodName;
         }
-        return methodType.prefix() + camelize(methodName, false);
+        return prefix + camelize(methodName, false);
     }
 
-    protected String getCustomMethodBody() throws IOException {
-        String methodBody = INDENT;
-        methodBody += JaxWsCodeGenerator.getWSInvocationCode(targetFile, false, service, port, operation);
-
-        return methodBody;
-    }
-
-    private String getSOAPClientInvocation(String typeName, String variableName) throws IOException {
+    private String getSOAPClientInvocation(String typeName) throws IOException {
         String code = "{\n";
-        code += INDENT + "try {\n";
         code += getCustomMethodBody() + "\n";
-        if (!typeName.equals(Constants.VOID)) {
-            code += "return " + variableName + ";\n";
-        }
-        code += INDENT + "} catch (Exception ex) {\n";
-        code += INDENT_2 + "ex.printStackTrace();\n";
-        code += INDENT + "}\n";
-        if (!typeName.equals(Constants.VOID)) {
+        if (!typeName.equals("void")) {
             code += "return null;\n";  //TODO: will there be a case for primitive return types?
 
         }
@@ -395,7 +425,123 @@ public class RestWrapperForSoapGenerator {
 
     }
 
-    public Class getPrimitiveType(String typeName) {
+    private String getReturnTypeQName(String returnTypeName) {
+        int index = returnTypeName.lastIndexOf(".");
+        String packageName = returnTypeName.substring(0, index);
+        StringTokenizer tokenizer = new StringTokenizer(packageName, ".");
+        int tokens = tokenizer.countTokens();
+        String[] inverted = new String[tokens];
+        while (tokenizer.hasMoreTokens()) {
+            inverted[--tokens] = tokenizer.nextToken();
+        }
+        StringBuffer namespace = new StringBuffer();
+        for (int i = 0; i < inverted.length; i++) {
+            namespace.append(inverted[i]);
+            if (i < inverted.length - 1) {
+                namespace.append(".");
+            }
+        }
+        String ns = "http//" + namespace.toString() + "/";
+        String localpart = returnTypeName.substring(index + 1).toLowerCase();
+
+        return "new QName(\"" + ns + "\",\"" + localpart + "\")";
+
+    }
+
+    private String getReturnStatement(WSOperation operation) {
+        String statement = "return result";
+        String returnTypeName = operation.getReturnTypeName();
+        Class c = getPrimitiveType(returnTypeName);
+        if (c != null && !returnTypeName.equals("java.lang.String") && !returnTypeName.equals("String")) {
+            statement = "return new " + c.getName() + "(result).toString();";
+        } else if (c == null) {
+            statement = "return new JAXBElement<" + returnTypeName + ">(" + getReturnTypeQName(returnTypeName) + "," + returnTypeName + ".class, result);";
+        }
+        return statement;
+    }
+
+    private String getCustomMethodBody() throws IOException {
+        String methodBody = INDENT;
+        methodBody += getWSInvocationCode(targetFile, service, port, operation);
+
+        return methodBody;
+    }
+
+    public String getWSInvocationCode(FileObject target, WSService service, WSPort port, WSOperation operation) {
+
+
+        String serviceFieldName = "service"; //NOI18N
+
+        String operationJavaName = operation.getJavaName();
+        String portJavaName = port.getJavaName();
+        String portGetterMethod = port.getPortGetter();
+        String serviceJavaName = service.getJavaName();
+        List<WSParameter> arguments = operation.getParameters();
+        String returnTypeName = operation.getReturnTypeName();
+        StringBuffer argumentBuffer = new StringBuffer();
+
+        int i = 0;
+        for (WSParameter argument : arguments) {
+            String argumentTypeName = argument.getTypeName();
+            String argumentName = argument.getName();
+            if (getPrimitiveType(argumentTypeName) == null) {
+                argumentName = argumentName + ".getValue()";
+            }
+            argumentBuffer.append(i > 0 ? ", " + argumentName : argumentName); //NOI18N
+            i++;
+        }
+
+        String argumentDeclarationPart = argumentBuffer.toString();
+
+        String javaInvocationBody = getJavaInvocationWithReturnBody(
+                operation,
+                portJavaName,
+                portGetterMethod,
+                returnTypeName,
+                operationJavaName,
+                serviceFieldName,
+                argumentDeclarationPart);
+
+        return javaInvocationBody;
+
+    }
+
+    public String getJavaInvocationWithReturnBody(
+            WSOperation operation, String portJavaName,
+            String portGetterMethod, String returnTypeName,
+            String operationJavaName, String serviceFName,
+            String argumentDeclarationPart) {
+
+        String serviceJavaName = service.getJavaName();
+        String invocationBody = "";
+        Object[] args = new Object[]{
+            serviceJavaName, portJavaName,
+            portGetterMethod,
+            returnTypeName, operationJavaName,
+            serviceFName, argumentDeclarationPart
+        };
+        if ("void".equals(returnTypeName)) { //NOI18N
+            String body =
+                    JAVA_TRY +
+                    JAVA_SERVICE_DEF +
+                    JAVA_PORT_DEF +
+                    JAVA_VOID +
+                    JAVA_CATCH;
+            invocationBody = MessageFormat.format(body, args);
+        } else {
+            String body =
+                    JAVA_TRY +
+                    JAVA_SERVICE_DEF +
+                    JAVA_PORT_DEF +
+                    JAVA_RESULT +
+                    getReturnStatement(operation) +
+                    JAVA_CATCH;
+            invocationBody = MessageFormat.format(body, args);
+        }
+        return invocationBody;
+    }
+
+    private Class getPrimitiveType(String typeName) {
         if (primitiveTypes == null) {
             primitiveTypes = new HashMap<String, Class>();
             primitiveTypes.put("int", Integer.class);
@@ -414,6 +560,9 @@ public class RestWrapperForSoapGenerator {
             primitiveTypes.put("long[]", Long[].class);
             primitiveTypes.put("short", Short.class);
             primitiveTypes.put("short[]", Short[].class);
+            primitiveTypes.put("java.lang.String", String.class);
+            primitiveTypes.put("String", String.class);
+
         }
         return primitiveTypes.get(typeName);
     }
@@ -463,5 +612,44 @@ public class RestWrapperForSoapGenerator {
         }
         return sb.toString();
 
+    }
+
+    private boolean hasComplexTypes(String[] types) {
+        for (int i = 0; i < types.length; i++) {
+            if (getPrimitiveType(types[i]) == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Object[] getOperationAnnotationAttrs(String operationName, String returnType, String[] parameterTypes) {
+        List<Object> attributes = new ArrayList<Object>();
+        attributes.add(null);
+        if (!returnType.equals("void")) {
+            if (getPrimitiveType(returnType) == null) {
+                attributes.add(APP_XML_MIME);
+            } else {
+                attributes.add(TEXT_PLAIN_MIME);
+            }
+        }
+        if (hasComplexTypes(parameterTypes)) {
+            attributes.add(APP_XML_MIME);
+        } else {
+            attributes.add(TEXT_PLAIN_MIME);
+        }
+        attributes.add(operationName.toLowerCase() + "/");
+        return attributes.toArray(new Object[attributes.size()]);
+    }
+
+    private String[] getOperationAnnotations(String returnType, String[] parameterTypes) {
+        if (!returnType.equals("void")) {
+            if (hasComplexTypes(parameterTypes)) {
+                return ANNOTATIONS_POST;
+            } else {
+                return ANNOTATIONS_GET;
+            }
+        }
+        return ANNOTATIONS_PUT;
     }
 }

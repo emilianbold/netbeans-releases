@@ -1442,7 +1442,7 @@ public final class FileUtil extends Object {
                 LOG.log(Level.FINE, file.toString(), e);
             }
             // #135547 - on Windows Vista map "Documents and Settings\<username>\My Documents" to "Users\<username>\Documents"
-            if((Utilities.getOperatingSystem() & (Utilities.OS_FREEBSD << 1)) != 0) { //TODO replace with Utilities.OS_WINVISTA
+            if((Utilities.getOperatingSystem() & Utilities.OS_WINVISTA) != 0) {
                 if(retVal == null) {
                     retVal = file;
                 }

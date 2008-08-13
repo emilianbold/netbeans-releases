@@ -84,4 +84,14 @@ public interface RailsDatabaseConfiguration {
      * @return the display name or null.
      */
     String getDisplayName();
+
+    /**
+     * Gets the preferred <strong>development</strong> database name
+     * of this adapter, i.e. the name that the adapter will use for the
+     * project if the user doesn't specify otherwise.
+     *
+     * @param projectName the name of the project.
+     * @return the default development database name.
+     */
+    String getDatabaseName(String projectName);
 }

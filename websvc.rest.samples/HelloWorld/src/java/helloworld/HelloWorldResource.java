@@ -45,8 +45,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
@@ -70,7 +70,7 @@ public class HelloWorldResource {
      * @return an instance of java.lang.String
      */
     @GET
-    @ProduceMime("text/html")
+    @Produces("text/html")
     public String getXml() {
         return "<html><body><h1>Hello World!</body></h1></html>";
     }
@@ -81,7 +81,7 @@ public class HelloWorldResource {
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
-    @ConsumeMime("application/xml")
+    @Consumes("application/xml")
     public void putXml(String content) {
     }
 }

@@ -131,7 +131,7 @@ public class CommandEvaluator {
 
         if (m.matches()) {
             results[0] = m.group(1);
-            if (ProviderRegistry.getInstance().getProviders().isKnownCommand(results[0])) {
+            if (ProviderModel.getInstance().isKnownCommand(results[0])) {
                 results[1] = m.group(3);
             } else {
                 results[0] = null;
@@ -150,7 +150,7 @@ public class CommandEvaluator {
      * @return true if providers are expected to return all results, false otherwise
      */
     private static boolean getProviderCategories (String[] commands, List<Category> result) {
-        List<Category> cats = ProviderRegistry.getInstance().getProviders().getCategories();
+        List<Category> cats = ProviderModel.getInstance().getCategories();
 
         // always include recent searches
         for (Category cat : cats) {

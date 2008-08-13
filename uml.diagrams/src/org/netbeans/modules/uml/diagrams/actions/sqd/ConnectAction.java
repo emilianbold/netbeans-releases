@@ -115,7 +115,14 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
     }
 
     @Override
-    public WidgetAction.State mousePressed (Widget widget, WidgetAction.WidgetMouseEvent event) {
+    public WidgetAction.State mousePressed (Widget widget, WidgetAction.WidgetMouseEvent event) 
+    {
+        if (isLocked ())
+            return WidgetAction.State.createLocked (widget, this);
+        return mousePressedCore (widget, event);
+    }
+    
+    protected State mousePressedCore (Widget widget, WidgetMouseEvent event) {
         if (event.getButton () == MouseEvent.BUTTON1 && event.getClickCount () == 1) {
             boolean isSource=provider instanceof ExConnectWithLocationProvider ? ((ExConnectWithLocationProvider)provider).isSourceWidget(widget, widget.convertLocalToScene(event.getPoint ())) : provider.isSourceWidget (widget);
             if (isSource) {
@@ -181,7 +188,7 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
         boolean state = move (widget, point);
         final Point finishPnt= widget.convertLocalToScene(point);
         final Point startingPnt= sourceWidget.convertLocalToScene(startingPoint);
-        if (state) 
+        if ((state) && (event.getButton () == MouseEvent.BUTTON1))
         {
             if (targetWidget != null)
             {
@@ -237,6 +244,10 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
             {
                 cancel ();
             }
+        }
+        else
+        {
+            cancel();
         }
         return state ? State.CONSUMED : State.REJECTED;
     }

@@ -102,14 +102,6 @@ public class UMLCoreModule
                         if (file1.exists()) {
                             return;
 			}
-
-                        //kris richards
-                        //removing the mac warning dialog since future versions
-                        //will support the mac. Note the showMacWarning() code
-                        //will remain unchanged.
-//                            if (Utilities.isMac()) {
-//                               showMacWarning() ;
-//                        }
                         
 			ClassLoader loader = UMLCoreModule.class.getClassLoader();
 			InputStream in = null;
@@ -165,20 +157,4 @@ public class UMLCoreModule
             e.printStackTrace();
         }
    }
- 
-   private static void showMacWarning() {
-       MacWarningPanel mwp = new MacWarningPanel() ;
-        DialogDescriptor dd = new DialogDescriptor(
-                mwp, 
-                NbBundle.getMessage (UMLCoreModule.class, "MAC_WARNING_TITLE"), 
-                 false, 
-                 new Object[] {DialogDescriptor.OK_OPTION}, 
-                 null, 
-                 DialogDescriptor.DEFAULT_ALIGN,
-                 null,
-                 null)  ;
-        
-        DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
-    }
-   
 }

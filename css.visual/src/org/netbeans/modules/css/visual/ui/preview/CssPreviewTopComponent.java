@@ -138,6 +138,8 @@ public final class CssPreviewTopComponent extends TopComponent {
 
         PREVIEW_ERROR_PANEL = makeMsgPanel(NbBundle.getBundle("org/netbeans/modules/css/visual/ui/preview/Bundle").getString("Preview_Error"));
 
+        setName(DEFAULT_TC_NAME); //set default TC name
+        
         //init SAX parser
         try {
             SAXParserFactory factory = SAXParserFactory.newInstance();

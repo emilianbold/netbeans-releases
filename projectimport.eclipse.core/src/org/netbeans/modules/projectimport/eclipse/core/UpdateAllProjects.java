@@ -58,7 +58,6 @@ import org.netbeans.modules.projectimport.eclipse.core.wizard.ProjectSelectionPa
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**

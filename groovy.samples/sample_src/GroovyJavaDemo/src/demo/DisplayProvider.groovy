@@ -1,7 +1,7 @@
 
 package demo
 
-class Display {
+class DisplayProvider {
 
     def text = "Hello from Groovy!"
 

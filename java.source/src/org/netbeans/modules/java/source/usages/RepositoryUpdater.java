@@ -3143,7 +3143,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                         }
                         
-                        if (TasklistSettings.isTasklistEnabled() && activeTuple.file != null) {
+                        if (TasklistSettings.isTasklistEnabled() && activeTuple.file != null && !activeTuple.virtual) {
                             toRefresh.addAll(TaskCache.getDefault().dumpErrors(rootFo.getURL(), u.toURL(), activeTuple.file, diag));
                         }
                         Log.instance(jt.getContext()).nerrors = 0;

@@ -62,6 +62,12 @@ public class PredefinedSymbols {
             "_COOKIE", "_SESSION", "_REQUEST", "_ENV", "php_errormsg", //NOI18N
             "HTTP_RAW_POST_DATA", "http_response_header", "argc", "argv")); //NOI18N
     
+    public  static final Collection<String> MAGIC_METHODS =
+            Arrays.asList(new String[] {"__call()", "__clone()", "__construct()",//NOI18N
+            "__destruct()",  "__get()", "__set()", "__set_state()",//NOI18N
+            "__sleep()", "__toString()", "__unset()", "__wakeup()" //NOI18N
+    });
+    
     private static String docURLBase;
     
     private static void initDoc() {

@@ -128,6 +128,8 @@ public class SelectPhpInterpreterPanel extends JPanel {
             message = NbBundle.getMessage(SelectPhpInterpreterPanel.class, "LBL_NoPhpInterpretersFound");
         } else {
             message = " "; // NOI18N
+            // preselect the 1st item
+            phpInterpretersList.setSelectedIndex(0);
         }
         messageLabel.setText(message);
         progressBar.setIndeterminate(false);

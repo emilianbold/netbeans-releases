@@ -109,7 +109,7 @@ final class GemListModel extends AbstractListModel implements ComboBoxModel {
     }
 
     public Object getElementAt(int index) {
-        return filtered.get(index);
+        return index >= 0 && index < filtered.size() ? filtered.get(index) : null;
     }
 
     public void setSelectedItem(Object selectedGem) {

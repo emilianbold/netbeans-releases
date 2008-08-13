@@ -83,7 +83,14 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     @Override
     public String getText() {
-        return token.text().toString();
+        CharSequence cs = token.text();
+        if (cs == null) {
+            // Token.text() can return null if the token has been removed.
+            // We want to avoid NPE (see IZ#143591).
+            return ""; // NOI18N
+        } else {
+            return cs.toString();
+        }
     }
     
     @Override

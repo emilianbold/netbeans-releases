@@ -51,7 +51,7 @@ public class ChildrenLazyKeysTest extends ChildrenKeysTest {
     }
 
 //    public static ChildrenLazyKeysTest suite() {
-//        return new ChildrenLazyKeysTest("testSlowRemoveNotify");
+//        return new ChildrenLazyKeysTest("testRefreshKey");
 //    }
 
     @Override

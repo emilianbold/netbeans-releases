@@ -261,7 +261,7 @@ public class EventsAndTransitionsAction extends SceneNodeAction implements Conte
     {
         ITransition transition = (ITransition) Util.retrieveModelElement("Transition");
         transition.setIsInternal(true);
-        transition.setName("Unnamed");
+        transition.setName(NbBundle.getMessage (org.netbeans.modules.uml.common.Util.class, "UNNAMED"));
         transition.setContainer(state.getFirstContent());
         return transition;
     }

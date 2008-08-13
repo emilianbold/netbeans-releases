@@ -71,6 +71,15 @@ public class CppLexerBatchTestCase extends TestCase {
     protected void tearDown() throws java.lang.Exception {
     }
 
+    public void testAloneBackSlash() {
+        String text = "\\\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ESCAPED_LINE, "\\\n");
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
     public void testPreprocEmbedding() {
         String text = "#define C 1 \"/*\" /* \n@see C */";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());

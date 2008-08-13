@@ -102,6 +102,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -281,6 +282,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.enable_timings(false);
             if (pae.getID() == DEBUG_ATTACH) {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
+                if (((MakeConfiguration) pae.getConfiguration()).isDynamicLibraryConfiguration()) {
+                    String pgm = getExePathFromPID(programPID);
+                    if (pgm != null) {
+                        gdb.file_exec_and_symbols(pgm);
+                    }
+                }
                 CommandBuffer cb = new CommandBuffer(gdb);
                 gdb.target_attach(cb, Long.toString(programPID));
                 cb.waitForCompletion();
@@ -479,17 +486,17 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
 
-    private String getOsArch() {
+    private static String getOsArch() {
         String orig = System.getProperty("os.arch"); // NOI18N
         return "-" + ((orig.equals("i386") || orig.equals("i686")) ? "x86" : orig); // NOI18N
     }
 
-    private String getOsName() {
+    private static String getOsName() {
         return "-" + System.getProperty("os.name").replace(" ", "_"); // NOI18N
     }
 
-    private String getExtension() {
-        return platform == PlatformTypes.PLATFORM_WINDOWS ? ".dll" : platform == PlatformTypes.PLATFORM_MACOSX ? ".dylib" : ".so"; // NOI18N
+    private static String getExtension() {
+        return Utilities.isWindows() ? ".dll" : Utilities.getOperatingSystem() == PlatformTypes.PLATFORM_MACOSX ? ".dylib" : ".so"; // NOI18N
     }
 
     private String fixPath(String path) {
@@ -655,9 +662,26 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 if (ep.equals(exepath) || (platform == PlatformTypes.PLATFORM_WINDOWS && ep.equals(exepath + ".exe"))) { // NOI18N
                     return true;
                 }
+            } else if (line.contains("Loaded symbols for ") && equivalentPaths(exepath, line.substring(19))) {
+                return true;
             }
         }
         return false;
+    }
+    
+    private boolean equivalentPaths(String path1, String path2) {
+        if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+            return winpath(path1).equals(winpath(path2));
+        }
+        return path1.equals(path1);
+    }
+    
+    private String winpath(String path) {
+        if (platform == PlatformTypes.PLATFORM_WINDOWS && path.startsWith("/cygdrive/")) {
+            return path.substring(10, 11).toUpperCase() + ':' + path.substring(11);
+        } else {
+            return path;
+        }
     }
 
     private boolean symbolsReadFromInfoFiles(String results, String exepath) {
@@ -696,6 +720,23 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         }
         return false;
+    }
+    
+    private String getExePathFromPID(long pid) {
+        if (platform != PlatformTypes.PLATFORM_WINDOWS && pid > 0) {
+            String procdir = "/proc/" + Long.toString(pid); // NOI18N
+            File pathfile = new File(procdir, "path/a.out"); // NOI18N - Solaris only?
+            if (!pathfile.exists()) {
+                pathfile = new File(procdir, "exe"); // NOI18N - Linux?
+            }
+            if (pathfile.exists()) {
+                String path = getPathFromSymlink(pathfile.getAbsolutePath());
+                if (path != null && path.length() > 0) {
+                    return path;
+                }
+            }
+        }
+        return null;
     }
 
     private String getPathFromSymlink(String apath) {
@@ -1055,21 +1096,24 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         if (cb != null) {
             cb.append(omsg);
-        } else if (msg.startsWith("GNU gdb ") && startupTimer != null) { // NOI18N
-            // Cancel the startup timer - we've got our first response from gdb
-            startupTimer.cancel();
-            startupTimer = null;
+        } else if (msg.startsWith("GNU gdb ")) { // NOI18N
+            if (startupTimer != null) {
+                // Cancel the startup timer - we've got our first response from gdb
+                startupTimer.cancel();
+                startupTimer = null;
+            }
 
             // Now process the version information
             int first = msg.indexOf('.');
-            int last = msg.lastIndexOf('.');
+            int next = msg.indexOf('.', first + 1);
             try {
-                if (first == last) {
+                if (next == -1) {
                     gdbVersion = Double.parseDouble(msg.substring(8));
                 } else {
-                    gdbVersion = Double.parseDouble(msg.substring(8, last));
+                    gdbVersion = Double.parseDouble(msg.substring(8, next));
                 }
             } catch (NumberFormatException ex) {
+                log.warning("GdbDebugger: Failed to parse version string");
             }
             if (msg.contains("cygwin")) { // NOI18N
                 cygwin = true;
@@ -1086,9 +1130,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (!isTmp && getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
                 setRunning();
             }
-        } else if (msg.contains("(no debugging symbols found)") && state.equals(STATE_STARTING)) { // NOI18N
-            DialogDisplayer.getDefault().notify(
-                           new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
+        } else if (msg.contains("(no debugging symbols found)") && state.equals(STATE_STARTING) && !isAttaching()) { // NOI18N
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                            "ERR_NoDebuggingSymbolsFound"))); // NOI18N
             setExited();
             finish(false);
@@ -2382,5 +2425,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 lastGo == LAST_GO_WAS_STEP || lastGo == LAST_GO_WAS_NEXT) {
             this.lastGo = lastGo;
         }
+    }
+    
+    private boolean isAttaching() {
+        ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+        return pae.getID() == DEBUG_ATTACH;
     }
 }
