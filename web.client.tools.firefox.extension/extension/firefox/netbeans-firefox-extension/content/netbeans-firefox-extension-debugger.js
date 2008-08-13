@@ -706,15 +706,21 @@
         var condition = matches[8];
 
         if (!isTemporary) {
-            setBreakpoint(href, line,
+            if (setBreakpoint(href, line,
             {
                 disabled: disabled,
-                hitCount: hitValue,
-                hitCondition: hitCondition,
+                hitCount: 0,
                 condition: condition,
                 onTrue: true
-            });
-        }
+            })) {
+                var breakpointHitCondition =  {
+                    hitCount:hitValue,
+                    hitCondition:hitCondition,
+                    hits:0
+                };
+                breakpointHitConditions[""+href +":"+line] = breakpointHitCondition;
+            }
+        }      
 
         var breakpointSetResponse =
         <response command="breakpoint_set"
@@ -727,7 +733,6 @@
         transaction_id={
         transaction_id
         } />;
-
         socket.send(breakpointSetResponse);
 
         if (isTemporary) {
@@ -773,17 +778,32 @@
         var hitCondition = matches[4];
         var condition = matches[5];
 
+        var breakpointHitCondition = breakpointHitConditions[""+href+":"+line];
         // Remove and add with new properties
         removeBreakpointId(breakpointId);
-        setBreakpoint(href, line,
+        if (setBreakpoint(href, line,
         {
             disabled: disabled,
-            hitCount: hitValue,
-            hitCondition: hitCondition,
+            hitCount: 0,
             condition: condition,
             onTrue: true
-        });
-
+        })) {
+            if (breakpointHitCondition) {
+                if (breakpointHitCondition.hitCount != hitValue
+                    || breakpointHitCondition.hitCondition != hitCondition) {
+                    breakpointHitCondition.hitCount = hitValue;
+                    breakpointHitCondition.hitCondition=hitCondition;
+                    breakpointHitCondition.hits = 0;
+                }
+            } else {
+                breakpointHitCondition = {
+                    hitCount:hitValue,
+                    hitCondition:hitCondition,
+                    hits:0
+                };
+                breakpointHitConditions[""+href+":"+line] = breakpointHitCondition;
+            }
+        };
         socket.send(breakpointUpdateResponse);
     }
 
@@ -802,7 +822,9 @@
         }
 
         var breakpointId = matches[1];
-        removeBreakpointId(breakpointId);
+        if (removeBreakpointId(breakpointId)) {
+            delete breakpointHitConditions[""+breakpointId];
+        }
 
         socket.send(breakpointRemoveResponse);
     }
@@ -860,6 +882,7 @@
     }
 
     var breakpoints = {};
+    var breakpointHitConditions = {};
 
     function hasBreakpoint(href,line)
     {
@@ -1500,6 +1523,29 @@
                 }
                 break;
             case TYPE_BREAKPOINT:
+                var breakpointHitCondition = breakpointHitConditions[frame.script.fileName+":"+frame.line];
+                if (breakpointHitCondition) {
+                    breakpointHitCondition.hits++;
+                    if (breakpointHitCondition.hitCount > 0) {
+                        switch (breakpointHitCondition.hitCondition) {
+                            case ">=":
+                                if (!(breakpointHitCondition.hits >= breakpointHitCondition.hitCount)) {
+                                    return RETURN_CONTINUE;
+                                }
+                                break;
+                            case "==":
+                                if (!(breakpointHitCondition.hits == breakpointHitCondition.hitCount)) {
+                                    return RETURN_CONTINUE;
+                                }
+                                break;
+                            case "%":
+                                if ((breakpointHitCondition.hits % breakpointHitCondition.hitCount) != 0) {
+                                    return RETURN_CONTINUE;
+                                }
+                                break;
+                        }
+                    }
+                }
                 debugState.suspendReason = "breakpoint";
                 break;
             case TYPE_DEBUG_REQUESTED:
