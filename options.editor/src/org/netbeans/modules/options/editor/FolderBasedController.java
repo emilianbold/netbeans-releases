@@ -79,11 +79,13 @@ public final class FolderBasedController extends OptionsPanelController implemen
         folder = subFolder != null ? BASE_FOLDER + subFolder : BASE_FOLDER;
     }    
     
-    public final void update() {
+    public final synchronized void update() {
         Collection<? extends OptionsPanelController> controllers = getMimeType2delegates ().values();
         for(OptionsPanelController c : controllers) {
             c.update();
         }
+        if (panel != null)
+            panel.update ();
     }
     
     public final void applyChanges() {
