@@ -55,6 +55,7 @@ import javax.swing.JComponent;
 import org.netbeans.modules.uml.common.generics.IteratorT;
 import org.netbeans.modules.uml.core.eventframework.EventBlocker;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
@@ -654,28 +655,13 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
          }
          else if (pElement instanceof IState)
          {
-            IState cpState = (IState) pElement;
-            ETList < IRegion > cpRegions = cpState.getContents();
-            if (cpRegions != null)
-            {
-               int count = cpRegions.size();
-               for (int i = 0; i < count; i++)
-               {
-                  IRegion cpRegion = cpRegions.get(i);
-                  ETList < INamedElement > elems = cpRegion.getOwnedElements();
-                  if (elems != null)
-                  {
-                     if (retObj != null)
-                     {
-                        retObj.addAll(elems);
-                     }
-                     else
-                     {
-                        retObj = elems;
-                     }
-                  }
-               }
-            }
+             // Since the composite state will include the children naturally
+             // we can not include them as part of the CDFS.  
+         }
+         else if(pElement instanceof IActivityGroup)
+         {
+             // Since activity group and partion nodes include the children 
+             // naturally we can not include them as part of the CDFS.
          }
          else if(pElement instanceof IActivity)
          {
