@@ -305,56 +305,82 @@ public class TSDiagramConverter
             addNodeToScene(ninfo);
         }
         addEdgestWithValidationWait();
+        scene.revalidate();
         scene.validate();
    }
     
     private void addEdgestWithValidationWait()
     {
-        new AfterValidationExecutor(new ActionProvider() {
-
-            public void perfomeAction() {
-                if(diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
-                {
-                    addEdgesSequenceDiagram();
-                }
-                else
-                {
-                    addEdgesGeneral();
-                }
-                processContainmentWithValidationWait();
-                scene.validate();
-            }
-        },scene);
+        ActionProviderImplOne actProvOne = new ActionProviderImplOne();
+        new AfterValidationExecutor(actProvOne, scene);
     }
+    
+    private class ActionProviderImplOne implements ActionProvider
+    {
+        public ActionProviderImplOne()
+        {
+        }
+
+        public void perfomeAction()
+        {
+            if (diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
+            {
+                addEdgesSequenceDiagram();
+            }
+            else
+            {
+                addEdgesGeneral();
+            }
+            processContainmentWithValidationWait();
+            scene.revalidate();
+            scene.validate();
+        }
+    }
+    
     private void processContainmentWithValidationWait()
     {
-        new AfterValidationExecutor(new ActionProvider() {
+        ActionProviderImplTwo actProvTwo = new ActionProviderImplTwo();
+        new AfterValidationExecutor(actProvTwo, scene);
+    }
+    
+    private class ActionProviderImplTwo implements ActionProvider
+    {
+        public ActionProviderImplTwo()
+        {
+        }
 
-            public void perfomeAction() {
-                for(Widget w:widgetsList)
+        public void perfomeAction()
+        {
+            for (Widget w : widgetsList)
+            {
+                if (w instanceof ContainerNode && w instanceof UMLNodeWidget)
                 {
-                    if(w instanceof ContainerNode && w instanceof UMLNodeWidget)
+                    ObjectScene scene = (ObjectScene) w.getScene();
+                    IPresentationElement pe = (IPresentationElement) scene.findObject(w);
+                    if (pe.getFirstSubject() instanceof ICombinedFragment)
                     {
-                        ObjectScene scene=(ObjectScene) w.getScene();
-                        IPresentationElement pe=(IPresentationElement) scene.findObject(w);
-                        if(pe.getFirstSubject() instanceof ICombinedFragment)continue;//TBD need to solve concurrent modification issue
-                         ContainerNode cont=(ContainerNode) w;
-                         cont.getContainer().calculateChildren(false);
+                        continue; //TBD need to solve concurrent modification issue
                     }
+                    ContainerNode cont = (ContainerNode) w;
+                    cont.getContainer().calculateChildren(false);
                 }
-                scene.validate();
-                scene.getDiagram().setDirty(true);
-                try {
-                    scene.getDiagram().save();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                processArchiveWithValidationWait();
-                scene.revalidate();
-                scene.validate();
-                PersistenceUtil.setDiagramLoading(false);
             }
-        }, scene);
+            scene.validate();
+            scene.getDiagram().setDirty(true);
+//                scene.getEngine().getTopComponent().setDiagramDirty(true);
+            try
+            {
+                scene.getDiagram().save();
+            }
+            catch (IOException ex)
+            {
+                Exceptions.printStackTrace(ex);
+            }
+            processArchiveWithValidationWait();
+            scene.revalidate();
+            scene.validate();
+            PersistenceUtil.setDiagramLoading(false);
+        }
     }
     
     private void processArchiveWithValidationWait()
@@ -393,6 +419,7 @@ public class TSDiagramConverter
             }
         }
         if(messagesInfo.size()>0)addMessagesToSQD(messagesInfo);
+        scene.validate();
     }
     
     private void archiveTSDiagram()

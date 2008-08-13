@@ -980,7 +980,7 @@ class DiagramLoader
         String nodeID = "";
         for (ConnectorInfo conn : connectorList)
         {
-            if (connID.equalsIgnoreCase(conn.getConnectorID()))
+            if ((connID != null) && (connID.equalsIgnoreCase(conn.getConnectorID())))
             {
                 nodeID = conn.getNodePEID();
                 break;

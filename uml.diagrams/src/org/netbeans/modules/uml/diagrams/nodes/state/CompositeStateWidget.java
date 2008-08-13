@@ -263,8 +263,9 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
     private void updateSize()
     {
         setPreferredBounds(null);
-        setPreferredSize(null);      
-        setMinimumSize(getBounds().getSize());        
+        setPreferredSize(null);    
+        if (getBounds() != null)
+            setMinimumSize(getBounds().getSize());    
     }
     
     
