@@ -87,6 +87,11 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
             Preferences prefs = NbPreferences.forModule(DebugConstants.class);
             String testSet = prefs.get(DebugConstants.CLIENT_DEBUG, null);
             
+            String defBrowser = (ffBrowserSupported || !ieBrowserSupported) ? 
+                WebClientToolsProjectUtils.Browser.FIREFOX.name() : WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name();
+
+            globalBrowser = WebClientToolsProjectUtils.Browser.valueOf(prefs.get(DebugConstants.BROWSER, defBrowser));
+            
             // looks strange, but the 'debug client-side' dialog when Debug is invoked
             // shouldn't be forced to not appear by this automatic action
             boolean useGlobal = !prefs.getBoolean(DebugConstants.DISPLAY_CONFIG, true);
@@ -95,11 +100,6 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
                 if (!clientDebug) {
                     serverDebug = true;
                 }
-
-                String defBrowser = (ffBrowserSupported || !ieBrowserSupported) ? 
-                    WebClientToolsProjectUtils.Browser.FIREFOX.name() : WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name();
-
-                globalBrowser = WebClientToolsProjectUtils.Browser.valueOf(prefs.get(DebugConstants.BROWSER, defBrowser));
             }
         }
         
@@ -182,12 +182,11 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
         });
 
         browserButtonGroup.add(firefoxRadioButton);
-        firefoxRadioButton.setLabel(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.label")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(firefoxRadioButton, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.text")); // NOI18N
 
         browserButtonGroup.add(internetExplorerRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(internetExplorerRadioButton, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.text")); // NOI18N
         internetExplorerRadioButton.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.tooltip")); // NOI18N
-        internetExplorerRadioButton.setLabel(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(noSupportedBrowserLabel, org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.noSupportedBrowserLabel.text")); // NOI18N
 
@@ -199,7 +198,7 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
                 .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 650, Short.MAX_VALUE)
                 .add(22, 22, 22))
             .add(layout.createSequentialGroup()
-                .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 656, Short.MAX_VALUE)
+                .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 661, Short.MAX_VALUE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(24, 24, 24)
@@ -223,7 +222,7 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
                 .add(internetExplorerRadioButton)
                 .add(18, 18, 18)
                 .add(noSupportedBrowserLabel)
-                .addContainerGap(371, Short.MAX_VALUE))
+                .addContainerGap(375, Short.MAX_VALUE))
         );
 
         debugServerJCheckBox.getAccessibleContext().setAccessibleDescription("null");
