@@ -54,62 +54,92 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * Top level language for join sections testing.
+ * Embedded language for join sections testing.
  *
  * @author mmetelka
  */
-public enum TestJoinSectionsTopTokenId implements TokenId {
+public enum TestJoinTextTokenId implements TokenId {
     
-    TAG(), // Text enclosed in <..> including '<' and '>' - implicit embedding of TestJoinSectionsTextTokenId
-    PARENS(), // Text enclosed in (..) including '(' and ')' - custom embedding may be created/removed
-    TEXT(); // Any text not enclosed in <...>
+    
+    /**
+     * Text enclosed in (..) including '(' and ')'. <br/>
+     * Expicit embedding may be created (preferrably TestJoinTextTokenId.inBracesLanguage).
+     */
+    PARENS(),
+    /**
+     * Text enclosed in [..] including '[' and ']'. <br/>
+     * Automatic joining embedding of TestPlainTokenId.inBracketsLanguage.
+     */
+    BRACKETS(),
+    /**
+     * Text in apostrophes including them. </br>
+     * Automatic non-joining embedding of TestPlainTokenId.inApostrophesLanguage.
+     */
+    APOSTROPHES(),
+    /**
+     * All other text. <br/>
+     * No embedding.
+     */
+    TEXT();
 
-    private TestJoinSectionsTopTokenId() {
+    private TestJoinTextTokenId() {
     }
     
     public String primaryCategory() {
         return null;
     }
 
-    private static final Language<TestJoinSectionsTopTokenId> language
-    = new LanguageHierarchy<TestJoinSectionsTopTokenId>() {
+    public static final Language<TestJoinTextTokenId> language
+            = new LH("text/x-join-text").language();
+            
+    public static final Language<TestJoinTextTokenId> inTagLanguage
+            = new LH("text/x-join-in-tag").language();
+            
+    public static final Language<TestJoinTextTokenId> inBracesLanguage
+            = new LH("text/x-join-in-braces").language();
+            
+    public static final Language<TestJoinTextTokenId> inBackquotesLanguage
+            = new LH("text/x-join-in-quotes").language();
+            
+    private static final class LH extends LanguageHierarchy<TestJoinTextTokenId> {
+
+        private String mimeType;
+        
+        LH(String mimeType) {
+            this.mimeType = mimeType;
+        }
 
         @Override
         protected String mimeType() {
-            return "text/x-join-sections-top";
+            return mimeType;
         }
 
         @Override
-        protected Collection<TestJoinSectionsTopTokenId> createTokenIds() {
-            return EnumSet.allOf(TestJoinSectionsTopTokenId.class);
+        protected Collection<TestJoinTextTokenId> createTokenIds() {
+            return EnumSet.allOf(TestJoinTextTokenId.class);
         }
 
         @Override
-        protected Lexer<TestJoinSectionsTopTokenId> createLexer(LexerRestartInfo<TestJoinSectionsTopTokenId> info) {
-            return new TestJoinSectionsTopLexer(info);
+        protected Lexer<TestJoinTextTokenId> createLexer(LexerRestartInfo<TestJoinTextTokenId> info) {
+            return new TestJoinTextLexer(info);
         }
         
         @Override
         public LanguageEmbedding<?> embedding(
-        Token<TestJoinSectionsTopTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        Token<TestJoinTextTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             // Test language embedding in the block comment
             switch (token.id()) {
-                case TEXT:
-                    // Create embedding that joins the sections
-                    return LanguageEmbedding.create(TestJoinSectionsTextTokenId.textLanguage, 0, 0, true);
-                case TAG:
-                    // Create embedding that joins the sections
-                    return LanguageEmbedding.create(TestJoinSectionsTextTokenId.tagLanguage, 1, 1, true);
-                case PARENS:
-                    return null; // By default no embedding; a custom embedding may be created by tests
+//                case PARENS: - explicit custom embedding
+//                    return LanguageEmbedding.create(TestPlainTokenId.inParensLanguage, 1, 1, true);
+                case BRACKETS:
+                    return LanguageEmbedding.create(TestPlainTokenId.inBracketsLanguage, 1, 1, true);
+                case APOSTROPHES:
+                    return LanguageEmbedding.create(TestPlainTokenId.inApostrophesLanguage, 1, 1, false);
+//                case TEXT:
+//                    return LanguageEmbedding.create(TestStringTokenId.language(), 1, 1);
             }
             return null; // No embedding
         }
 
-    }.language();
-
-    public static Language<TestJoinSectionsTopTokenId> language() {
-        return language;
     }
-
 }

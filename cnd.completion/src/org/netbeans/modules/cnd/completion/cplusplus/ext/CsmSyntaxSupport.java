@@ -125,6 +125,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     /** Whether java 1.5 constructs are recognized. */
     private boolean java15;
+    
+    private int lastSeparatorOffset = -1;
 
     public CsmSyntaxSupport(BaseDocument doc) {
         super(doc);
@@ -146,6 +148,14 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         this.java15 = java15;
     }
 
+    void setLastSeparatorOffset(int lastSeparatorOffset) {
+        this.lastSeparatorOffset = lastSeparatorOffset;
+    }
+
+    int getLastSeparatorOffset() {
+        return lastSeparatorOffset;
+    }
+
     @Override
     public TokenID[] getCommentTokens() {
         return COMMENT_TOKENS;
@@ -165,44 +175,44 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             return 0;
         final int posLine = Utilities.getLineOffset(getDocument(), pos);
         TextBatchProcessor tbp = new TextBatchProcessor() {
-                                     public int processTextBatch(BaseDocument doc, int startPos, int endPos,
-                                                                 boolean lastBatch) {
-                                         try {
-                                             int[] blks = getCommentBlocks(endPos, startPos);
-                                             FinderFactory.CharArrayBwdFinder cmdFinder
-                                             = new FinderFactory.CharArrayBwdFinder(COMMAND_SEPARATOR_CHARS);
-                                             int lastSeparatorOffset = findOutsideBlocks(cmdFinder, startPos, endPos, blks);
-                                             if (lastSeparatorOffset<1) return lastSeparatorOffset;
-                                             TokenID separatorID = getTokenID(lastSeparatorOffset);
-                                             if (separatorID.getNumericID() == CCTokenContext.RBRACE_ID) {
-                                                 int matchingBrkPos[] = findMatchingBlock(lastSeparatorOffset, true);
-                                                 if (matchingBrkPos != null){
-                                                     int prev = Utilities.getFirstNonWhiteBwd(getDocument(), matchingBrkPos[0]);
-                                                     if (prev > -1 && getTokenID(prev).getNumericID() == CCTokenContext.RBRACKET_ID){
-                                                         return getLastCommandSeparator(prev);
-                                                     }
-                                                 }
-                                             } else if (separatorID.getCategory() == CCTokenContext.CPP) {
-                                                 // found preprocessor directive, skip till the end of it
-                                                 int separatorLine = Utilities.getLineOffset(getDocument(), lastSeparatorOffset);
-                                                 assert (separatorLine <= posLine);
-                                                 if (separatorLine != posLine) {
-                                                     lastSeparatorOffset = Utilities.getRowEnd(getDocument(), lastSeparatorOffset);
-                                                 }
-                                             }
-                                             if (separatorID.getNumericID() != CCTokenContext.LBRACE_ID &&
-                                                 separatorID.getNumericID() != CCTokenContext.RBRACE_ID &&
-                                                 separatorID.getNumericID() != CCTokenContext.SEMICOLON_ID &&
-                                                 separatorID.getCategory() != CCTokenContext.CPP){
-                                                     lastSeparatorOffset = processTextBatch(doc, lastSeparatorOffset, 0, lastBatch);
-                                             }
-                                             return lastSeparatorOffset;
-                                         } catch (BadLocationException e) {
-                                             e.printStackTrace();
-                                             return -1;
-                                         }
-                                     }
-                                 };
+                 public int processTextBatch(BaseDocument doc, int startPos, int endPos,
+                                             boolean lastBatch) {
+                     try {
+                         int[] blks = getCommentBlocks(endPos, startPos);
+                         FinderFactory.CharArrayBwdFinder cmdFinder
+                         = new FinderFactory.CharArrayBwdFinder(COMMAND_SEPARATOR_CHARS);
+                         int lastSeparatorOffset = findOutsideBlocks(cmdFinder, startPos, endPos, blks);
+                         if (lastSeparatorOffset<1) return lastSeparatorOffset;
+                         TokenID separatorID = getTokenID(lastSeparatorOffset);
+                         if (separatorID.getNumericID() == CCTokenContext.RBRACE_ID) {
+                             int matchingBrkPos[] = findMatchingBlock(lastSeparatorOffset, true);
+                             if (matchingBrkPos != null){
+                                 int prev = Utilities.getFirstNonWhiteBwd(getDocument(), matchingBrkPos[0]);
+                                 if (prev > -1 && getTokenID(prev).getNumericID() == CCTokenContext.RBRACKET_ID){
+                                     return getLastCommandSeparator(prev);
+                                 }
+                             }
+                         } else if (separatorID.getCategory() == CCTokenContext.CPP) {
+                             // found preprocessor directive, skip till the end of it
+                             int separatorLine = Utilities.getLineOffset(getDocument(), lastSeparatorOffset);
+                             assert (separatorLine <= posLine);
+                             if (separatorLine != posLine) {
+                                 lastSeparatorOffset = Utilities.getRowEnd(getDocument(), lastSeparatorOffset);
+                             }
+                         }
+                         if (separatorID.getNumericID() != CCTokenContext.LBRACE_ID &&
+                             separatorID.getNumericID() != CCTokenContext.RBRACE_ID &&
+                             separatorID.getNumericID() != CCTokenContext.SEMICOLON_ID &&
+                             separatorID.getCategory() != CCTokenContext.CPP){
+                                 lastSeparatorOffset = processTextBatch(doc, lastSeparatorOffset, 0, lastBatch);
+                         }
+                         return lastSeparatorOffset;
+                     } catch (BadLocationException e) {
+                         e.printStackTrace();
+                         return -1;
+                     }
+                 }
+             };
         int lastPos = getDocument().processText(tbp, pos, 0);
 
         //ensure we return last command separator from last

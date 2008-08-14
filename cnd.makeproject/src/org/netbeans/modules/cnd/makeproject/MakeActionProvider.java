@@ -242,7 +242,7 @@ public class MakeActionProvider implements ActionProvider {
 
         // vv: leaving all logic to be later called from EDT
         // (although I'm not sure all of below need to be done in EDT)
-        Runnable actionEDTWorker = new Runnable() {
+        Runnable actionWorker = new Runnable() {
             public void run() {
                 // Add actions to do
                 ArrayList actionEvents = new ArrayList();
@@ -268,76 +268,76 @@ public class MakeActionProvider implements ActionProvider {
             }
         };
         if (conf.getDevelopmentHost().isLocalhost()) {
-            actionEDTWorker.run();
+            actionWorker.run();
         } else {
             String hkey = conf.getDevelopmentHost().getName();
             ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
             assert registry != null;
             ServerRecord record = registry.get(hkey);
             assert record != null;
-            if (!record.isOnline() || record.isDeleted()) {
-                initServerRecordAndRunWorker(record, actionEDTWorker);
-            } else {
-                actionEDTWorker.run();
-            }
+            invokeRemoteHostAction(record, actionWorker);
         }        
     }
 
-    private void initServerRecordAndRunWorker(final ServerRecord record, final Runnable actionEDTWorker) {
-        String message;
-        int res = JOptionPane.NO_OPTION;
-        if (record.isDeleted()) {
-            message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getName());
-            res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
-            if (res == JOptionPane.YES_OPTION) {
-                ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-                assert registry != null;
-                registry.addServer(record.getName(), false, true);
-            }
-        } else if (!record.isOnline()) {
-            message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
-            res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
-        }
-        if (res == JOptionPane.YES_OPTION) {
-            // start validation phase
-	    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
-	    final JDialog dialog = new JDialog(mainWindow, NbBundle.getMessage(ConfigureHostPanel.class, "DLG_TITLE_Configure_Host"), true);
-            final ConfigureHostPanel panel = new ConfigureHostPanel();
-            
-	    dialog.getContentPane().add(panel);
-	    dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
-	    dialog.pack();
-	    
-	    Rectangle bounds = mainWindow.getBounds();
-	    
-	    int middleX = bounds.x + bounds.width / 2;
-	    int middleY = bounds.y + bounds.height / 2;
-	    
-	    Dimension size = dialog.getPreferredSize();
-	    
-	    dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
-            panel.setHost(record.getName());
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        record.validate(true);
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                // hide dialog and run action if successfully connected
-                                dialog.setVisible(false);
-                                dialog.dispose();
-                                if (record.isOnline()) {
-                                    actionEDTWorker.run();
-                                }
-                            }
-                        });
-                    }
+    private void invokeRemoteHostAction(final ServerRecord record, final Runnable actionWorker) {
+        if (!record.isDeleted() && record.isOnline()) {
+            actionWorker.run();
+        } else {
+            String message;
+            int res = JOptionPane.NO_OPTION;
+            if (record.isDeleted()) {
+                message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getName());
+                res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
+                if (res == JOptionPane.YES_OPTION) {
+                    ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                    assert registry != null;
+                    registry.addServer(record.getName(), false, true);
                 }
-            }, 100); // delay to be in time for displaying dialog
-            dialog.setVisible(true);
+            } else if (!record.isOnline()) {
+                message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
+                res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
+            }
+            if (res == JOptionPane.YES_OPTION) {
+                // start validation phase
+                final Frame mainWindow = WindowManager.getDefault().getMainWindow();
+                final JDialog dialog = new JDialog(mainWindow, NbBundle.getMessage(ConfigureHostPanel.class, "DLG_TITLE_Configure_Host"), true);
+                final ConfigureHostPanel panel = new ConfigureHostPanel();
+
+                dialog.getContentPane().add(panel);
+                dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
+                dialog.pack();
+
+                Rectangle bounds = mainWindow.getBounds();
+
+                int middleX = bounds.x + bounds.width / 2;
+                int middleY = bounds.y + bounds.height / 2;
+
+                Dimension size = dialog.getPreferredSize();
+
+                dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
+                panel.setHost(record.getName());
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            record.validate(true);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    // hide dialog and run action if successfully connected
+                                    dialog.setVisible(false);
+                                    dialog.dispose();
+                                    if (record.isOnline()) {
+                                        actionWorker.run();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }, 100); // delay to be in time for displaying dialog
+                dialog.setVisible(true);
+            }
         }
     }
     

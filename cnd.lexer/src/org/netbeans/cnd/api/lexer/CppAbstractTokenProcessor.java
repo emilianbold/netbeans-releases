@@ -52,6 +52,10 @@ public abstract class CppAbstractTokenProcessor implements CppTokenProcessor {
 
     public void end(int offset, int lastTokenOffset) {}
 
+    public int getLastSeparatorOffset() {
+        return -1;
+    }
+
     /**
      *
      * @param token

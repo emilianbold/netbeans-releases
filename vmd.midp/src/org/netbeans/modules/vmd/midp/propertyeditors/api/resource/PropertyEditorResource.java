@@ -84,7 +84,8 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public class PropertyEditorResource extends PropertyEditorUserCode implements PropertyEditorElement {
-
+    
+    //TODO This Map is memory leak!!
     private Map<String, DesignComponent> createdComponents;
     private final TypeID componentTypeID;
     private String noneComponentAsText;
@@ -285,6 +286,14 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
 
         return decodeValue[0] != null ? decodeValue[0] : "n/a"; //NOI18N
     }
+
+    @Override
+    public void init(DesignComponent component) {
+        perElement.setDesignDocument(component.getDocument());
+        super.init(component);
+    }
+    
+    
 
     @Override
     public String[] getTags() {

@@ -54,65 +54,84 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * Embedded language for join sections testing.
+ * Top level language for join sections testing.
  *
  * @author mmetelka
  */
-public enum TestJoinSectionsTextTokenId implements TokenId {
+public enum TestJoinTopTokenId implements TokenId {
     
-    BRACES(), // "{...}" i.e. text within braces
-    TEXT(); // Text except of text within braces
+    /**
+     * Text enclosed in &lt;..&gt; including them. <br/>
+     * Implicit joining embedding of TestJoinTextTokenId.inTagLanguage.
+     */
+    TAG(),
+    /**
+     * Text enclosed in {..} including '{' and '}'. <br/>
+     * Implicit non-joining embedding of TestJoinTextTokenId.inBracesLanguage
+     */
+    BRACES(),
+    /**
+     * Text enclosed within back quotes `xyz` - it's used instead of regular quotes not run into
+     * necessity to prefix the regular quotes by backslash e.g. when making an extract of a failing test.
+     * <br/>
+     * Implicit non-joining embedding of TestJoinTextTokenId.inQuotesLanguage
+     */
+    BACKQUOTES(),
+    /**
+     * Everything else.
+     * Implicit embedding of TestPlainTokenId.inQuotesLanguage
+     */
+    TEXT();
 
-    private TestJoinSectionsTextTokenId() {
+    private TestJoinTopTokenId() {
     }
     
     public String primaryCategory() {
         return null;
     }
 
-    public static final Language<TestJoinSectionsTextTokenId> textLanguage
-            = new LH("text/x-join-sections-text").language();
-            
-    public static final Language<TestJoinSectionsTextTokenId> tagLanguage
-            = new LH("text/x-join-sections-tag").language();
-
-    public static final Language<TestJoinSectionsTextTokenId> parenLanguage
-            = new LH("text/x-join-sections-paren").language();
-
-
-    private static final class LH extends LanguageHierarchy<TestJoinSectionsTextTokenId> {
-
-        private String mimeType;
-        
-        LH(String mimeType) {
-            this.mimeType = mimeType;
-        }
+    private static final Language<TestJoinTopTokenId> language
+    = new LanguageHierarchy<TestJoinTopTokenId>() {
 
         @Override
         protected String mimeType() {
-            return mimeType;
+            return "text/x-join-top";
         }
 
         @Override
-        protected Collection<TestJoinSectionsTextTokenId> createTokenIds() {
-            return EnumSet.allOf(TestJoinSectionsTextTokenId.class);
+        protected Collection<TestJoinTopTokenId> createTokenIds() {
+            return EnumSet.allOf(TestJoinTopTokenId.class);
         }
 
         @Override
-        protected Lexer<TestJoinSectionsTextTokenId> createLexer(LexerRestartInfo<TestJoinSectionsTextTokenId> info) {
-            return new TestJoinSectionsTextLexer(info);
+        protected Lexer<TestJoinTopTokenId> createLexer(LexerRestartInfo<TestJoinTopTokenId> info) {
+            return new TestJoinTopLexer(info);
         }
         
         @Override
         public LanguageEmbedding<?> embedding(
-        Token<TestJoinSectionsTextTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+        Token<TestJoinTopTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             // Test language embedding in the block comment
             switch (token.id()) {
-//                case TEXT:
-//                    return LanguageEmbedding.create(TestStringTokenId.language(), 1, 1);
+                case TAG:
+                    // Create embedding that joins the sections
+                    return LanguageEmbedding.create(TestJoinTextTokenId.inTagLanguage, 1, 1, true);
+                case BRACES:
+                    // Embedding that does not join tokens
+                    return LanguageEmbedding.create(TestJoinTextTokenId.inBracesLanguage, 1, 1, false);
+                case BACKQUOTES:
+                    return LanguageEmbedding.create(TestJoinTextTokenId.inBackquotesLanguage, 1, 1, false);
+                case TEXT:
+                    // Create embedding that joins the sections - has 0-length start/end skip lengths
+                    return LanguageEmbedding.create(TestJoinTextTokenId.language, 0, 0, true);
             }
             return null; // No embedding
         }
 
+    }.language();
+
+    public static Language<TestJoinTopTokenId> language() {
+        return language;
     }
+
 }
