@@ -119,6 +119,7 @@ import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -241,6 +242,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         Token<? extends GroovyTokenId> beforeLiteral;
         Token<? extends GroovyTokenId> before2;
         Token<? extends GroovyTokenId> before1;
+        Token<? extends GroovyTokenId> active;
         Token<? extends GroovyTokenId> after1;
         Token<? extends GroovyTokenId> after2;
         Token<? extends GroovyTokenId> afterLiteral;
@@ -250,6 +252,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             Token<? extends GroovyTokenId> beforeLiteral,
             Token<? extends GroovyTokenId> before2,
             Token<? extends GroovyTokenId> before1,
+            Token<? extends GroovyTokenId> active,
             Token<? extends GroovyTokenId> after1,
             Token<? extends GroovyTokenId> after2,
             Token<? extends GroovyTokenId> afterLiteral,
@@ -258,6 +261,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             this.beforeLiteral = beforeLiteral;
             this.before2 = before2;
             this.before1 = before1;
+            this.active = active;
             this.after1 = after1;
             this.after2 = after2;
             this.afterLiteral = afterLiteral;
@@ -278,18 +282,30 @@ public class CodeCompleter implements CodeCompletionHandler {
         Token<? extends GroovyTokenId> beforeLiteral = null;
         Token<? extends GroovyTokenId> before2 = null;
         Token<? extends GroovyTokenId> before1 = null;
+        Token<? extends GroovyTokenId> active = null;
         Token<? extends GroovyTokenId> after1 = null;
         Token<? extends GroovyTokenId> after2 = null;
         Token<? extends GroovyTokenId> afterLiteral = null;
 
         TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
-        ts.move(position);
+        
+        int difference = 0;
+        difference = ts.move(position);
+        
+        // get the active token:
+        
+        if(ts.isValid() && ts.moveNext() && ts.offset() >= 0){
+            active = (Token<? extends GroovyTokenId>) ts.token();
+        }
 
-        // *if* there is an prefix, we gotta rewind to ignore it
+        // if we are right at the end of a line, a separator or a whitespace we gotta rewind.
 
-        if (request.prefix.length() > 0) {
+        if(active.id() == GroovyTokenId.NLS ||
+            ( active.id() == GroovyTokenId.WHITESPACE && difference == 0 ) ||
+            active.id().primaryCategory().equals("separator")) {
             ts.movePrevious();
         }
+
 
         // Travel to the beginning to get before2 and before1
 
@@ -364,16 +380,52 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
 
+        if (false) {
+            // Display the line where completion was invoked to ease debugging
 
-        LOG.log(Level.FINEST, "-------------------------------------------");
+            String line = "";
+            String marker = "";
+
+            try {
+                int lineStart = org.netbeans.editor.Utilities.getRowStart(request.doc, request.lexOffset);
+                int lineStop = org.netbeans.editor.Utilities.getRowEnd(request.doc, request.lexOffset);
+                int lineLength = request.lexOffset - lineStart;
+                
+                line = request.doc.getText(lineStart, lineStop - lineStart);
+                
+                StringBuilder sb = new StringBuilder();
+                
+                while (lineLength > 0) {
+                    sb.append(" ");
+                    lineLength--;
+                }
+
+                sb.append("|");
+
+                marker = sb.toString();
+                
+                
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+            LOG.log(Level.FINEST, "---------------------------------------------------------------");
+            LOG.log(Level.FINEST, "Prefix : {0}", request.prefix);
+            LOG.log(Level.FINEST, "Line   : {0}", marker);
+            LOG.log(Level.FINEST, "Line   : {0}", line);
+        }
+
+        LOG.log(Level.FINEST, "---------------------------------------------------------------");
+        LOG.log(Level.FINEST, "move() diff   : {0}", difference);
         LOG.log(Level.FINEST, "beforeLiteral : {0}", beforeLiteral);
         LOG.log(Level.FINEST, "before2       : {0}", before2);
         LOG.log(Level.FINEST, "before1       : {0}", before1);
+        LOG.log(Level.FINEST, "active        : {0}", active);
         LOG.log(Level.FINEST, "after1        : {0}", after1);
         LOG.log(Level.FINEST, "after2        : {0}", after2);
         LOG.log(Level.FINEST, "afterLiteral  : {0}", afterLiteral);
 
-        return new CompletionContext(beforeLiteral, before2, before1, after1, after2, afterLiteral, ts);
+        return new CompletionContext(beforeLiteral, before2, before1, active, after1, after2, afterLiteral, ts);
     }
 
     boolean checkForPackageStatement(final CompletionRequest request) {
@@ -678,14 +730,6 @@ public class CodeCompleter implements CodeCompletionHandler {
         // Is there already a "package"-statement in the sourcecode?
         boolean havePackage = checkForPackageStatement(request);
 
-        CompletionContext completionContext = getCompletionContext(request);
-
-        LOG.log(Level.FINEST, "CompletionContext ------------------------------------------"); // NOI18N
-        LOG.log(Level.FINEST, "CompletionContext before 2: {0}", completionContext.before2); // NOI18N
-        LOG.log(Level.FINEST, "CompletionContext before 1: {0}", completionContext.before1); // NOI18N
-        LOG.log(Level.FINEST, "CompletionContext after  1: {0}", completionContext.after1); // NOI18N
-        LOG.log(Level.FINEST, "CompletionContext after  2: {0}", completionContext.after2); // NOI18N
-
         keywords = EnumSet.allOf(GroovyKeyword.class);
 
         // filter-out keywords in a step-by-step approach
@@ -693,9 +737,9 @@ public class CodeCompleter implements CodeCompletionHandler {
         filterPackageStatement(havePackage);
         filterPrefix(prefix);
         filterLocation(request.location);
-        filterClassInterfaceOrdering(completionContext);
-        filterMethodDefinitions(completionContext);
-        filterKeywordsNextToEachOther(completionContext);
+        filterClassInterfaceOrdering(request.ctx);
+        filterMethodDefinitions(request.ctx);
+        filterKeywordsNextToEachOther(request.ctx);
 
         // add the remaining keywords to the result
 

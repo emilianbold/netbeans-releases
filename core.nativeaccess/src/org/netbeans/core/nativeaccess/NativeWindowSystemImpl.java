@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.core.nativeaccess.transparency.WindowUtils;
+import org.openide.util.Utilities;
 
 
 /**
@@ -58,7 +59,11 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
     public boolean isWindowAlphaSupported() {
         boolean res = false;
         try {
-            res = WindowUtils.isWindowAlphaSupported();
+            String osArch = System.getProperty("os.arch");
+            // jna currently doesn't work on 64 bit java on Win, this check should
+            // be deleted when https://jna.dev.java.net/issues/show_bug.cgi?id=59 is implemented
+            boolean isWin64 = Utilities.isWindows() && osArch != null && osArch.indexOf("amd64") != -1;
+            res = WindowUtils.isWindowAlphaSupported() && !isWin64;
         } catch( ThreadDeath td ) {
             throw td;
         } catch( Throwable e ) {

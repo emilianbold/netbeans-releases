@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,33 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.support.options;
+package org.netbeans.modules.groovy.editor.completion;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+/**
+ *
+ * @author schmidtm
+ */
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public final class GroovyOptionsCategory extends OptionsCategory {
+/**
+ *
+ * @author schmidtm
+ */
+public class MethodCompletionTest extends GroovyTestBase {
+
+    String TEST_BASE = "testfiles/completion/method/";
+
+    public MethodCompletionTest(String testName) {
+        super(testName);
+        Logger.getLogger(CodeCompleter.class.getName()).setLevel(Level.FINEST);
+    }
 
     @Override
-    public Icon getIcon() {
-        return new ImageIcon(Utilities.loadImage("org/netbeans/modules/groovy/support/resources/groovy-options.png")); // NOI18N
+    public void setUp() throws Exception {
+        super.setUp();
+        CodeCompleter.setTesting(true);
     }
 
-    public String getCategoryName() {
-        return NbBundle.getMessage(GroovyOptionsCategory.class, "OptionsCategory_Name_Groovy");
+    // uncomment this to have logging from GroovyLexer
+    protected Level logLevel() {
+        // enabling logging
+        return Level.INFO;
+        // we are only interested in a single logger, so we set its level in setUp(),
+        // as returning Level.FINEST here would log from all loggers
     }
 
-    public String getTitle() {
-        return NbBundle.getMessage(GroovyOptionsCategory.class, "OptionsCategory_Title_Groovy");
+    public void testMethods1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods1.groovy", "        new URL(\"http://google.com\").getPr^", false);
     }
 
-    public OptionsPanelController create() {
-        return new GroovyPanelController();
+    public void testMethods2() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods1.groovy", "        new URL(\"http://google.com\").getP^r", false);
     }
+
+    public void testMethods3() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods1.groovy", "        new URL(\"http://google.com\").get^Pr", false);
+    }
+
+    public void testMethods4() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods1.groovy", "        new URL(\"http://google.com\").^getPr", false);
+    }
+
 }

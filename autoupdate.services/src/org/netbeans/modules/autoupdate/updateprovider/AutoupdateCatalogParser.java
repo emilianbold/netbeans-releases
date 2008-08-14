@@ -132,7 +132,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     
     private static String GZIP_EXTENSION = ".gz"; // NOI18N
     
-    public static Map<String, UpdateItem> getUpdateItems (URL url, AutoupdateCatalogProvider provider) {
+    public synchronized static Map<String, UpdateItem> getUpdateItems (URL url, AutoupdateCatalogProvider provider) {
         Map<String, UpdateItem> items = new HashMap<String, UpdateItem> ();
         try {
             URI base = null;
