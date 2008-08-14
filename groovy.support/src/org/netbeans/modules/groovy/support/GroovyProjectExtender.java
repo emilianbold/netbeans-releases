@@ -92,6 +92,11 @@ public class GroovyProjectExtender {
         this.project = project;
     }
 
+    public GroovyCustomizerPanel createPanel() {
+        panel = new GroovyCustomizerPanel(this);
+        return panel;
+    }
+
     public GroovyCustomizerPanel getPanel() {
         if (panel == null) {
             panel = new GroovyCustomizerPanel(this);
