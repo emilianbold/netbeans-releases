@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,67 +31,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.actions;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.JButton;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.remote.ui.AddServerDialog;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+package org.netbeans.modules.cnd.remote.support;
 
 /**
  *
- * @author gordonp
+ * @author Vladimir Voskresensky
  */
-public class AddNewServerAction extends NodeAction implements PropertyChangeListener {
-    
-    protected JButton ok;
-    
-    public String getName() {
-        return NbBundle.getMessage(AddNewServerAction.class, "LBL_AddNewServer");
+public class Encrypter {
+    private final byte[] passPhrase;
+    Encrypter(String passPhrase) {
+        this.passPhrase = passPhrase.getBytes();
     }
 
-    public void performAction(Node[] nodes) {
-        AddServerDialog dlg = new AddServerDialog();
-        if (dlg.createNewRecord()) {
-            String entry = dlg.getLoginName() + '@' + dlg.getServerName();
-            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-            if (!registry.getRecords().contains(entry)) {
-                registry.addServer(entry, false, true);
-            }
+    public String encrypt(String str) {
+        // now just xor with passphrase :-(
+        return xor(str);
+    }
+
+    public String decrypt(String str) {
+        // now just xor with passphrase :-(
+        return xor(str);
+    }
+    
+    private String xor(String str) {
+        if (str == null) {
+            return null;
         }
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(AddServerDialog.PROP_VALID)) {
-            AddServerDialog dlg = (AddServerDialog) evt.getSource();
-            ok.setEnabled(dlg.isOkValid());
+        byte[] bytes = str.getBytes();
+        int len = Math.max(passPhrase.length, bytes.length);
+        byte[] out = new byte[len];
+        for (int i = 0; i < len; i++) {
+            out[i] = (byte) (bytes[i % bytes.length] ^ passPhrase[i % passPhrase.length]);
         }
-    }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    public boolean asynchronous() {
-        return false;
-    }
+        return new String(out);
+    }    
 }

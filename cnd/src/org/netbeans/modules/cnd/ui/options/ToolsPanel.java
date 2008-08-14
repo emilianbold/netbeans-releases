@@ -591,7 +591,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                     liveServers = new ArrayList<String>();
                     serverList.clear();
                     for (String key : serverUpdateCache.getHostKeyList()) {
-                        serverList.addServer(key, false, true);
+                        serverList.addServer(key, false, false);
                         liveServers.add(key);
                     }
                     serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
