@@ -354,10 +354,35 @@ abstract class PHPCompletionItem implements CompletionProposal {
             insertDollarPrefix = false;
         }
     }
+    
+    static class SpecialFunctionItem extends KeywordItem{
+        public SpecialFunctionItem(String fncName, CompletionRequest request) {
+            super(fncName, request);
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            StringBuilder builder = new StringBuilder();
+            builder.append(getName());
+            builder.append(" '${cursor}';"); //NOI18N
+            return builder.toString();
+        }
+    }
+    
+    static class ReturnItem extends KeywordItem{
+        public ReturnItem(CompletionRequest request) {
+            super("return", request); //NOI18N
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            return "return ${cursor};"; //NOI18N
+        }
+    }
 
     //TODO: dummy must show also parameters similar like FunctionItem
-    static class SpecialFunctionItem extends KeywordItem {
-        public SpecialFunctionItem(String fncName, CompletionRequest request) {
+    static class MagicMethodItem extends KeywordItem {
+        public MagicMethodItem(String fncName, CompletionRequest request) {
             super(fncName, request);
         }
 
