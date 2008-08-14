@@ -266,9 +266,16 @@ public class BindingPanel extends SectionInnerPanel {
             doNotSync = true;
             try {
                 PolicyModelHelper.setConfigVersion(binding, userExpectedCfgVersion, project);
+                try {
+                    inSync = true;
+                    fillProfileCombo(stsChBox.isSelected());
+                } finally {
+                    inSync = false;
+                }
             } finally {
                 doNotSync = false;
             }
+            sync();
         }
 
         RMModelHelper rmh = RMModelHelper.getInstance(userExpectedCfgVersion);
