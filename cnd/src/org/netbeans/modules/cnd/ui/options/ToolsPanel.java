@@ -636,6 +636,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 
     /** What to do if user cancels the dialog (nothing) */
     public void cancel() {
+        serverUpdateCache = null;
         changed = false;
     }
 

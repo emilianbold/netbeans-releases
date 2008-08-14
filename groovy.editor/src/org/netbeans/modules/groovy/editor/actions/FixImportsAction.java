@@ -118,6 +118,10 @@ public class FixImportsAction extends BaseAction implements Runnable {
                 public void run(GroovyParserResult result) throws Exception {
                     if (result != null) {
                         ErrorCollector errorCollector = result.getErrorCollector();
+                        if (errorCollector == null) {
+                            LOG.log(Level.FINEST, "Could not get error collector");
+                            return;
+                        }
                         List errList = errorCollector.getErrors();
 
                         if (errList == null) {

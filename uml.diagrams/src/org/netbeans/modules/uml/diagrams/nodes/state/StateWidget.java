@@ -111,6 +111,7 @@ public class StateWidget extends UMLNodeWidget
             state = (State) presentation.getFirstSubject();
             setCurrentView(createStateView(state));
         }
+        super.initializeNode(presentation);
     }
 
     private void initStateWidget()

@@ -912,7 +912,7 @@
             if ( breakpoints[href].length > 0 )
                 hrefs.push(href);
         }
-        fbsClearAllBreakpoints(hrefs.length,hrefs);
+        fbsClearAllBreakpoints(hrefs);
     }
 
     function setBreakpoint(href,line,props)

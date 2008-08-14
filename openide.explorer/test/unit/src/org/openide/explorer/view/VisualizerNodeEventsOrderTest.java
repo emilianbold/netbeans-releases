@@ -149,7 +149,32 @@ public class VisualizerNodeEventsOrderTest extends NbTestCase {
         assertEquals("Child check", "x", getChildAt(3).toString());
         assertEquals("Child check", "y", getChildAt(4).toString());
     }
-    
+
+    Throwable e = null;
+    public void testForToStrictAssertsInVisualizerChildren() throws InterruptedException, InvocationTargetException {
+        // block AWT thread
+        Block b = new Block();
+        b.block();
+        Node n = lch.getNodeAt(0);
+        final TreeNode tn = Visualizer.findVisualizer(n);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                try {
+                    int idx = ta.getIndex(tn);
+                } catch (Throwable ex) {
+                    e = ex;
+                }
+            }
+        });
+        lch.keys("x", "y", "y");
+        b.unblock();
+        waitForAwtQueue();
+        if (e != null) {
+            fail();
+        }
+    }
+
     void invokeGetChildAt(final int pos) {
         SwingUtilities.invokeLater(new Runnable() {
 

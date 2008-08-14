@@ -285,6 +285,8 @@ public class PackageWidget extends ContainerNode
                 }
             }
         });
+        
+        super.initializeNode(pe);
     }
 
     protected void updateStereotypes(List<String> stereotypes)

@@ -80,7 +80,7 @@ public final class GroovyCustomizer implements ProjectCustomizer.CompositeCatego
         if (project != null) {
             extender = project.getLookup().lookup(GroovyProjectExtender.class);
         }
-        return extender.getPanel();
+        return extender.createPanel();
     }
 
     private static final class StoreActionListener implements ActionListener {
