@@ -222,12 +222,11 @@ public final class Preview extends Dialog implements Percent.Listener {
     myPrevious.addKeyListener(myKeyListener);
     panel.add(myPrevious, c);
 
-    // text field
+    // go to
     myGoto = new JTextField();
-    int width = (int) Math.round(myPrevious.getPreferredSize().width * GOTO_RATIO);
     int height = myPrevious.getPreferredSize().height;
-    myGoto.setPreferredSize(new Dimension(width, height));
-    myGoto.setMinimumSize(new Dimension(width, height));
+    myGoto.setPreferredSize(new Dimension(GOTO_WIDTH, height));
+    myGoto.setMinimumSize(new Dimension(GOTO_WIDTH, height));
 
     InputMap inputMap = myGoto.getInputMap();
     ActionMap actionMap = myGoto.getActionMap();
@@ -910,10 +909,10 @@ public final class Preview extends Dialog implements Percent.Listener {
   private PrintProvider [] myPrintProviders;
 
   private static final int GAP_SIZE = 20;
+  private static final int GOTO_WIDTH = 60;
   private static final int SCROLL_INCREMENT = 40;
-  private static final double GOTO_RATIO = 1.20;
+
   private static final double SCALE_RATIO = 1.05;
-  
   private static final double PREVIEW_HEIGHT_RATIO = 0.66;
   private static final double PREVIEW_WIDTH_RATIO = 0.44;
 
