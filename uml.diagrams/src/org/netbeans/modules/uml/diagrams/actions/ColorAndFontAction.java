@@ -204,7 +204,11 @@ public class ColorAndFontAction extends SceneNodeAction
                 ((UMLNodeWidget) w).setNodeFont(f);
                 scene.getEngine().getTopComponent().setDiagramDirty(true);
             }
+            
+            w.revalidate();
         }
+        
+        scene.validate();
     }
 
     private void setForeground()
@@ -226,7 +230,11 @@ public class ColorAndFontAction extends SceneNodeAction
                 ((ConnectionWidget) w).setLineColor(color);
                 scene.getEngine().getTopComponent().setDiagramDirty(true);
             }
+            w.revalidate();
         }
+        w.revalidate();
+        scene.revalidate();
+        scene.validate();
     }
 
     private void setBackground()
@@ -240,7 +248,10 @@ public class ColorAndFontAction extends SceneNodeAction
                 ((UMLNodeWidget) w).setNodeBackground(color);
                 scene.getEngine().getTopComponent().setDiagramDirty(true);
             }
+            w.revalidate();
         }
+        
+        scene.validate();
     }
 
     private void setBorder()

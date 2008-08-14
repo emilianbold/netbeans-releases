@@ -66,10 +66,12 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
 
     public UMLLabelWidget(Scene scene) {
         super(scene);
+        setForeground(null);
     }
     
     public UMLLabelWidget(Scene scene, String label) {
         super(scene, label);
+        setForeground(null);
     }
     
     public UMLLabelWidget(Scene scene, String propertyID, String displayName) {
@@ -87,6 +89,7 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
     
      private void init(String propertyID, String displayName)
      {
+        setForeground(null);
         id = propertyID;
         ResourceValue.initResources(propertyID, this);
         this.displayName = displayName;

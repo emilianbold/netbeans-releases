@@ -140,6 +140,7 @@ public class ActivityGroupWidget extends ContainerNode //UMLNodeWidget
         mainView.setCheckClipping(true);
         
         Widget nameLayer = new Widget(scene);
+        nameLayer.setForeground(null);
         nameLayer.setLayout(
                 LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.CENTER, 0));
@@ -148,6 +149,7 @@ public class ActivityGroupWidget extends ContainerNode //UMLNodeWidget
         groupKindWidget = new UMLLabelWidget(scene,
                 this.getWidgetID()+".groupKind",  //NO I18N
                 bundle.getString("LBL_groupKind"));
+        groupKindWidget.setForeground(null);
  
         groupKindWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
         setGroupKind(element);
