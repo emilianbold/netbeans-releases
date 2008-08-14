@@ -859,7 +859,8 @@ TestSupport.prototype = {
                  for (var i = 0; i < node.childNodes.length; ++i) {
                    printIndented(node.childNodes[i], indent+2);
                  }
-                 if(node.childNodes[0].nodeValue == null)
+                 if(node.childNodes[0].nodeValue == null ||
+                     trim(node.childNodes[0].nodeValue) == "")
                     prettyContent += nd + getContent(node, false);
                  else
                     prettyContent += getContent(node, false);
@@ -920,6 +921,12 @@ TestSupport.prototype = {
              c = c.substring(0, len2) + indent + '&nbsp;&nbsp;&nbsp;' + breakLine2(c.substring(len2), len, indent);
          }
          return c;
+       }
+       
+       function trim(str) {
+         if(!str || typeof str != 'string')
+             return null;
+         return str.replace(/^[\s]+/,'').replace(/[\s]+$/,'').replace(/[\s]{2,}/,' ');
        }
     },
 
@@ -1811,101 +1818,59 @@ XHR.prototype = {
         return xmlHttpReq;
     },
 
-    get : function(url, mime) {
-        var xmlHttpReq = this.connect('GET', url, mime, 0, false);
+    httpRetrieve : function(method, url, mime, monitor) {
+        var xmlHttpReq = this.connect(method, url, mime, 0, false);
         try {
             xmlHttpReq.send(null);
-            if (this.isResponseReady(xmlHttpReq, '', true)) {
+            if (this.isResponseReady(xmlHttpReq, '', monitor)) {
               var rtext = xmlHttpReq.responseText;
               if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
-                  var err = 'Get MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
-                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
-                  ts.debug('Failed XHR(GET, '+url+'): '+err);
+                  var err = method+' MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n<br/>'+
+                      'MSG_TEST_RESBEANS_Response: {<br/>' + xmlHttpReq.responseText + "<br/>}";
+                  ts.debug('Failed XHR('+method+', '+url+'): '+err);
                   return err;
               }
               return rtext;           
             }
         } catch( e ) {
-           ts.debug('get(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
+           ts.debug('httpRetrieve(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
         }
         return '-1';
     },
-
-    post : function(url, mime, content) {
-        var xmlHttpReq = this.connect('POST', url, mime, content.length, false);
+    
+    httpUpdate : function(method, url, mime, content, monitor) {
+        var len = 0;
+        if(content != undefined && content != null)
+            len = content.length;
+        var xmlHttpReq = this.connect(method, url, mime, len, false);
         try {
             xmlHttpReq.send(content);
-            if (this.isResponseReady(xmlHttpReq, content, true)) {
-                var status = xmlHttpReq.status;
-                if(status != 201) {
-                  var err = 'Post MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
-                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
-                  ts.debug('Failed XHR(POST, '+url+'): '+err);
-                  return err;
-                }
+            if (this.isResponseReady(xmlHttpReq, content, monitor)) {
+                return method+' succeeded for: '+url+'. <br/><br/>Server returned: {<br/>'+ts.printPretty(xmlHttpReq.responseText)+ "<br/>}";
             }
         } catch( e ) {
-          ts.debug('post(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
+          ts.debug('httpUpdate(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
         }
-        return 'Post succeeded for: '+url+'. Server returned: '+xmlHttpReq.responseText;
     },
-
-    put : function(url, mime, content) {
-        var xmlHttpReq = this.connect('PUT', url, mime, content.length, false);
-        try {
-            xmlHttpReq.send(content);
-            if (this.isResponseReady(xmlHttpReq, content, true)) {
-              var status = xmlHttpReq.status;
-              if(status != 204) {
-                  var err = 'Put MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
-                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
-                  ts.debug('Failed XHR(PUT, '+url+'): '+err);
-                  return err;
-              }
-            }
-        } catch( e ) {
-          ts.debug('put(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
-        }
-        return 'Put succeeded for: '+url+'. Server returned: '+xmlHttpReq.responseText;
-    },
-
-    delete_ : function(url) {
-        var xmlHttpReq = this.connect('DELETE', url, 'application/xml', 0, false);
-        try {
-            xmlHttpReq.send(null);  
-            if (this.isResponseReady(xmlHttpReq, '', true)) {
-              var status = xmlHttpReq.status;
-              if(status != 204) {
-                  var err = 'Delete MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
-                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
-                  ts.debug('Failed XHR(DELETE, '+url+'): '+err);
-                  return err;
-              }
-            }
-        } catch( e ) {
-          ts.debug('delete(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
-        }
-        return 'Delete succeeded for: '+url+'. Server returned: '+xmlHttpReq.responseText;
+    
+    get : function(url, mime) {
+        return this.httpRetrieve('GET', url, mime, true);
     },
     
     options : function(url, mime) {
-        var xmlHttpReq = this.connect('OPTIONS', url, mime, 0, false);
-        try {
-            xmlHttpReq.send(null);
-            if (this.isResponseReady(xmlHttpReq, '', false)) {
-              var rtext = xmlHttpReq.responseText;
-              if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
-                  var err = 'Options MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
-                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
-                  ts.debug('Failed XHR(GET, '+url+'): '+err);
-                  return err;
-              }
-              return rtext;           
-            }
-        } catch( e ) {
-           ts.debug('get(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
-        }
-        return '-1';
+        return this.httpRetrieve('OPTIONS', url, mime, false);
+    },
+
+    post : function(url, mime, content) {
+        return this.httpUpdate('POST', url, mime, content, true);
+    },
+
+    put : function(url, mime, content) {
+        return this.httpUpdate('PUT', url, mime, content, true);
+    },
+
+    delete_ : function(url) {
+        return this.httpUpdate('DELETE', url, 'application/xml', true);
     },
     
     loadXml : function(xmlStr) {
