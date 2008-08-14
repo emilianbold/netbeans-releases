@@ -78,7 +78,7 @@ public class PersistenceUnitTest extends J2eeTestCase {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(PersistenceUnitTest.class);
-        conf = addServerTests(conf,"testOpenProject","testPUProviders","testPUDataSource");
+        conf = addServerTests(Server.ANY, conf,"testOpenProject","testPUProviders","testPUDataSource");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }
@@ -128,7 +128,7 @@ public class PersistenceUnitTest extends J2eeTestCase {
                 persistenceUnit.setJtaDataSource(p.getDefaultJtaDatasource());
                 persistenceUnit.setProvider(p.getProviderClass());
                 ProviderUtil.setTableGeneration(persistenceUnit, s, p);
-
+                
                 dataObject.addPersistenceUnit(persistenceUnit);
             }
         }

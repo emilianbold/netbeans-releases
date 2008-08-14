@@ -132,6 +132,8 @@ public class VariablesPanel extends javax.swing.JPanel implements ExplorerManage
         editButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
 
+        tree.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(VariablesPanel.class, "VariablesPanel.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

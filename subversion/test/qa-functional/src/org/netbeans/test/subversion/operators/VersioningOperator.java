@@ -42,7 +42,6 @@ package org.netbeans.test.subversion.operators;
 
 import java.awt.Component;
 import javax.swing.JComponent;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.ComponentChooser;

@@ -1,0 +1,6 @@
+Code completion result for source line:
+"User $nom|"
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+FIELD      nomad                                      String
+FIELD      nomos                                      String

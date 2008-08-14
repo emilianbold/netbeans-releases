@@ -319,6 +319,7 @@ public final class AntBuildExtender {
             for (Extension ext : extensions.values()) {
                 Element child = doc.createElementNS(AntBuildExtenderAccessor.AUX_NAMESPACE, AntBuildExtenderAccessor.ELEMENT_EXTENSION);
                 child.setAttribute(AntBuildExtenderAccessor.ATTR_ID, ext.id);
+
                 String relPath = FileUtil.getRelativePath(nbproj, ext.file);
                 assert relPath != null;
                 child.setAttribute(AntBuildExtenderAccessor.ATTR_FILE, relPath);
@@ -397,22 +398,27 @@ public final class AntBuildExtender {
             assert implementation.getExtensibleTargets().contains(mainBuildTarget) : 
                 "The target '" + mainBuildTarget + "' is not designated by the project type as extensible.";
             synchronized (this) {
-                loadDependency(mainBuildTarget, extensionTarget);
-                updateProjectMetadata();
+                if (loadDependency(mainBuildTarget, extensionTarget)) {
+                    updateProjectMetadata();
+                }
             }
         }
         
-        private synchronized void loadDependency(String mainBuildTarget, String extensionTarget) {
+        private synchronized boolean loadDependency(String mainBuildTarget, String extensionTarget) {
             Collection<String> tars = dependencies.get(mainBuildTarget);
+            boolean changed = false;
             if (tars == null) {
                 tars = new ArrayList<String>();
                 dependencies.put(mainBuildTarget, tars);
+                changed = true;
             }
             if (!tars.contains(extensionTarget)) {
                 tars.add(extensionTarget);
+                changed = true;
             } else {
                 //log?
             }
+            return changed;
         }
         
         
@@ -425,8 +431,9 @@ public final class AntBuildExtender {
         public void removeDependency(String mainBuildTarget, String extensionTarget) {
             Collection<String> str = dependencies.get(mainBuildTarget);
             if (str != null) {
-                str.remove(extensionTarget);
-                updateProjectMetadata();
+                if (str.remove(extensionTarget)) {
+                    updateProjectMetadata();
+                }
             } else {
                 //oh well, just ignore, nothing to update anyway..
             }
