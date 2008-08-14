@@ -182,6 +182,9 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     public boolean isValid() {
         return valid;
     }
+
+    public void cancel() {
+    }
     
 /*    private Collection<CsmReference> getOccurrences() {
         Collection<CsmReference> out = null;
