@@ -127,6 +127,7 @@ public class AliasedTypeWidget extends UMLNodeWidget implements PropertyChangeLi
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
+        super.propertyChange(event);
         nameWidget.propertyChange(event);
     }
  

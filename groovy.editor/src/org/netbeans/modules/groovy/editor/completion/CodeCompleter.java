@@ -119,7 +119,6 @@ import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -950,8 +949,19 @@ public class CodeCompleter implements CodeCompletionHandler {
                 continue;
             }
 
-            if (field.getName().startsWith(request.prefix)) {
-                proposals.add(new FieldItem(field.getName(), anchor, request, javax.lang.model.element.ElementKind.FIELD, fieldTypeAsString));
+            // If we are dealing with GStrings, the prefix is prefixed ;-)
+            // ... with the dollar sign $ See # 143295
+
+            int anchorShift = 0;
+            String fieldName = request.prefix;
+            
+            if(request.prefix.startsWith("$")) {
+                fieldName = request.prefix.substring(1);
+                anchorShift = 1;
+                }
+            
+            if (field.getName().startsWith(fieldName)) {
+                proposals.add(new FieldItem(field.getName(), anchor + anchorShift, request, javax.lang.model.element.ElementKind.FIELD, fieldTypeAsString));
             }
 
         }
@@ -1470,12 +1480,23 @@ public class CodeCompleter implements CodeCompletionHandler {
     private boolean isValidPackage(ClasspathInfo pathInfo, String pkg) {
         assert pathInfo != null : "ClasspathInfo can not be null";
 
-        // get packageSet
+        // the following statement gives us all the packages *starting* with the
+        // first parameter. We have to check for exact matches ourselves. See # 142372
 
         Set<String> pkgSet = pathInfo.getClassIndex().getPackageNames(pkg, true, EnumSet.allOf(ClassIndex.SearchScope.class));
 
         if (pkgSet.size() > 0) {
-            return true;
+            LOG.log(Level.FINEST, "Packages with prefix : {0}", pkg);
+            LOG.log(Level.FINEST, "               found : {0}", pkgSet);
+
+            for (String singlePkg : pkgSet) {
+                if(singlePkg.equals(pkg)){
+                    LOG.log(Level.FINEST, "Exact match found.");
+                    return true;
+                }
+            }
+
+            return false;
         } else {
             return false;
         }
@@ -2197,8 +2218,14 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
 
-        // all methods of class given at that position
-        populateProposalWithMethodsFromClass(proposals, request, declaringClass.getName(), false);
+        // all methods of class given at that position.
+        // If we are dealing with Interface we have to get them using javac means, see # 142372
+        
+        if (declaringClass.isInterface()) {
+            populateProposalWithMethodsFromClass(proposals, request, declaringClass.getName(), true);
+        } else {
+            populateProposalWithMethodsFromClass(proposals, request, declaringClass.getName(), false);
+        }
 
         return true;
     }

@@ -70,7 +70,8 @@ public class RemoteNativeExecution extends NativeExecution {
             String arguments,
             String[] envp,
             PrintWriter out,
-            Reader in) throws IOException, InterruptedException {
+            Reader in,
+            boolean unbuffer) throws IOException, InterruptedException {
         RemoteNativeExecutionSupport support = null;
         if (host != null && host.length() > 0) {
             support = new RemoteNativeExecutionSupport(host, runDirFile, executable, arguments, envp, out, in);

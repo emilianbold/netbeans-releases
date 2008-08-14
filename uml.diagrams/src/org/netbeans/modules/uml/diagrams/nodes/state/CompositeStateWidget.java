@@ -79,15 +79,14 @@ import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
-import org.netbeans.modules.uml.drawingarea.widgets.ContainerWithCompartments;
 
 /**
  *
  * @author Sheryl Su
  */
-public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidget,ContainerWithCompartments
+public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidget
 {
-
+    
     private State state;
     private Scene scene;
     private Widget bodyWidget;
@@ -119,24 +118,30 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
     public void initializeNode(IPresentationElement presentation)
     {
         IElement element = presentation.getFirstSubject();
-        for (RegionWidget w: regionWidgets)
-        {
-            w.remove(w);
-        }
-        regionWidgets.clear();
         elements.clear();
         
         if (element instanceof State && ((State) element).getIsComposite())
         {
             state = (State) presentation.getFirstSubject();
-            init();
-            Widget widget = new Widget(scene);
-            widget.setLayout(LayoutFactory.createVerticalFlowLayout());
-            widget.addChild(tabWidget, 0);
-            widget.addChild(bodyWidget, 100);
-            setCurrentView(widget);
-            setIsInitialized(true);
-            setFont(getCurrentView().getFont());
+            if (!isInitialized())
+            {
+                init();
+                Widget widget = new ViewWidget(scene);
+                widget.setLayout(LayoutFactory.createVerticalFlowLayout());
+                widget.addChild(tabWidget, 0);
+                widget.addChild(bodyWidget, 100);
+                setCurrentView(widget);
+                setIsInitialized(true);
+                setFont(getCurrentView().getFont());
+            }
+           else
+            {
+                if (!PersistenceUtil.isDiagramLoading())
+                {
+                    initRegions();
+                    addRegionElements();
+                }
+            }
         }
     }
 
@@ -173,11 +178,30 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
     protected void initRegions()
     {
         List<IRegion> regions = state.getContents();
-
+              
         for (int i = 0; i < regions.size(); i++)
         {
             IRegion region = regions.get(i);
-            addRegion(region);
+            boolean found = false;
+            
+            for (RegionWidget rw: regionWidgets)
+            {
+               if (rw.getElement().equals(region))
+               {
+                   found = true;
+                   break;
+               }
+            }
+            if (!found)
+                addRegion(region);
+        }
+        
+        for (RegionWidget rw : regionWidgets)
+        {
+            if (!PersistenceUtil.isDiagramLoading())
+            {
+                rw.initContainedElements();
+            }
         }
     }
 
@@ -231,9 +255,19 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
 
         setFont(getFont());
         updateConstraint();
-        updateSizeWithOptions();
+//        updateSizeWithOptions();
+        updateSize();
     }
-
+    
+    private void updateSize()
+    {
+        setPreferredBounds(null);
+        setPreferredSize(null);    
+        if (getBounds() != null)
+            setMinimumSize(getBounds().getSize());    
+    }
+    
+    
     public void propertyChange(PropertyChangeEvent event)
     {
         String propName = event.getPropertyName();
@@ -389,12 +423,7 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
         updateConstraint();
     }
     
-    public void notifyCompartmentWidgetAdded()
-    {
-        if (regionWidgets.size() == state.getContents().size())
-            discoverRelationship();
-    }
-
+    
     public void addChildrenInBounds() {
         for(CompartmentWidget w:regionWidgets)
         {
@@ -414,5 +443,24 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
             }
         }
         revalidate();
+    }
+    
+    // this main purpose of this class is to capture the moment to execute relationship discovery
+    // when all regions and their contained elements are created
+    private class ViewWidget extends Widget
+    {
+        public ViewWidget(Scene scene)
+        {
+            super(scene);
+            setForeground(null);
+            setBackground(null);
+            setFont(null);
+        }
+
+        public void notifyAdded()
+        {
+            UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
+            relationshipD.discoverCommonRelations(elements);
+        }
     }
 }

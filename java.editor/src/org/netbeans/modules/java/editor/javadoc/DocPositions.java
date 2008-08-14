@@ -486,10 +486,10 @@ public final class DocPositions {
                 = new WeakHashMap<CompilationUnitTree, DocPositions.DocPositionsManager>();
         
         private final Map<Doc, DocPositions> cache = new WeakHashMap<Doc, DocPositions>();
-        private final Document doc;
+        private final Reference<Document> doc;
 
         public DocPositionsManager(Document doc) {
-            this.doc = doc;
+            this.doc = new WeakReference<Document>(doc);
         }
 
         public static DocPositionsManager get(CompilationInfo javac) {
@@ -511,7 +511,7 @@ public final class DocPositions {
         public DocPositions get(Doc javadoc, TokenSequence<JavadocTokenId> jdts) {
             DocPositions dp = cache.get(javadoc);
             if (dp == null) {
-                dp = new DocPositions(javadoc, jdts, doc);
+                dp = new DocPositions(javadoc, jdts, doc.get());
                 cache.put(javadoc, dp);
             }
             return dp;

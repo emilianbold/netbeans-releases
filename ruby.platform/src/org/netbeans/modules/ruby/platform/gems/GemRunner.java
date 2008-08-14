@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.platform.gems;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -464,6 +465,10 @@ final class GemRunner {
             final String successMessage, final String failureMessage,
             final Runnable successCompletionTask, final String gemCommand,
             final String... commandArgs) {
+        if (!EventQueue.isDispatchThread()) {
+            throw new AssertionError("#asynchGemRunner must be called from EDT");
+        }
+        
         final Cursor originalCursor;
         if (parent != null) {
             originalCursor = parent.getCursor();
@@ -495,7 +500,6 @@ final class GemRunner {
         final Process[] processHolder = new Process[1];
         final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
 
-
         closeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
                 dlg.setVisible(false);
@@ -507,14 +511,15 @@ final class GemRunner {
         Runnable runner = new Runnable() {
             public void run() {
                 try {
-                    boolean succeeded =
+                    final boolean succeeded =
                             runGemTool(gemCommand, true, progress, processHolder, commandArgs);
-
-                    closeButton.setEnabled(true);
-                    cancelButton.setEnabled(false);
-
-                    progress.done(succeeded ? successMessage : failureMessage);
-
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            closeButton.setEnabled(true);
+                            cancelButton.setEnabled(false);
+                            progress.done(succeeded ? successMessage : failureMessage);
+                        }
+                    });
                     if (succeeded && (successCompletionTask != null)) {
                         successCompletionTask.run();
                     }
@@ -543,8 +548,16 @@ final class GemRunner {
         }
     }
 
-    private static void resetCursor(Component parent, Cursor originalCursor) {
+    private static void resetCursor(final Component parent, final Cursor originalCursor) {
         if (parent != null) {
+            if (!EventQueue.isDispatchThread()) {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        resetCursor(parent, originalCursor);
+                    }
+                });
+                return;
+            }
             parent.setCursor(originalCursor);
         }
     }

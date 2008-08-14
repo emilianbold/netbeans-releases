@@ -195,35 +195,33 @@ public class RailsProjectGenerator {
     }
 
     private static RakeProjectHelper createProject(FileObject dirFO, final RubyPlatform platform, RailsProjectCreateData createData) throws IOException {
-
         RakeProjectHelper h = ProjectGenerator.createProject(dirFO, RailsProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(createData.getName()));
         data.appendChild(nameEl);
-        
+
         // set the target server
         EditableProperties privateProperties = h.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
         privateProperties.put(RailsProjectProperties.RAILS_SERVERTYPE, createData.getServerInstanceId());
-        
+
         EditableProperties ep = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-        
+
         RubyInstance instance = ServerRegistry.getDefault().getServer(createData.getServerInstanceId(), platform);
         int port = instance != null ? instance.getRailsPort() : 3000;
         ep.setProperty(RailsProjectProperties.RAILS_PORT, String.valueOf(port));
 
         Charset enc = FileEncodingQuery.getDefaultEncoding();
         ep.setProperty(RailsProjectProperties.SOURCE_ENCODING, enc.name());
-        
+
         h.putPrimaryConfigurationData(data, true);
         RailsProjectProperties.storePlatform(ep, platform);
-        
+
         h.putProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-        h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
+        h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         return h;
     }
-
 }
 
 

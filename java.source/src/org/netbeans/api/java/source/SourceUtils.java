@@ -89,11 +89,13 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassFileUtil;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -163,25 +165,10 @@ public class SourceUtils {
      * @return the type declaration within which this member or constructor
      * is declared, or null if there is none
      * @throws IllegalArgumentException if the provided element is a package element
+     * @deprecated use {@link ElementUtilities#enclosingTypeElement(javax.lang.model.element.Element)}
      */
-    public static TypeElement getEnclosingTypeElement( Element element ) throws IllegalArgumentException {
-        
-	if( element.getKind() == ElementKind.PACKAGE ) {
-	    throw new IllegalArgumentException();
-	}
-
-        element = element.getEnclosingElement();
-
-        if (element.getKind() == ElementKind.PACKAGE) {
-            //element is a top level class, returning null according to the contract:
-            return null;
-        }
-        
-	while(element != null && !(element.getKind().isClass() || element.getKind().isInterface())) {
-	    element = element.getEnclosingElement();
-	}
-        
-	return (TypeElement)element;
+    public static @Deprecated TypeElement getEnclosingTypeElement( Element element ) throws IllegalArgumentException {
+        return ElementUtilities.enclosingTypeElementImpl(element);
     }
     
     public static TypeElement getOutermostEnclosingTypeElement( Element element ) {
@@ -866,16 +853,25 @@ out:                    for (URL e : roots) {
      */
     public static Collection<ElementHandle<TypeElement>> getMainClasses (final FileObject[] sourceRoots) {
         final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>> ();
-        for (FileObject root : sourceRoots) {
-            try {
+        for (final FileObject root : sourceRoots) {
+            try {               
+                final File rootFile = FileUtil.toFile(root);
                 ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
                 ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
                 ClassPath srcPath = ClassPathSupport.createClassPath(new FileObject[] {root});
                 ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
-                final Set<ElementHandle<TypeElement>> classes = cpInfo.getClassIndex().getDeclaredTypes("", ClassIndex.NameKind.PREFIX, EnumSet.of(ClassIndex.SearchScope.SOURCE));
                 JavaSource js = JavaSource.create(cpInfo);
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController control) throws Exception {
+                        final URL rootURL = root.getURL();
+                        Iterable<? extends URL> mainClasses = ExecutableFilesIndex.DEFAULT.getMainClasses(rootURL);                        
+                        List<ElementHandle<TypeElement>> classes = new LinkedList<ElementHandle<TypeElement>>();
+                        for (URL mainClass : mainClasses) {
+                            File mainFo = new File (URI.create(mainClass.toExternalForm()));
+                            if (mainFo.exists()) {
+                                classes.addAll(RepositoryUpdater.getRelatedFiles(mainFo, rootFile));
+                            }
+                        }
                         for (ElementHandle<TypeElement> cls : classes) {
                             TypeElement te = cls.resolve(control);
                             if (te != null) {

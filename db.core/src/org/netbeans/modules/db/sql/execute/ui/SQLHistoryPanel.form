@@ -24,7 +24,7 @@
                           <Group type="102" attributes="0">
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="connectionComboBox" pref="208" max="32767" attributes="0"/>
+                              <Component id="connectionUrlComboBox" pref="208" max="32767" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -57,7 +57,7 @@
                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="searchTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="connectionComboBox" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
+                  <Component id="connectionUrlComboBox" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -86,10 +86,13 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JComboBox" name="connectionComboBox">
+    <Component class="javax.swing.JComboBox" name="connectionUrlComboBox">
       <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="new UrlComboBoxModel()" type="code"/>
+        </Property>
         <Property name="renderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="new ConnectionRenderer()" type="code"/>
+          <Connection code="new ConnectionUrlRenderer()" type="code"/>
         </Property>
       </Properties>
       <AccessibilityProperties>

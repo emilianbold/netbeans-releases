@@ -71,7 +71,7 @@ public class DebuggerProxy {
     private volatile Socket sessionSocket;
     private String sessionID;
     private BlockingQueue<Message> suspensionPointQueue = new ArrayBlockingQueue<Message>(128);
-    private BlockingQueue<HttpMessage> httpQueue = new ArrayBlockingQueue<HttpMessage>(200); //this queue may be a lot larger.
+    private BlockingQueue<Message> httpQueue = new ArrayBlockingQueue<Message>(200); //this queue may be a lot larger.
     private BlockingQueue<ResponseMessage> responseQueue = new ArrayBlockingQueue<ResponseMessage>(8);
     public static final List<DebuggerProxy> proxies = new CopyOnWriteArrayList<DebuggerProxy>();
     private CommandFactory commandFactory;
@@ -86,13 +86,12 @@ public class DebuggerProxy {
         this.sessionID = id;
     }
 
-    public synchronized boolean isActive() {
-        if(messageHandlerThread != null) {
-            return true;
-        } else if( suspensionPointQueue.size() > 0 || httpQueue.size() > 0) {
-            return true;
-        }
-        return false;
+    public synchronized boolean isSuspensionQueueActive() {
+        return messageHandlerThread != null || suspensionPointQueue.size() > 0;
+    }
+    
+    public synchronized boolean isHttpQueueActive() {
+        return messageHandlerThread != null || httpQueue.size() > 0;
     }
 
     public void setBooleanFeature(Feature.Name featureName, boolean featureValue) {
@@ -224,9 +223,9 @@ public class DebuggerProxy {
         return response != null ? response.getBreakpoints() : null;
     }
 
-    public String getSource(URI uri) {
+    public byte[] getSource(URI uri) {
         SourceResponse response = (SourceResponse) sendCommand(getCommandFactory().sourceCommand(uri));
-        return response != null ? response.getSourceCode() : null;
+        return (response != null && response.isSusccess()) ? response.getSourceCode() : null;
     }
 
     public Message getSuspensionPoint() {
@@ -312,6 +311,7 @@ public class DebuggerProxy {
             ResponseMessage responseMessage = (ResponseMessage)message;
             int txID = responseMessage.getTransactionId();
             if( txID == -1) {
+                httpQueue.add(message);
                 suspensionPointQueue.add(message);
             }else {
                 //Ignore if the response is for a timed-out request

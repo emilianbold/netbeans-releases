@@ -61,6 +61,14 @@ public class TestBase extends NbTestCase  {
     private String schema;
     private String jarpath;
 
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
+
     private JDBCDriver jdbcDriver;
     private DatabaseConnection dbconn;
 

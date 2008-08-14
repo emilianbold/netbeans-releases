@@ -42,11 +42,13 @@
 package org.netbeans.modules.glassfish.common.wizards;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -237,9 +239,9 @@ public class Retriever implements Runnable {
                     conn = url.openConnection();
                     conn.setConnectTimeout(LOCATION_DOWNLOAD_TIMEOUT);
                     conn.setReadTimeout(LOCATION_DOWNLOAD_TIMEOUT);
-                    is = new DataInputStream(new BufferedInputStream(conn.getInputStream()));
-                    while((result = is.readLine()) != null) {
-                        return targetUrlPrefix + result; // First line is the one we want.
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    while ((result = br.readLine()) != null) {
+                        return targetUrlPrefix + result; // we really just want the first line
                     }
                 } catch(Exception ex) {
                     Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);

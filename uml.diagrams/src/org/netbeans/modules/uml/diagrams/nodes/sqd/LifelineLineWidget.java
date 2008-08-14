@@ -59,6 +59,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
+import org.openide.util.NbBundle;
 
 
 
@@ -76,7 +77,8 @@ public class LifelineLineWidget extends CustomizableWidget implements DiagramNod
     private  boolean destroy;
     
     public LifelineLineWidget(Scene scene) {
-        super(scene,"lifelineline","Lifeline Line");
+        super(scene,"lifelineline", // NO18N
+              NbBundle.getMessage(LifelineLineWidget.class, "LBL_Lifeline_Line"));
         setCustomizableResourceTypes(new ResourceType[]{ResourceType.FOREGROUND});
         setMinimumSize(new Dimension(0,20));
         setLayout(new LifelineLineLayout());

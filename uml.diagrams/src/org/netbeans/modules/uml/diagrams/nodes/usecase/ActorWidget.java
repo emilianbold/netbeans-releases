@@ -153,6 +153,7 @@ public class ActorWidget extends UMLNodeWidget
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
+        super.propertyChange(event);
         if (!event.getSource().equals(actor))
         {
             return;

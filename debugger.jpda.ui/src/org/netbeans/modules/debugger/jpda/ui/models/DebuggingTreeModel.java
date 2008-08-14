@@ -184,8 +184,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         for (Object node : nodes) {
             if (node instanceof JPDAThread) {
                 JPDAThread t = (JPDAThread)node;
-                if ((filterSystem && isSystem(t) ||
-                        (filterRunning && !t.isSuspended() && t != debugger.getCurrentThread()))) {
+                watchState(t);
+                if (!t.isSuspended() && (filterSystem && isSystem(t) ||
+                        (filterRunning && t != debugger.getCurrentThread()))) {
                     if (list == null) {
                         list = new ArrayList(Arrays.asList(nodes));
                     }
@@ -411,7 +412,9 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
 
     
     private void fireThreadStateChanged (Object node) {
-        if (preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false)) {
+        if (preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false) ||
+            !preferences.getBoolean(SHOW_SYSTEM_THREADS, false)) {
+
             fireNodeChanged(ROOT);
         }
         List<ModelListener> ls;

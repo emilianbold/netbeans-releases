@@ -67,6 +67,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -91,6 +92,7 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         private ChangeSupport changeSupport;
         private ProjectWebServiceView view;
         private Node serviceNode,  clientNode;
+        private ChangeListener weakL;
 
         public WsNodeList(Project proj) {
             project = proj;
@@ -141,16 +143,18 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
 
         public void addNotify() {
             initView();
-            view.addChangeListener(this, ProjectWebServiceView.ViewType.SERVICE);
-            view.addChangeListener(this, ProjectWebServiceView.ViewType.CLIENT);
+            weakL = WeakListeners.change(this, view);
+            view.addChangeListener(weakL, ProjectWebServiceView.ViewType.SERVICE);
+            view.addChangeListener(weakL, ProjectWebServiceView.ViewType.CLIENT);
             view.addNotify();
         }
 
         public void removeNotify() {
             if (view != null) {
-                view.removeChangeListener(this, ProjectWebServiceView.ViewType.SERVICE);
-                view.removeChangeListener(this, ProjectWebServiceView.ViewType.CLIENT);
+                view.removeChangeListener(weakL, ProjectWebServiceView.ViewType.SERVICE);
+                view.removeChangeListener(weakL, ProjectWebServiceView.ViewType.CLIENT);
                 view.removeNotify();
+                weakL = null;
             }
         }
 

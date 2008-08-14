@@ -52,14 +52,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import java.util.Queue;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeEvent;
-import org.netbeans.editor.SettingsChangeListener;
-import org.netbeans.editor.SettingsUtil;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
 import org.openide.filesystems.FileObject;
-
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -81,60 +74,39 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion;
  * @author Vladimir Voskresensky
  * based on MDRFinder
  */
-public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
+public class CsmFinderImpl implements CsmFinder {
 
     private boolean caseSensitive = false;
     
     private FileObject fo;
     private CsmFile csmFile;
     
-    private Class kitClass;
+    private String mimeType;
 
     // ..........................................................................
     
-    public CsmFinderImpl(FileObject fo, Class kitClass){
-        this();
+    public CsmFinderImpl(FileObject fo, String mimeType){
         this.fo = fo;
-        this.kitClass = kitClass;
+        this.mimeType = mimeType;
         caseSensitive = getCaseSensitive();
-        Settings.addSettingsChangeListener(this);        
     }
         
-    public CsmFinderImpl(CsmFile csmFile, Class kitClass){
-        this();
+    public CsmFinderImpl(CsmFile csmFile, String mimeType){
         this.csmFile = csmFile;
-        this.kitClass = kitClass;
+        this.mimeType = mimeType;
         caseSensitive = getCaseSensitive();
-        Settings.addSettingsChangeListener(this);        
-    }
-    
-    public CsmFinderImpl(){
-        super();
     }
 
     public CsmFile getCsmFile() {
         return this.csmFile;
     }
     
-    public void settingsChange(SettingsChangeEvent evt) {
-        if (evt == null || kitClass != evt.getKitClass()) return;
-        
-        if (ExtSettingsNames.COMPLETION_CASE_SENSITIVE.equals((evt.getSettingName()))){
-            caseSensitive = getCaseSensitive();
-        }
-    }
-    
-    
     private boolean getCaseSensitive() {
-        return SettingsUtil.getBoolean(kitClass,
-            ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-            ExtSettingsDefaults.defaultCompletionCaseSensitive);
+        return CsmCompletionUtils.isCaseSensitive(mimeType);
     }
     
     private boolean getNaturalSort() {
-        return SettingsUtil.getBoolean(kitClass,
-            ExtSettingsNames.COMPLETION_NATURAL_SORT,
-            ExtSettingsDefaults.defaultCompletionNaturalSort);
+        return CsmCompletionUtils.isNaturalSort(mimeType);
     }
     
     private CsmNamespace resolveNamespace(String namespaceName, boolean caseSensitive) {
