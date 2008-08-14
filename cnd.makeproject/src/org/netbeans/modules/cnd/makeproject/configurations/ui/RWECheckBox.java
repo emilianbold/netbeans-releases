@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,42 +31,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
-package org.netbeans.modules.projectimport.eclipse;
-
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportAppRunParams;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportJavaVersion;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportMultipleRootsJavaProjectFromWS;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportProjectWithTransitiveDeps;
-import org.netbeans.modules.projectimport.eclipse.gui.ImporterMenu;
-import org.netbeans.modules.projectimport.eclipse.gui.ImporterWizard;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleJavaProjectFromWS;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleWebProjectFromWS;
+import java.awt.Dimension;
+import java.awt.Insets;
+import javax.swing.JCheckBox;
 
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author thp
  */
-public class ImporterTest {
+public class RWECheckBox extends JCheckBox {
+    private int val = 0;
 
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ImporterMenu.class).
-                addTest(ImporterWizard.class).
-		addTest(ImportSimpleJavaProjectFromWS.class).
-                addTest(ImportSimpleWebProjectFromWS.class).
-                addTest(ImportMultipleRootsJavaProjectFromWS.class).
-                addTest(ImportJavaVersion.class).
-                addTest(ImportProjectWithTransitiveDeps.class).
-                addTest(ImportAppRunParams.class).
-                enableModules(".*").clusters(".*").
-                gui(true).reuseUserDir(true));
+    @Override
+    public Insets getInsets() {
+        return new Insets(0, 0, 0, 0);
+    }
+    
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(16, 16);
+    }
+    
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(16, 16);
     }
 
+    public int getVal() {
+        if (isSelected())
+            return val;
+        else
+            return 0;
+    }
+
+    public void setVal(int val) {
+        this.val = val;
+    }
 }
