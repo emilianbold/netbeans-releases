@@ -46,8 +46,6 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerLogger;
-import org.netbeans.lib.profiler.marker.Marker;
-import org.netbeans.lib.profiler.marker.Mark;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
