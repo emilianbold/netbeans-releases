@@ -104,6 +104,7 @@ public class DataStoreWidget extends ActivityNodeWidget
         dataStoreLabel.setAlignment(UMLLabelWidget.Alignment.CENTER);
         dataStoreLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         dataStoreLabel.setLabel("<<datastore>>");   //NOI18N
+        dataStoreLabel.setForeground(null);
         mainView.addChild(dataStoreLabel);
         
         // stereotyep widget

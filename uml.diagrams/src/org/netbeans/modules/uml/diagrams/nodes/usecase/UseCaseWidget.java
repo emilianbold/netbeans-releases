@@ -163,6 +163,7 @@ public class UseCaseWidget extends UMLNodeWidget
                 NbBundle.getMessage(UseCaseWidget.class, "LBL_ExtensionPoints"), // NOI18N
                 getWidgetID() + "." + "extensionPoint", 
                 NbBundle.getMessage(UseCaseWidget.class, "LBL_ExtensionPoint_Label")); // NOI18N
+        extPtLabel.setForeground(null);
         extPtLabel.setAlignment(LabelWidget.Alignment.CENTER);
         extPtLabel.setBorder(BorderFactory.createEmptyBorder(5));
 

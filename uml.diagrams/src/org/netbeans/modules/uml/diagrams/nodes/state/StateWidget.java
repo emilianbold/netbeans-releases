@@ -162,6 +162,7 @@ public class StateWidget extends UMLNodeWidget
                 loc("LBL_Transitions"), getWidgetID() + "." + "transition", "Transition Label");
         transitionLabel.setAlignment(LabelWidget.Alignment.CENTER);
         transitionLabel.setBorder(BorderFactory.createEmptyBorder(5));
+        transitionLabel.setForeground(null);
         detailWidget.addChild(transitionLabel);
 
         updateDetails();
