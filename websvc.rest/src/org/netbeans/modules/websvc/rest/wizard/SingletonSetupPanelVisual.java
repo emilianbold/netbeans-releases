@@ -394,6 +394,7 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
 
         if (groups == null || groups.length < 1) {
             AbstractPanel.setErrorMessage(wizard, "MSG_NoJavaSourceRoots");
+            return false;
         } else if (className.length() == 0 || !Utilities.isJavaIdentifier(className)) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceClassName");
             return false;
