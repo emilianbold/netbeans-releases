@@ -75,10 +75,13 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private final static Object DLGLOCK = new Object();
     private Component parent;
     private final String host;
+    private final Encrypter crypter;
     
     private RemoteUserInfo(String host) {
         this.host = host;
-        this.passwd = decryptPassword(NbPreferences.forModule(RemoteUserInfo.class).get(REMOTE_USER_INFO + host, null));
+        this.crypter = new Encrypter(host);
+        String hostKey = encrypt(REMOTE_USER_INFO + host);
+        this.passwd = decrypt(NbPreferences.forModule(RemoteUserInfo.class).get(hostKey, null));
         setParentComponent(this);
     }
     /**
@@ -106,14 +109,12 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         return ui;
     }
 
-    private String encryptPassword(String pwd) {
-        // TODO encrypt
-        return pwd;
+    private String encrypt(String pwd) {
+        return crypter.encrypt(pwd);
     }
 
-    private String decryptPassword(String pwd) {
-        // TODO decrypt encrypt
-        return pwd;
+    private String decrypt(String pwd) {
+        return crypter.decrypt(pwd);
     }
     
     private void reset() {
@@ -133,10 +134,11 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
      */
     public void setPassword(String pwd, boolean rememberPassword) {
         this.passwd = pwd;
+        String hostKey = encrypt(REMOTE_USER_INFO + host);
         if (rememberPassword && pwd != null) {
-            NbPreferences.forModule(RemoteUserInfo.class).put(REMOTE_USER_INFO + host, encryptPassword(pwd));
+            NbPreferences.forModule(RemoteUserInfo.class).put(hostKey, encrypt(pwd));
         } else {
-            NbPreferences.forModule(RemoteUserInfo.class).remove(REMOTE_USER_INFO + host);
+            NbPreferences.forModule(RemoteUserInfo.class).remove(hostKey);
         }
     }
     
