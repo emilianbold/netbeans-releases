@@ -144,14 +144,6 @@ public class FirefoxBrowserUtils {
         return null;
     }
     
-    public static boolean isSupportedFirefox(HtmlBrowser.Factory browser) {
-        return isSupportedFirefox(browser, null, null);
-    }
-    
-    public static boolean isSupportedFirefox(HtmlBrowser.Factory browser, File defaultProfile) {
-        return isSupportedFirefox(browser, defaultProfile, null);
-    }
-    
     /**
      * Checks $firefox_install_dir/defaults/pref/firefox.js for version string from
      * <code>prefs("general.useragent.extra.firefox", "Firefox/*****");</code>, or 
@@ -161,9 +153,9 @@ public class FirefoxBrowserUtils {
      * @param browser
      * @param defaultProfile
      * @param actualVersion
-     * @return true if Firefox version is 2.*.*
+     * @return true if Firefox 2 is found
      */
-    public static boolean isSupportedFirefox(HtmlBrowser.Factory browser, File defaultProfile, StringBuffer actualVersion) {
+    public static boolean isFirefox2(HtmlBrowser.Factory browser, File defaultProfile, StringBuffer actualVersion) {
         String browserExecutable = getBrowserExecutable(browser);
         if (browserExecutable == null) {
             return isCompatibleFirefox(defaultProfile);

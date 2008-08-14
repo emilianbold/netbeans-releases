@@ -162,7 +162,7 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
+                    .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(debugURLLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
