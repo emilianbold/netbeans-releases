@@ -150,7 +150,6 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
         locationLabel.setLabelFor(locationComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(SingletonSetupPanelVisual.class, "LBL_SrcLocation")); // NOI18N
 
-        locationComboBox.setEnabled(false);
         locationComboBox.setMinimumSize(new java.awt.Dimension(4, 20));
         locationComboBox.setPreferredSize(new java.awt.Dimension(130, 23));
         locationComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -206,11 +205,11 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(locationLabel)
                     .add(projectLabel)
-                    .add(packageLabel)
                     .add(contentClassLabel)
                     .add(classLabel)
                     .add(uriLabel)
-                    .add(mediaTypeLabel))
+                    .add(mediaTypeLabel)
+                    .add(packageLabel))
                 .add(7, 7, 7)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
@@ -238,9 +237,9 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel implements Abs
                     .add(locationLabel)
                     .add(locationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(packageLabel)
-                    .add(packageComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(packageComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(packageLabel))
                 .add(9, 9, 9)
                 .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
