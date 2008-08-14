@@ -97,7 +97,7 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
                 NbBundle.getMessage(NbJSBreakpointConditionsPanel.class,
                         "ConditionsPanel.cbWhenHitCount.equals"), // NOI18N
                 NbBundle.getMessage(NbJSBreakpointConditionsPanel.class,
-                        "ConditionsPanel.cbWhenHitCount.greater"), // NOI18N
+                        "ConditionsPanel.cbWhenHitCount.greaterThanOrEquals"), // NOI18N
                 NbBundle.getMessage(NbJSBreakpointConditionsPanel.class,
                         "ConditionsPanel.cbWhenHitCount.multiple") // NOI18N
                 // NOI18N
@@ -285,8 +285,8 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
         tfHitCountFilter.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ACSN_HitCountTF")); // NOI18N
         tfHitCountFilter.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ACSD_TF_HitCount_Desc")); // NOI18N
 
-        cbHitStyle.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "equals to", "is greater than", "is multiple of" }));
-        cbHitStyle.setToolTipText(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "TTT_CB_CondtionsPanel_HitFilterStyle")); // NOI18N
+        cbHitStyle.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "equals to", "is greater than or equals to", "is multiple of" }));
+        cbHitStyle.setSelectedIndex(1);
         cbHitStyle.setEnabled(false);
         cbHitStyle.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -348,7 +348,7 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
 
     private void cbWhenHitCountActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cbWhenHitCountActionPerformed
         boolean isSelected = cbWhenHitCount.isSelected();
-//        cbHitStyle.setEnabled(isSelected);
+        cbHitStyle.setEnabled(isSelected);
         tfHitCountFilter.setEnabled(isSelected);
     }// GEN-LAST:event_cbWhenHitCountActionPerformed
 
