@@ -66,7 +66,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.MigrateAction;
-import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.plugins.PluginAction;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
@@ -212,30 +211,10 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         }
     }
     
-//    private static Lookup createLookup( Project project ) {
-//        DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
-//        // XXX Remove root folder after FindAction rewrite
-//        return Lookups.fixed(new Object[] {project, rootFolder});
-//    }
-    
-    
-    // Private innerclasses ----------------------------------------------------------------
-    
-    private static final String[] BREAKABLE_PROPERTIES = new String[] {
-        RailsProjectProperties.JAVAC_CLASSPATH,
-        RailsProjectProperties.RUN_CLASSPATH,
-        RailsProjectProperties.DEBUG_CLASSPATH,
-        RailsProjectProperties.RUN_TEST_CLASSPATH,
-        RailsProjectProperties.DEBUG_TEST_CLASSPATH,
-        RailsProjectProperties.JAVAC_TEST_CLASSPATH,
-    };
-    
-//    private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/ruby/railsprojects/ui/resources/brokenProjectBadge.gif", true);
-    
-    /** Filter node containin additional features for the Ruby physical
-     */
-    private final class RailsLogicalViewRootNode extends AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
-        
+    /** Filter node containin additional features for the Ruby physical. */
+    private final class RailsLogicalViewRootNode extends AbstractNode
+            implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
+
         private Set<FileObject> files;
         private Map<FileSystem, FileStatusListener> fileSystemListeners;
         private RequestProcessor.Task task;
