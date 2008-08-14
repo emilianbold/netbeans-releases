@@ -79,15 +79,14 @@ import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
-import org.netbeans.modules.uml.drawingarea.widgets.ContainerWithCompartments;
 
 /**
  *
  * @author Sheryl Su
  */
-public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidget,ContainerWithCompartments
+public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidget
 {
-
+    
     private State state;
     private Scene scene;
     private Widget bodyWidget;
@@ -263,8 +262,9 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
     private void updateSize()
     {
         setPreferredBounds(null);
-        setPreferredSize(null);      
-        setMinimumSize(getBounds().getSize());        
+        setPreferredSize(null);    
+        if (getBounds() != null)
+            setMinimumSize(getBounds().getSize());    
     }
     
     

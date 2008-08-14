@@ -117,11 +117,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final List<String> INHERITANCE_KEYWORDS =
             Arrays.asList(new String[] {"extends","implements"});//NOI18N
     private static final List<PHPTokenId[]> NONE_TOKENCHAINS = Arrays.asList(
-        new PHPTokenId[]{PHPTokenId.PHP_CLASS},
-        new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE},
-         new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE},
-         new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE}         
-        );
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS},
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE});
     private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_NEW},
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},

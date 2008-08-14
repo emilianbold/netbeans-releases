@@ -113,7 +113,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
      * This method should be invoked from subclass to init elements. Develpers can controll position of 
      * the Elements by seting index as a Integer value in the elements map. 
      */
-    protected void initElements(Map<PropertyEditorElement, Integer> elements) {
+    protected void initElements(LinkedHashMap<PropertyEditorElement, Integer> elements) {
         customEditor.init(elements);
     }
 

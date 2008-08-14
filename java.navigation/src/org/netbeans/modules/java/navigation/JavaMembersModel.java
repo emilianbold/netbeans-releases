@@ -149,8 +149,10 @@ public final class JavaMembersModel extends DefaultTreeModel {
                             List<Element> elementsList = new ArrayList<Element>(elementHandles.length);
 
                             for (ElementHandle elementHandle : elementHandles) {
-                                elementsList.add(elementHandle.resolve(
-                                        compilationController));
+                                final Element element = elementHandle.resolve(compilationController);
+                                if (element != null) {
+                                    elementsList.add(element);
+                                }
                             }
 
                             Element[] elements = elementsList.toArray(EMPTY_ELEMENTS_ARRAY);
