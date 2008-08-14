@@ -92,16 +92,18 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                 // source is probably broken and there is no AST
                 // let's generate empty Java stub with simple name equal to file name
                 FileObject fo = FileUtil.toFileObject(file);
-                String pkg = FileUtil.getRelativePath(rootFO, fo.getParent());
-                if (pkg != null) {
-                    pkg = pkg.replace('/', '.');
-                    StringBuilder sb = new StringBuilder();
-                    if (!pkg.equals("")) { // NOI18N
-                        sb.append("package " + pkg + ";"); // NOI18N
+                if (fo != null) {
+                    String pkg = FileUtil.getRelativePath(rootFO, fo.getParent());
+                    if (pkg != null) {
+                        pkg = pkg.replace('/', '.');
+                        StringBuilder sb = new StringBuilder();
+                        if (!pkg.equals("")) { // NOI18N
+                            sb.append("package " + pkg + ";"); // NOI18N
+                        }
+                        String name = fo.getName();
+                        sb.append("public class " + name + "{}"); // NOI18N
+                        result.add(file, pkg, name, sb.toString());
                     }
-                    String name = fo.getName();
-                    sb.append("public class " + name + "{}"); // NOI18N
-                    result.add(file, pkg, name, sb.toString());
                 }
             } else {                                
                 for (ClassNode classNode : classNodes) {
