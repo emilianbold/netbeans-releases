@@ -39,8 +39,10 @@
 package org.netbeans.modules.ruby.railsprojects.database;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
@@ -58,6 +60,20 @@ import org.openide.util.Parameters;
  * @author Erno Mononen
  */
 public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
+
+    private static final Logger LOGGER = Logger.getLogger(ConfigurableRailsAdapter.class.getName());
+    /**
+     * The default suffix for the development database name.
+     */
+    private static final String DEVELOPMENT_DB_SUFFIX = "_development"; //NOI18N
+    /**
+     * The default suffix for the production database name.
+     */
+    private static final String PRODUCTION_DB_SUFFIX = "_production"; //NOI18N
+    /**
+     * The default suffix for the test database name.
+     */
+    private static final String TEST_DB_SUFFIX = "_test"; //NOI18N
 
     private final RailsDatabaseConfiguration delegate;
     private final String userName;
@@ -86,6 +102,7 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
         this.database = database;
         this.jdbc = jdbc;
     }
+
 
     public String railsGenerationParam() {
         return delegate.railsGenerationParam();
@@ -161,6 +178,8 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
                     // for the javadb adapter
                     changeAttribute(doc, "username:", userName, "url:"); //NOI18N
                     changeAttribute(doc, "password:", password, "username:"); //NOI18N
+                    // see #138294
+                    handleTestAndProduction(doc);
                     SaveCookie sc = dobj.getCookie(SaveCookie.class);
                     if (sc != null) {
                         sc.save();
@@ -176,6 +195,94 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
                 Exceptions.printStackTrace(ioe);
             }
         }
+    }
+
+    /**
+     * Changes the test and production database configs to match that of the development
+     * database config. Basically just copies the development config and changes the database
+     * name.
+     * 
+     * @param databaseYml the document for database.yml that already contains correctly generated
+     * development database config and the default configs for test and production databases.
+     * 
+     * @throws javax.swing.text.BadLocationException
+     */
+    private void handleTestAndProduction(Document databaseYml) throws BadLocationException {
+        String text = getText(databaseYml);
+        int start = text.indexOf("development:\n"); //NOI18N
+        int end = text.indexOf("test:\n"); //NOI18N
+        if (end == -1) {
+            // log a warning and return. "test:" should be present, 
+            // if it is not, we will do more harm than good by trying to 
+            // modify the document further
+            LOGGER.warning("Could not find 'test:' in database.yml. Its content is: " + text);
+            return;
+        }
+
+        databaseYml.remove(end, databaseYml.getLength() - end);
+        String developmentConfig = databaseYml.getText(start, end - start);
+        
+        PlainDocument test = new PlainDocument();
+        String testConfig = developmentConfig.replace("development:\n", "test:\n");//NOI18N
+        // remove the comment that rails generates for the test database. removes
+        // it from the end so that it doesn't get added for the production database too,
+        // the comment will still be there for the test database.
+        int warningIndex = testConfig.lastIndexOf("# Warning: The database defined as \"test\" will be erased");//NOI18N
+        if (warningIndex != -1) {
+            testConfig = testConfig.substring(0, warningIndex);
+        }
+        test.insertString(0, testConfig, null);
+        changeDatabase(test, buildDatabaseName(databaseYml, TEST_DB_SUFFIX));
+        
+        PlainDocument production = new PlainDocument();
+        String productionConfig = testConfig.replace("test:\n", "production:\n");//NOI18N
+        production.insertString(0, productionConfig, null);
+        changeDatabase(production, buildDatabaseName(databaseYml, PRODUCTION_DB_SUFFIX));
+
+        databaseYml.insertString(databaseYml.getLength(), getText(test) + getText(production), null);
+    }
+
+    /**
+     * Changes the database name specified in the given document. If using JDBC, 
+     * changes the url instead.
+     * 
+     * @param doc
+     * @param databaseName the new name for the database.
+     * @throws javax.swing.text.BadLocationException
+     */
+    private void changeDatabase(Document doc, String databaseName) throws BadLocationException {
+        JdbcInfo jdbcInfo = getJdbcInfo();
+        if (!jdbc || jdbcInfo == null) {
+            changeAttribute(doc, "database:", databaseName, null); //NOI18N
+        } else {
+            changeAttribute(doc, "url:", jdbcInfo.getURL("localhost", databaseName), "adapter:"); //NOI18N
+        }
+    }
+
+    private String getText(Document doc) throws BadLocationException {
+        return doc.getText(0, doc.getLength());
+    }
+
+    /**
+     * Builds a new database name based on the existing name and the given suffix.
+     * 
+     * @param doc
+     * @param suffix
+     * @return
+     * @throws javax.swing.text.BadLocationException
+     */
+    private String buildDatabaseName(Document doc, String suffix) throws BadLocationException {
+        String develDb = !isEmpty(database) ? database : RailsAdapters.getPropertyValue(doc, "database:"); //NOI18N
+        if (develDb == null) {
+            return "";
+        }
+        int i = develDb.indexOf(DEVELOPMENT_DB_SUFFIX); //NOI18N
+        if (i == -1) {
+            return develDb + suffix;
+        } else if (i == 0) {
+            return suffix;
+        }
+        return develDb.substring(0, i) + suffix;
     }
 
     private void setDatabase(Document databaseYml) throws BadLocationException {
