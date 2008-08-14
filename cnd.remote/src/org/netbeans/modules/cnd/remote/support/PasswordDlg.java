@@ -75,7 +75,10 @@ public class PasswordDlg extends javax.swing.JPanel {
     String getPassword() {
         return String.valueOf(tfPassword.getPassword());
     }
-    
+
+    boolean isRememberPassword() {
+        return cbRememberPwd.isSelected();
+    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -89,6 +92,7 @@ public class PasswordDlg extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         tfHost = new javax.swing.JTextField();
+        cbRememberPwd = new javax.swing.JCheckBox();
 
         tfPassword.setText(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.tfPassword.text")); // NOI18N
         tfPassword.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -107,6 +111,8 @@ public class PasswordDlg extends javax.swing.JPanel {
         tfHost.setText(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.tfHost.text")); // NOI18N
         tfHost.setFocusable(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbRememberPwd, org.openide.util.NbBundle.getMessage(PasswordDlg.class, "PasswordDlg.cbRememberPwd.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -114,12 +120,15 @@ public class PasswordDlg extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel2)
-                    .add(jLabel1))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
-                    .add(tfPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE))
+                    .add(cbRememberPwd)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel2)
+                            .add(jLabel1))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(tfHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                            .add(tfPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -133,6 +142,8 @@ public class PasswordDlg extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(tfPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbRememberPwd)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -140,8 +151,12 @@ public class PasswordDlg extends javax.swing.JPanel {
 
         tfPassword.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "Pwd.Password_AN")); // NOI18N
         tfPassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "Pwd.Password_AD")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "AN_Password")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "DESC_Password")); // NOI18N
         tfHost.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "Pwd.Host_AN")); // NOI18N
         tfHost.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "Pwd.Host_AD")); // NOI18N
+        cbRememberPwd.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "AN_RememberPassword")); // NOI18N
+        cbRememberPwd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PasswordDlg.class, "DESC_RememberPassword")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void tfPasswordonPwdFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfPasswordonPwdFocus
@@ -150,6 +165,7 @@ public class PasswordDlg extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox cbRememberPwd;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField tfHost;

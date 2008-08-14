@@ -262,6 +262,9 @@ public class ThreadsListener extends DebuggerManagerAdapter {
                         debuggingView.refreshView(); // [TODO]
                     }
                 } else if (JPDAThread.PROP_SUSPENDED.equals(propName)) {
+                    if (!thread.isSuspended()) {
+                        removeBreakpointHit(thread);
+                    }
                     if (debugger == currentDebugger && debuggingView != null) {
                         debuggingView.refreshView(); // [TODO]
                     }
@@ -309,9 +312,6 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             threads.clear();
             currentThreadsHistory.clear();
             hits.clear();
-            if (lockerThreads != null) {
-                lockerThreads.clear();
-            }
             lockedThread = null;
             debugger.removePropertyChangeListener(this);
             debugger.getThreadsCollector().getDeadlockDetector().removePropertyChangeListener(this);

@@ -53,6 +53,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.tokens.InitiatorToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RecipientToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
 /**
@@ -61,12 +62,18 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
  */
 public class SenderVouches extends ProfileBaseForm {
 
-    /** 
+    private int suppTokenType = SecurityTokensModelHelper.SIGNED_ENCRYPTED;
+
+    /**
      * Creates new form SenderVouches
      */
     public SenderVouches(WSDLComponent comp, SecurityProfile secProfile) {
         super(comp, secProfile);
         initComponents();
+
+        if (ConfigVersion.CONFIG_1_0.equals(cfgVersion)) {
+            suppTokenType = SecurityTokensModelHelper.SIGNED_SUPPORTING;
+        }
 
         inSync = true;
         fillLayoutCombo(layoutCombo);
@@ -79,7 +86,7 @@ public class SenderVouches extends ProfileBaseForm {
     
     protected void sync() {
         inSync = true;
-
+        
         WSDLComponent secBinding = null;
         WSDLComponent bootPolicy = null;
         WSDLComponent topSecBinding = SecurityPolicyModelHelper.getSecurityBindingTypeElement(comp);
@@ -107,9 +114,9 @@ public class SenderVouches extends ProfileBaseForm {
         WSDLComponent tokenKind = null;
         if (secConv) {
             Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
-            tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, suppTokenType);
         } else {
-            tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, suppTokenType);
         }
         WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
         samlVersion = SecurityTokensModelHelper.getTokenProfileVersion(token);
@@ -192,11 +199,9 @@ public class SenderVouches extends ProfileBaseForm {
             WSDLComponent tokenKind = null;
             if (secConv){
                 Policy pp = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class,false);
-                tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, 
-                                                SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                tokenKind = SecurityTokensModelHelper.getSupportingToken(pp, suppTokenType);
             } else {
-                tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, 
-                                                SecurityTokensModelHelper.SIGNED_SUPPORTING);
+                tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, suppTokenType);
             }
             WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
             stmh.setTokenProfileVersion(token, (String) samlVersionCombo.getSelectedItem());

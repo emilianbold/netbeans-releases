@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.projectimport.eclipse.gui;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -109,7 +108,8 @@ public class ImportJavaVersion extends ProjectImporterTestCase {
             fail("No expected java version set");
         }
         propsDialog.close();
-    }
+    }    
+
     private void importProject(String projectName) {
         importWizard = invokeImporterWizard();
         selectProjectFromWS(importWizard,"testdata", projectName);

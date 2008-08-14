@@ -3,3 +3,4 @@ print $GL|;
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 VARIABLE   $GLOBALS                                   PHP Platform
+KEYWORD    return                                     null

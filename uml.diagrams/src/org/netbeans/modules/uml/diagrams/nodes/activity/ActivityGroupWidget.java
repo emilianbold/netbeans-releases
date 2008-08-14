@@ -110,6 +110,7 @@ public class ActivityGroupWidget extends ContainerNode //UMLNodeWidget
                 initContainedElements();           
         }
         setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
     }
 
     public  DefaultContextPaletteModel initializeContextPalette()
@@ -371,5 +372,53 @@ public class ActivityGroupWidget extends ContainerNode //UMLNodeWidget
                 saveChildren(child, nodeWriter);
             }
         }
+    }
+    
+    @Override
+    public void duplicate(boolean setBounds, Widget target)
+    {
+        assert target instanceof ActivityGroupWidget;     
+        assert target.getScene() instanceof DesignerScene;
+        
+        super.duplicate(setBounds, target);
+        DesignerScene targetScene = (DesignerScene)target.getScene();
+        List<Widget> children = new ArrayList<Widget>(((ActivityGroupWidget) target).getContainer().getChildren());
+        
+        for (Widget newChild: children)
+        {         
+            if (newChild instanceof UMLNodeWidget)
+            {
+                boolean found = false;
+
+                IPresentationElement pe = ((UMLNodeWidget)newChild).getObject();
+                if (pe != null)
+                {
+                    for (Widget c : getContainer().getChildren())
+                    {
+                        if (!(c instanceof UMLNodeWidget))
+                        {
+                            continue;
+                        }
+                        IPresentationElement origPE = ((UMLNodeWidget) c).getObject();
+                        if (pe.getFirstSubject() == origPE.getFirstSubject())
+                        {
+                            ((UMLNodeWidget) c).duplicate(setBounds, newChild);
+                            newChild.setPreferredLocation(c.getPreferredLocation());
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found)
+                {                 
+                    for (IPresentationElement edgePE : targetScene.findNodeEdges(pe, true, true))
+                    {
+                        targetScene.removeEdge(edgePE);
+                    }
+                    ((ActivityGroupWidget) target).getContainer().removeChild(newChild);
+                }
+            }
+        }
+        targetScene.validate();
     }
 }

@@ -456,6 +456,10 @@ public final class UI {
     return clipboard;
   }
   
+  public static boolean isDigit(char c) {
+    return "0123456789".indexOf(c) != -1; // NOI18N
+  }
+
   public static void startTimeln() {
     tim();
     startTime();

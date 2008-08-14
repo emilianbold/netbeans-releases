@@ -51,16 +51,16 @@ import org.netbeans.spi.lexer.TokenFactory;
  *
  * @author mmetelka
  */
-final class TestJoinSectionsTopLexer implements Lexer<TestJoinSectionsTopTokenId> {
+final class TestJoinTopLexer implements Lexer<TestJoinTopTokenId> {
 
     // Copy of LexerInput.EOF
     private static final int EOF = LexerInput.EOF;
 
     private final LexerInput input;
     
-    private final TokenFactory<TestJoinSectionsTopTokenId> tokenFactory;
+    private final TokenFactory<TestJoinTopTokenId> tokenFactory;
     
-    TestJoinSectionsTopLexer(LexerRestartInfo<TestJoinSectionsTopTokenId> info) {
+    TestJoinTopLexer(LexerRestartInfo<TestJoinTopTokenId> info) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
         assert (info.state() == null); // never set to non-null value in state()
@@ -70,33 +70,50 @@ final class TestJoinSectionsTopLexer implements Lexer<TestJoinSectionsTopTokenId
         return null; // always in default state after token recognition
     }
 
-    public Token<TestJoinSectionsTopTokenId> nextToken() {
+    public Token<TestJoinTopTokenId> nextToken() {
         int c = input.read();
         switch (c) {
             case '<':
                 if (input.readLength() > 1) {
                     input.backup(1);
-                    return token(TestJoinSectionsTopTokenId.TEXT);
+                    return token(TestJoinTopTokenId.TEXT);
                 }
                 while (true) {
                     switch ((c = input.read())) {
                         case '>':
+                            return token(TestJoinTopTokenId.TAG);
                         case EOF:
-                            return token(TestJoinSectionsTopTokenId.TAG);
+                            return token(TestJoinTopTokenId.TEXT);
                     }
                 }
                 // break;
 
-            case '(':
+            case '{':
                 if (input.readLength() > 1) {
                     input.backup(1);
-                    return token(TestJoinSectionsTopTokenId.TEXT);
+                    return token(TestJoinTopTokenId.TEXT);
                 }
                 while (true) {
                     switch ((c = input.read())) {
-                        case ')':
+                        case '}':
+                            return token(TestJoinTopTokenId.BRACES);
                         case EOF:
-                            return token(TestJoinSectionsTopTokenId.PARENS);
+                            return token(TestJoinTopTokenId.TEXT);
+                    }
+                }
+                // break;
+
+            case '"':
+                if (input.readLength() > 1) {
+                    input.backup(1);
+                    return token(TestJoinTopTokenId.TEXT);
+                }
+                while (true) {
+                    switch ((c = input.read())) {
+                        case '"':
+                            return token(TestJoinTopTokenId.BACKQUOTES);
+                        case EOF:
+                            return token(TestJoinTopTokenId.TEXT);
                     }
                 }
                 // break;
@@ -108,17 +125,18 @@ final class TestJoinSectionsTopLexer implements Lexer<TestJoinSectionsTopTokenId
                 while (true) {
                     switch ((c = input.read())) {
                         case '<':
-                        case '(':
+                        case '{':
+                        case '"':
                         case EOF:
                             input.backup(1);
-                            return token(TestJoinSectionsTopTokenId.TEXT);
+                            return token(TestJoinTopTokenId.TEXT);
                     }
                 }
                 // break;
         }
     }
         
-    private Token<TestJoinSectionsTopTokenId> token(TestJoinSectionsTopTokenId id) {
+    private Token<TestJoinTopTokenId> token(TestJoinTopTokenId id) {
         return tokenFactory.createToken(id);
     }
     

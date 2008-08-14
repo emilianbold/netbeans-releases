@@ -49,6 +49,10 @@ made subject to such option by the copyright holder.
 	<chmod file="${cluster}/bin/GdbHelper-Mac_OS_X-x86.dylib" perm="ugo+rx"/>
 	<chmod file="${cluster}/bin/GdbHelper-SunOS-x86.so" perm="ugo+rx"/>
 	<chmod file="${cluster}/bin/GdbHelper-SunOS-sparc.so" perm="ugo+rx"/>
+        <chmod file="${cluster}/bin/unbuffer-Linux-x86.so" perm="ugo+rx"/>
+	<chmod file="${cluster}/bin/unbuffer-Mac_OS_X-x86.dylib" perm="ugo+rx"/>
+	<chmod file="${cluster}/bin/unbuffer-SunOS-x86.so" perm="ugo+rx"/>
+	<chmod file="${cluster}/bin/unbuffer-SunOS-sparc.so" perm="ugo+rx"/>
     </target>
 
     <target name="netbeans-extra">

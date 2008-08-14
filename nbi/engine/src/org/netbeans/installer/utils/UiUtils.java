@@ -42,6 +42,7 @@ import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
 import javax.swing.JFileChooser;
@@ -374,6 +375,15 @@ public final class UiUtils {
         } finally {
             LogManager.unindent();
             LogManager.log("... initializing L&F finished");
+            if (Boolean.getBoolean("nbi.look.and.feel.dump.defaults")) {
+                LogManager.logIndent("... dumping UIManger L&F defaults: ");
+                Hashtable hash = UIManager.getLookAndFeelDefaults();
+                for (Object obj : hash.keySet()) {
+                    LogManager.log("" + obj + " = " + hash.get(obj));
+                }
+                LogManager.unindent();
+            }
+            
             lookAndFeelInitialized = true;
             lookAndFeelType = getLAF();
         }
