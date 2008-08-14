@@ -114,6 +114,7 @@ public class WidgetMoveActionMenu
                     target -= 1;
                 parentWidget.addChild(target, widget);
                 widget.getScene().validate();
+                ((DesignerScene)widget.getScene()).getEngine().getTopComponent().setDiagramDirty(true);
             }
         }
     }
@@ -172,6 +173,7 @@ public class WidgetMoveActionMenu
                     i -= 1;
                 parentWidget.addChild(i, swap);
                 widget.getScene().validate();
+                ((DesignerScene)widget.getScene()).getEngine().getTopComponent().setDiagramDirty(true);
             }
         }
     }
@@ -198,6 +200,7 @@ public class WidgetMoveActionMenu
                 parent.removeChild(widget);
                 parent.addChild(widget);
                 widget.getScene().validate();
+                ((DesignerScene)widget.getScene()).getEngine().getTopComponent().setDiagramDirty(true);
             }
         }
     }
@@ -224,6 +227,7 @@ public class WidgetMoveActionMenu
                 parent.removeChild(widget);
                 parent.addChild(0, widget);
                 widget.getScene().validate();
+                ((DesignerScene)widget.getScene()).getEngine().getTopComponent().setDiagramDirty(true);
             }
         }
     }
