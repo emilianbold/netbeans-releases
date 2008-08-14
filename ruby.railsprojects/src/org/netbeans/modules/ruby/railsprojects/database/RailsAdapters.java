@@ -57,6 +57,19 @@ import org.openide.util.Parameters;
  */
 final class RailsAdapters {
 
+    /**
+     * The default suffix for the development database name.
+     */
+    static final String DEVELOPMENT_DB_SUFFIX = "_development"; //NOI18N
+    /**
+     * The default suffix for the production database name.
+     */
+    private static final String PRODUCTION_DB_SUFFIX = "_production"; //NOI18N
+    /**
+     * The default suffix for the test database name.
+     */
+    private static final String TEST_DB_SUFFIX = "_test"; //NOI18N
+
     private RailsAdapters() {
     }
 
@@ -198,4 +211,35 @@ final class RailsAdapters {
         }
         return indent;
     }
+
+
+    static String getTestDatabaseName(String develDb) {
+        return buildDatabaseName(develDb, TEST_DB_SUFFIX);
+    }
+
+    static String getProductionDatabaseName(String develDb) {
+        return buildDatabaseName(develDb, PRODUCTION_DB_SUFFIX);
+    }
+
+    /**
+     * Builds a new database name based on the existing name and the given suffix.
+     *
+     * @param doc
+     * @param suffix
+     * @return
+     * @throws javax.swing.text.BadLocationException
+     */
+    private static String buildDatabaseName(String develDb, String suffix) {
+        if (develDb == null) {
+            return "";
+        }
+        int i = develDb.indexOf(DEVELOPMENT_DB_SUFFIX); //NOI18N
+        if (i == -1) {
+            return develDb + suffix;
+        } else if (i == 0) {
+            return suffix;
+        }
+        return develDb.substring(0, i) + suffix;
+    }
+
 }

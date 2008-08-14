@@ -62,19 +62,6 @@ import org.openide.util.Parameters;
 public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger(ConfigurableRailsAdapter.class.getName());
-    /**
-     * The default suffix for the development database name.
-     */
-    private static final String DEVELOPMENT_DB_SUFFIX = "_development"; //NOI18N
-    /**
-     * The default suffix for the production database name.
-     */
-    private static final String PRODUCTION_DB_SUFFIX = "_production"; //NOI18N
-    /**
-     * The default suffix for the test database name.
-     */
-    private static final String TEST_DB_SUFFIX = "_test"; //NOI18N
-
     private final RailsDatabaseConfiguration delegate;
     private final String userName;
     private final String password;
@@ -221,6 +208,7 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
 
         databaseYml.remove(end, databaseYml.getLength() - end);
         String developmentConfig = databaseYml.getText(start, end - start);
+        String developmentDbName = !isEmpty(database) ? database : RailsAdapters.getPropertyValue(databaseYml, "database:"); //NOI18N
         
         PlainDocument test = new PlainDocument();
         String testConfig = developmentConfig.replace("development:\n", "test:\n");//NOI18N
@@ -232,12 +220,12 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
             testConfig = testConfig.substring(0, warningIndex);
         }
         test.insertString(0, testConfig, null);
-        changeDatabase(test, buildDatabaseName(databaseYml, TEST_DB_SUFFIX));
+        changeDatabase(test, getTestDatabaseName(developmentDbName));
         
         PlainDocument production = new PlainDocument();
         String productionConfig = testConfig.replace("test:\n", "production:\n");//NOI18N
         production.insertString(0, productionConfig, null);
-        changeDatabase(production, buildDatabaseName(databaseYml, PRODUCTION_DB_SUFFIX));
+        changeDatabase(production, getProductionDatabaseName(developmentDbName));
 
         databaseYml.insertString(databaseYml.getLength(), getText(test) + getText(production), null);
     }
@@ -261,28 +249,6 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
 
     private String getText(Document doc) throws BadLocationException {
         return doc.getText(0, doc.getLength());
-    }
-
-    /**
-     * Builds a new database name based on the existing name and the given suffix.
-     * 
-     * @param doc
-     * @param suffix
-     * @return
-     * @throws javax.swing.text.BadLocationException
-     */
-    private String buildDatabaseName(Document doc, String suffix) throws BadLocationException {
-        String develDb = !isEmpty(database) ? database : RailsAdapters.getPropertyValue(doc, "database:"); //NOI18N
-        if (develDb == null) {
-            return "";
-        }
-        int i = develDb.indexOf(DEVELOPMENT_DB_SUFFIX); //NOI18N
-        if (i == -1) {
-            return develDb + suffix;
-        } else if (i == 0) {
-            return suffix;
-        }
-        return develDb.substring(0, i) + suffix;
     }
 
     private void setDatabase(Document databaseYml) throws BadLocationException {
@@ -317,5 +283,13 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
 
     public String getDatabaseName(String projectName) {
         return delegate.getDatabaseName(projectName);
+    }
+
+    public String getTestDatabaseName(String developmentDbName) {
+        return delegate.getTestDatabaseName(developmentDbName);
+    }
+
+    public String getProductionDatabaseName(String developmentDbName) {
+        return delegate.getProductionDatabaseName(developmentDbName);
     }
 }
