@@ -248,7 +248,7 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         }
     }
 
-    protected IPresentationElement getObject()
+    public IPresentationElement getObject()
     {
         return (IPresentationElement) scene.findObject(this);
     }

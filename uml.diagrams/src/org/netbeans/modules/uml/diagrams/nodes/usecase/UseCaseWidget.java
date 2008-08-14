@@ -118,6 +118,7 @@ public class UseCaseWidget extends UMLNodeWidget
             setCurrentView(currentView);
             setFont(getCurrentView().getFont());
         }
+        super.initializeNode(presentation);
     }
 
     private void initUseCaseWidget()
