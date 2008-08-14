@@ -61,8 +61,7 @@ import org.openide.util.Exceptions;
  *
  * @author schmidtm
  */
-public class NewGrailsProjectWizardIterator implements WizardDescriptor.InstantiatingIterator,
-        WizardDescriptor.ProgressInstantiatingIterator {
+public class NewGrailsProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private static final Logger LOGGER = Logger.getLogger(NewGrailsProjectWizardIterator.class.getName());
     private transient int index;
