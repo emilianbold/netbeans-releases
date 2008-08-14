@@ -141,7 +141,8 @@ public class FSCompletion implements CompletionProvider {
                             
                             relativeTo.add(parameter.getFileObject().getParent());
                             
-                            resultSet.addAllItems(computeRelativeItems(relativeTo, prefix, startOffset, new PHPIncludesFilter()));
+                            resultSet.addAllItems(computeRelativeItems(relativeTo, prefix,
+                                    startOffset, new PHPIncludesFilter(parameter.getFileObject())));
                         }
                 }, true);
                 } catch (IOException e) {
@@ -204,8 +205,17 @@ public class FSCompletion implements CompletionProvider {
     }
     
     private static class PHPIncludesFilter implements FileObjectFilter {
+        private FileObject currentFile;
+
+        public PHPIncludesFilter(FileObject currentFile) {
+            this.currentFile = currentFile;
+        }
 
         public boolean accept(FileObject file) {
+            if (file.equals(currentFile)){
+                return false; //do not include self in the cc result
+            }
+
             if (file.isFolder()) {
                 return true;
             }
