@@ -4,8 +4,8 @@
     <folder name="Loaders">
         <folder name="application">
             <folder name="x-gsp">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/gsp/resources/gsp16.png"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/gsp/resources/gsp16.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/gsp/resources/GspFile16x16.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/gsp/resources/GspFile16x16.png"/>
                 <folder name="Factories">
                     <file name="org-netbeans-modules-groovy-gsp-loaders-GspDataLoader.instance">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
