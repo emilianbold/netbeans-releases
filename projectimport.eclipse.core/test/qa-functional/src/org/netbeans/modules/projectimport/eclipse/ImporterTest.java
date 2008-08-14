@@ -41,6 +41,7 @@ package org.netbeans.modules.projectimport.eclipse;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.projectimport.eclipse.gui.ImportAppRunParams;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportJavaVersion;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportMultipleRootsJavaProjectFromWS;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportProjectWithTransitiveDeps;
@@ -63,6 +64,7 @@ public class ImporterTest {
                 addTest(ImportMultipleRootsJavaProjectFromWS.class).
                 addTest(ImportJavaVersion.class).
                 addTest(ImportProjectWithTransitiveDeps.class).
+                addTest(ImportAppRunParams.class).
                 enableModules(".*").clusters(".*").
                 gui(true).reuseUserDir(true));
     }

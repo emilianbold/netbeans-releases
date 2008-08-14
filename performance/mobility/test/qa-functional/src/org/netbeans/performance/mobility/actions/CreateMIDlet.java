@@ -116,7 +116,7 @@ public class CreateMIDlet extends PerformanceTestCase {
 
     @Override
     protected void shutdown() {
-        ProjectSupport.closeProject(testProjectName);
+        //ProjectSupport.closeProject(testProjectName);
     }
 
 //    public static void main(java.lang.String[] args) {

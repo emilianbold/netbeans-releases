@@ -301,6 +301,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String type = atts.getValue(TYPE_ATTR); // NOI18N
             String to = atts.getValue(TO_ATTR); // NOI18N
             String from = atts.getValue(FROM_ATTR); // NOI18N
+            from = getString(adjustOffset(from));
             String perm = atts.getValue(PERM_ATTR); // NOI18N
             String owner = atts.getValue(OWNER_ATTR); // NOI18N
             String group = atts.getValue(GROUP_ATTR); // NOI18N

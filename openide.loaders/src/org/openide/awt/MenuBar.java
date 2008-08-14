@@ -66,6 +66,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -139,7 +140,13 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }
         DataFolder theFolder = folder;
         if (theFolder == null) {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Menu");
+            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+            FileObject fo = null;
+            try {
+                fo = FileUtil.createFolder(root, "Menu"); // NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             if (fo == null) throw new IllegalStateException("No Menu/"); // NOI18N
             theFolder = DataFolder.findFolder(fo);
         }

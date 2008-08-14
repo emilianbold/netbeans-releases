@@ -162,7 +162,7 @@ public class CompilerSetManager {
             }
         }
         
-        if (csm.state == STATE_UNINITIALIZED && !SwingUtilities.isEventDispatchThread()) {
+        if (csm.isUninitialized() && !SwingUtilities.isEventDispatchThread()) {
             log.fine("CSM.getDefault: Doing deferred remote setup");
             csm.sets.clear();
             csm.initRemoteCompilerSets(key);

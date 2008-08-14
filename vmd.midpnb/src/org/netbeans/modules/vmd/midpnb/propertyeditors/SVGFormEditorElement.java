@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -105,7 +106,8 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private final AtomicBoolean requiresModelUpdate = new AtomicBoolean(false);
     private DesignComponentWrapper wrapper;
     private PropertyEditorMessageAwareness messageAwareness;
-
+    private WeakReference<DesignDocument> documentReferences;
+    
     public SVGFormEditorElement() {
         paths = new HashMap<String, FileObject>();
         comboBoxModel = new DefaultComboBoxModel();
@@ -135,10 +137,13 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
 
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         this.wrapper = wrapper;
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            project = ProjectUtils.getProject(document);
+        
+        if (documentReferences == null || documentReferences.get() == null) {
+            return;
         }
+        final DesignDocument document = documentReferences.get();
+        project = ProjectUtils.getProject(document);
+        
 
         if (wrapper == null) {
             // UI stuff
@@ -439,11 +444,17 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     public void run() {
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            updateModel(document);
+        
+        if (documentReferences == null || documentReferences.get() == null) {
+            return;
         }
-
+        
+        final DesignDocument document = documentReferences.get();
+        
+        project = ProjectUtils.getProject(document);
+        
+        updateModel(document);
+        
         showProgressBar(false);
         setDesignComponentWrapper(wrapper);
         requiresModelUpdate.set(false);
@@ -510,6 +521,12 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         }
     }
 
+    @Override
+    public void setDesignDocument(DesignDocument document) {
+        documentReferences = new WeakReference<DesignDocument>(document);
+        super.setDesignDocument(document);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

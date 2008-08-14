@@ -91,7 +91,6 @@ final class VisualizerChildren extends Object {
      * @return true if there is non-null object inside
      */
     private final boolean recomputeIndexes(VisualizerNode tn) {
-        assert tn == null || this.parent == tn.getParent() : "tn must be our child!"; // NOI18N
 
         boolean isNonNull = false;
         for (int i = 0; i < visNodes.size(); i++) {
