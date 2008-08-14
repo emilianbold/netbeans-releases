@@ -49,24 +49,20 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 /**
@@ -140,6 +136,9 @@ public class CallEjbCodeGenerator implements CodeGenerator {
         }
         J2eeModuleProvider j2eeModuleProvider = project.getLookup ().lookup (J2eeModuleProvider.class);
         if (j2eeModuleProvider != null) {
+            if (project.getLookup().lookup(EnterpriseReferenceContainer.class) == null) {
+                return false;
+            }
             String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
             if (serverInstanceId == null) {
                 return true;
