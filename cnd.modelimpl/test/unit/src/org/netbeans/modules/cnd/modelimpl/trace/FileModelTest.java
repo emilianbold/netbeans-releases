@@ -433,6 +433,10 @@ public class FileModelTest extends TraceModelTestBase {
             super(testName);
         }
 
+        public void testTemplateSpecializationInheritance_1() throws Exception {
+            performTest("template_spec_inherited_1.cc"); // NOI18N
+        }
+
 	@Override
 	protected void setUp() throws Exception {
 	    System.setProperty("parser.report.errors", "true");
