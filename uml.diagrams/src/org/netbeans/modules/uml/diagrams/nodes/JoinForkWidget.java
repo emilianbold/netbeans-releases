@@ -125,6 +125,7 @@ public class JoinForkWidget extends UMLLabelNodeWidget
             mainView.setOpaque(true);
             setCurrentView(mainView);
         }
+        super.initializeNode(presentation);
     }
     
     public void rotate()

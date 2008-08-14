@@ -160,7 +160,7 @@ public final class ModuleSelector extends BaseExtendSelector {
         return Boolean.TRUE;
     }
     // Copied from apisupport.project.ui.customizer.SingleModuleProperties:
-    private static boolean clusterMatch(Collection<String> enabledClusters, String clusterName) { // #73706
+    static boolean clusterMatch(Collection<String> enabledClusters, String clusterName) { // #73706
         String baseName = clusterBaseName(clusterName);
         for (String c : enabledClusters) {
             if (clusterBaseName(c).equals(baseName)) {
@@ -169,7 +169,7 @@ public final class ModuleSelector extends BaseExtendSelector {
         }
         return false;
     }
-    private static String clusterBaseName(String clusterName) {
+    static String clusterBaseName(String clusterName) {
         return clusterName.replaceFirst("[0-9.]+$", ""); // NOI18N
     }
 

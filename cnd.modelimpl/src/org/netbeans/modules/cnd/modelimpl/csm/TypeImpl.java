@@ -156,6 +156,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         return !instantiationParams.isEmpty();
     }
 
+    /** Though it returns the same for now, it's better if its name differs */
+    protected boolean isInstantiationOrSpecialization() {
+        return !instantiationParams.isEmpty();
+    }
+
     public boolean isTemplateBased() {
         CsmClassifier classifier = getClassifier();
         if (CsmKindUtilities.isTypedef(classifier)) {
@@ -314,9 +319,33 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     protected CsmClassifier renderClassifier(CharSequence[] qname, Resolver parent) {
         CsmClassifier result = null;
         Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
-        CsmObject o = resolver.resolve(qname, Resolver.CLASSIFIER);
-        if( CsmKindUtilities.isClassifier(o) ) {
-            result = (CsmClassifier) o;
+        if (isInstantiationOrSpecialization()) {
+            CharSequence[] specializationQname = new CharSequence[qname.length];
+            int last = qname.length - 1;
+            StringBuilder sb = new StringBuilder(qname[last]);
+            sb.append('<');
+            for (int i = 0; i < instantiationParams.size(); i++) {
+                CsmType type = instantiationParams.get(i);
+                if (i > 0) {
+                    sb.append(',');
+                }
+                sb.append(type.getCanonicalText());
+            }
+            sb.append('>');
+            specializationQname[last] = sb.toString();
+            for (int i = 0; i < last; i++) {
+                specializationQname[i] = qname[i];
+            }
+            CsmObject o = resolver.resolve(specializationQname, Resolver.CLASSIFIER);
+            if( CsmKindUtilities.isClassifier(o) ) {
+                result = (CsmClassifier) o;
+            }
+        }
+        if (result == null) {
+            CsmObject o = resolver.resolve(qname, Resolver.CLASSIFIER);
+            if( CsmKindUtilities.isClassifier(o) ) {
+                result = (CsmClassifier) o;
+            }
         }
         if( result == null ) {
             result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(qname, getContainingFile(), getStartOffset());

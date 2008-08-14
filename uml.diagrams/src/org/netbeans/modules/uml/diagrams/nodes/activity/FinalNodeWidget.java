@@ -64,6 +64,7 @@ public class FinalNodeWidget extends ControlNodeWidget
                     DEFAULT_OUTER_RADIUS, getResourcePath(), bundle.getString("LBL_body"));
             setCurrentView(widget);
         }
+        super.initializeNode(presentation);
     }
     
     public String getWidgetID()
