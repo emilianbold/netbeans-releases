@@ -200,14 +200,21 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         try {
             // find last separator position
-            final int lastSepOffset = sup.getLastCommandSeparator(offset);
-            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset);
+            int lastSepatorOffset = sup.getLastSeparatorOffset();
+            final int lastSepOffset;
+            if (lastSepatorOffset >=0 && lastSepatorOffset < offset){
+                lastSepOffset = lastSepatorOffset;
+            } else {
+                lastSepOffset = sup.getLastCommandSeparator(offset);
+            }
+            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, sup.getLastSeparatorOffset());
             tp.setJava15(true);
             doc.runAtomic(new Runnable() {
                 public void run() {
                     CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
                 }
             });
+            sup.setLastSeparatorOffset(tp.getLastSeparatorOffset());
 //            boolean cont = true;
 //            while (cont) {
 //                sup.tokenizeText(tp, ((lastSepOffset < offset) ? lastSepOffset + 1 : offset), offset, true);
