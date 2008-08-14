@@ -48,6 +48,7 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.NbModuleSuite;
@@ -104,21 +105,10 @@ public class CreateCompositeApplication extends PerformanceTestCase {
     }
     
     public void prepare(){
-        NewProjectWizardOperator wizard; 
-        for(int attempt = 1; ; attempt++) {
-            log("Attempt " + attempt + " to open New Project Wizard");
-            new EventTool().waitNoEvent(3000);
-            try {
-                wizard = NewProjectWizardOperator.invoke();
-                break;
-            } catch (Exception exc) {
-                if (attempt < 5) {
-                    log("Attempt failed with exception: " + exc);
-                    continue;
-                }
-                throw new Error(exc);
-            }
-        }   
+        // Workaround for issue 143497
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
+        NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
@@ -154,6 +144,7 @@ public class CreateCompositeApplication extends PerformanceTestCase {
             .addTest("measureTime")
             .enableModules(".*")
             .clusters(".*")
+            .reuseUserDir(true)
         );    
     }
 }
