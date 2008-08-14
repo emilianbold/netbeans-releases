@@ -55,8 +55,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -65,7 +66,6 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -101,9 +101,11 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     public static final int TABLE_DATA_WIDTH_SQL = 125;
     public static final Logger LOGGER = Logger.getLogger(SQLHistoryPanel.class.getName());
     private static Object[][] data;
+    private List<String> currentUrlList;
     private Object[] comboData;
     private SQLHistoryView view;
     private JEditorPane editorPane;
+    private String currentUrl;
 
     /** Creates new form SQLHistoryPanel */
     public SQLHistoryPanel(final JEditorPane editorPane) {
@@ -114,14 +116,15 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             }
         });
         task.run();
-        initSQLHistoryTableData(view);
+        initSQLHistoryTableData();
         initComponents();
-        connectionComboBox.addActionListener((HistoryTableModel) sqlHistoryTable.getModel());
+        connectionUrlComboBox.addActionListener((HistoryTableModel) sqlHistoryTable.getModel());
         searchTextField.getDocument().addDocumentListener((HistoryTableModel) sqlHistoryTable.getModel());
         sqlHistoryTable.getColumnModel().getColumn(0).setHeaderValue(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_SQLTableTitle"));
         sqlHistoryTable.getColumnModel().getColumn(1).setHeaderValue(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_DateTableTitle"));
-        // Initialize data for the Connection combo box  
-        this.view.updateUrl();
+        // Initialize data for the Url combo box
+        currentUrlList = new ArrayList<String>();
+        initConnectionUrlComboBox();
         // SQL statments save limit
         inputWarningLabel.setVisible(false);
         String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""); // NOI18N
@@ -146,7 +149,23 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         });
     }
 
-    private void initSQLHistoryTableData(SQLHistoryView localSQLView) {
+    private void initConnectionUrlComboBox() {
+        // Initialize sql column data
+        List<String> urlList = view.getUrlList();
+        String defaultUrlItem = NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem");
+        urlList.add(defaultUrlItem);
+        comboData = new Object[urlList.size()];
+        int row = 0;    
+        for (String url : urlList) {
+            comboData[row] = url;
+            row++;
+        }
+        // set the current url
+        currentUrl = defaultUrlItem;
+        connectionUrlComboBox.setSelectedItem(defaultUrlItem);
+    }
+    
+    private void initSQLHistoryTableData() {
             // Initialize sql column data          
             List<String> sqlList = view.getSQLList();
             List<String> dateList = view.getDateList();
@@ -178,7 +197,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        connectionComboBox = new javax.swing.JComboBox();
+        connectionUrlComboBox = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         searchTextField = new javax.swing.JTextField();
         insertSQLButton = new javax.swing.JButton();
@@ -201,7 +220,8 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Connection")); // NOI18N
 
-        connectionComboBox.setRenderer(new ConnectionRenderer());
+        connectionUrlComboBox.setModel(new UrlComboBoxModel());
+        connectionUrlComboBox.setRenderer(new ConnectionUrlRenderer());
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Match")); // NOI18N
 
@@ -253,7 +273,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                             .add(layout.createSequentialGroup()
                                 .add(jLabel1)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(connectionComboBox, 0, 208, Short.MAX_VALUE)
+                                .add(connectionUrlComboBox, 0, 208, Short.MAX_VALUE)
                                 .add(18, 18, 18)
                                 .add(jLabel2)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -279,7 +299,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                     .add(jLabel1)
                     .add(searchTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel2)
-                    .add(connectionComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(connectionUrlComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(insertSQLButton)
@@ -294,8 +314,8 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        connectionComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ASCN_ConnectionCombo")); // NOI18N
-        connectionComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSD_ConnectionCombo")); // NOI18N
+        connectionUrlComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ASCN_ConnectionCombo")); // NOI18N
+        connectionUrlComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSD_ConnectionCombo")); // NOI18N
         searchTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSN_Match")); // NOI18N
         searchTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSD_Match")); // NOI18N
         insertSQLButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSN_Insert")); // NOI18N
@@ -336,13 +356,13 @@ private void verifySQLLimit() {
     int iLimit = 0;
     SQLHistoryPersistenceManager sqlPersistanceManager = SQLHistoryPersistenceManager.getInstance();
     inputWarningLabel.setVisible(false);
-    if (limit.equals(SAVE_STATEMENTS_CLEARED)) { // NOI18N
+    if (limit.equals(SAVE_STATEMENTS_CLEARED)) { 
         iLimit = SAVE_STATEMENTS_MAX_LIMIT;
         view.setSQLHistoryList(sqlPersistanceManager.updateSQLSaved(iLimit, Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER)));
         ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null);
         NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
         sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED);
-    } else {
+    } else { // user enters a value to limit the number of SQL statements to save
         try {
             iLimit = Integer.parseInt(limit);
             String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", SAVE_STATEMENTS_CLEARED); // NOI18N
@@ -354,12 +374,13 @@ private void verifySQLLimit() {
                 if (savedLimit != null) {
                     sqlLimitTextField.setText(savedLimit);
                 } else {
-                    sqlLimitTextField.setText(SAVE_STATEMENTS_CLEARED); // NOI18N
-                    sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); // NOI18N
+                    sqlLimitTextField.setText(SAVE_STATEMENTS_CLEARED); 
+                    sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); 
                 }
             } else {
                 SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER));
                 ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null);
+                view.updateConnectionUrl();
                 NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
             }
         } catch (NumberFormatException ne) {
@@ -370,13 +391,13 @@ private void verifySQLLimit() {
             if (savedLimit != null) {
                 sqlLimitTextField.setText(savedLimit);
             } else {
-                sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); // NOI18N
+                sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); 
             }
         }
     }
 }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox connectionComboBox;
+    private javax.swing.JComboBox connectionUrlComboBox;
     private javax.swing.JLabel inputWarningLabel;
     private javax.swing.JButton insertSQLButton;
     private javax.swing.JLabel jLabel1;
@@ -391,12 +412,18 @@ private void verifySQLLimit() {
     private class SQLHistoryView {
         private SQLHistoryModel model;
         List<SQLHistory> sqlHistoryList;
+        List<SQLHistory> currentSQLHistoryList;
         public static final String MATCH_EMPTY = ""; // NOI18N
         public static final String NO_MATCH = ""; // NOI18N
 
         public SQLHistoryView(SQLHistoryModel model) {
             this.model = model;
             this.sqlHistoryList = model.getSQLHistoryList();
+            this.currentSQLHistoryList = model.getSQLHistoryList();
+        }
+        
+        public void setCurrentSQLHistoryList(List<SQLHistory> sqlHistoryList) {
+            currentSQLHistoryList = sqlHistoryList;
         }
 
         public List<SQLHistory> getSQLHistoryList() {
@@ -455,7 +482,7 @@ private void verifySQLLimit() {
             buffer.append(targetChars, copyFrom, targetChars.length - copyFrom);
             return buffer.toString();
         }
-        
+             
         public List<String> getUrlList() {
             List<String> urlList = new ArrayList<String>();
             for (SQLHistory sqlHistory : sqlHistoryList) {
@@ -495,33 +522,44 @@ private void verifySQLLimit() {
             return dateList;
         }
 
-        public void updateUrl() {
+        public void updateConnectionUrl() {
             // Initialize combo box data
-            connectionComboBox.addItem(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem"));
-            List<String> urlList = getUrlList();
-            for (String url : urlList) {
-                Object item = new Object();
-                item = url;
-                connectionComboBox.addItem(item);
-            }
-        }
-
-        private List<SQLHistory> filterSQLHistoryList() {
-            List<SQLHistory> filteredSqlHistoryList = new ArrayList<SQLHistory>();
-            String match = searchTextField.getText();
-            String url = (String)connectionComboBox.getSelectedItem();
+            currentUrlList.clear();
             FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
             String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
-            List<SQLHistory> persistedSQLHistoryList = null;
             try {
-                persistedSQLHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
+                sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ClassNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            // Set default item in the combo box
+            String defaultSelectedItem = NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem");
+            currentUrlList.add(defaultSelectedItem);
+            connectionUrlComboBox.setSelectedItem(defaultSelectedItem);
+
+            for (SQLHistory sqlHistory : sqlHistoryList) {
+                if (!currentUrlList.contains(sqlHistory.getUrl())) {
+                    currentUrlList.add(sqlHistory.getUrl());
+                }
+            }
+            // Initialize combo data
+            comboData = null;
+            comboData = new Object[currentUrlList.size()];
+            int row = 0;
+            for (String url : currentUrlList) {
+                comboData[row++] = url;
+            }
+            connectionUrlComboBox.revalidate();
+        }
+
+        private List<SQLHistory> filterSQLHistoryList() {
+            List<SQLHistory> filteredSqlHistoryList = new ArrayList<SQLHistory>();
+            String match = searchTextField.getText();
+            String url = (String)connectionUrlComboBox.getSelectedItem();
             // modify list of SQL to reflect a selection from the Connection dropdown or if a match text entered
-            for (SQLHistory sqlHistory : persistedSQLHistoryList) {
+            for (SQLHistory sqlHistory : currentSQLHistoryList) {
                 if (sqlHistory.getUrl().equals(url) || url.equals(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ConnectionCombo"))) {
                     if (!match.equals(MATCH_EMPTY)) {
                         if (sqlHistory.getSql().toLowerCase().indexOf(match.toLowerCase()) != -1) {
@@ -532,42 +570,43 @@ private void verifySQLLimit() {
                     }
                 }
             }
+            currentSQLHistoryList = filteredSqlHistoryList;
             return filteredSqlHistoryList;
         }
     }
 
-//    private final class UrlComboBoxModel implements ComboBoxModel, ActionListener {
-//
-//        public void setSelectedItem(Object item) {
-//            connectionComboBox.setSelectedItem(item);
-//        }
-//
-//        public Object getSelectedItem() {
-//            return (String) connectionComboBox.getSelectedItem();
-//        }
-//
-//        public int getSize() {
-//            return comboData.length;
-//        }
-//
-//        public Object getElementAt(int index) {
-//            return comboData[index];
-//        }
-//
-//        public void addListDataListener(ListDataListener arg0) {
-//        }
-//
-//        public void removeListDataListener(ListDataListener arg0) {
-//        }
-//
-//        public void actionPerformed(ActionEvent arg0) {
-//        }
-//    }
+    private final class UrlComboBoxModel extends DefaultComboBoxModel implements ActionListener {
+
+        @Override
+        public void setSelectedItem(Object item) {
+            super.setSelectedItem(item);
+        }
+
+        @Override
+        public Object getSelectedItem() {
+            return super.getSelectedItem();
+        }
+
+        @Override
+        public int getSize() {
+            return comboData.length;
+        }
+
+        @Override
+        public Object getElementAt(int index) {
+            return comboData[index];
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            currentUrl = ((JComboBox) evt.getSource()).getSelectedItem().toString();
+        }
+    }
 
     private final class HistoryTableModel extends DefaultTableModel implements ActionListener, DocumentListener {
         List<String> sqlList;
         List<String> dateList;
             
+        @Override
         public int getRowCount() {
             if (sqlHistoryTable.getSelectedRow() == -1) {
                 insertSQLButton.setEnabled(false);
@@ -575,10 +614,12 @@ private void verifySQLLimit() {
             return data.length;
         }
 
+        @Override
         public int getColumnCount() {
             return 2;
         }
 
+        @Override
         public Class<?> getColumnClass(int c) {
             Object value = getValueAt(0, c);
             if (value == null) {
@@ -588,10 +629,12 @@ private void verifySQLLimit() {
             }
         }
 
+        @Override
         public boolean isCellEditable(int arg0, int arg1) {
             return false;
         }
 
+        @Override
         public Object getValueAt(int row, int col) {
             if (sqlHistoryTable.isRowSelected(row)) {
                 insertSQLButton.setEnabled(true);
@@ -599,15 +642,18 @@ private void verifySQLLimit() {
             return data[row][col];
         }
 
+        @Override
         public void setValueAt(Object value, int row, int col) {
             adjustColumnPreferredWidths(sqlHistoryTable);
             fireTableCellUpdated(row, col);
         }
 
+        @Override
         public void addTableModelListener(TableModelListener arg0) {
             // not used
         }
 
+        @Override
         public void removeTableModelListener(TableModelListener arg0) {
             // not used
         }
@@ -646,26 +692,27 @@ private void verifySQLLimit() {
         
         public void refreshTable(ActionEvent evt) {
             String url;
+            // Retrieve persisted data
             List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
-            if (evt != null) {
-                url = ((javax.swing.JComboBox) evt.getSource()).getSelectedItem().toString();
-                sqlHistoryList = view.getSQLHistoryList();
+            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
+            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
+            try {
+                sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
+                view.setCurrentSQLHistoryList(sqlHistoryList);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            // Get the connection url from the combo box
+            if (sqlHistoryList.size() > 0) {
+                url = connectionUrlComboBox.getSelectedItem().toString();
             } else {
-                url = connectionComboBox.getSelectedItem().toString();
-                FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
-                String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
-                try {
-                    sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ClassNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                url = NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem");
             }
             sqlList = new ArrayList<String>();
             dateList = new ArrayList<String>();
-            connectionComboBox.setToolTipText(url);
-            int i = 0;
+            connectionUrlComboBox.setToolTipText(url);
             int length;
             int maxLength;
             for (SQLHistory sqlHistory : sqlHistoryList) {
@@ -681,7 +728,6 @@ private void verifySQLLimit() {
                     dateList.add(DateFormat.getInstance().format(sqlHistory.getDate()));
                 }
             }
-
             // Initialize sql column data
             data = null;
             data = new Object[sqlList.size()][2];
@@ -863,13 +909,6 @@ private void verifySQLLimit() {
             }
 
             int start = insert(s, target, doc);
-//            // format the inserted text
-//            if (reformat && start >= 0 && doc instanceof BaseDocument) {  
-//                int end = start + s.length();
-//                Formatter f = ((BaseDocument) doc).getFormatter();
-//                f.reformat((BaseDocument) doc, start, end);
-//            }
-
             if (doc instanceof BaseDocument) {
                 ((BaseDocument) doc).atomicUnlock();
             }
@@ -917,8 +956,9 @@ private void verifySQLLimit() {
         }
     }
 
-    private static final class ConnectionRenderer extends DefaultListCellRenderer {
+    private static final class ConnectionUrlRenderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel component = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             component.setToolTipText((String) value);

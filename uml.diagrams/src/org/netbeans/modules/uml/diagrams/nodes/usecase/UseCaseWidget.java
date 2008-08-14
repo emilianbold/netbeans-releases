@@ -160,8 +160,9 @@ public class UseCaseWidget extends UMLNodeWidget
         detailWidget.setLayout(LayoutFactory.createVerticalFlowLayout());
         detailWidget.addChild(new ExtensionPointSeparator(scene));
         UMLLabelWidget extPtLabel = new UMLLabelWidget(scene,
-                NbBundle.getMessage(UseCaseWidget.class, "LBL_ExtensionPoints"),
-                getWidgetID() + "." + "extensionPoint", "Extension Point Label");
+                NbBundle.getMessage(UseCaseWidget.class, "LBL_ExtensionPoints"), // NOI18N
+                getWidgetID() + "." + "extensionPoint", 
+                NbBundle.getMessage(UseCaseWidget.class, "LBL_ExtensionPoint_Label")); // NOI18N
         extPtLabel.setAlignment(LabelWidget.Alignment.CENTER);
         extPtLabel.setBorder(BorderFactory.createEmptyBorder(5));
 
@@ -216,6 +217,7 @@ public class UseCaseWidget extends UMLNodeWidget
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
+        super.propertyChange(event);
         if (!event.getSource().equals(usecase))
         {
             return;

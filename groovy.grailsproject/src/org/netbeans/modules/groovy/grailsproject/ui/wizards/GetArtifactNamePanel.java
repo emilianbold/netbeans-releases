@@ -66,41 +66,41 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         String dirPrefix  = "";
         
         switch(cat){
-            case DOMAIN:
+            case GRAILSAPP_DOMAIN:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_DOMAIN")); // NOI18N
                 subDirName = "domain";
                 dirPrefix = "grails-app" + File.separatorChar;
                 break;
-            case CONTROLLERS:
+            case GRAILSAPP_CONTROLLERS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_CONTROLLERS")); // NOI18N
                 subDirName = "controllers";
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "Controller";
                 break;
-            case SERVICES:
+            case GRAILSAPP_SERVICES:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SERVICES")); // NOI18N
                 subDirName = "services";
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "Service";
                 break; 
-            case VIEWS:
+            case GRAILSAPP_VIEWS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_VIEWS")); // NOI18N
                 subDirName = "views";
                 dirPrefix = "grails-app" + File.separatorChar;
                 break;    
-            case TAGLIB:
+            case GRAILSAPP_TAGLIB:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
                 subDirName = "taglib";
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "TagLib";
                 break;    
-            case INTEGRATION_TESTS:
+            case TEST_INTEGRATION:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
                 subDirName = "integration";
                 dirPrefix = "test" + File.separatorChar;
                 suffix = "Tests";
                 break;
-            case UNIT_TESTS:
+            case TEST_UNIT:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
                 subDirName = "unit";
                 dirPrefix = "test" + File.separatorChar;

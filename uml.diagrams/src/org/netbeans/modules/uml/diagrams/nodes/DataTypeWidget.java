@@ -127,6 +127,7 @@ public class DataTypeWidget extends UMLNodeWidget implements PropertyChangeListe
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
+        super.propertyChange(event);
         nameWidget.propertyChange(event);
     }
  

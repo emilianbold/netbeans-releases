@@ -171,8 +171,10 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
         FileObject dd = wm.getDeploymentDescriptor();
         if (dd != null){
             FileObject[] configs = StrutsConfigUtilities.getConfigFilesFO(dd);
-            for (int i = 0; i < configs.length; i ++){
-                files.add(FileUtil.toFile(configs[i]));
+            if (configs != null) {
+                for (int i = 0; i < configs.length; i ++){
+                    files.add(FileUtil.toFile(configs[i]));
+                }
             }
             FileObject fo = webinf.getFileObject("tiles-defs.xml");  //NOI18N
             if (fo != null) files.add(FileUtil.toFile(fo));

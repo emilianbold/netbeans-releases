@@ -488,6 +488,9 @@ public class UMLDiagramManager
                                 //need to persist in some preference
                                 prefs.put ("UML_Convert_61_Diagram_To_65_Format", "PSK_ALWAYS");
                             }
+                            //after converting, set topcomponent dirty to save the diagram
+                            topComponent.setDiagramDirty(true);  
+                            
                         }
                         else
                         {

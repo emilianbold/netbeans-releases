@@ -80,7 +80,15 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
         return sourceWidget != null;
     }
 
-    public WidgetAction.State mousePressed (Widget widget, WidgetAction.WidgetMouseEvent event) {
+    public WidgetAction.State mousePressed (Widget widget, WidgetAction.WidgetMouseEvent event) 
+    {
+        if (isLocked ())
+            return WidgetAction.State.createLocked (widget, this);
+        return mousePressedCore (widget, event);
+    }
+    
+    protected State mousePressedCore (Widget widget, WidgetMouseEvent event)
+    {
         if (event.getButton () == MouseEvent.BUTTON1 && event.getClickCount () == 1) {
             if (provider.isSourceWidget (widget)) {
                 sourceWidget = widget;
@@ -99,7 +107,7 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
     public WidgetAction.State mouseReleased (Widget widget, WidgetAction.WidgetMouseEvent event) {
         Point point = event.getPoint ();
         boolean state = move (widget, point);
-        if (state) 
+        if ((state) && (event.getButton () == MouseEvent.BUTTON1))
         {
             if (targetWidget != null)
             {
@@ -123,6 +131,10 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
                 }
             }
             cancel ();
+        }
+        else
+        {
+            cancel();
         }
         return state ? State.CONSUMED : State.REJECTED;
     }

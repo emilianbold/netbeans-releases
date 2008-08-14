@@ -67,6 +67,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
@@ -84,8 +85,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
     private final RubyProject project;
     
-    private final JTextField[] data;
-    private final String[] keys;
+    private final JTextField[] configFields;
+    private final String[] configPropsKeys;
+    
     private final Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
     private final RubyProjectProperties uiProperties;
     private PlatformComponentFactory.PlatformChangeListener platformListener;
@@ -98,7 +100,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         
         configs = uiProperties.RUN_CONFIGS;
         
-        data = new JTextField[] {
+        configFields = new JTextField[] {
             jTextFieldMainClass,
             jTextFieldArgs,
             rubyOptions,
@@ -106,7 +108,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             rakeTextField,
             jrubyPropsText,
         };
-        JLabel[] dataLabels = new JLabel[]{
+        JLabel[] configLabels = new JLabel[]{
             jLabelMainClass,
             jLabelArgs,
             rubyOptionsLabel,
@@ -114,7 +116,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             rakeLabel,
             jrubyPropsLabel
         };
-        keys = new String[] {
+        configPropsKeys = new String[] {
             RubyProjectProperties.MAIN_CLASS,
             RubyProjectProperties.APPLICATION_ARGS,
             RubyProjectProperties.RUBY_OPTIONS,
@@ -123,7 +125,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             RubyProjectProperties.JRUBY_PROPS
         
         };
-        assert data.length == keys.length;
+        assert configFields.length == configPropsKeys.length;
         
         configChanged(uiProperties.activeConfig);
         
@@ -135,7 +137,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     // uninitialized?
                     label = null;
                 } else if (config.length() > 0) {
-                    Map<String,String> m = configs.get(config);
+                    Map<String, String> m = configs.get(config);
                     label = m != null ? m.get("$label") : /* temporary? */ null; // NOI18N
                     if (label == null) {
                         label = config;
@@ -147,51 +149,22 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             }
         });
         
-        for (int i = 0; i < data.length; i++) {
-            final JTextField field = data[i];
-            final String prop = keys[i];
-            final JLabel label = dataLabels[i];
-            field.getDocument().addDocumentListener(new DocumentListener() {
-                Font basefont = label.getFont();
-                Font boldfont = basefont.deriveFont(Font.BOLD);
-                {
-                    updateFont();
-                }
-                public void insertUpdate(DocumentEvent e) {
-                    changed();
-                }
-                public void removeUpdate(DocumentEvent e) {
-                    changed();
-                }
-                public void changedUpdate(DocumentEvent e) {}
-                void changed() {
-                    String config = (String) configCombo.getSelectedItem();
-                    if (config.length() == 0) {
-                        config = null;
-                    }
-                    String v = field.getText();
-                    if (v != null && config != null && v.equals(configs.get(null).get(prop))) {
-                        // default value, do not store as such
-                        v = null;
-                    }
-                    configs.get(config).put(prop, v);
-                    updateFont();
-                }
-                void updateFont() {
-                    String v = field.getText();
-                    String config = (String) configCombo.getSelectedItem();
-                    if (config.length() == 0) {
-                        config = null;
-                    }
-                    String def = configs.get(null).get(prop);
-                    label.setFont(config != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? boldfont : basefont); // NOI18N
-                }
-            });
+        for (int i = 0; i < configFields.length; i++) {
+            configFields[i].getDocument().addDocumentListener(new ConfigChangeListener(
+                    configPropsKeys[i], configLabels[i], configFields[i]));
         }
 
         jButtonMainClass.addActionListener( new MainClassListener( project.getSourceRoots(), jTextFieldMainClass ) );
         platforms.setSelectedItem(uiProperties.getPlatform());
         updateEnabled();
+    }
+
+    private String getSelectedConfig() {
+        String config = (String) configCombo.getSelectedItem();
+        if (config.length() == 0) {
+            config = null;
+        }
+        return config;
     }
 
     private void updateEnabled() {
@@ -205,7 +178,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         super.addNotify();
         platformListener = new PlatformComponentFactory.PlatformChangeListener() {
             public void platformChanged() {
-                uiProperties.setPlatform(((RubyPlatform) platforms.getSelectedItem()));
+                RubyPlatform platform = (RubyPlatform) platforms.getSelectedItem();
+                uiProperties.setPlatform(platform);
+                configs.get(getSelectedConfig()).put(RubyProjectProperties.PLATFORM_ACTIVE, platform.getID());
                 updateEnabled();
             }
         };
@@ -468,7 +443,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }// </editor-fold>//GEN-END:initComponents
 
     private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
-        String config = (String) configCombo.getSelectedItem();
+        String config = getSelectedConfig();
         assert config != null;
         configs.put(config, null);
         configChanged(null);
@@ -500,10 +475,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_configNewActionPerformed
 
     private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
-        String config = (String) configCombo.getSelectedItem();
-        if (config.length() == 0) {
-            config = null;
-        }
+        String config = getSelectedConfig();
         configChanged(config);
         uiProperties.activeConfig = config;
     }//GEN-LAST:event_configComboActionPerformed
@@ -544,7 +516,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 return label != null ? label : c;
             }
         });
-        for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
+        for (Map.Entry<String, Map<String, String>> entry : configs.entrySet()) {
             String config = entry.getKey();
             if (config != null && entry.getValue() != null) {
                 alphaConfigs.add(config);
@@ -555,17 +527,22 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         }
         configCombo.setModel(model);
         configCombo.setSelectedItem(activeConfig != null ? activeConfig : "");
-        Map<String,String> m = configs.get(activeConfig);
+        Map<String,String> active = configs.get(activeConfig);
         Map<String,String> def = configs.get(null);
-        if (m != null) {
-            for (int i = 0; i < data.length; i++) {
-                String v = m.get(keys[i]);
+        if (active != null) {
+            for (int i = 0; i < configFields.length; i++) {
+                String v = active.get(configPropsKeys[i]);
                 if (v == null) {
                     // display default value
-                    v = def.get(keys[i]);
+                    v = def.get(configPropsKeys[i]);
                 }
-                data[i].setText(v);
+                configFields[i].setText(v);
             }
+            String activePlatformID = active.get(RubyProjectProperties.PLATFORM_ACTIVE);
+            if (activePlatformID == null) {
+                activePlatformID = def.get(RubyProjectProperties.PLATFORM_ACTIVE);
+            }
+            platforms.setSelectedItem(RubyPlatformManager.getPlatformByID(activePlatformID));
         } // else ??
         configDel.setEnabled(activeConfig != null);
     }
@@ -653,4 +630,48 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         
     }
     
+    private class ConfigChangeListener implements DocumentListener {
+
+        private final JTextField field;
+        private final JLabel label;
+        private final String prop;
+
+        ConfigChangeListener(final String prop, final JLabel label, final JTextField field) {
+            this.field = field;
+            this.label = label;
+            this.prop = prop;
+            updateFont();
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            changed();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            changed();
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+        }
+
+        void changed() {
+            String config = getSelectedConfig();
+            String v = field.getText();
+            if (v != null && config != null && v.equals(configs.get(null).get(prop))) {
+                // default value, do not store as such
+                v = null;
+            }
+            configs.get(config).put(prop, v);
+            updateFont();
+        }
+
+        void updateFont() {
+            Font basefont = label.getFont();
+            Font boldfont = basefont.deriveFont(Font.BOLD);
+
+            String v = field.getText();
+            String def = configs.get(null).get(prop);
+            label.setFont(getSelectedConfig() != null && !Utilities.compareObjects(v != null ? v : "", def != null ? def : "") ? boldfont : basefont); // NOI18N
+        }
+    }
 }

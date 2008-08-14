@@ -152,7 +152,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private BarsPanel leftPanel;
     private IconsPanel rightPanel;
     
-    private final ThreadsListener threadsListener;
+    private ThreadsListener threadsListener = null;
     private transient Reference<TopComponent> lastSelectedTCRef;
     private transient Reference<TopComponent> componentToActivateAfterClose;
     
@@ -171,9 +171,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         
         initComponents();
     
-        threadsListener = ThreadsListener.getDefault();
-        threadsListener.setDebuggingView(this);
-        
         resumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_16.png"));
         focusedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_focused_16.png"));
         pressedResumeIcon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/debugger/jpda/resources/resume_button_pressed_16.png"));
@@ -311,6 +308,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     Exceptions.printStackTrace(ex);
                 }
             }
+        }
+        if (threadsListener == null) {
+            threadsListener = ThreadsListener.getDefault();
+            threadsListener.setDebuggingView(this);
         }
         if (engine != null) {
             final JPDADebugger deb = engine.lookupFirst(null, JPDADebugger.class);

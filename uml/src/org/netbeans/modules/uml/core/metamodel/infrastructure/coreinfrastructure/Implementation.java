@@ -77,12 +77,12 @@ public class Implementation extends Realization implements IImplementation
 	/**
 	 * property Contract
 	*/
-	public IInterface getContract()
+	public IClassifier getContract()
 	{
-		IInterface retInterface = null;
+		IClassifier retInterface = null;
 		INamedElement namedElem = super.getSupplier();
-		if (namedElem instanceof IInterface)
-			retInterface = (IInterface)namedElem;
+		if (namedElem instanceof IClassifier)
+			retInterface = (IClassifier)namedElem;
 		
 		return retInterface;	
 	}
@@ -90,7 +90,7 @@ public class Implementation extends Realization implements IImplementation
 	/**
 	 * property Contract
 	*/
-	public void setContract( IInterface value )
+	public void setContract( IClassifier value )
 	{
 		super.setSupplier(value);
 	}
@@ -101,6 +101,7 @@ public class Implementation extends Realization implements IImplementation
 	 * [in] The document where this element will reside
 	 * [in] The element's parent node.
 	 */	
+        @Override
 	public void establishNodePresence(Document doc, Node parent)
 	{
 		super.buildNodePresence("UML:Implementation",doc,parent);

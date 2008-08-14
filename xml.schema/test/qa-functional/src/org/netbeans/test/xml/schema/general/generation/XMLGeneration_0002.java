@@ -158,8 +158,8 @@ public class XMLGeneration_0002 extends XMLGeneration {
 
       for( CImportClickData cli : aimpData )
       {
-        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
-        ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error );
+        Sleep( 1000 );
+        ExpandByClicks( jto, cli.row, cli.col, cli.count, cli.result, cli.error, cli.timeout );
       }
 
       JButtonOperator jOk = new JButtonOperator( jBrowser, "OK" );
