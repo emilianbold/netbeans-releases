@@ -69,6 +69,13 @@ public class HasNoArgConstructor extends JPAClassRule {
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
+        
+        // If the class is not public, no need to give this warning, yet. 
+        // See issue 110170
+        if(!subject.getModifiers().contains(Modifier.PUBLIC)) {
+            return null;
+        }
+        
         boolean hasDefaultContructor = true;
         
         for (ExecutableElement constr : ElementFilter.constructorsIn(subject.getEnclosedElements())){
