@@ -139,6 +139,16 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136188_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v2->^", false);
     }
+    
+    //#137033: Code completion for class identifier
+    public void test137033_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue137033.php", "class a^", false);
+    }
+    
+    public void test137033_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue137033.php", "interface a^", false);
+    }
+    
     public void test136188_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v3->^", false);
     }

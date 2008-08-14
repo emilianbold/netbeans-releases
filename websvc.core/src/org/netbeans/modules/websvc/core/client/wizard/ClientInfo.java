@@ -126,7 +126,8 @@ import org.openide.filesystems.FileObject;
  */
 public final class ClientInfo extends JPanel implements WsdlRetriever.MessageReceiver {
 
-    private static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
+    private static final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;
+    private static final String PROP_INFO_MESSAGE = WizardDescriptor.PROP_INFO_MESSAGE;
     private static final int WSDL_FROM_PROJECT = 0;
     private static final int WSDL_FROM_FILE = 1;
     private static final int WSDL_FROM_URL = 2;
@@ -1011,7 +1012,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         if(wsdlSource == WSDL_FROM_PROJECT || wsdlSource == WSDL_FROM_URL) {
             String wsdlUrl = (wsdlSource == WSDL_FROM_PROJECT?jTxtWsdlProject.getText().trim():jTxtWsdlURL.getText().trim());
             if(wsdlUrl == null || wsdlUrl.length() == 0) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterURL")); // NOI18N
+                wizardDescriptor.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterURL")); // NOI18N
                 return false;
             }
             
@@ -1040,7 +1041,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
             String wsdlFilePath = jTxtLocalFilename.getText().trim();
             
             if(wsdlFilePath == null || wsdlFilePath.length() == 0) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterFilename")); // NOI18N
+                wizardDescriptor.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterFilename")); // NOI18N
                 return false; // unspecified WSDL file
             }
             

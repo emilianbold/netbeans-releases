@@ -370,6 +370,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private class Worker implements Runnable {
         
         private volatile boolean isCanceled = false;
+        private volatile TypeProvider current;
         private final String text;
         
         private final long createTime;
@@ -418,8 +419,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             if ( panel.time != -1 ) {
                 LOGGER.fine( "Worker for text " + text + " canceled after " + ( System.currentTimeMillis() - createTime ) + " ms."  );                
             }
-
-            isCanceled = true;
+            TypeProvider _provider;
+            synchronized (this) {
+                isCanceled = true;
+                _provider = current;
+            }
+            if (_provider != null) {
+                _provider.cancel();
+            }
         }
 
         @SuppressWarnings("unchecked")
@@ -435,7 +442,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 if (isCanceled) {
                     return null;
                 }
-                provider.computeTypeNames(context, result);
+                current = provider;
+                try {
+                    provider.computeTypeNames(context, result);
+                } finally {
+                    current = null;
+                }
+                
             }
             if ( !isCanceled ) {   
                 //time = System.currentTimeMillis();

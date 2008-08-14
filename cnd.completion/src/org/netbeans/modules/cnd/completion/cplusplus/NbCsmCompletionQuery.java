@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
@@ -84,7 +85,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     protected CsmFinder getFinder() {
 	CsmFinder finder = null; 
         if (getCsmFile() != null) {
-            finder = new CsmFinderImpl(getCsmFile(), CCKit.class);
+            finder = new CsmFinderImpl(getCsmFile(), MIMENames.CPLUSPLUS_MIME_TYPE);
         }
         return finder;
     }
@@ -113,8 +114,10 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
             boolean openingSource, boolean sort, QueryScope queryScope, boolean inIncludeDirective) {
 	CompletionResolver resolver = null; 
         if (csmFile != null) {
-            Class kit = bDoc.getKitClass();
-            resolver = new CompletionResolverImpl(csmFile, openingSource || isCaseSensitive(kit), sort, isNaturalSort(kit));
+            String mimeType = CsmCompletionUtils.getMimeType(bDoc);
+            resolver = new CompletionResolverImpl(csmFile, 
+                    openingSource || CsmCompletionUtils.isCaseSensitive(mimeType),
+                    sort, CsmCompletionUtils.isNaturalSort(mimeType));
             ((CompletionResolverImpl)resolver).setResolveScope(queryScope);
             ((CompletionResolverImpl)resolver).setInIncludeDirective(inIncludeDirective);
         }

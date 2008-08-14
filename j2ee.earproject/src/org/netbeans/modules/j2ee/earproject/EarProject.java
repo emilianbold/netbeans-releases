@@ -445,9 +445,6 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             
-            J2eeModuleProvider pwm = EarProject.this.getLookup().lookup(J2eeModuleProvider.class);
-            pwm.getConfigSupport().ensureConfigurationReady();
-            
             try {
                 getProjectDirectory().getFileSystem().runAtomicAction(new AtomicAction() {
                     public void run() throws IOException {
@@ -499,6 +496,13 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
                 }
             }
 
+            // initialize the server configuration
+            // it MUST BE called AFTER classpaths are registered to GlobalPathRegistry
+            // and after server resolve!!
+            // DDProvider (used here) needs classpath set correctly when resolving Java Extents for annotations
+            J2eeModuleProvider pwm = EarProject.this.getLookup().lookup(J2eeModuleProvider.class);
+            pwm.getConfigSupport().ensureConfigurationReady();
+            
             // UI Logging
             EarProjectUtil.logUI(NbBundle.getBundle(EarProject.class), "UI_EAR_PROJECT_OPENED", // NOI18N
                     new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});
