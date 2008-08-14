@@ -667,7 +667,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     public ExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
-        String options = project.evaluator().getProperty(RailsProjectProperties.RUN_JVM_ARGS);
+        String options = project.evaluator().getProperty(RailsProjectProperties.RUBY_OPTIONS);
 
         if (options != null && options.trim().length() == 0) {
             options = null;

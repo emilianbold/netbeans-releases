@@ -387,8 +387,8 @@ public final class LanguagePath {
     
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("LanguagePath: size=");
-        sb.append(size());
+        sb.append("LanguagePath: size=").append(size());
+        sb.append(", IHC=").append(System.identityHashCode(this));
         sb.append('\n');
         for (int i = 0; i < size(); i++) {
             sb.append('[').append(i).append("]: "); // NOI18N
