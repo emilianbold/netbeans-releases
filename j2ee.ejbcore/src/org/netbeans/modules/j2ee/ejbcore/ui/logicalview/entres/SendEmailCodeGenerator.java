@@ -344,6 +344,9 @@ public class SendEmailCodeGenerator implements CodeGenerator {
         if (j2eeModuleProvider == null) {
             return false;
         }
+        if (project.getLookup().lookup(EnterpriseReferenceContainer.class) == null) {
+            return false;
+        }
         String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
         if (serverInstanceId == null) {
             return true;
