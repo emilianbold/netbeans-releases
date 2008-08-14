@@ -92,7 +92,14 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     }
     
     public static Test suite() {
-        if(Utils.DEFAULT_SERVER.equals(Utils.TOMCAT)) {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class);
+        conf = addServerTests(Server.GLASSFISH, conf,"testOpenProjects","testRunProject","testSetBreakpoint",
+                "testDebugProject","testDebugReload","testAttachDebugger","testDebugAfterBreakpoint",
+                "testDebugAndStopServer","testStartAnotherSession","testJavaSession","testStopServer");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
+        /*if(Utils.DEFAULT_SERVER.equals(Utils.TOMCAT)) {
+            
             return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class),
                     "testOpenProjects",
                     "testSetTomcatPort", /// <---
@@ -122,6 +129,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
                     "testStopServer"
                     ).enableModules(".*").clusters(".*"));
         }
+        */
     }
     
     /** Print test name and initialize status bar tracer. */
