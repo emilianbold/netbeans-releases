@@ -107,7 +107,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
 
     public void setNoRelexStartInfo() {
         this.relexTokenListIndex = tokenListListUpdate.modTokenListIndex;
-        this.relexChanges = Collections.emptyList();
+        this.relexChanges = new ArrayList<RelexTokenListChange<T>>(1);
     }
 
     @Override
@@ -163,7 +163,15 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
             if (matchIndex == jtl.activeStartJoinIndex()) { // First in ETL
                 // Cannot use previous value of matchOffset since it pointed to end of previous ETL
                 // Token is not join token so use its natural length()
-                matchOffset = jtl.activeTokenList().startOffset() + token.length();
+                EmbeddedTokenList<T> etl = jtl.activeTokenList();
+                // If an insertion was done right at the begining of a modified ETL
+                // then the matchOffset should only be increased because
+                // the computation would not include the inserted text.
+                if (etl != charModTokenList) {
+                    matchOffset = etl.startOffset() + token.length();
+                } else {
+                    matchOffset += token.length();
+                }
             } else {
                 matchOffset += token.length();
             }
@@ -203,52 +211,59 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
     }
     
     public void replaceTokens(TokenHierarchyEventInfo eventInfo) {
-        // Determine position of matchIndex in token lists
-        // if matchIndex == jtl.tokenCount() the token list index will be the last list
-        //   and endLocalIndex will be its tokenCount(). Because of this
-        //   there must be a check whether token list index is not among removed ETLs.
+        // BTW the following case must be properly handled:
+        // Remove ']' from "<x>a<]>c"  (present in JoinRandomTest)
+        // The 'x' is joined with ']' and removal of ']' means that the last ETL
+        // with char data is the one containing 'x'. However ETL with "<]>" is now "<>"
+        // but the contained token ']' must be removed.
+
+        // Determine position of matchIndex in token lists and ensure that in all ETLs
+        // except the matchTokenListIndex the matchIndex will be set to ETL.tokenCount()
+        // and in the matchLocalIndex it will be set to localMatchIndex.
+
+        // Determine matchTokenListIndex and localMatchIndex corresponding to matchIndex.
+        // If matchIndex == jtl.tokenCount() the token list index will be jtl.tokenListCount()
+        // and localMatchIndex will be 0.
         MutableJoinTokenList<T> jtl = (MutableJoinTokenList<T>) tokenList();
         int localMatchIndex = jtl.tokenStartLocalIndex(matchIndex);
         int matchTokenListIndex = jtl.activeTokenListIndex();
-        if (matchTokenListIndex >= tokenListListUpdate.modTokenListIndex + tokenListListUpdate.removedTokenListCount) {
-            // Project into relexChanges
-            matchTokenListIndex += tokenListListUpdate.tokenListCountDiff();
-            // It's possible that the matching ETL is empty and thus the relexChanges
-            // will not contain it.
-            if (matchTokenListIndex - relexTokenListIndex < relexChanges.size()) {
-                relexChanges.get(matchTokenListIndex - relexTokenListIndex).setMatchIndex(localMatchIndex);
-            }
-            int afterAddIndex = tokenListListUpdate.modTokenListIndex + tokenListListUpdate.addedTokenListCount();
-            while (--matchTokenListIndex >= afterAddIndex) {
-                if (matchTokenListIndex - relexTokenListIndex < relexChanges.size()) {
-                    TokenListChange<T> change = relexChanges.get(matchTokenListIndex - relexTokenListIndex);
-                    change.setMatchIndex(change.tokenList().tokenCountCurrent());
-                }
-            }
+        // Since relexChanges only contain the "new" ETLs (i.e. the removed ETLs are not contained)
+        // the algorithm must handle that.
+        // To simplify the algorithm first ensure that the matchTokenListIndex is >= possible last removed ETL.
+        // That should mostly be true but could possibly not be true if e.g. last removed ETL is empty and non-joined
+        // so fix that case.
+        int removedEndTokenListIndex = tokenListListUpdate.modTokenListIndex + tokenListListUpdate.removedTokenListCount;
+        if (matchTokenListIndex < removedEndTokenListIndex) {
+            matchTokenListIndex = removedEndTokenListIndex;
+            localMatchIndex = 0;
         }
-        // Check for empty ETLs that were at end of added ETLs - they would not be covered
-        // by tokens since they were empty and there is no relex change for them and so
-        // they do not contain join info.
-        int index;
-        while ((index = relexTokenListIndex + relexChanges.size()) <
-                tokenListListUpdate.modTokenListIndex + tokenListListUpdate.addedTokenListCount()
-        ) {
-            // Add an empty relex change for ending added ETL(s)
-            relexChanges.add(new RelexTokenListChange<T>(tokenListListUpdate.afterUpdateTokenList(jtl, index)));
+        // Now matchTokenListIndex >= removedEndTokenListIndex
+        int afterUpdateMatchEndIndex = matchTokenListIndex + tokenListListUpdate.tokenListCountDiff();
+        // If localMatchIndex == 0 it means that in fact only previous ETL was covered.
+        if (localMatchIndex != 0) { // Include ETL at matchTokenListIndex in relexChanges too.
+            afterUpdateMatchEndIndex++;
         }
-
-        // Set match-index in the below-mod-ETLs area to all-tokens-removed
-        // Note that if there would be several empty ETLs at the end of lexing
-        // (e.g. one below modTokenListIndex and one added right above modTokenListIndex)
-        // the code would fail with IOOBE since there would be no corresponding relex-changes for the empty ETLs.
-        // Therefore the preceding code that fills extra relex-changes for empty ETLs
-        // is necessary to be done first.
-        // Test: JoinSectionsMod1Test.testCreateEmptyEmbedding()
-        index = tokenListListUpdate.modTokenListIndex;
-        while (--index >= relexTokenListIndex) {
+        int relexChangesEndIndex = relexTokenListIndex + relexChanges.size();
+        while (relexChangesEndIndex < afterUpdateMatchEndIndex) {
+            relexChanges.add(new RelexTokenListChange<T>(tokenListListUpdate.afterUpdateTokenList(jtl, relexChangesEndIndex++)));
+        }
+        // Now if localMatchIndex != 0 then ETL at (relexChangesEndIndex-1) must match at localMatchIndex
+        // and rest at their ETL.tokenCount().
+        // For localMatchIndex == 0 all relexChanges should match at ETL.tokenCount().
+        int index = afterUpdateMatchEndIndex - 1;
+        if (localMatchIndex != 0 && index >= relexTokenListIndex) {
+            TokenListChange<T> change = relexChanges.get(index - relexTokenListIndex);
+            change.setMatchIndex(localMatchIndex);
+            index--;
+        }
+        // Now all the relex changes at and below index should match at their ETL.tokenCount().
+        // Newly added ETLs should be fine since they should still be empty at this point.
+        while (index >= relexTokenListIndex) {
             TokenListChange<T> change = relexChanges.get(index - relexTokenListIndex);
             change.setMatchIndex(change.tokenList().tokenCountCurrent());
+            index--;
         }
+
         // Physically replace the token lists
         if (tokenListListUpdate.isTokenListsMod()) {
             replaceTokenLists();
@@ -335,9 +350,9 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
 
     @Override
     public String toString() {
-        return super.toString() + ", tokenListListUpdate=" + tokenListListUpdate + // NOI18N
-                ", relexTokenListIndex=" + relexTokenListIndex + // NOI18N
-                ", relexChanges.size()=" + relexChanges.size();
+        return super.toString() + ", tokenListListUpdate: " + tokenListListUpdate + // NOI18N
+                ", relexTLInd=" + relexTokenListIndex + // NOI18N
+                ", relexChgs.size()=" + relexChanges.size();
     }
 
     @Override

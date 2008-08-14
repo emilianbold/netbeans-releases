@@ -250,7 +250,7 @@ public final class TokenSequence<T extends TokenId> {
     public int offset() {
         checkTokenNotNull();
         if (tokenOffset == -1) {
-            tokenOffset = tokenList.tokenOffsetByIndex(tokenIndex);
+            tokenOffset = tokenList.tokenOffset(tokenIndex);
         }
         return tokenOffset;
     }

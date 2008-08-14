@@ -45,13 +45,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.lib.lexer.EmbeddedJoinInfo;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.JoinLexerInputOperation;
-import org.netbeans.lib.lexer.JoinTokenList;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
-import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.JoinToken;
 import org.netbeans.lib.lexer.token.PartToken;
@@ -173,8 +170,8 @@ public final class TokenListUpdater {
                 // must be properly lexed and notified (even if the last present
                 // token has zero lookahead).
                 if (loggable) {
-                    LOG.log(Level.FINE, "TLU.updateRegular() FINISHED: Not fully lexed yet. rOff=" +
-                            relexOffset + ", mOff=" + eventInfo.modOffset() + "\n");
+                    LOG.log(Level.FINE, "UPDATE-REGULAR FINISHED: Not fully lexed yet. rOff=" +
+                            relexOffset + ", modOff=" + eventInfo.modOffset() + "\n");
                 }
                 change.setIndex(relexIndex);
                 change.setOffset(relexOffset);
@@ -250,7 +247,7 @@ public final class TokenListUpdater {
 
         if (loggable) {
             StringBuilder sb = new StringBuilder(200);
-            sb.append("updateRegular() BEFORE-RELEX:\n  relex=").append(relex);
+            sb.append("REGULAR-UPDATE-BEFORE-RELEX:\n  relex=").append(relex);
             sb.append(", reInd=").append(relexIndex).append(", reOff=").append(relexOffset);
             sb.append(", maInd=").append(matchIndex).append(", maOff=").append(matchOffset).append('\n');
             sb.append(", reSta=").append(relexState).append(", tokenList-part:\n");
@@ -269,7 +266,7 @@ public final class TokenListUpdater {
 
         tokenList.replaceTokens(change, eventInfo, true);
         if (loggable) {
-            LOG.log(Level.FINE, "TLU.updateRegular() FINISHED: change:" + change + "\nMods:" + change.toStringMods(4));
+            LOG.log(Level.FINE, "UPDATE-REGULAR FINISHED: change:" + change + "\nMods:" + change.toStringMods(4));
         }
     }
 
@@ -334,6 +331,18 @@ public final class TokenListUpdater {
                 jtl.setActiveTokenListIndex(modEndTokenListIndex - 1);
                 matchIndex = jtl.activeEndJoinIndex();
                 matchOffset = jtl.activeTokenList().endOffset();
+                // matchOffset must be updated by subtraction of the removed text length.
+                // Otherwise the following case fails (see JoinRandomTest):
+                // "tt<g[h>ab<i]jk>[y]<{>x}[]o[<[x]<[><]>" and remove ">[y]<"
+                // The non-updated matchOffset would be 18 (orig-end of "[y]")
+                // but the relexed join-token would end at 18 too (in the new-offsets).
+                // The new join token would include "x}" as last part and "x}" token would be duplicated
+                // first token in the ETL that contains it.
+                // BTW it's possible that matchOffset < modOffset e.g. for addition or even in case of removal
+                // when the mod would require relex of an embedding before the modification point.
+                if (matchOffset > modOffset) {
+                    matchOffset = Math.max(matchOffset - eventInfo.removedLength(), modOffset);
+                }
                 if (jtl.activeTokenList().joinInfo.joinTokenLastPartShift() > 0) {
                     // Note: JoinToken.endOffset() calls EC.updateStatus() otherwise there could be obsolete start-offset.
                     matchOffset = ((JoinToken<T>) jtl.tokenOrEmbeddingUnsync(matchIndex).token()).endOffset();
@@ -437,20 +446,25 @@ public final class TokenListUpdater {
                 checkPrevTokenListJoined = true;
             }
             if (relexLocalIndex == matchLocalIndex) {
-                // Special case when inserting at end of a token with zero lookahead
-                if (matchLocalIndex == modEtlTokenCount) {
+                // Special case when inserting right at end boundary of a last token with zero lookahead.
+                // In that case relexLocalIndex == modEtlTokenCount.
+                // Alternatively modEtl may be empty (no tokens at all).
+                if (relexLocalIndex == modEtlTokenCount) {
                     //   Token is last in an ETL => ensure the relexing starts at end of modEtl
                     //     where the textual modification happened (instead of the begining of the next ETL).
                     //   Example:
                     //       doc:"{x}<a>y" and insert(3,"u") becomes "{x}u<a>y"
                     //   Then the relexIndex would be 1 and relexOffset would normally point to "y"
                     //     but it has to point to the inserted 'u' instead.
-                    if (modEtl.joinInfo.joinTokenLastPartShift() > 0) {
+                    if (modEtl.joinInfo.joinTokenLastPartShift() > 0) { // Adjust to last token's start
+                        // Or there is a possibility that the modEtl has no tokens at all
                         assert (eventInfo.removedLength() == 0) : "Insert only expected";
-                        relexIndex = jtl.activeEndJoinIndex();
-                        relexLocalIndex = relexIndex - jtl.activeStartJoinIndex();
-                        // There should be at least one token in modEtl since otherwise the (relexLocalIndex==0) would be matched
-                        relexOffset = modEtl.tokenOffsetByIndex(relexLocalIndex);
+                        if (modEtlTokenCount > 0) { // At least one token
+                            assert (relexIndex == jtl.activeEndJoinIndex() + 1);
+                            relexIndex--;
+                            relexLocalIndex--;
+                            relexOffset = modEtl.tokenOffset(relexLocalIndex);
+                        }
                         if (relexLocalIndex == 0) { // Only a single token in ETL - may be joined by prev
                             checkPrevTokenListJoined = true;
                         }
@@ -477,7 +491,8 @@ public final class TokenListUpdater {
                         relModOffset = partToken.partTextEndOffset();
                         relexOffset = partToken.joinToken().offset(null);
                         // Locate to begining of join token
-                        if (partToken.partTokenIndex() != 0) {
+                        if (partToken.partTokenIndex() != 0) { // Must relex from join token's begining
+                            // Notice that the following will change jtl's activeTokenListIndex
                             relexLocalIndex = jtl.tokenStartLocalIndex(relexIndex);
                             relexTokenListIndex = jtl.activeTokenListIndex();
                         }
@@ -486,6 +501,8 @@ public final class TokenListUpdater {
                         if (relexIndex == matchIndex) { // Fix matchIndex to join-token's end
                             matchIndex++;
                             matchOffset = partToken.joinToken().endOffset();
+                            // Recompute lps since it may be obsolete after possible activeTokenListIndex change
+                            lps = jtl.activeTokenList().joinInfo.joinTokenLastPartShift();
                             // If the last part is located inside modEtl then it must be adjusted
                             if (jtl.activeTokenListIndex() + lps == modTokenListIndex) {
                                 matchOffset += eventInfo.diffLength();
@@ -516,7 +533,7 @@ public final class TokenListUpdater {
             }
         }
         if (relexIndex != origRelexIndex) {
-            relexOffset = jtl.tokenOffsetByIndex(relexIndex);
+            relexOffset = jtl.tokenOffset(relexIndex);
             relexLocalIndex = jtl.tokenStartLocalIndex(relexIndex);
             relexTokenListIndex = jtl.activeTokenListIndex();
             relex = true;
@@ -538,7 +555,7 @@ public final class TokenListUpdater {
             // setMatchIndex() and setMatchOffset() called later below
             if (loggable) {
                 StringBuilder sb = new StringBuilder(200);
-                sb.append("updateJoined() BEFORE-RELEX:");
+                sb.append("JOINED-UPDATE-BEFORE-RELEX:");
                 sb.append(", reInd=").append(relexIndex).append(", reOff=").append(relexOffset);
                 sb.append(", maInd=").append(matchIndex).append(", maOff=").append(matchOffset).append('\n');
                 sb.append(", reSta=").append(relexState).append(", tokenList-part:\n");
@@ -555,7 +572,7 @@ public final class TokenListUpdater {
         
         jtl.replaceTokens(change, eventInfo, true);
         if (loggable) {
-            LOG.log(Level.FINE, "TLU.updateJoined() FINISHED: change:" + change + // NOI18N
+            LOG.log(Level.FINE, "JOINED-UPDATE-FINISHED: change:" + change + // NOI18N
                     "\nMods:" + change.toStringMods(4)); // NOI18N
         }
     }
@@ -723,7 +740,7 @@ public final class TokenListUpdater {
                 }
                 // Last removed and added tokens are the same so undo the addition
                 if (loggable) {
-                    LOG.log(Level.FINE, "    RETAIN-ORIGINAL at (mInd-1)=" + (change.matchIndex-1) +
+                    LOG.log(Level.FINE, "    RETAIN-ORIGINAL at (maInd-1)=" + (change.matchIndex-1) +
                             ", id=" + lastRemovedToken.id() + "\n");
                 }
                 lastAddedTokenIndex--;
@@ -756,9 +773,9 @@ public final class TokenListUpdater {
         CharSequence afterText = inputSourceText.subSequence(afterInsertOffset,
                 Math.min(afterInsertOffset + 5, inputSourceText.length()));
         StringBuilder sb = new StringBuilder(200);
-        sb.append("TLU.update");
-        sb.append(updateJoined ? "Joined" : "Regular");
-        sb.append("() ").append(tokenList.languagePath().mimePath()).append('\n');
+        sb.append(updateJoined ? "JOINED" : "REGULAR");
+        sb.append("-UPDATE:");
+        sb.append(tokenList.languagePath().mimePath()).append('\n');
         sb.append("  modOff=").append(modOffset);
         sb.append(", text-around:\"").append(beforeText).append('|');
         sb.append(afterText).append("\", insLen=");

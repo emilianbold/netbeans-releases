@@ -125,7 +125,7 @@ public interface TokenList<T extends TokenId> {
      * For EmbeddedTokenList a EmbeddingContainer.updateStatus() must be called
      * prior this method to obtain up-to-date results.
      */
-    int tokenOffsetByIndex(int index);
+    int tokenOffset(int index);
     
     /**
      * Get absolute offset of a token contained in this token list.

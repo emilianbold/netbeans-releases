@@ -73,6 +73,8 @@ public class TestRandomModify {
     
     private int opId;
     
+    private int startDebugOpCount;
+    
     private int maxDocLength;
     
     private List<SnapshotDescription> snapshots = new ArrayList<SnapshotDescription>();
@@ -91,9 +93,13 @@ public class TestRandomModify {
         System.err.println("TestRandomModify with SEED=" + seed + "L");
         random.setSeed(seed);
     }
-    
+
+    private boolean isOpDebug() {
+        return opId >= startDebugOpCount;
+    }
+
     public boolean isDebugOperation() {
-        return debugOperation;
+        return debugOperation && isOpDebug();
     }
     
     /**
@@ -105,7 +111,7 @@ public class TestRandomModify {
     }
 
     public boolean isDebugHierarchy() {
-        return debugHierarchy;
+        return debugHierarchy && isOpDebug();
     }
     
     /**
@@ -117,7 +123,7 @@ public class TestRandomModify {
     }
 
     public boolean isDebugDocumentText() {
-        return debugDocumentText;
+        return debugDocumentText && isOpDebug();
     }
     
     /**
@@ -322,6 +328,14 @@ public class TestRandomModify {
             s = " " + s;
         }
         return "OPER[" + s + "]";
+    }
+
+    public int startDebugOpCount() {
+        return startDebugOpCount;
+    }
+        
+    public void setStartDebugOpCount(int startDebugOpCount) {
+        this.startDebugOpCount = startDebugOpCount;
     }
         
     public final Random random() {
