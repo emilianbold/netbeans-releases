@@ -46,17 +46,17 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
  *
  * @author Maks
  */
-public class ImportJavaVersion extends ProjectImporterTestCase {
+public class ImportAppRunParams extends ProjectImporterTestCase {
     WizardOperator importWizard;
   
-    public ImportJavaVersion(String testName) {
+    public ImportAppRunParams(String testName) {
         super(testName);
     }
     @Override
@@ -64,33 +64,18 @@ public class ImportJavaVersion extends ProjectImporterTestCase {
         super.setUp();
         ExtractToWorkDir(getDataDir().getAbsolutePath(),"testdata.jar");
     }
-    public void testImportJavaVersion13() {
-        String projectName = "JavaVersion13";
+    public void testImportJavaVMParams() {
+        String projectName = "JavaRunParams";
         importProject(projectName);
-        validateProjectJavaVersionProperties(projectName, "1.3");
+        validateProjectJavaVMParams(projectName);
     }
-    public void testImportJavaVersion14() {
-        String projectName = "JavaVersion14";
-        importProject(projectName);
-        validateProjectJavaVersionProperties(projectName, "1.4");
-    }
-    public void testImportJavaVersion15() {
-        String projectName = "JavaVersion15";
-        importProject(projectName);
-        validateProjectJavaVersionProperties(projectName, "1.5");
-    }
-    public void testImportJavaVersion16() {
-        String projectName = "JavaVersion16";
-        importProject(projectName);
-        validateProjectJavaVersionProperties(projectName, "1.6");
-    }
-    private void validateProjectJavaVersionProperties(String projectName, String expectedVersion) {
+    private void validateProjectJavaVMParams(String projectName) {
         pto = new ProjectsTabOperator();
         ProjectRootNode projectRoot = null;
         try {
             projectRoot = pto.getProjectRootNode(projectName);
         } catch(TimeoutExpiredException tex) {
-            fail("No project [ "+projectName+" ]loaded");
+            fail("No project [ "+projectName+" ] loaded");
         }
         projectRoot.properties();
         String propsDialogCaption = Bundle.getString("org.netbeans.modules.apisupport.project.ui.customizer.Bundle", "LBL_CustomizerTitle", new Object[]{projectName});
@@ -101,15 +86,23 @@ public class ImportJavaVersion extends ProjectImporterTestCase {
             fail("Unable to open project [ "+projectName+" ] properties dialog");
         }
         JTreeOperator tree = new JTreeOperator(propsDialog);
-        TreePath path = tree.findPath("Sources");
+        TreePath path = tree.findPath("Run");
         tree.selectPath(path);
-        JComboBoxOperator versionCombo = new JComboBoxOperator(propsDialog, 0);
-        if(!versionCombo.getSelectedItem().toString().endsWith(expectedVersion)) {
-            fail("No expected java version set");
+        
+        JTextFieldOperator runClass = new JTextFieldOperator(propsDialog, 0);
+        if(!runClass.getText().toString().equals("c.s.t2.SecondRunClass")) {
+            fail("No expected main class set");
         }
+        JTextFieldOperator runParams = new JTextFieldOperator(propsDialog, 1);
+        if(!runParams.getText().toString().equals("param1 param2 param3")) {
+            fail("No run parameters passed");
+        }
+        JTextFieldOperator JVMParams = new JTextFieldOperator(propsDialog, 3);
+        if(!JVMParams.getText().toString().equals("-Xms25m")) {
+            fail("No JVM parameters passed");
+        }         
         propsDialog.close();
-    }    
-
+    }
     private void importProject(String projectName) {
         importWizard = invokeImporterWizard();
         selectProjectFromWS(importWizard,"testdata", projectName);
