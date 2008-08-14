@@ -41,20 +41,14 @@
 
 package org.netbeans.modules.db.sql.editor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.StringTokenizer;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
 import org.netbeans.modules.db.api.sql.SQLKeywords;
-import org.openide.util.NbBundle;
 
 /**
  * This class implements SQL syntax recognition
  *
- * @author Jesse Beaumont
+ * @author Jesse Beaumont, Andrei Badea
  */
 public class SQLSyntax extends Syntax {
 
@@ -78,6 +72,8 @@ public class SQLSyntax extends Syntax {
     private static final int ISA_SEMICOLON = 35; //after ';'
     private static final int ISA_LPAREN = 36; //after (
     private static final int ISA_RPAREN = 37; //after )
+
+    private int startQuoteChar = -1;
 
     /** 
      * Creates a new instance of SQLSyntax 
@@ -144,6 +140,9 @@ public class SQLSyntax extends Syntax {
 
                             // otherwise it's an identifier
                             state = ISI_IDENTIFIER;
+                            if (isStartQuoteChar(actChar)) {
+                                startQuoteChar = actChar;
+                            }
                             break;
                     }
                     break;
@@ -185,16 +184,25 @@ public class SQLSyntax extends Syntax {
 
                 //if we are currently in an identifier (e.g. a variable name)
                 case ISI_IDENTIFIER:
-                    if (!Character.isLetterOrDigit(actChar) && actChar != '_') {
-                        state = INIT;
-                        TokenID tid = matchKeyword(buffer, tokenOffset, offset - tokenOffset);
-                        if (tid != null) {
-                            return tid;
+                    if (startQuoteChar != -1) {
+                        if (!isEndQuoteChar(startQuoteChar, actChar)) {
+                            break;
                         } else {
-                            return SQLTokenContext.IDENTIFIER;
+                            offset++;
+                        }
+                    } else {
+                        if (Character.isLetterOrDigit(actChar) || actChar == '_') {
+                            break;
                         }
                     }
-                    break;
+                    state = INIT;
+                    startQuoteChar = -1;
+                    TokenID tid = matchKeyword(buffer, tokenOffset, offset - tokenOffset);
+                    if (tid != null) {
+                        return tid;
+                    } else {
+                        return SQLTokenContext.IDENTIFIER;
+                    }
 
                 //if we are after a slash (/)
                 case ISA_SLASH:
@@ -400,6 +408,19 @@ public class SQLSyntax extends Syntax {
         default:
             return super.getStateName(stateNumber);
         }
+    }
+
+    private static boolean isStartQuoteChar(int start) {
+        return start == '\"' || // SQL-99
+               start == '`' ||  // MySQL
+               start == '[';    // MS SQL Server
+    }
+
+
+    private static boolean isEndQuoteChar(int start, int end) {
+        return start == '\"' && end == start || // SQL-99
+               start == '`' && end == start ||  // MySQL
+               start == '[' && end == ']';      // MS SQL Server
     }
 
     /**

@@ -245,10 +245,10 @@ public class EnvPanel extends javax.swing.JPanel implements HelpCtx.Provider, Pr
 	int numRows = envvarModel.getRowCount();
 	if (numRows > 0) {
 	    for (int j = 0; j < numRows; j++) {
-		String name = (String)envvarModel.getValueAt(j, 0);
+		String name = ((String)envvarModel.getValueAt(j, 0)).trim();
 		if (name.length() == 0)
 		    continue;
-		String value = (String)envvarModel.getValueAt(j, 1);
+		String value = ((String)envvarModel.getValueAt(j, 1)).trim();
 		env.putenv(name, value);
 	    }
 	}

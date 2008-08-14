@@ -185,7 +185,7 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
             if (close) con.close();
             return spec;
         } catch (SQLException e) {
-            throw new DDLException("unable to connect to server");
+            throw new DDLException("unable to connect to server", e);
         } catch (Exception e) {
             throw new DatabaseProductNotFoundException(pn, "unable to create specification, "+e.getMessage());
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -129,7 +129,7 @@ public final class TreePathHandle {
     /**                                                                                                                                                                                                                        
      * Resolves an {@link TreePath} from the {@link TreePathHandle}.                                                                                                                                                           
      * @param compilationInfo representing the {@link javax.tools.CompilationTask}                                                                                                                                             
-     * @return resolved subclass of {@link Element} or null if the elment does not exist on                                                                                                                                    
+     * @return resolved subclass of {@link Element} or null if the element does not exist on                                                                                                                                    
      * the classpath/sourcepath of {@link javax.tools.CompilationTask}.
      * @throws {@link IllegalArgumentException} when this {@link TreePathHandle} is not created for a source
      * represented by the compilationInfo.
@@ -163,7 +163,7 @@ public final class TreePathHandle {
     /**                                                                                                                                                                                                                        
      * Resolves an {@link Element} from the {@link TreePathHandle}.                                                                                                                                                            
      * @param compilationInfo representing the {@link javax.tools.CompilationTask}                                                                                                                                             
-     * @return resolved subclass of {@link Element} or null if the elment does not exist on                                                                                                                                    
+     * @return resolved subclass of {@link Element} or null if the element does not exist on                                                                                                                                    
      * the classpath/sourcepath of {@link javax.tools.CompilationTask}.                                                                                                                                                        
      */                                                                                                                                                                                                                        
     public Element resolveElement(final CompilationInfo info) {
@@ -358,7 +358,7 @@ public final class TreePathHandle {
         /**                                                                                                                                                                                                                        
          * Resolves an {@link TreePath} from the {@link TreePathHandle}.                                                                                                                                                           
          * @param compilationInfo representing the {@link javax.tools.CompilationTask}                                                                                                                                             
-         * @return resolved subclass of {@link Element} or null if the elment does not exist on                                                                                                                                    
+         * @return resolved subclass of {@link Element} or null if the element does not exist on                                                                                                                                    
          * the classpath/sourcepath of {@link javax.tools.CompilationTask}.
          * @throws {@link IllegalArgumentException} when this {@link TreePathHandle} is not created for a source
          * represented by the compilationInfo.
@@ -427,7 +427,7 @@ public final class TreePathHandle {
         /**                                                                                                                                                                                                                        
          * Resolves an {@link Element} from the {@link TreePathHandle}.                                                                                                                                                            
          * @param compilationInfo representing the {@link javax.tools.CompilationTask}                                                                                                                                             
-         * @return resolved subclass of {@link Element} or null if the elment does not exist on                                                                                                                                    
+         * @return resolved subclass of {@link Element} or null if the element does not exist on                                                                                                                                    
          * the classpath/sourcepath of {@link javax.tools.CompilationTask}.                                                                                                                                                        
          */
         public Element resolveElement(final CompilationInfo info) {

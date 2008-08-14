@@ -45,10 +45,9 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -87,6 +86,9 @@ public class RemoteServerRecord implements ServerRecord {
      * @param name
      */
     protected RemoteServerRecord(final String name) {
+        this(name, true);
+    }
+    protected RemoteServerRecord(final String name, boolean connect) {
         this.name = name;
         int pos = name.indexOf('@');
         if (pos != -1) {
@@ -105,29 +107,29 @@ public class RemoteServerRecord implements ServerRecord {
             state = STATE_ONLINE;
         } else {
             editable = true;
-            state = STATE_UNINITIALIZED;
+            state = connect ? STATE_UNINITIALIZED : STATE_OFFLINE;
         }
     }
     
-    public void validate() {
+    public void validate(final boolean force) {
         if (!isOnline()) {
             if (SwingUtilities.isEventDispatchThread()) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        validateOutOfEDT();
+                        validateOutOfEDT(force);
                     }
                 });
             } else  {
-                validateOutOfEDT();
+                validateOutOfEDT(force);
             }
         }
     }
     
-    private void validateOutOfEDT() {
+    private void validateOutOfEDT(boolean force) {
         log.fine("RSR.validate2: Validating " + name);
         ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name)); // NOI18N
         ph.start();
-        init(null);
+        init(force, null);
         ph.finish();
         String msg;
         if (isOnline()) {
@@ -142,9 +144,14 @@ public class RemoteServerRecord implements ServerRecord {
      * Start the initialization process. This should <b>never</b> be done from the AWT Evet
      * thread. Parts of the initialization use this thread and will block.
      */
-    public synchronized void init(PropertyChangeSupport pcs) {
+    public synchronized void init(boolean force, PropertyChangeSupport pcs) {
         assert !SwingUtilities.isEventDispatchThread() : "RemoteServer initialization must be done out of EDT"; // NOI18N
         Object ostate = state;
+        if (force && state != STATE_ONLINE) {
+            RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(name, true);
+            userInfo.setPassword(null);
+            state = STATE_UNINITIALIZED;
+        }
         if (state != STATE_UNINITIALIZED) {
             return;
         }

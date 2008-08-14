@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.projectimport.eclipse.core;
 
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -66,11 +69,7 @@ public class ProjectOpenHookImpl extends ProjectOpenedHook{
     @Override
     protected synchronized void projectOpened() {
         if (currentTask == null)  {
-            currentTask = PROJ_OPEN_HOOK_RESYNCHRONIZER.create(new Runnable() {
-                public void run() {
-                    new UpdateAllProjects().update(true);
-                }
-            });
+            currentTask = PROJ_OPEN_HOOK_RESYNCHRONIZER.create(new RunnableImpl());
         }
         // coalesce events from multiple project being opened.
         currentTask.schedule(10000);
@@ -78,6 +77,25 @@ public class ProjectOpenHookImpl extends ProjectOpenedHook{
 
     @Override
     protected void projectClosed() {
+    }
+
+    private static class RunnableImpl implements Runnable {
+
+        public RunnableImpl() {
+        }
+
+        public void run() {
+            try {
+                // coalesce events from multiple project being opened.
+                OpenProjects.getDefault().openProjects().get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+            new UpdateAllProjects().update(true);
+        }
     }
 
 }

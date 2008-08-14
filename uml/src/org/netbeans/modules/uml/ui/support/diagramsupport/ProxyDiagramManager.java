@@ -1370,28 +1370,29 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
 
                 String independPath = directoryFile.getCanonicalPath();
                 StringBuffer filenameBuffer = new StringBuffer();
-
-                for (int index = 0; index < diagramFiles.length; index++) 
-                {
-                    filenameBuffer.append(independPath);
-
-                    if (independPath.charAt(independPath.length() - 1) 
-                        != File.separatorChar) 
-                    {
-                        filenameBuffer.append(File.separatorChar);
-                    }
-
-                    filenameBuffer.append(diagramFiles[index]);
-                    String fullPath = filenameBuffer.toString();
-
-                    if (isValidTSDiagram(independPath, diagramFiles[index])) 
-                    {
-                        diagrams.add(fullPath);
-                    }
-
-                    filenameBuffer.delete(0, filenameBuffer.length());
-                }
                 
+                if (diagramFiles != null)
+                {
+                    for (int index = 0; index < diagramFiles.length; index++)
+                    {
+                        filenameBuffer.append(independPath);
+
+                        if (independPath.charAt(independPath.length() - 1) != File.separatorChar)
+                        {
+                            filenameBuffer.append(File.separatorChar);
+                        }
+
+                        filenameBuffer.append(diagramFiles[index]);
+                        String fullPath = filenameBuffer.toString();
+
+                        if (isValidTSDiagram(independPath, diagramFiles[index]))
+                        {
+                            diagrams.add(fullPath);
+                        }
+
+                        filenameBuffer.delete(0, filenameBuffer.length());
+                    }
+                }
                 
             } 
             

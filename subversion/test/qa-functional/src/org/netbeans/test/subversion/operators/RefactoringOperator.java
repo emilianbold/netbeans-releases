@@ -42,15 +42,10 @@
 package org.netbeans.test.subversion.operators;
 
 import java.awt.Component;
-import java.awt.Container;
-import javax.swing.JComponent;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.test.subversion.operators.actions.RefactoringAction;
 
 public class RefactoringOperator extends TopComponentOperator {

@@ -41,30 +41,36 @@ package org.netbeans.modules.websvc.core.jaxws.saas;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import java.util.logging.Logger;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.core.JaxWsUtils;
+import org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardIterator;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
+import org.netbeans.modules.websvc.rest.model.api.RestServices;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -74,16 +80,9 @@ import org.openide.util.RequestProcessor;
 public class RestResourceGenerator {
 
     public static final String RESOURCE_TEMPLATE = "Templates/WebServices/GenericResource.java"; //NOI18N
-
-    public static final String SWDP_LIBRARY = "restlib"; //NOI18N
-
-    public static final String RESTAPI_LIBRARY = "restapi"; //NOI18N
-    private static final String [] CLASSPATHTYPES = new String[]{"javac.classpath"};
-
     private FileObject folder;
     private URL wsdlURL;
     private WsdlModel wsdlModel;
-    private RestWrapperForSoapGenerator generator;
 
     public RestResourceGenerator(FileObject folder, URL wsdlURL) {
         this.folder = folder;
@@ -91,43 +90,168 @@ public class RestResourceGenerator {
     }
 
     public void generate() {
+        final Project project = FileOwnerQuery.getOwner(folder);
         try {
-            addSwdpLibrary(CLASSPATHTYPES);
-            WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlURL);
+            String packageName = folder.getName() + "_client";  //TODO Uniquify this
+            JaxWsModel jaxwsModel = project.getLookup().lookup(JaxWsModel.class);
+            String clientName = getWsdlName(wsdlURL.toString());
+            if (!clientExists(jaxwsModel, clientName)) {
+                clientName = generateClient(project, wsdlURL.toString(), packageName);
+            }
+            JAXWSClientSupport clientSupport = JAXWSClientSupport.getJaxWsClientSupport(folder);
+            FileObject localWsdlFolder = clientSupport.getLocalWsdlFolderForClient(clientName, false);
+
+            Client client = jaxwsModel.findClientByName(clientName);
+            FileObject localWsdl = localWsdlFolder.getFileObject(client.getLocalWsdlFile());
+            WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(localWsdl.getURL());
+            wsdlModeler.setPackageName(packageName);
+            wsdlModeler.setCatalog(clientSupport.getCatalog());
             wsdlModeler.generateWsdlModel(new WsdlModelListener() {
 
                 public void modelCreated(WsdlModel model) {
                     wsdlModel = model;
-                    FileObject targetFile = null;
+                    JavaSource targetSource = null;
+
+                    final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+                    try {
+                        restSupport.ensureRestDevelopmentReady();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     List<WsdlService> services = wsdlModel.getServices();
                     for (WsdlService service : services) {
                         List<WsdlPort> ports = service.getPorts();
                         for (WsdlPort port : ports) {
-                            targetFile = JavaSourceHelper.createJavaSource(RESOURCE_TEMPLATE, folder, folder.getName(), port.getName());
+                            FileObject fo = folder.getFileObject(port.getName(), "java");
+                            if (fo != null) {
+                                NotifyDescriptor d =
+                                        new NotifyDescriptor.Confirmation(NbBundle.getMessage(RestResourceGenerator.class, "MSG_CONFIRM_DELETE" , port.getName()),
+                                        NbBundle.getMessage(RestResourceGenerator.class, "TITLE_CONFIRM_DELETE"),
+                                        NotifyDescriptor.YES_NO_OPTION);
+                                if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
+                                    FileLock lock = null;
+                                    try {
+                                        lock = fo.lock();
+                                        fo.delete(lock);
+                                    } catch (IOException ex) {
+                                        ErrorManager.getDefault().notify(ex);
+                                    } finally {
+                                        if (lock != null) {
+                                            lock.releaseLock();
+                                        }
+                                    }
+                                }
+                                else{
+                                    continue;
+                                }
+                            }
+                            targetSource = JavaSourceHelper.createJavaSource(RESOURCE_TEMPLATE, folder, folder.getName(), port.getName());
                             List<WSOperation> operations = port.getOperations();
                             for (WSOperation operation : operations) {
                                 try {
-                                    new RestWrapperForSoapGenerator(service, port, operation, targetFile).generate();
+                                    new RestWrapperForSoapGenerator(service, port, operation, project,
+                                            targetSource.getFileObjects().iterator().next()).generate();
                                 } catch (IOException ex) {
                                     ErrorManager.getDefault().notify(ex);
+                                    //restSupport.getRestServicesModel().runReadAction(action);
+
+                                    try {
+                                        restSupport.getRestServicesModel().runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+
+                                            public Void run(RestServicesMetadata metadata) throws IOException {
+                                                RestServices root = metadata.getRoot();
+
+                                                if (root.sizeRestServiceDescription() < 1) {
+                                                    restSupport.removeRestDevelopmentReadiness();
+                                                }
+
+                                                return null;
+                                            }
+                                        });
+                                    } catch (IOException e) {
+                                        Exceptions.printStackTrace(e);
+                                    }
                                 }
                             }
+                            try {
+                                FileObject targetFile = targetSource.getFileObjects().iterator().next();
+                                openFileInEditor(DataObject.find(targetFile)); //display in the editor
+                            } catch (DataObjectNotFoundException ex) {
+                                ErrorManager.getDefault().notify(ex);
+                            }
+
+                        // }
+                        //}
                         }
                     }
-                    try {
-                        openFileInEditor(DataObject.find(targetFile)); //display in the editor
-                    } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    
                 }
-            });
+            },
+                    true);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
     }
-    
-    
+
+    private boolean clientExists(JaxWsModel jaxwsModel, String clientName) {
+        Client[] clients = jaxwsModel.getClients();
+        for (int i = 0; i < clients.length; i++) {
+            if (clients[i].getName().equals(clientName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String generateClient(Project project, String wsdlUrl, String packageName) throws IOException {
+        JAXWSClientSupport jaxWsClientSupport = null;
+        if (project != null) {
+            jaxWsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory());
+        }
+        if (jaxWsClientSupport == null) {
+            String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_NoWebServiceClientSupport"); // NOI18N
+            NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(desc);
+            return null;
+        }
+        if (packageName != null && packageName.length() == 0) {
+            packageName = null;
+        }
+        return jaxWsClientSupport.addServiceClient(getWsdlName(wsdlUrl), wsdlUrl, packageName, true);
+
+    }
+
+    private String getWsdlName(String wsdlUrl) {
+        int ind = wsdlUrl.lastIndexOf("/"); //NOI18N
+        String wsdlName = ind >= 0 ? wsdlUrl.substring(ind + 1) : wsdlUrl;
+        if (wsdlName.toUpperCase().endsWith("?WSDL")) {
+            wsdlName = wsdlName.substring(0, wsdlName.length() - 5);
+        } //NOI18N
+        ind = wsdlName.lastIndexOf("."); //NOI18N
+        if (ind > 0) {
+            wsdlName = wsdlName.substring(0, ind);
+        }
+        // replace special characters with '_'
+        return convertAllSpecialChars(wsdlName);
+    }
+
+    private String convertAllSpecialChars(String resultStr) {
+        StringBuffer sb = new StringBuffer(resultStr);
+        for (int i = 0; i < sb.length(); i++) {
+            char c = sb.charAt(i);
+            if (Character.isLetterOrDigit(c) ||
+                    (c == '/') ||
+                    (c == '.') ||
+                    (c == '_') ||
+                    (c == ' ') ||
+                    (c == '-')) {
+                continue;
+            } else {
+                sb.setCharAt(i, '_');
+            }
+        }
+        return sb.toString();
+    }
+
     public static void openFileInEditor(DataObject dobj) {
 
         final OpenCookie openCookie = dobj.getCookie(OpenCookie.class);
@@ -146,39 +270,6 @@ public class RestResourceGenerator {
                     ec.open();
                 }
             }, 1000);
-        }
-    }
-
-    
-      /**
-     *  Add SWDP library for given source file on specified class path types.
-     * 
-     *  @param source source file object for which the libraries is added.
-     *  @param classPathTypes types of class path to add ("javac.compile",...)
-     */
-    private void addSwdpLibrary(String[] classPathTypes) throws IOException {
-        Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
-        if (swdpLibrary == null) {
-            return;
-        }
-
-        Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
-        if (restapiLibrary == null) {
-            return;
-        }
-        Project project = FileOwnerQuery.getOwner(folder);
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sgs == null || sgs.length < 1) {
-            throw new IOException("Project has no Java sources"); //NOI18N
-
-        }
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        for (String type : classPathTypes) {
-            try {
-                ProjectClassPathModifier.addLibraries(new Library[]{restapiLibrary, swdpLibrary}, sourceRoot, type);
-            } catch (UnsupportedOperationException ex) {
-                Logger.getLogger(getClass().getName()).info(type + " not supported.");
-            }
         }
     }
 }

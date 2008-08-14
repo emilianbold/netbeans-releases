@@ -140,7 +140,9 @@ public class FixActionProvider extends ActionsProviderSupport {
         Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
         if (nodes == null || nodes.length == 0) return MainProjectManager.getDefault().getMainProject();
         DataObject dao = (DataObject) nodes[0].getCookie(DataObject.class);
-        if (dao == null) return MainProjectManager.getDefault().getMainProject();
+        if (dao == null || !dao.isValid()) {
+            return MainProjectManager.getDefault().getMainProject();
+        }
         return FileOwnerQuery.getOwner(dao.getPrimaryFile());        
     }
     
@@ -174,9 +176,9 @@ public class FixActionProvider extends ActionsProviderSupport {
         int i, k = nodes.length;
         ArrayList l = new ArrayList ();
         for (i = 0; i < k; i++) {
-            Object o = nodes [i].getCookie (DataObject.class);
-            if (o != null)
-                l.add (o);
+            DataObject dobj = (DataObject)nodes [i].getCookie (DataObject.class);
+            if (dobj != null && dobj.isValid())
+                l.add (dobj);
         }
         return Lookups.fixed (l.toArray (new DataObject [l.size ()]));
     }

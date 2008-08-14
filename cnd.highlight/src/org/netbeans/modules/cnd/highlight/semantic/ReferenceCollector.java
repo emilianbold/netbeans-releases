@@ -41,12 +41,11 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 
 /**
  * Reference collector visits all references in the file and
- * creates a list of offsetable blocks that satisfy some criteria.
+ * creates a list of references that satisfy some criteria.
  * A good example is unused variable finder.
  *
  * @author Alexey Vladykin
@@ -62,10 +61,10 @@ public interface ReferenceCollector {
     void visit(CsmReference ref, CsmFile file);
 
     /**
-     * Returns a list of offsetable blocks satisfying some criteria.
+     * Returns a list of references satisfying some criteria.
      *
-     * @return  list of offsetable blocks in non-specified order
+     * @return  list of references
      */
-    List<? extends CsmOffsetable> getBlocks();
+    List<CsmReference> getReferences();
 
 }

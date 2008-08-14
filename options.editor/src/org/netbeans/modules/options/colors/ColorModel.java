@@ -109,6 +109,7 @@ public final class ColorModel {
     }
     
     public boolean isCustomProfile (String profile) {
+        if (!getProfiles ().contains (profile)) return true;
         return EditorSettings.getDefault().isCustomFontColorProfile (profile);
     }
     
@@ -450,7 +451,7 @@ public final class ColorModel {
                 }
                 if (exampleFile != null) {
                     if (exampleFile.getMIMEType().equals("content/unknown")) { //NOI18N
-                        exampleMimeType = "text/x-java"; //NOI18N
+                        exampleMimeType = "text/x-all-languages"; //NOI18N
                     } else {
                         exampleMimeType = exampleFile.getMIMEType();
                     }
@@ -518,8 +519,11 @@ public final class ColorModel {
             languageToMimeType = new HashMap<String, String>();
             Set<String> mimeTypes = EditorSettings.getDefault().getMimeTypes();
             for(String mimeType : mimeTypes) {
-                languageToMimeType.put(
-                    EditorSettings.getDefault().getLanguageName(mimeType),
+                String name = EditorSettings.getDefault().getLanguageName (mimeType);
+                if (name.equals (mimeType))
+                    continue;
+                languageToMimeType.put (
+                    name,
                     mimeType
                 );
             }

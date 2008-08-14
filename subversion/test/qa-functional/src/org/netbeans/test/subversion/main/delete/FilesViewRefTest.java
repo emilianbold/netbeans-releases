@@ -38,7 +38,6 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
@@ -145,7 +144,7 @@ public class FilesViewRefTest extends JellyTestCase {
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME + "|src|a");
             node.performPopupActionNoBlock("Cut");
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME + "|src|javaapp");
-            node.performPopupActionNoBlock("Paste|Refactor Move");
+            node.performPopupAction("Paste|Refactor Move");
 
             nbdialog = new NbDialogOperator("Move Classes");
             JButtonOperator refBut = new JButtonOperator(nbdialog, "Refactor");
@@ -155,6 +154,7 @@ public class FilesViewRefTest extends JellyTestCase {
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME);
             node.performPopupActionNoBlock("Subversion|Show Changes");
             vo = VersioningOperator.invoke();
+            Thread.sleep(2000);
             String[] expected = new String[]{"AClass.java", "BClass.java", "CClass.java", "a", "AClass.java", "b", "BClass.java", "c", "CClass.java"};
             String[] actual = new String[vo.tabFiles().getRowCount()];
             for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {

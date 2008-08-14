@@ -44,6 +44,7 @@ import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -141,14 +142,13 @@ public class ClientStubModel {
         }
     }
     
-    public String buildModel(FileObject wadlFile) throws IOException {
+    public String buildModel(InputStream is) throws IOException {
         String baseUrl = null;
-        this.wadlFile = wadlFile;
         this.resourceList = new ArrayList<Resource>();
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(wadlFile.getInputStream());          
+            Document doc = db.parse(is);          
             
             //App base
             baseUrl = RestUtils.getAttributeValue(doc, "//application/resources", "base");

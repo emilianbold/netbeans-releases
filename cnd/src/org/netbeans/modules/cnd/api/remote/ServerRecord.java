@@ -59,5 +59,5 @@ public interface ServerRecord {
 
     public boolean isDeleted();
     
-    public void validate();
+    public void validate(boolean force);
 }

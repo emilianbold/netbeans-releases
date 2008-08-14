@@ -336,7 +336,7 @@ public class Abbrev implements /* SettingsChangeListener,*/ PropertyChangeListen
 
         final BaseDocument doc = editorUI.getDocument();
         final Object[] result = new Object [1];
-        doc.runAtomic (new Runnable () {
+        doc.runAtomicAsUser (new Runnable () {
             public void run () {
                 try {
                     Caret caret = editorUI.getComponent().getCaret();

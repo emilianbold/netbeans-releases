@@ -80,20 +80,4 @@ public class IEJSDebugger extends JSAbstractExternalDebugger {
         }
         return ID;
     }
-   
-    @Override
-    protected InputStream getInputStreamForURLImpl(URL url) {
-        if (proxy != null && url != null) {
-            try {
-                String source = proxy.getSource(url.toURI());
-                if (source != null) {
-                    return new ByteArrayInputStream(source.getBytes());
-                }
-            } catch (URISyntaxException use) {
-                Log.getLogger().log(Level.INFO, use.getMessage(), use);
-            }
-        }
-        return null;
-    }
-    
 }

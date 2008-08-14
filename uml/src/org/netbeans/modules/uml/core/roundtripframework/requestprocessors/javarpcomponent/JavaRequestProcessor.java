@@ -1072,12 +1072,14 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                                                 if ( pExistingTo != null )
                                                 {
                                                     boolean isSame = pExistingTo.isSame(pCandidateTo);
-                                                    if (!isSame)
+                                                    
+                                                    // Fix for issue 138300.
+                                                    // if it's a reconnected relationship, relax the validation, because the
+                                                    //pExistingTo element has not been disconnected from the relationship yet.
+                                                    if (!isSame && !proxy.isReconnected()) 
                                                     {
                                                         // This is illegal in Java
                                                         valid = false;
-                                                        
-                                                        
                                                         sendErrorMessage(RPMessages.getString("IDS_JRT_GENERALIZATION_INVALID"),
                                                                 RPMessages.getString("IDS_JRT_INVALID_GENERALIZATION_TITLE"));
                                                     }

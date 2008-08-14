@@ -444,10 +444,25 @@ public class UIDiagram extends Diagram {
     
     public void setNamespace(INamespace value) 
     {   
-        if(value.isSame(space) == false)
+        boolean isSame = true;
+        if (space != null)
         {
-            space = value;
-            setOwner(space);
+            isSame = space.isSame(value);
+        } 
+        else if (value != null) 
+        {
+            isSame = false;
+        }
+        
+        if (!isSame)  //if the namespace is being changed, fire an event
+        {
+             space = value;
+             if (getNotify()) 
+            {
+                fireDrawingAreaPropertyChange("FireDrawingAreaPostPropertyChange", 
+                        DiagramAreaEnumerations.DAPK_NAMESPACE);
+             }
+             setOwner(space);
         }
     }
     
