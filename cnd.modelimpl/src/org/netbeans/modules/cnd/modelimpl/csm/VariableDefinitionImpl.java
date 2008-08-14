@@ -226,9 +226,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 	if( cnn != null ) {
 	    CsmObject obj = ResolverFactory.createResolver(this).resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
 	    if( obj instanceof CsmClass ) {
-		if( !( obj instanceof Unresolved.UnresolvedClass) ) {
-		    return (CsmClass) obj;
-		}
+                return (CsmClass) obj;
 	    }
 	    else if( obj instanceof CsmNamespace ) {
 		return (CsmNamespace) obj;
