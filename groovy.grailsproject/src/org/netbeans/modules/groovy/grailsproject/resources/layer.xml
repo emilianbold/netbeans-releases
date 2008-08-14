@@ -71,7 +71,7 @@
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.NewGrailsProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/grails/resources/GrailsIcon16x16.png"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/grailsproject/resources/emptyProject.html"/>
                 </file>
             </folder>

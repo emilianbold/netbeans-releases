@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,37 +31,23 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.gsp.loaders;
+package org.netbeans.modules.groovy.grails.api;
 
-import java.awt.Image;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.SimpleBeanInfo;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.Utilities;
+/**
+ *
+ * @author Martin Adamek
+ */
+public class GrailsConstants {
 
-public class GspDataLoaderBeanInfo extends SimpleBeanInfo {
-    
-    @Override
-    public BeanInfo[] getAdditionalBeanInfo() {
-        try {
-            return new BeanInfo[] {Introspector.getBeanInfo(UniFileLoader.class)};
-        } catch (IntrospectionException e) {
-            throw new AssertionError(e);
-        }
-    }
-    
-    @Override
-    public Image getIcon(int type) {
-        if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage(GspDataNode.IMAGE_ICON_BASE);
-        } else {
-            return null;
-        }
-        
-    }
-    
+    /**
+     * Location of Grails icon (16x16)
+     */
+    public static final String GRAILS_ICON_16x16 = "org/netbeans/modules/groovy/grails/resources/GrailsIcon16x16.png"; //NOI18N
+
 }

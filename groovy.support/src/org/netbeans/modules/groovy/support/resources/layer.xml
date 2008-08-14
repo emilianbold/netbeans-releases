@@ -32,7 +32,7 @@
                 <attr name="templateCategory" stringvalue="groovy, java-main-class"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyScript.html"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/script.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
             </file>
             <file name="GroovyClass.groovy" url="GroovyClass.groovy">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.support.resources.Bundle"/>
@@ -42,7 +42,7 @@
                 <attr name="templateCategory" stringvalue="groovy, java-main-class"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyClass.html"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/script.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
             </file>
         </folder>
     </folder>
