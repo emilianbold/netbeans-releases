@@ -41,6 +41,7 @@
 package org.openide.explorer.view;
 
 import java.awt.AWTEvent;
+import java.awt.Component;
 import javax.swing.plaf.TreeUI;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
@@ -57,7 +58,6 @@ import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -102,6 +102,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTree;
@@ -210,9 +211,7 @@ public abstract class TreeView extends JScrollPane {
     /** Drop support */
     transient TreeViewDropSupport dropSupport;
     transient boolean dropTargetPopupAllowed = true;
-    transient private Container contentPane;
-    transient private List storeSelectedPaths;
-
+    
     // default DnD actions
     transient private int allowedDragActions = DnDConstants.ACTION_COPY_OR_MOVE | DnDConstants.ACTION_REFERENCE;
     transient private int allowedDropActions = DnDConstants.ACTION_COPY_OR_MOVE | DnDConstants.ACTION_REFERENCE;
@@ -852,39 +851,50 @@ public abstract class TreeView extends JScrollPane {
     //
     // showing and removing the wait cursor
     //
-    private void showWaitCursor() {
-        if (getRootPane() == null) {
+    private void showWaitCursor (boolean show) {
+        JRootPane rPane = getRootPane();
+        if (rPane == null) {
             return;
         }
 
-        contentPane = getRootPane().getContentPane();
-
         if (SwingUtilities.isEventDispatchThread()) {
-            contentPane.setCursor(Utilities.createProgressCursor(contentPane));
+            doShowWaitCursor(rPane.getGlassPane(), show);
         } else {
-            SwingUtilities.invokeLater(new CursorR(contentPane, Utilities.createProgressCursor(contentPane)));
+            SwingUtilities.invokeLater(new CursorR(rPane.getGlassPane(), show));
         }
     }
 
-    private void showNormalCursor() {
-        if (contentPane == null) {
-            return;
+    private static void doShowWaitCursor (Component glassPane, boolean show) {
+        if (show) {
+            glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            glassPane.setVisible(true);
+        } else {
+            glassPane.setVisible(false);
+            glassPane.setCursor(null);
+        }
+    }
+
+    private static class CursorR implements Runnable {
+        private Component glassPane;
+        private boolean show;
+
+        private CursorR(Component cont, boolean show) {
+            this.glassPane = cont;
+            this.show = show;
         }
 
-        if (SwingUtilities.isEventDispatchThread()) {
-            contentPane.setCursor(null);
-        } else {
-            SwingUtilities.invokeLater(new CursorR(contentPane, null));
+        public void run() {
+            doShowWaitCursor(glassPane, show);
         }
     }
 
     private void prepareWaitCursor(final Node node) {
         // check type of node
         if (node == null) {
-            showNormalCursor();
+            showWaitCursor(false);
         }
 
-        showWaitCursor();
+        showWaitCursor(true);
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
@@ -895,7 +905,7 @@ public abstract class TreeView extends JScrollPane {
                     LOG.log(Level.WARNING, null, e);
                 } finally {
                     // show normal cursor above all
-                    showNormalCursor();
+                    showWaitCursor(false);
                 }
             }
         });
@@ -1128,20 +1138,6 @@ public abstract class TreeView extends JScrollPane {
          */
     }
 
-    private static class CursorR implements Runnable {
-        private Container contentPane;
-        private Cursor c;
-
-        private CursorR(Container cont, Cursor c) {
-            contentPane = cont;
-            this.c = c;
-        }
-
-        public void run() {
-            contentPane.setCursor(c);
-        }
-    }
-
     /** Listens to the property changes on tree */
     class TreePropertyListener implements VetoableChangeListener, PropertyChangeListener, TreeExpansionListener,
         TreeWillExpandListener, TreeSelectionListener, Runnable {
@@ -1272,7 +1268,7 @@ public abstract class TreeView extends JScrollPane {
 
         public synchronized void treeCollapsed(final TreeExpansionEvent ev) {
 
-            showNormalCursor();
+            showWaitCursor(false);
             class Request implements Runnable {
                 private TreePath path;
 
@@ -1341,7 +1337,6 @@ public abstract class TreeView extends JScrollPane {
         */
         public void valueChanged(TreeSelectionEvent ev) {
             TreePath[] paths = tree.getSelectionPaths();
-            storeSelectedPaths = Arrays.asList((paths == null) ? new TreePath[0] : paths);
 
             if (paths == null) {
                 // part of bugfix #37279, if DnD is active then is useless select a nearby node
