@@ -830,16 +830,12 @@ public final class Preview extends Dialog implements Percent.Listener {
     for (int i=0; i < value.length(); i++) {
       char c = value.charAt(i);
 
-      if ( !isAplha(c)) {
+      if ( !isDigit(c)) {
         break;
       }
       buffer.append(c);
     }
     return getInt(buffer.toString());
-  }
-
-  private boolean isAplha(char c) {
-    return "0123456789".indexOf(c) != -1; // NOI18N
   }
 
   // ----------------------------------------------------------
