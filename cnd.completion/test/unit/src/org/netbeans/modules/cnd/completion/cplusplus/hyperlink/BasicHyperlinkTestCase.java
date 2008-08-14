@@ -335,7 +335,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#138683 : function typedef are not recognized
         performTest("IZ138683.cc", 4, 24, "IZ138683.cc", 2, 1);
     }
-    
+
     public void testLabels() throws Exception {
         // IZ#141135 : Labels within code bocks are unresolved
         performTest("labels.cc", 3, 12, "labels.cc", 4, 5);
@@ -372,6 +372,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ137897.cc", 2, 26, "IZ137897.cc", 2, 16);
         performTest("IZ137897.cc", 2, 43, "IZ137897.cc", 2, 34);
         performTest("IZ137897.cc", 3, 30, "IZ137897.cc", 3, 24);
+    }
+
+    public void testIZ143226() throws Exception {
+        // IZ#143226 : Incorrect error in the editor
+        performTest("IZ143226.cc", 3, 6, "IZ143226.cc", 2, 5);
+        performTest("IZ143226.cc", 3, 18, "IZ143226.cc", 2, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

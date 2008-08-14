@@ -1044,7 +1044,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                             CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS |
                                                             CompletionResolver.RESOLVE_GLOB_NAMESPACES |
                                                             CompletionResolver.RESOLVE_LIB_CLASSES |
-                                                            CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
+                                                            CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS |
+                                                            CompletionResolver.RESOLVE_LOCAL_CLASSES);
                                 } else {
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                 }
