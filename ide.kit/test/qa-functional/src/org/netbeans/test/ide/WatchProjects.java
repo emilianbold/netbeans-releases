@@ -41,17 +41,13 @@ package org.netbeans.test.ide;
 
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.FlowLayout;
-import java.awt.Frame;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import junit.framework.Assert;
@@ -108,6 +104,9 @@ public final class WatchProjects {
         StringSelection ss = new StringSelection("");
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, ss);
         Toolkit.getDefaultToolkit().getSystemSelection().setContents(ss, ss);
+        Clipboard cc = Lookup.getDefault().lookup(Clipboard.class);
+        Assert.assertNotNull("There is a clipboard in lookup", cc);
+        cc.setContents(ss, ss);
 /*
         for (Frame f : Frame.getFrames()) {
             f.setVisible(false);
