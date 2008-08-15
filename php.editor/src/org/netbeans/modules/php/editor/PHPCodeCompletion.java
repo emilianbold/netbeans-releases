@@ -162,7 +162,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         );
 
     private static final PHPTokenId[] COMMENT_TOKENS = new PHPTokenId[]{
-        PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_LINE_COMMENT};
+        PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_COMMENT_END};
 
     private static final List<PHPTokenId[]> PHPDOC_TOKENCHAINS = Arrays.asList(
             new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT_START},
