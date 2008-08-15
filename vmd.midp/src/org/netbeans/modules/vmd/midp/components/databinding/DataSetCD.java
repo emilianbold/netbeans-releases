@@ -56,7 +56,6 @@ import org.netbeans.modules.vmd.midp.codegen.MidpDataSetBodyCodePresenter;
 public class DataSetCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.DataSet"); //NOI18N
-    
 
     @Override
     public TypeDescriptor getTypeDescriptor() {
@@ -70,15 +69,17 @@ public class DataSetCD extends ComponentDescriptor {
 
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-      return null;
+        return null;
     }
 
     @Override
     protected List<? extends Presenter> createPresenters() {
-        
+
         return Arrays.asList(
                 // code
                 MidpDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code") //NOI18N
-        );   
+                
+                );
     }
 }
+

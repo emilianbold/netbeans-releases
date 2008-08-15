@@ -111,6 +111,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedClass;
+import org.netbeans.modules.groovy.editor.elements.IndexedMethod;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
@@ -122,6 +123,7 @@ import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.netbeans.modules.gsf.api.Index.SearchScope;
 
 public class CodeCompleter implements CodeCompletionHandler {
 
@@ -299,11 +301,30 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
 
         // if we are right at the end of a line, a separator or a whitespace we gotta rewind.
+        
+        // 1.) NO  str.^<NLS>
+        // 2.) NO  str.^subString
+        // 3.) NO  str.sub^String
+        // 4.) YES str.subString^<WHITESPACE-HERE>
+        // 5.) YES str.subString^<NLS>
+        // 6.) YES str.subString^()
+        
 
-        if(active.id() == GroovyTokenId.NLS ||
-            ( active.id() == GroovyTokenId.WHITESPACE && difference == 0 ) ||
-            active.id().primaryCategory().equals("separator")) {
-            ts.movePrevious();
+        if (active != null) {
+            if ((active.id() == GroovyTokenId.WHITESPACE && difference == 0) ||
+                active.id().primaryCategory().equals("separator")) {
+                LOG.log(Level.FINEST, "ts.movePrevious()");
+                ts.movePrevious();
+            } else if (active.id() == GroovyTokenId.NLS ) {
+                ts.movePrevious();
+                if(((Token<? extends GroovyTokenId>) ts.token()).id() == GroovyTokenId.DOT) {
+                    ts.moveNext();
+                } else {
+                    LOG.log(Level.FINEST, "ts.movePrevious()");
+                }
+               
+            }
+            
         }
 
 
@@ -1551,15 +1572,15 @@ public class CodeCompleter implements CodeCompletionHandler {
      *
      * This could be either
      *
-     * a) Completing all available Types in a given package for import statements or
+     * 1.) Completing all available Types in a given package for import statements or
      *    giving fqn names.
      *
-     * b) Complete the types which are available without having to give a fqn:
+     * 2.) Complete the types which are available without having to give a fqn:
      *
-     * 1.) Types defined in the Groovy File where the completion is invoked. (INDEX)
-     * 2.) Types located in the same package (source or binary). (INDEX)
-     * 3.) Types manually imported via the "import" statement. (AST)
-     * 4.) The Default imports for Groovy, which are a super-set of Java. (NB JavaSource)
+     * 2.1.) Types defined in the Groovy File where the completion is invoked. (INDEX)
+     * 2.2.) Types located in the same package (source or binary). (INDEX)
+     * 2.3.) Types manually imported via the "import" statement. (AST)
+     * 2.4.) The Default imports for Groovy, which are a super-set of Java. (NB JavaSource)
      *
      * These are the Groovy default imports:
      *
@@ -1660,13 +1681,10 @@ public class CodeCompleter implements CodeCompletionHandler {
                     if (classes.size() == 0) {
                         LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
                     } else {
+                        LOG.log(Level.FINEST, "Found this number of classes : {0} ", classes.size());
                         for (IndexedClass indexedClass : classes) {
                             
-                            String signature = indexedClass.getSignature();
-                            
-                            if (signature != null && signature.startsWith(packageName)) {
-                                addToProposalUsingFilter(proposals, request, indexedClass.getSignature());
-                            }
+                            addToProposalUsingFilter(proposals, request, indexedClass.getName());
                         }
                     }
                 }
@@ -2116,10 +2134,8 @@ public class CodeCompleter implements CodeCompletionHandler {
         // 2.) right behind a dot. Then we look for:
         //     2.1  method on collection type: List, Map or Range
         //     2.2  static/instance method on class or object
-        //     2.3  dynamic, mixin method on Groovy-object like getXbyY()
-        // 3.) We live in a class which defines this method either:
-        //     3.1 defined here in this CU
-        //     3.2 defind in a super-class.
+        //     2.3  Get apropriate groovy-methods from index.
+        //     2.4  dynamic, mixin method on Groovy-object like getXbyY()
 
 
         // 1.) Test if this is a Constructor-call?
@@ -2271,6 +2287,42 @@ public class CodeCompleter implements CodeCompletionHandler {
             populateProposalWithMethodsFromClass(proposals, request, declaringClass.getName(), false);
         }
 
+        // 2.3  Get apropriate groovy-methods from index.
+        
+        GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+
+        if (index != null) {
+
+            String methodName = "";
+            
+            if(request.prefix != null) {
+                methodName = request.prefix;
+            }
+            
+            Set<IndexedMethod> methods = index.getMethods(methodName, declaringClass.getName(), NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
+
+            if (methods.size() == 0) {
+                LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
+            } else {
+                LOG.log(Level.FINEST, "Found this number of methods : {0} ", methods.size());
+                for (IndexedMethod indexedMethod : methods) {
+                    LOG.log(Level.FINEST, "method from index : {0} ", indexedMethod.getName());
+
+//                    List<String> params = indexedMethod.getParameters();
+//                    StringBuffer sb = new StringBuffer();
+//
+//                    for (String string : params) {
+//                        sb.append(string);
+//                        sb.append(" ");
+//                    }
+
+                    proposals.add(new JavaMethodItem(indexedMethod.getName(), "", "", anchor, request));
+                }
+            }
+        }
+
+        
+        
         return true;
     }
 

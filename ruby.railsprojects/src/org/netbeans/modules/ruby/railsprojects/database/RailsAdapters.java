@@ -127,7 +127,7 @@ final class RailsAdapters {
 
         StringBuilder sb = new StringBuilder();
         sb.append("# JRuby doesn't support socket:\n"); //NOI18N
-        boolean addLocalHost = text.indexOf("host:") == -1; //NOI18N
+        boolean addLocalHost = text.indexOf("host:", fromIndex) == -1; //NOI18N
         if (addLocalHost) {
             for (int i = 0; i < indent; i++) {
                 sb.append(" ");

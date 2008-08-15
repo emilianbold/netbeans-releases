@@ -353,20 +353,23 @@ public final class CreateElement implements ErrorRule<Void> {
 
         if (fixTypes.contains(ElementKind.FIELD) && isTargetWritable(target, info)) { //IZ 111048 -- don't offer anything if target file isn't writable
             Element enclosingElement = e.getEnclosingElement();
-	    if(enclosingElement != null && enclosingElement.getKind() == ElementKind.ANNOTATION_TYPE) {
-                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
-                
+            if (enclosingElement != null && enclosingElement.getKind() == ElementKind.ANNOTATION_TYPE) {
+//                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
+                FileObject targetFile = SourceUtils.getFile(ElementHandle.create(target), info.getClasspathInfo());
                 if (targetFile != null) {
                     result.add(new CreateMethodFix(info, simpleName, modifiers, target, type, types, Collections.<String>emptyList(), targetFile));
                 }
-                
-		return result;
-	    }	
-	    else {
-                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
-                
+
+                return result;
+            } else {
+//                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
+                FileObject targetFile = SourceUtils.getFile(ElementHandle.create(target), info.getClasspathInfo());
                 if (targetFile != null) {
-                    result.add(new CreateFieldFix(info, simpleName, modifiers, target, type, targetFile));
+                    if (target.getKind() == ElementKind.ENUM) {
+                        result.add(new CreateEnumConstant(info, simpleName, modifiers, target, type, targetFile));
+                    } else {
+                        result.add(new CreateFieldFix(info, simpleName, modifiers, target, type, targetFile));
+                    }
                 }
             }
         }

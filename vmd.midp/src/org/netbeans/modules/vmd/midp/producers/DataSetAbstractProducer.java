@@ -79,13 +79,6 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
         return isValid;
     }
 
-    @Override
-    public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
-        MidpProjectSupport.addLibraryToProject(document, "DataBindingME"); //NOI18N
-        mainComponent.writeProperty(DataSetAbstractCD.PROP_READ_ONLY, MidpTypes.createBooleanValue(true));
-        return super.postInitialize(document, mainComponent);
-    }
-
     public static final class DataSetProducer extends DataSetAbstractProducer {
 
         public DataSetProducer() {
@@ -99,10 +92,11 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
                                           null)); 
         }
 
+        @Override
         public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
             MidpProjectSupport.addLibraryToProject(document, "DataBindingME"); //NOI18N
             mainComponent.writeProperty(DataSetAbstractCD.PROP_READ_ONLY, MidpTypes.createBooleanValue(false));
-            return super.postInitialize(document, mainComponent);
+            return new Result (mainComponent);
         }
     }
     /*
@@ -139,7 +133,7 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
         public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
             MidpProjectSupport.addLibraryToProject(document, "DataBindingME", "DataBindingME-PIM"); //NOI18N
             mainComponent.writeProperty(DataSetAbstractCD.PROP_READ_ONLY, MidpTypes.createBooleanValue(true));
-            return super.postInitialize(document, mainComponent);
+            return new Result (mainComponent);
         }
     }
     /*
@@ -212,7 +206,7 @@ public abstract class DataSetAbstractProducer extends ComponentProducer {
         public Result postInitialize(DesignDocument document, DesignComponent mainComponent) {
             MidpProjectSupport.addLibraryToProject(document, "DataBindingME", "DataBindingME-PIM"); //NOI18N
             mainComponent.writeProperty(DataSetAbstractCD.PROP_READ_ONLY, MidpTypes.createBooleanValue(false));
-            return super.postInitialize(document, mainComponent);
+            return new Result (mainComponent);
         }
     }
 }
