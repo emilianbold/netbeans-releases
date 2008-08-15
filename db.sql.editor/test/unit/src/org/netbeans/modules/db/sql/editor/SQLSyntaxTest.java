@@ -43,7 +43,6 @@ package org.netbeans.modules.db.sql.editor;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
 import org.netbeans.junit.NbTestCase;
@@ -72,7 +71,17 @@ public class SQLSyntaxTest extends NbTestCase {
             SQLTokenContext.IDENTIFIER,
         });
     }
-    
+
+    public void testLast() {
+        SQLSyntax s = new SQLSyntax();
+        String sql = "`ident";
+        s.load(null, sql.toCharArray(), 0, sql.length(), true, sql.length());
+        assertEquals(SQLTokenContext.IDENTIFIER, s.nextToken());
+        sql = "select foo bar baz";
+        s.load(null, sql.toCharArray(), 0, sql.length(), true, sql.length());
+        assertEquals(SQLTokenContext.KEYWORD, s.nextToken());
+    }
+
     private void assertTokens(String m, TokenID[] tokens) {
         Syntax s = new SQLSyntax();
         s.load(null, m.toCharArray(), 0, m.length(), true, m.length());
