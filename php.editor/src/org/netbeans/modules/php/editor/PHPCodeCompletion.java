@@ -161,11 +161,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_TOKEN}
         );
 
-    private static final List<PHPTokenId[]> COMMENT_TOKENCHAINS = Arrays.asList(
-            new PHPTokenId[]{PHPTokenId.PHP_COMMENT_START},
-            new PHPTokenId[]{PHPTokenId.PHP_COMMENT},
-            new PHPTokenId[]{PHPTokenId.PHP_LINE_COMMENT}
-            );
+    private static final PHPTokenId[] COMMENT_TOKENS = new PHPTokenId[]{
+        PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_LINE_COMMENT};
 
     private static final List<PHPTokenId[]> PHPDOC_TOKENCHAINS = Arrays.asList(
             new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT_START},
@@ -281,7 +278,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             return CompletionContext.CLASS_MEMBER;
         } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS)){
             return CompletionContext.STATIC_CLASS_MEMBER;
-        } else if (acceptTokenChains(tokenSequence, COMMENT_TOKENCHAINS)){
+        } else if (isOneOfTokens(tokenSequence, COMMENT_TOKENS)){
             return CompletionContext.NONE;
         } else if (acceptTokenChains(tokenSequence, PHPDOC_TOKENCHAINS)){
             return CompletionContext.PHPDOC;
@@ -310,6 +307,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             return CompletionContext.NONE;
         }
         return CompletionContext.EXPRESSION;
+    }
+    
+    private static boolean isOneOfTokens(TokenSequence tokenSequence, PHPTokenId[] tokenIds){
+        TokenId searchedId = tokenSequence.token().id();
+
+        for (TokenId tokenId : tokenIds){
+            if (tokenId.equals(searchedId)){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static boolean acceptTokenChains(TokenSequence tokenSequence, List<PHPTokenId[]> tokenIdChains){

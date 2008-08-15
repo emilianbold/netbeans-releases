@@ -54,6 +54,18 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testPhpContextWithPrefix() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "^GL", false);
     }
+    
+    public void testComments1() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.php", "one line ^", false);
+    }
+    
+    public void testComments2() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.php", "multiline comment ^", false);
+    }
+    
+    public void testComments3() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.php", "PHPDoc comment ^", false);
+    }
 
     public void testPhpContext2() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
