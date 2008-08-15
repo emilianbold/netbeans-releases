@@ -146,4 +146,8 @@ class CreateEnumConstant implements Fix {
         return Utilities.commitAndComputeChangeInfo(targetFile, diff, null);
     }
 
+    String toDebugString(CompilationInfo info) {
+        return "CreateEnumConstant:" + name + ":" + target.getQualifiedName() + ":" + proposedType.resolve(info).toString(); // NOI18N
+    }
+    
 }
