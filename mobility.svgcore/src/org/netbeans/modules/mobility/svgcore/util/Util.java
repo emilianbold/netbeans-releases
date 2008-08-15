@@ -78,12 +78,16 @@ import org.openide.windows.InputOutput;
  */
 public class Util {  
     //public static final String UNIQUE_NODE_ID = "unid";
-    
+
+    public static final int MAX_WORKUNITS = 300;
+
     //**
     // * Lunches external editor set using options. If the editor is not set or is not set correctly, 
     // * <br> no Exception is thrown but warning dialog is displayed.
     // * @param fo SVG file to be lunched in external editor
     // 
+    
+    
     public static void launchExternalEditor(final FileObject fo){
         assert fo != null : "File object is null";
         final InputOutput io = IOProvider.getDefault().getIO(NbBundle.getMessage(Util.class, "LBL_EditedSvgFile", fo.getName()), false); //NOI18N
@@ -181,7 +185,7 @@ public class Util {
     
     private static SVGImage loadImageWithProgress(FileObject fo) throws IOException {
         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Util.class, "MSG_Loading", fo.getNameExt()));
-        handle.start(200);
+        handle.start(MAX_WORKUNITS);
         if ( SVGDataObject.EXT_SVG.equals(fo.getExt().toLowerCase())){  //NOI18N
             ProgressInputStream pis = null;
             try {
@@ -263,6 +267,9 @@ public class Util {
             double current = ((double)alreadyRead / (double)expectedSize) * 100.0;
             if (current > (double)expectedSize){
                 current = (double)expectedSize;
+            }
+            if (current >= MAX_WORKUNITS) {
+                current = 295;
             }
             handle.progress((int)current);  
         }
