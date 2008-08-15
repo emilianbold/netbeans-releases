@@ -38,21 +38,90 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.makeproject;
+package org.netbeans.modules.cnd.utils.ui;
 
-import org.openide.util.NbBundle;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Rectangle;
+import java.awt.Window;
+import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-public class ConfigureHostPanel extends javax.swing.JPanel {
+public class ModalMessageDlg extends javax.swing.JPanel {
 
-    /** Creates new form ConfigureHostPanel */
-    public ConfigureHostPanel() {
+    /** Creates new form ModalMessageDlg */
+    public ModalMessageDlg() {
         initComponents();
     }
 
+    /**
+     * allows to display modal dialog with title and message for the period of
+     * long task run
+     * @param parent parent frame or dialog
+     * @param workTask non EDT task to run
+     * @param postEDTTask EDT task to run after closing modal dialog (can be null)
+     * @param title title of dialog
+     * @param message message in dialog
+     * @return
+     */
+    public static Task runLongTask(Dialog parent, final Runnable workTask, final Runnable postEDTTask, String title, String message) {
+        return runLongTaskImpl(parent, workTask, postEDTTask, title, message);
+    }
+    public static Task runLongTask(Frame parent, final Runnable workTask, final Runnable postEDTTask, String title, String message) {
+        return runLongTaskImpl(parent, workTask, postEDTTask, title, message);
+    }
+    private static Task runLongTaskImpl(Window parent, final Runnable workTask, final Runnable postEDTTask, String title, String message) {
+        final JDialog dialog;
+        if (parent instanceof Frame) {
+            dialog = new JDialog((Frame)parent, title, true);           
+        } else {
+            assert (parent instanceof Dialog);
+            dialog = new JDialog((Dialog)parent, title, true);
+        }
+        final ModalMessageDlg panel = new ModalMessageDlg();
+
+        dialog.getContentPane().add(panel);
+        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
+        dialog.pack();
+
+        Rectangle bounds = parent.getBounds();
+
+        int middleX = bounds.x + bounds.width / 2;
+        int middleY = bounds.y + bounds.height / 2;
+
+        Dimension size = dialog.getPreferredSize();
+
+        dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
+        panel.setMessage(message);
+        Task post = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    workTask.run();
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            // hide dialog and run action if successfully connected
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                            if (postEDTTask != null) {
+                                postEDTTask.run();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        dialog.setVisible(true);
+        return post;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -62,9 +131,7 @@ public class ConfigureHostPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lblHost = new javax.swing.JLabel();
-
-        lblHost.setText(org.openide.util.NbBundle.getMessage(ConfigureHostPanel.class, "ConfigureHostPanel.lblHost.text")); // NOI18N
+        lblMessage = new javax.swing.JLabel();
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -72,24 +139,24 @@ public class ConfigureHostPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(lblHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
+                .add(lblMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(28, Short.MAX_VALUE)
-                .add(lblHost)
+                .add(lblMessage)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel lblHost;
+    private javax.swing.JLabel lblMessage;
     // End of variables declaration//GEN-END:variables
 
-    public void setHost(String host) {
-        lblHost.setText(NbBundle.getMessage(ConfigureHostPanel.class, "MSG_Configure_Host_Progress", host)); // NOI18N
+    public void setMessage(String msg) {
+        lblMessage.setText(msg);
     }
 }
