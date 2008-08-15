@@ -8,7 +8,7 @@
 #ifndef _resolver_class_string_H
 #define	_resolver_class_string_H
 
-namespace std {
+namespace std_1 {
     template<typename _Alloc>
     class allocator;
     
@@ -20,32 +20,32 @@ namespace std {
     class basic_string {
     };
     
-    class string : public std::basic_string<char> {
+    class string : public std_1::basic_string<char> {
         
     };
 }
 
-namespace std {
+namespace std_1 {
     class wstring : protected basic_string<wchar_t> {
         
     };
 }
 
-using std::string;
+using std_1::string;
 
-std :: wstring write(string str);
+std_1 :: wstring write(string str);
 
 
-namespace A {
+namespace resolver_class_string {
   string read();
-  using namespace std;
+  using namespace std_1;
   class ClassA {
   public:
     wstring read() const;
   };
 }
 
-using A::ClassA;
+using resolver_class_string::ClassA;
 
 #endif	/* _resolver_class_string_H */
 

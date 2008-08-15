@@ -347,7 +347,7 @@ public abstract class CommonConfigurationXMLCodec
     
     private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
 	xes.elementOpen(TOOLS_SET_ELEMENT);
-	xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getDisplayName());
+	xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getName());
         xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
         if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault())
             xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());

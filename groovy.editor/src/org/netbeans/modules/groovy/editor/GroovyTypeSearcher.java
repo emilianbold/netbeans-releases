@@ -59,6 +59,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -144,7 +145,6 @@ public class GroovyTypeSearcher implements TypeSearcher {
         private Icon projectIcon;
         private final Helper helper;
         private boolean isLibrary;
-        private static final String ICON_PATH = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
         
         public GroovyTypeDescriptor(IndexedElement element, Helper helper) {
             this.element = element;
@@ -198,7 +198,7 @@ public class GroovyTypeSearcher implements TypeSearcher {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(org.openide.util.Utilities.loadImage(ICON_PATH));
+                return new ImageIcon(org.openide.util.Utilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
             }
             return projectIcon;
         }

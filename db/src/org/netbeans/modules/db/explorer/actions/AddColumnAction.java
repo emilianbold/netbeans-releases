@@ -74,17 +74,13 @@ public class AddColumnAction extends DatabaseAction {
 
         DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
         final TableNodeInfo nfo = (TableNodeInfo) info.getParent(nodename);
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run () {
-                try {
-                    AddTableColumnDialog dlg = new AddTableColumnDialog((Specification) nfo.getSpecification(), nfo);
-                    if (dlg.run()) {
-                        nfo.addColumn(dlg.getColumnName());
-                    }
-                } catch(Exception exc) {
-                    DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
-                }
+        try {
+            AddTableColumnDialog dlg = new AddTableColumnDialog((Specification) nfo.getSpecification(), nfo);
+            if (dlg.run()) {
+                nfo.addColumn(dlg.getColumnName());
             }
-        }, 0);
+        } catch(Exception exc) {
+            DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
+        }
     }
 }

@@ -356,17 +356,18 @@ public abstract class CsmResultItem
     
     // Compares include directives dy file names
     private boolean isIncludesEqual(String inc1, String inc2) {
-        normalizeInclude(inc1);
-        normalizeInclude(inc2);
+        inc1 = normalizeInclude(inc1);
+        inc2 = normalizeInclude(inc2);
         return (inc1.equals(inc2));
     }
     
     // Normailizes include directive string
-    private void normalizeInclude(String inc) {
+    private String normalizeInclude(String inc) {
         inc.toLowerCase();
         inc = inc.replaceAll("[\\s\n]+", " "); // NOI18N
         inc = inc.replaceAll("[<>\"]", "\""); // NOI18N
         inc = inc.trim();
+        return inc;
     }
 
     // Says is it forward declarartion or not

@@ -41,38 +41,49 @@ NAMESPACE DEFINITOIN qwe [26:1/252-37:2/455] SCOPE: functions_and_variables.cc
 USING NAMESPACE. qwe  [39:1/457-39:20/476]; REF NS: qwe SCOPE: null
 USING NAMESPACE. qwe::asd  [40:1/478-40:25/502]; REF NS: qwe::asd SCOPE: null
 USING NAMESPACE. qwe::asd::zxc  [41:1/504-41:30/533]; REF NS: qwe::asd::zxc SCOPE: null
-CLASS C (C ) [48:1/557-48:12/568] lcurly=565 SCOPE: $Global$ 
+CLASS NewClass (NewClass ) [44:1/601-50:3/678] lcurly=616 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-FUNCTION f11 [50:1/570-50:12/581] FunctionImpl SCOPE: $Global$ 
+        FIELD PUBLIC static AAA [46:5/630-46:20/645]  TYPE: int TEXT=int  [46:5/630-46:15/640]  INIT: null  SCOPE: NewClass 
+            DEFINITION: AAA [52:1/680-52:24/703]  TYPE: int TEXT=int  [52:1/680-52:4/683]  INIT: text='10'  SCOPE: null
+        FIELD PUBLIC static BBB [47:5/650-47:20/665]  TYPE: int TEXT=int  [47:5/650-47:15/660]  INIT: null  SCOPE: NewClass 
+            DEFINITION: BBB [53:1/704-53:24/727]  TYPE: int TEXT=int  [53:1/704-53:4/707]  INIT: null  SCOPE: null
+VARIABLE DEFINITION AAA [52:1/680-52:24/703]  TYPE: int TEXT=int  [52:1/680-52:4/683]  INIT: text='10'  SCOPE: null
+    DECLARATION: AAA [46:5/630-46:20/645]  TYPE: int TEXT=int  [46:5/630-46:15/640]  INIT: null  SCOPE: NewClass 
+VARIABLE DEFINITION BBB [53:1/704-53:24/727]  TYPE: int TEXT=int  [53:1/704-53:4/707]  INIT: null  SCOPE: null
+    DECLARATION: BBB [47:5/650-47:20/665]  TYPE: int TEXT=int  [47:5/650-47:15/660]  INIT: null  SCOPE: NewClass 
+CLASS C (C ) [59:1/749-59:12/760] lcurly=757 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+FUNCTION f11 [61:1/762-61:12/773] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f11(C)
     UNIQUE NAME F:f11(C)
     PARAMETERS:
-         [50:9/578-50:10/579]  TYPE: C TEXT=C  [50:9/578-50:10/579]  INIT: null  SCOPE: f11 
-    RETURNS int TEXT=int  [50:1/570-50:4/573]
-FUNCTION f23 [51:1/582-51:13/594] FunctionImpl SCOPE: $Global$ 
+         [61:9/770-61:10/771]  TYPE: C TEXT=C  [61:9/770-61:10/771]  INIT: null  SCOPE: f11 
+    RETURNS int TEXT=int  [61:1/762-61:4/765]
+FUNCTION f23 [62:1/774-62:13/786] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f23(C*)
     UNIQUE NAME F:f23(C*)
     PARAMETERS:
-         [51:9/590-51:11/592]  TYPE: *C TEXT=C*  [51:9/590-51:10/591]  INIT: null  SCOPE: f23 
-    RETURNS int TEXT=int  [51:1/582-51:4/585]
-FUNCTION DEFINITION main  [53:1/596-59:2/714] FunctionDDImpl SCOPE: $Global$ 
+         [62:9/782-62:11/784]  TYPE: *C TEXT=C*  [62:9/782-62:10/783]  INIT: null  SCOPE: f23 
+    RETURNS int TEXT=int  [62:1/774-62:4/777]
+FUNCTION DEFINITION main  [64:1/788-70:2/906] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE main(int,char**)
     UNIQUE NAME f:main(int,char**)
-    DECLARATION: main  [53:1/596-59:2/714]
+    DECLARATION: main  [64:1/788-70:2/906]
     PARAMETERS:
-        argc [53:10/605-53:18/613]  TYPE: int TEXT=int  [53:10/605-53:13/608]  INIT: null  SCOPE: main 
-        argv [53:20/615-53:31/626]  TYPE: **char TEXT=char**  [53:20/615-53:26/621]  INIT: null  SCOPE: main 
-    RETURNS int TEXT=int  [53:1/596-53:4/599]
-    STATEMENT COMPOUND  [53:33/628-59:2/714] SCOPE: main 
-        STATEMENT DECLARATION  [54:5/634-54:13/642] SCOPE: Stmt  [53:33/628-59:2/714]
-            VARIABLE foo [54:5/634-54:13/642]  TYPE: int TEXT=int  [54:5/634-54:8/637]  INIT: null  SCOPE: Stmt  [53:33/628-59:2/714]
-        STATEMENT EXPRESSION  [55:5/647-55:17/659] SCOPE: Stmt  [53:33/628-59:2/714] text: 'foo = qweqwe'
-        STATEMENT EXPRESSION  [56:5/665-56:17/677] SCOPE: Stmt  [53:33/628-59:2/714] text: 'foo = asdasd'
-        STATEMENT EXPRESSION  [57:5/683-57:17/695] SCOPE: Stmt  [53:33/628-59:2/714] text: 'foo = zxczxc'
-        STATEMENT RETURN  [58:5/701-58:16/712] SCOPE: Stmt  [53:33/628-59:2/714] text: 'return foo;'
+        argc [64:10/797-64:18/805]  TYPE: int TEXT=int  [64:10/797-64:13/800]  INIT: null  SCOPE: main 
+        argv [64:20/807-64:31/818]  TYPE: **char TEXT=char**  [64:20/807-64:26/813]  INIT: null  SCOPE: main 
+    RETURNS int TEXT=int  [64:1/788-64:4/791]
+    STATEMENT COMPOUND  [64:33/820-70:2/906] SCOPE: main 
+        STATEMENT DECLARATION  [65:5/826-65:13/834] SCOPE: Stmt  [64:33/820-70:2/906]
+            VARIABLE foo [65:5/826-65:13/834]  TYPE: int TEXT=int  [65:5/826-65:8/829]  INIT: null  SCOPE: Stmt  [64:33/820-70:2/906]
+        STATEMENT EXPRESSION  [66:5/839-66:17/851] SCOPE: Stmt  [64:33/820-70:2/906] text: 'foo = qweqwe'
+        STATEMENT EXPRESSION  [67:5/857-67:17/869] SCOPE: Stmt  [64:33/820-70:2/906] text: 'foo = asdasd'
+        STATEMENT EXPRESSION  [68:5/875-68:17/887] SCOPE: Stmt  [64:33/820-70:2/906] text: 'foo = zxczxc'
+        STATEMENT RETURN  [69:5/893-69:16/904] SCOPE: Stmt  [64:33/820-70:2/906] text: 'return foo;'
 
 ========== Dumping model of PROJECT DummyProject
 VARIABLE pA [10:6/86-10:8/88]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [10:1/81-10:5/85]  INIT: null  SCOPE: $Global$ 
@@ -95,38 +106,45 @@ FUNCTION foo_2 [24:1/232-24:19/250] FunctionImpl SCOPE: $Global$
 USING NAMESPACE. qwe  [39:1/457-39:20/476]; REF NS: qwe SCOPE: null
 USING NAMESPACE. qwe::asd  [40:1/478-40:25/502]; REF NS: qwe::asd SCOPE: null
 USING NAMESPACE. qwe::asd::zxc  [41:1/504-41:30/533]; REF NS: qwe::asd::zxc SCOPE: null
-CLASS C (C ) [48:1/557-48:12/568] lcurly=565 SCOPE: $Global$ 
+CLASS NewClass (NewClass ) [44:1/601-50:3/678] lcurly=616 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-FUNCTION f11 [50:1/570-50:12/581] FunctionImpl SCOPE: $Global$ 
+        FIELD PUBLIC static AAA [46:5/630-46:20/645]  TYPE: int TEXT=int  [46:5/630-46:15/640]  INIT: null  SCOPE: NewClass 
+            DEFINITION: AAA [52:1/680-52:24/703]  TYPE: int TEXT=int  [52:1/680-52:4/683]  INIT: text='10'  SCOPE: null
+        FIELD PUBLIC static BBB [47:5/650-47:20/665]  TYPE: int TEXT=int  [47:5/650-47:15/660]  INIT: null  SCOPE: NewClass 
+            DEFINITION: BBB [53:1/704-53:24/727]  TYPE: int TEXT=int  [53:1/704-53:4/707]  INIT: null  SCOPE: null
+CLASS C (C ) [59:1/749-59:12/760] lcurly=757 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+FUNCTION f11 [61:1/762-61:12/773] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f11(C)
     UNIQUE NAME F:f11(C)
     PARAMETERS:
-         [50:9/578-50:10/579]  TYPE: C TEXT=C  [50:9/578-50:10/579]  INIT: null  SCOPE: f11 
-    RETURNS int TEXT=int  [50:1/570-50:4/573]
-FUNCTION f23 [51:1/582-51:13/594] FunctionImpl SCOPE: $Global$ 
+         [61:9/770-61:10/771]  TYPE: C TEXT=C  [61:9/770-61:10/771]  INIT: null  SCOPE: f11 
+    RETURNS int TEXT=int  [61:1/762-61:4/765]
+FUNCTION f23 [62:1/774-62:13/786] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE f23(C*)
     UNIQUE NAME F:f23(C*)
     PARAMETERS:
-         [51:9/590-51:11/592]  TYPE: *C TEXT=C*  [51:9/590-51:10/591]  INIT: null  SCOPE: f23 
-    RETURNS int TEXT=int  [51:1/582-51:4/585]
-FUNCTION DEFINITION main  [53:1/596-59:2/714] FunctionDDImpl SCOPE: $Global$ 
+         [62:9/782-62:11/784]  TYPE: *C TEXT=C*  [62:9/782-62:10/783]  INIT: null  SCOPE: f23 
+    RETURNS int TEXT=int  [62:1/774-62:4/777]
+FUNCTION DEFINITION main  [64:1/788-70:2/906] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE main(int,char**)
     UNIQUE NAME f:main(int,char**)
-    DECLARATION: main  [53:1/596-59:2/714]
+    DECLARATION: main  [64:1/788-70:2/906]
     PARAMETERS:
-        argc [53:10/605-53:18/613]  TYPE: int TEXT=int  [53:10/605-53:13/608]  INIT: null  SCOPE: main 
-        argv [53:20/615-53:31/626]  TYPE: **char TEXT=char**  [53:20/615-53:26/621]  INIT: null  SCOPE: main 
-    RETURNS int TEXT=int  [53:1/596-53:4/599]
-    STATEMENT COMPOUND  [53:33/628-59:2/714] SCOPE: main 
-        STATEMENT DECLARATION  [54:5/634-54:13/642] SCOPE: Stmt  [53:33/628-59:2/714]
-            VARIABLE foo [54:5/634-54:13/642]  TYPE: int TEXT=int  [54:5/634-54:8/637]  INIT: null  SCOPE: Stmt  [53:33/628-59:2/714]
-        STATEMENT EXPRESSION  [55:5/647-55:17/659] SCOPE: Stmt  [53:33/628-59:2/714] text: 'foo = qweqwe'
-        STATEMENT EXPRESSION  [56:5/665-56:17/677] SCOPE: Stmt  [53:33/628-59:2/714] text: 'foo = asdasd'
-        STATEMENT EXPRESSION  [57:5/683-57:17/695] SCOPE: Stmt  [53:33/628-59:2/714] text: 'foo = zxczxc'
-        STATEMENT RETURN  [58:5/701-58:16/712] SCOPE: Stmt  [53:33/628-59:2/714] text: 'return foo;'
+        argc [64:10/797-64:18/805]  TYPE: int TEXT=int  [64:10/797-64:13/800]  INIT: null  SCOPE: main 
+        argv [64:20/807-64:31/818]  TYPE: **char TEXT=char**  [64:20/807-64:26/813]  INIT: null  SCOPE: main 
+    RETURNS int TEXT=int  [64:1/788-64:4/791]
+    STATEMENT COMPOUND  [64:33/820-70:2/906] SCOPE: main 
+        STATEMENT DECLARATION  [65:5/826-65:13/834] SCOPE: Stmt  [64:33/820-70:2/906]
+            VARIABLE foo [65:5/826-65:13/834]  TYPE: int TEXT=int  [65:5/826-65:8/829]  INIT: null  SCOPE: Stmt  [64:33/820-70:2/906]
+        STATEMENT EXPRESSION  [66:5/839-66:17/851] SCOPE: Stmt  [64:33/820-70:2/906] text: 'foo = qweqwe'
+        STATEMENT EXPRESSION  [67:5/857-67:17/869] SCOPE: Stmt  [64:33/820-70:2/906] text: 'foo = asdasd'
+        STATEMENT EXPRESSION  [68:5/875-68:17/887] SCOPE: Stmt  [64:33/820-70:2/906] text: 'foo = zxczxc'
+        STATEMENT RETURN  [69:5/893-69:16/904] SCOPE: Stmt  [64:33/820-70:2/906] text: 'return foo;'
 NAMESPACE DEFINITIONS for qwe (qwe) 
     functions_and_variables.cc  [26:1/252-37:2/455]
 NAMESPACE qwe (qwe) 

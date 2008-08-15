@@ -861,7 +861,7 @@ public final class RubyPlatform {
             Info info = new Info("JRuby", "1.8.6"); // NOI18N
             info.jversion = "1.1.3"; // NOI18N
             info.patchlevel = "114"; // NOI18N
-            info.releaseDate = "2008-07-19"; // NOI18N
+            info.releaseDate = "2008-08-15"; // NOI18N
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
                     "jruby-1.1.3", "org.netbeans.modules.ruby.platform", false);  // NOI18N
@@ -871,7 +871,7 @@ public final class RubyPlatform {
             info.libDir = FileUtil.toFile(libDirFO.getFileObject("/1.8")).getAbsolutePath(); // NOI18N
             info.gemHome = FileUtil.toFile(libDirFO.getFileObject("/gems/1.8")).getAbsolutePath(); // NOI18N
             info.gemPath = info.gemHome;
-            info.gemVersion = "1.0.1 (1.0.1)"; // NOI18N
+            info.gemVersion = "1.2.0 (1.2.0)"; // NOI18N
             return info;
         }
 

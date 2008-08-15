@@ -218,7 +218,7 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
         throw new IllegalStateException("Internal error - should never be called");
     }
 
-    public int tokenOffsetByIndex(int index) {
+    public int tokenOffset(int index) {
         locateTokenListByIndex(index);
         // Need to treat specially token parts - return offset of complete token
         AbstractToken<T> token;
@@ -227,7 +227,7 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
         ) {
             return ((PartToken<T>)token).joinToken().offset(null);
         }
-        return activeTokenList.tokenOffsetByIndex(index - activeStartJoinIndex);
+        return activeTokenList.tokenOffset(index - activeStartJoinIndex);
     }
 
     public int tokenListIndex(int offset, int startIndex, int endIndex) {
@@ -495,6 +495,20 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
                 while (activeTokenList.tokenCountCurrent() == 0) {
                     activeTokenListIndex++;
                     fetchActiveTokenListData();
+                    if (activeTokenListIndex == tokenListCount()) {
+                        // All ETLs were empty including last one - the JTL.tokenOrEmbedding()
+                        // should return null in this case.
+                        return;
+                    }
+                }
+                // Now located on first non-empty ETL - its first token
+                // is either regular or a joined token in which case
+                // it should be relocated to the last part's index to comply
+                // with the JTL contract.
+                if (activeStartJoinIndex == activeEndJoinIndex) { // surely non-empty; and contains single joined token
+                    lps = activeTokenList.joinInfo.joinTokenLastPartShift();
+                    activeTokenListIndex += lps;
+                    fetchActiveTokenListData();
                 }
             }
         }
@@ -588,9 +602,13 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
 
     private EmbeddedTokenList<T> initTokenList(int tokenListIndex, int joinTokenCount) {
         EmbeddedTokenList<T> tokenList = tokenList(tokenListIndex);
-        assert (tokenList.embedding().joinSections()) :
-                "Embedding not declared to join sections. " +
-                tokenList.dumpInfo(null);
+        if (!tokenList.embedding().joinSections()) {
+            throw new IllegalStateException(
+                    "Embedding " + tokenList.embedding() + " not declared to join sections. " +
+                    tokenList.dumpInfo(null)
+            );
+        }
+                
         if (tokenList.tokenCountCurrent() > 0) {
             // Clear all tokens so that it can be initialized by joined lexing.
             tokenList.clear();

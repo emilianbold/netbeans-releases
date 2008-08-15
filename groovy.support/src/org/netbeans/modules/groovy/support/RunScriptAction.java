@@ -84,7 +84,7 @@ public class RunScriptAction extends NodeAction {
 
         if (project != null) {
             FileObject parentDir = nodeFile.getParent();
-            if (parentDir.isFolder() && parentDir.getName().equals("scripts")) {
+            if (parentDir != null && parentDir.isFolder() && parentDir.getName().equals("scripts")) {
                 FileObject prjDir = project.getProjectDirectory();
                 
                 if (prjDir != null) {

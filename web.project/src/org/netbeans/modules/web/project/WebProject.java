@@ -943,6 +943,11 @@ public final class WebProject implements Project, AntProjectListener {
                 String web = props.get(WebProjectProperties.WEB_DOCBASE_DIR);
                 props.setProperty(WebProjectProperties.WEBINF_DIR, web + "/WEB-INF"); //NOI18N
             }
+            
+            //add persistence.xml.dir introduced in 6.5 - see issue 143884 and 142164
+            if (props.getProperty(WebProjectProperties.PERSISTENCE_XML_DIR) == null) {
+                props.setProperty(WebProjectProperties.PERSISTENCE_XML_DIR, "${" + WebProjectProperties.CONF_DIR + "}");
+            }
 
             updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
@@ -962,6 +967,7 @@ public final class WebProject implements Project, AntProjectListener {
             if (!props.containsKey(ProjectProperties.EXCLUDES)) {
                 props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
             }
+            
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 
             try {
