@@ -62,7 +62,7 @@ public class RemoteServerSetup {
     private static final String GET_SCRIPT_INFO = "PATH=/bin:/usr/bin:$PATH  grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null 2> /dev/null"; // NOI18N
     private static final String DOS2UNIX_CMD = "PATH=/bin:/usr/bin:$PATH  dos2unix " + REMOTE_SCRIPT_DIR; // NOI18N
     private static final String GET_LIB_INFO = "PATH=/bin:/usr/bin:$PATH  ls -1 2>&1 "; // NOI18N
-    private static final String REMOTE_LIB_DIR = ".netbeans/6.5/cnd2/lib/"; // NOI18N
+    public static final String REMOTE_LIB_DIR = ".netbeans/6.5/cnd2/lib/"; // NOI18N
     
     private final Map<String, Double> scriptSetupMap;
     private final Map<String, String> binarySetupMap;
@@ -80,10 +80,14 @@ public class RemoteServerSetup {
         scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.7)); // NOI18N
         
         // Binary setup map
+        // TODO: this should be done in gdb module (see IZ 144053)
         binarySetupMap = new HashMap<String, String>();
         binarySetupMap.put(".netbeans/6.5/cnd2/lib/GdbHelper-Linux-x86.so", "bin/GdbHelper-Linux-x86.so"); // NOI18N
         binarySetupMap.put(".netbeans/6.5/cnd2/lib/GdbHelper-SunOS-x86.so", "bin/GdbHelper-SunOS-x86.so"); // NOI18N
         binarySetupMap.put(".netbeans/6.5/cnd2/lib/GdbHelper-SunOS-sparc.so", "bin/GdbHelper-SunOS-sparc.so"); // NOI18N
+        binarySetupMap.put(".netbeans/6.5/cnd2/lib/unbuffer-Linux-x86.so", "bin/unbuffer-Linux-x86.so"); // NOI18N
+        binarySetupMap.put(".netbeans/6.5/cnd2/lib/unbuffer-SunOS-x86.so", "bin/unbuffer-SunOS-x86.so"); // NOI18N
+        binarySetupMap.put(".netbeans/6.5/cnd2/lib/unbuffer-SunOS-sparc.so", "bin/unbuffer-SunOS-sparc.so"); // NOI18N
         
         updateMap = new HashMap<String, List<String>>();
     }
