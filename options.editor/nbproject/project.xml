@@ -371,6 +371,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.diff</friend>
                 <friend>org.netbeans.modules.java.source</friend>
+                <friend>org.netbeans.modules.ruby</friend>
                 <package>org.netbeans.modules.options.colors</package>
                 <package>org.netbeans.modules.options.colors.spi</package>
                 <package>org.netbeans.modules.options.editor.spi</package>
