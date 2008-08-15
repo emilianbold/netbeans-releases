@@ -1434,6 +1434,7 @@
             functionName = '';
         else if (functionName == 'anonymous') {
             functionName = getAnonymousFunctionName(script);
+            
         }
         return functionName;
     }    
@@ -1454,8 +1455,8 @@
         var accumulatedText = "";
         var matched = false;
         
-        for (var i = 0; i < 10 && script.baseLineNumber-i >= 0; i++) {
-            accumulatedText = lines[script.baseLineNumber - i] + accumulatedText;
+        for (var i = 0; i < 2 && script.baseLineNumber-1-i >= 0; i++) {
+            accumulatedText = lines[script.baseLineNumber - 1 - i] + accumulatedText;
             var functionPos = accumulatedText.lastIndexOf('function');
             if (functionPos >= 0) {
                 accumulatedText = accumulatedText.substring(0, functionPos);
