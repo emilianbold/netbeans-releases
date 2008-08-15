@@ -94,32 +94,6 @@ public final class CodeStylePreferences {
     }
     
     // ----------------------------------------------------------------------
-    // PreferenceChangeListener implementation
-    // ----------------------------------------------------------------------
-
-    public void run() {
-        // this runs under ProjectManager.mutex().writeAccess, see #138528
-        synchronized (this) {
-            this.projectRoot = findProjectPreferences(doc);
-            if (projectRoot != null) {
-                // determine if we are using code style preferences from the project
-                String usedProfile = projectRoot.get(PROP_USED_PROFILE, DEFAULT_PROFILE);
-                this.useProject = PROJECT_PROFILE.equals(usedProfile);
-                this.projectPrefs = mimeType == null ?
-                    projectRoot.node(PROJECT_PROFILE) : projectRoot.node(PROJECT_PROFILE).node(mimeType);
-
-                // listen on changes
-                projectRoot.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, this.projectRoot));
-            } else {
-                useProject = false;
-                projectPrefs = null;
-            }
-            
-            logInfo();
-        }
-    }
-    
-    // ----------------------------------------------------------------------
     // private implementation
     // ----------------------------------------------------------------------
     
@@ -136,10 +110,8 @@ public final class CodeStylePreferences {
     private final Reference<Document> refDoc;
     private final String filePath;
     
-    private final Document doc;
+    private final Preferences projectRoot;
     private final Preferences globalPrefs;
-    
-    private Preferences projectRoot;
     private Preferences projectPrefs;
     private boolean useProject;
 
@@ -186,26 +158,34 @@ public final class CodeStylePreferences {
         this.mimeType = mimeType;
         this.refDoc = refDoc;
         this.filePath = filePath; // just for logging
-        
-        if (projectRoot != null) {
-            Preferences allLangCodeStyle = projectRoot.node(NODE_CODE_STYLE);
-            Preferences p = allLangCodeStyle.node(PROJECT_PROFILE);
 
-            // determine if we are using code style preferences from the project
-            String usedProfile = allLangCodeStyle.get(PROP_USED_PROFILE, DEFAULT_PROFILE);
-            this.useProject = PROJECT_PROFILE.equals(usedProfile);
-            this.projectPrefs = mimeType == null ? 
-                p :
-                new ProxyPreferences(projectRoot.node(mimeType).node(NODE_CODE_STYLE).node(PROJECT_PROFILE), p);
-            
-            // listen on changes
-            allLangCodeStyle.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, switchTrakcer, allLangCodeStyle));
-        } else {
-            useProject = false;
-            projectPrefs = null;
-        }
-        
         this.globalPrefs = MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
+        this.projectPrefs = null;
+        this.useProject = false;
+
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+            public void run() {
+                synchronized (CodeStylePreferences.this) {
+                    if (CodeStylePreferences.this.projectRoot != null) {
+                        Preferences allLangCodeStyle = CodeStylePreferences.this.projectRoot.node(NODE_CODE_STYLE);
+                        Preferences p = allLangCodeStyle.node(PROJECT_PROFILE);
+
+                        // determine if we are using code style preferences from the project
+                        String usedProfile = allLangCodeStyle.get(PROP_USED_PROFILE, DEFAULT_PROFILE);
+                        useProject = PROJECT_PROFILE.equals(usedProfile);
+                        projectPrefs = CodeStylePreferences.this.mimeType == null ?
+                            p :
+                            new ProxyPreferences(CodeStylePreferences.this.projectRoot.node(CodeStylePreferences.this.mimeType).node(NODE_CODE_STYLE).node(PROJECT_PROFILE), p);
+
+                        // listen on changes
+                        allLangCodeStyle.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, switchTrakcer, allLangCodeStyle));
+                    } else {
+                        useProject = false;
+                        projectPrefs = null;
+                    }
+                }
+            }
+        });
 
         LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences; doc=" + s2s(refDoc.get())); //NOI18N
     }
