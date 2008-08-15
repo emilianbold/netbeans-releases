@@ -254,7 +254,14 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 
         if ( doc == classNameTextField.getDocument() ) {
             
-            fileName = baseDir + File.separatorChar + classNameTextField.getText() + suffix + ".groovy";
+            String artifactName = classNameTextField.getText();
+            // there can be package name as part of the artifact name,
+            // we don't have package chooser in this wizard
+            if (artifactName.indexOf('.') != -1) {
+                artifactName = artifactName.replace('.', File.separatorChar);
+            }
+            
+            fileName = baseDir + File.separatorChar + artifactName + suffix + ".groovy";
             createdFileTextField.setText(fileName);
             projectTextField.setText(project.getProjectDirectory().getName());
             
