@@ -39,17 +39,21 @@
 package org.netbeans.modules.ruby.railsprojects.ui.customizer;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectTestBase;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
+import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
+import static org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties.PLATFORM_ACTIVE;
+import static org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties.RAILS_ENV;
+import static org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties.RAILS_SERVERTYPE;
 
 public class RailsProjectPropertiesTest extends RailsProjectTestBase {
 
@@ -63,38 +67,43 @@ public class RailsProjectPropertiesTest extends RailsProjectTestBase {
                 project, project.getUpdateHelper(), project.evaluator(),
                 project.getReferenceHelper(), project.getLookup().lookup(GeneratedFilesHelper.class));
         assertNull("initially null environment", props.getRailsEnvironment());
-        assertNull("initially null environment property", project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV));
-        assertEquals("initially WEBRICK server", "WEBRICK", project.evaluator().getProperty(RailsProjectProperties.RAILS_SERVERTYPE));
+        assertNull("initially null environment property", project.evaluator().getProperty(RAILS_ENV));
+        assertEquals("initially WEBRICK server", "WEBRICK", project.evaluator().getProperty(RAILS_SERVERTYPE));
 
         props.setServer(new WebMockerServer(), null);
         props.setRailsEnvironment("production", null);
         props.save();
         
-        assertEquals("WEBMOCKER server", "WEBMOCKER", project.evaluator().getProperty(RailsProjectProperties.RAILS_SERVERTYPE));
-        assertEquals("production environment", "production", project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV));
+        assertEquals("WEBMOCKER server", "WEBMOCKER", project.evaluator().getProperty(RAILS_SERVERTYPE));
+        assertEquals("production environment", "production", project.evaluator().getProperty(RAILS_ENV));
     }
 
-    /**
-     * <strong>Note:</strong> Copy-pasted from APISupport
-     * <p>
-     * Convenience method for loading {@link EditableProperties} from a {@link
-     * FileObject}. New items will alphabetized by key.
-     *
-     * @param propsFO file representing properties file
-     * @exception FileNotFoundException if the file represented by the given
-     *            FileObject does not exists, is a folder rather than a regular
-     *            file or is invalid. i.e. as it is thrown by {@link
-     *            FileObject#getInputStream()}.
-     */
-    public static EditableProperties loadProperties(FileObject propsFO) throws IOException {
-        InputStream propsIS = propsFO.getInputStream();
-        EditableProperties props = new EditableProperties(true);
-        try {
-            props.load(propsIS);
-        } finally {
-            propsIS.close();
-        }
-        return props;
+    public void testPlatformVsConfig() throws Exception {
+        RailsProject project = createTestProject();
+        FileObject prjDirFO = project.getProjectDirectory();
+        String prjDirS = FileUtil.toFile(prjDirFO).getAbsolutePath();
+
+        FileObject privateFO = touch(prjDirS, "nbproject/private/private.properties");
+        EditableProperties privateProps = RubyProjectTestBase.loadProperties(privateFO);
+        privateProps.setProperty(PLATFORM_ACTIVE, "Ruby");
+        RubyProjectTestBase.storeProperties(privateFO, privateProps);
+
+        FileObject configFO = touch(prjDirS, "nbproject/private/config.properties");
+        EditableProperties configProps = RubyProjectTestBase.loadProperties(configFO);
+        configProps.setProperty("config", "jruby");
+        RubyProjectTestBase.storeProperties(configFO, configProps);
+
+        FileObject jrubyConfigFO = touch(prjDirS, "nbproject/private/configs/jruby.properties");
+        EditableProperties jrubyConfigProps = RubyProjectTestBase.loadProperties(jrubyConfigFO);
+        jrubyConfigProps.setProperty(PLATFORM_ACTIVE, "JRuby");
+        RubyProjectTestBase.storeProperties(jrubyConfigFO, jrubyConfigProps);
+
+        RailsProjectProperties props = new RailsProjectProperties(
+                project, project.getUpdateHelper(), project.evaluator(),
+                project.getReferenceHelper(), project.getLookup().lookup(GeneratedFilesHelper.class));
+
+        String platform = props.getRunConfigs().get(null).get(PLATFORM_ACTIVE);
+        assertEquals("right platform", "Ruby", platform);
     }
 
     private static class WebMockerServer implements RubyInstance {

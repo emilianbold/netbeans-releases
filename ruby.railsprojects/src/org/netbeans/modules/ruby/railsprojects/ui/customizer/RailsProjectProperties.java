@@ -61,11 +61,14 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     /** All per-configuration properties to be stored. */
     private static final String[] CONFIG_PROPS = {
         RAILS_PORT, RAILS_SERVERTYPE, RAKE_ARGS, RAILS_ENV,
-        MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RAILS_SERVERTYPE
+        MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RAILS_SERVERTYPE,
+        PLATFORM_ACTIVE
     };
     
     /** Private per-configuration properties. */
-    private static final String[] CONFIG_PRIVATE_PROPS = { RAILS_PORT, RAILS_ENV, RAKE_ARGS, APPLICATION_ARGS };
+    private static final String[] CONFIG_PRIVATE_PROPS = {
+        RAILS_PORT, RAILS_ENV, RAKE_ARGS, APPLICATION_ARGS, PLATFORM_ACTIVE
+    };
 
     private RubyInstance server;
     private String railsEnvironment;
