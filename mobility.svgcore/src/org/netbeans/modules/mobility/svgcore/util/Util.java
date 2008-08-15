@@ -79,7 +79,7 @@ import org.openide.windows.InputOutput;
 public class Util {  
     //public static final String UNIQUE_NODE_ID = "unid";
 
-    public static final int MAX_WORKUNITS = 300;
+    private static final int MAX_WORKUNITS = 300;
 
     //**
     // * Lunches external editor set using options. If the editor is not set or is not set correctly, 
