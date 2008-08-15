@@ -28,6 +28,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.client.javascript.debugger.http.api.HttpActivity;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
+import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpHeaderModel;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSHttpRequest;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
@@ -56,14 +57,12 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static final Model METHOD_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.METHOD_COLUMN);
     private static final Model SENT_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.SENT_COLUMN);
     private static final Model RESPONSE_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.RESPONSE_COLUMN);
+    private static final Model VALUE_COLUMN = HttpHeaderModel.getColumnModel(HttpHeaderModel.VALUE_COLUMN);
     private static final String PREFERRED_ID = "HttpMonitorTopComponent";
     private final static HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
     private final ActivitiesPropertyChange activityPropertyChangeListener = new ActivitiesPropertyChange();
     private static final Map<String, String> EMPTY_MAP = Collections.emptyMap();
 
-    /* Table Models for Request and Response Details */
-    private final MapTableModel reqHeaderTableModel = new MapTableModel(EMPTY_MAP);
-    private final MapTableModel resHeaderTableModel = new MapTableModel(EMPTY_MAP);
     private final Logger LOG = Logger.getLogger(HttpMonitorTopComponent.class.getName());
 
     /* Component for main table */
@@ -87,19 +86,78 @@ final class HttpMonitorTopComponent extends TopComponent {
         }
         return (StartIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(START_ICON_PATH)));
     }
+    
+    public ExplorerManager getActivityExplorerManager() {
+        assert tableView instanceof ExplorerManager.Provider;
+        ExplorerManager activityExplorerManager = ((ExplorerManager.Provider) tableView).getExplorerManager();
+        return activityExplorerManager;
+    }
 
     private JComponent createActivitiesTable() {
         CompoundModel compoundModel = createViewCompoundModel(HttpMonitorUtility.getCurrentHttpMonitorModel());
 
         tableView = Models.createView(compoundModel);
-        assert tableView instanceof ExplorerManager.Provider;
 
-        ExplorerManager activityExplorerManager = ((ExplorerManager.Provider) tableView).getExplorerManager();
-        activityExplorerManager.addPropertyChangeListener(activityPropertyChangeListener);
+        getActivityExplorerManager().addPropertyChangeListener(activityPropertyChangeListener);
 
         DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
 
         return tableView;
+    }
+
+    private JComponent createResponseView() {
+        Model model = new HttpResponseModel(getActivityExplorerManager());
+        JComponent component = Models.createView(createHeaderCompoundModel(model));
+        return component;
+    }
+
+    private JComponent createRequestView() {
+        Model model = new HttpRequestModel(getActivityExplorerManager());
+        JComponent component = Models.createView(createHeaderCompoundModel(model));
+        return component;
+    }
+    
+    private CompoundModel createHeaderCompoundModel (Model model ) {
+        List<Model> models = new ArrayList<Model>();
+        if (models != null) {
+            models.add(model);
+            models.add(VALUE_COLUMN);
+        }
+        return Models.createCompoundModel(models);
+        
+    }
+    
+    
+    public class HttpResponseModel extends HttpHeaderModel {
+
+        public HttpResponseModel(ExplorerManager activityExplorerManager) {
+            super(activityExplorerManager);
+        }
+
+        @Override
+        protected Map<String, String> getHeader() {
+            HttpActivity activity = getSelectedActivity();
+            if( activity == null ) {
+                return Collections.emptyMap();
+            }
+            return getSelectedActivity().getResponseHeader();
+        }
+    }
+    
+    public class HttpRequestModel extends HttpHeaderModel {
+
+        public HttpRequestModel(ExplorerManager activityExplorerManager) {
+            super(activityExplorerManager);
+        }
+
+        @Override
+        protected Map<String, String> getHeader() {
+            HttpActivity activity = getSelectedActivity();
+            if( activity == null ) {
+                return Collections.emptyMap();
+            }
+            return getSelectedActivity().getRequestHeader();
+        }
     }
 
     private void resetHttpActivitesModel(HttpActivitiesModel model) {
@@ -123,14 +181,13 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
-                if (reqHeaderJTable != null) {
 
                     assert evt.getNewValue() instanceof Node[];
                     Node[] nodes = (Node[]) evt.getNewValue();
                     if (nodes == null || nodes.length < 1) {
-                        reqHeaderTableModel.setMap(EMPTY_MAP);
+//                        reqHeaderTableModel.setMap(EMPTY_MAP);
                         reqParamTextArea.setText("");
-                        resHeaderTableModel.setMap(EMPTY_MAP);
+//                        resHeaderTableModel.setMap(EMPTY_MAP);
 //                        resBodyTextArea.setText("");
                         resBodyEditorPane.setText("");
                         resBodyEditorPane.setContentType("text/html");
@@ -143,7 +200,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                     if (activity != null) {
                         JSHttpRequest request = activity.getRequest();
                         assert request != null;
-                        reqHeaderTableModel.setMap(activity.getRequestHeader());
+//                        reqHeaderTableModel.setMap(activity.getRequestHeader());
                         if (request.getMethod().equals(JSHttpRequest.MethodType.POST)) {
                             reqParamTextArea.setText("POST: " + request.getPostText());
                         } else {
@@ -152,7 +209,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                         
                         Map<String, String> header = activity.getResponseHeader();
                         if (header != null) {
-                            resHeaderTableModel.setMap(header);
+//                            resHeaderTableModel.setMap(header);
                             String mime = activity.getMimeType();
                             String contentType = "text/html";
                             if( mime != null ) {
@@ -171,13 +228,12 @@ final class HttpMonitorTopComponent extends TopComponent {
 
 //                            resBodyTextArea.setText(activity.getResponseText());
                         } else {
-                            resHeaderTableModel.setMap(EMPTY_MAP);
+//                            resHeaderTableModel.setMap(EMPTY_MAP);
                             resBodyEditorPane.setText("");
                             resBodyEditorPane.setContentType("text/html");
 //                            resBodyTextArea.setText("");
                         }
                     }
-                }
             }
 
         }
@@ -193,6 +249,7 @@ final class HttpMonitorTopComponent extends TopComponent {
             public void run() {
                 detailsSplitPane.setDividerLocation(getDetailsDividerLoc());
                 httpMonitorSplitPane.setDividerLocation(getHttpMonitorDividerLoc());
+                
             }
         });
     }
@@ -239,11 +296,21 @@ final class HttpMonitorTopComponent extends TopComponent {
     }
 
     private double getHttpMonitorDividerLoc() {
-        return NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5);
+        double d = NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5);  
+        if ( d >= 1 || d <=0 ){
+            NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_HttpMonitorSplitPane_DIVIDERLOC, 0.5);
+            d = 0.5;
+        }
+        return d;
     }
 
     private double getDetailsDividerLoc() {
-        return NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_DetailsSplitPane_DIVIDERLOC, 0.5);
+        double d = NbPreferences.forModule(HttpMonitorTopComponent.class).getDouble(PREF_DetailsSplitPane_DIVIDERLOC, 0.5);
+        if ( d >= 1 || d <=0 ){ 
+            NbPreferences.forModule(HttpMonitorTopComponent.class).putDouble(PREF_DetailsSplitPane_DIVIDERLOC, 0.5);
+            d = 0.5;
+        }
+        return d;
     }
 
     private void setHttpMonitorDividerLoc() {
@@ -299,16 +366,14 @@ final class HttpMonitorTopComponent extends TopComponent {
         httpReqPanel = new javax.swing.JPanel();
         reqLabel = new javax.swing.JLabel();
         reqTabbedPane = new javax.swing.JTabbedPane();
-        reqHeaderPanel = new javax.swing.JScrollPane();
-        reqHeaderJTable = new javax.swing.JTable();
+        reqHeaderPanel = new javax.swing.JPanel();
         reqParamPanel = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         reqParamTextArea = new javax.swing.JTextArea();
         httpResPanel = new javax.swing.JPanel();
         resLabel = new javax.swing.JLabel();
         resTabbedPane = new javax.swing.JTabbedPane();
-        resHeaderPanel = new javax.swing.JScrollPane();
-        resHeaderJTable = new javax.swing.JTable();
+        resHeaderPanel = new javax.swing.JPanel();
         resBodyPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         resBodyEditorPane = new javax.swing.JEditorPane();
@@ -343,6 +408,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         cleanButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/clean.gif"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(cleanButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.cleanButton.text")); // NOI18N
+        cleanButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_CLEAN_TT")); // NOI18N
         cleanButton.setEnabled(false);
         cleanButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         cleanButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -359,6 +425,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         all_filterButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(all_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.all_filterButton.text")); // NOI18N
+        all_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_All_TT")); // NOI18N
         all_filterButton.setEnabled(false);
         all_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         all_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -372,6 +439,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         all_filterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_All_TT")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(html_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.html_filterButton.text")); // NOI18N
+        html_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_HTML_TT")); // NOI18N
         html_filterButton.setEnabled(false);
         html_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         html_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -385,6 +453,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         html_filterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_HTML_TT")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(js_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.js_filterButton.text")); // NOI18N
+        js_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_JS_TT")); // NOI18N
         js_filterButton.setEnabled(false);
         js_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         js_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -398,6 +467,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         js_filterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_JS_TT")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(xhr_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.xhr_filterButton.text")); // NOI18N
+        xhr_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_XHR_TT")); // NOI18N
         xhr_filterButton.setEnabled(false);
         xhr_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         xhr_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -411,6 +481,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         xhr_filterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_XHR_TT")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(css_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.css_filterButton.text")); // NOI18N
+        css_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_CSS_TT")); // NOI18N
         css_filterButton.setEnabled(false);
         css_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         css_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -424,6 +495,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         css_filterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_CSS_TT")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(images_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.images_filterButton.text")); // NOI18N
+        images_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_Images_TT")); // NOI18N
         images_filterButton.setEnabled(false);
         images_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         images_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -437,6 +509,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         images_filterButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_Images_TT")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(flash_filterButton, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.flash_filterButton.text")); // NOI18N
+        flash_filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "BTN_HTTPToolbar_Filter_Flash_TT")); // NOI18N
         flash_filterButton.setEnabled(false);
         flash_filterButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         flash_filterButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -474,15 +547,11 @@ final class HttpMonitorTopComponent extends TopComponent {
         org.openide.awt.Mnemonics.setLocalizedText(reqLabel, org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.reqLabel.text")); // NOI18N
         httpReqPanel.add(reqLabel, java.awt.BorderLayout.NORTH);
 
-        reqHeaderPanel.setAutoscrolls(true);
-
-        reqHeaderJTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        reqHeaderJTable.setModel(reqHeaderTableModel);
-        reqHeaderJTable.setGridColor(new java.awt.Color(204, 204, 204));
-        reqHeaderPanel.setViewportView(reqHeaderJTable);
-
-        reqTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.reqHeaderPanel.TabConstraints.tabTitle"), reqHeaderPanel); // NOI18N
-        reqHeaderPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "TABBED_PANE_Header")); // NOI18N
+        reqHeaderPanel.setLayout(new java.awt.BorderLayout());
+        reqHeaderPanel.add(createRequestView(), BorderLayout.CENTER);
+        reqTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, " HttpMonitorTopComponent.headerPanel.TabConstraints.tabTitle"), reqHeaderPanel); // NOI18N
+        reqHeaderPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, " HttpMonitorTopComponent.reqHeaderPanel.TabConstraints.tabAsc")); // NOI18N
+        reqHeaderPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.reqHeader.TabConstraints.tabDescription")); // NOI18N
 
         reqParamPanel.setName(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.reqHeader.TabConstraints.tabTitle")); // NOI18N
         reqParamPanel.setLayout(new java.awt.BorderLayout());
@@ -508,16 +577,13 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         resTabbedPane.setName(""); // NOI18N
 
-        resHeaderPanel.setName(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "org.netbeans.modules.web.client.javascript.debugger.http.ui.Bundle")); // NOI18N
+        resHeaderPanel.setLayout(new java.awt.BorderLayout());
 
-        resHeaderJTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        resHeaderJTable.setModel(resHeaderTableModel);
-        resHeaderJTable.setFocusable(false);
-        resHeaderJTable.setGridColor(new java.awt.Color(204, 204, 204));
-        resHeaderPanel.setViewportView(resHeaderJTable);
+        resHeaderPanel.add(createResponseView(), BorderLayout.CENTER);
 
-        resTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.resHeaderPanel.TabConstraints.tabTitle"), resHeaderPanel); // NOI18N
-        resHeaderPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "TABBED_PANE_Header")); // NOI18N
+        resTabbedPane.addTab(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.headerPanel.TabConstraints.tabTitle"), resHeaderPanel); // NOI18N
+        resHeaderPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.resHeaderPanel.TabConstraints.tabAsc")); // NOI18N
+        resHeaderPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(HttpMonitorTopComponent.class, "HttpMonitorTopComponent.resHeaderPanel.TabConstraints.tabDescription")); // NOI18N
 
         resBodyPanel.setLayout(new java.awt.BorderLayout());
 
@@ -598,16 +664,14 @@ final class HttpMonitorTopComponent extends TopComponent {
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JToggleButton js_filterButton;
     private javax.swing.JPanel outerActivitiesPanel;
-    private javax.swing.JTable reqHeaderJTable;
-    private javax.swing.JScrollPane reqHeaderPanel;
+    private javax.swing.JPanel reqHeaderPanel;
     private javax.swing.JLabel reqLabel;
     private javax.swing.JPanel reqParamPanel;
     private javax.swing.JTextArea reqParamTextArea;
     private javax.swing.JTabbedPane reqTabbedPane;
     private javax.swing.JEditorPane resBodyEditorPane;
     private javax.swing.JPanel resBodyPanel;
-    private javax.swing.JTable resHeaderJTable;
-    private javax.swing.JScrollPane resHeaderPanel;
+    private javax.swing.JPanel resHeaderPanel;
     private javax.swing.JLabel resLabel;
     private javax.swing.JTabbedPane resTabbedPane;
     private javax.swing.JButton start_stopMonitoring;

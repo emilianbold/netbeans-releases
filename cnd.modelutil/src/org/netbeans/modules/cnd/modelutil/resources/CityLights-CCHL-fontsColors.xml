@@ -59,4 +59,6 @@ made subject to such option by the copyright holder.
     </fontcolor>
     <fontcolor name="cc-highlighting-typedefs" foreColor="2E92C7" default="default">
     </fontcolor>
+    <fontcolor name="cc-highlighting-unused-variables" waveUnderlined="999999" default="default">
+    </fontcolor>
 </fontscolors>

@@ -556,7 +556,11 @@ public class SQLHistoryPersistenceManager {
         }
 
         public List<SQLHistory> getXmlSqlHistoryList() {
-            return xmlSqlHistoryList;
+            if (xmlSqlHistoryList == null) {
+                return new ArrayList<SQLHistory>();
+            } else {
+                return xmlSqlHistoryList;
+            }
         }
     }
 }

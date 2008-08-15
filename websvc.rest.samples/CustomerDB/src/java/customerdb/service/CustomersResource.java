@@ -46,8 +46,8 @@ import java.util.Collection;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
@@ -83,7 +83,7 @@ public class CustomersResource {
      * @return an instance of CustomersConverter
      */
     @GET
-    @ProduceMime({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public CustomersConverter get(@QueryParam("start")
     @DefaultValue("0")
     int start, @QueryParam("max")
@@ -107,7 +107,7 @@ public class CustomersResource {
      * @return an instance of CustomerConverter
      */
     @POST
-    @ConsumeMime({"application/xml", "application/json"})
+    @Consumes({"application/xml", "application/json"})
     public Response post(CustomerConverter data) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {

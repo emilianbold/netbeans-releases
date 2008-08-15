@@ -66,7 +66,7 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
     private static final long serialVersionUID = 1L;
     private DesignerScene scene;
     private IPresentationElement pe;
-    private ActivityPartitionWidget activityPartitiionWidget;
+    private ActivityPartitionWidget activityPartitionWidget;
 
     public Action createContextAwareInstance(Lookup actionContext)
     {
@@ -78,7 +78,7 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
             Widget widget = scene.findWidget(pe);
             if (widget instanceof ActivityPartitionWidget)
         {
-            activityPartitiionWidget = (ActivityPartitionWidget) widget;
+            activityPartitionWidget = (ActivityPartitionWidget) widget;
             return this;
         }
         }
@@ -94,19 +94,19 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
     public JMenuItem getPopupPresenter()
     {
         JMenu popupMenu = new JMenu(getName());
-        if ((activityPartitiionWidget.getSubPartitionCount() < 2))
+        if ((activityPartitionWidget.getSubPartitionCount() < 2))
         {
             popupMenu.add(new AddColumnAction(loc("CTL_AddPartitionColumn")));
             popupMenu.add(new AddRowAction(loc("CTL_AddPartitionRow")));
         } else
         {
-            popupMenu.add(activityPartitiionWidget.isHorizontalLayout() ? new AddColumnAction(loc("CTL_AddPartitionColumn")) : new AddRowAction(loc("CTL_AddPartitionRow")));
+            popupMenu.add(activityPartitionWidget.isHorizontalLayout() ? new AddColumnAction(loc("CTL_AddPartitionColumn")) : new AddRowAction(loc("CTL_AddPartitionRow")));
         }
-        for (CompartmentWidget w : activityPartitiionWidget.getCompartmentWidgets())
+        for (CompartmentWidget w : activityPartitionWidget.getCompartmentWidgets())
         {
             if (w.isSelected())
             {
-                String name = activityPartitiionWidget.isHorizontalLayout()? 
+                String name = activityPartitionWidget.isHorizontalLayout()? 
                     loc("CTL_DeletePartitionColumn") : loc("CTL_DeletePartitionRow");
                 popupMenu.add(new DeleteCompartmentWidgetAction(w, name));
                 break;
@@ -148,18 +148,18 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
 
         protected void updateOrientation()
         {
-            activityPartitiionWidget.setOrientation(Orientation.VERTICAL);
+            activityPartitionWidget.setOrientation(Orientation.VERTICAL);
         }
 
         public void actionPerformed(ActionEvent e)
         {
             int count = 1;
             updateOrientation();
-            ETList<IActivityPartition> subPartitions = activityPartitiionWidget.getParentPartition().getSubPartitions();
+            ETList<IActivityPartition> subPartitions = activityPartitionWidget.getParentPartition().getSubPartitions();
             if (subPartitions == null || subPartitions.size() == 0)
             {
                 count = 2;
-                activityPartitiionWidget.removeSubPartitionWidgets();
+                activityPartitionWidget.removeSubPartitionWidgets();
             }
             while (count-- > 0)
             {
@@ -168,9 +168,9 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
                 IActivityPartition subPartition = ret.createType("ActivityPartition");
                 if (subPartition != null)
                 {
-                    activityPartitiionWidget.getParentPartition().addSubPartition(subPartition);
+                    activityPartitionWidget.getParentPartition().addSubPartition(subPartition);
                     // add sub parttion widget to main widget.
-                    activityPartitiionWidget.addSubPartition(subPartition);
+                    activityPartitionWidget.addSubPartition(subPartition);
                 }
             }
         }
@@ -187,7 +187,7 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
         @Override
         protected void updateOrientation()
         {
-            activityPartitiionWidget.setOrientation(Orientation.HORIZONTAL);
+            activityPartitionWidget.setOrientation(Orientation.HORIZONTAL);
         }
     }  
 }

@@ -51,6 +51,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 
 import java.util.*;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBoxNoUserCode;
 import org.openide.util.NbBundle;
 
 /**
@@ -131,9 +132,7 @@ public final class FontCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Kind"), // NOI18N
-                        PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID,
-                            NbBundle.getMessage(FontCD.class, "DISP_Font_Kind_RB_LABEL"), // NOI18N
-                            NbBundle.getMessage(FontCD.class, "DISP_Font_Kind_UCLABEL")), PROP_FONT_KIND) // NOI18N
+                        PropertyEditorComboBoxNoUserCode.createInstance(getKindTypes(), TYPEID), PROP_FONT_KIND)
                     .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Face"), // NOI18N
                         PropertyEditorComboBox.createInstance(getFaceTypes(), TYPEID, TYPEID,
                             NbBundle.getMessage(FontCD.class, "DISP_Font_Face_RB_LABEL"), // NOI18N

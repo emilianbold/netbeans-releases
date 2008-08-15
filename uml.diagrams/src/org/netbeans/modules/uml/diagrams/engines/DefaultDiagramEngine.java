@@ -429,6 +429,9 @@ public class DefaultDiagramEngine extends  DiagramEngine {
                 IPresentationElement relPresenation = (IPresentationElement) scene.findObject(connectionWidget);
                 IElement relElement = relPresenation.getFirstSubject();
                 relationshipProxy.setConnectionElementType(relElement.getElementType());
+                
+                // indicates that this relationship is a reconnected one
+                relationshipProxy.setReconnectionFlag(true);
 
                 // Verify the relation
                 validator.validateRelation(relationshipProxy);

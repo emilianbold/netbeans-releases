@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -579,7 +580,18 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         int exitValue = -1;
         
         try {
-            final Process process = Runtime.getRuntime().exec(arr);
+            final Process process;
+            Locale current = Locale.getDefault();
+            String message = ""; // NOI18N
+            if (type == CMD_START && current.equals(new Locale("tr","TR"))) {
+                // the server is just plain broken when run in a Turkish locale
+                process = Runtime.getRuntime().exec(arr, new String[] {"LANG=en_US","LC_ALL=en_US"} );
+                message = NbBundle.getMessage(StartSunServer.class, "WARN_LOCALE_SWITCHED");
+                NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            } else {
+                process = Runtime.getRuntime().exec(arr);
+            }
                                     
             ByteArrayOutputStream eos = new ByteArrayOutputStream();
             
@@ -601,7 +613,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                 shouldStopDeploymentManagerSilently =false;
                 return 0;
             }
-            pes.fireHandleProgressEvent(null,  pes.createStatus(ActionType.EXECUTE,  ct, "" ,StateType.RUNNING));
+            pes.fireHandleProgressEvent(null,  pes.createStatus(ActionType.EXECUTE,  ct, message ,StateType.RUNNING));
             try {
                 if(currentMode==MODE_PROFILE){
                     // asadmin start-domain doesn't return when the profiler

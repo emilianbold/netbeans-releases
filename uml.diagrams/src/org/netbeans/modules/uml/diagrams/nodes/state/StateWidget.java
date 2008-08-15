@@ -76,8 +76,6 @@ import org.openide.util.NbBundle;
  */
 public class StateWidget extends UMLNodeWidget
 {
-
-    private Widget currentView;
     private Scene scene;
     private Widget stateWidget;
     private Widget detailWidget;
@@ -111,15 +109,18 @@ public class StateWidget extends UMLNodeWidget
         if (element instanceof State)
         {
             state = (State) presentation.getFirstSubject();
-            currentView = createStateView(state);
-            setCurrentView(currentView);
+            setCurrentView(createStateView(state));
         }
+        super.initializeNode(presentation);
     }
 
     private void initStateWidget()
     {
         stateWidget = new BackgroundWidget(
-                scene, getWidgetID() + "." + UMLNodeWidget.DEFAULT, "Default", 15, 15);
+                scene, getResourcePath(), 
+                NbBundle.getMessage(UMLNodeWidget.class, "LBL_Default"), 15, 15);
+        stateWidget.setOpaque(true);
+        stateWidget.setCheckClipping(true);
         detailWidget = new Widget(getScene());
         detailWidget.setForeground(null);
         detailWidget.setBackground(null);
@@ -205,6 +206,7 @@ public class StateWidget extends UMLNodeWidget
         }
 
         updateTransitions();
+        updateSizeWithOptions();
     }
 
     private void updateTransitions()
@@ -296,9 +298,11 @@ public class StateWidget extends UMLNodeWidget
         createSubMachineStateView(state);
         nameWidget.showAllWidgets();
 
+        String unnamed = NbBundle.getMessage (org.netbeans.modules.uml.common.Util.class, "UNNAMED");
+        
         // create dummy procedure
         IProcedure pro = (IProcedure) Util.retrieveModelElement("Procedure");
-        pro.setName("unnamed");
+        pro.setName(unnamed);
 
         eventsWidget.removeChildren();
         entryWidget = new EntryEventWidget(getScene(), pro);
@@ -307,7 +311,7 @@ public class StateWidget extends UMLNodeWidget
         // create dummy transition
         ITransition transition = (ITransition) Util.retrieveModelElement("Transition");
         transition.setIsInternal(true);
-        transition.setName("Unnamed");
+        transition.setName(unnamed);
         transition.setContainer(state.getFirstContent());
 
         TransitionWidget w = new TransitionWidget.IncomingTransitionWidget(scene, transition);

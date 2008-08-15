@@ -116,6 +116,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDescriptor;
@@ -336,11 +337,19 @@ public class RetoucheUtils {
         Project p = FileOwnerQuery.getOwner(fo);
         if (p==null) 
             return false;
+
+        //workaround for 143542
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
-        if (!Arrays.asList(opened).contains(p)) {
-            return false;
+        for (Project pr : opened) {
+            for (SourceGroup sg : ProjectUtils.getSources(pr).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                if (fo==sg.getRootFolder() || (FileUtil.isParentOf(sg.getRootFolder(), fo) && sg.contains(fo))) {
+                    return true;
+                }
+            }
         }
-        return ClassPath.getClassPath(fo, ClassPath.SOURCE)!=null;
+        return false;
+        //end of workaround
+        //return ClassPath.getClassPath(fo, ClassPath.SOURCE)!=null;
     }
 
     public static boolean isClasspathRoot(FileObject fo) {
@@ -508,6 +517,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getElementHandle();
         } catch (IOException ex) {
@@ -519,6 +529,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getElementKind();
         } catch (IOException ex) {
@@ -531,6 +542,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getSimpleName();
         } catch (IOException ex) {
@@ -543,6 +555,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + handle.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(handle), true);
             return ff.getFileObject();
         } catch (IOException ex) {
@@ -554,6 +567,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getQualifiedName();
         } catch (IOException ex) {
@@ -565,6 +579,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph, fqn), true);
             return ff.typeExist();
         } catch (IOException ex) {

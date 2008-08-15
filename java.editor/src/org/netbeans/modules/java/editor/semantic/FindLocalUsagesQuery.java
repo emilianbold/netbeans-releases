@@ -44,6 +44,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
@@ -69,9 +70,14 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
     private Set<Token> usages;
     private Element toFind;
     private Document doc;
+    private boolean instantRename;
     
-    /** Creates a new instance of FindLocalUsagesQuery */
     public FindLocalUsagesQuery() {
+        this(false);
+    }
+
+    public FindLocalUsagesQuery(boolean instantRename) {
+        this.instantRename = instantRename;
     }
     
     public Set<Token> findUsages(Element element, CompilationInfo info, Document doc) {
@@ -142,4 +148,29 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
         super.visitClass(tree, d);
         return null;
     }
+
+    @Override
+    public Void visitNewClass(NewClassTree node, Stack<Tree> p) {
+        if (instantRename) {
+            return super.visitNewClass(node, p);
+        }
+        
+        Element el = info.getTrees().getElement(getCurrentPath());
+
+        if (toFind.equals(el) && node.getIdentifier() != null) {
+            Token<JavaTokenId> t = Utilities.getToken(info, doc, new TreePath(getCurrentPath(), node.getIdentifier()));
+            
+            if (t != null)
+                usages.add(t);
+
+            return null;
+        }
+
+        if (el != null && toFind.equals(el.getEnclosingElement())) {
+            return null;
+        }
+        
+        return super.visitNewClass(node, p);
+    }
+    
 }

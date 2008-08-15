@@ -50,6 +50,7 @@ import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.FavoritesAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -64,8 +65,8 @@ public class BasicsTest extends JellyTestCase {
 
     private final String SAMPLE_PROJECT_NAME_F1="SampleF1";
 
-    
-    
+
+
     /** Need to be defined because of JUnit */
     public BasicsTest(String name) {
         super(name);
@@ -74,20 +75,21 @@ public class BasicsTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(BasicsTest.class, ".*", ".*");
     }
-    
+
     public @Override void setUp() {
         System.out.println("########  "+getName()+"  #######");
     }
-        
+
     public void testHomeFolder(){
         // checking if $HOME is by default present in favorites
+        new FavoritesAction().performShortcut();
         FavoritesOperator fo = FavoritesOperator.invoke();
         File home = new File(System.getProperty("user.home"));
         Node nodeHome = new Node(fo.tree(),home.getName());
         nodeHome.expand();
         nodeHome.collapse();
     }
-    
+
     public void testAddJavaPackageToFavorites(){
         //Creating sample project General/Java application
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
@@ -116,6 +118,7 @@ public class BasicsTest extends JellyTestCase {
 
     public void testAddFolderToFavorites(){
         //Opening a favorites tab (or focusing into it)
+        new FavoritesAction().performShortcut();
         FavoritesOperator fo = FavoritesOperator.invoke();
         //Invoking popup, choosing Add to favorites.
         String add2fav = Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle", "ACT_AddOnFavoritesNode");
@@ -131,9 +134,10 @@ public class BasicsTest extends JellyTestCase {
         node.collapse();
         assertEquals("items in favorites", 3, fo.tree().getChildCount(fo.tree().getRoot()));
      }
-    
+
     public void testAddNonexistingFolder(){
         //Opening a favorites tab (or focusing into it)
+        new FavoritesAction().performShortcut();
         FavoritesOperator fo = FavoritesOperator.invoke();
         //Invoking popup, choosing Add to favorites.
         String add2fav = Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle", "ACT_AddOnFavoritesNode");
@@ -141,13 +145,13 @@ public class BasicsTest extends JellyTestCase {
         // In filechooser, type some non-existing name
         JFileChooserOperator jfco = new JFileChooserOperator();
         jfco.chooseFile("SomeNotExistingFooFile");
-        //Expected error dialog arises, close it. 
+        //Expected error dialog arises, close it.
         String dialogName = Bundle.getString("org.netbeans.modules.favorites.Bundle", "ERR_FileDoesNotExistDlgTitle");
         NbDialogOperator dialog = new NbDialogOperator(dialogName);
         dialog.closeByButton();
         assertEquals("items in favorites", 3, fo.tree().getChildCount(fo.tree().getRoot()));
     }
-    
+
     public void testRemoveFromFavorites(){
         //Opening a favorites tab (or focusing into it)
         FavoritesOperator fo = FavoritesOperator.invoke();

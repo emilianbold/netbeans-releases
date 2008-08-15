@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
@@ -43,6 +42,7 @@ import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorF
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
+import org.netbeans.modules.php.project.PhpInterpreter;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
@@ -70,10 +70,10 @@ public class RunLocalCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        final String command = getPhpInterpreter();
+        PhpInterpreter phpInterpreter = getProject().getPhpInterpreter();
         final FileObject scriptFo = (context == null) ? fileForProject() : fileForContext(context);
         final File scriptFile = (scriptFo != null) ? FileUtil.toFile(scriptFo) : null;
-        if (command == null || scriptFile == null) {
+        if (!phpInterpreter.isValid() || scriptFile == null) {
             //TODO mising error handling
             return;
         }
@@ -84,16 +84,19 @@ public class RunLocalCommand extends Command implements Displayable {
             InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
             descriptor = descriptor.outProcessorFactory(redirector);
             descriptor = descriptor.postExecution(redirector);
-            final ExecutionService service = ExecutionService.newService(getBuilder(command, scriptFile),
-                    descriptor, getOutputTabTitle(command, scriptFile));
+            final ExecutionService service = ExecutionService.newService(getBuilder(phpInterpreter, scriptFile),
+                    descriptor, getOutputTabTitle(phpInterpreter.getInterpreter(), scriptFile));
             service.run();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
-    private ExternalProcessBuilder getBuilder(String command, File scriptFile) {
-        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(command);
+    private ExternalProcessBuilder getBuilder(PhpInterpreter phpInterpreter, File scriptFile) {
+        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(phpInterpreter.getInterpreter());
+        for (String param : phpInterpreter.getParameters()) {
+            processBuilder = processBuilder.addArgument(param);
+        }
         processBuilder = processBuilder.addArgument(scriptFile.getName());
         String argProperty = getProperty(PhpProjectProperties.ARGS);
         if (argProperty != null && argProperty.length() > 0) {

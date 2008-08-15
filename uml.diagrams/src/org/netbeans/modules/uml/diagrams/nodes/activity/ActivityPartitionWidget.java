@@ -44,7 +44,6 @@ import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
@@ -60,12 +59,11 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity;
-import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
-import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
@@ -81,18 +79,16 @@ import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
-import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
-import org.netbeans.modules.uml.drawingarea.widgets.ContainerWithCompartments;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Thuy
  */
-public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeWidget,ContainerWithCompartments
+public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeWidget
 {
 
     private Scene scene;
@@ -106,7 +102,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
 
     public ActivityPartitionWidget(Scene scene)
     {
-        super(scene,true);
+        super(scene, false);
         this.scene = scene;
         
         // initialize context palette
@@ -119,12 +115,19 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
     @Override
     public void initializeNode(IPresentationElement presentation)
     {
-        if (presentation != null)
+        assert presentation != null;
+
+        parentPartition = (IActivityPartition) presentation.getFirstSubject();
+        if (!isInitialized())
         {
-            parentPartition = (IActivityPartition) presentation.getFirstSubject();
             setCurrentView(createActivityPartitionView(parentPartition));
+        } else   // sync diagram is invoked
+        {
+            populatePartitions(parentPartition);
         }
+
         setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
     }
 
     private Widget createActivityPartitionView(IActivityPartition partitionElement)
@@ -141,7 +144,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         mainView.setBorder(BorderFactory.createLineBorder(2));
         mainView.setUseGradient(useGradient);
         mainView.setCustomizableResourceTypes(
-                new ResourceType[]{ResourceType.BACKGROUND});
+                new ResourceType[]{ResourceType.BACKGROUND, ResourceType.FONT});
         mainView.setOpaque(true);
         mainView.setCheckClipping(true);
 
@@ -165,6 +168,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         }
         mainView.addChild(partitionPanel, 1);
 
+        setIsInitialized(true);
         return mainView;
     }
 
@@ -322,12 +326,14 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
-        nameWidget.propertyChange(event);
+        if (event.getSource() instanceof IActivityPartition)
+        {
+            nameWidget.propertyChange(event);
+        }   
     }
 
     private void initializeSubPartitions(IActivityPartition parentPartition)
     {
-        SubPartitionWidget subPartWidget = null;
         if (parentPartition != null)
         {
             ETList<IActivityPartition> partitions = parentPartition.getSubPartitions();
@@ -340,11 +346,12 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
                     addSubPartition(subPart);
                 }
             }
-            else // there's no subPartition
+            else // there's no subPartition, create one
             {
-                subPartWidget = new SubPartitionWidget(scene, null, this);
-                subPartWidget.getNameWidget().setVisible(false);
-                addSubPartition(subPartWidget);
+                TypedFactoryRetriever<IActivityPartition> ret = new TypedFactoryRetriever<IActivityPartition>();
+                IActivityPartition subPartition = ret.createType("ActivityPartition");
+                parentPartition.addSubPartition(subPartition);
+                addSubPartition(subPartition);              
             }
         }
     }
@@ -352,49 +359,16 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
     private void populatePartitions(IActivityPartition parentPartition)
     {
         if (parentPartition != null)
-        {            
-            //get a list of all partitions
-            ETList<IActivityPartition> partitionList = parentPartition.getSubPartitions();
-            
-            //iterate thru each partition, and populate them
-            for (IActivityGroup partition : partitionList)
+        {                        
+            for (CompartmentWidget widget: compartmentWidgets)
             {
-                ETList<IActivityNode> nodeList = partition.getNodeContents();
-                for (IActivityNode node : nodeList)
-                {
-                    //we have a node that is contained in the subpartition.. 
-                    //add the appropriate widget
-                    addNodeWidget(node, partition);
-                    elements.add(node);
-                }
+                widget.initContainedElements();
             }
         }
-    }
-    Point point = new Point(20, 20);
-    private void addNodeWidget(IActivityNode node, IActivityGroup partition)
-    {
-        if (!(scene instanceof GraphScene) || (node == null) || (partition == null))
+        for (IActivityPartition par: parentPartition.getSubPartitions())
         {
-            return;
+            elements.addAll(par.getNodeContents());
         }
-
-        // get the subpartition widget
-        SubPartitionWidget subPart = null;
-        if (partition instanceof IActivityPartition)
-        {
-            subPart = getSubPartitionWidget((IActivityPartition) partition);
-        }
-        IPresentationElement presentation = Util.createNodePresentationElement();
-        presentation.addSubject(node);
-
-        Widget w = ((DesignerScene) getScene()).addNode(presentation);
-        if (w != null)
-        {
-            subPart.addContainedChild(w);
-            w.setPreferredLocation(point);
-            point = new Point(point.x + 50, point.y + 50);
-        }
-
     }
     
     private SubPartitionWidget createSubPartitionWidget(IActivityPartition subPart)
@@ -525,6 +499,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         }
     
     
+        @Override
         public void notifyAdded()
         {
             UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) scene);
@@ -547,13 +522,10 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         removeSubPartition(widget);
     }
 
-    public void notifyCompartmentWidgetAdded()
-    {   
-        // do nothing
-    }
 
-    public void addChildrenInBounds() {
-        for(CompartmentWidget w:compartmentWidgets)
+    public void addChildrenInBounds()
+    {
+        for (CompartmentWidget w : compartmentWidgets)
         {
             w.getContainerWidget().calculateChildren(false);//only add, do not check removal
         }

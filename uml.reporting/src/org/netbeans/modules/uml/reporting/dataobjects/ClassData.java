@@ -113,16 +113,16 @@ public class ClassData extends ElementDataObject
     }
     
     
-    public IInterface[] getImplementedInterfaces()
+    public IClassifier[] getImplementedInterfaces()
     {
-        ArrayList<IInterface> list = new ArrayList();
+        ArrayList<IClassifier> list = new ArrayList();
         
         ETList<IImplementation> impls = getElement().getImplementations();
         for (int i=0; i<impls.size(); i++)
         {
             list.add(impls.get(i).getContract());
         }
-        IInterface[] a = new IInterface[list.size()];
+        IClassifier[] a = new IClassifier[list.size()];
         return list.toArray(a);
     }
     
@@ -657,7 +657,7 @@ public class ClassData extends ElementDataObject
             out.write("<B>" + getElement().getFullyQualifiedName(false) + "</B>\r\n");
             out.write("</PRE>\r\n");
             
-            IInterface[] infs = getImplementedInterfaces();
+            IClassifier[] infs = getImplementedInterfaces();
             if (infs.length > 0)
             {
                 out.write("<DL>\r\n"); // NOI18N
@@ -665,7 +665,7 @@ public class ClassData extends ElementDataObject
                         NbBundle.getMessage(ClassData.class, "All_Implemented_Interfaces") + ":</B> <DD>"); // NOI18N
                 for (int i=0; i<infs.length; i++)
                 {
-                    IInterface inf = infs[i];
+                    IClassifier inf = infs[i];
                     if (inf == null)
                     {
                         Logger.getLogger(ClassData.class.getName()).

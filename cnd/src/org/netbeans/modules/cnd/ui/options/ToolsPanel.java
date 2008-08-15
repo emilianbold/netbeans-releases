@@ -591,7 +591,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                     liveServers = new ArrayList<String>();
                     serverList.clear();
                     for (String key : serverUpdateCache.getHostKeyList()) {
-                        serverList.addServer(key, false);
+                        serverList.addServer(key, false, false);
                         liveServers.add(key);
                     }
                     serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
@@ -636,6 +636,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 
     /** What to do if user cancels the dialog (nothing) */
     public void cancel() {
+        serverUpdateCache = null;
         changed = false;
     }
 

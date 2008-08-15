@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -51,7 +51,6 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateInfoParserTest;
@@ -74,6 +73,7 @@ public class UpdateUnitFactoryTest extends NbTestCase {
     private UpdateProvider p = null;
     private static File NBM_FILE = null;
     
+    @Override
     protected void setUp () throws IOException, URISyntaxException {
         clearWorkDir ();
         System.setProperty ("netbeans.user", getWorkDirPath ());
@@ -161,49 +161,6 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         assertEquals ("Same size of upadtes (modules + features) and UpdateUnit", updates.size () - installed, kits + modules + features);
     }
     
-    public void testFeatueVsStandaloneModules () throws IOException {
-        String testSpec = "org.netbeans.bootstrap";
-        Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
-        Map<String, UpdateItem> updates = p.getUpdateItems ();
-        assertNotNull ("Some upadtes are present.", updates);
-        assertFalse ("Some upadtes are present.", updates.isEmpty ());
-        
-        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
-                unitImpls,
-                p);
-        assertNotNull ("Some units found.", newImpls);
-        assertFalse ("Some units found.", newImpls.isEmpty ());
-        
-        int modules = 0;
-        int features = 0;
-        int standalone = 0;
-
-        for (UpdateUnit unit : newImpls.values ()) {
-            if (unit.getCodeName ().indexOf (testSpec) == -1) {
-                continue;
-            }
-            switch (unit.getType ()) {
-            case MODULE :
-                modules ++;
-                break;
-            case STANDALONE_MODULE :
-                standalone ++;
-                //fail ("No STANDALONE_MODULE for " + testSpec);
-                break;
-            case LOCALIZATION :
-            case FEATURE :
-                assertNotNull ("Module " + testSpec + " is installed.", unit.getInstalled ());
-                features ++;
-                break;
-            }
-        }
-        /*System.out.println("MODULE: " + modules);
-        System.out.println("STANDALONE_MODULE: " + standalone);
-        System.out.println("FEATURE: " + features);
-        System.out.println("INSTALLED: " + installed);*/
-        assertTrue (testSpec + " feature found.", features > 0);
-    }
-    
     public void testGroupInstalledAndUpdates () {
         Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
         Map<String, UpdateUnit> installedImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
@@ -240,7 +197,7 @@ public class UpdateUnitFactoryTest extends NbTestCase {
         UpdateElement el = u.getAvailableUpdates ().get (0);
         assertEquals ("org.yourorghere.depending", el.getCodeName ());
         assertEquals ("1.0", el.getSpecificationVersion ());
-        assertEquals (NBM_FILE.length(), el.getDownloadSize ());
+        assertEquals (0, el.getDownloadSize ());
     }
     
     public static class MyProvider extends AutoupdateCatalogProvider {

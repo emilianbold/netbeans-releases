@@ -84,7 +84,8 @@ public class ActivityPartition
      */
     public void addSubPartition(IActivityPartition pPartition)
     {
-        namedElem.addElement(pPartition);
+        //namedElem.addElement(pPartition);
+        addOwnedElement( pPartition );  
     }
     
     public IActivity getActivity()

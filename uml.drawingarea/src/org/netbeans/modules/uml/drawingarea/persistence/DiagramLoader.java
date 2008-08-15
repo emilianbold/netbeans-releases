@@ -230,8 +230,8 @@ class DiagramLoader
 
     private void printData()
     {
-        System.out.println(" connector list =  " + connectorList);
-        System.out.println(" pres elt list =  " + presEltList);
+//        System.out.println(" connector list =  " + connectorList);
+//        System.out.println(" pres elt list =  " + presEltList);
 
     }
 
@@ -804,6 +804,7 @@ class DiagramLoader
         {
             EdgeInfo edgeReader = new EdgeInfo();
             Widget connWidget = null;
+            Hashtable<String, String> props = new Hashtable();
 
             edgeReader.setPEID(reader.getAttributeValue(null, "xmi.id"));
             while (reader.hasNext())
@@ -823,6 +824,11 @@ class DiagramLoader
                     {
                         edgeReader.setSemanticModelBridgePresentation(reader.getAttributeValue(null, "presentation"));
                     }
+                    if (reader.getName().getLocalPart().equalsIgnoreCase("DiagramElement.property"))
+                    {
+                        props = processProperties();
+                        edgeReader.setProperties(props);
+                    }                    
                     if (reader.getName().getLocalPart().equalsIgnoreCase("Uml2SemanticModelBridge.element"))
                     {
                         reader.nextTag();
@@ -886,16 +892,24 @@ class DiagramLoader
         } 
 //            pE.setXMIID(PEID);
         pE.addSubject(elt);
-
-        String proxyType = edgeReader.getSemanticModelBridgePresentation();
-        if (proxyType.trim().length() > 0 && !proxyType.equalsIgnoreCase(""))
+        
+        Hashtable edgeProps = edgeReader.getProperties();
+        if (edgeProps != null && edgeProps.size() > 0)
         {
-            proxyPE = new ProxyPresentationElement(pE, proxyType);
+            if (edgeProps.containsKey(UMLEdgeWidget.PROXY_PRESENTATION_ELEMENT)) 
+            {
+                String proxyType = edgeReader.getSemanticModelBridgePresentation();
+                if (proxyType.trim().length() > 0 && !proxyType.equalsIgnoreCase("")) 
+                {
+                    proxyPE = new ProxyPresentationElement(pE, proxyType);
+                }
+            }
         }
         if (proxyPE != null)
         {
             connWidget = scene.addEdge(proxyPE);
-        } else
+        } 
+        else
         {
             connWidget = scene.addEdge(pE);
         }
@@ -966,7 +980,7 @@ class DiagramLoader
         String nodeID = "";
         for (ConnectorInfo conn : connectorList)
         {
-            if (connID.equalsIgnoreCase(conn.getConnectorID()))
+            if ((connID != null) && (connID.equalsIgnoreCase(conn.getConnectorID())))
             {
                 nodeID = conn.getNodePEID();
                 break;
@@ -1139,14 +1153,14 @@ class DiagramLoader
                             if(edgeConnectors[0]!=null)edgeReader.setSourcePE(findNode(edgeConnectors[0])); //We know that the first conn is src and the second is target
                             else
                             {
-                                System.out.println("WARNING, EDGE WITTH NULL CONNECTOR");
+//                                System.out.println("WARNING, EDGE WITTH NULL CONNECTOR");
                                 edgeInfoList.remove(edgeReader);
                                 return;
                             }
                             if(edgeConnectors[1]!=null)edgeReader.setTargetPE(findNode(edgeConnectors[1])); //target
                             else
                             {
-                                System.out.println("WARNING, EDGE WITTH NULL CONNECTOR");
+//                                System.out.println("WARNING, EDGE WITTH NULL CONNECTOR");
                                 edgeInfoList.remove(edgeReader);
                                 return;
                             }
@@ -1157,7 +1171,7 @@ class DiagramLoader
                 {
                     if (reader.isEndElement() && reader.getName().getLocalPart().equalsIgnoreCase("GraphEdge"))
                     {
-                        System.out.println(" End Graph Edge !!");                        
+//                        System.out.println(" End Graph Edge !!");                        
                         return;
                     }
                 }
@@ -1213,7 +1227,7 @@ class DiagramLoader
                 if (message.getKind() == IMessageKind.MK_SYNCHRONOUS)
                 {
                     Point resultStartingPoint, resultEndingPoint;
-                    System.out.println(" SYNCHRONOUS message... ");
+//                    System.out.println(" SYNCHRONOUS message... ");
                     //now find the result message for this call message
                     IMessage returnMsg = findReturnMessage(messageList, message);
                     if (returnMsg != null)
@@ -1227,25 +1241,25 @@ class DiagramLoader
                             resultEndingPoint = (Point) returnMsgInfo.getWayPoints().get(returnMsgInfo.getWayPoints().size() - 1);
                             
                             retVal = (List)provider.createSynchConnection(sourceWidget, targetWidget, startingPoint, endingPoint, resultStartingPoint, resultEndingPoint);
-                            System.out.println("syncMsg"+retVal);
+//                            System.out.println("syncMsg"+retVal);
                         }
                     }
                 } 
                 else if ((message.getKind() == IMessageKind.MK_ASYNCHRONOUS) 
                         || (message.getKind() == IMessageKind.MK_CREATE))
                 {
-                    System.out.println(" ASYNC message ..");
+//                    System.out.println(" ASYNC message ..");
                     provider = sqdengine.getConnectProvider(message, null);
                     retVal = (List)provider.createConnection(sourceWidget, targetWidget, startingPoint, endingPoint);                    
-                    System.out.println("Async "+retVal);
+//                    System.out.println("Async "+retVal);
                 } 
                 else if (message.getKind() == IMessageKind.MK_RESULT) {
                     //do nothing for now.. TODO delete it.
-                    System.out.println(" Result Message ! ");
+//                    System.out.println(" Result Message ! ");
                 }
                else
                 {
-                    System.out.println(" short method..");
+//                    System.out.println(" short method..");
                     provider = sqdengine.getConnectProvider(message, null);
                     provider.createConnection(sourceWidget, targetWidget);
                 }
@@ -1268,7 +1282,7 @@ class DiagramLoader
             }
             else if (message == null && edgeInfo != null)  // we may be a comment edge..
             {
-                System.out.println("comment edge .. I cannot think of any other edge type here..");
+//                System.out.println("comment edge .. I cannot think of any other edge type here..");
                 Widget connWidget = addEdgeToScene(edgeInfo);
                 if (connWidget != null && connWidget instanceof UMLEdgeWidget)
                 {

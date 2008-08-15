@@ -40,10 +40,16 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmFileReferences.Visitor;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
@@ -81,7 +87,7 @@ public class SemanticHighlighter extends HighlighterBase {
 
         return bag;
     }
-    
+
     private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.highlighting.times");
 
     private void update() {
@@ -93,14 +99,41 @@ public class SemanticHighlighter extends HighlighterBase {
             long start = System.currentTimeMillis();
             if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() have started for file " + csmFile.getAbsolutePath());
             if (csmFile != null && csmFile.isParsed()) {
-                for (SemanticEntity se : SemanticEntitiesProvider.instance().get()) {
-                    long start2 = System.currentTimeMillis();
+                final List<SemanticEntity> entities = new ArrayList<SemanticEntity>(SemanticEntitiesProvider.instance().get());
+                final List<ReferenceCollector> collectors = new ArrayList<ReferenceCollector>(entities.size());
+                // the following loop deals with entities without collectors
+                // and gathers collectors for the next step
+                for (Iterator<SemanticEntity> i = entities.iterator(); i.hasNext(); ) {
+                    SemanticEntity se = i.next();
                     if (SemanticHighlightingOptions.instance().isEnabled(se.getName())) {
-                        for (CsmOffsetable block : se.getBlocks(csmFile)) {
-                            newBag.addHighlight(block.getStartOffset(), block.getEndOffset(), se.getColor(block));
+                        ReferenceCollector collector = se.getCollector();
+                        if (collector != null) {
+                            // remember the collector for future use
+                            collectors.add(collector);
+                        } else {
+                            // this is simple entity without collector,
+                            // let's add its blocks right now
+                            addHighlights(newBag, se.getBlocks(csmFile), se);
+                            i.remove();
                         }
+                    } else {
+                        // skip disabled entity
+                        i.remove();
                     }
-                    if (SHOW_TIMES) System.err.println("#@# Highlighter '" + se.getName() + "' have finished. Took " + (System.currentTimeMillis() - start2) + "ms.");
+                }
+                // here we invoke the collectors
+                if (!entities.isEmpty()) {
+                    CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
+                        public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
+                            for (ReferenceCollector c : collectors) {
+                                c.visit(ref, csmFile);
+                            }
+                        }
+                    });
+                    // here we apply highlighting to discovered blocks
+                    for (int i = 0; i < entities.size(); ++i) {
+                        addHighlights(newBag, collectors.get(i).getReferences(), entities.get(i));
+                    }
                 }
             }
             getHighlightsBag(doc).setHighlights(newBag);
@@ -108,6 +141,11 @@ public class SemanticHighlighter extends HighlighterBase {
         }
     }
 
+    private void addHighlights(OffsetsBag bag, List<? extends CsmOffsetable> blocks, SemanticEntity entity) {
+        for (CsmOffsetable block : blocks) {
+            bag.addHighlight(block.getStartOffset(), block.getEndOffset(), entity.getAttributes(block));
+        }
+    }
 
     // PhaseRunner
     public void run(Phase phase) {
@@ -130,5 +168,8 @@ public class SemanticHighlighter extends HighlighterBase {
 
     public boolean isValid() {
         return true;
+    }
+
+    public void cancel() {
     }
 }

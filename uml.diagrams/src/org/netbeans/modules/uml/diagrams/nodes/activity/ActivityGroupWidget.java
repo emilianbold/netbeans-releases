@@ -39,9 +39,13 @@
 package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.awt.Dimension;
+import java.awt.Point;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -54,11 +58,17 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IExpression;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IValueSpecification;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
+import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
 import org.netbeans.modules.uml.diagrams.nodes.ContainerNode;
 import org.netbeans.modules.uml.diagrams.nodes.RoundedRectWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
+import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
+import org.netbeans.modules.uml.drawingarea.util.Util;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
@@ -70,7 +80,7 @@ import org.openide.util.NbBundle;
  *
  * @author thuy
  */
-public class ActivityGroupWidget extends UMLNodeWidget//ContainerNode
+public class ActivityGroupWidget extends ContainerNode //UMLNodeWidget
 {
     private UMLLabelWidget groupKindWidget = null;
     private UMLNameWidget actGrpNameWidget = null;
@@ -78,6 +88,7 @@ public class ActivityGroupWidget extends UMLNodeWidget//ContainerNode
     public static final int MIN_NODE_WIDTH = 130;
     public static final int MIN_NODE_HEIGHT = 80;
     private static ResourceBundle bundle = NbBundle.getBundle(ContainerNode.class);
+    private IActivityGroup group;
 
     public ActivityGroupWidget(Scene scene)
     {
@@ -90,10 +101,16 @@ public class ActivityGroupWidget extends UMLNodeWidget//ContainerNode
         if ( presentation != null)
         {
             IActivityGroup element = (IActivityGroup) presentation.getFirstSubject();
-            setCurrentView(createActivityGroupView(element));
-            addToLookup(initializeContextPalette());
+            if (!isInitialized())
+            {
+                setCurrentView(createActivityGroupView(element));
+                addToLookup(initializeContextPalette());
+            }
+           if (!PersistenceUtil.isDiagramLoading())
+                initContainedElements();           
         }
         setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
     }
 
     public  DefaultContextPaletteModel initializeContextPalette()
@@ -105,6 +122,7 @@ public class ActivityGroupWidget extends UMLNodeWidget//ContainerNode
     
     private Widget createActivityGroupView(IActivityGroup element)
     {
+        group = element;
         Scene scene =  getScene();
         
         //create main view 
@@ -164,7 +182,7 @@ public class ActivityGroupWidget extends UMLNodeWidget//ContainerNode
         containerLayer.addChild(containerWidget);
         
         mainView.addChild(containerLayer);
-        
+        setIsInitialized(true);
         return mainView;
     }
 
@@ -173,9 +191,10 @@ public class ActivityGroupWidget extends UMLNodeWidget//ContainerNode
     { 
         IElement element = (IElement) event.getSource();
         String propName = event.getPropertyName();
-        actGrpNameWidget.propertyChange(event);
+        
         if (element instanceof IActivityGroup)
         {
+            actGrpNameWidget.propertyChange(event);
             IActivityGroup actGroupElem = (IActivityGroup) element;
             if (propName.equals(ModelElementChangedKind.ELEMENTMODIFIED.toString()))
             {
@@ -272,9 +291,134 @@ public class ActivityGroupWidget extends UMLNodeWidget//ContainerNode
         containerWidget.addChild(widget);
     }
     
-//    @Override
-//    public ContainerWidget getContainer()
-//    {
-//        return containerWidget;
-//    }
+    @Override
+    public ContainerWidget getContainer()
+    {
+        return containerWidget;
+    }
+    
+    
+    public void initContainedElements()
+    {
+        if (!(getScene() instanceof GraphScene))
+        {
+            return;
+        }
+ 
+        Point point = new Point(10,10);
+        for (IElement e : group.getNodeContents())
+        {
+            boolean found = false;
+            
+            List<Widget> list = getContainer().getChildren();
+            List<Widget> children = new ArrayList<Widget>(list);
+            for (Widget child: children)
+            {
+                Object object = ((DesignerScene)getScene()).findObject(child);
+                assert object instanceof IPresentationElement;
+                if (((IPresentationElement)object).getFirstSubject() == e)
+                {
+                    ((UMLNodeWidget)child).initializeNode((IPresentationElement)object);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                IPresentationElement presentation = Util.createNodePresentationElement();
+                presentation.addSubject(e);
+
+                Widget w = ((DesignerScene) getScene()).addNode(presentation);
+                if (w != null)
+                {
+                    w.removeFromParent();
+                    getContainer().addChild(w);
+                    w.setPreferredLocation(point);
+                    point = new Point(point.x + 50, point.y + 50);
+                }
+            }
+        }
+        
+        UMLRelationshipDiscovery relationshipD = new UMLRelationshipDiscovery((GraphScene) getScene());
+        relationshipD.discoverCommonRelations(new ArrayList<IElement>(group.getNodeContents()));
+    }
+    
+    public void save(NodeWriter nodeWriter)
+    {
+        setNodeWriterValues(nodeWriter, this);
+        nodeWriter.beginGraphNodeWithModelBridge();
+        nodeWriter.beginContained();
+        //write contained
+        saveChildren(this, nodeWriter);
+        nodeWriter.endContained();
+        nodeWriter.endGraphNode();
+    }
+
+    public void saveChildren(Widget widget, NodeWriter nodeWriter)
+    {
+        if (widget == null || nodeWriter == null)
+        {
+            return;
+        }
+        List<Widget> widList = widget.getChildren();
+        for (Widget child : widList)
+        {
+            if ((child instanceof DiagramNodeWriter) && !(child instanceof Widget.Dependency))
+            { // we write dependencies in another section
+
+                ((DiagramNodeWriter) child).save(nodeWriter);
+            } else
+            {
+                saveChildren(child, nodeWriter);
+            }
+        }
+    }
+    
+    @Override
+    public void duplicate(boolean setBounds, Widget target)
+    {
+        assert target instanceof ActivityGroupWidget;     
+        assert target.getScene() instanceof DesignerScene;
+        
+        super.duplicate(setBounds, target);
+        DesignerScene targetScene = (DesignerScene)target.getScene();
+        List<Widget> children = new ArrayList<Widget>(((ActivityGroupWidget) target).getContainer().getChildren());
+        
+        for (Widget newChild: children)
+        {         
+            if (newChild instanceof UMLNodeWidget)
+            {
+                boolean found = false;
+
+                IPresentationElement pe = ((UMLNodeWidget)newChild).getObject();
+                if (pe != null)
+                {
+                    for (Widget c : getContainer().getChildren())
+                    {
+                        if (!(c instanceof UMLNodeWidget))
+                        {
+                            continue;
+                        }
+                        IPresentationElement origPE = ((UMLNodeWidget) c).getObject();
+                        if (pe.getFirstSubject() == origPE.getFirstSubject())
+                        {
+                            ((UMLNodeWidget) c).duplicate(setBounds, newChild);
+                            newChild.setPreferredLocation(c.getPreferredLocation());
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (!found)
+                {                 
+                    for (IPresentationElement edgePE : targetScene.findNodeEdges(pe, true, true))
+                    {
+                        targetScene.removeEdge(edgePE);
+                    }
+                    ((ActivityGroupWidget) target).getContainer().removeChild(newChild);
+                }
+            }
+        }
+        targetScene.validate();
+    }
 }

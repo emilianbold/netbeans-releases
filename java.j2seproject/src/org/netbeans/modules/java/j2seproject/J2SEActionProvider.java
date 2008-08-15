@@ -43,6 +43,7 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -360,7 +361,7 @@ class J2SEActionProvider implements ActionProvider {
                         }
                         return ;
                     }
-                    if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command)) {
+                    if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command)) {
                         prepareSystemProperties(execProperties, false);
                         bypassAntBuildScript(command, context, execProperties);
 
@@ -694,6 +695,8 @@ class J2SEActionProvider implements ActionProvider {
     }
     private void prepareDirtyList(Properties p, boolean isExplicitBuildTarget) {
         String doDepend = project.evaluator().getProperty(J2SEProjectProperties.DO_DEPEND);
+        String buildClassesDirValue = project.evaluator().getProperty(J2SEProjectProperties.BUILD_CLASSES_DIR);
+        File buildClassesDir = project.getAntProjectHelper().resolveFile(buildClassesDirValue);
         synchronized (this) {
             if (dirty == null) {
                 // #119777: the first time, build everything.
@@ -705,7 +708,8 @@ class J2SEActionProvider implements ActionProvider {
                 // (If you make an edit and press F11, the save event happens *after* Ant is launched.)
                 modification(d.getPrimaryFile());
             }
-            if (!"true".equalsIgnoreCase(doDepend) && !(isExplicitBuildTarget && dirty.isEmpty())) { // NOI18N
+            boolean wasBuiltAutomatically = new File(buildClassesDir, ".netbeans_automatic_build").canRead(); //NOI18N
+            if (!"true".equalsIgnoreCase(doDepend) && !(isExplicitBuildTarget && dirty.isEmpty()) && !wasBuiltAutomatically) { // NOI18N
                 // #104508: if not using <depend>, try to compile just those files known to have been touched since the last build.
                 // (In case there are none such, yet the user invoked build anyway, probably they know what they are doing.)
                 if (dirty.isEmpty()) {
@@ -1063,7 +1067,7 @@ class J2SEActionProvider implements ActionProvider {
         FileObject toRun;
         boolean run = true;
 
-        if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command)) {
+        if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command)) {
             final String mainClass = project.evaluator().getProperty(J2SEProjectProperties.MAIN_CLASS);
             final FileObject[] mainClassFile = new FileObject[1];
             ClassPathProviderImpl cpProvider = project.getClassPathProvider();
@@ -1092,6 +1096,10 @@ class J2SEActionProvider implements ActionProvider {
             }
 
             toRun = mainClassFile[0];
+            
+            if (COMMAND_DEBUG_STEP_INTO.equals(command)) {
+                p.setProperty("stopclassname", mainClass);
+            }
         } else {
             //run single:
             FileObject[] files = findSources(context);
@@ -1107,7 +1115,7 @@ class J2SEActionProvider implements ActionProvider {
 
             toRun = files[0];
         }
-        boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command);
+        boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command);
         try {
             if (run) {
                 copyValue(J2SEProjectProperties.APPLICATION_ARGS, p);

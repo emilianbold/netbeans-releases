@@ -49,11 +49,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
 import org.openide.util.NbBundle;
 
@@ -88,8 +91,8 @@ abstract public class BasePanel extends JPanel {
                     AbstractButton ab = (AbstractButton) c;
                     SwingUtilities.invokeLater(new ButtonSetter(ab, value));
                 } else if (c instanceof JTable) {
-                    JTable tab = (JTable) c;
-                    SwingUtilities.invokeLater(new TableSetter(compName, tab, data));
+                    JTable table = (JTable) c;
+                    SwingUtilities.invokeLater(new TableSetter(table, data));
                 }
             }
         }
@@ -110,8 +113,12 @@ abstract public class BasePanel extends JPanel {
                     AbstractButton ab = (AbstractButton) c;
                     retVal.put(key, Boolean.toString(ab.isSelected()));
                 } else if (c instanceof JTable) {
-                    JTable tab = (JTable) c;
-                    MyTableModel model = (MyTableModel) tab.getModel();
+                    JTable table = (JTable) c;
+                    TableCellEditor tce = table.getCellEditor();
+                    if (null != tce) {
+                        tce.stopCellEditing();
+                    }
+                    DataTableModel model = (DataTableModel) table.getModel();
                     retVal.putAll(model.getData());
                 }
             }
@@ -147,29 +154,29 @@ abstract public class BasePanel extends JPanel {
     }
 
     static class TableSetter implements Runnable {
-        private JTable tab;
+        private JTable table;
         private Map<String, String> data;
-        private String spec;
-        TableSetter(String spec, JTable tab, Map<String,String> data) {
-            this.tab = tab;
+        TableSetter(JTable table, Map<String,String> data) {
+            this.table = table;
             this.data = data;
-            this.spec = spec;
         }
 
         public void run() {
             // build the row data
-            String[] specComp = spec.split("\\.");
+            String[] specComp = table.getName().split("\\.");
             int colCount = specComp.length - 1;
             if (0 >= colCount) {
                 // probably should log something here, too...
                 return;
             }
             List<String[]> l = new ArrayList<String[]>();
-            String pattern = ".*\\."+specComp[0]+"\\..*\\."+specComp[1];
+            // old style
+            Pattern pattern = Pattern.compile(".*\\."+specComp[0]+"\\..*\\."+specComp[1]);
             Set<String> keys = data.keySet();
             String pushPrefix = null;
             for (String k : keys) {
-                if (k.matches(pattern)) {
+                Matcher test = pattern.matcher(k);
+                if (test.matches()) {
                     if (null == pushPrefix) {
                         int dex = k.lastIndexOf(specComp[0]);
                         pushPrefix = k.substring(0,dex);
@@ -185,17 +192,44 @@ abstract public class BasePanel extends JPanel {
                     l.add(aRow);
                 }
             }
-            tab.setModel(new MyTableModel(l.toArray(new String[l.size()][]),specComp,pushPrefix));
+            if (l.size() > 0) {
+                table.setModel(new AttributedPropertyTableModel(l.toArray(new String[l.size()][]), specComp, pushPrefix));
+            } else {
+                // this data is from a post beta build...
+                pattern = Pattern.compile(".*\\." + specComp[0] + "\\..*");
+                pushPrefix = null;
+                for (String k : keys) {
+                Matcher test = pattern.matcher(k);
+                if (test.matches()) {
+                        if (null == pushPrefix) {
+                            int dex = k.lastIndexOf(specComp[0]);
+                            pushPrefix = k.substring(0, dex);
+                        }
+                        String[] aRow = new String[colCount];
+                        int dex = k.lastIndexOf(".");
+                        String propName = k.substring(dex + 1);
+                        aRow[0] = propName;
+                        aRow[1] = data.get(k);
+                        l.add(aRow);
+                    }
+                }
+                if (l.size() > 0) {
+                    table.setModel(new NameValueTableModel(l.toArray(new String[l.size()][]), specComp, pushPrefix));
+                }
+            }
         }
     }
 
-    static class MyTableModel extends AbstractTableModel {
+    static abstract class DataTableModel extends AbstractTableModel {
+
+        abstract public Map<String, String> getData();
+
         private String[][] rowData;
         private String pushPrefix;
         private String[] names;
         private String[] specComp;
 
-        MyTableModel(String[][] rowData, String[] specComp, String pushPrefix) {
+        DataTableModel(String[][] rowData, String[] specComp, String pushPrefix) {
             this.rowData = rowData;
             this.specComp = specComp;
             this.pushPrefix = pushPrefix;
@@ -211,7 +245,7 @@ abstract public class BasePanel extends JPanel {
                         names[i] = specComp[i + 1];
                     }
                 }
-            }
+            } 
         }
 
         public int getRowCount() {
@@ -219,7 +253,7 @@ abstract public class BasePanel extends JPanel {
         }
 
         public int getColumnCount() {
-            return rowData[0].length;
+            return rowData.length == 0 ? 0 : rowData[0].length;
         }
 
         @Override
@@ -247,16 +281,43 @@ abstract public class BasePanel extends JPanel {
         public String getPushPrefix() {
             return pushPrefix;
         }
+        
+        public String getSpecComp(int i) {
+            return specComp[i];
+        }
+    }
 
+    static class AttributedPropertyTableModel extends DataTableModel {
+        AttributedPropertyTableModel(String[][] rowData, String[] specComp, String pushPrefix) {
+            super(rowData,specComp,pushPrefix);
+        }
+        
         public Map<String,String> getData() {
             Map<String,String> retVal = new HashMap<String,String>(getRowCount()*(getColumnCount()-1));
             for (int i = 0; i < getRowCount(); i++) {
-                String key = pushPrefix + specComp[0]+"."+
+                String key = getPushPrefix() + getSpecComp(0)+"."+
                         getValueAt(i,0)+".";
                 for (int j = 1; j < getColumnCount(); j++) {
-                    key += specComp[j+1];
+                    key += getSpecComp(j+1);
                     retVal.put(key, (String) getValueAt(i,j));
                 }
+            }
+            return retVal;
+        }
+    }
+
+    static class NameValueTableModel extends DataTableModel {
+
+        NameValueTableModel(String[][] rowData, String[] specComp, String pushPrefix) {
+            super(rowData,specComp,pushPrefix);
+        }
+
+        public Map<String, String> getData() {
+            Map<String, String> retVal = new HashMap<String, String>(getRowCount() * (getColumnCount() - 1));
+            for (int i = 0; i < getRowCount(); i++) {
+                String key = getPushPrefix() + getSpecComp(0) + "." +
+                        getValueAt(i, 0); //+".";
+                retVal.put(key, (String) getValueAt(i, 1));
             }
             return retVal;
         }
@@ -269,7 +330,7 @@ abstract public class BasePanel extends JPanel {
             return "";
         }
         protected List<Component> getDataComponents() {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
         @Override

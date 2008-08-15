@@ -111,170 +111,172 @@ public class Utils {
     
     public static void populateModel(final FileObject implClass, final ServiceModel serviceModel) {
         JavaSource javaSource = JavaSource.forFileObject(implClass);
-        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                //CompilationUnitTree cut = controller.getCompilationUnit();
-                
-                TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
-                if (classEl !=null) {
-                    //ClassTree javaClass = srcUtils.getClassTree();
-                    // find if class is Injection Target
-                    TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-                    if (wsElement!=null) {
-                        List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
-                        AnnotationMirror webServiceAn=null;
-                        for (AnnotationMirror anMirror : annotations) {
-                            if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
-                                webServiceAn = anMirror;
-                                break;
+        if (javaSource != null) {
+            CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+                public void run(CompilationController controller) throws IOException {
+                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                    //CompilationUnitTree cut = controller.getCompilationUnit();
+
+                    TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
+                    if (classEl !=null) {
+                        //ClassTree javaClass = srcUtils.getClassTree();
+                        // find if class is Injection Target
+                        TypeElement wsElement = controller.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
+                        if (wsElement!=null) {
+                            List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
+                            AnnotationMirror webServiceAn=null;
+                            for (AnnotationMirror anMirror : annotations) {
+                                if (controller.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
+                                    webServiceAn = anMirror;
+                                    break;
+                                }
                             }
-                        }
-                        if (webServiceAn==null) {
-                            serviceModel.status = ServiceModel.STATUS_NOT_SERVICE;
-                            return;
-                        }
-                        
-                        Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = webServiceAn.getElementValues();
-                        boolean nameFound=false;
-                        boolean serviceNameFound=false;
-                        boolean portNameFound=false;
-                        boolean tnsFound = false;
-                        for(ExecutableElement ex:expressions.keySet()) {
-                            if (ex.getSimpleName().contentEquals("serviceName")) { //NOI18N
-                                serviceModel.serviceName = (String)expressions.get(ex).getValue();
-                                serviceNameFound=true;
-                            } else if (ex.getSimpleName().contentEquals("name")) { //NOI18N
-                                serviceModel.name = (String)expressions.get(ex).getValue();
-                                nameFound=true;
-                            } else if (ex.getSimpleName().contentEquals("portName")) { //NOI18N
-                                serviceModel.portName = (String)expressions.get(ex).getValue();
-                                portNameFound=true;
-                            } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
-                                serviceModel.targetNamespace = (String)expressions.get(ex).getValue();
-                                tnsFound = true;
-                            } else if (ex.getSimpleName().contentEquals("endpointInterface")) { //NOI18N
-                                serviceModel.endpointInterface = (String)expressions.get(ex).getValue();
-                            } else if (ex.getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
-                                serviceModel.wsdlLocation = (String)expressions.get(ex).getValue();
+                            if (webServiceAn==null) {
+                                serviceModel.status = ServiceModel.STATUS_NOT_SERVICE;
+                                return;
                             }
+
+                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = webServiceAn.getElementValues();
+                            boolean nameFound=false;
+                            boolean serviceNameFound=false;
+                            boolean portNameFound=false;
+                            boolean tnsFound = false;
+                            for(ExecutableElement ex:expressions.keySet()) {
+                                if (ex.getSimpleName().contentEquals("serviceName")) { //NOI18N
+                                    serviceModel.serviceName = (String)expressions.get(ex).getValue();
+                                    serviceNameFound=true;
+                                } else if (ex.getSimpleName().contentEquals("name")) { //NOI18N
+                                    serviceModel.name = (String)expressions.get(ex).getValue();
+                                    nameFound=true;
+                                } else if (ex.getSimpleName().contentEquals("portName")) { //NOI18N
+                                    serviceModel.portName = (String)expressions.get(ex).getValue();
+                                    portNameFound=true;
+                                } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
+                                    serviceModel.targetNamespace = (String)expressions.get(ex).getValue();
+                                    tnsFound = true;
+                                } else if (ex.getSimpleName().contentEquals("endpointInterface")) { //NOI18N
+                                    serviceModel.endpointInterface = (String)expressions.get(ex).getValue();
+                                } else if (ex.getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
+                                    serviceModel.wsdlLocation = (String)expressions.get(ex).getValue();
+                                }
+                            }
+                            // set default names
+                            if (!nameFound) serviceModel.name=implClass.getName();
+                            if (!portNameFound) serviceModel.portName = serviceModel.getName()+"Port"; //NOI18N
+                            if (!serviceNameFound) serviceModel.serviceName = implClass.getName()+"Service"; //NOI18N
+                            if (!tnsFound) {
+                                String qualifName = classEl.getQualifiedName().toString();
+                                int ind = qualifName.lastIndexOf(".");
+                                serviceModel.targetNamespace = "http://"+(ind>=0?qualifName.substring(0,ind):"")+"/";
+                            }
+
+                            //TODO: Also have to apply JAXWS/JAXB rules regarding collision of names
                         }
-                        // set default names
-                        if (!nameFound) serviceModel.name=implClass.getName();
-                        if (!portNameFound) serviceModel.portName = serviceModel.getName()+"Port"; //NOI18N
-                        if (!serviceNameFound) serviceModel.serviceName = implClass.getName()+"Service"; //NOI18N
-                        if (!tnsFound) {
-                            String qualifName = classEl.getQualifiedName().toString();
-                            int ind = qualifName.lastIndexOf(".");
-                            serviceModel.targetNamespace = "http://"+(ind>=0?qualifName.substring(0,ind):"")+"/";
+
+
+                        // use SEI class annotations if endpointInterface annotation is specified
+                        TypeElement seiClassEl = null;
+                        if (serviceModel.endpointInterface!=null) {
+                            seiClassEl = controller.getElements().getTypeElement(serviceModel.endpointInterface);
+                            if (seiClassEl != null) classEl = seiClassEl;
                         }
-                        
-                        //TODO: Also have to apply JAXWS/JAXB rules regarding collision of names
-                    }
-                    
-                    
-                    // use SEI class annotations if endpointInterface annotation is specified
-                    TypeElement seiClassEl = null;
-                    if (serviceModel.endpointInterface!=null) {
-                        seiClassEl = controller.getElements().getTypeElement(serviceModel.endpointInterface);
-                        if (seiClassEl != null) classEl = seiClassEl;
-                    }
-                    
-                    boolean foundWebMethodAnnotation=false;
-                    TypeElement methodAnotationEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-                    List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
-                    for (Element member : classEl.getEnclosedElements()) {
-                        if (member.getKind() == ElementKind.METHOD/* && member.getSimpleName().contentEquals("min")*/) {
-                            ExecutableElement methodEl = (ExecutableElement) member;
-                            if (methodEl.getModifiers().contains(Modifier.PUBLIC)) {
-                                List<? extends AnnotationMirror> methodAnnotations = methodEl.getAnnotationMirrors();
-                                if (foundWebMethodAnnotation) {
-                                    for (AnnotationMirror anMirror : methodAnnotations) {
-                                        if (controller.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
-                                            methods.add(methodEl);
-                                            break;
+
+                        boolean foundWebMethodAnnotation=false;
+                        TypeElement methodAnotationEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
+                        List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
+                        for (Element member : classEl.getEnclosedElements()) {
+                            if (member.getKind() == ElementKind.METHOD/* && member.getSimpleName().contentEquals("min")*/) {
+                                ExecutableElement methodEl = (ExecutableElement) member;
+                                if (methodEl.getModifiers().contains(Modifier.PUBLIC)) {
+                                    List<? extends AnnotationMirror> methodAnnotations = methodEl.getAnnotationMirrors();
+                                    if (foundWebMethodAnnotation) {
+                                        for (AnnotationMirror anMirror : methodAnnotations) {
+                                            if (controller.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
+                                                methods.add(methodEl);
+                                                break;
+                                            }
                                         }
-                                    }
-                                } else { // until now no @WebMethod annotations
-                                    for (AnnotationMirror anMirror : methodAnnotations) {
-                                        if (controller.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
-                                            // found first @WebMethod annotation
-                                            // need to remove all, previously found, public methods
-                                            methods.clear();
-                                            foundWebMethodAnnotation=true;
-                                            methods.add(methodEl);
-                                            break;
+                                    } else { // until now no @WebMethod annotations
+                                        for (AnnotationMirror anMirror : methodAnnotations) {
+                                            if (controller.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
+                                                // found first @WebMethod annotation
+                                                // need to remove all, previously found, public methods
+                                                methods.clear();
+                                                foundWebMethodAnnotation=true;
+                                                methods.add(methodEl);
+                                                break;
+                                            }
                                         }
-                                    }
-                                    if (!foundWebMethodAnnotation) {
-                                        // all methods are supposed to be web methods when missing @WebMethod annotation
-                                        methods.add(methodEl);
+                                        if (!foundWebMethodAnnotation) {
+                                            // all methods are supposed to be web methods when missing @WebMethod annotation
+                                            methods.add(methodEl);
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    // populate methods
-                    
-                    List<MethodModel> operations = new ArrayList<MethodModel>();
-                    if (methods.size()==0) {
-                        serviceModel.operations=operations;
-                        serviceModel.status = ServiceModel.STATUS_INCORRECT_SERVICE;
-                        return;
-                    }
-                    
-                    boolean hasEndpointInterfaceAttr = serviceModel.endpointInterface != null;
-                    
-                    // search for SEI class
-                    FileObject seiClass = null;
-                    if(hasEndpointInterfaceAttr){
-                        // first look for SEI class in src hierarchy (SEI exists but : WS from Java case)
-                        ClassPath classPath = ClassPath.getClassPath(implClass, ClassPath.SOURCE);
-                        FileObject[] srcRoots = classPath.getRoots();
-                        for (FileObject srcRoot:srcRoots) {
-                            String seiClassResource = serviceModel.endpointInterface.replace('.', '/')+".java"; //NOI18N
-                            seiClass = srcRoot.getFileObject(seiClassResource);
-                            if (seiClass != null) {
-                                break;
-                            }
-                        }                        
-                        if (seiClass == null) { // looking for SEI class under build/generated directory
-                            final Project project = FileOwnerQuery.getOwner(implClass);
-                            String seiPath = "build/generated/wsimport/service/" + serviceModel.endpointInterface.replace('.', '/') + ".java"; //NOI18N
-                            seiClass = project.getProjectDirectory().getFileObject(seiPath);
-                            if(seiClass == null){
-                                invokeWsImport(project, serviceModel.getName());
+                        // populate methods
+
+                        List<MethodModel> operations = new ArrayList<MethodModel>();
+                        if (methods.size()==0) {
+                            serviceModel.operations=operations;
+                            serviceModel.status = ServiceModel.STATUS_INCORRECT_SERVICE;
+                            return;
+                        }
+
+                        boolean hasEndpointInterfaceAttr = serviceModel.endpointInterface != null;
+
+                        // search for SEI class
+                        FileObject seiClass = null;
+                        if(hasEndpointInterfaceAttr){
+                            // first look for SEI class in src hierarchy (SEI exists but : WS from Java case)
+                            ClassPath classPath = ClassPath.getClassPath(implClass, ClassPath.SOURCE);
+                            FileObject[] srcRoots = classPath.getRoots();
+                            for (FileObject srcRoot:srcRoots) {
+                                String seiClassResource = serviceModel.endpointInterface.replace('.', '/')+".java"; //NOI18N
+                                seiClass = srcRoot.getFileObject(seiClassResource);
+                                if (seiClass != null) {
+                                    break;
+                                }
+                            }                        
+                            if (seiClass == null) { // looking for SEI class under build/generated directory
+                                final Project project = FileOwnerQuery.getOwner(implClass);
+                                String seiPath = "build/generated/wsimport/service/" + serviceModel.endpointInterface.replace('.', '/') + ".java"; //NOI18N
                                 seiClass = project.getProjectDirectory().getFileObject(seiPath);
+                                if(seiClass == null){
+                                    invokeWsImport(project, serviceModel.getName());
+                                    seiClass = project.getProjectDirectory().getFileObject(seiPath);
+                                }
                             }
+
                         }
-                        
-                    }
-                    
-                    // populate methods
-                    for (int i=0;i<methods.size();i++) {
-                        MethodModel operation = new MethodModel();
-                        if (hasEndpointInterfaceAttr && seiClass != null) {
-                            operation.setImplementationClass(seiClass);
-                        } else {
-                            operation.setImplementationClass(implClass);
+
+                        // populate methods
+                        for (int i=0;i<methods.size();i++) {
+                            MethodModel operation = new MethodModel();
+                            if (hasEndpointInterfaceAttr && seiClass != null) {
+                                operation.setImplementationClass(seiClass);
+                            } else {
+                                operation.setImplementationClass(implClass);
+                            }
+                            ElementHandle methodHandle = ElementHandle.create(methods.get(i));
+                            operation.setMethodHandle(methodHandle);
+                            Utils.populateOperation(controller, methods.get(i), methodHandle, operation, serviceModel.getTargetNamespace());
+                            operations.add(operation);
                         }
-                        ElementHandle methodHandle = ElementHandle.create(methods.get(i));
-                        operation.setMethodHandle(methodHandle);
-                        Utils.populateOperation(controller, methods.get(i), methodHandle, operation, serviceModel.getTargetNamespace());
-                        operations.add(operation);
+                        serviceModel.operations=operations;
+                    } else {
+                        serviceModel.status = ServiceModel.STATUS_INCORRECT_SERVICE;
                     }
-                    serviceModel.operations=operations;
-                } else {
-                    serviceModel.status = ServiceModel.STATUS_INCORRECT_SERVICE;
                 }
+                public void cancel() {}
+            };
+
+            try {
+                javaSource.runUserActionTask(task, true);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
-            public void cancel() {}
-        };
-        
-        try {
-            javaSource.runUserActionTask(task, true);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
         }
     }
     

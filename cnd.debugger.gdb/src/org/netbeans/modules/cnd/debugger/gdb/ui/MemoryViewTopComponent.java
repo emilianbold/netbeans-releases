@@ -62,7 +62,7 @@ final class MemoryViewTopComponent extends TopComponent {
     // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
     static final String ICON_PATH = "org/netbeans/modules/cnd/debugger/gdb/resources/memory.png"; // NOI18N
 
-    private static final String PREFERRED_ID = "MemoryViewTopComponent";
+    private static final String PREFERRED_ID = "MemoryViewTopComponent"; // NOI18N
 
     private MemoryViewTopComponent() {
         initComponents();
@@ -262,15 +262,15 @@ final class MemoryViewTopComponent extends TopComponent {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
             Logger.getLogger(MemoryViewTopComponent.class.getName()).warning(
-                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+                    "Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system."); // NOI18N
             return getDefault();
         }
         if (win instanceof MemoryViewTopComponent) {
             return (MemoryViewTopComponent) win;
         }
         Logger.getLogger(MemoryViewTopComponent.class.getName()).warning(
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID + // NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior."); // NOI18N
         return getDefault();
     }
 

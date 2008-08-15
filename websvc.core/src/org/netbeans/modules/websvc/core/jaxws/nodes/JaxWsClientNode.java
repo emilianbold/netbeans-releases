@@ -499,10 +499,12 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         List<URL> list = new ArrayList<URL>();
         for (int i=0;i<bindingFiles.length;i++) {
             FileObject fo = bindingsFolder.getFileObject(bindingFiles[i]);
-            try {
-                list.add(fo.getURL());
-            } catch (FileStateInvalidException ex) {
-                // if there is problem no bindings will be added
+            if (fo != null) {
+                try {
+                    list.add(fo.getURL());
+                } catch (FileStateInvalidException ex) {
+                    // if there is problem no bindings will be added
+                }
             }
         }
         URL[] bindings = new URL[list.size()];

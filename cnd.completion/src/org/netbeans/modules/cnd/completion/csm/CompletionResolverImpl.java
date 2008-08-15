@@ -317,7 +317,9 @@ public class CompletionResolverImpl implements CompletionResolver {
             boolean staticContext = fun == null ? true : CsmBaseUtilities.isStaticContext(fun);
 
             if (needClassElements(context, offset)) {
-                CsmClass clazz = CsmBaseUtilities.getFunctionClass(fun);
+                //if (fun == null) System.err.printf("\nFunction is null. Offset: %d Context:\n%s \n", offset, context.toString());
+                CsmClass clazz = (fun == null) ? null : CsmBaseUtilities.getFunctionClass(fun);
+                clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
                 if (clazz != null) {
                     // get class variables visible in this method
                     resImpl.classFields = contResolver.getFields(clazz, fun, strPrefix, staticContext, match, true,false);
@@ -781,11 +783,11 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
             if(!match) {
                 resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
+                resolveTypes |= RESOLVE_LOCAL_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_VARIABLES;
                 resolveTypes |= RESOLVE_CLASS_FIELDS;
                 resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
             }
-            resolveTypes |= RESOLVE_LOCAL_VARIABLES;
         }
     }
 

@@ -118,7 +118,7 @@ public class NewGroupPanel extends JPanel {
     private void updateNameField() {
         if (adHocKindRadio.isSelected() && useOpenCheckbox.isSelected()) {
             Project p = OpenProjects.getDefault().getMainProject();
-            if (p != null) {
+            if (p != null && nameField.getText().length() == 0) {
                 nameField.setText(ProjectUtils.getInformation(p).getDisplayName());
             }
         } else if (subprojectsKindRadio.isSelected()) {
@@ -129,7 +129,7 @@ public class NewGroupPanel extends JPanel {
                 if (fo != null && fo.isFolder()) {
                     try {
                         Project p = ProjectManager.getDefault().findProject(fo);
-                        if (p != null) {
+                        if (p != null && nameField.getText().length() == 0) {
                             nameField.setText(ProjectUtils.getInformation(p).getDisplayName());
                         }
                     } catch (IOException x) {
@@ -139,7 +139,7 @@ public class NewGroupPanel extends JPanel {
             }
         } else if (directoryKindRadio.isSelected()) {
             String s = directoryField.getText();
-            if (s != null && s.length() > 0) {
+            if (s != null && s.length() > 0 && nameField.getText().length() == 0) {
                 File f = new File(s);
                 nameField.setText(f.getName());
             }
@@ -158,7 +158,7 @@ public class NewGroupPanel extends JPanel {
         } else if (subprojectsKindRadio.isSelected()) {
             FileObject fo = FileUtil.toFileObject(new File(masterProjectField.getText()));
             try {
-                return SubprojectsGroup.create(ProjectManager.getDefault().findProject(fo));
+                return SubprojectsGroup.create(nameField.getText().trim(), ProjectManager.getDefault().findProject(fo));
             } catch (IOException x) {
                 throw new AssertionError(x);
             }

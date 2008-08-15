@@ -128,7 +128,7 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
     public Set instantiate() throws java.io.IOException {
         PersistenceUnit punit = null;
         LOG.fine("Instantiating...");
-            if (descriptor.isContainerManaged()) {
+        if (descriptor.isContainerManaged()) {
             LOG.fine("Creating a container managed PU");
             punit = new PersistenceUnit();
             if (descriptor.getDatasource() != null && !"".equals(descriptor.getDatasource())){
@@ -162,6 +162,13 @@ public class PersistenceUnitWizard implements WizardDescriptor.InstantiatingIter
                 Util.addLibraryToProject(project, lib);
             }
         }
+        
+        // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>
+        // See issue 142575 - desc 10
+        if (!Util.isJavaSE(project)) {
+            punit.setExcludeUnlistedClasses(false);
+        }
+        
         punit.setName(descriptor.getPersistenceUnitName());
         ProviderUtil.setTableGeneration(punit, descriptor.getTableGeneration(), project);
         try{

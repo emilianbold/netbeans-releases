@@ -1420,30 +1420,33 @@ public class ReformatterImpl {
         if (prev != null) {
             switch (prev.id()) {
                 case FOR:
-                    return countParenthesisIndent(codeStyle.alignMultilineFor(), depth);
+                    return countParenthesisIndent(codeStyle.alignMultilineFor(), depth, codeStyle.spaceWithinForParens());
                 case IF:
-                    return countParenthesisIndent(codeStyle.alignMultilineIfCondition(), depth);
+                    return countParenthesisIndent(codeStyle.alignMultilineIfCondition(), depth, codeStyle.spaceWithinIfParens());
                 case WHILE:
-                    return countParenthesisIndent(codeStyle.alignMultilineWhileCondition(), depth);
+                    return countParenthesisIndent(codeStyle.alignMultilineWhileCondition(), depth, codeStyle.spaceWithinWhileParens());
                 case IDENTIFIER:
                 {
                     if (braces.isDeclarationLevel()) {
-                        return countParenthesisIndent(codeStyle.alignMultilineMethodParams(), depth);
+                        return countParenthesisIndent(codeStyle.alignMultilineMethodParams(), depth, codeStyle.spaceWithinMethodDeclParens());
                     } else {
-                        return countParenthesisIndent(codeStyle.alignMultilineCallArgs(), depth);
+                        return countParenthesisIndent(codeStyle.alignMultilineCallArgs(), depth, codeStyle.spaceWithinMethodCallParens());
                     }
                 }
                 default:
-                    return countParenthesisIndent(codeStyle.alignMultilineParen(), depth);
+                    return countParenthesisIndent(codeStyle.alignMultilineParen(), depth, codeStyle.spaceWithinParens());
             }
         }
         return -1;
     }
     
-    private int countParenthesisIndent(boolean isIndent, int depth){
+    private int countParenthesisIndent(boolean isIndent, int depth, boolean addSpace){
         if (isIndent) {
             int i = ts.openParenIndent(depth);
             if (i >= 0) {
+                if (addSpace) {
+                    i++;
+                }
                 return i;
             }
         }
