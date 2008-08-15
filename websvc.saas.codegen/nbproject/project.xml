@@ -190,7 +190,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-			<release-version>1</release-version>
+                        <release-version>1</release-version>
                         <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
@@ -232,10 +232,11 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.websvc.saas.kit</friend>
-                <friend>org.netbeans.modules.websvc.saas.codegen.java</friend>
+                <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
+                <friend>org.netbeans.modules.websvc.saas.codegen.java</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.php</friend>
+                <friend>org.netbeans.modules.websvc.saas.kit</friend>
                 <package>org.netbeans.modules.websvc.saas.codegen</package>
                 <package>org.netbeans.modules.websvc.saas.codegen.model</package>
                 <package>org.netbeans.modules.websvc.saas.codegen.spi</package>

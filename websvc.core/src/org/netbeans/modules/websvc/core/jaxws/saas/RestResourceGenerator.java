@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -54,12 +55,12 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelerFactory;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardIterator;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.saas.codegen.ui.ProgressDialog;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -72,6 +73,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -83,121 +85,148 @@ public class RestResourceGenerator {
     private FileObject folder;
     private URL wsdlURL;
     private WsdlModel wsdlModel;
+    private ProgressHandle pHandle;
+    private int totalWorkUnits;
+    private int workUnits;
+    private Task generatorTask;
+    private String packageName;
+    private ProgressDialog dialog;
 
-    public RestResourceGenerator(FileObject folder, URL wsdlURL) {
+    public RestResourceGenerator(FileObject folder, URL wsdlURL, String packageName) {
         this.folder = folder;
         this.wsdlURL = wsdlURL;
+        this.packageName = packageName;
+    //
     }
 
     public void generate() {
-        final Project project = FileOwnerQuery.getOwner(folder);
-        try {
-            String packageName = folder.getName() + "_client";  //TODO Uniquify this
-            JaxWsModel jaxwsModel = project.getLookup().lookup(JaxWsModel.class);
-            String clientName = getWsdlName(wsdlURL.toString());
-            if (!clientExists(jaxwsModel, clientName)) {
-                clientName = generateClient(project, wsdlURL.toString(), packageName);
-            }
-            JAXWSClientSupport clientSupport = JAXWSClientSupport.getJaxWsClientSupport(folder);
-            FileObject localWsdlFolder = clientSupport.getLocalWsdlFolderForClient(clientName, false);
+        String mes = NbBundle.getMessage(RestResourceGenerator.class, "MSG_GENERATING_REST_RESOURCE");
+        dialog = new ProgressDialog(mes);
+        generatorTask = RequestProcessor.getDefault().create(new Runnable() {
 
-            Client client = jaxwsModel.findClientByName(clientName);
-            FileObject localWsdl = localWsdlFolder.getFileObject(client.getLocalWsdlFile());
-            WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(localWsdl.getURL());
-            wsdlModeler.setPackageName(packageName);
-            wsdlModeler.setCatalog(clientSupport.getCatalog());
-            wsdlModeler.generateWsdlModel(new WsdlModelListener() {
+            public void run() {
+                initProgressReporting(dialog.getProgressHandle());
 
-                public void modelCreated(WsdlModel model) {
-                    wsdlModel = model;
-                    JavaSource targetSource = null;
-
-                    final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-                    try {
-                        restSupport.ensureRestDevelopmentReady();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                final Project project = FileOwnerQuery.getOwner(folder);
+                try {
+                    String clientPackageName = packageName + "_client";  //TODO Uniquify this
+                    JaxWsModel jaxwsModel = project.getLookup().lookup(JaxWsModel.class);
+                    String clientName = getWsdlName(wsdlURL.toString());
+                    if (!clientExists(jaxwsModel, clientName)) {
+                        String mes = NbBundle.getMessage(RestResourceGenerator.class, "MSG_GENERATING_CLIENT_ARTIFACTS");
+                        reportProgress(mes);
+                        clientName = generateClient(project, wsdlURL.toString(), clientPackageName);
                     }
-                    List<WsdlService> services = wsdlModel.getServices();
-                    for (WsdlService service : services) {
-                        List<WsdlPort> ports = service.getPorts();
-                        for (WsdlPort port : ports) {
-                            FileObject fo = folder.getFileObject(port.getName(), "java");
-                            if (fo != null) {
-                                NotifyDescriptor d =
-                                        new NotifyDescriptor.Confirmation(NbBundle.getMessage(RestResourceGenerator.class, "MSG_CONFIRM_DELETE" , port.getName()),
-                                        NbBundle.getMessage(RestResourceGenerator.class, "TITLE_CONFIRM_DELETE"),
-                                        NotifyDescriptor.YES_NO_OPTION);
-                                if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
-                                    FileLock lock = null;
-                                    try {
-                                        lock = fo.lock();
-                                        fo.delete(lock);
-                                    } catch (IOException ex) {
-                                        ErrorManager.getDefault().notify(ex);
-                                    } finally {
-                                        if (lock != null) {
-                                            lock.releaseLock();
+                    JAXWSClientSupport clientSupport = JAXWSClientSupport.getJaxWsClientSupport(folder);
+                    FileObject localWsdlFolder = clientSupport.getLocalWsdlFolderForClient(clientName, false);
+
+                    Client client = jaxwsModel.findClientByName(clientName);
+                    if(client == null){
+                        return;
+                    }
+                    FileObject localWsdl = localWsdlFolder.getFileObject(client.getLocalWsdlFile());
+                    WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(localWsdl.getURL());
+                    wsdlModeler.setPackageName(clientPackageName);
+                    wsdlModeler.setCatalog(clientSupport.getCatalog());
+                    wsdlModeler.generateWsdlModel(new WsdlModelListener() {
+
+                        public void modelCreated(WsdlModel model) {
+                            wsdlModel = model;
+                            JavaSource targetSource = null;
+
+                            final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+                            try {
+                                restSupport.ensureRestDevelopmentReady();
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            List<WsdlService> services = wsdlModel.getServices();
+                            for (WsdlService service : services) {
+                                List<WsdlPort> ports = service.getPorts();
+                                for (final WsdlPort port : ports) {
+                                    final FileObject fo = folder.getFileObject(port.getName(), "java");
+                                    if (fo != null) {
+                                        final NotifyDescriptor d = new NotifyDescriptor.Confirmation(NbBundle.getMessage(RestResourceGenerator.class, "MSG_CONFIRM_DELETE", port.getName()), NbBundle.getMessage(RestResourceGenerator.class, "TITLE_CONFIRM_DELETE"), NotifyDescriptor.YES_NO_OPTION);
+                                        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
+                                            FileLock lock = null;
+                                            try {
+                                                lock = fo.lock();
+                                                fo.delete(lock);
+                                            } catch (IOException ex) {
+                                                ErrorManager.getDefault().notify(ex);
+                                            } finally {
+                                                if (lock != null) {
+                                                    lock.releaseLock();
+                                                }
+                                            }
+                                        } else {
+                                            continue;
+                                        }
+
+                                    }
+                                    String mes = NbBundle.getMessage(RestResourceGenerator.class, "MSG_GENERATING_RESOURCE_FILE");
+                                    reportProgress(mes);
+                                    targetSource = JavaSourceHelper.createJavaSource(RESOURCE_TEMPLATE, folder, packageName, port.getName());
+                                    List<WSOperation> operations = port.getOperations();
+                                    for (WSOperation operation : operations) {
+                                        try {
+                                            new RestWrapperForSoapGenerator(service, port, operation, project,
+                                                    targetSource.getFileObjects().iterator().next()).generate();
+                                        } catch (IOException ex) {
+                                            ErrorManager.getDefault().notify(ex);
+                                            try {
+                                                restSupport.getRestServicesModel().runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+
+                                                    public Void run(RestServicesMetadata metadata) throws IOException {
+                                                        RestServices root = metadata.getRoot();
+
+                                                        if (root.sizeRestServiceDescription() < 1) {
+                                                            restSupport.removeRestDevelopmentReadiness();
+                                                        }
+
+                                                        return null;
+                                                    }
+                                                });
+                                            } catch (IOException e) {
+                                                Exceptions.printStackTrace(e);
+                                            }
                                         }
                                     }
-                                }
-                                else{
-                                    continue;
-                                }
-                            }
-                            targetSource = JavaSourceHelper.createJavaSource(RESOURCE_TEMPLATE, folder, folder.getName(), port.getName());
-                            List<WSOperation> operations = port.getOperations();
-                            for (WSOperation operation : operations) {
-                                try {
-                                    new RestWrapperForSoapGenerator(service, port, operation, project,
-                                            targetSource.getFileObjects().iterator().next()).generate();
-                                } catch (IOException ex) {
-                                    ErrorManager.getDefault().notify(ex);
-                                    //restSupport.getRestServicesModel().runReadAction(action);
-
                                     try {
-                                        restSupport.getRestServicesModel().runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-
-                                            public Void run(RestServicesMetadata metadata) throws IOException {
-                                                RestServices root = metadata.getRoot();
-
-                                                if (root.sizeRestServiceDescription() < 1) {
-                                                    restSupport.removeRestDevelopmentReadiness();
-                                                }
-
-                                                return null;
-                                            }
-                                        });
-                                    } catch (IOException e) {
-                                        Exceptions.printStackTrace(e);
+                                        FileObject targetFile = targetSource.getFileObjects().iterator().next();
+                                        openFileInEditor(DataObject.find(targetFile)); //display in the editor
+                                    } catch (DataObjectNotFoundException ex) {
+                                        ErrorManager.getDefault().notify(ex);
                                     }
                                 }
                             }
-                            try {
-                                FileObject targetFile = targetSource.getFileObjects().iterator().next();
-                                openFileInEditor(DataObject.find(targetFile)); //display in the editor
-                            } catch (DataObjectNotFoundException ex) {
-                                ErrorManager.getDefault().notify(ex);
-                            }
 
-                        // }
-                        //}
                         }
-                    }
+                    },
+                            false);
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                } finally {
+                    dialog.close();
+                    finishProgressReporting();
+
                 }
-            },
-                    true);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
+
+
+            }
+        });
+        generatorTask.schedule(50);
+        dialog.open();
     }
 
     private boolean clientExists(JaxWsModel jaxwsModel, String clientName) {
         Client[] clients = jaxwsModel.getClients();
-        for (int i = 0; i < clients.length; i++) {
+        for (int i = 0; i <
+                clients.length; i++) {
             if (clients[i].getName().equals(clientName)) {
                 return true;
             }
+
         }
         return false;
     }
@@ -207,8 +236,9 @@ public class RestResourceGenerator {
         if (project != null) {
             jaxWsClientSupport = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory());
         }
+
         if (jaxWsClientSupport == null) {
-            String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_NoWebServiceClientSupport"); // NOI18N
+            String mes = NbBundle.getMessage(RestResourceGenerator.class, "ERR_NoWebServiceClientSupport"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
             return null;
@@ -216,6 +246,7 @@ public class RestResourceGenerator {
         if (packageName != null && packageName.length() == 0) {
             packageName = null;
         }
+
         return jaxWsClientSupport.addServiceClient(getWsdlName(wsdlUrl), wsdlUrl, packageName, true);
 
     }
@@ -226,17 +257,19 @@ public class RestResourceGenerator {
         if (wsdlName.toUpperCase().endsWith("?WSDL")) {
             wsdlName = wsdlName.substring(0, wsdlName.length() - 5);
         } //NOI18N
+
         ind = wsdlName.lastIndexOf("."); //NOI18N
         if (ind > 0) {
             wsdlName = wsdlName.substring(0, ind);
         }
-        // replace special characters with '_'
+// replace special characters with '_'
         return convertAllSpecialChars(wsdlName);
     }
 
     private String convertAllSpecialChars(String resultStr) {
         StringBuffer sb = new StringBuffer(resultStr);
-        for (int i = 0; i < sb.length(); i++) {
+        for (int i = 0; i <
+                sb.length(); i++) {
             char c = sb.charAt(i);
             if (Character.isLetterOrDigit(c) ||
                     (c == '/') ||
@@ -248,6 +281,7 @@ public class RestResourceGenerator {
             } else {
                 sb.setCharAt(i, '_');
             }
+
         }
         return sb.toString();
     }
@@ -255,21 +289,75 @@ public class RestResourceGenerator {
     public static void openFileInEditor(DataObject dobj) {
 
         final OpenCookie openCookie = dobj.getCookie(OpenCookie.class);
-        if (openCookie != null) {
-            RequestProcessor.getDefault().post(new Runnable() {
 
-                public void run() {
+        if (openCookie != null) {
+            RequestProcessor.getDefault().post(new
+
+                  Runnable() {
+
+
+
+             public void run() {
                     openCookie.open();
                 }
             }, 1000);
         } else {
             final EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            RequestProcessor.getDefault().post(new Runnable() {
+            RequestProcessor.getDefault().post(new
 
-                public void run() {
+                  Runnable() {
+
+
+
+             public void run() {
                     ec.open();
                 }
             }, 1000);
         }
+    }
+
+    public void initProgressReporting(ProgressHandle pHandle) {
+        initProgressReporting(pHandle, true);
+    }
+
+    public void initProgressReporting(ProgressHandle pHandle, boolean start) {
+        this.pHandle = pHandle;
+        this.totalWorkUnits = getTotalWorkUnits();
+        this.workUnits = 0;
+
+        if (pHandle != null && start) {
+            if (totalWorkUnits > 0) {
+                pHandle.start(totalWorkUnits);
+            } else {
+                pHandle.start();
+            }
+
+        }
+    }
+
+    public void reportProgress(String message) {
+        if (pHandle != null) {
+            if (totalWorkUnits > 0) {
+                pHandle.progress(message, ++workUnits);
+            } else {
+                pHandle.progress(message);
+            }
+
+        }
+    }
+
+    public void finishProgressReporting() {
+        if (pHandle != null) {
+            pHandle.finish();
+        }
+
+    }
+
+    public int getTotalWorkUnits() {
+        return 0;
+    }
+
+    protected ProgressHandle getProgressHandle() {
+        return pHandle;
     }
 }
