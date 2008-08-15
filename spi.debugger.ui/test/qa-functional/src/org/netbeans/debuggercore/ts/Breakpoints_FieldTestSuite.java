@@ -40,17 +40,17 @@
 package org.netbeans.debuggercore.ts;
 
 import junit.framework.Test;
-import org.netbeans.debuggercore.BreakpointsTest;
+import org.netbeans.debuggercore.FieldBreakpointsTest;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author peter
+ * @author Peter, Revision Petr Cyhelsky
  */
-public class BreakPointsTestSuite extends JellyTestCase {
+public class Breakpoints_FieldTestSuite extends JellyTestCase {
     
-    public BreakPointsTestSuite(String name) {
+    public Breakpoints_FieldTestSuite(String name) {
         super(name);
     }
     
@@ -61,58 +61,14 @@ public class BreakPointsTestSuite extends JellyTestCase {
     
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(BreakpointsTest.class, 
-                    "testLineBreakpointCreation",
-                    "testLineBreakpointFunctionality",
-                    "testLineBreakpointFunctionalityAfterContinue",
-                    "testLineBreakpointFunctionalityInStaticMethod",
-                    "testLineBreakpointFunctionalityInInitializer",
-                    "testLineBreakpointFunctionalityInConstructor",
-                    "testLineBreakpointFunctionalityInInnerClass",
-                    "testLineBreakpointFunctionalityInSecondaryClass",
-                    "testConditionalLineBreakpointFunctionality",
-                    "testLineBreakpointActions",
-                    "testLineBreakpointsValidation",
-                    "testLineBreakpointsHitCount",
-
-                    "testMethodBreakpointPrefilledConstructor",
-                    "testMethodBreakpointPrefilledMethod",
-                    "testMethodBreakpointCreation",
-                    "testMethodBreakpointFunctionalityInPrimaryClass",
-                    "testMethodBreakpointFunctionalityInSecondClass",
-                    "testMethodBreakpointFunctionalityOnAllMethods",
-                    "testMethodBreakpointFunctionalityOnExit",
-                    "testConditionalMethodBreakpointFunctionality",
-                    "testMethodBreakpointsValidation",
-
-                    "testClassBreakpointPrefilledInClass",
-                    "testClassBreakpointPrefilledInInitializer",
-                    "testClassBreakpointPrefilledInConstructor",
-                    "testClassBreakpointPrefilledInMethod",
-                    "testClassBreakpointPrefilledInSecondClass",
-                    "testClassBreakpointCreation",
-                    "testClassBreakpointFunctionalityOnPrimaryClass",
-                    "testClassBreakpointFunctionalityOnSecondClass",
-                    "testClassBreakpointFunctionalityWithFilter",
-
+                .addTest(FieldBreakpointsTest.class,
                     "testFieldBreakpointPrefilledValues",
                     "testFieldBreakpointCreation",
                     "testFieldBreakpointFunctionalityAccess",
                     "testFieldBreakpointFunctionalityModification",
                     "testConditionalFieldBreakpointFunctionality",
-                    "testFieldBreakpointsValidation",
-
-                    "testThreadBreakpointCreation",
-                    "testThreadBreakpointFunctionality",
-                    "testThreadBreakpointFunctionalityHitCount",
-
-                    "testExceptionBreakpointCreation",
-                    "testExceptionBreakpointFunctionality",
-                    "testExceptionBreakpointMatchClasses",
-                    "testExceptionBreakpointExcludeClasses",
-                    "testExceptionBreakpointHitCount"/*,
-                    "testConditionalExceptionBreakpoint"
-*/                )
+                    "testFieldBreakpointsValidation"
+                )
             .enableModules(".*").clusters(".*"));
     }
 }
