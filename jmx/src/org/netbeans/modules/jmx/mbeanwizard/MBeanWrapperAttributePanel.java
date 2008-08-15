@@ -49,7 +49,7 @@ import org.netbeans.modules.jmx.mbeanwizard.table.WrapperAttributeTable;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperAttributeTableModel;
 import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanAttribute;
-import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardConstants;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;

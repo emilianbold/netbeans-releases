@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.jmx.mbeanwizard.table;
 
-import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardConstants;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanOperationTableModel;
 import java.awt.BorderLayout;
@@ -60,7 +60,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.jmx.FireEvent;
-import org.netbeans.modules.jmx.WizardHelpers;
+import org.netbeans.modules.jmx.common.WizardHelpers;
 import org.netbeans.modules.jmx.mbeanwizard.listener.OperationTextFieldKeyListener;
 import org.netbeans.modules.jmx.mbeanwizard.popup.OperationExceptionPopup;
 import org.netbeans.modules.jmx.mbeanwizard.popup.OperationParameterPopup;

@@ -47,7 +47,7 @@ import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardConstants;
 import org.netbeans.modules.jmx.mbeanwizard.listener.TextFieldFocusListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;

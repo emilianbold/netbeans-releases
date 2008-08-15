@@ -1,0 +1,16 @@
+src/**/Bundle*.properties
+
+src/**/*.gif
+src/**/*.png
+src/**/*.jpg
+src/**/*.jpeg
+
+src/**/*.html
+
+javahelp/**/*.html
+javahelp/**/*.hs
+javahelp/**/*.jhm
+javahelp/**/*.xml
+javahelp/**/*.css
+javahelp/**/*.gif
+javahelp/**/*.toc

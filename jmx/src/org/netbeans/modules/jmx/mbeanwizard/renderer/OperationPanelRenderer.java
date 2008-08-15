@@ -41,7 +41,7 @@
 package org.netbeans.modules.jmx.mbeanwizard.renderer;
 
 import javax.swing.table.DefaultTableCellRenderer;
-import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardConstants;
 import java.awt.Component;
 import java.awt.BorderLayout;
 import javax.swing.JTextField;

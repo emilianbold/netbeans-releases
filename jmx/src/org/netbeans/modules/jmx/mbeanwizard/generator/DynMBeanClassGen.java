@@ -44,7 +44,7 @@ package org.netbeans.modules.jmx.mbeanwizard.generator;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.jmx.JavaModelHelper;
 import org.netbeans.modules.jmx.MBeanDO;
-import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;

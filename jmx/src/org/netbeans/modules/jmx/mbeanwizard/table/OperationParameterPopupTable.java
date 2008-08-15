@@ -52,7 +52,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.jmx.WizardHelpers;
+import org.netbeans.modules.jmx.common.WizardHelpers;
 
 /**
  * Class responsible for the parameter table in the operation parameter popup  

@@ -46,8 +46,8 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanNotification;
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.WizardHelpers;
+import org.netbeans.modules.jmx.common.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardHelpers;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.TemplateWizard;
 

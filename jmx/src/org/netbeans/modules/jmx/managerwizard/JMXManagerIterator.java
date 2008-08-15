@@ -60,10 +60,10 @@ import org.openide.loaders.TemplateWizard;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 
-import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.WizardHelpers;
+import org.netbeans.modules.jmx.common.WizardConstants;
+import org.netbeans.modules.jmx.common.WizardHelpers;
 
-import org.netbeans.modules.jmx.runtime.J2SEProjectType;
+import org.netbeans.modules.jmx.common.runtime.J2SEProjectType;
 
 
 /**
