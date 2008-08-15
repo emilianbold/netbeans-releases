@@ -45,13 +45,6 @@
       </Properties>
     </Component>
     <Container class="javax.swing.JPanel" name="jPanel1">
-      <Properties>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-            <EtchetBorder/>
-          </Border>
-        </Property>
-      </Properties>
 
       <Layout>
         <DimensionLayout dim="0">
@@ -60,22 +53,29 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="lNumberOfSpacesPerIndent" alignment="0" pref="207" max="32767" attributes="2"/>
-                              <Component id="lTabSize" alignment="0" pref="207" max="32767" attributes="1"/>
-                              <Component id="lRightMargin" alignment="0" min="-2" pref="195" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="sRightMargin" linkSize="1" pref="42" max="32767" attributes="1"/>
-                              <Component id="sTabSize" linkSize="1" pref="42" max="32767" attributes="1"/>
-                              <Component id="sNumberOfSpacesPerIndent" linkSize="1" alignment="1" pref="42" max="32767" attributes="1"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Component id="cbExpandTabsToSpaces" pref="219" max="32767" attributes="1"/>
+                          <Component id="cbExpandTabsToSpaces" pref="223" max="32767" attributes="1"/>
                           <EmptySpace min="-2" pref="54" max="-2" attributes="0"/>
+                      </Group>
+                      <Group type="102" alignment="1" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <Component id="lRightMargin" min="-2" pref="195" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="lTabSize" pref="223" max="32767" attributes="1"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="lNumberOfSpacesPerIndent" pref="223" max="32767" attributes="2"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="sNumberOfSpacesPerIndent" linkSize="1" alignment="0" pref="42" max="32767" attributes="1"/>
+                              <Component id="sTabSize" linkSize="1" alignment="1" pref="42" max="32767" attributes="1"/>
+                              <Component id="sRightMargin" linkSize="1" alignment="1" pref="42" max="32767" attributes="1"/>
+                          </Group>
                       </Group>
                   </Group>
               </Group>
@@ -84,24 +84,25 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Component id="cbExpandTabsToSpaces" min="-2" pref="19" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="63" max="-2" attributes="0"/>
+              </Group>
+              <Group type="102" alignment="1" attributes="0">
+                  <EmptySpace pref="25" max="32767" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="lNumberOfSpacesPerIndent" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="sNumberOfSpacesPerIndent" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lNumberOfSpacesPerIndent" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="lTabSize" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="sTabSize" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lTabSize" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="-2" pref="6" max="-2" attributes="1"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="lRightMargin" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="sRightMargin" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lRightMargin" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace min="0" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
