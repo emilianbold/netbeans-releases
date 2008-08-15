@@ -54,6 +54,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.StyledDocument;
 
 
+import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.cookies.EditCookie;
@@ -128,10 +129,10 @@ public class DataEditorSupportTest extends NbTestCase {
     }
 
     DES support () throws Exception {
-        DataObject obj = DataObject.find (fileObject);
+        DataObject tmpObj = DataObject.find (fileObject);
         
-        assertEquals ("My object was created", MyDataObject.class, obj.getClass ());
-        Object cookie = obj.getCookie (org.openide.cookies.OpenCookie.class);
+        assertEquals ("My object was created", MyDataObject.class, tmpObj.getClass ());
+        Object cookie = tmpObj.getCookie (org.openide.cookies.OpenCookie.class);
         assertNotNull ("Our object has this cookie", cookie);
         assertEquals ("It is my cookie", DES.class, cookie.getClass ());
         
@@ -242,11 +243,15 @@ public class DataEditorSupportTest extends NbTestCase {
         DES des = support();
         FileEncodingQueryImpl.getDefault().reset();
         StyledDocument doc = des.openDocument();
-        assertEquals(des.getDataObject().getPrimaryFile(),FileEncodingQueryImpl.getDefault().getFile());
+        FileEncodingQueryImpl.getDefault().assertFile(
+            des.getDataObject().getPrimaryFile()
+        );
         FileEncodingQueryImpl.getDefault().reset();
         doc.insertString(doc.getLength(), " Added text.", null);
         des.saveDocument();        
-        assertEquals(des.getDataObject().getPrimaryFile(),FileEncodingQueryImpl.getDefault().getFile());
+        FileEncodingQueryImpl.getDefault().assertFile(
+            des.getDataObject().getPrimaryFile()
+        );
         assertEquals(" Added text.", content);
     }
     
@@ -274,6 +279,7 @@ public class DataEditorSupportTest extends NbTestCase {
                 public ContentStream() {
                     openStreams = -1;
                 }
+                @Override
                 public void close () throws java.io.IOException {
                     if (openStreams != -1) {
                         IOException ex = new IOException("One output stream");
@@ -462,6 +468,7 @@ public class DataEditorSupportTest extends NbTestCase {
         private static FileEncodingQueryImpl instance;
         
         private FileObject file;
+        private Exception who;
         
         private FileEncodingQueryImpl () {
             
@@ -471,6 +478,7 @@ public class DataEditorSupportTest extends NbTestCase {
             InputStream is  = null;
             try {
                 this.file = file;
+                this.who = new Exception("Assigned from here");
                 byte[] arr = new byte[4096];
                 is = file.getInputStream();
                 is.read(arr);
@@ -490,6 +498,7 @@ public class DataEditorSupportTest extends NbTestCase {
         
         public void reset () {
             this.file = null;
+            this.who = new Exception("Cleaned from here");
         }
         
         public FileObject getFile () {
@@ -501,7 +510,15 @@ public class DataEditorSupportTest extends NbTestCase {
                 instance = new FileEncodingQueryImpl ();
             }
             return instance;
-        }                
+        }
+
+        private void assertFile(FileObject primaryFile) {
+            if (!primaryFile.equals(file)) {
+                AssertionFailedError afe = new AssertionFailedError("Files shall be the same:\nExpected:" + primaryFile + "\nReal    :" + file);
+                afe.initCause(who);
+                throw afe;
+            }
+        }
     }
 
     public static final class Lkp extends org.openide.util.lookup.AbstractLookup  {
@@ -541,6 +558,7 @@ public class DataEditorSupportTest extends NbTestCase {
         protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
             return new MyDataObject(this, primaryFile);
         }
+        @Override
         protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
             primary++;
             return new org.openide.loaders.FileEntry (obj, primaryFile);
@@ -557,6 +575,7 @@ public class DataEditorSupportTest extends NbTestCase {
             return new DES (this, new MyEnv (this)); 
         }
         
+        @Override
         protected Node createNodeDelegate() {
             return new MyNode(this, Children.LEAF); 
         }
@@ -569,6 +588,7 @@ public class DataEditorSupportTest extends NbTestCase {
             super(obj, ch);
         }
         
+        @Override
         public String getHtmlDisplayName() {
             return "<b>" + getDisplayName() + "</b>";
         }
