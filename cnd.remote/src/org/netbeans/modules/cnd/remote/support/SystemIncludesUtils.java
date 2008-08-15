@@ -72,6 +72,8 @@ public class SystemIncludesUtils {
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
+                ProgressHandle handle = ProgressHandleFactory.createHandle(getMessage("SIU_ProgressTitle") + " " + RemoteUtils.getHostName(hkey)); //NOI18N
+                handle.start();
                 log.fine("SystemIncludesUtils.load for " + hkey); // NOI18N
                 String storagePrefix = null;
                 try {
@@ -92,32 +94,17 @@ public class SystemIncludesUtils {
                             }
                         }
                     }
-                    synchronized (inProgress) {
-                        if (inProgress.contains(storagePrefix)) { //TODO: very weak validation
-                            log.fine("SystemIncludesUtils.load for " + storagePrefix + " already in progress"); // NOI18N
-                            return;
-                        }
-                        inProgress.add(storagePrefix);
-                    }
                     if (storagePrefix != null) {
-                        doLoad(hkey, storagePrefix, paths);
+                        doLoad(hkey, storagePrefix, paths, handle);
                     }
                 } finally {
-                    synchronized (inProgress) {
-                        inProgress.remove(storagePrefix);
-                    }
+                    handle.finish();
                 }
             }
         });
-    }    // TODO: to think about next way:
-    // just put links in the path mapped from server and set up
-    // toolchain accordingly. Although those files will confuse user...
-    // Hiding links in nbproject can help but would lead for different
-    // include set for each project and issues with connecting to new
-    // hosts with the same project...
-    private static final Set<String> inProgress = new HashSet<String>();
+    }
 
-    static boolean doLoad(final String hkey, String storagePrefix, Collection<String> paths) {
+    private static boolean doLoad(final String hkey, String storagePrefix, Collection<String> paths, ProgressHandle handle) {
         File includesStorageFolder = new File(storagePrefix);
         File tempIncludesStorageFolder = new File(includesStorageFolder.getParent(), includesStorageFolder.getName() + ".download"); //NOI18N
 
@@ -133,8 +120,6 @@ public class SystemIncludesUtils {
             return false;
         }
         boolean success = false;
-        ProgressHandle handle = ProgressHandleFactory.createHandle(getMessage("SIU_ProgressTitle") + " " + RemoteUtils.getHostName(hkey)); //NOI18N
-        handle.start();
         try {
             RemoteCopySupport rcs = new RemoteCopySupport(hkey);
             success = load(tempIncludesStorageFolder.getAbsolutePath(), rcs, paths, handle);
@@ -144,7 +129,6 @@ public class SystemIncludesUtils {
                 tempIncludesStorageFolder.renameTo(includesStorageFolder);
             }
         } finally {
-            handle.finish();
             if (!success && includesStorageFolder.exists()) {
                 log.fine("SystemIncludesUtils.doLoad removing " + includesStorageFolder + " due to faile"); // NOI18N
                 includesStorageFolder.delete();
@@ -176,7 +160,7 @@ public class SystemIncludesUtils {
         return true;
     }
 
-    static void unzip(String path, String fileName) {
+    private static void unzip(String path, String fileName) {
         long start = System.currentTimeMillis();
         Enumeration entries;
         ZipFile zipFile;
