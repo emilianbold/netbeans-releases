@@ -307,7 +307,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 String[] env = pae.getProfile().getEnvironment().getenv();
                 boolean showInput = pae.getID() == ProjectActionEvent.RUN;
                 MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
-                String key = conf.getDevelopmentHost().getDisplayName();
+                String key = conf.getDevelopmentHost().getName();
                 
                 if (!conf.getDevelopmentHost().isLocalhost()) {
                     // Make sure the project root is visible remotely
