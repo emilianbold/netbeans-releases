@@ -49,6 +49,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.netbeans.api.progress.ProgressHandle;
@@ -65,11 +66,13 @@ import org.openide.util.RequestProcessor;
  * @author Sergey Grinev
  */
 public class SystemIncludesUtils {
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     public static void load(final String hkey, final List<CompilerSet> csList) {
         RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
+                log.fine("SystemIncludesUtils.load for " + hkey); // NOI18N
                 String storagePrefix = null;
                 try {
                     Set<String> paths = new HashSet<String>();
@@ -81,7 +84,7 @@ public class SystemIncludesUtils {
                                 for (Object obj : bc.getSystemIncludeDirectories()) {
                                     String localPath = (String) obj;
                                     if (localPath.length() < storagePrefix.length()) {
-                                        System.err.println("CompilerSet " + bc.getDisplayName() + " has returned invalid include path: " + localPath);
+                                        log.warning("CompilerSet " + bc.getDisplayName() + " has returned invalid include path: " + localPath);
                                     } else {
                                         paths.add(localPath.substring(storagePrefix.length()));
                                     }
@@ -91,6 +94,7 @@ public class SystemIncludesUtils {
                     }
                     synchronized (inProgress) {
                         if (inProgress.contains(storagePrefix)) { //TODO: very weak validation
+                            log.fine("SystemIncludesUtils.load for " + storagePrefix + " already in progress"); // NOI18N
                             return;
                         }
                         inProgress.add(storagePrefix);
@@ -134,12 +138,15 @@ public class SystemIncludesUtils {
         try {
             RemoteCopySupport rcs = new RemoteCopySupport(hkey);
             success = load(tempIncludesStorageFolder.getAbsolutePath(), rcs, paths, handle);
+            log.fine("SystemIncludesUtils.doLoad for " + tempIncludesStorageFolder + " finished " + success); // NOI18N
             if (success) {
+                log.fine("SystemIncludesUtils.doLoad renaming " + tempIncludesStorageFolder + " to " + includesStorageFolder); // NOI18N
                 tempIncludesStorageFolder.renameTo(includesStorageFolder);
             }
         } finally {
             handle.finish();
             if (!success && includesStorageFolder.exists()) {
+                log.fine("SystemIncludesUtils.doLoad removing " + includesStorageFolder + " due to faile"); // NOI18N
                 includesStorageFolder.delete();
             }
         }
@@ -151,6 +158,7 @@ public class SystemIncludesUtils {
         handle.switchToDeterminate(3 * paths.size());
         int workunit = 0;
         for (String path : paths) {
+            log.fine("SystemIncludesUtils.load loading " + path); // NOI18N            
             //TODO: check file existence (or make shell script to rule them all ?)
             String zipRemote = "cnd" + path.replaceAll("(/|\\\\)", "-") + ".zip"; //NOI18N
             String zipRemotePath = "/tmp/" + zipRemote; // NOI18N
@@ -162,6 +170,7 @@ public class SystemIncludesUtils {
             copySupport.copyFrom(zipRemotePath, zipLocalPath);
             handle.progress(getMessage("SIU_Preparing") + " " + path, workunit++); // NOI18N
             unzip(storageFolder, zipLocalPath);
+            log.fine("SystemIncludesUtils.load loading done for " + path); // NOI18N            
         }
         copySupport.disconnect();
         return true;
@@ -198,9 +207,10 @@ public class SystemIncludesUtils {
             zipFile.close();
         } catch (IOException ioe) {
             ioe.printStackTrace();
+            log.fine("unzipping " + fileName + " to " + path + " failed");
             return;
         } finally {
-            System.err.println("unzipping " + fileName + " to " + path + " took " + (System.currentTimeMillis() - start) + " ms");
+            log.fine("unzipping " + fileName + " to " + path + " took " + (System.currentTimeMillis() - start) + " ms");
         }
     }
 
