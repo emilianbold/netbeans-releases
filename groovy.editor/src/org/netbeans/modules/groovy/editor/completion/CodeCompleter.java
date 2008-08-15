@@ -300,10 +300,12 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         // if we are right at the end of a line, a separator or a whitespace we gotta rewind.
 
-        if(active.id() == GroovyTokenId.NLS ||
-            ( active.id() == GroovyTokenId.WHITESPACE && difference == 0 ) ||
-            active.id().primaryCategory().equals("separator")) {
-            ts.movePrevious();
+        if (active != null) {
+            if (active.id() == GroovyTokenId.NLS ||
+                (active.id() == GroovyTokenId.WHITESPACE && difference == 0) ||
+                active.id().primaryCategory().equals("separator")) {
+                ts.movePrevious();
+            }
         }
 
 
@@ -1551,15 +1553,15 @@ public class CodeCompleter implements CodeCompletionHandler {
      *
      * This could be either
      *
-     * a) Completing all available Types in a given package for import statements or
+     * 1.) Completing all available Types in a given package for import statements or
      *    giving fqn names.
      *
-     * b) Complete the types which are available without having to give a fqn:
+     * 2.) Complete the types which are available without having to give a fqn:
      *
-     * 1.) Types defined in the Groovy File where the completion is invoked. (INDEX)
-     * 2.) Types located in the same package (source or binary). (INDEX)
-     * 3.) Types manually imported via the "import" statement. (AST)
-     * 4.) The Default imports for Groovy, which are a super-set of Java. (NB JavaSource)
+     * 2.1.) Types defined in the Groovy File where the completion is invoked. (INDEX)
+     * 2.2.) Types located in the same package (source or binary). (INDEX)
+     * 2.3.) Types manually imported via the "import" statement. (AST)
+     * 2.4.) The Default imports for Groovy, which are a super-set of Java. (NB JavaSource)
      *
      * These are the Groovy default imports:
      *
@@ -1660,13 +1662,10 @@ public class CodeCompleter implements CodeCompletionHandler {
                     if (classes.size() == 0) {
                         LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
                     } else {
+                        LOG.log(Level.FINEST, "Found this number of classes : {0} ", classes.size());
                         for (IndexedClass indexedClass : classes) {
                             
-                            String signature = indexedClass.getSignature();
-                            
-                            if (signature != null && signature.startsWith(packageName)) {
-                                addToProposalUsingFilter(proposals, request, indexedClass.getSignature());
-                            }
+                            addToProposalUsingFilter(proposals, request, indexedClass.getName());
                         }
                     }
                 }
