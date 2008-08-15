@@ -113,6 +113,8 @@ public class SQLCompletionQueryTest extends NbTestCase {
         suite.addTest(new SQLCompletionQueryTest("whereSimple"));
         suite.addTest(new SQLCompletionQueryTest("whereSchema"));
         suite.addTest(new SQLCompletionQueryTest("whereSchemaTable"));
+        suite.addTest(new SQLCompletionQueryTest("groupBySimple"));
+        suite.addTest(new SQLCompletionQueryTest("orderBySimple"));
 
         suite.addTest(new SQLCompletionQueryTest("selectSubquery"));
 

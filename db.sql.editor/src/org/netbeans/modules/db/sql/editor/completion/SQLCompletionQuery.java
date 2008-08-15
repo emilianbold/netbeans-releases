@@ -169,11 +169,11 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 insideFrom(ident);
                 break;
             case JOIN_CONDITION:
-                insideJoinCondition(ident);
+                insideClauseAfterFrom(ident);
                 break;
-            case WHERE:
+            default:
                 if (fromClause != null) {
-                    insideWhere(ident);
+                    insideClauseAfterFrom(ident);
                 }
         }
     }
@@ -196,17 +196,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
     }
 
-    private void insideJoinCondition(Identifier ident) {
-        if (ident.fullyTypedIdent.isEmpty()) {
-            completeSimpleIdentBasedOnFromClause(ident.lastPrefix, ident.quoted);
-        } else if (ident.fullyTypedIdent.isSimple()) {
-            completeSingleQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
-        } else if (ident.fullyTypedIdent.isSingleQualified()) {
-            completeDoubleQualIdentBasedOnFromClause(ident.fullyTypedIdent, ident.lastPrefix, ident.quoted);
-        }
-    }
-
-    private void insideWhere(Identifier ident) {
+    private void insideClauseAfterFrom(Identifier ident) {
         if (ident.fullyTypedIdent.isEmpty()) {
             completeSimpleIdentBasedOnFromClause(ident.lastPrefix, ident.quoted);
         } else if (ident.fullyTypedIdent.isSimple()) {
