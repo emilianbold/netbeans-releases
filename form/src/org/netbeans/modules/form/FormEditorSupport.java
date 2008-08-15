@@ -268,7 +268,9 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         // otherwise multiview is opened in AWT using invokeLater
         // and we don't have multiviewTC correctly set
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
-        handler.requestActive(handler.getPerspectives()[JAVA_ELEMENT_INDEX]);
+        if (handler != null) {
+            handler.requestActive(handler.getPerspectives()[JAVA_ELEMENT_INDEX]);
+        }
     }
     
     /** Overriden from JavaEditor - opens editor at given position and ensures
@@ -944,8 +946,19 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     
     public GuardedSectionManager getGuardedSectionManager() {
         try {
-            StyledDocument doc = openDocument();
-            return GuardedSectionManager.getInstance(doc);
+            StyledDocument doc = null;
+            try {
+                doc = openDocument();
+            } catch (UserQuestionException uqex) { // Issue 143655
+                Object retVal = DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Confirmation(uqex.getLocalizedMessage(),
+                            NotifyDescriptor.YES_NO_OPTION));
+                if (NotifyDescriptor.YES_OPTION == retVal) {
+                    uqex.confirmed();
+                    doc = openDocument();
+                }
+            }
+            return (doc == null) ? null : GuardedSectionManager.getInstance(doc);
         } catch (IOException ex) {
             throw (IllegalStateException) new IllegalStateException("cannot open document").initCause(ex); // NOI18N
         }

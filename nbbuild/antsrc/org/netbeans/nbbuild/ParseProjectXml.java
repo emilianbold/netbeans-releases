@@ -902,7 +902,7 @@ public final class ParseProjectXml extends Task {
         }
         String cluster = module.getClusterName();
         if (cluster != null) { // #68716
-            if ((includedClusters != null && !includedClusters.isEmpty() && !includedClusters.contains(cluster)) ||
+            if ((includedClusters != null && !includedClusters.isEmpty() && ! ModuleSelector.clusterMatch(includedClusters, cluster)) ||
                     ((includedClusters == null || includedClusters.isEmpty()) && excludedClusters != null && excludedClusters.contains(cluster))) {
                 throw new BuildException("The module " + cnb + " cannot be compiled against because it is part of the cluster " + cluster +
                                          " which has been excluded from the target platform in your suite configuration", getLocation());

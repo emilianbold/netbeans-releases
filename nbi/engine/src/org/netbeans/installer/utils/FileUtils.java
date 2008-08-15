@@ -598,7 +598,7 @@ public final class FileUtils {
             LogManager.log("... cannot get canonical file for " + file);
         }
         for (File root: roots) {
-            if (isParent(root, file)) {
+            if (isParent(root, file) || root.equals(file)) {
                 if(result == null ||
                         (result.getAbsolutePath().length() <
                         root.getAbsolutePath().length())) {

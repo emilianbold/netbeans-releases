@@ -103,9 +103,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         this.uiProperties = uiProperties;
         initComponents();
 
-        this.project = uiProperties.getProject();
-        
-        configs = uiProperties.RUN_CONFIGS;
+        this.project = uiProperties.getRailsProject();
+        configs = uiProperties.getRunConfigs();
         
         configFields = new JTextField[] {
             portField,
@@ -122,7 +121,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         };
         assert configFields.length == configPropsKeys.length;
         
-        configChanged(uiProperties.activeConfig);
+        configChanged(uiProperties.getActiveConfig());
         
         configCombo.setRenderer(new DefaultListCellRenderer() {
             public @Override Component getListCellRendererComponent(JList list, Object value,
@@ -181,7 +180,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             });
         }
 
-        this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
+        this.originalEncoding = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
         if (this.originalEncoding == null) {
             this.originalEncoding = Charset.defaultCharset().name();
         }
@@ -517,7 +516,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         assert config != null;
         configs.put(config, null);
         configChanged(null);
-        uiProperties.activeConfig = null;
+        uiProperties.setActiveConfig(null);
     }//GEN-LAST:event_configDelActionPerformed
 
     private void configNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configNewActionPerformed
@@ -541,13 +540,13 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         }
         configs.put(config, m);
         configChanged(config);
-        uiProperties.activeConfig = config;
+        uiProperties.setActiveConfig(config);
     }//GEN-LAST:event_configNewActionPerformed
 
     private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
         String config = getSelectedConfig();
         configChanged(config);
-        uiProperties.activeConfig = config;
+        uiProperties.setActiveConfig(config);
     }//GEN-LAST:event_configComboActionPerformed
 
     private void manageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageButtonActionPerformed

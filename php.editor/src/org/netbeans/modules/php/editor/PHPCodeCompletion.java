@@ -117,11 +117,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final List<String> INHERITANCE_KEYWORDS =
             Arrays.asList(new String[] {"extends","implements"});//NOI18N
     private static final List<PHPTokenId[]> NONE_TOKENCHAINS = Arrays.asList(
-        new PHPTokenId[]{PHPTokenId.PHP_CLASS},
-        new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE},
-         new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE},
-         new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE}         
-        );
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS},
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE});
     private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_NEW},
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
@@ -222,15 +225,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         CLASS_CONTEXT_KEYWORDS, NONE};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
-        "__LINE__", "array()", "class", "const", "continue", "die()", "echo()", "empty()", "endif",
-        "eval()", "exit()", "for", "foreach", "function", "global", "if",
-        "include()", "include_once()", "isset()", "list()", "new",
-        "print()", "require()", "require_once()", "return", "static",
-        "switch", "unset()", "use", "var", "while",
+        "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
+        "eval()", "exit()", "for", "foreach", "function", "global", "if", "isset()", "list()", "new",
+        "print()", "static", "switch", "unset()", "use", "var", "while",
         "__FUNCTION__", "__CLASS__", "__METHOD__", "final", "php_user_filter",
         "interface", "implements", "extends", "public", "private",
         "protected", "abstract", "clone", "try", "catch", "throw"
     };
+    
+    private final static String[] PHP_KEYWORD_FUNCTIONS = {
+        "echo", "include", "include_once", "require", "require_once"}; //NOI18N
 
     private final static String[] PHP_CLASS_KEYWORDS = {
         "$this->", "self::", "parent::"
@@ -505,7 +509,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPCompletionItem.CompletionRequest request) {
         for (String keyword : PredefinedSymbols.MAGIC_METHODS) {
             if (keyword.startsWith(request.prefix)) {
-                proposals.add(new PHPCompletionItem.SpecialFunctionItem(keyword, request));
+                proposals.add(new PHPCompletionItem.MagicMethodItem(keyword, request));
             }
         }
     //autoCompleteKeywords(proposals, request, METHOD_NAME_PROPOSALS);
@@ -652,6 +656,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 proposals.add(new PHPCompletionItem.KeywordItem(keyword, request));
             }
         }
+        
+        for (String keyword : PHP_KEYWORD_FUNCTIONS) {
+            if (startsWith(keyword, request.prefix)) {
+                proposals.add(new PHPCompletionItem.SpecialFunctionItem(keyword, request));
+            }
+        }
+
+        proposals.add(new PHPCompletionItem.ReturnItem(request));
+
+        // end: KEYWORDS
 
         PHPIndex index = request.index;
         if (request.prefix.length() == 0) {

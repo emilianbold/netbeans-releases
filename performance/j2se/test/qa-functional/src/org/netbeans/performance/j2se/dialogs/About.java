@@ -73,9 +73,9 @@ public class About extends PerformanceTestCase {
     
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Help") + "|" + Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle" , "About");
-        ABOUT = Bundle.getStringTrimmed("org.netbeans.core.Bundle_nb", "CTL_About_Title");
-        DETAIL = Bundle.getStringTrimmed("org.netbeans.core.Bundle_nb", "CTL_About_Detail");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Help") + "|" + Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle" , "About");
+        ABOUT = Bundle.getStringTrimmed("org.netbeans.core.startup.Bundle", "CTL_About_Title");
+        DETAIL = Bundle.getStringTrimmed("org.netbeans.core.startup.Bundle", "CTL_About_Detail");
         waitNoEvent(2000);
     }
     

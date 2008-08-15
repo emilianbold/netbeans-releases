@@ -10,6 +10,7 @@
 package org.netbeans.modules.vmd.game.model;
 
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.Presenter;
@@ -52,9 +53,11 @@ public class ImageResourceCD extends ComponentDescriptor {
 	}
 
 	protected List<? extends Presenter> createPresenters() {
+            List<String> fqnForImport = new LinkedList<String>();
 		return Arrays.asList (
             // code
-            GameCodeSupport.createImageResourceCodePresenter()
+            GameCodeSupport.createImageResourceCodePresenter( fqnForImport ),
+            GameCodeSupport.createAddImportPresenter(fqnForImport)            
         );
 	}
 	

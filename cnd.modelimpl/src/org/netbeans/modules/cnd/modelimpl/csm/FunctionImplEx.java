@@ -96,9 +96,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	if( cnn != null ) {
 	    CsmObject obj = ResolverFactory.createResolver(this, parent).resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
 	    if( obj instanceof CsmClass ) {
-		if( !( obj instanceof Unresolved.UnresolvedClass) ) {
-		    return (CsmClass) obj;
-		}
+                return (CsmClass) obj;
 	    }
 	    else if( obj instanceof CsmNamespace ) {
 		return (CsmNamespace) obj;

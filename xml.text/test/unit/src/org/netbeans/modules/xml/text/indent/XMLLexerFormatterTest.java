@@ -58,7 +58,7 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         suite.addTest(new XMLLexerFormatterTest("testFormat"));
         suite.addTest(new XMLLexerFormatterTest("testFormatSubsection"));
         suite.addTest(new XMLLexerFormatterTest("testFormatForTab"));
-       // suite.addTest(new XMLLexerFormatterTest("testFormatTime"));
+        suite.addTest(new XMLLexerFormatterTest("testFormatPerformance"));
         return suite;
     }
     
@@ -98,15 +98,22 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
     }
     
       
-    public void testFormatTime() throws Exception {
+    public void testFormatPerformance() throws Exception {
         BaseDocument inputDoc = getDocument("indent/1998stats.xml");
         //format the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
         long t1 = System.currentTimeMillis();
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         long t2 = System.currentTimeMillis();
-        long timeElapsed = t2-t1;
-        System.out.println("Time take to format(ms):: " +timeElapsed);
+        System.out.println("Time taken to format NFL XML in ms:: " + (t2-t1) );
         
+        //try OTA Schema
+        inputDoc = getDocument("indent/1998stats.xml");
+        //format the inputDoc
+        formatter = new XMLLexerFormatter(null);
+        t1 = System.currentTimeMillis();
+        formatter.doReformat(inputDoc, 0, inputDoc.getLength());
+        t2 = System.currentTimeMillis();
+        System.out.println("Time taken to format OTA Schema in ms:: " + (t2-t1) );
     }
 }

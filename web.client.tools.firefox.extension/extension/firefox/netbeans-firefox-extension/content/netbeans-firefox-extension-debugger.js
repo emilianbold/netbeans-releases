@@ -706,15 +706,21 @@
         var condition = matches[8];
 
         if (!isTemporary) {
-            setBreakpoint(href, line,
+            if (setBreakpoint(href, line,
             {
                 disabled: disabled,
-                hitCount: hitValue,
-                hitCondition: hitCondition,
+                hitCount: 0,
                 condition: condition,
                 onTrue: true
-            });
-        }
+            })) {
+                var breakpointHitCondition =  {
+                    hitCount:hitValue,
+                    hitCondition:hitCondition,
+                    hits:0
+                };
+                breakpointHitConditions[""+href +":"+line] = breakpointHitCondition;
+            }
+        }      
 
         var breakpointSetResponse =
         <response command="breakpoint_set"
@@ -727,7 +733,6 @@
         transaction_id={
         transaction_id
         } />;
-
         socket.send(breakpointSetResponse);
 
         if (isTemporary) {
@@ -773,17 +778,32 @@
         var hitCondition = matches[4];
         var condition = matches[5];
 
+        var breakpointHitCondition = breakpointHitConditions[""+href+":"+line];
         // Remove and add with new properties
         removeBreakpointId(breakpointId);
-        setBreakpoint(href, line,
+        if (setBreakpoint(href, line,
         {
             disabled: disabled,
-            hitCount: hitValue,
-            hitCondition: hitCondition,
+            hitCount: 0,
             condition: condition,
             onTrue: true
-        });
-
+        })) {
+            if (breakpointHitCondition) {
+                if (breakpointHitCondition.hitCount != hitValue
+                    || breakpointHitCondition.hitCondition != hitCondition) {
+                    breakpointHitCondition.hitCount = hitValue;
+                    breakpointHitCondition.hitCondition=hitCondition;
+                    breakpointHitCondition.hits = 0;
+                }
+            } else {
+                breakpointHitCondition = {
+                    hitCount:hitValue,
+                    hitCondition:hitCondition,
+                    hits:0
+                };
+                breakpointHitConditions[""+href+":"+line] = breakpointHitCondition;
+            }
+        };
         socket.send(breakpointUpdateResponse);
     }
 
@@ -802,7 +822,9 @@
         }
 
         var breakpointId = matches[1];
-        removeBreakpointId(breakpointId);
+        if (removeBreakpointId(breakpointId)) {
+            delete breakpointHitConditions[""+breakpointId];
+        }
 
         socket.send(breakpointRemoveResponse);
     }
@@ -860,6 +882,7 @@
     }
 
     var breakpoints = {};
+    var breakpointHitConditions = {};
 
     function hasBreakpoint(href,line)
     {
@@ -889,7 +912,7 @@
             if ( breakpoints[href].length > 0 )
                 hrefs.push(href);
         }
-        fbsClearAllBreakpoints(hrefs.length,hrefs);
+        fbsClearAllBreakpoints(hrefs);
     }
 
     function setBreakpoint(href,line,props)
@@ -1211,12 +1234,12 @@
             // transmit them in UTF-8 - the default XML encoding.
             // We may need to convert the source text to UTF-8
             // here using nsIScriptableUnicodeConverter service.
-            data = NetBeans.Utils.convertUnicodeToUTF8(data.join("\n"));
+            data = data.join("\n");
 
             var sourceResponse =
-              <response command="source" encoding="base64"
+              <response command="source" encoding="none"
                   success="1"
-                  transaction_id={transaction_id}>{window.btoa(data)}</response>;
+                  transaction_id={transaction_id}>{data}</response>;
             socket.send(sourceResponse);
         } else {
             var sourceResponse =
@@ -1500,6 +1523,29 @@
                 }
                 break;
             case TYPE_BREAKPOINT:
+                var breakpointHitCondition = breakpointHitConditions[frame.script.fileName+":"+frame.line];
+                if (breakpointHitCondition) {
+                    breakpointHitCondition.hits++;
+                    if (breakpointHitCondition.hitCount > 0) {
+                        switch (breakpointHitCondition.hitCondition) {
+                            case ">=":
+                                if (!(breakpointHitCondition.hits >= breakpointHitCondition.hitCount)) {
+                                    return RETURN_CONTINUE;
+                                }
+                                break;
+                            case "==":
+                                if (!(breakpointHitCondition.hits == breakpointHitCondition.hitCount)) {
+                                    return RETURN_CONTINUE;
+                                }
+                                break;
+                            case "%":
+                                if ((breakpointHitCondition.hits % breakpointHitCondition.hitCount) != 0) {
+                                    return RETURN_CONTINUE;
+                                }
+                                break;
+                        }
+                    }
+                }
                 debugState.suspendReason = "breakpoint";
                 break;
             case TYPE_DEBUG_REQUESTED:
@@ -2035,7 +2081,7 @@
     }
 
     /**
-     * @param  jsdIValue variable
+     * @param variable
      **/
     function getPropertiesArray(variable)
     {
@@ -2146,7 +2192,7 @@
             case TYPE_BOOLEAN:
                 val.type = "boolean";
                 val.displayType  = CONST_TYPE_BOOLEAN;
-                val.displayValue = value.stringValue;
+                val.displayValue = value.getWrappedValue();
                 break;
             case TYPE_INT:
                 val.type = "int";
@@ -2161,8 +2207,7 @@
             case TYPE_STRING:
                 val.type = "string";
                 val.displayType  = CONST_TYPE_STRING;
-                strval = value.stringValue;
-                val.displayValue = strval.quote();
+                val.displayValue = "\"" + value.getWrappedValue() + "\""
                 break;
             case TYPE_FUNCTION:
             case TYPE_OBJECT:
@@ -2177,6 +2222,8 @@
                 {
                     case "Function":
                         val.displayType  = (value.isNative ? CONST_NATIVE_FUNCTION : CONST_SCRIPT_FUNCTION );
+                        // Use value.getWrappedValue() instead of value.stringValue to get
+                        // the unicode chars
                         val.displayValue = value.getWrappedValue().toString();
                         break;
 
@@ -2185,14 +2232,18 @@
                         if (value.jsConstructor) {
                             val.displayType = value.jsConstructor.jsFunctionName;
                         }
-                        val.displayValue = value.stringValue;
+                        // Use value.getWrappedValue() instead of value.stringValue to get
+                        // the unicode chars
+                        val.displayValue = value.getWrappedValue();
                         if ( val.displayValue == 'null' ) {
                             NetBeans.Logger.log('!null value was found','err');
                         }
                         break;
 
                     case "String":
-                        strval = value.stringValue;
+                        // Use value.getWrappedValue() instead of value.stringValue to get
+                        // the unicode chars
+                        strval = value.getWrappedValue();
                         val.displayValue = strval.quote();
                         break;
 
@@ -2205,7 +2256,9 @@
 
                     case "Number":
                     case "Boolean":
-                        val.displayValue = value.stringValue;
+                        // Use value.getWrappedValue() instead of value.stringValue to get
+                        // the unicode chars
+                        val.displayValue = value.getWrappedValue();
                         break;
 
                     default:

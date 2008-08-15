@@ -185,9 +185,9 @@ public class PersistenceUtil {
         for (Iterator<String> it = propertyNames.iterator(); it.hasNext();)
         {
             String key = it.next();
-            System.out.println(" Scene property = " + key);
+//            System.out.println(" Scene property = " + key);
             Object propVal = table.getProperty(key);
-            System.out.println(" property value = " + propVal.toString());
+//            System.out.println(" property value = " + propVal.toString());
             props.put(key, propVal.toString());
         }
     }
@@ -213,7 +213,7 @@ public class PersistenceUtil {
                     //don't do anything yet.. we'll deal with this in anchorage section..
                 }
                 else { //assuming only movablelabelwidgets here...
-                    System.out.println(" obj is " + obj);
+//                    System.out.println(" obj is " + obj);
                     if (obj instanceof DiagramNodeWriter) {
                         ((DiagramNodeWriter)obj).save(nodeWriter);
                     }

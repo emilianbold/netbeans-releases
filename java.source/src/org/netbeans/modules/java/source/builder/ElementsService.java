@@ -84,23 +84,6 @@ public class ElementsService {
         types = JavacTypes.instance(context);
     }
 
-    /**
-     * Returns the TypeElement which encloses the specified element.
-     */
-    public TypeElement enclosingTypeElement(Element element) {
-        if (element instanceof PackageElement)
-            throw new IllegalArgumentException("package elements cannot be enclosed");
-        Element e = element;
-	while (e != null && 
-               e.getKind() != CLASS &&
-               e.getKind() != INTERFACE &&
-               e.getKind() != ANNOTATION_TYPE &&
-               e.getKind() != ENUM) {
-	    e = e.getEnclosingElement();
-	}
-	return (TypeElement)e;
-    }
-
     /** 
      * The outermost TypeElement which indirectly encloses this element.
      */

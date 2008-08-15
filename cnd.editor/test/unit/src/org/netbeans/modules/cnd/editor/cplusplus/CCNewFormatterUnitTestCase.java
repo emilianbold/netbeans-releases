@@ -4613,5 +4613,32 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 );
     }
 
+    public void testReformatMultiLineAndSpacing() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceDeclaration, 
+                CodeStyle.BracePlacement.SAME_LINE.name());
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.alignMultilineCallArgs, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinMethodDeclParens, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceWithinMethodCallParens, true);
+        setLoadDocumentText(
+                  "void m(int a,\n"
+                + "int b) {\n"
+                + "    printf(a, \n"
+                + "    \"haf\");\n"
+                + "}\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect new-line indent",
+                  "void m( int a,\n" 
+                + "        int b ) {\n"
+                + "    printf( a,\n"
+                + "            \"haf\" );\n"
+                + "}\n"
+                );
+    }
     
 }

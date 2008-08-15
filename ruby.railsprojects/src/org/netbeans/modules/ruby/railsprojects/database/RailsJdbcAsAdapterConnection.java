@@ -219,7 +219,15 @@ public class RailsJdbcAsAdapterConnection implements RailsDatabaseConfiguration 
     }
 
     public String getDatabaseName(String projectName) {
-        return projectName + "_development"; //NOI18N
+        return projectName + RailsAdapters.DEVELOPMENT_DB_SUFFIX;
+    }
+
+    public String getTestDatabaseName(String developmentDbName) {
+        return RailsAdapters.getTestDatabaseName(developmentDbName);
+    }
+
+    public String getProductionDatabaseName(String developmentDbName) {
+        return RailsAdapters.getProductionDatabaseName(developmentDbName);
     }
 
 }

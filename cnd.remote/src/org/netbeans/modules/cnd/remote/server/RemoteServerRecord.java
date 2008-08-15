@@ -45,10 +45,9 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
+import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -148,7 +147,7 @@ public class RemoteServerRecord implements ServerRecord {
     public synchronized void init(boolean force, PropertyChangeSupport pcs) {
         assert !SwingUtilities.isEventDispatchThread() : "RemoteServer initialization must be done out of EDT"; // NOI18N
         Object ostate = state;
-        if (force && state == STATE_OFFLINE) {
+        if (force && state != STATE_ONLINE) {
             state = STATE_UNINITIALIZED;
         }
         if (state != STATE_UNINITIALIZED) {

@@ -862,7 +862,7 @@ public class Utilities {
         // check chars for difference and possibly change document
         for (int i = 0; i < orig.length; i++) {
             if (orig[i] != changed[i]) {
-                final BadLocationException[] badLocationExceptions = new BadLocationException [0];
+                final BadLocationException[] badLocationExceptions = new BadLocationException [1];
                 doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         try {

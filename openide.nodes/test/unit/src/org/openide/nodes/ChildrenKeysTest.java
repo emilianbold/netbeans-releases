@@ -1458,6 +1458,44 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("2 nodes expected", 2, ch.getNodesCount());
     }
 
+    public void testForIssue143777() {
+
+        class K extends Keys {
+            boolean canReturnNull = false;
+
+            K() {
+                super(lazy());
+            }
+
+            @Override
+            protected void addNotify() {
+                keys("a");
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (canReturnNull && key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+        }
+
+        K ch = new K();
+        Node root = createNode(ch);
+        Node[] nodes = root.getChildren().getNodes();
+        
+        ch.canReturnNull = true;
+        ch.keys("-b", "a");
+        nodes = root.getChildren().getNodes();
+        ch.canReturnNull = false;
+        ch.keys("a");
+        ch.keys("a", "b");
+        nodes = root.getChildren().getNodes();
+        assertEquals("1st is a", "a", nodes[0].getName());
+        assertEquals("2nd is b", "b", nodes[1].getName());
+    }    
+    
     public void testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces() throws Exception {
         final Ticker tick = new Ticker();
         final List who = new java.util.Vector();

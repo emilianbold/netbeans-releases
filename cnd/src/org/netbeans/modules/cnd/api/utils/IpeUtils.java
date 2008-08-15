@@ -265,19 +265,25 @@ public class IpeUtils {
         }
         return newPath;
     }
-    
-    
+
+
     /**
      *  Compute an array of the individual path elements of a pathname.
      */
-    static private final Object[] getPathNameArray(String path) {
-        ArrayList l;
-        int pos = 1;			    // start of a path name component
+    /*package*/ static final String[] getPathNameArray(String path) {
+        ArrayList<String> l;
+        int pos = 0;			    // start of a path name component
         int next;			    // position of next '/' in path
-        
+
+        if (0 < path.length() && (path.charAt(0) == '/' || path.charAt(0) == '\\')) {
+            // skip the first slash, because we don't want
+            // an empty path element in the resulting array
+            pos = 1;
+        }
+
         l = new ArrayList();
         if (isPathAbsolute(path)) {
-            while (pos > 0) {
+            while (pos >= 0) {
                 next = path.indexOf('/', pos);
                 if (next < 0)
                     next = path.indexOf('\\', pos);
@@ -290,10 +296,10 @@ public class IpeUtils {
                 }
             }
         }
-        
-        return l.toArray();
+
+        return l.toArray(new String[l.size()]);
     }
-    
+
     /**
      * Expand '~' and env variables in path.
      * Also strips off leading and trailing white space.

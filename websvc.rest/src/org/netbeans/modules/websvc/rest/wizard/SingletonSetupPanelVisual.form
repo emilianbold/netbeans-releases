@@ -32,11 +32,11 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="locationLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="projectLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="packageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="contentClassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="classLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="uriLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="mediaTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="packageLabel" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -71,9 +71,9 @@
                   <Component id="locationComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="packageLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="packageComboBox" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="packageComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="packageLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
               <Component id="jSeparator2" min="-2" max="-2" attributes="0"/>
@@ -219,7 +219,6 @@
     </Component>
     <Component class="javax.swing.JComboBox" name="locationComboBox">
       <Properties>
-        <Property name="enabled" type="boolean" value="false"/>
         <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[4, 20]"/>
         </Property>

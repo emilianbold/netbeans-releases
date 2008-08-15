@@ -41,6 +41,7 @@
 package org.netbeans.modules.web.debug;
 
 import java.io.File;
+import java.io.IOException;
 import javax.swing.JDialog;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
@@ -75,6 +76,7 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.openide.util.Exceptions;
 
 /** Test of web application debugging. Manual test specification is here:
  * http://qa.netbeans.org/modules/webapps/promo-f/jspdebug/jspdebug-testspec.html
@@ -90,7 +92,14 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     }
     
     public static Test suite() {
-        if(Utils.DEFAULT_SERVER.equals(Utils.TOMCAT)) {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class);
+        conf = addServerTests(Server.GLASSFISH, conf,"testOpenProjects","testRunProject","testSetBreakpoint",
+                "testDebugProject","testDebugReload","testAttachDebugger","testDebugAfterBreakpoint",
+                "testDebugAndStopServer","testStartAnotherSession","testJavaSession","testStopServer");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
+        /*if(Utils.DEFAULT_SERVER.equals(Utils.TOMCAT)) {
+            
             return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(JSPDebuggingOverallTest.class),
                     "testOpenProjects",
                     "testSetTomcatPort", /// <---
@@ -120,6 +129,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
                     "testStopServer"
                     ).enableModules(".*").clusters(".*"));
         }
+        */
     }
     
     /** Print test name and initialize status bar tracer. */
@@ -147,7 +157,13 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     public void testOpenProjects() {
         String[] projects = {"MainTestApplication", "TestFreeformLibrary", "TestLibrary", "TestTagLibrary"}; //NOI18N
         for(int i=0;i<projects.length;i++) {
-            ProjectSupport.openProject(new File(getDataDir(), projects[i]));
+            //ProjectSupport.openProject(new File(getDataDir(), projects[i]));
+            try {
+                openProjects(new File(getDataDir(), projects[i]).getAbsolutePath());
+                ProjectSupport.waitScanFinished();
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
         }
         // check missing target server dialog is shown    
         // "Open Project"

@@ -51,9 +51,9 @@ public class GroovyCustomizerPanel extends javax.swing.JPanel {
 
     public GroovyCustomizerPanel(GroovyProjectExtender extender) {
         initComponents();
-        if (extender == null) {
+        if (extender == null || !extender.isGroovyEnabled()) {
             enableGroovyCheckBox.setSelected(false);
-        } else if (extender.isGroovyEnabled()) {
+        } else {
             enableGroovyCheckBox.setSelected(true);
         }
     }
