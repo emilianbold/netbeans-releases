@@ -1523,6 +1523,7 @@ public class Evaluator implements JavaParserVisitor {
                     }
                 } catch (NativeMethodException nmex) {
                     // ignore - no arguments available
+                } catch (InvalidStackFrameException ex) {
                 }
             }
         }

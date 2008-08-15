@@ -61,6 +61,8 @@ import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.editors2.JTableHeaderEditor;
 import org.netbeans.modules.form.editors2.TableColumnModelEditor;
 import org.netbeans.modules.form.editors2.TableModelEditor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -1169,6 +1171,8 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             try {
                 modelProperty.setValue(new FormProperty.ValueWithEditor(rowTableModel, new TableModelEditor()));
             } catch (Exception ex) {
+                String message = NbBundle.getMessage(getClass(), "MSG_TableCustomizer_ModelPropertyError"); // NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
@@ -1417,9 +1421,14 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                         }
                     }
                 }
+                // Issue 140846
+                int columnCount = rowTableModel.getColumnCount();
+                for (int i=columns.size()-1; i>=columnCount; i--) {
+                    columns.remove(i);
+                }
             } catch (Exception ex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-            }            
+            }
         } else if (modelBoundChoice.isSelected()) {
             MetaBinding binding = bindingProperty.getValue();
             if (binding != null) {

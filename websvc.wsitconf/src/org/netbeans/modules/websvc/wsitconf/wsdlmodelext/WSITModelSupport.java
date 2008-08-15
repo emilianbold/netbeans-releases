@@ -69,6 +69,9 @@ import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.util.UndoManagerHolder;
 import org.netbeans.modules.websvc.wsitconf.WSITEditor;
 import org.netbeans.modules.websvc.wsitconf.api.DesignerListenerProvider;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
+import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.ServiceProviderElement;
 import org.netbeans.modules.websvc.wsitconf.util.AbstractTask;
 import org.netbeans.modules.websvc.wsitconf.util.SourceUtils;
@@ -797,9 +800,14 @@ public class WSITModelSupport {
         
         // Security
         if (security) {
-            ProfilesModelHelper.getInstance(targetCfgVersion).setSecurityProfile(b, profile, null, false);
-            if (serviceDefaultsUsed) {
-                ProfilesModelHelper.setServiceDefaults(profile, b, project);
+            SecurityProfile p = SecurityProfileRegistry.getDefault().getProfile(profile);
+            if ((p != null) && (!p.isProfileSupported(project, b, sts))) {
+                ProfilesModelHelper.getInstance(targetCfgVersion).setSecurityProfile(b, ComboConstants.PROF_USERNAME, null, false);
+            } else {
+                ProfilesModelHelper.getInstance(targetCfgVersion).setSecurityProfile(b, profile, null, false);
+                if (serviceDefaultsUsed) {
+                    ProfilesModelHelper.setServiceDefaults(profile, b, project);
+                }
             }
         }
         

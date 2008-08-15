@@ -175,7 +175,7 @@ public class RubyOptionsAdvancedPanel extends AdvancedOption {
         
         
         public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
+            return new HelpCtx("netbeans.optionsDialog.advanced.ruby"); //NOI18N
         }
     }
 }

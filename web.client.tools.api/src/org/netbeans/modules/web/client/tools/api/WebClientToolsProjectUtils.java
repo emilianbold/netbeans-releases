@@ -98,7 +98,7 @@ public final class WebClientToolsProjectUtils {
     }
     
     public static boolean isDebugPropertySet(Project project) {
-        Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, true);
+        Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, false);
         assert prefs != null;
         
         return prefs.get(CLIENT_DEBUG_PROP, null) != null;
@@ -113,7 +113,7 @@ public final class WebClientToolsProjectUtils {
     }
     
     private static boolean getProjectProperty(Project project, String propKey, boolean def) {
-        Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, true);
+        Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, false);
         assert prefs != null;
         
         return prefs.getBoolean(propKey, def);
@@ -124,7 +124,7 @@ public final class WebClientToolsProjectUtils {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
 
                 public Boolean run() throws BackingStoreException {
-                    Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, true);
+                    Preferences prefs = ProjectUtils.getPreferences(project, WebClientToolsProjectUtils.class, false);
                     assert prefs != null;
 
                     boolean isFirefox = (browser == Browser.FIREFOX);

@@ -92,6 +92,7 @@ import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramE
 import org.netbeans.modules.uml.drawingarea.view.Customizable;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -138,7 +139,10 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
     public void initializeNode(IPresentationElement presentation)
     {
         //setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY,0));
-        actorWidget=new ActorSymbolWidget(getScene(),getWidgetID()+".actorsymbol","Actor Figure");
+        actorWidget=new ActorSymbolWidget(getScene(),
+                                          getWidgetID()+".actorsymbol", 
+                                          NbBundle.getMessage(LifelineWidget.class, "LBL_Lifeline_Actor"));
+        
         actorWidget.setMinimumSize(new Dimension(10,SQDDiagramEngineExtension.DEFAULT_LIFELINE_Y-SQDDiagramEngineExtension.DEFAULT_ACTORLIFELINE_Y));
         actorWidget.setMaximumSize(new Dimension(50,SQDDiagramEngineExtension.DEFAULT_LIFELINE_Y-SQDDiagramEngineExtension.DEFAULT_ACTORLIFELINE_Y));
         actorWidget.setPreferredSize(new Dimension(40,SQDDiagramEngineExtension.DEFAULT_LIFELINE_Y-SQDDiagramEngineExtension.DEFAULT_ACTORLIFELINE_Y));
@@ -215,6 +219,8 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
                 }
             }, getScene());
         }
+        
+        super.initializeNode(presentation);
     }
 
     @Override

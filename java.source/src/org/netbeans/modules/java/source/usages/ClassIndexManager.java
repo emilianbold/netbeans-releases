@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.openide.util.Exceptions;
 
@@ -64,13 +63,12 @@ public final class ClassIndexManager {
 
     private static ClassIndexManager instance;
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
-    private final ReadWriteLock lock;
+    private final ReentrantReadWriteLock lock;
     private final List<ClassIndexManagerListener> listeners = new CopyOnWriteArrayList<ClassIndexManagerListener> ();
     private boolean invalid;
     private Set<URL> added;
     private Set<URL> removed;
     private int depth = 0;
-    private Thread owner;
     
     
     
@@ -87,42 +85,33 @@ public final class ClassIndexManager {
         assert listener != null;
         this.listeners.remove(listener);
     }
-    
+        
     public <T> T writeLock (final ExceptionAction<T> r) throws IOException, InterruptedException {
         this.lock.writeLock().lock();
-        try {
-            if (depth == 0) {
-                this.owner = Thread.currentThread();
-            }
+        try {            
+            depth++;
             try {
-                depth++;
-                try {
-                    if (depth == 1) {
-                        this.added = new HashSet<URL>();
-                        this.removed = new HashSet<URL>();
-                    }
-                    try {
-                        return r.run();
-                    } finally {
-                        if (depth == 1) {
-                            if (!removed.isEmpty()) {
-                                fire (removed, OP_REMOVE);
-                                removed.clear();
-                            }
-                            if (!added.isEmpty()) {
-                                fire (added, OP_ADD);
-                                added.clear();
-                            }                
-                        }
-                    }
-                } finally {
-                    depth--;
-                }            
-            } finally {
-                if (depth == 0) {
-                    this.owner = null;
+                if (depth == 1) {
+                    this.added = new HashSet<URL>();
+                    this.removed = new HashSet<URL>();
                 }
-            }
+                try {
+                    return r.run();
+                } finally {
+                    if (depth == 1) {
+                        if (!removed.isEmpty()) {
+                            fire (removed, OP_REMOVE);
+                            removed.clear();
+                        }
+                        if (!added.isEmpty()) {
+                            fire (added, OP_ADD);
+                            added.clear();
+                        }                
+                    }
+                }
+            } finally {
+                depth--;
+            }                        
         } finally {
             this.lock.writeLock().unlock();
         }
@@ -138,7 +127,7 @@ public final class ClassIndexManager {
     }
     
     public boolean holdsWriteLock () {
-        return Thread.currentThread().equals(this.owner);
+        return this.lock.isWriteLockedByCurrentThread();
     }
     
     public synchronized ClassIndexImpl getUsagesQuery (final URL root) {

@@ -150,8 +150,8 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
                 serviceName = getSaasServiceFolder().getName();
             } catch (IOException ex) {
             }
-            methodBody += INDENT + "$username = TwitterWhatAreYouDoingServiceAuthenticator::getSession(\"" + serviceName + "_username\");\n";
-            methodBody += INDENT + "$password = TwitterWhatAreYouDoingServiceAuthenticator::getSession(\"" + serviceName + "_password\");\n";
+            methodBody += INDENT + "$username = "+getBean().getAuthenticatorClassName()+"::getSession(\"" + serviceName + "username\");\n";
+            methodBody += INDENT + "$password = "+getBean().getAuthenticatorClassName()+"::getSession(\"" + serviceName + "password\");\n";
             methodBody += INDENT + "$conn->setAuthentication($username, $password);\n";
         }
         return methodBody;
@@ -349,7 +349,29 @@ public class SaasClientPhpAuthenticationGenerator extends SaasClientAuthenticati
     }
     
     public static String getQuotedValue(String value) {
-        return Util.getQuotedValue(value).replace("+", ".");
+        StringBuffer sb = new StringBuffer();
+        String[] parts = value.replace("+", "&plus;").split("&plus;");
+        for(String part:parts) {
+            if(isWord(part))
+                sb.append("$"+part.trim()+".");
+            else
+                sb.append(part+".");
+        }
+        String str = sb.toString();
+        if(parts.length > 0)
+            str = str.substring(0, str.length()-1);
+        return Util.getQuotedValue(str);
+    }
+    
+    public static boolean isWord(String part) {
+        if(part == null || part.trim().equals(""))
+            return false;
+        String word = part.trim();
+        for(char ch:word.toCharArray()) {
+            if(!Character.isLetter(ch))
+                return false;
+        }
+        return true;
     }
     
     public static String[] getParamIds(ParameterInfo p, String groupName,

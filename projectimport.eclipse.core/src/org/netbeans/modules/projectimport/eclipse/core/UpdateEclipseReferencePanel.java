@@ -63,11 +63,13 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
         projName = reference.getProject().getLookup().lookup(ProjectInformation.class).getDisplayName();
         initComponents();
         eclipseProjectTextField.setText(reference.getEclipseProjectLocation().getPath());
-        eclipseProjectTextField.setEnabled(!reference.getEclipseProjectLocation().exists());
-        browseProjectButton.setEnabled(!reference.getEclipseProjectLocation().exists());
+        boolean enabled = !(reference.getEclipseProjectLocation().exists() && EclipseUtils.isRegularProject(reference.getEclipseProjectLocation()));
+        eclipseProjectTextField.setEnabled(enabled);
+        browseProjectButton.setEnabled(enabled);
+        enabled = !(reference.getEclipseWorkspaceLocation().exists() && EclipseUtils.isRegularWorkSpace(reference.getEclipseWorkspaceLocation()));
         eclipseWorkspaceTextField.setText(reference.getEclipseWorkspaceLocation().getPath());
-        eclipseWorkspaceTextField.setEnabled(!reference.getEclipseWorkspaceLocation().exists());
-        browseWorkspaceButton.setEnabled(!reference.getEclipseWorkspaceLocation().exists());
+        eclipseWorkspaceTextField.setEnabled(enabled);
+        browseWorkspaceButton.setEnabled(enabled);
     }
 
     public void setDialogDescriptor(DialogDescriptor dd) {
@@ -153,22 +155,24 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(eclipseProjectTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel1.text")); // NOI18N
 
         eclipseProjectTextField.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.eclipseProjectTextField.text")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel2.text")); // NOI18N
+        jLabel2.setLabelFor(eclipseWorkspaceTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel2.text")); // NOI18N
 
         eclipseWorkspaceTextField.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.eclipseWorkspaceTextField.text")); // NOI18N
 
-        browseProjectButton.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.browseProjectButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseProjectButton, org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.browseProjectButton.text")); // NOI18N
         browseProjectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseProjectButtonActionPerformed(evt);
             }
         });
 
-        browseWorkspaceButton.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.browseWorkspaceButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseWorkspaceButton, org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.browseWorkspaceButton.text")); // NOI18N
         browseWorkspaceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseWorkspaceButtonActionPerformed(evt);
@@ -176,11 +180,11 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
         });
 
         error.setForeground(java.awt.Color.red);
-        error.setText(" ");
+        org.openide.awt.Mnemonics.setLocalizedText(error, " ");
 
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel3.text", projName)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel3.text", projName)); // NOI18N
 
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "UpdateEclipseReferencePanel.jLabel4.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -229,6 +233,20 @@ class UpdateEclipseReferencePanel extends javax.swing.JPanel implements Document
                 .add(error)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "ACSD_UpdateEclipseReferencePanel_NA")); // NOI18N
+        eclipseProjectTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "ACSD_UpdateEclipseReferencePanel_NA")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "ACSD_UpdateEclipseReferencePanel_NA")); // NOI18N
+        eclipseWorkspaceTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "ACSD_UpdateEclipseReferencePanel_NA")); // NOI18N
+        browseProjectButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "ACSD_UpdateEclipseReferencePanel_NA")); // NOI18N
+        browseWorkspaceButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "ACSD_UpdateEclipseReferencePanel_NA")); // NOI18N
+        error.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "ACSD_UpdateEclipseReferencePanel_NA")); // NOI18N
+        error.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "ACSD_UpdateEclipseReferencePanel_NA")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "ACSD_UpdateEclipseReferencePanel_NA")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "ACSD_UpdateEclipseReferencePanel_NA")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "ACSD_UpdateEclipseReferencePanel_NA")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(UpdateEclipseReferencePanel.class, "ACSD_UpdateEclipseReferencePanel_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void browseProjectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseProjectButtonActionPerformed

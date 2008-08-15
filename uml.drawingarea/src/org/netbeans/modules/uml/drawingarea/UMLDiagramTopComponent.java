@@ -725,7 +725,6 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
             public void propertyChange(PropertyChangeEvent event)
             {
                 String propName = event.getPropertyName();
-                System.out.println("Palette Property: " + propName);
                 if (PaletteController.PROP_SELECTED_ITEM.equals(propName)) 
                 {
                     // If a node is deseleted then the new value is an empty
@@ -753,7 +752,6 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
                         Node node = lookup.lookup(Node.class);
                         if(node != null)
                         {
-                            System.out.println("--- Found Node");
                             Lookup nodeLookup = node.getLookup();
                              try {
                                 CopyPasteSupport.getClipboard().setContents(node.clipboardCopy(), new StringSelection("")); // NOI18N
@@ -766,13 +764,11 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
                         }
                         else
                         {
-                            System.out.println("--- NO Found Node");
                             scene.setActiveTool(DesignerTools.SELECT);
                         }
                     }
                     else
                     {
-                        System.out.println("--- NO Found Node");
                         scene.setActiveTool(DesignerTools.SELECT);
                     }
                 }
@@ -1368,7 +1364,6 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
         {
             if (aNode != null && aNode instanceof DiagramModelElementNode)
             {
-                //System.out.println("updateSaveCookie: node="+ aNode.getDisplayName() );
                 if (action == ADD)
                 {
                     ((DiagramModelElementNode)aNode).addSaveCookie();

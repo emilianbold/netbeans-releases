@@ -42,9 +42,11 @@
 package org.netbeans.modules.groovy.editor;
 
 import javax.lang.model.element.ExecutableElement;
+import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
@@ -104,6 +106,35 @@ public class Methods {
         return false;
     }
 
+    public static boolean isSameConstructor(ConstructorNode constructor, ConstructorCallExpression call) {
+        if (constructor.getDeclaringClass().getNameWithoutPackage().equals(call.getType().getNameWithoutPackage())) {
+            // not comparing parameter types for now, only their count
+            // is it even possible to make some check for parameter types?
+            if (getParameterCount(call) == constructor.getParameters().length) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isSameConstuctor(ConstructorCallExpression call1, ConstructorCallExpression call2) {
+        String constructor1 = call1.getType().getNameWithoutPackage();
+        if (constructor1 != null && constructor1.equals(call2.getType().getNameWithoutPackage())) {
+            int size1 = getParameterCount(call1);
+            int size2 = getParameterCount(call2);
+            // not comparing parameter types for now, only their count
+            // is it even possible to make some check for parameter types?
+            if (size1 >= 0 && size1 == size2) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isSameConstructor(ConstructorNode constructor1, ConstructorNode constructor2) {
+        return isSameMethod(constructor1, constructor2);
+    }
+
     /**
      * Tries to calculate number of method parameters.
      *
@@ -125,4 +156,17 @@ public class Methods {
         }
     }
     
+    private static int getParameterCount(ConstructorCallExpression constructorCall) {
+        Expression expression = constructorCall.getArguments();
+        if (expression instanceof ArgumentListExpression) {
+            return ((ArgumentListExpression) expression).getExpressions().size();
+        } else if (expression instanceof NamedArgumentListExpression) {
+            // this is in fact map acting as named parameters
+            // lets return size 1
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
 }

@@ -54,6 +54,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -71,6 +72,19 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader {
     @Override
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
         return new CndFormatExt(obj, primaryFile);
+    }
+
+    public void addExtensions(Collection<String> newExt) {
+        // Discovery wizard can detect headers' extensions.
+        // See IZ#104651:Newly found file extensions are not suggested to be included into known object type list        
+        // If discovery registered extension discovered file items with extensions are disappeared.
+        // Fix depend on IZ#94935:File disappears from project when user is adding new extension
+        ExtensionList oldList = getExtensions();
+        ExtensionList newList = (ExtensionList) oldList.clone();
+        for (String name : newExt) {
+            newList.addExtension(name);
+        }   
+        setExtensions(newList);
     }
 
     private static class CndFormatExt extends CndFormat {

@@ -894,7 +894,7 @@ public class ExtKit extends BaseKit {
                 }
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomic (new Runnable () {
+                doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         try {
                             int startPos;

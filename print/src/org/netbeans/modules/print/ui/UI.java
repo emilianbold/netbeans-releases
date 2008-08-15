@@ -226,15 +226,15 @@ public final class UI {
   }
 
   public static void a11y(Component component, String a11y) {
-      a11y(component, a11y, a11y);
+    a11y(component, a11y, a11y);
   }
 
-  public static void a11y(Component component, String a11yN, String a11yD) {
-    if (a11yN != null) {  
-        component.getAccessibleContext().setAccessibleName(a11yN);
+  public static void a11y(Component component, String name, String description) {
+    if (name != null) {  
+      component.getAccessibleContext().setAccessibleName(name);
     }
-    if (a11yD != null) {
-        component.getAccessibleContext().setAccessibleDescription(a11yD);
+    if (description != null) {
+      component.getAccessibleContext().setAccessibleDescription(description);
     }
   }
 
@@ -456,6 +456,10 @@ public final class UI {
     return clipboard;
   }
   
+  public static boolean isDigit(char c) {
+    return "0123456789".indexOf(c) != -1; // NOI18N
+  }
+
   public static void startTimeln() {
     tim();
     startTime();

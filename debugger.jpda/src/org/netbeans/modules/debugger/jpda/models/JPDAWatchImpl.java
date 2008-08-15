@@ -46,6 +46,7 @@ import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.Field;
 import com.sun.jdi.InterfaceType;
+import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
@@ -191,7 +192,12 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
             return ;
         }
         // try to set as a field
-        ReferenceType clazz = frame.getStackFrame().location().declaringType();
+        ReferenceType clazz = null;
+        try {
+            clazz = frame.getStackFrame().location().declaringType();
+        } catch (InvalidStackFrameException ex) {
+            throw new InvalidExpressionException (ex);
+        }
         Field field = clazz.fieldByName(getExpression());
         if (field == null) {
             throw new InvalidExpressionException (
@@ -213,11 +219,11 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
                     NbBundle.getMessage(JPDAWatchImpl.class, "MSG_CanNotSetValue", getExpression()));
             }
         } else {
-            ObjectReference thisObject = frame.getStackFrame ().thisObject ();
-            if (thisObject == null) {
-                throw new InvalidExpressionException ("no instance context.");
-            }
             try {
+                ObjectReference thisObject = frame.getStackFrame ().thisObject ();
+                if (thisObject == null) {
+                    throw new InvalidExpressionException ("no instance context.");
+                }
                 thisObject.setValue (field, value);
             } catch (InvalidTypeException ex) {
                 throw new InvalidExpressionException (ex);
@@ -225,6 +231,8 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
                 throw new InvalidExpressionException (ex);
             } catch (IllegalArgumentException iaex) {
                 throw new InvalidExpressionException (iaex);
+            } catch (InvalidStackFrameException ex) {
+                throw new InvalidExpressionException (ex);
             }
         }
     }

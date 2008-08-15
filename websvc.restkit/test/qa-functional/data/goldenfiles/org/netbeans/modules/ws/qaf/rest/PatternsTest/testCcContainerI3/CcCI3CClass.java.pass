@@ -9,7 +9,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 
 /**
  * REST Web Service
@@ -31,7 +31,7 @@ public class CcCI3CClass {
      * @return an instance of java.lang.String
      */
     @GET
-    @ProduceMime("text/html")
+    @Produces("text/html")
     public String getHtml() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();

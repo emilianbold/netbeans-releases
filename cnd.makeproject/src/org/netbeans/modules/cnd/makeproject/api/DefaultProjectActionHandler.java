@@ -436,7 +436,8 @@ public class DefaultProjectActionHandler implements ActionListener {
                         pae.getTabName(),
                         pae.getActionName(),
                         pae.getID() == ProjectActionEvent.BUILD,
-                        showInput);
+                        showInput,
+                        pae.getProfile().getConsoleType().getValue() == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
                 projectExecutor.addExecutionListener(this);
                 if (rcfile != null) {
                     projectExecutor.setExitValueOverride(rcfile);

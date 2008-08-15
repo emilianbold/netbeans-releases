@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 public interface SemanticEntity {
     String getName();
     List<? extends CsmOffsetable> getBlocks(CsmFile csmFile);
+    ReferenceCollector getCollector();
     void updateFontColors(FontColorProvider provider);
-    public AttributeSet getColor(CsmOffsetable obj);
+    public AttributeSet getAttributes(CsmOffsetable obj);
 }

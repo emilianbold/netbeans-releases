@@ -218,7 +218,7 @@ final class OutputForwarder implements Runnable {
                         return;
                     }
 
-                    final int millisToWait = 1000;
+                    final int millisToWait = 5000;
                     final int waitMillis = 50;
                     int millisWaited = 0;
                     // wait upto millisToWait for the stream to be ready

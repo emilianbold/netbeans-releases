@@ -311,7 +311,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
         
         if (allowInstantRename(el)) {
-            final Set<Token> points = new HashSet<Token>(new FindLocalUsagesQuery().findUsages(el, info, doc));
+            final Set<Token> points = new HashSet<Token>(new FindLocalUsagesQuery(true).findUsages(el, info, doc));
             
             if (el.getKind().isClass()) {
                 //rename also the constructors:

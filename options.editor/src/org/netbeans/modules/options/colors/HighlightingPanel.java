@@ -245,8 +245,11 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
     public void setCurrentProfile (String currentProfile) {
         String oldScheme = this.currentProfile;
         this.currentProfile = currentProfile;
-        if (!colorModel.getProfiles ().contains (currentProfile)) {
+        if (!colorModel.getProfiles ().contains (currentProfile) &&
+            !profileToCategories.containsKey (currentProfile)
+        ) {
             // clone profile
+            System.out.println("clone profile !!!!");
             Vector<AttributeSet> categories = getCategories (oldScheme);
             profileToCategories.put (currentProfile, new Vector<AttributeSet>(categories));
             toBeSaved.add (currentProfile);

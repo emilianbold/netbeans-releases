@@ -706,6 +706,10 @@ public class PHPIndex {
             new WeakHashMap<PHPParseResult, HashMap<String, Collection<String>>>();
     
     public Collection<String> getAllIncludes(PHPParseResult context, String filePath){
+        return getAllIncludes(context, filePath, new TreeSet<String>());
+    }
+    
+    private Collection<String> getAllIncludes(PHPParseResult context, String filePath, Collection<String> alreadyProcessed){
        // try to fetch cached result first
         HashMap<String, Collection<String>> resultTable = includesCache.get(context);
 
@@ -720,19 +724,22 @@ public class PHPIndex {
             includesCache.put(context, resultTable);
         }
         
-        Collection<String> includes = getAllIncludesImpl(context, filePath);
+        Collection<String> includes = getAllIncludesImpl(context, filePath, alreadyProcessed);
         resultTable.put(filePath, includes);
         return includes;
     }
     
 
-    private Collection<String>getAllIncludesImpl(PHPParseResult context, String filePath){
+    private Collection<String>getAllIncludesImpl(PHPParseResult context, String filePath, Collection<String> alreadyProcessed){
         Collection<String> includes = new TreeSet<String>();
         Collection<String> directIncludes = getDirectIncludes(context, filePath);
         
         for (String directInclude : directIncludes){
-            includes.add(directInclude);
-            includes.addAll(getAllIncludes(context, directInclude));
+            if (!alreadyProcessed.contains(directInclude)) {
+                alreadyProcessed.add(directInclude);
+                includes.add(directInclude);
+                includes.addAll(getAllIncludes(context, directInclude, alreadyProcessed));
+            }
         }
         
         return Collections.unmodifiableCollection(includes);

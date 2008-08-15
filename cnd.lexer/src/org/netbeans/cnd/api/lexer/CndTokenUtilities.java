@@ -84,9 +84,14 @@ public class CndTokenUtilities {
         if (cppTokenSequence == null) {
             return;
         }
-        int shift = cppTokenSequence.move(startOffset);
         if (startOffset > lastOffset) {
             return;
+        }
+        int shift = cppTokenSequence.move(startOffset);
+        if (tp.getLastSeparatorOffset() >=0 && 
+            tp.getLastSeparatorOffset() > startOffset && 
+            tp.getLastSeparatorOffset() < lastOffset) {
+            shift = cppTokenSequence.move(tp.getLastSeparatorOffset());
         }
         tp.start(startOffset, startOffset - shift);
         if (processTokensImpl(tp, cppTokenSequence, startOffset, lastOffset)) {

@@ -23,7 +23,7 @@
         <font style="italic"/>
     </fontcolor>
     <fontcolor name="PHP_VARIABLE" foreColor="6d3206"/>
-        
+    <fontcolor name="heredocdelimiter" foreColor="6c3d03"/>    
     <fontcolor name="PHP_STRING" default="identifier">
     </fontcolor>    
     <!--<fontcolor name="FLOAT_LITERAL" default="number"/>

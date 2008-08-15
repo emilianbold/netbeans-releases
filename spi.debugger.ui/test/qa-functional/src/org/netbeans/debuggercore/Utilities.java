@@ -303,7 +303,7 @@ public class Utilities {
         eo.setCaretPosition(line, column);
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
-        new EventTool().waitNoEvent(1000l);
+        new EventTool().waitNoEvent(5000);
         return dialog;
     }
 
@@ -313,7 +313,7 @@ public class Utilities {
         setCaret(eo, line);
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
-        new EventTool().waitNoEvent(1000l);
+        new EventTool().waitNoEvent(5000);
         return dialog;
     }
 
@@ -413,7 +413,7 @@ public class Utilities {
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
         ConsoleChooser cch = new ConsoleChooser(op, text, status);
         JemmyProperties.getCurrentOutput().printLine("Waiting on text in debugger console '" + text + "' from line " + status);
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 30000l);
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 30000);
         try {
             op.waitState(cch);
         } catch (TimeoutExpiredException ex) {

@@ -154,6 +154,7 @@ public class WebProjectProperties {
     public static final String SRC_DIR = "src.dir"; //NOI18N
     public static final String TEST_SRC_DIR = "test.src.dir"; //NOI18N
     public static final String CONF_DIR = "conf.dir"; //NOI18N
+    public static final String PERSISTENCE_XML_DIR = "persistence.xml.dir"; //NOI18N
     public static final String WEB_DOCBASE_DIR = "web.docbase.dir"; //NOI18N
     public static final String RESOURCE_DIR = "resource.dir"; //NOI18N
     public static final String WEBINF_DIR = "webinf.dir"; //NOI18N

@@ -291,5 +291,26 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("FINE", matcher.group(1));
         assertEquals("Loading 3 files took 12.345", matcher.group(2));
     }
+    
+    public void testIssue143508TestStarted() {
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.TestStartedHandler();
+        String output = "%TEST_STARTED% test_foo(FooTest)\\n";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(2, matcher.groupCount());
+        assertEquals("test_foo", matcher.group(1));
+        assertEquals("FooTest", matcher.group(2));
+    } 
+
+    public void testIssue143508TestFinished() {
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.TestFinishedHandler();
+        String output = "%TEST_FINISHED% time=0.203 test_foo(FooTest)\\n";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(3, matcher.groupCount());
+        assertEquals("0.203", matcher.group(1));
+        assertEquals("test_foo", matcher.group(2));
+        assertEquals("FooTest", matcher.group(3));
+    }
 
 }

@@ -101,7 +101,7 @@ public class PaletteItemDataNode extends DataNode
     @Override
     public Transferable clipboardCut() throws IOException
     {
-        ExTransferable t = ExTransferable.create (super.clipboardCopy ());
+        ExTransferable t = ExTransferable.create (super.clipboardCut ());
         
         ExTransferable.Single item = new ExTransferable.Single(PaletteItem.FLAVOR)
         {

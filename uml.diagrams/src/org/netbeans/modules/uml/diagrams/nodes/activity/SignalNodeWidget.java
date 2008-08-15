@@ -119,6 +119,7 @@ public class SignalNodeWidget extends ActivityNodeWidget
             
             setCurrentView(mainView);
         }
+        super.initializeNode(presentation);
     }
 
     public String getWidgetID()

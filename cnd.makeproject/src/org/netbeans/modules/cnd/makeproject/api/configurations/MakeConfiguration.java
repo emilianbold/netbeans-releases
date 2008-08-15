@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -102,13 +103,17 @@ public class MakeConfiguration extends Configuration {
 
     // Constructors
     public MakeConfiguration(MakeConfigurationDescriptor makeConfigurationDescriptor, String name, int configurationTypeValue) {
-        this(makeConfigurationDescriptor.getBaseDir(), name, configurationTypeValue);
+        this(makeConfigurationDescriptor.getBaseDir(), name, configurationTypeValue, CompilerSetManager.getDefaultDevelopmentHost());
     }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
+        this(baseDir, name, configurationTypeValue, CompilerSetManager.getDefaultDevelopmentHost());
+    }    
+
+    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
         super(baseDir, name);
         configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES, null);
-        developmentHost = new DevelopmentHostConfiguration();
+        developmentHost = new DevelopmentHostConfiguration(host);
         compilerSet = new CompilerSet2Configuration(developmentHost);
         cRequired = new LanguageBooleanConfiguration();
         cppRequired = new LanguageBooleanConfiguration();
@@ -633,9 +638,9 @@ public class MakeConfiguration extends Configuration {
         }
         return subProjectOutputLocations;
     }
-
-    public String getAbsoluteOutputValue() {
-        String output;
+    
+    public String getOutputValue() {
+        String output = null;
         if (isLinkerConfiguration()) {
             output = getLinkerConfiguration().getOutputValue();
         } else if (isArchiverConfiguration()) {
@@ -643,8 +648,13 @@ public class MakeConfiguration extends Configuration {
         } else if (isMakefileConfiguration()) {
             output = getMakefileConfiguration().getOutput().getValue();
         } else {
-            output = null;
+            assert false;
         }
+        return output;
+    }
+
+    public String getAbsoluteOutputValue() {
+        String output = getOutputValue();
 
         if (output == null || IpeUtils.isPathAbsolute(output)) {
             return output;

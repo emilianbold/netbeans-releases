@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
 import java.util.Iterator;
-import org.netbeans.editor.Settings;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -67,23 +66,25 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -91,6 +92,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
@@ -354,17 +356,18 @@ public abstract class CsmResultItem
     
     // Compares include directives dy file names
     private boolean isIncludesEqual(String inc1, String inc2) {
-        normalizeInclude(inc1);
-        normalizeInclude(inc2);
+        inc1 = normalizeInclude(inc1);
+        inc2 = normalizeInclude(inc2);
         return (inc1.equals(inc2));
     }
     
     // Normailizes include directive string
-    private void normalizeInclude(String inc) {
+    private String normalizeInclude(String inc) {
         inc.toLowerCase();
         inc = inc.replaceAll("[\\s\n]+", " "); // NOI18N
         inc = inc.replaceAll("[<>\"]", "\""); // NOI18N
         inc = inc.trim();
+        return inc;
     }
 
     // Says is it forward declarartion or not
@@ -724,8 +727,8 @@ public abstract class CsmResultItem
     }
     
     public static class FileLocalFunctionResultItem extends MethodResultItem {
-        public FileLocalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity) {
-            super(mtd, substituteExp, priotity);
+        public FileLocalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration) {
+            super(mtd, substituteExp, priotity, isDeclaration);
         }
         
         @Override
@@ -735,8 +738,8 @@ public abstract class CsmResultItem
     }
     
     public static class GlobalFunctionResultItem extends MethodResultItem {
-        public GlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity) {
-            super(mtd, substituteExp, priotity);
+        public GlobalFunctionResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration) {
+            super(mtd, substituteExp, priotity, isDeclaration);
         }
         
         @Override
@@ -754,8 +757,8 @@ public abstract class CsmResultItem
         private String mtdName;
         
         
-        public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity){
-            super(mtd, substituteExp, priotity);
+        public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration){
+            super(mtd, substituteExp, priotity, isDeclaration);
             typeName = CsmResultItem.getTypeName(mtd.getReturnType());
             mtdName = mtd.getName().toString();
             typeColor = CsmResultItem.getTypeColor(mtd.getReturnType());
@@ -826,6 +829,7 @@ public abstract class CsmResultItem
         
         private CsmFunction ctr;
         private CsmCompletionExpression substituteExp;
+        private boolean isDeclaration;
         private List params = new ArrayList();
         private List excs = new ArrayList();
         private int modifiers;
@@ -833,10 +837,11 @@ public abstract class CsmResultItem
         private int activeParameterIndex = -1;
         private int varArgIndex = -1;
         
-        public ConstructorResultItem(CsmFunction ctr, CsmCompletionExpression substituteExp, int priotity){
-            super(ctr, priotity);
+        public ConstructorResultItem(CsmFunction ctr, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
+            super(ctr, priority);
             this.ctr = ctr;
             this.substituteExp = substituteExp;
+            this.isDeclaration = isDeclaration;
             this.modifiers = convertCsmModifiers(ctr);
             CsmParameter[] prms = (CsmParameter[]) ctr.getParameters().toArray(new CsmParameter[0]);
             for (int i=0; i<prms.length; i++) {
@@ -935,6 +940,7 @@ public abstract class CsmResultItem
         @Override
         public boolean substituteText(final JTextComponent c, final int offset, final int origLen, final boolean shift) {
             final boolean res[] = new boolean[] { true };
+            final AtomicBoolean showTooltip = new AtomicBoolean();
             final BaseDocument doc = (BaseDocument) c.getDocument();
             doc.runAtomic(new Runnable() {
 
@@ -1003,13 +1009,11 @@ public abstract class CsmResultItem
                             text = getItemText();
                             boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
                             boolean addClosingParen = false;
-                            Formatter f = doc.getFormatter();
-                            if (f instanceof ExtFormatter) {
-                                Object o = ((ExtFormatter) f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
-                                o = Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
-                                if ((o instanceof Boolean) && ((Boolean) o).booleanValue()) {
-                                    addClosingParen = true;
-                                }
+
+                            String mimeType = CsmCompletionUtils.getMimeType(doc);
+                            if (mimeType != null) {
+                                Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+                                addClosingParen = prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
                             }
 
                             if (addParams) {
@@ -1034,13 +1038,19 @@ public abstract class CsmResultItem
                                     text += '('; // NOI18N
                                     if (params.size() > 0) {
                                         selectionStartOffset = selectionEndOffset = text.length();
-                                        Completion completion = Completion.get();
-                                        completion.hideCompletion();
-                                        completion.hideDocumentation();
-                                        completion.showToolTip();
+                                        showTooltip.set(true);
                                     }
-                                    if (addClosingParen) {
+                                    if (isDeclaration) {
+                                        for (Object obj : createParamsList()) {
+                                            text += obj;
+                                        }
+                                    }
+                                    if (isDeclaration || addClosingParen) {
                                         text += ")";  // NOI18N
+                                        if (isDeclaration && CsmKindUtilities.isMethod(ctr) && ((CsmMethod)ctr).isConst()) {
+                                            // Fix for IZ#143117: Method autocompletion does not add 'const' keyword
+                                            text += " const"; // NOI18N
+                                        }
                                     }
                                 } else {
                                     try {
@@ -1074,7 +1084,9 @@ public abstract class CsmResultItem
                             }
                             doc.remove(offset, len);
                             doc.insertString(offset, text, null);
-                            if (selectionStartOffset >= 0) {
+                            if (isDeclaration) {
+                                c.setCaretPosition(offset + text.length());
+                            } else if (selectionStartOffset >= 0) {
                                 c.select(offset + selectionStartOffset,
                                         offset + selectionEndOffset);
                             } else if ("(".equals(toAdd)) { // NOI18N
@@ -1092,6 +1104,12 @@ public abstract class CsmResultItem
                     }
                 }
             });
+            if (showTooltip.get()) {
+                Completion completion = Completion.get();
+                completion.hideCompletion();
+                completion.hideDocumentation();
+                completion.showToolTip();
+            }
             return res[0];
         }
         

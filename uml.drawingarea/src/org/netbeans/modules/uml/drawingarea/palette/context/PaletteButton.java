@@ -244,7 +244,13 @@ public class PaletteButton extends JPanel
             }
             
             
-            currentTool = scene.getActiveTool();
+            // If the user right clicks while drawing a relationship we will
+            // get the tool that we made active.
+            if(scene.getActiveTool().equals(DesignerTools.CONTEXT_PALETTE) != true)
+            {
+                currentTool = scene.getActiveTool();
+            }
+            
             scene.setActiveTool(DesignerTools.CONTEXT_PALETTE);
             for(WidgetAction action : actions)
             {

@@ -346,6 +346,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         private final java.util.Comparator comparator = new NodeComparator();
         // Need to hold the conf dir strongly, otherwise it can be garbage-collected.
         private FileObject confDir;
+        private FileObject persistenceXmlDir;
 
         private final FileChangeListener webInfListener = new FileChangeAdapter() {
 
@@ -472,6 +473,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
 
             addWellKnownFiles();
             addConfDirectoryFiles();
+            addPersistenceXmlDirectoryFiles();
             addServerSpecificFiles();
             addFrameworkFiles();
         }
@@ -516,6 +518,22 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             }
 
             confDir.addFileChangeListener(anyFileListener);
+        }
+        
+        private void addPersistenceXmlDirectoryFiles() {
+            persistenceXmlDir = pwm.getPersistenceXmlDir();
+            if (persistenceXmlDir == null ||
+                    (confDir != null && FileUtil.toFile(persistenceXmlDir).equals(FileUtil.toFile(confDir)))) {
+                return;
+            }
+            FileObject[] children = persistenceXmlDir.getChildren();
+            for (int i = 0; i < children.length; i++) {
+                if (VisibilityQuery.getDefault().isVisible(children[i])) {
+                    keys.add(children[i]);
+                }
+            }
+
+            persistenceXmlDir.addFileChangeListener(anyFileListener);
         }
 
         private void addServerSpecificFiles() {

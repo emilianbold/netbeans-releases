@@ -635,6 +635,12 @@ public class ConfigurationMakefileWriter {
         bw.write("# Macros\n"); // NOI18N
         bw.write("TOP=" + "`pwd`" + "\n"); // NOI18N
         bw.write("TMPDIR=" + tmpdir + "\n"); // NOI18N
+        String projectOutput = conf.getOutputValue();
+        if (projectOutput == null || projectOutput.length() == 0) {
+            projectOutput = "MissingOutputInProject"; // NOI18N
+        }
+        bw.write("OUTPUT_PATH=" + projectOutput + "\n"); // NOI18N
+        bw.write("OUTPUT_BASENAME=" + IpeUtils.getBaseName(projectOutput) + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Functions\n"); // NOI18N
@@ -697,7 +703,7 @@ public class ConfigurationMakefileWriter {
         
         bw.write("# Copy files and create directories and links\n"); // NOI18N
         for (FileElement elem : fileList) {
-            bw.write("cd $TOP\n"); // NOI18N
+            bw.write("cd \"$TOP\"\n"); // NOI18N
             if (elem.getType() == FileElement.FileType.FILE) {
                 String toDir = IpeUtils.getDirName(elem.getTo());
                 if (toDir != null && toDir.length() >= 0) {
@@ -729,13 +735,13 @@ public class ConfigurationMakefileWriter {
         
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
             bw.write("# Generate zip file\n"); // NOI18N
-            bw.write("cd $TOP\n"); // NOI18N
+            bw.write("cd \"$TOP\"\n"); // NOI18N
             bw.write("cd $TMPDIR\n"); // NOI18N
             bw.write(packagingConfiguration.getToolValue() + " -r "+ packagingConfiguration.getOptionsValue() + " " + outputRelToTmp + " *\n"); // NOI18N
         }
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             bw.write("# Generate tar file\n"); // NOI18N
-            bw.write("cd $TOP\n"); // NOI18N
+            bw.write("cd \"$TOP\"\n"); // NOI18N
             bw.write("cd $TMPDIR\n"); // NOI18N
             String options = packagingConfiguration.getOptionsValue() + "cf"; // NOI18N
             if (options.charAt(0) != '-') { // NOI18N
@@ -746,10 +752,11 @@ public class ConfigurationMakefileWriter {
         else {
             assert false;
         }
+        bw.write("checkReturnCode\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Cleanup\n"); // NOI18N
-        bw.write("cd $TOP\n"); // NOI18N
+        bw.write("cd \"$TOP\"\n"); // NOI18N
         bw.write("rm -rf $TMPDIR\n"); // NOI18N
     }
     
@@ -810,13 +817,13 @@ public class ConfigurationMakefileWriter {
         bw.write("PROTOTYPEFILE=$TMPDIR/prototype\n"); // NOI18N
         bw.write("rm -f $PKGINFOFILE $PROTOTYPEFILE\n"); // NOI18N
         bw.write("\n"); // NOI18N        
-        bw.write("cd $TOP\n"); // NOI18N
+        bw.write("cd \"$TOP\"\n"); // NOI18N
         List<InfoElement> infoList = packagingConfiguration.getHeader().getValue();
         for (InfoElement elem : infoList) {
             bw.write("echo \'" + elem.getName() + "=\"" + elem.getValue() + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
         }
-        bw.write("\n"); // NOI18N        
-        bw.write("cd $TOP\n"); // NOI18N 
+        bw.write("\n"); // NOI18N       
+        bw.write("cd \"$TOP\"\n"); // NOI18N
         bw.write("echo \"i pkginfo=pkginfo\" >> $PROTOTYPEFILE\n"); // NOI18N
         bw.write("\n"); // NOI18N     
         List<String> dirList = findUndefinedDirectories(packagingConfiguration);
@@ -867,8 +874,8 @@ public class ConfigurationMakefileWriter {
             bw.write(" >> $PROTOTYPEFILE\n"); // NOI18N
         }
         bw.write("\n"); // NOI18N
-        bw.write("# Make package\n"); // NOI18N        
-        bw.write("cd $TOP\n"); // NOI18N   
+        bw.write("# Make package\n"); // NOI18N  
+        bw.write("cd \"$TOP\"\n"); // NOI18N
         bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
         bw.write("pkgtrans -s $TMPDIR tmp.pkg " + packageName + "\n"); // NOI18N
@@ -878,7 +885,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N
         
         bw.write("# Cleanup\n"); // NOI18N
-        bw.write("cd $TOP\n"); // NOI18N
+        bw.write("cd \"$TOP\"\n"); // NOI18N
         bw.write("rm -rf $TMPDIR\n"); // NOI18N
     }
 }

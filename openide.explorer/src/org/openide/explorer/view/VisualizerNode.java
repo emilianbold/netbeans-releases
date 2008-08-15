@@ -112,7 +112,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     private Reference<VisualizerChildren> children = NO_REF;
 
     /** the VisualizerChildren that contains this VisualizerNode or null */
-    private VisualizerChildren parent;
+    VisualizerChildren parent;
 
     /** index in parent */
     int indexOf = -1;
