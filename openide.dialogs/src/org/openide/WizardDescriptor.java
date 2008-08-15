@@ -1286,7 +1286,8 @@ public class WizardDescriptor extends DialogDescriptor {
                 Panel old = data.current;
                 data.current.storeSettings(data.getSettings(this));
                 if (! old.equals (data.current)) {
-                    currentPanelWasChangedWhileStoreSettings = true;
+// temporary rollback due to broken tests                    
+//                    currentPanelWasChangedWhileStoreSettings = true;
                 }
             }
         }
