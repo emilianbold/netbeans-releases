@@ -69,8 +69,6 @@ import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
@@ -410,9 +408,7 @@ public final class EarProjectGenerator {
     // get existing project but only java ee module
     private Project getExistingJ2EEModuleProject(final FileObject projectDirectory) throws IOException {
         Project project = ProjectManager.getDefault().findProject(projectDirectory);
-        if (project != null
-                && project.getLookup().lookup(J2eeModuleProvider.class) != null
-                && project.getLookup().lookup(J2eeApplicationProvider.class) == null) {
+        if (EarProjectUtil.isJavaEEModule(project)) {
             return project;
         }
         return null;
