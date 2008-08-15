@@ -56,6 +56,8 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JSpinner;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
@@ -103,8 +105,6 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
 
     // this is called when OK button is clicked to store the controlled preferences
     public void actionPerformed(ActionEvent e) {
-        String profile = globalButton.isSelected() ? DEFAULT_PROFILE : PROJECT_PROFILE;
-        pf.getPreferences("").parent().put(USED_PROFILE, profile); //NOI18N
         pf.applyChanges();
     }
 
@@ -193,13 +193,45 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
     }// </editor-fold>//GEN-END:initComponents
 
 private void globalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_globalButtonActionPerformed
+
+    pf.getPreferences("").parent().put(USED_PROFILE, DEFAULT_PROFILE); //NOI18N
     loadButton.setEnabled(false);
     setEnabled(panel, false);
 }//GEN-LAST:event_globalButtonActionPerformed
 
 private void projectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectButtonActionPerformed
+
+    pf.getPreferences("").parent().put(USED_PROFILE, PROJECT_PROFILE); //NOI18N
     loadButton.setEnabled(true);
     setEnabled(panel, true);
+
+    if (copyOnFork) {
+        copyOnFork = false;
+
+        // copy global settings
+        for(String mimeType : selector.getMimeTypes()) {
+            Preferences globalPrefs = MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(Preferences.class);
+            Preferences projectPrefs = pf.getPreferences(mimeType);
+            
+            // XXX: we should somehow be able to determine __all__ the formatting settings
+            // for each mime type, but there can be different sets of settings for different
+            // mime types (eg. all java, ruby and C++ have different formatting settings).
+            // The only way is to stash all formatting settings under one common Preferences node
+            // as it is in projects. The problem is that MimeLookup's Preferences implementation
+            // does not support subnodes.
+            // So, we at least copy the basic setting
+            boolean copied = false;
+            copied |= copyValueIfExists(globalPrefs, projectPrefs, SimpleValueNames.EXPAND_TABS);
+            copied |= copyValueIfExists(globalPrefs, projectPrefs, SimpleValueNames.INDENT_SHIFT_WIDTH);
+            copied |= copyValueIfExists(globalPrefs, projectPrefs, SimpleValueNames.SPACES_PER_TAB);
+            copied |= copyValueIfExists(globalPrefs, projectPrefs, SimpleValueNames.TAB_SIZE);
+            copied |= copyValueIfExists(globalPrefs, projectPrefs, SimpleValueNames.TEXT_LIMIT_WIDTH);
+
+            if (mimeType.length() > 0 && copied) {
+                projectPrefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, true);
+            }
+        }
+    }
 }//GEN-LAST:event_projectButtonActionPerformed
 
 private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButtonActionPerformed
@@ -240,6 +272,7 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private final ProjectPreferencesFactory pf;
     private final CustomizerSelector selector;
     private final FormattingPanel panel;
+    private boolean copyOnFork;
     
     /** Creates new form CodeStyleCustomizerPanel */
     private FormattingCustomizerPanel(Lookup context) {
@@ -252,6 +285,7 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         customizerPanel.add(panel, BorderLayout.CENTER);
         
         Preferences prefs = pf.getPreferences("").parent(); //NOI18N
+        this.copyOnFork = prefs.get(USED_PROFILE, null) == null;
         String profile = prefs.get(USED_PROFILE, DEFAULT_PROFILE);
         if (DEFAULT_PROFILE.equals(profile)) {
             globalButton.doClick();
@@ -269,20 +303,29 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         }
     }
 
+    private static boolean copyValueIfExists(Preferences src, Preferences trg, String key) {
+        String value = src.get(key, null);
+        if (value != null) {
+            trg.put(key, value);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private static final class ProjectPreferencesFactory implements CustomizerSelector.PreferencesFactory {
 
         public ProjectPreferencesFactory(Project project) {
             this.project = project;
+            Preferences p = ProjectUtils.getPreferences(project, IndentUtils.class, true);
+            projectPrefs = ProxyPreferences.get(p);
         }
 
         public synchronized Preferences getPreferences(String mimeType) {
             ProxyPreferences prefs = mimeTypePreferences.get(mimeType);
 
             if (prefs == null) {
-                if (projectPrefs == null) {
-                    Preferences p = ProjectUtils.getPreferences(project, IndentUtils.class, true);
-                    projectPrefs = ProxyPreferences.get(p);
-                }
+                assert projectPrefs != null;
                 prefs = (ProxyPreferences) projectPrefs.node(mimeType).node(CODE_STYLE_PROFILE).node(PROJECT_PROFILE);
                 mimeTypePreferences.put(mimeType, prefs);
             }
@@ -331,7 +374,8 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                     LOG.log(Level.WARNING, "Can't flush project codestyle root preferences", ex); //NOI18N
                 }
             }
-            
+
+            mimeTypePreferences.clear();
             projectPrefs.destroy();
             projectPrefs = null;
         }

@@ -139,8 +139,11 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
         // initialize controls
         prefsChange(null);
-        if (showOverrideGlobalOptions) {
-            this.prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areGlobalOptionsOverriden());
+        if (showOverrideGlobalOptions && 
+            null == this.prefs.get(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null))
+        {
+            // FormattingCustomizerPanel and FormattingPanelController expect this to be set
+            this.prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areBasicOptionsOverriden());
         }
     }
 
@@ -244,7 +247,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
         if (showOverrideGlobalOptions) {
             if (key == null || FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS.equals(key)) {
-                boolean nue = prefs.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areGlobalOptionsOverriden());
+                boolean nue = prefs.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areBasicOptionsOverriden());
                 if (nue != cbOverrideGlobalOptions.isSelected()) {
                     cbOverrideGlobalOptions.setSelected(nue);
                 }
@@ -282,7 +285,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 //                + ", allLangPrefs(" + key + ")=" + allLangPrefs.get(key, null))
 //                + "; override=" + prefs.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areGlobalOptionsOverriden()));
         
-        if (prefs.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areGlobalOptionsOverriden())) {
+        if (prefs.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areBasicOptionsOverriden())) {
             // ignore allLangPrefs changes when we are actually overriding the all languages values
             return;
         }
@@ -441,7 +444,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
     }
 
-    private boolean areGlobalOptionsOverriden() {
+    private boolean areBasicOptionsOverriden() {
         String mimeType = mimePath.getPath();
         return prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.EXPAND_TABS, mimeType) ||
             prefsFactory.isKeyOverridenForMimeType(SimpleValueNames.INDENT_SHIFT_WIDTH, mimeType) ||
