@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,33 +31,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.support;
 
 import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 
 /**
- * Run a non-interactive command. Output from the command will be available via the toString() method.
- * 
- * @author gordonp
+ *
+ * @author Sergey Grinev
  */
-public class RemoteCommandProvider implements CommandProvider {
-    
-    private RemoteCommandSupport support;
+public class ShellUtils {
 
-    public int run(String hkey, String cmd, Map<String, String> env) {
-        support = new RemoteCommandSupport(hkey, cmd, env);
-        return support.run();
+    private ShellUtils() {
     }
+
+    public static String prepareExportString(String hkey, Map<String, String> env) {
+        boolean isCshShell = RemoteHostInfoProvider.getHostInfo(hkey).isCshShell();
+        return prepareExportString(isCshShell, env);
+    }
+
+    static String prepareExportString(boolean isCshShell, Map<String, String> env) {
+        StringBuilder cmdline = new StringBuilder();
+        String exportCommand = getExportCommand(isCshShell);
+        String middleFix = isCshShell ? " " : "="; // NOI18N
+        for (String ev : env.keySet()) {
+            cmdline.append(exportCommand).append(ev).append(middleFix).append("\"").append(env.get(ev)).append("\";"); // NOI18N
+        }
+        return cmdline.toString();
+    }
+
+    public static String prepareExportString(String hkey, String[] envp) {
+        boolean isCshShell = RemoteHostInfoProvider.getHostInfo(hkey).isCshShell();
+        return prepareExportString(isCshShell, envp);
+    }
+
+    static String prepareExportString(boolean isCshShell, String[] envp) {
+        StringBuilder cmdline = new StringBuilder();
+        String exportCommand = getExportCommand(isCshShell);
+        for (String ev : envp) {
+            ev = ev.replace("=", isCshShell ? " \"":"=\""); //NOI18N
+            cmdline.append(exportCommand).append(ev).append("\";"); // NOI18N
+        }
+        return cmdline.toString();
+    }
+
+    private static final String BashExport = "export"; //NOI8N
+    private static final String CshExport = "setenv"; //NOI8N
+    // all other shells are smart enough to know both
     
-    @Override
-    public String toString() {
-        return support.toString();
+    private static String getExportCommand(boolean isCshShell) {
+        return (isCshShell ? CshExport : BashExport) + " ";
     }
 }
