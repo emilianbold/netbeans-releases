@@ -56,41 +56,28 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" alignment="0" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="lNumberOfSpacesPerIndent" pref="207" max="32767" attributes="2"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="lTabSize" pref="207" max="32767" attributes="1"/>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="lRightMargin" min="-2" pref="195" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
+              <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <Component id="sRightMargin" linkSize="1" pref="42" max="32767" attributes="1"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="lNumberOfSpacesPerIndent" alignment="0" pref="207" max="32767" attributes="2"/>
+                              <Component id="lTabSize" alignment="0" pref="207" max="32767" attributes="1"/>
+                              <Component id="lRightMargin" alignment="0" min="-2" pref="195" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="sRightMargin" linkSize="1" pref="42" max="32767" attributes="1"/>
+                              <Component id="sTabSize" linkSize="1" pref="42" max="32767" attributes="1"/>
+                              <Component id="sNumberOfSpacesPerIndent" linkSize="1" alignment="1" pref="42" max="32767" attributes="1"/>
+                          </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
-                      <Group type="102" attributes="0">
-                          <Component id="sTabSize" linkSize="1" pref="42" max="32767" attributes="1"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="1" attributes="0">
-                          <Component id="sNumberOfSpacesPerIndent" linkSize="1" pref="42" max="32767" attributes="1"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="cbExpandTabsToSpaces" pref="219" max="32767" attributes="1"/>
+                          <EmptySpace min="-2" pref="54" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-              </Group>
-              <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="cbExpandTabsToSpaces" pref="219" max="32767" attributes="1"/>
-                  <EmptySpace min="-2" pref="54" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -132,6 +119,9 @@
               <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledCheckBox()"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="lNumberOfSpacesPerIndent">
           <Properties>
@@ -140,8 +130,14 @@
             </Property>
             <Property name="text" type="java.lang.String" value="Number of Spaces per Indent:"/>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledLabel()"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JSpinner" name="sNumberOfSpacesPerIndent">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledSpinner()"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="lTabSize">
           <Properties>
@@ -150,8 +146,14 @@
             </Property>
             <Property name="text" type="java.lang.String" value="Tab Size:"/>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledLabel()"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JSpinner" name="sTabSize">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledSpinner()"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="lRightMargin">
           <Properties>
@@ -160,8 +162,14 @@
             </Property>
             <Property name="text" type="java.lang.String" value="Right Margin:"/>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledLabel()"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JSpinner" name="sRightMargin">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ControlledSpinner()"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

@@ -55,6 +55,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JSpinner;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
@@ -261,9 +262,10 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     
     private void setEnabled(Component component, boolean enabled) {
         component.setEnabled(enabled);
-        if (component instanceof Container) {
-            for (Component c : ((Container)component).getComponents())
+        if (component instanceof Container && !(component instanceof JSpinner)) {
+            for (Component c : ((Container)component).getComponents()) {
                 setEnabled(c, enabled);
+            }
         }
     }
 

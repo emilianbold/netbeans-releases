@@ -54,10 +54,12 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -256,13 +258,13 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 }
                 
                 needsRefresh = true;
-                cbExpandTabsToSpaces.setEnabled(nue);
-                lNumberOfSpacesPerIndent.setEnabled(nue);
-                sNumberOfSpacesPerIndent.setEnabled(nue);
-                lTabSize.setEnabled(nue);
-                sTabSize.setEnabled(nue);
-                lRightMargin.setEnabled(nue);
-                sRightMargin.setEnabled(nue);
+                ((ControlledCheckBox) cbExpandTabsToSpaces).setEnabledInternal(nue);
+                ((ControlledLabel) lNumberOfSpacesPerIndent).setEnabledInternal(nue);
+                ((ControlledSpinner) sNumberOfSpacesPerIndent).setEnabledInternal(nue);
+                ((ControlledLabel) lTabSize).setEnabledInternal(nue);
+                ((ControlledSpinner) sTabSize).setEnabledInternal(nue);
+                ((ControlledLabel) lRightMargin).setEnabledInternal(nue);
+                ((ControlledSpinner) sRightMargin).setEnabledInternal(nue);
             }
         }
 
@@ -316,13 +318,13 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
         cbOverrideGlobalOptions = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
-        cbExpandTabsToSpaces = new javax.swing.JCheckBox();
-        lNumberOfSpacesPerIndent = new javax.swing.JLabel();
-        sNumberOfSpacesPerIndent = new javax.swing.JSpinner();
-        lTabSize = new javax.swing.JLabel();
-        sTabSize = new javax.swing.JSpinner();
-        lRightMargin = new javax.swing.JLabel();
-        sRightMargin = new javax.swing.JSpinner();
+        cbExpandTabsToSpaces = new ControlledCheckBox();
+        lNumberOfSpacesPerIndent = new ControlledLabel();
+        sNumberOfSpacesPerIndent = new ControlledSpinner();
+        lTabSize = new ControlledLabel();
+        sTabSize = new ControlledSpinner();
+        lRightMargin = new ControlledLabel();
+        sRightMargin = new ControlledSpinner();
 
         cbOverrideGlobalOptions.setText("Override Global Options");
         cbOverrideGlobalOptions.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -347,31 +349,22 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(jPanel1Layout.createSequentialGroup()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE))
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE))
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(lRightMargin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 195, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(sRightMargin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(sTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
-                        .addContainerGap())))
-            .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
-                .add(54, 54, 54))
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                            .add(lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                            .add(lRightMargin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 195, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(sRightMargin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
+                            .add(sTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
+                        .addContainerGap())
+                    .add(jPanel1Layout.createSequentialGroup()
+                        .add(cbExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                        .add(54, 54, 54))))
         );
 
         jPanel1Layout.linkSize(new java.awt.Component[] {sNumberOfSpacesPerIndent, sRightMargin, sTabSize}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -538,4 +531,114 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     private static String s2s(Object o) {
         return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));
     }
+
+    private static final class ControlledCheckBox extends JCheckBox {
+
+        private boolean externallyEnabled = true;
+        private boolean internallyEnabled = true;
+        
+        public @Override void setEnabled(boolean b) {
+            if (externallyEnabled == b) {
+                return;
+            } else {
+                externallyEnabled = b;
+                if (externallyEnabled) {
+                    if (internallyEnabled) {
+                        super.setEnabled(true);
+                    }
+                } else {
+                    super.setEnabled(false);
+                }
+            }
+        }
+
+        public void setEnabledInternal(boolean b) {
+            if (internallyEnabled == b) {
+                return;
+            } else {
+                internallyEnabled = b;
+                if (internallyEnabled) {
+                    if (externallyEnabled) {
+                        super.setEnabled(true);
+                    }
+                } else {
+                    super.setEnabled(false);
+                }
+            }
+        }
+    } // End of ControlledCheckBox class
+
+    private static final class ControlledLabel extends JLabel {
+
+        private boolean externallyEnabled = true;
+        private boolean internallyEnabled = true;
+        
+        public @Override void setEnabled(boolean b) {
+            if (externallyEnabled == b) {
+                return;
+            } else {
+                externallyEnabled = b;
+                if (externallyEnabled) {
+                    if (internallyEnabled) {
+                        super.setEnabled(true);
+                    }
+                } else {
+                    super.setEnabled(false);
+                }
+            }
+        }
+
+        public void setEnabledInternal(boolean b) {
+            if (internallyEnabled == b) {
+                return;
+            } else {
+                internallyEnabled = b;
+                if (internallyEnabled) {
+                    if (externallyEnabled) {
+                        super.setEnabled(true);
+                    }
+                } else {
+                    super.setEnabled(false);
+                }
+            }
+        }
+    } // End of ControlledLabel class
+    
+    private static final class ControlledSpinner extends JSpinner {
+
+        private boolean externallyEnabled = true;
+        private boolean internallyEnabled = true;
+        
+        public @Override void setEnabled(boolean b) {
+            if (externallyEnabled == b) {
+                return;
+            } else {
+                externallyEnabled = b;
+                if (externallyEnabled) {
+                    if (internallyEnabled) {
+                        super.setEnabled(true);
+                    }
+                } else {
+                    super.setEnabled(false);
+                }
+            }
+        }
+
+        public void setEnabledInternal(boolean b) {
+            if (internallyEnabled == b) {
+                return;
+            } else {
+                internallyEnabled = b;
+                if (internallyEnabled) {
+                    if (externallyEnabled) {
+                        super.setEnabled(true);
+                    }
+                } else {
+                    super.setEnabled(false);
+                }
+            }
+        }
+    } // End of ControlledSpinner class
+
 }
+
