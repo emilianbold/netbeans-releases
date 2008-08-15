@@ -66,7 +66,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -432,13 +431,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             // we need to remember once calculated "valid" state and reuse it
             // instead of check on each unrelated action
             // with remote support it became even more visible in UI freezing
-            if (SwingUtilities.isEventDispatchThread()) {
-                log.fine("ToolsPanel.isPathFieldValid from EDT"); // NOI18N
-                // always return true in remote mode, instead of call to very expensive operation
-                return true;
-            } else {
-                return serverList.isValidExecutable(hkey, txt);
-            }
+            return true;
+//            if (SwingUtilities.isEventDispatchThread()) {
+//                log.fine("ToolsPanel.isPathFieldValid from EDT"); // NOI18N
+//                // always return true in remote mode, instead of call to very expensive operation
+//                return true;
+//            } else {
+//                return serverList.isValidExecutable(hkey, txt);
+//            }
         }
     }
 
@@ -1718,6 +1718,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         return;
     }
     CompilerSetManager newCsm = CompilerSetManager.create(hkey);
+    newCsm.initialize();
     copiedManagers.put(hkey, newCsm);
     List<CompilerSet> list = csm.getCompilerSets();
     for (CompilerSet cs : list) {
