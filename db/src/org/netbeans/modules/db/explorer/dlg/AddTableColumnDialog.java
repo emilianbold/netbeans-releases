@@ -46,6 +46,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.beans.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +54,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.lib.ddl.DDLException;
 import org.openide.*;
 import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.impl.*;
@@ -502,12 +504,15 @@ public class AddTableColumnDialog {
                                   return ddl.execute(colname, citem, indexName);
                               }
                           });
-                      } catch ( Exception e ) {
-                        LOGGER.log(Level.WARNING, null, e);
-                          
-                        DbUtilities.reportError(bundle.getString(
-                            "ERR_UnableToAddColumn"), e.getMessage());
-                        return;
+                      } catch (InvocationTargetException e) {
+                          Throwable cause = e.getCause();
+                          if (cause instanceof DDLException) {
+                              DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                          } else {
+                              LOGGER.log(Level.INFO, null, cause);
+                              DbUtilities.reportError(bundle.getString("ERR_UnableToAddColumn"), e.getMessage());
+                          }
+                          return;
                       }
 
                       // was execution of commands with or without exception?

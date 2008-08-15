@@ -107,6 +107,19 @@ is the proper place.
     <changes>
         <change>
             <api name="database_explorer_api"/>
+            <summary>Add support for always quoting and for unquoting SQL identifiers.</summary>
+            <version major="1" minor="29"/>
+            <date day="15" month="8" year="2008"/>
+            <author login="abadea"/>
+            <compatibility addition="yes"/>
+            <description>
+                Add support for always quoting and for unquoting SQL identifiers.
+            </description>
+            <class package="org.netbeans.api.db.sql.support" name="SQLIdentifiers"/>
+            <issue number="143441"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
             <summary>Add ability to get the underlying JDBC Driver instance for a JDBCDriver</summary>
             <version major="1" minor="28"/>
             <date day="27" month="6" year="2008"/>
