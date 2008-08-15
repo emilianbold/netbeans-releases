@@ -286,9 +286,10 @@ public abstract class SharedRubyProjectProperties {
 
     protected static boolean showModifiedMessage(String title) {
         String message = NbBundle.getMessage(SharedRubyProjectProperties.class, "TXT_Regenerate");
-        JButton regenerateButton = new JButton(NbBundle.getMessage(RubyProjectProperties.class, "CTL_RegenerateButton"));
+        JButton regenerateButton = new JButton(NbBundle.getMessage(SharedRubyProjectProperties.class, "CTL_RegenerateButton"));
         regenerateButton.setDefaultCapable(true);
-        regenerateButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RubyProjectProperties.class, "AD_RegenerateButton"));
+        regenerateButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(SharedRubyProjectProperties.class, "AD_RegenerateButton"));
         NotifyDescriptor d = new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
         d.setTitle(title);
         d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
