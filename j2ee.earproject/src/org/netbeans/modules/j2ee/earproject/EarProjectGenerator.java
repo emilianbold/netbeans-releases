@@ -69,6 +69,8 @@ import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
@@ -370,6 +372,14 @@ public final class EarProjectGenerator {
             final String platformName, final FileObject subprojectRoot)
             throws IllegalArgumentException, IOException {
         
+        // #87604 & #143772 - check first whether the module is not already a project
+        Project existingProject = getExistingJ2EEModuleProject(subprojectRoot);
+        if (existingProject != null) {
+            EarProjectProperties.addJ2eeSubprojects(p, new Project[] { existingProject });
+            return existingProject;
+        }
+        
+        // module is not a project
         FileObject javaRoot = getJavaRoot(subprojectRoot);
         File srcFolders[] = getSourceFolders(javaRoot);
         File subProjDir = FileUtil.normalizeFile(
@@ -397,6 +407,17 @@ public final class EarProjectGenerator {
         return subProject;
     }
     
+    // get existing project but only java ee module
+    private Project getExistingJ2EEModuleProject(final FileObject projectDirectory) throws IOException {
+        Project project = ProjectManager.getDefault().findProject(projectDirectory);
+        if (project != null
+                && project.getLookup().lookup(J2eeModuleProvider.class) != null
+                && project.getLookup().lookup(J2eeApplicationProvider.class) == null) {
+            return project;
+        }
+        return null;
+    }
+
     private AntProjectHelper addAppClientModule(final FileObject javaRoot, final FileObject subprojectRoot, final File subProjDir, final String platformName) throws IOException {
         FileObject docBaseFO = FileUtil.createFolder(subprojectRoot, DEFAULT_DOC_BASE_FOLDER);
         File docBase = FileUtil.toFile(docBaseFO);
