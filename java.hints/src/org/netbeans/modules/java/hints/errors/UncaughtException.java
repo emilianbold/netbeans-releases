@@ -299,7 +299,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                         magic = ((BlockTree) tp.getLeaf()).getStatements().size() != 1;
                     }
                     if(magic)
-                        result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, ElementHandle.create(method), fqns));
+                        result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, method != null ? ElementHandle.create(method) : null, fqns));
                 }
             }
         }
