@@ -727,25 +727,9 @@ private void restoreBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             {
                 IPresentationElement element = ((IPresentationElement) ((ObjectScene) w.getScene()).findObject(w));
                 String elementName = element.getFirstSubject().getExpandedElementType();
+                String displayName = element.getFirstSubject().getDisplayElementType();
                 
-                String name = elementName;
-                try
-                {
-                    name = NbBundle.getMessage(ElementCustomizationPanel.class, elementName);
-                }
-                catch(MissingResourceException e)
-                {
-                    // Since the goal of using a resource file is not to allow
-                    // the model element name to be translated (they have
-                    // been marked with NOI18N) but to put space in the element
-                    // names that are really to words.  For example 
-                    // CombinedFragment.  Therefore there will be some that
-                    // are missing.  
-                    //
-                    // So simply use the model elements name.
-                }
-                
-                setText(name);
+                setText(displayName);
                 String imageName = CommonResourceManager.instance().getIconDetailsForElementType(elementName);
                 imageName = imageName.substring(imageName.lastIndexOf("/") + 1);
                 setIcon(ImageUtil.instance().getIcon(imageName));
