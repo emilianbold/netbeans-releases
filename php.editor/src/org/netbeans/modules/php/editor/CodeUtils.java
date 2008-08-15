@@ -147,10 +147,7 @@ public class CodeUtils {
     }
     
     private static String findClassNameEnclosingDeclaration(Program program,
-            IndexedConstant variable) {
-        // this function is only supposed to be called for the currently edited file
-        
-        
+            IndexedConstant variable) {    
         ASTNode node = Utils.getNodeAtOffset(program,
                 variable.getOffset(), ClassDeclaration.class);
 
