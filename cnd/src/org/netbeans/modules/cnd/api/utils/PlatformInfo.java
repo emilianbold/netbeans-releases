@@ -132,7 +132,7 @@ public final class PlatformInfo {
 
         for (String dir : list) {
             buf.append(dir);
-            buf.append(File.pathSeparator);
+            buf.append(pathSeparator());
         }
         return buf.substring(0, buf.length() - 1); // remove the trailing pathSeparator...
     }
@@ -246,8 +246,13 @@ public final class PlatformInfo {
         if (pi == null) {
             int thePlatform = CompilerSetManager.getDefault(hkey).getPlatform();
             pi = new PlatformInfo(hkey, thePlatform);
+            map.put(hkey, pi);
         }
         return pi;
+    }
+
+    public static PlatformInfo localhost() {
+        return getDefault(CompilerSetManager.LOCALHOST);
     }
 
 }
