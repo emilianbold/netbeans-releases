@@ -48,7 +48,6 @@ import java.awt.Window;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -71,13 +70,13 @@ public class ModalMessageDlg extends javax.swing.JPanel {
      * @param message message in dialog
      * @return
      */
-    public static Task runLongTask(Dialog parent, final Runnable workTask, final Runnable postEDTTask, String title, String message) {
-        return runLongTaskImpl(parent, workTask, postEDTTask, title, message);
+    public static void runLongTask(Dialog parent, final Runnable workTask, final Runnable postEDTTask, String title, String message) {
+        runLongTaskImpl(parent, workTask, postEDTTask, title, message);
     }
-    public static Task runLongTask(Frame parent, final Runnable workTask, final Runnable postEDTTask, String title, String message) {
-        return runLongTaskImpl(parent, workTask, postEDTTask, title, message);
+    public static void runLongTask(Frame parent, final Runnable workTask, final Runnable postEDTTask, String title, String message) {
+        runLongTaskImpl(parent, workTask, postEDTTask, title, message);
     }
-    private static Task runLongTaskImpl(Window parent, final Runnable workTask, final Runnable postEDTTask, String title, String message) {
+    private static void runLongTaskImpl(Window parent, final Runnable workTask, final Runnable postEDTTask, String title, String message) {
         final JDialog dialog;
         if (parent instanceof Frame) {
             dialog = new JDialog((Frame)parent, title, true);           
@@ -100,7 +99,7 @@ public class ModalMessageDlg extends javax.swing.JPanel {
 
         dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
         panel.setMessage(message);
-        Task post = RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
                     workTask.run();
@@ -119,7 +118,6 @@ public class ModalMessageDlg extends javax.swing.JPanel {
             }
         });
         dialog.setVisible(true);
-        return post;
     }
     
     /** This method is called from within the constructor to

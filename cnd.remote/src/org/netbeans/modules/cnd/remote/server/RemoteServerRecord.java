@@ -111,28 +111,17 @@ public class RemoteServerRecord implements ServerRecord {
         }
     }
     
-    public void validate(final boolean force) {
-        if (!isOnline()) {
-            if (SwingUtilities.isEventDispatchThread()) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        validateOutOfEDT(force);
-                    }
-                });
-            } else  {
-                validateOutOfEDT(force);
-            }
+    public synchronized void validate(final boolean force) {
+        if (isOnline()) {
+            return;
         }
-    }
-    
-    private void validateOutOfEDT(boolean force) {
         log.fine("RSR.validate2: Validating " + name);
-        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name)); // NOI18N
-        ph.start();
         if (force) {
+            ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name)); // NOI18N
+            ph.start();
             init(null);
+            ph.finish();
         }
-        ph.finish();
         String msg;
         if (isOnline()) {
             msg = NbBundle.getMessage(RemoteServerRecord.class, "Validation_OK", name);// NOI18N
@@ -228,6 +217,6 @@ public class RemoteServerRecord implements ServerRecord {
     }
     
     public String getReason() {
-        return reason;
+        return reason == null ? "" : reason;
     }
 }
