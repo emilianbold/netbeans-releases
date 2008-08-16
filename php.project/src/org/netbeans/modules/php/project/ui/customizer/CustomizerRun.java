@@ -180,40 +180,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         separator = new JSeparator();
         runPanel = new RunAsPanel(insidePanels);
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return configCombo;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return configCombo;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return configDel;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  configCombo){
-                    return configNew;
-                }
-                if(aComponent ==  configNew){
-                    return configDel;
-                }
-                return configCombo;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  configNew){
-                    return configCombo;
-                }
-                if(aComponent ==  configDel){
-                    return configNew;
-                }
-                return configDel;//end getComponentBefore
-
-            }}
-        
-        );
+        setFocusTraversalPolicy(null);
 
         configLabel.setLabelFor(configCombo);
 
@@ -249,7 +216,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     .add(GroupLayout.LEADING, runPanel, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
                     .add(GroupLayout.LEADING, separator, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(configLabel, GroupLayout.PREFERRED_SIZE, 90, GroupLayout.PREFERRED_SIZE)
+                        .add(configLabel)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(configCombo, 0, 142, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.RELATED)
