@@ -107,6 +107,7 @@ public class DesignPatternWidget extends UMLNodeWidget
         ICollaboration c = (ICollaboration) presentation.getFirstSubject();
         setCurrentView(createView(c));
         setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
         getScene().validate();
     }
 

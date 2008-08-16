@@ -147,7 +147,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    record.init(false, pcs);
+                    record.init(pcs);
                     phandle.finish();
                     // back to EDT to work with Swing
                     SwingUtilities.invokeLater(new Runnable() {

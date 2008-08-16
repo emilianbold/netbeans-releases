@@ -41,10 +41,9 @@
 
 package org.netbeans.modules.cnd.makeproject;
 
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
@@ -55,9 +54,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
@@ -114,7 +111,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
@@ -300,43 +296,27 @@ public class MakeActionProvider implements ActionProvider {
             if (res == JOptionPane.YES_OPTION) {
                 // start validation phase
                 final Frame mainWindow = WindowManager.getDefault().getMainWindow();
-                final JDialog dialog = new JDialog(mainWindow, NbBundle.getMessage(ConfigureHostPanel.class, "DLG_TITLE_Configure_Host"), true);
-                final ConfigureHostPanel panel = new ConfigureHostPanel();
-
-                dialog.getContentPane().add(panel);
-                dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
-                dialog.pack();
-
-                Rectangle bounds = mainWindow.getBounds();
-
-                int middleX = bounds.x + bounds.width / 2;
-                int middleY = bounds.y + bounds.height / 2;
-
-                Dimension size = dialog.getPreferredSize();
-
-                dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
-                panel.setHost(record.getName());
-                RequestProcessor.getDefault().post(new Runnable() {
+                Runnable csmWorker = new Runnable() {
                     public void run() {
                         try {
                             record.validate(true);
+                            // initialize compiler sets for remote host if needed
+                            CompilerSetManager csm = CompilerSetManager.getDefault(record.getName());
+                            csm.initialize();
                         } catch(Exception e) {
                             e.printStackTrace();
-                        } finally {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    // hide dialog and run action if successfully connected
-                                    dialog.setVisible(false);
-                                    dialog.dispose();
-                                    if (record.isOnline()) {
-                                        actionWorker.run();
-                                    }
-                                }
-                            });
                         }
-                    }
-                }, 100); // delay to be in time for displaying dialog
-                dialog.setVisible(true);
+                    }                    
+                };
+                Runnable edtWorker = new Runnable() {
+                    public void run() {
+                        if (record.isOnline()) {
+                            actionWorker.run();
+                        }
+                    }                    
+                };
+                String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Configure_Host_Progress", record.getName());
+                ModalMessageDlg.runLongTask(mainWindow, csmWorker, edtWorker, NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Configure_Host"), msg);
             }
         }
     }

@@ -158,7 +158,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
             try {
                 FileObject localWsdlFolder = getJAXWSSupport().getLocalWsdlFolderForService(service.getName(),false);
                 if (localWsdlFolder == null) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING,"missing folder for wsdl file"); // NOI18
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO,"missing folder for wsdl file"); // NOI18
                     updateKeys();
                     return;
                 }

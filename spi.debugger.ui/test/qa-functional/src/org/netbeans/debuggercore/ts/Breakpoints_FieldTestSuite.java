@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,34 +31,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.editor.completion;
+package org.netbeans.debuggercore.ts;
 
-import org.netbeans.junit.NbTestCase;
+import junit.framework.Test;
+import org.netbeans.debuggercore.FieldBreakpointsTest;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author Andrei Badea
+ * @author Peter, Revision Petr Cyhelsky
  */
-public class SQLCompletionQueryUtilsTest extends NbTestCase {
-
-    public SQLCompletionQueryUtilsTest(String name) {
+public class Breakpoints_FieldTestSuite extends JellyTestCase {
+    
+    public Breakpoints_FieldTestSuite(String name) {
         super(name);
     }
-
-    public void testUnquote() {
-        assertEquals("id", SQLCompletionQuery.unquote("id", null));
-        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
-        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
-        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
-        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
-        assertEquals("id", SQLCompletionQuery.unquote("id", "`"));
-        assertNull(SQLCompletionQuery.unquote("``", "`"));
-        assertNull(SQLCompletionQuery.unquote("```", "`"));
+    
+    @Override
+    protected void setUp() throws Exception {
+        System.out.println("### " + getName() + " ###");
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                .addTest(FieldBreakpointsTest.class,
+                    "testFieldBreakpointPrefilledValues",
+                    "testFieldBreakpointCreation",
+                    "testFieldBreakpointFunctionalityAccess",
+                    "testFieldBreakpointFunctionalityModification",
+                    "testConditionalFieldBreakpointFunctionality",
+                    "testFieldBreakpointsValidation"
+                )
+            .enableModules(".*").clusters(".*"));
     }
 }
