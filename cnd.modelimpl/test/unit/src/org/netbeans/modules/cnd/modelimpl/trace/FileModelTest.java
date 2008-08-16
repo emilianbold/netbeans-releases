@@ -429,6 +429,12 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("template_spec_inherited_1.cc"); // NOI18N
     }
     
+    // #144156 Template specialization functions: incorrect navigation between definitions and declarations
+    public void testTemplateFunctionSpecialization() throws Exception {
+        performTest("template_fun_spec.cc"); // NOI18N
+    }
+
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
