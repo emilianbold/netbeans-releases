@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences.Visitor;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -124,7 +125,8 @@ public class SemanticHighlighter extends HighlighterBase {
                 // here we invoke the collectors
                 if (!entities.isEmpty()) {
                     CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
-                        public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
+                        public void visit(CsmReferenceContext context) {
+                            CsmReference ref = context.getReference();
                             for (ReferenceCollector c : collectors) {
                                 c.visit(ref, csmFile);
                             }
