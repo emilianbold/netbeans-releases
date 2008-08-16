@@ -424,6 +424,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("template_inner_class_dtor_definition.cc"); // NOI18N
     }
 
+    // #143611 If a class inherits some template *specialization*, unresolved IDs appear
+    public void testTemplateSpecializationInheritance_1() throws Exception {
+        performTest("template_spec_inherited_1.cc"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -431,10 +436,6 @@ public class FileModelTest extends TraceModelTestBase {
 	
         public Failed(String testName) {
             super(testName);
-        }
-
-        public void testTemplateSpecializationInheritance_1() throws Exception {
-            performTest("template_spec_inherited_1.cc"); // NOI18N
         }
 
 	@Override
