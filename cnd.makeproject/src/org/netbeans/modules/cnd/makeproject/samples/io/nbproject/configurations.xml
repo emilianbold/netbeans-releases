@@ -29,7 +29,6 @@
         <ccCompilerTool>
         </ccCompilerTool>
         <linkerTool>
-          <output>dist/Debug/io</output>
           <linkerLibItems>
           </linkerLibItems>
         </linkerTool>
@@ -49,7 +48,6 @@
           <developmentMode>5</developmentMode>
         </ccCompilerTool>
         <linkerTool>
-          <output>dist/Release/io</output>
           <linkerLibItems>
           </linkerLibItems>
         </linkerTool>
