@@ -68,8 +68,8 @@ import org.openide.nodes.Node;
 public class DebugTreeView extends BeanTreeView {
 
     private int thickness = 0;
-    private Color highlightColor = new Color(233, 239, 248); // new Color(234, 234, 250);
-    private Color currentThreadColor = new Color(233, 255, 230); // new Color(234, 234, 250);
+    private Color highlightColor = new Color(233, 239, 248);
+    private Color currentThreadColor = new Color(233, 255, 230);
     private Color whiteColor = javax.swing.UIManager.getDefaults().getColor("Tree.background"); // NOI18N
     
     private JPDAThread focusedThread;

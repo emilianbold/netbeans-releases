@@ -97,6 +97,7 @@ public class SignalNodeWidget extends ActivityNodeWidget
             enableStereoTypeWidget(element);
 
             Widget editorPanel = new Widget(scene);
+            editorPanel.setForeground(null);
             editorPanel.setLayout(
                     LayoutFactory.createHorizontalFlowLayout(
                     LayoutFactory.SerialAlignment.JUSTIFY, 0));

@@ -40,7 +40,7 @@ public class NonASCIIQuoterTest extends NbTestCase {
         super(name);
     }
 
-    public void testBasic() {
+    public void testQuoteIfNeeded() {
         Quoter quoter = new NonASCIIQuoter("\"");
 
         assertEquals("foo", quoter.quoteIfNeeded("foo"));
@@ -50,5 +50,12 @@ public class NonASCIIQuoterTest extends NbTestCase {
         assertEquals("\"foo bar\"", quoter.quoteIfNeeded("foo bar"));
 
         assertEquals("\"foo bar\"", quoter.quoteIfNeeded("\"foo bar\""));
+    }
+
+    public void testQuoteAlways() {
+        Quoter quoter = new NonASCIIQuoter("\"");
+
+        assertEquals("\"foo\"", quoter.quoteAlways("foo"));
+        assertEquals("\"foo bar\"", quoter.quoteAlways("\"foo bar\""));
     }
 }

@@ -89,7 +89,9 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
             return null;
         }
 
-        boolean supportedFile = sourceFO != null && (RefactoringUtil.isJavaFile(sourceFO) || Utils.isGroovyFile(sourceFO));
+        boolean supportedFile = sourceFO != null && Utils.isInGroovyProject(sourceFO) &&
+                (RefactoringUtil.isJavaFile(sourceFO) || Utils.isGroovyFile(sourceFO));
+
 
         String clazz = null;
         if (handle != null) {

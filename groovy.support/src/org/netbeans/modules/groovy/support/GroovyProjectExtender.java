@@ -59,6 +59,7 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.groovy.support.customizer.GroovyCustomizerPanel;
+import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -75,7 +76,7 @@ import org.openide.util.MutexException;
  * 
  * @author Martin Adamek
  */
-public class GroovyProjectExtender {
+public class GroovyProjectExtender implements GroovyFeature {
 
     private static final String EXTENSIBLE_TARGET_NAME = "-pre-pre-compile"; // NOI18N
     private static final String GROOVY_EXTENSION_ID = "groovy"; // NOI18N

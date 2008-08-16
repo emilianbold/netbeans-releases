@@ -12,14 +12,14 @@ Includes:
 "resolver_typedef_string.h" [1:1/0-1:37/36]
 Macros:
     <no macros>
-FUNCTION DEFINITION write  [3:1/38-8:2/133] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE write(string)
-    UNIQUE NAME f:write(string)
-    DECLARATION: write  [32:1/587-32:36/622]
+FUNCTION DEFINITION wrt_2  [3:1/38-8:2/133] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE wrt_2(string)
+    UNIQUE NAME f:wrt_2(string)
+    DECLARATION: wrt_2  [32:1/587-32:36/622]
     PARAMETERS:
-        str [3:22/59-3:32/69]  TYPE: std_2::string TEXT=string  [3:22/59-3:28/65]  INIT: null  SCOPE: write 
+        str [3:22/59-3:32/69]  TYPE: std_2::string TEXT=string  [3:22/59-3:28/65]  INIT: null  SCOPE: wrt_2 
     RETURNS std_2::wstring TEXT=std_2::wstring  [3:1/38-3:15/52]
-    STATEMENT COMPOUND  [4:1/71-8:2/133] SCOPE: write 
+    STATEMENT COMPOUND  [4:1/71-8:2/133] SCOPE: wrt_2 
         STATEMENT DECLARATION  [5:5/77-5:25/97] SCOPE: Stmt  [4:1/71-8:2/133]
             USING DECL. std_2::wstring  [5:5/77-5:25/97]; REF DECL: std_2::wstring  [27:5/523-27:43/561] SCOPE: null
         STATEMENT DECLARATION  [6:5/103-6:17/115] SCOPE: Stmt  [4:1/71-8:2/133]
@@ -48,26 +48,26 @@ NAMESPACE DEFINITOIN resolver_typedef_string [10:1/135-20:2/325] SCOPE: resolver
             STATEMENT RETURN  [18:9/306-18:20/317] SCOPE: Stmt  [16:34/275-19:6/323] text: 'return str;'
 
 ========== Dumping model of PROJECT DummyProject
-FUNCTION DEFINITION write  [3:1/38-8:2/133] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE write(string)
-    UNIQUE NAME f:write(string)
-    DECLARATION: write  [32:1/587-32:36/622]
+FUNCTION DEFINITION wrt_2  [3:1/38-8:2/133] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE wrt_2(string)
+    UNIQUE NAME f:wrt_2(string)
+    DECLARATION: wrt_2  [32:1/587-32:36/622]
     PARAMETERS:
-        str [3:22/59-3:32/69]  TYPE: std_2::string TEXT=string  [3:22/59-3:28/65]  INIT: null  SCOPE: write 
+        str [3:22/59-3:32/69]  TYPE: std_2::string TEXT=string  [3:22/59-3:28/65]  INIT: null  SCOPE: wrt_2 
     RETURNS std_2::wstring TEXT=std_2::wstring  [3:1/38-3:15/52]
-    STATEMENT COMPOUND  [4:1/71-8:2/133] SCOPE: write 
+    STATEMENT COMPOUND  [4:1/71-8:2/133] SCOPE: wrt_2 
         STATEMENT DECLARATION  [5:5/77-5:25/97] SCOPE: Stmt  [4:1/71-8:2/133]
             USING DECL. std_2::wstring  [5:5/77-5:25/97]; REF DECL: std_2::wstring  [27:5/523-27:43/561] SCOPE: null
         STATEMENT DECLARATION  [6:5/103-6:17/115] SCOPE: Stmt  [4:1/71-8:2/133]
             VARIABLE out [6:5/103-6:17/115]  TYPE: std_2::wstring TEXT=wstring  [6:5/103-6:12/110]  INIT: null  SCOPE: Stmt  [4:1/71-8:2/133]
         STATEMENT RETURN  [7:5/120-7:16/131] SCOPE: Stmt  [4:1/71-8:2/133] text: 'return out;'
 USING DECL. std_2::string  [30:1/565-30:20/584]; REF DECL: std_2::string  [23:5/456-23:46/497] SCOPE: $Global$ 
-FUNCTION write [32:1/587-32:36/622] FunctionImpl SCOPE: $Global$ 
-    DEFINITION: write  [3:1/38-8:2/133]
-    SIGNATURE write(string)
-    UNIQUE NAME F:write(string)
+FUNCTION wrt_2 [32:1/587-32:36/622] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: wrt_2  [3:1/38-8:2/133]
+    SIGNATURE wrt_2(string)
+    UNIQUE NAME F:wrt_2(string)
     PARAMETERS:
-        str [32:24/610-32:34/620]  TYPE: std_2::string TEXT=string  [32:24/610-32:30/616]  INIT: null  SCOPE: write 
+        str [32:24/610-32:34/620]  TYPE: std_2::string TEXT=string  [32:24/610-32:30/616]  INIT: null  SCOPE: wrt_2 
     RETURNS std_2::wstring TEXT=std_2::wstring  [32:1/587-32:17/603]
 NAMESPACE DEFINITIONS for resolver_typedef_string (resolver_typedef_string) 
     resolver_typedef_string.cc  [10:1/135-20:2/325]

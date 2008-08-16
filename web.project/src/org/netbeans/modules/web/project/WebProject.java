@@ -946,8 +946,7 @@ public final class WebProject implements Project, AntProjectListener {
             
             //add persistence.xml.dir introduced in 6.5 - see issue 143884 and 142164
             if (props.getProperty(WebProjectProperties.PERSISTENCE_XML_DIR) == null) {
-                String confDir = props.getProperty(WebProjectProperties.CONF_DIR);
-                props.setProperty(WebProjectProperties.PERSISTENCE_XML_DIR, confDir);
+                props.setProperty(WebProjectProperties.PERSISTENCE_XML_DIR, "${" + WebProjectProperties.CONF_DIR + "}");
             }
 
             updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

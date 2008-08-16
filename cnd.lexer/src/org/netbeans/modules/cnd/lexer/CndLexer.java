@@ -395,6 +395,9 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                                             return token(CppTokenId.FLOAT_LITERAL_INVALID);
                                         }
                                         break;
+                                    case 'l':
+                                    case 'L': // 0x1234l or 0x1234L
+                                        return token(CppTokenId.LONG_LITERAL);
                                     case 'p':
                                     case 'P': // binary exponent
                                         return finishFloatExponent();

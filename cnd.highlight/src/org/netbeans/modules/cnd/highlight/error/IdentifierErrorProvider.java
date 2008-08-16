@@ -39,17 +39,11 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmTypedef;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo.Severity;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.openide.util.NbBundle;
@@ -84,13 +78,14 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
             this.response = response;
         }
 
-        public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
+        public void visit(CsmReferenceContext context) {
+            CsmReference ref = context.getReference();
             if (ref.getReferencedObject() == null) {
-                Severity severity = Severity.ERROR;
-                if (CsmFileReferences.isTemplateBased(ref, prev, parent) ||
-                        CsmFileReferences.isMacroBased(ref, prev, parent)) {
-                    severity = Severity.WARNING;
+                if (CsmFileReferences.isMacroBased(context)) {
+                    return;
                 }
+                Severity severity = CsmFileReferences.isTemplateBased(context)?
+                    Severity.WARNING : Severity.ERROR;
                 response.addError(new IdentifierErrorInfo(
                         ref.getStartOffset(), ref.getEndOffset(),
                         ref.getText().toString(), severity));

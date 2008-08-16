@@ -27,7 +27,6 @@
     <conf name="Debug" type="2">
       <compileType>
         <linkerTool>
-          <output>dist/Debug/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X</output>
           <linkerLibItems>
           </linkerLibItems>
         </linkerTool>
@@ -51,7 +50,6 @@
           <developmentMode>5</developmentMode>
         </fortranCompilerTool>
         <linkerTool>
-          <output>dist/Release/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X</output>
           <linkerLibItems>
           </linkerLibItems>
         </linkerTool>

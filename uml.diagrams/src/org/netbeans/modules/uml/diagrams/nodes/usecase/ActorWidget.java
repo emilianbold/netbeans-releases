@@ -102,6 +102,7 @@ public class ActorWidget extends UMLNodeWidget
                 setFont(getCurrentView().getFont());
             }
         }
+        super.initializeNode(element);
     }
 
     private Widget initActorWidget(IActor actor)

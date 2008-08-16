@@ -54,9 +54,10 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.jws.WebParam.Mode;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -97,6 +98,7 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -460,122 +462,136 @@ public class Utils {
     }
     
     private static void setSoapRequest(MethodModel methodModel, String tns) {
-        
+        MessageFactory messageFactory = null;
         try {
             // create a sample SOAP request using SAAJ API
-            MessageFactory messageFactory = MessageFactory.newInstance();
-            
-            SOAPMessage request = messageFactory.createMessage();
-            MimeHeaders headers = request.getMimeHeaders();
-            String action = methodModel.getAction();
-            headers.addHeader("SOAPAction", action==null? "\"\"":action); //NOI18N
-            SOAPPart part = request.getSOAPPart();
-            SOAPEnvelope envelope = part.getEnvelope();
-            String prefix = envelope.getPrefix();
-            if (!"soap".equals(prefix)) { //NOI18N
-                envelope.removeAttribute("xmlns:"+prefix); // NOI18N
-                envelope.setPrefix("soap"); //NOI18N
-            }
-            SOAPBody body = envelope.getBody();
-            body.setPrefix("soap"); //NOI18N
-            
-            // removing soap header
-            SOAPHeader header = envelope.getHeader();
-            envelope.removeChild(header);
-            
-            // implementing body
-            Name methodName = envelope.createName(methodModel.getOperationName());
-            SOAPElement methodElement = body.addBodyElement(methodName);
-            methodElement.setPrefix("ns0"); //NOI18N
-            methodElement.addNamespaceDeclaration("ns0",tns); //NOI18N
-            
-            // params
-            List<ParamModel> params = methodModel.getParams();
-            int i=0;
-            for (ParamModel param:params) {
-                String paramNs = param.getTargetNamespace();
-                Name paramName = null;
-                if (paramNs!=null && paramNs.length()>0) {
-                    String pref = "ns"+String.valueOf(++i); //NOI18N
-                    paramName = envelope.createName(param.getName(), pref, paramNs);
-                    methodElement.addNamespaceDeclaration(pref,paramNs);
-                } else {
-                    paramName = envelope.createName(param.getName());
-                }
-                
-                SOAPElement paramElement = methodElement.addChildElement(paramName);
-                
-                String paramType = param.getParamType();
-                if ("javax.xml.namespace.QName".equals(paramType)) {
-                    paramElement.addNamespaceDeclaration("sampleNs", "http://www.netbeans.org/sampleNamespace");
-                    paramElement.addTextNode("sampleNs:sampleQName");
-                } else {
-                    paramElement.addTextNode(getSampleValue(paramType));
-                }
-            }
-            
-            methodModel.setSoapRequest(request);
-            
+            messageFactory = MessageFactory.newInstance();
         } catch (SOAPException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Utils.class.getName()).log(Level.WARNING, 
+                    NbBundle.getMessage(Utils.class, "MSG_SAAJ_PROBLEM"), //NOI18N
+                    ex);
+        }
+        if (messageFactory != null) {
+            try {
+                SOAPMessage request = messageFactory.createMessage();
+                MimeHeaders headers = request.getMimeHeaders();
+                String action = methodModel.getAction();
+                headers.addHeader("SOAPAction", action==null? "\"\"":action); //NOI18N
+                SOAPPart part = request.getSOAPPart();
+                SOAPEnvelope envelope = part.getEnvelope();
+                String prefix = envelope.getPrefix();
+                if (!"soap".equals(prefix)) { //NOI18N
+                    envelope.removeAttribute("xmlns:"+prefix); // NOI18N
+                    envelope.setPrefix("soap"); //NOI18N
+                }
+                SOAPBody body = envelope.getBody();
+                body.setPrefix("soap"); //NOI18N
+
+                // removing soap header
+                SOAPHeader header = envelope.getHeader();
+                envelope.removeChild(header);
+
+                // implementing body
+                Name methodName = envelope.createName(methodModel.getOperationName());
+                SOAPElement methodElement = body.addBodyElement(methodName);
+                methodElement.setPrefix("ns0"); //NOI18N
+                methodElement.addNamespaceDeclaration("ns0",tns); //NOI18N
+
+                // params
+                List<ParamModel> params = methodModel.getParams();
+                int i=0;
+                for (ParamModel param:params) {
+                    String paramNs = param.getTargetNamespace();
+                    Name paramName = null;
+                    if (paramNs!=null && paramNs.length()>0) {
+                        String pref = "ns"+String.valueOf(++i); //NOI18N
+                        paramName = envelope.createName(param.getName(), pref, paramNs);
+                        methodElement.addNamespaceDeclaration(pref,paramNs);
+                    } else {
+                        paramName = envelope.createName(param.getName());
+                    }
+
+                    SOAPElement paramElement = methodElement.addChildElement(paramName);
+
+                    String paramType = param.getParamType();
+                    if ("javax.xml.namespace.QName".equals(paramType)) {
+                        paramElement.addNamespaceDeclaration("sampleNs", "http://www.netbeans.org/sampleNamespace");
+                        paramElement.addTextNode("sampleNs:sampleQName");
+                    } else {
+                        paramElement.addTextNode(getSampleValue(paramType));
+                    }
+                }
+
+                methodModel.setSoapRequest(request);
+
+            } catch (SOAPException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         }
     }
     
     private static void setSoapResponse(MethodModel methodModel, String tns) {
         if (methodModel.isOneWay()) return;
-        
+        MessageFactory messageFactory = null;
         try {
             // create a sample SOAP request using SAAJ API
-            MessageFactory messageFactory = MessageFactory.newInstance();
-            
-            SOAPMessage response = messageFactory.createMessage();
-            SOAPPart part = response.getSOAPPart();
-            SOAPEnvelope envelope = part.getEnvelope();
-            String prefix = envelope.getPrefix();
-            if (!"soap".equals(prefix)) { //NOI18N
-                envelope.removeAttribute("xmlns:"+prefix); // NOI18N
-                envelope.setPrefix("soap"); //NOI18N
-            }
-            SOAPBody body = envelope.getBody();
-            body.setPrefix("soap"); //NOI18N
-            
-            // removing soap header
-            SOAPHeader header = envelope.getHeader();
-            envelope.removeChild(header);
-            
-            // implementing body
-            Name responseName = envelope.createName(methodModel.getOperationName()+"Response"); //NOI18N
-            SOAPElement responseElement = body.addBodyElement(responseName);
-            responseElement.setPrefix("ns0"); //NOI18N
-            responseElement.addNamespaceDeclaration("ns0",tns); //NOI18N
-            
-            // return
-            
-            ResultModel resultModel = methodModel.getResult();
-            String resultNs = resultModel.getTargetNamespace();
-            
-            Name resultName = null;
-            if (resultNs!=null && resultNs.length()>0) {
-                responseElement.addNamespaceDeclaration("ns1",resultNs); //NOI18N
-                resultName = envelope.createName(resultModel.getName(), "ns1", resultNs); //NOI18N
-            } else {
-                resultName = envelope.createName(resultModel.getName()); //NOI18N
-            }
-            
-            String resultType = resultModel.getResultType();
-            if ("javax.xml.namespace.QName".equals(resultType)) {
-                SOAPElement resultElement = responseElement.addChildElement(resultName);
-                resultElement.addNamespaceDeclaration("sampleNs", "http://www.netbeans.org/sampleNamespace");
-                resultElement.addTextNode("sampleNs:sampleQName");
-            } else if (!"void".equals(resultType)) { //NOI18N
-                SOAPElement resultElement = responseElement.addChildElement(resultName);
-                resultElement.addTextNode(getSampleValue(resultType));
-            }
-            
-            methodModel.setSoapResponse(response);
-            
+            messageFactory = MessageFactory.newInstance();
         } catch (SOAPException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Utils.class.getName()).log(Level.WARNING, 
+                    NbBundle.getMessage(Utils.class, "MSG_SAAJ_PROBLEM"), //NOI18N
+                    ex);
+        }
+        if (messageFactory != null) {
+            try {
+                SOAPMessage response = messageFactory.createMessage();
+                SOAPPart part = response.getSOAPPart();
+                SOAPEnvelope envelope = part.getEnvelope();
+                String prefix = envelope.getPrefix();
+                if (!"soap".equals(prefix)) { //NOI18N
+                    envelope.removeAttribute("xmlns:"+prefix); // NOI18N
+                    envelope.setPrefix("soap"); //NOI18N
+                }
+                SOAPBody body = envelope.getBody();
+                body.setPrefix("soap"); //NOI18N
+
+                // removing soap header
+                SOAPHeader header = envelope.getHeader();
+                envelope.removeChild(header);
+
+                // implementing body
+                Name responseName = envelope.createName(methodModel.getOperationName()+"Response"); //NOI18N
+                SOAPElement responseElement = body.addBodyElement(responseName);
+                responseElement.setPrefix("ns0"); //NOI18N
+                responseElement.addNamespaceDeclaration("ns0",tns); //NOI18N
+
+                // return
+
+                ResultModel resultModel = methodModel.getResult();
+                String resultNs = resultModel.getTargetNamespace();
+
+                Name resultName = null;
+                if (resultNs!=null && resultNs.length()>0) {
+                    responseElement.addNamespaceDeclaration("ns1",resultNs); //NOI18N
+                    resultName = envelope.createName(resultModel.getName(), "ns1", resultNs); //NOI18N
+                } else {
+                    resultName = envelope.createName(resultModel.getName()); //NOI18N
+                }
+
+                String resultType = resultModel.getResultType();
+                if ("javax.xml.namespace.QName".equals(resultType)) {
+                    SOAPElement resultElement = responseElement.addChildElement(resultName);
+                    resultElement.addNamespaceDeclaration("sampleNs", "http://www.netbeans.org/sampleNamespace");
+                    resultElement.addTextNode("sampleNs:sampleQName");
+                } else if (!"void".equals(resultType)) { //NOI18N
+                    SOAPElement resultElement = responseElement.addChildElement(resultName);
+                    resultElement.addTextNode(getSampleValue(resultType));
+                }
+
+                methodModel.setSoapResponse(response);
+
+            } catch (SOAPException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         }
     }
     

@@ -142,6 +142,7 @@ public class ImageItemCD extends ComponentDescriptor {
                 new ImageFileAcceptPresenter(ImageItemCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "gif", "png"), //NOI18N
                 new MidpAcceptProducerKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
                 new MidpAcceptTrensferableKindPresenter().addType(ImageCD.TYPEID, PROP_IMAGE),
+                DatabindingItemAcceptPresenter.create(PROP_IMAGE, ItemCD.PROP_LABEL),
                 // screen
                 new ImageItemDisplayPresenter(),
                 new ImageItemInjectorPresenter ()

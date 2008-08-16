@@ -261,9 +261,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.uml.project</friend>
                 <friend>org.netbeans.modules.uml.propertysupport</friend>
                 <friend>org.netbeans.modules.uml.reporting</friend>
-                <friend>org.netbeans.modules.uml.requirements</friend>
-                <friend>org.netbeans.modules.uml.requirements.doorsprovider</friend>
-                <friend>org.netbeans.modules.uml.requirements.xmlrequirements</friend>
                 <friend>org.netbeans.modules.uml.samples</friend>
                 <package>org.netbeans.modules.uml</package>
                 <package>org.netbeans.modules.uml.common</package>

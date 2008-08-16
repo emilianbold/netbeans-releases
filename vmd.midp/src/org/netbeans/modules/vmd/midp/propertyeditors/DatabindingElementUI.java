@@ -630,7 +630,6 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                         saveCommands(document, connector, selectedPreviousCommand,DataSetConnectorCD.PROP_PREVIOUS_COMMAND);
                         MidpDatabindingSupport.removerUnusedIndexes(document);
                         component.resetToDefault(propertyEditor.getPropertyNames().get(0));
-                        component.readProperty(propertyEditor.getPropertyNames().get(0));
                         break;
                     }
                 }

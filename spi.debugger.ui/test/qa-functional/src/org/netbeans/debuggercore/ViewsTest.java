@@ -44,7 +44,6 @@
 package org.netbeans.debuggercore;
 
 import java.awt.event.KeyEvent;
-import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
@@ -58,9 +57,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 
 
 public class ViewsTest extends JellyTestCase {

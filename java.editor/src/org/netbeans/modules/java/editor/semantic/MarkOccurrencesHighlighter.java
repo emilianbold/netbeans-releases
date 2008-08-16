@@ -46,6 +46,7 @@ import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -361,7 +362,12 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         //variable declaration:
         if (!insideJavadoc) {
             if (tp.getParentPath() != null && tp.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
-                el = info.getTrees().getElement(tp.getParentPath());
+                TreePath c = new TreePath(tp.getParentPath(), ((NewClassTree) tp.getParentPath().getLeaf()).getIdentifier());
+                if (isIn(caretPosition, Utilities.findIdentifierSpan(info, doc, c))) {
+                    el = info.getTrees().getElement(tp.getParentPath());
+                } else {
+                    el = info.getTrees().getElement(tp);
+                }
             } else {
                 el = info.getTrees().getElement(tp);
             }

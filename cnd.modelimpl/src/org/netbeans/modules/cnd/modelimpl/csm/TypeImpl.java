@@ -209,7 +209,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     }
 
     public String getCanonicalText() {
-	return decorateText(getClassifierText(), this, true, null).toString();
+        CharSequence text = getClassifierText();
+        if (isInstantiationOrSpecialization()) {
+            text = text.toString() + getInstantiationText(this);
+        }
+	return decorateText(text, this, true, null).toString();
     }
 
     // package

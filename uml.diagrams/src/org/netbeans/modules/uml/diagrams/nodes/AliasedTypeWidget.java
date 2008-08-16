@@ -96,6 +96,7 @@ public class AliasedTypeWidget extends UMLNodeWidget implements PropertyChangeLi
         setOpaque(true);
         ResourceValue.initResources(getResourcePath(), this);
         setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
     }
 
     public Widget createDataTypeView(IDataType type)
