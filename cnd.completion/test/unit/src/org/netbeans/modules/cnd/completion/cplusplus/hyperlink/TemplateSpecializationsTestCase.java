@@ -49,6 +49,12 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ143611_using_inherited_spec_field() throws Exception {
+        performTest("iz143611_inherited_spec_field.cc", 21, 15, "iz143611_inherited_spec_field.cc", 7, 5); // param_t
+        performTest("iz143611_inherited_spec_field.cc", 26, 15, "iz143611_inherited_spec_field.cc", 11, 5); // param_int
+        performTest("iz143611_inherited_spec_field.cc", 31, 15, "iz143611_inherited_spec_field.cc", 15, 5); // param_char_int
+    }
+    
     public void testIZ144156_func_partial_spec_pointer() throws Exception {
         performTest("template_fun_spec.cc", 12, 33, "template_fun_spec.cc", 40, 1); // partial spec. for T*
         performTest("template_fun_spec.cc", 40, 33, "template_fun_spec.cc", 12, 1); // and back
