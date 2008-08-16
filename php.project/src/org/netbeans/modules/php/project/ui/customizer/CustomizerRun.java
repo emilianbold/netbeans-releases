@@ -271,7 +271,13 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
             String name = d.getInputText();
-        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+            if (name.trim().length() == 0) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(CustomizerRun.class, "MSG_ConfigurationNameBlank"),
+                        NotifyDescriptor.WARNING_MESSAGE));
+                return;
+            }
+            String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
 
             if (manager.exists(config)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
