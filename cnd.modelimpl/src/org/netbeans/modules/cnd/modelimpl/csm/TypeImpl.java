@@ -108,6 +108,26 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         this.arrayDepth = (byte) arrayDepth;
         this._const = _const;
     }
+    
+    // package-local
+    TypeImpl(CsmType type) {
+        super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
+
+        this.pointerDepth = (byte) type.getPointerDepth();
+        this.reference = type.isReference();
+        this.arrayDepth = (byte) type.getArrayDepth();
+        this._const = type.isConst();
+
+        if (type instanceof TypeImpl) {
+            TypeImpl ti = (TypeImpl) type;
+            this.classifierUID = ti.classifierUID;
+            this.qname = ti.qname;
+            this.classifierText = ti.classifierText;
+            if (!ti.instantiationParams.isEmpty()) {
+                this.instantiationParams.addAll(ti.instantiationParams);
+            }
+        }
+    }    
 
      /*TypeImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
         this(null, pointerDepth, reference, arrayDepth, ast, file, null);
