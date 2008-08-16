@@ -42,51 +42,44 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
 
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
+
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
-/**
- * @author Pavel Buzek
- */
-final class PersistenceClientSetupPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel, ChangeListener {
-    
+final class JSFConfigurationWizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+
+    private ExtenderController controller = ExtenderController.create();
     private WizardDescriptor wizardDescriptor;
-    private PersistenceClientSetupPanelVisual component;
-    private boolean finishPanel = true;
+    private JSFConfigurationWizardPanelVisual component;
+    private WebModuleExtender wme;
     
-    private Project project;
     /** Create the wizard panel descriptor. */
-    public PersistenceClientSetupPanel(Project project, WizardDescriptor wizardDescriptor) {
-        this.project = project;
-        this.wizardDescriptor = wizardDescriptor;
+    public JSFConfigurationWizardPanel(WebModuleExtender wme) {
+        this.wme = wme;
     }
     
     public boolean isFinishPanel() {
-        return finishPanel;
-    }
-    
-    public void setFinishPanel(boolean finishPanel) {
-        this.finishPanel = finishPanel;
+        return true;
     }
 
     public Component getComponent() {
         if (component == null) {
-            component = new PersistenceClientSetupPanelVisual(wizardDescriptor);
-            component.addChangeListener(this);
+            component = new JSFConfigurationWizardPanelVisual(this, controller, wme);
         }
         return component;
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx("framework_jsf_fromentity"); // NOI18N
+        HelpCtx helpCtx = null;
+        if (component != null && (helpCtx = component.getHelpCtx())!=null)
+            return helpCtx;
+        return new HelpCtx(JSFConfigurationWizardPanel.class);
     }
     
     public boolean isValid() {
@@ -94,27 +87,16 @@ final class PersistenceClientSetupPanel implements WizardDescriptor.Panel, Wizar
         return component.valid(wizardDescriptor);
     }
     
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
-    protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
-        }
+    protected void fireChangeEvent() {
+        changeSupport.fireChange();
     }
     
     public void readSettings(Object settings) {
@@ -131,21 +113,6 @@ final class PersistenceClientSetupPanel implements WizardDescriptor.Panel, Wizar
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
-
         ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
-    }
-
-    protected final void fireChangeEvent(ChangeEvent ev) {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
-        }
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
-        }
-    }
-    
-    public void stateChanged(ChangeEvent e) {
-        fireChangeEvent(e);
     }
 }
