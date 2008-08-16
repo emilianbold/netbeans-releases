@@ -33,7 +33,7 @@ namespace std_1 {
 
 using std_1::string;
 
-std_1 :: wstring write(string str);
+std_1 :: wstring wrt_1(string str);
 
 
 namespace resolver_class_string {

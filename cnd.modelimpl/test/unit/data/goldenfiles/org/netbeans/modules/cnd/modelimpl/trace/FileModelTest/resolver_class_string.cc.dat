@@ -12,14 +12,14 @@ Includes:
 "resolver_class_string.h" [1:1/0-1:35/34]
 Macros:
     <no macros>
-FUNCTION DEFINITION write  [3:1/36-8:2/131] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE write(string)
-    UNIQUE NAME f:write(string)
-    DECLARATION: write  [36:1/633-36:36/668]
+FUNCTION DEFINITION wrt_1  [3:1/36-8:2/131] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE wrt_1(string)
+    UNIQUE NAME f:wrt_1(string)
+    DECLARATION: wrt_1  [36:1/633-36:36/668]
     PARAMETERS:
-        str [3:22/57-3:32/67]  TYPE: std_1::string TEXT=string  [3:22/57-3:28/63]  INIT: null  SCOPE: write 
+        str [3:22/57-3:32/67]  TYPE: std_1::string TEXT=string  [3:22/57-3:28/63]  INIT: null  SCOPE: wrt_1 
     RETURNS std_1::wstring TEXT=std_1::wstring  [3:1/36-3:15/50]
-    STATEMENT COMPOUND  [4:1/69-8:2/131] SCOPE: write 
+    STATEMENT COMPOUND  [4:1/69-8:2/131] SCOPE: wrt_1 
         STATEMENT DECLARATION  [5:5/75-5:25/95] SCOPE: Stmt  [4:1/69-8:2/131]
             USING DECL. std_1::wstring  [5:5/75-5:25/95]; REF DECL: std_1::wstring  [29:5/542-31:7/607] SCOPE: null
         STATEMENT DECLARATION  [6:5/101-6:17/113] SCOPE: Stmt  [4:1/69-8:2/131]
@@ -49,14 +49,14 @@ FUNCTION DEFINITION read  [20:1/260-23:2/329] FunctionDefinitionImpl SCOPE: reso
         STATEMENT RETURN  [22:5/316-22:16/327] SCOPE: Stmt  [20:30/289-23:2/329] text: 'return str;'
 
 ========== Dumping model of PROJECT DummyProject
-FUNCTION DEFINITION write  [3:1/36-8:2/131] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE write(string)
-    UNIQUE NAME f:write(string)
-    DECLARATION: write  [36:1/633-36:36/668]
+FUNCTION DEFINITION wrt_1  [3:1/36-8:2/131] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE wrt_1(string)
+    UNIQUE NAME f:wrt_1(string)
+    DECLARATION: wrt_1  [36:1/633-36:36/668]
     PARAMETERS:
-        str [3:22/57-3:32/67]  TYPE: std_1::string TEXT=string  [3:22/57-3:28/63]  INIT: null  SCOPE: write 
+        str [3:22/57-3:32/67]  TYPE: std_1::string TEXT=string  [3:22/57-3:28/63]  INIT: null  SCOPE: wrt_1 
     RETURNS std_1::wstring TEXT=std_1::wstring  [3:1/36-3:15/50]
-    STATEMENT COMPOUND  [4:1/69-8:2/131] SCOPE: write 
+    STATEMENT COMPOUND  [4:1/69-8:2/131] SCOPE: wrt_1 
         STATEMENT DECLARATION  [5:5/75-5:25/95] SCOPE: Stmt  [4:1/69-8:2/131]
             USING DECL. std_1::wstring  [5:5/75-5:25/95]; REF DECL: std_1::wstring  [29:5/542-31:7/607] SCOPE: null
         STATEMENT DECLARATION  [6:5/101-6:17/113] SCOPE: Stmt  [4:1/69-8:2/131]
@@ -64,12 +64,12 @@ FUNCTION DEFINITION write  [3:1/36-8:2/131] FunctionDDImpl SCOPE: $Global$
         STATEMENT RETURN  [7:5/118-7:16/129] SCOPE: Stmt  [4:1/69-8:2/131] text: 'return out;'
 USING DECL. std_1::wstring  [18:1/237-18:21/257]; REF DECL: null  SCOPE: $Global$ 
 USING DECL. std_1::string  [34:1/611-34:20/630]; REF DECL: std_1::string  [23:5/451-25:7/516] SCOPE: $Global$ 
-FUNCTION write [36:1/633-36:36/668] FunctionImpl SCOPE: $Global$ 
-    DEFINITION: write  [3:1/36-8:2/131]
-    SIGNATURE write(string)
-    UNIQUE NAME F:write(string)
+FUNCTION wrt_1 [36:1/633-36:36/668] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: wrt_1  [3:1/36-8:2/131]
+    SIGNATURE wrt_1(string)
+    UNIQUE NAME F:wrt_1(string)
     PARAMETERS:
-        str [36:24/656-36:34/666]  TYPE: std_1::string TEXT=string  [36:24/656-36:30/662]  INIT: null  SCOPE: write 
+        str [36:24/656-36:34/666]  TYPE: std_1::string TEXT=string  [36:24/656-36:30/662]  INIT: null  SCOPE: wrt_1 
     RETURNS std_1::wstring TEXT=std_1::wstring  [36:1/633-36:17/649]
 USING DECL. resolver_class_string::ClassA  [48:1/808-48:36/843]; REF DECL: resolver_class_string::ClassA  [42:3/749-45:5/804] SCOPE: $Global$ 
 NAMESPACE DEFINITIONS for resolver_class_string (resolver_class_string) 
