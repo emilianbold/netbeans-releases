@@ -1147,10 +1147,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         StringBuffer poolName = new StringBuffer(vendorName);
         String dbName = getDatabaseName(urlData);
         if (dbName != null) {
-            poolName.append("_" + dbName); //$NON-NLS-1$
+            poolName.append("_" + dbName); //NOI18N
         }
         if (username != null) {
-            poolName.append("_" + username); //$NON-NLS-1$
+            poolName.append("_" + username); //NOI18N
         }
         poolName.append(WizardConstants.__ConnPoolSuffix); 
         return poolName.toString(); 
