@@ -39,39 +39,31 @@
 
 package org.netbeans.modules.projectimport.eclipse.gui;
 
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.junit.NbTestSuite;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
 public class ImporterWizard  extends JellyTestCase {
-    private static String menuString = "File"+"|"+"Import Project"+"|"+org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_MenuItem");
+    private static final String menuPath = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File");
+    private static final String importMenuPath = Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.resources.Bundle","Menu/File/Import");
+    private static String menuRootString = menuPath+"|"+importMenuPath+"|";    
+    private static String menuString = menuRootString+Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_MenuItem");
     public ImporterWizard(String testName) {
         super(testName);
-        
     }
-    public static NbTestSuite suite() {
-	NbTestSuite suite = new NbTestSuite();
-	suite.addTest(new ImporterWizard("testImporterWizard"));
-	return suite;
-    }
-    /** Setup before every test case. */
+
     @Override
     public void setUp() {
-	System.out.println(menuString);
         new ActionNoBlock(menuString, null).performMenu();
     }
 
-    /** Clean up after every test case. */
-    @Override
-    public void tearDown() {
-    }
     public void testImporterWizard() {
-        String caption =org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.wizard.Bundle", "CTL_WizardTitle");
+        String caption = Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.wizard.Bundle", "CTL_WizardTitle");
         NbDialogOperator importWizard = new NbDialogOperator(caption);
         importWizard.cancel();
     }

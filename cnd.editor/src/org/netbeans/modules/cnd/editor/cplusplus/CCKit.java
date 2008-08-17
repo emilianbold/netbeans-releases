@@ -86,7 +86,8 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
 /** C++ editor kit with appropriate document */
 public class CCKit extends NbEditorKit {
     private InputAttributes lexerAttrs = null;
-    
+    private static final String ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY = "abbrev-ignore-modification"; // NOI18N
+
     @Override
     public String getContentType() {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
@@ -342,8 +343,10 @@ public class CCKit extends NbEditorKit {
                 // correctly over FormatWriter because it's final class for some reasons.
                 // But java editor has the same bug, so one day we may have such possibility 
                 doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, Boolean.TRUE); 
+                doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, Boolean.TRUE);
                 super.checkIndentHotChars(target, typedText);
                 doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, null);
+                doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, null);
             }
             
        	}

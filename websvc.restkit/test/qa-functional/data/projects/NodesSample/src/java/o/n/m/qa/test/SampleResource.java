@@ -9,13 +9,13 @@
 
 package o.n.m.qa.test;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
+import javax.ws.rs.Produces;
 
 /**
  * REST Web Service
@@ -37,7 +37,7 @@ public class SampleResource {
      * @return an instance of java.lang.String
      */
     @GET
-    @ProduceMime("application/json")
+    @Produces("application/json")
     public String getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
@@ -49,7 +49,7 @@ public class SampleResource {
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
-    @ConsumeMime("application/json")
+    @Consumes("application/json")
     public void putJson(String content) {
     }
 }

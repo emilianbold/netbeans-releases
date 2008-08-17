@@ -436,10 +436,6 @@ public class PropertyModelTest extends TestBase {
 
         assertTrue(csspv.success());
 
-        text = "URI('/images/v6/tabs-bg.png')";
-        csspv = new CssPropertyValue(p, text);
-        assertTrue(csspv.success());
-
         text = "url'/images/v6/tabs-bg.png')";
         csspv = new CssPropertyValue(p, text);
         assertFalse(csspv.success());

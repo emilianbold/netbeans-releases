@@ -363,7 +363,7 @@ public final class LexerTestUtilities {
                 incCheckNested("TOP", doc, batchTS, batchHi, incTS, incHi);
             } catch (Throwable t) { // Re-throw with hierarchy info
                 StringBuilder sb = new StringBuilder(512);
-                sb.append("\nERROR in HIERARCHY!!!!!!!!\n");
+                sb.append("\n\n\nERROR in HIERARCHY!!!!!!!!\n");
                 sb.append(t.toString());
                 sb.append("\n\nBATCH token hierarchy:\n").append(batchHi);
                 sb.append("\n\n\n\nTEST token hierarchy:\n").append(incHi);

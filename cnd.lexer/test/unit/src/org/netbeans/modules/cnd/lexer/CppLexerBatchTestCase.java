@@ -71,6 +71,15 @@ public class CppLexerBatchTestCase extends TestCase {
     protected void tearDown() throws java.lang.Exception {
     }
 
+    public void testAloneBackSlash() {
+        String text = "\\\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.ESCAPED_LINE, "\\\n");
+        assertFalse("No more tokens", ts.moveNext());
+    }
+
     public void testPreprocEmbedding() {
         String text = "#define C 1 \"/*\" /* \n@see C */";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
@@ -171,7 +180,7 @@ public class CppLexerBatchTestCase extends TestCase {
 
     public void testNumberLiterals() {
         String text = "0 00 09 1 12 0L 1l 12L 0x1 0xf 0XdE 0Xbcy" +
-                " 09.5 1.5f 1.6F 6u 7U 7e3 6.1E-7f .3 3614090360UL 3614090360ul 0xffffffffull";
+                " 09.5 1.5f 1.6F 6u 7U 7e3 6.1E-7f .3 3614090360UL 3614090360ul 0xffffffffull 0x1234l 0x1234L";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT_LITERAL, "0");
@@ -220,6 +229,11 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.UNSIGNED_LONG_LITERAL, "3614090360ul");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.UNSIGNED_LONG_LONG_LITERAL, "0xffffffffull");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LONG_LITERAL, "0x1234l");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LONG_LITERAL, "0x1234L");
+        assertFalse("No more tokens", ts.moveNext());
     }
 
     public void testOperators() {

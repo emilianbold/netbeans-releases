@@ -185,6 +185,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.project.navigationloader</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <friend>org.netbeans.modules.worklist.editor</friend>
+                <friend>org.netbeans.modules.wlm.editor</friend>
                 <package>org.netbeans.modules.xml.multiview</package>
                 <package>org.netbeans.modules.xml.multiview.cookies</package>
                 <package>org.netbeans.modules.xml.multiview.ui</package>

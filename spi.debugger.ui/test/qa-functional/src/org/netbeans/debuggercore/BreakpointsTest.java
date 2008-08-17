@@ -68,7 +68,6 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator.StringComparator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 
 
 
@@ -102,7 +101,7 @@ public class BreakpointsTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(BreakpointsTest.class).addTest(
-                    "testLineBreakpointCreation",
+                    "testLineBreakpointCreation",/*
                     "testLineBreakpointFunctionality",
                     "testLineBreakpointFunctionalityAfterContinue",
                     "testLineBreakpointFunctionalityInStaticMethod",
@@ -123,7 +122,7 @@ public class BreakpointsTest extends JellyTestCase {
                     "testMethodBreakpointFunctionalityOnAllMethods",
                     "testMethodBreakpointFunctionalityOnExit",
                     "testConditionalMethodBreakpointFunctionality",
-                    "testMethodBreakpointsValidation",
+                    "testMethodBreakpointsValidation",*/
 
                     "testClassBreakpointPrefilledInClass",
                     "testClassBreakpointPrefilledInInitializer",
@@ -133,7 +132,7 @@ public class BreakpointsTest extends JellyTestCase {
                     "testClassBreakpointCreation",
                     "testClassBreakpointFunctionalityOnPrimaryClass",
                     "testClassBreakpointFunctionalityOnSecondClass",
-                    "testClassBreakpointFunctionalityWithFilter",
+                    "testClassBreakpointFunctionalityWithFilter"/*,
 
                     "testFieldBreakpointPrefilledValues",
                     "testFieldBreakpointCreation",
@@ -144,14 +143,14 @@ public class BreakpointsTest extends JellyTestCase {
 
                     "testThreadBreakpointCreation",
                     "testThreadBreakpointFunctionality",
-                    "testThreadBreakpointFunctionalityHitCount",
+                    "testThreadBreakpointFunctionalityHitCount"/*,
 
                     "testExceptionBreakpointCreation",
                     "testExceptionBreakpointFunctionality",
                     "testExceptionBreakpointMatchClasses",
                     "testExceptionBreakpointExcludeClasses",
                     "testExceptionBreakpointHitCount",
-                    "testConditionalExceptionBreakpoint"
+                    "testConditionalExceptionBreakpoint" */
                 )
             .enableModules(".*").clusters(".*"));
     }
@@ -328,7 +327,7 @@ public class BreakpointsTest extends JellyTestCase {
             Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
             assertEquals("Line MemoryView.java:64", jTableOperator.getValueAt(1, 0).toString());
-            new JPopupMenuOperator(jTableOperator.callPopupOnCell(1, 0)).pushMenuNoBlock("Customize");
+            new JPopupMenuOperator(jTableOperator.callPopupOnCell(1, 0)).pushMenuNoBlock("Properties");
             NbDialogOperator dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
             new JCheckBoxOperator(dialog, 0).changeSelection(true);
             new JEditorPaneOperator(dialog, 0).setText("i > 0");
@@ -358,7 +357,7 @@ public class BreakpointsTest extends JellyTestCase {
             Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
             assertEquals("Line MemoryView.java:102", jTableOperator.getValueAt(0, 0).toString());
-            new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenuNoBlock("Customize");
+            new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenuNoBlock("Properties");
             NbDialogOperator dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
 
             String nothread = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_CB_Actions_Panel_Suspend_None");
@@ -411,21 +410,21 @@ public class BreakpointsTest extends JellyTestCase {
             //set hit conditions
             Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenuNoBlock("Customize");
+            new JPopupMenuOperator(jTableOperator.callPopupOnCell(0, 0)).pushMenuNoBlock("Properties");
             NbDialogOperator dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
             new JCheckBoxOperator(dialog, 1).changeSelection(true);
             new JComboBoxOperator(dialog, 0).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "ConditionsPanel.cbWhenHitCount.equals"));
             new JTextFieldOperator(dialog, 2).setText("45");
             dialog.ok();
 
-            new JPopupMenuOperator(jTableOperator.callPopupOnCell(1, 0)).pushMenuNoBlock("Customize");
+            new JPopupMenuOperator(jTableOperator.callPopupOnCell(1, 0)).pushMenuNoBlock("Properties");
             dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
             new JCheckBoxOperator(dialog, 1).changeSelection(true);
             new JComboBoxOperator(dialog, 0).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "ConditionsPanel.cbWhenHitCount.greater"));
             new JTextFieldOperator(dialog, 2).setText("48");
             dialog.ok();
 
-            new JPopupMenuOperator(jTableOperator.callPopupOnCell(2, 0)).pushMenuNoBlock("Customize");
+            new JPopupMenuOperator(jTableOperator.callPopupOnCell(2, 0)).pushMenuNoBlock("Properties");
             dialog = new NbDialogOperator(Utilities.customizeBreakpointTitle);
             new JCheckBoxOperator(dialog, 1).changeSelection(true);
             new JComboBoxOperator(dialog, 0).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "ConditionsPanel.cbWhenHitCount.multiple"));

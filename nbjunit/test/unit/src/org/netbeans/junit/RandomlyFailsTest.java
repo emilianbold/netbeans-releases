@@ -130,16 +130,22 @@ public class RandomlyFailsTest extends TestCase {
         assertEquals(Arrays.asList(10, 20, 40, 40), runs);
     }
 
-    public static class Sub extends Three {
-        public Sub(String n) {super(n);}
+    @RandomlyFails public static class Sub1 extends One {
+        public Sub1(String n) {super(n);}
+    }
+    @RandomlyFails public static class Sub2 extends Two {
+        public Sub2(String n) {super(n);}
+    }
+    public static class Sub3 extends Three {
+        public Sub3(String n) {super(n);}
     }
 
     public void testHeritability() throws Exception {
         System.setProperty("ignore.random.failures", "false");
-        run(Sub.class);
-        assertEquals(Collections.singletonList(30), runs);
+        run(Sub1.class, Sub2.class, Sub3.class);
+        assertEquals(Arrays.asList(10, 11, 20, 30), runs);
         System.setProperty("ignore.random.failures", "true");
-        run(Sub.class);
+        run(Sub1.class, Sub2.class, Sub3.class);
         assertEquals(Collections.emptyList(), runs);
     }
 

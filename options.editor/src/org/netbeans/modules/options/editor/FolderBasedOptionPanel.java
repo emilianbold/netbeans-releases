@@ -44,6 +44,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
@@ -93,6 +94,15 @@ public class FolderBasedOptionPanel extends JPanel implements ActionListener {
         String preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
         languageCombo.setSelectedItem(preSelectMimeType);
         if (preSelectMimeType != languageCombo.getSelectedItem() && model.getSize() > 0)
+            languageCombo.setSelectedIndex(0);
+    }
+
+    void update () {
+        JTextComponent pane = EditorRegistry.lastFocusedComponent();
+        String preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
+        languageCombo.setSelectedItem(preSelectMimeType);
+        ComboBoxModel model = languageCombo.getModel();
+        if (!preSelectMimeType.equals (languageCombo.getSelectedItem()) && model.getSize() > 0)
             languageCombo.setSelectedIndex(0);
     }
     

@@ -280,7 +280,7 @@ public class ArchiverConfiguration implements AllOptionsProvider {
         String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
         outputName = ConfigurationSupport.makeNameLegal(outputName);
         outputName = "lib" + outputName + ".a"; // NOI18N
-        return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + getMakeConfiguration().getVariant() + "/" + outputName; // UNIX path // NOI18N
+        return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/" + outputName; // UNIX path // NOI18N
     }
     
     /*

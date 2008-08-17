@@ -36,15 +36,13 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -53,18 +51,16 @@ import org.openide.util.NbBundle;
  * @author gordonp
  */
 public class DevelopmentHostConfiguration {
-    
+
     public static final String PROP_DEV_HOST = "devHost"; // NOI18N
-    
     private final int def;
     private int value;
     private String[] names;
     private boolean modified;
     private boolean dirty = false;
     private PropertyChangeSupport pcs;
-    
     private static ServerList serverList = null;
-    
+
     public DevelopmentHostConfiguration(String host) {
         names = getServerNames();
         value = 0;
@@ -73,28 +69,35 @@ public class DevelopmentHostConfiguration {
                 value = i;
                 break;
             }
-        }        
+        }
         def = value;
         pcs = new PropertyChangeSupport(this);
     }
-    
+
     public String getName() {
         return names[value];
     }
-    
-    public String getDisplayName() {
-        return names[value];
+
+    public String getDisplayName(boolean displayIfNotFound) {
+        String out = names[value];
+        if (!isLocalhost() && displayIfNotFound) {
+            CompilerSetManager csm = CompilerSetManager.getDefault(out);
+            if (csm.isUninitialized()) {
+                out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
+            }
+        }
+        return out;
     }
 
     public int getValue() {
         return value;
     }
-    
+
     public void setValue(String v) {
         setValue(v, false);
     }
-    
-    public void setValue(String v, boolean firePC) {
+
+    public void setValue(final String v, boolean firePC) {
         for (int i = 0; i < names.length; i++) {
             if (v.equals(names[i])) {
                 value = i;
@@ -104,25 +107,19 @@ public class DevelopmentHostConfiguration {
                 return;
             }
         }
-        
-        // The project's configuration wants a dev host not currently defined. Ask the
-        // user what they want to do...
-        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                NbBundle.getMessage(DevelopmentHostConfiguration.class, "AddMissingRemoteServerQuestion", v));
-        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-            if (addDevelopmentHost(v)) {
-                names = getServerNames();
-                setValue(v, true);
-            }
-        } else {
-            setValue(CompilerSetManager.LOCALHOST, true);
-        }
+
+        // The project's configuration wants a dev host not currently defined.
+        // We don't want to ask user at this moment, so we create offline host and preserve compilerset name
+        // User will be asked about connection after choosing action like build for this particular project
+        addDevelopmentHost(v);
+        names = getServerNames();
+        setValue(v, firePC);
     }
-    
+
     private boolean addDevelopmentHost(String host) {
         ServerList list = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         if (list != null) {
-            list.addServer(host, false);
+            list.addServer(host, false, false);
         }
         return list != null;
     }
@@ -135,11 +132,11 @@ public class DevelopmentHostConfiguration {
     public boolean getModified() {
         return modified;
     }
-    
+
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
     }
-    
+
     public boolean getDirty() {
         return dirty;
     }
@@ -148,7 +145,7 @@ public class DevelopmentHostConfiguration {
         boolean dirty2 = false;
         String oldName = getName();
         String newName = conf.getName();
-        
+
         if (names.length != conf.names.length) {
             names = getServerNames();
             dirty2 = true;
@@ -159,7 +156,7 @@ public class DevelopmentHostConfiguration {
         setDirty(dirty2);
         setValue(newName);
     }
-    
+
     @Override
     public Object clone() {
         DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration(getName());
@@ -167,32 +164,31 @@ public class DevelopmentHostConfiguration {
         clone.setValue(getName());
         return clone;
     }
-    
+
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener(l);
     }
-    
+
     public void removePropertyChangeListener(PropertyChangeListener l) {
         pcs.removePropertyChangeListener(l);
     }
-    
+
     public String[] getServerNames() {
         if (getServerList() != null) {
-            String[] nu = serverList.getServerNames();
+            String[] nu = getServerList().getServerNames();
             return nu;
         }
-        return new String[] { CompilerSetManager.LOCALHOST };
+        return new String[]{CompilerSetManager.LOCALHOST};
     }
-    
+
     private static ServerList getServerList() {
         if (serverList == null) {
             serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         }
         return serverList;
     }
-    
+
     public boolean isLocalhost() {
         return CompilerSetManager.LOCALHOST.equals(getName());
     }
-
 }

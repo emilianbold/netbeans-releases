@@ -32,6 +32,7 @@ import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -73,13 +74,21 @@ public class GetArtifactNameStep implements  WizardDescriptor.Panel<WizardDescri
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx( GetArtifactNameStep.class        );
+        // I am returning name of this class + dot + grails command name, that is something that should
+        // be quite stable and independent
+        return new HelpCtx(GetArtifactNameStep.class.getName() + "." + cat.getCommand());
     }
 
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;        
         component.read (wizardDescriptor);
 
+        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+        // this name is used in NewFiletWizard to modify the title
+        Object substitute = ((JComponent)component).getClientProperty ("NewFileWizard_Title"); // NOI18N
+        if (substitute != null) {
+            wizardDescriptor.putProperty ("NewFileWizard_Title", substitute); // NOI18N
+        }
     }
 
     public void storeSettings(WizardDescriptor settings) {

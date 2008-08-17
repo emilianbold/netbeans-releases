@@ -48,6 +48,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -116,11 +117,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final List<String> INHERITANCE_KEYWORDS =
             Arrays.asList(new String[] {"extends","implements"});//NOI18N
     private static final List<PHPTokenId[]> NONE_TOKENCHAINS = Arrays.asList(
-        new PHPTokenId[]{PHPTokenId.PHP_CLASS},
-        new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE},
-         new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE},
-         new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE}         
-        );
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS},
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_INTERFACE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE},
+            new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE});
     private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_NEW},
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
@@ -157,11 +161,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_TOKEN}
         );
 
-    private static final List<PHPTokenId[]> COMMENT_TOKENCHAINS = Arrays.asList(
-            new PHPTokenId[]{PHPTokenId.PHP_COMMENT_START},
-            new PHPTokenId[]{PHPTokenId.PHP_COMMENT},
-            new PHPTokenId[]{PHPTokenId.PHP_LINE_COMMENT}
-            );
+    private static final PHPTokenId[] COMMENT_TOKENS = new PHPTokenId[]{
+        PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_COMMENT_END};
 
     private static final List<PHPTokenId[]> PHPDOC_TOKENCHAINS = Arrays.asList(
             new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT_START},
@@ -221,19 +222,24 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         CLASS_CONTEXT_KEYWORDS, NONE};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
-        "__LINE__", "array()", "class", "const", "continue", "die()", "echo()", "empty()", "endif",
-        "eval()", "exit()", "for", "foreach", "function", "global", "if",
-        "include()", "include_once()", "isset()", "list()", "new",
-        "print()", "require()", "require_once()", "return", "static",
-        "switch", "unset()", "use", "var", "while",
+        "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
+        "eval()", "exit()", "for", "foreach", "function", "global", "if", "isset()", "list()", "new",
+        "print()", "static", "switch", "unset()", "use", "var", "while",
         "__FUNCTION__", "__CLASS__", "__METHOD__", "final", "php_user_filter",
         "interface", "implements", "extends", "public", "private",
         "protected", "abstract", "clone", "try", "catch", "throw"
     };
+    
+    private final static String[] PHP_KEYWORD_FUNCTIONS = {
+        "echo", "include", "include_once", "require", "require_once"}; //NOI18N
 
     private final static String[] PHP_CLASS_KEYWORDS = {
         "$this->", "self::", "parent::"
     };
+
+    private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
+            Arrays.asList(' ', '=', ';', '+', '-', '*', '/',
+                '%', '(', ')', '[', ']', '{', '}')); 
 
     private boolean caseSensitive;
     private NameKind nameKind;
@@ -272,7 +278,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             return CompletionContext.CLASS_MEMBER;
         } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS)){
             return CompletionContext.STATIC_CLASS_MEMBER;
-        } else if (acceptTokenChains(tokenSequence, COMMENT_TOKENCHAINS)){
+        } else if (isOneOfTokens(tokenSequence, COMMENT_TOKENS)){
             return CompletionContext.NONE;
         } else if (acceptTokenChains(tokenSequence, PHPDOC_TOKENCHAINS)){
             return CompletionContext.PHPDOC;
@@ -301,6 +307,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             return CompletionContext.NONE;
         }
         return CompletionContext.EXPRESSION;
+    }
+    
+    private static boolean isOneOfTokens(TokenSequence tokenSequence, PHPTokenId[] tokenIds){
+        TokenId searchedId = tokenSequence.token().id();
+
+        for (TokenId tokenId : tokenIds){
+            if (tokenId.equals(searchedId)){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static boolean acceptTokenChains(TokenSequence tokenSequence, List<PHPTokenId[]> tokenIdChains){
@@ -500,7 +518,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPCompletionItem.CompletionRequest request) {
         for (String keyword : PredefinedSymbols.MAGIC_METHODS) {
             if (keyword.startsWith(request.prefix)) {
-                proposals.add(new PHPCompletionItem.SpecialFunctionItem(keyword, request));
+                proposals.add(new PHPCompletionItem.MagicMethodItem(keyword, request));
             }
         }
     //autoCompleteKeywords(proposals, request, METHOD_NAME_PROPOSALS);
@@ -647,6 +665,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 proposals.add(new PHPCompletionItem.KeywordItem(keyword, request));
             }
         }
+        
+        for (String keyword : PHP_KEYWORD_FUNCTIONS) {
+            if (startsWith(keyword, request.prefix)) {
+                proposals.add(new PHPCompletionItem.SpecialFunctionItem(keyword, request));
+            }
+        }
+
+        proposals.add(new PHPCompletionItem.ReturnItem(request));
+
+        // end: KEYWORDS
 
         PHPIndex index = request.index;
         if (request.prefix.length() == 0) {
@@ -777,8 +805,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             String namePrefix, String localFileURL, String type) {
 
         String varName = CodeUtils.extractVariableName(var);
+        String varNameNoDollar = varName.startsWith("$") ? varName.substring(1) : varName;
 
-        if (isPrefix(varName, namePrefix)) {
+        if (isPrefix(varName, namePrefix) && !PredefinedSymbols.isSuperGlobalName(varNameNoDollar)) {
             IndexedConstant ic = new IndexedConstant(varName, null,
                     null, localFileURL, var.getStartOffset(), 0, type);
 
@@ -1078,6 +1107,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             return QueryType.NONE;
         }
         char lastChar = typedText.charAt(typedText.length() - 1);
+
+        if (AUTOPOPUP_STOP_CHARS.contains(Character.valueOf(lastChar))){
+            return QueryType.STOP;
+        }
+
         Document document = component.getDocument();
         TokenHierarchy th = TokenHierarchy.get(document);
         TokenSequence<PHPTokenId> ts = th.tokenSequence(PHPTokenId.language());

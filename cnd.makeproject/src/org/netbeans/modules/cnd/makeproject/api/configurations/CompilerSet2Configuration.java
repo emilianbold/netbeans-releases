@@ -62,6 +62,13 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     private String flavor;
     private boolean dirty = false;
 
+    private CompilerSet2Configuration(CompilerSet2Configuration other) {
+        this.developmentHostConfiguration = (DevelopmentHostConfiguration) other.developmentHostConfiguration.clone();
+        this.compilerSetName = (StringConfiguration) other.compilerSetName.clone();
+        this.flavor = other.flavor;
+        this.compilerSetNodeProp = null;        
+    }
+    
     // Constructors
     public CompilerSet2Configuration(DevelopmentHostConfiguration developmentHostConfiguration) {
         this.developmentHostConfiguration = developmentHostConfiguration;
@@ -194,7 +201,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
 
     public String createNotFoundName(String name) {
-        return name.equals(CompilerSet.None) ? name : name + " - " + getString("NOT_FOUND"); // NOI18N
+        return name.equals(CompilerSet.None) ? name : NbBundle.getMessage(CompilerSet2Configuration.class,  "NOT_FOUND", name); // NOI18N
     }
 
     // Clone and assign
@@ -208,8 +215,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     @Override
     public Object clone() {
-        CompilerSet2Configuration clone = new CompilerSet2Configuration((DevelopmentHostConfiguration)developmentHostConfiguration.clone());
-        clone.setCompilerSetName((StringConfiguration)getCompilerSetName().clone());
+        CompilerSet2Configuration clone = new CompilerSet2Configuration(this);
         return clone;
     }
 
@@ -242,11 +248,6 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     public String getOption() {
         return getCompilerSetName().getValue();
-    }
-
-    /** Look up i18n strings here */
-    private static String getString(String s) {
-        return NbBundle.getMessage(CompilerSet2Configuration.class, s);
     }
 
     public String getNameAndFlavor() {

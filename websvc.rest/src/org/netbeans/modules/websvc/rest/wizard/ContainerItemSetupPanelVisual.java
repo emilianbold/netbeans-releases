@@ -70,6 +70,7 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -169,11 +170,6 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
         packageComboBox.setEditable(true);
         packageComboBox.setInheritsPopupMenu(true);
         packageComboBox.setPreferredSize(new java.awt.Dimension(4, 20));
-        packageComboBox.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                packageChanged(evt);
-            }
-        });
         packageComboBox.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 packageComboBoxKeyReleased(evt);
@@ -267,11 +263,11 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(containerUriLabel)
-                .addContainerGap(434, Short.MAX_VALUE))
+                .addContainerGap(471, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(mediaTypeLabel)
-                .addContainerGap(454, Short.MAX_VALUE))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
+                .addContainerGap(492, Short.MAX_VALUE))
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 560, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(classLabel)
@@ -282,14 +278,14 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
                     .add(packageLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(packageComboBox, 0, 378, Short.MAX_VALUE)
-                    .add(resourceNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
-                    .add(classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
-                    .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE)
-                    .add(locationComboBox, 0, 378, Short.MAX_VALUE)
+                    .add(packageComboBox, 0, 424, Short.MAX_VALUE)
+                    .add(resourceNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
+                    .add(classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
+                    .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)
+                    .add(locationComboBox, 0, 424, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(containerTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 378, Short.MAX_VALUE))))
+                        .add(containerTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE))))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(contentClassLabel1)
@@ -297,11 +293,11 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
                     .add(uriLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, uriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, representationClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerRepresentationClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerUriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, medaTypeComboBox, 0, 258, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, uriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, representationClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerRepresentationClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerUriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, medaTypeComboBox, 0, 285, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(selectClassButton)
@@ -434,14 +430,14 @@ private void containerRepresentationClassChanged(java.awt.event.KeyEvent evt) {/
     private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_resourceNameChanged
     String newName = resourceNameTextField.getText();
     if (! resourceClassNameOveridden) {
-        classTextField.setText(Util.deriveResourceClassName(newName));
+        classTextField.setText(findFreeClassName(newName));
     }
 //    if (! uriOveridden) {
 //        String currentUri = uriTextField.getText();
 //        uriTextField.setText(Util.deriveUri(newName, currentUri));
 //    }
     if (! containerClassNameOveridden) {
-        containerTextField.setText(Util.deriveContainerClassName(newName));
+        containerTextField.setText(findFreeClassName(Util.pluralize(newName)));
     }
     if (! containerUriOveridden) {
         String newContainerName = Util.lowerFirstChar(newName);
@@ -454,10 +450,6 @@ private void containerRepresentationClassChanged(java.awt.event.KeyEvent evt) {/
 private void containerTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_containerTextFieldActionPerformed
     // TODO add your handling code here:
 }//GEN-LAST:event_containerTextFieldActionPerformed
-
-private void packageChanged(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_packageChanged
-    fireChange();
-}//GEN-LAST:event_packageChanged
 
 private void containerUriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_containerUriChanged
     containerUriOveridden = true;
@@ -572,6 +564,7 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
         
         if (groups == null || groups.length < 1) {
             AbstractPanel.setErrorMessage(wizard, "MSG_NoJavaSourceRoots");
+            return false;
         } else if (resourceName.length() == 0 || ! Utilities.isJavaIdentifier(resourceName)) {
             AbstractPanel.setErrorMessage(wizard, "MSG_InvalidResourceName");
             return false;
@@ -654,40 +647,6 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
     public static final String DEFAULT_RESOURCE_NAME = "Item";
     
     public void read(WizardDescriptor settings) {
-        String value = (String) settings.getProperty(WizardProperties.ITEM_RESOURCE_NAME);
-        if (value == null || value.trim().length() == 0) { // first time
-            resourceNameTextField.setText(DEFAULT_RESOURCE_NAME);
-            String containerName = Util.pluralize(getResourceName());
-            String containerUri = "/" + Util.lowerFirstChar(containerName); //NOI18N
-            classTextField.setText(Util.deriveResourceClassName(getResourceName()));
-            if (isClientControlledPattern(settings)) {
-                uriTextField.setText("{name}"); //NOI18N
-            } else {
-                uriTextField.setText("{id}"); //NOI18N
-            }
-            containerTextField.setText(Util.deriveResourceClassName(containerName));
-            containerUriTextField.setText("/"+containerName);
-            representationClassTextField.setText(GenericResourceBean.
-                getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
-            containerRepresentationClassTextField.setText(GenericResourceBean.
-                getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
-        } else {
-            resourceNameTextField.setText(value);
-            classTextField.setText((String) settings.getProperty(WizardProperties.ITEM_RESOURCE_CLASS));
-            uriTextField.setText((String) settings.getProperty(WizardProperties.ITEM_RESOURCE_URI));
-            medaTypeComboBox.setSelectedItem(((MimeType[]) settings.getProperty(WizardProperties.ITEM_MIME_TYPES))[0]);
-            String[] types = (String[]) settings.getProperty(WizardProperties.ITEM_REPRESENTATION_TYPES);
-            if (types != null && types.length > 0) {
-                representationClassTextField.setText(types[0]);
-            }
-            containerTextField.setText((String) settings.getProperty(WizardProperties.CONTAINER_RESOURCE_CLASS));
-            containerUriTextField.setText((String) settings.getProperty(WizardProperties.CONTAINER_RESOURCE_URI));
-            types = (String[]) settings.getProperty(WizardProperties.CONTAINER_REPRESENTATION_TYPES);
-            if (types != null && types.length > 0) {
-                containerRepresentationClassTextField.setText(types[0]);
-            }
-        }
-        
         project = Templates.getProject(settings);
         FileObject targetFolder = Templates.getTargetFolder(settings);
         
@@ -711,6 +670,41 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
                }
             }
         }
+        
+           String value = (String) settings.getProperty(WizardProperties.ITEM_RESOURCE_NAME);
+        if (value == null || value.trim().length() == 0) { // first time
+            resourceNameTextField.setText(DEFAULT_RESOURCE_NAME);
+            String containerName = Util.pluralize(getResourceName());
+
+            classTextField.setText(findFreeClassName(getResourceName()));
+            if (isClientControlledPattern(settings)) {
+                uriTextField.setText("{name}"); //NOI18N
+            } else {
+                uriTextField.setText("{id}"); //NOI18N
+            }
+            containerTextField.setText(findFreeClassName(containerName));
+            containerUriTextField.setText("/"+containerName);
+            representationClassTextField.setText(GenericResourceBean.
+                getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
+            containerRepresentationClassTextField.setText(GenericResourceBean.
+                getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
+        } else {
+            resourceNameTextField.setText(value);
+            classTextField.setText((String) settings.getProperty(WizardProperties.ITEM_RESOURCE_CLASS));
+            uriTextField.setText((String) settings.getProperty(WizardProperties.ITEM_RESOURCE_URI));
+            medaTypeComboBox.setSelectedItem(((MimeType[]) settings.getProperty(WizardProperties.ITEM_MIME_TYPES))[0]);
+            String[] types = (String[]) settings.getProperty(WizardProperties.ITEM_REPRESENTATION_TYPES);
+            if (types != null && types.length > 0) {
+                representationClassTextField.setText(types[0]);
+            }
+            containerTextField.setText((String) settings.getProperty(WizardProperties.CONTAINER_RESOURCE_CLASS));
+            containerUriTextField.setText((String) settings.getProperty(WizardProperties.CONTAINER_RESOURCE_URI));
+            types = (String[]) settings.getProperty(WizardProperties.CONTAINER_REPRESENTATION_TYPES);
+            if (types != null && types.length > 0) {
+                containerRepresentationClassTextField.setText(types[0]);
+            }
+        }
+        
     }
     
     public void store(WizardDescriptor settings) {
@@ -747,6 +741,19 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
             }
             packageComboBox.setModel(model);
         }
+    }
+    
+    private String findFreeClassName(String uri) {
+        try {
+            FileObject folder = SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage());
+            if (folder != null) {
+                return FileUtil.findFreeFileName(folder, Util.deriveResourceClassName(uri), Constants.JAVA_EXT);
+            }
+        } catch (IOException ex) {
+            //OK just return null
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
     
     static boolean isClientControlledPattern(WizardDescriptor settings) {

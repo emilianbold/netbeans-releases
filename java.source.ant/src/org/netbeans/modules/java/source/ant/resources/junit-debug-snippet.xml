@@ -81,6 +81,7 @@ made subject to such option by the copyright holder.
                 <echo message="methods: ${methodname}"/>
                 <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true" dir="${work.dir}" jvm="${platform.java}">
                     <classpath>
+                        <fileset dir="${ant.home}" includes="patches/*.jar"/>
                         <path path="${ant.home}/lib/ant.jar:${ant.home}/lib/ant-junit.jar"/>
                         <path path="${classpath-translated}"/>
                     </classpath>

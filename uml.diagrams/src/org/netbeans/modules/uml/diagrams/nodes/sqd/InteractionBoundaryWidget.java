@@ -112,6 +112,7 @@ public class InteractionBoundaryWidget extends CombinedFragmentWidget {
             setOperator("ref " + initInteraction.getNameWithAlias());
         }
         getContainer();
+        super.initializeNode(presentation);
     }
 
     public boolean isBoundary()

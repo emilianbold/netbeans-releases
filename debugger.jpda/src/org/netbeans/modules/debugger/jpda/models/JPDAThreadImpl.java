@@ -994,12 +994,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             } catch (IllegalAccessException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);
             } catch (InvocationTargetException ex) {
-                String msg = "Thread '"+threadReference.name()+
-                             "': status = "+threadReference.status()+
-                             ", is suspended = "+threadReference.isSuspended()+
-                             ", suspend count = "+threadReference.suspendCount()+
-                             ", is at breakpoint = "+threadReference.isAtBreakpoint()+
-                             ", internal suspend status = "+suspended;
+                String msg = ""; // NOI18N
+                try {
+                    msg = "Thread '"+threadReference.name()+
+                                 "': status = "+threadReference.status()+
+                                 ", is suspended = "+threadReference.isSuspended()+
+                                 ", suspend count = "+threadReference.suspendCount()+
+                                 ", is at breakpoint = "+threadReference.isAtBreakpoint()+
+                                 ", internal suspend status = "+suspended;
+                } catch (VMDisconnectedException e) {
+                }
                 Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, ex);
             } catch (java.lang.NoSuchMethodException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);
@@ -1053,6 +1057,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
 
     public boolean checkForBlockingThreads() {
         try {
+            if (!threadReference.virtualMachine().canGetCurrentContendedMonitor() ||
+                !threadReference.virtualMachine().canGetMonitorInfo()) {
+                return false;
+            }
             //System.err.println("\""+getName()+"\".checkForBlockingThreads()");
             VirtualMachine vm = threadReference.virtualMachine();
             Map<ThreadReference, ObjectReference> lockedThreadsWithMonitors = null;
@@ -1104,6 +1112,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         } catch (VMDisconnectedException e) {
         } catch (InternalException e) {
         } catch (ObjectCollectedException e) {
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         }
         return false;
     }

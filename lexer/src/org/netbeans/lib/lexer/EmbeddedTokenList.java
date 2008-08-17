@@ -277,7 +277,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
      * For token hierarchy snapshots the returned value is corrected
      * in the TokenSequence explicitly by adding TokenSequence.tokenOffsetDiff.
      */
-    public int tokenOffsetByIndex(int index) {
+    public int tokenOffset(int index) {
 //        embeddingContainer().checkStatusUpdated();
         return elementOffset(index);
     }
@@ -504,7 +504,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         if (joinInfo != null) {
             sb.append("(").append(joinTokenCount()).append(')');
             sb.append(" JI:");
-            joinInfo.dumpInfo(sb);
+            joinInfo.dumpInfo(sb, this);
         }
         sb.append(", IHC=").append(System.identityHashCode(this));
         return sb;

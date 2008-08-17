@@ -43,8 +43,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
+import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
 import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
+import org.openide.util.Lookup;
 
 /**
  * This implementation of NativeExecution provides execution on a remote server.
@@ -70,7 +78,29 @@ public class RemoteNativeExecution extends NativeExecution {
             String arguments,
             String[] envp,
             PrintWriter out,
-            Reader in) throws IOException, InterruptedException {
+            Reader in,
+            boolean unbuffer) throws IOException, InterruptedException {
+        // Updating environment variables
+        List<String> envpList = new ArrayList<String>();
+        if (envp != null) {
+            envpList.addAll(Arrays.asList(envp));
+        }
+        envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
+        
+        if (unbuffer) {
+            int platformType = PlatformInfo.getDefault(host).getPlatform();
+            String unbufferPath = getUnbufferPath(platformType);
+            if (unbufferPath != null) {
+                if (platformType == PlatformTypes.PLATFORM_MACOSX) {
+                    envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
+                    envpList.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
+                } else {
+                    envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
+                }
+            }
+        }
+        envp = envpList.toArray(new String[envpList.size()]);
+
         RemoteNativeExecutionSupport support = null;
         if (host != null && host.length() > 0) {
             support = new RemoteNativeExecutionSupport(host, runDirFile, executable, arguments, envp, out, in);
@@ -81,4 +111,26 @@ public class RemoteNativeExecution extends NativeExecution {
     public void stop() {
     }
 
+    private String getUnbufferPath(int platformType) {
+        String path = null;
+        CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+        if (provider != null) {
+            int rc = provider.run(host, "echo $HOME", null); // NOI18N
+            if (rc == 0) {
+                path = provider.toString().trim(); // remote the newline
+            }
+        }
+        if (path == null) {
+            path = "/home/" + System.getProperty("user.name"); // NOI18N
+        }
+        path += "/" + RemoteServerSetup.REMOTE_LIB_DIR;
+        switch (platformType) {
+            case PlatformTypes.PLATFORM_LINUX : return path + "unbuffer-Linux-x86.so"; // NOI18N
+            case PlatformTypes.PLATFORM_SOLARIS_SPARC : return path + "unbuffer-SunOS-sparc.so"; // NOI18N
+            case PlatformTypes.PLATFORM_SOLARIS_INTEL : return path + "unbuffer-SunOS-x86.so"; // NOI18N
+            case PlatformTypes.PLATFORM_WINDOWS : return path + "unbuffer-Windows_XP-x86.dll"; // NOI18N
+            case PlatformTypes.PLATFORM_MACOSX : return path + "unbuffer-Mac_OS_X-x86.dylib"; // NOI18N
+        }
+        return null;
+    }
 }

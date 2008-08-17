@@ -60,6 +60,7 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
+import org.netbeans.modules.groovy.support.api.GroovySources;
 
 
 /**
@@ -178,16 +179,21 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
      */
     class JavaMethodItem extends GroovyCompletionItem {
 
-        private final javax.lang.model.element.Element javaElement;
+        private final String simpleName;
+        private final String parameterString;
+        private final String returnType;
+        
 
-        JavaMethodItem(javax.lang.model.element.Element element, int anchorOffset, CodeCompleter.CompletionRequest request) {
+        JavaMethodItem(String simpleName, String parameterString, String returnType, int anchorOffset, CodeCompleter.CompletionRequest request) {
             super(null, anchorOffset, request);
-            this.javaElement = element;
+            this.simpleName = simpleName;
+            this.parameterString = parameterString;
+            this.returnType = returnType;
         }
 
         @Override
         public String getName() {
-            return javaElement.getSimpleName().toString() + "()";
+            return simpleName + "()";
         }
 
         @Override
@@ -197,21 +203,13 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            
-            String params = "";
-            
-            if (javaElement instanceof ExecutableElement) {
-                params = CodeCompleter.getParameterListForMethod((ExecutableElement) javaElement);
-            }
-            
-            return javaElement.getSimpleName().toString() + "(" + params + ")";
+            return simpleName + "(" + parameterString + ")";
         }
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
             
-            String retType = ((ExecutableElement) javaElement).getReturnType().getClass().toString();
-            retType = NbUtilities.stripPackage(retType);
+            String retType = NbUtilities.stripPackage(returnType);
 
             formatter.appendHtml(retType);
 
@@ -240,7 +238,6 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
     
     class MethodItem extends GroovyCompletionItem {
 
-        private static final String GROOVY_METHOD = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
         MetaMethod method;
         boolean isGDK;
         AstMethodElement methodElement;
@@ -336,7 +333,7 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             }
 
             if (groovyIcon == null) {
-                groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
+                groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
             }
 
             return groovyIcon;
@@ -360,7 +357,6 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 
     class KeywordItem extends GroovyCompletionItem {
 
-        private static final String GROOVY_KEYWORD = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
         private static final String JAVA_KEYWORD   = "org/netbeans/modules/groovy/editor/resources/duke.png"; //NOI18N
         private final String keyword;
         private final String description;
@@ -400,7 +396,7 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             
             if (isGroovy) {
                 if (groovyIcon == null) {
-                    groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_KEYWORD));
+                    groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
                 }
                 return groovyIcon;
             } else {
@@ -519,13 +515,15 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
         private final String name;
         private static final String NEW_CSTR   = "org/netbeans/modules/groovy/editor/resources/new_constructor_16.png"; //NOI18N
         private boolean expand; // should this item expand to a constructor body?
-        private final ExecutableElement exe;
+        private final String paramListString;
+        private final List<CodeCompleter.ParamDesc> paramList;
 
-        ConstructorItem(String name, ExecutableElement exe, int anchorOffset, CodeCompleter.CompletionRequest request, boolean expand) {
+        ConstructorItem(String name, String paramListString, List<CodeCompleter.ParamDesc> paramList, int anchorOffset, CodeCompleter.CompletionRequest request, boolean expand) {
             super(null, anchorOffset, request);
             this.name = name;
             this.expand = expand;
-            this.exe = exe;
+            this.paramListString = paramListString;
+            this.paramList = paramList;
         }
 
         @Override
@@ -533,7 +531,7 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             if(expand){
                 return name + " - generate"; // NOI18N
             } else {
-                return name + "(" + CodeCompleter.getParameterListForMethod(exe) +  ")";
+                return name + "(" + paramListString +  ")";
             }            
         }
 
@@ -596,8 +594,6 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 
             StringBuilder sb = new StringBuilder();
             
-            List<CodeCompleter.ParamDesc> params = CodeCompleter.getParameterList(exe);
-
             sb.append(getInsertPrefix());
             sb.append("(");
             
@@ -605,7 +601,7 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             
             // sb.append("${cursor}"); // NOI18N
 
-            for (CodeCompleter.ParamDesc paramDesc : params) {
+            for (CodeCompleter.ParamDesc paramDesc : paramList) {
                 
                 LOG.log(Level.FINEST, "-------------------------------------------------------------------");
                 LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.fullTypeName);
@@ -627,7 +623,7 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
                 // sb.append(paramDesc.name);
 
 
-                if (id < params.size()) {
+                if (id < paramList.size()) {
                     sb.append(", "); //NOI18N
                 }
 

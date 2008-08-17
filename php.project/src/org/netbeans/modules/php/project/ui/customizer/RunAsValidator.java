@@ -84,14 +84,8 @@ public final class RunAsValidator {
      * @return an error message or <code>null</code> if everything is OK.
      */
     public static String validateScriptFields(String phpInterpreter, String indexFile, String arguments) {
-        String err = null;
-        if (phpInterpreter.length() == 0) {
-            err = NbBundle.getMessage(RunAsValidator.class, "MSG_NoPhpInterpreter");
-        } else {
-            err = validateIndexFile(indexFile, arguments);
-        }
         //XXX validation for arguments?
-        return err;
+        return Utils.validatePhpInterpreter(phpInterpreter);
     }
 
     private static final String INVALID_SEPARATOR = "\\";

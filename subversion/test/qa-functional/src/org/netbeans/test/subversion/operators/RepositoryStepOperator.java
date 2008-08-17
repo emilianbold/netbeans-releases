@@ -70,7 +70,6 @@ public class RepositoryStepOperator extends WizardOperator {
         super(""); //NO I18N
         stepsWaitSelectedValue("Repository");
     }
-
     private JLabelOperator _lblSteps;
     private JListOperator _lstSteps;
     private JLabelOperator _lblRepository;
@@ -95,16 +94,14 @@ public class RepositoryStepOperator extends WizardOperator {
     private JButtonOperator _btHelp;
     private JLabelOperator _lblWarning;
     
-    
     //******************************
     // Subcomponents definition part
     //******************************
-
     /** Tries to find "Steps" JLabel in this dialog.
      * @return JLabelOperator
      */
     public JLabelOperator lblSteps() {
-        if (_lblSteps==null) {
+        if (_lblSteps == null) {
             _lblSteps = new JLabelOperator(this, "Steps");
         }
         return _lblSteps;
@@ -113,8 +110,9 @@ public class RepositoryStepOperator extends WizardOperator {
     /** Tries to find null JList in this dialog.
      * @return JListOperator
      */
+    @Override
     public JListOperator lstSteps() {
-        if (_lstSteps==null) {
+        if (_lstSteps == null) {
             _lstSteps = new JListOperator(this);
         }
         return _lstSteps;
@@ -124,7 +122,7 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblRepository() {
-        if (_lblRepository==null) {
+        if (_lblRepository == null) {
             _lblRepository = new JLabelOperator(this, "Repository");
         }
         return _lblRepository;
@@ -134,7 +132,7 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JButtonOperator
      */
     public JButtonOperator btProxyConfiguration() {
-        if (_btProxyConfiguration==null) {
+        if (_btProxyConfiguration == null) {
             _btProxyConfiguration = new JButtonOperator(this, "Proxy Configuration...");
         }
         return _btProxyConfiguration;
@@ -144,7 +142,7 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblUseExternal() {
-        if (_lblUseExternal==null) {
+        if (_lblUseExternal == null) {
             _lblUseExternal = new JLabelOperator(this, "Use External");
         }
         return _lblUseExternal;
@@ -154,7 +152,7 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblTunnelCommand() {
-        if (_lblTunnelCommand==null) {
+        if (_lblTunnelCommand == null) {
             _lblTunnelCommand = new JLabelOperator(this, "Tunnel Command");
         }
         return _lblTunnelCommand;
@@ -164,7 +162,7 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblPassword() {
-        if (_lblPassword==null) {
+        if (_lblPassword == null) {
             _lblPassword = new JLabelOperator(this, "Password:");
         }
         return _lblPassword;
@@ -174,7 +172,7 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblUser() {
-        if (_lblUser==null) {
+        if (_lblUser == null) {
             _lblUser = new JLabelOperator(this, "User:");
         }
         return _lblUser;
@@ -184,7 +182,7 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblRepositoryURL() {
-        if (_lblRepositoryURL==null) {
+        if (_lblRepositoryURL == null) {
             _lblRepositoryURL = new JLabelOperator(this, "Repository URL:");
         }
         return _lblRepositoryURL;
@@ -194,8 +192,9 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtTunnelCommand() {
-        if (_txtTunnelCommand == null)
+        if (_txtTunnelCommand == null) {
             _txtTunnelCommand = new JTextFieldOperator(this, 1);
+        }
         return _txtTunnelCommand;
     }
     
@@ -203,8 +202,9 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JTextFieldOperator
      */
     public JTextFieldOperator txtUser() {
-        if (_txtUser == null)
+        if (_txtUser == null) {
             _txtUser = new JTextFieldOperator(this);
+        }
         return _txtUser;
     }
 
@@ -212,8 +212,9 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JPasswordFieldOperator
      */
     public JPasswordFieldOperator txtPassword() {
-        if (_txtPassword == null)
+        if (_txtPassword == null) {
             _txtPassword = new JPasswordFieldOperator(this);
+        }
         return _txtPassword;
     }
 
@@ -221,7 +222,7 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblLeaveBlankForAnonymousAccess() {
-        if (_lblLeaveBlankForAnonymousAccess==null) {
+        if (_lblLeaveBlankForAnonymousAccess == null) {
             _lblLeaveBlankForAnonymousAccess = new JLabelOperator(this, "(leave blank for anonymous access)");
         }
         return _lblLeaveBlankForAnonymousAccess;
@@ -231,7 +232,7 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JComboBoxOperator
      */
     public JComboBoxOperator cboRepositoryURL() {
-        if (_cboRepositoryURL==null) {
+        if (_cboRepositoryURL == null) {
             _cboRepositoryURL = new JComboBoxOperator(this);
         }
         return _cboRepositoryURL;
@@ -241,7 +242,7 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblSpecifySubversionRepositoryLocation() {
-        if (_lblSpecifySubversionRepositoryLocation==null) {
+        if (_lblSpecifySubversionRepositoryLocation == null) {
             _lblSpecifySubversionRepositoryLocation = new JLabelOperator(this, "Specify Subversion repository location:");
         }
         return _lblSpecifySubversionRepositoryLocation;
@@ -251,7 +252,7 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JLabelOperator
      */
     public JLabelOperator lblWizardDescriptor$FixedHeightLabel() {
-        if (_lblWizardDescriptor$FixedHeightLabel==null) {
+        if (_lblWizardDescriptor$FixedHeightLabel == null) {
             _lblWizardDescriptor$FixedHeightLabel = new JLabelOperator(this, 7);
         }
         return _lblWizardDescriptor$FixedHeightLabel;
@@ -268,7 +269,7 @@ public class RepositoryStepOperator extends WizardOperator {
      * @return JButtonOperator
      */
     public JButtonOperator btStop() {
-        if (_btStop==null) {
+        if (_btStop == null) {
             _btStop = new JButtonOperator(this, "Stop");
         }
         return _btStop;
@@ -277,8 +278,9 @@ public class RepositoryStepOperator extends WizardOperator {
     /** Tries to find "< Back" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btBack() {
-        if (_btBack==null) {
+        if (_btBack == null) {
             _btBack = new JButtonOperator(this, "< Back");
         }
         return _btBack;
@@ -287,8 +289,9 @@ public class RepositoryStepOperator extends WizardOperator {
     /** Tries to find "Next >" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btNext() {
-        if (_btNext==null) {
+        if (_btNext == null) {
             _btNext = new JButtonOperator(this, "Next >");
         }
         return _btNext;
@@ -297,8 +300,9 @@ public class RepositoryStepOperator extends WizardOperator {
     /** Tries to find "Finish" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btFinish() {
-        if (_btFinish==null) {
+        if (_btFinish == null) {
             _btFinish = new JButtonOperator(this, "Finish");
         }
         return _btFinish;
@@ -307,8 +311,9 @@ public class RepositoryStepOperator extends WizardOperator {
     /** Tries to find "Cancel" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btCancel() {
-        if (_btCancel==null) {
+        if (_btCancel == null) {
             _btCancel = new JButtonOperator(this, "Cancel");
         }
         return _btCancel;
@@ -317,8 +322,9 @@ public class RepositoryStepOperator extends WizardOperator {
     /** Tries to find "Help" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btHelp() {
-        if (_btHelp==null) {
+        if (_btHelp == null) {
             _btHelp = new JButtonOperator(this, "Help");
         }
         return _btHelp;
@@ -332,7 +338,6 @@ public class RepositoryStepOperator extends WizardOperator {
     //****************************************
     // Low-level functionality definition part
     //****************************************
-
     /** clicks on "Proxy Configuration..." JButton
      */
     public void proxyConfiguration() {
@@ -402,30 +407,35 @@ public class RepositoryStepOperator extends WizardOperator {
 
     /** clicks on "< Back" JButton
      */
+    @Override
     public void back() {
         btBack().push();
     }
 
     /** clicks on "Next >" JButton
      */
+    @Override
     public void next() {
         btNext().push();
     }
 
     /** clicks on "Finish" JButton
      */
+    @Override
     public void finish() {
         btFinish().push();
     }
 
     /** clicks on "Cancel" JButton
      */
+    @Override
     public void cancel() {
         btCancel().push();
     }
 
     /** clicks on "Help" JButton
      */
+    @Override
     public void help() {
         btHelp().push();
     }
@@ -434,10 +444,10 @@ public class RepositoryStepOperator extends WizardOperator {
     //*****************************************
     // High-level functionality definition part
     //*****************************************
-
     /**
      * Performs verification of CheckoutWizardOperator by accessing all its components.
      */
+    @Override
     public void verify() {
         lblSteps();
         lstSteps();

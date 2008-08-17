@@ -209,6 +209,7 @@ protected static int repeat = 4
     /**
      * SetUp test cases: redirect log/ref, initialize performance data.
      */
+    @Override
     public void setUp() {
         //checkScanFinished();
 // has to be resolved in new test model execution        
@@ -237,6 +238,7 @@ protected static int repeat = 4
      * TearDown test cases: call method <code>call()</code> and closing all modal dialogs.
      * @see close
      */
+    @Override
     public void tearDown() {
         // tr = null;
         //close();
@@ -286,13 +288,13 @@ protected static int repeat = 4
 
         // filter default button on Vista - see issue 100961
         if("Windows Vista".equalsIgnoreCase(System.getProperty("os.name",""))){
-            repaintManager().addRegionFilter(repaintManager().VISTA_FILTER);
+            repaintManager().addRegionFilter(LoggingRepaintManager.VISTA_FILTER);
         }
         
         String performanceDataName = setPerformanceName();
 
         tr.startNewEventList(performanceDataName);
-        tr.add(tr.TRACK_CONFIG_APPLICATION_MESSAGE, "Expected_time="+expectedTime+
+        tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "Expected_time="+expectedTime+
                 ", Repeat="+repeat+
                 ", Wait_after_prepare="+WAIT_AFTER_PREPARE+
                 ", Wait_after_open="+WAIT_AFTER_OPEN+
@@ -321,14 +323,14 @@ protected static int repeat = 4
 
                     logMemoryUsage();
 
-                    tr.add(tr.TRACK_TRACE_MESSAGE,OPEN_BEFORE);
+                    tr.add(ActionTracker.TRACK_TRACE_MESSAGE,OPEN_BEFORE);
                     testedComponentOperator = open();
-                    tr.add(tr.TRACK_TRACE_MESSAGE,OPEN_AFTER);
+                    tr.add(ActionTracker.TRACK_TRACE_MESSAGE,OPEN_AFTER);
 
                     // this is to optimize delays
                     long wait_time = (wait_after_open_heuristic>WAIT_AFTER_OPEN)?WAIT_AFTER_OPEN:wait_after_open_heuristic;
-                    tr.add(tr.TRACK_CONFIG_APPLICATION_MESSAGE, "Wait_after_open_heuristic="+wait_time);
-                    Thread.currentThread().sleep(wait_time);
+                    tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "Wait_after_open_heuristic="+wait_time);
+                    Thread.sleep(wait_time);
                     waitNoEvent(wait_time/4);
 
                     logMemoryUsage();
@@ -339,7 +341,7 @@ protected static int repeat = 4
                     new QueueTool().waitEmpty();
 
                     measuredTime[i] = getMeasuredTime();
-                    tr.add(tr.TRACK_APPLICATION_MESSAGE, "Measured Time="+measuredTime[i], true);
+                    tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "Measured Time="+measuredTime[i], true);
                     // negative HEURISTIC_FACTOR disables heuristic
                     if (HEURISTIC_FACTOR > 0) {
                         wait_after_open_heuristic = (long) (measuredTime[i] * HEURISTIC_FACTOR);
@@ -366,7 +368,7 @@ protected static int repeat = 4
                         // Uncomment if you want to run with analyzer tool
                         // com.sun.forte.st.collector.CollectorAPI.pause ();
 
-                        tr.add(tr.TRACK_TRACE_MESSAGE, "CLOSE - before");
+                        tr.add(ActionTracker.TRACK_TRACE_MESSAGE, "CLOSE - before");
                         close();
 
                         closeAllModal();
@@ -387,7 +389,7 @@ protected static int repeat = 4
             tr.startNewEventList("shutdown hooks");
             shutdown();
             closeAllDialogs();
-            tr.add(tr.TRACK_APPLICATION_MESSAGE, "AFTER SHUTDOWN");
+            tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "AFTER SHUTDOWN");
         }catch (Exception e) { // catch for initialize(), shutdown(), closeAllDialogs()
             log("----------------------- Exception rises while shuting down / initializing: " + e);
             e.printStackTrace(getLog());
@@ -711,7 +713,7 @@ protected static int repeat = 4
             Runtime runtime = Runtime.getRuntime();
             long totalMemory = runtime.totalMemory();
             long freeMemory = runtime.freeMemory();
-            tr.add(tr.TRACK_APPLICATION_MESSAGE, "Memory used="+ (totalMemory-freeMemory) +" total="+totalMemory);
+            tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "Memory used="+ (totalMemory-freeMemory) +" total="+totalMemory);
         }
     }
 
@@ -724,11 +726,11 @@ protected static int repeat = 4
             try{
                 System.runFinalization();
                 System.gc();
-                Thread.currentThread().sleep(500);
+                Thread.sleep(500);
                 System.gc();
-                Thread.currentThread().sleep(500);
+                Thread.sleep(500);
                 System.gc();
-                Thread.currentThread().sleep(500);
+                Thread.sleep(500);
             }catch(Exception exc){
                 exc.printStackTrace(System.err);
             }
@@ -990,13 +992,15 @@ protected static int repeat = 4
      * done if your tests extend PerformanceTestCase.
      * @return testCaseName (all '|' are replaced by '#' if it was changed if not call super.getName() !
      */
+    @Override
     public String getName(){
         String originalTestCaseName = super.getName();
 
         if(renamedTestCaseName.containsKey(originalTestCaseName))
             return (renamedTestCaseName.get(originalTestCaseName)).replace('|','-'); // workarround for problem on Win, there isn't possible cretae directories with '|'
-        else
-            return originalTestCaseName;
+        else {
+            return this.getClass().getSimpleName() + "." + originalTestCaseName;
+        }
     }
 
     /**

@@ -51,6 +51,7 @@ import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -222,21 +223,10 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
     }
 
     private boolean validateComponent() {
-        String phpInterpreter = phpOptionsPanel.getPhpInterpreter();
-        if (phpInterpreter.length() > 0) {
-            File file = new File(phpInterpreter);
-            if (!file.isAbsolute()) {
-                phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_PhpNotAbsolutePath"));
-                return false;
-            }
-            if (!file.isFile()) {
-                phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_PhpNotFile"));
-                return false;
-            }
-            if (!file.canRead()) {
-                phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_PhpCannotRead"));
-                return false;
-            }
+        String err = Utils.validatePhpInterpreter(phpOptionsPanel.getPhpInterpreter());
+        if (err != null) {
+            phpOptionsPanel.setError(err);
+            return false;
         }
         Integer debuggerPort = phpOptionsPanel.getDebuggerPort();
         if (debuggerPort == null || debuggerPort < 1) {

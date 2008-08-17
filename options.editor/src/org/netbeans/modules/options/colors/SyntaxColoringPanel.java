@@ -450,6 +450,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             (Preview.PROP_CURRENT_ELEMENT, this);
         listen = false;
         List<String> languages = new ArrayList<String>(colorModel.getLanguages ());
+        languages.remove ("text/x-all-languages");
         Collections.sort (languages, new LanguagesComparator ());
         Iterator it = languages.iterator ();
         Object lastLanguage = cbLanguage.getSelectedItem ();

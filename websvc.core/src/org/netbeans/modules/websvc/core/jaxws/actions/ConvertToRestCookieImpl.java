@@ -42,20 +42,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.core.jaxws.nodes.JaxWsNode;
 import org.netbeans.modules.websvc.core.jaxws.saas.RestResourceGenerator;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -75,6 +70,7 @@ public class ConvertToRestCookieImpl implements ConvertToRestCookie {
             FileObject fo = node.getLookup().lookup(FileObject.class);
             JAXWSSupport support = JAXWSSupport.getJAXWSSupport(fo);
             Service service = node.getLookup().lookup(Service.class);
+            String packageName = getPackageName(service.getImplementationClass());
             String wsdlFileName = service.getLocalWsdlFile();
             URL wsdlURL = null;
             if (wsdlFileName != null) {  //fromWsdl
@@ -82,30 +78,19 @@ public class ConvertToRestCookieImpl implements ConvertToRestCookie {
                 File urlFile = new File(support.getLocalWsdlFolderForService(service.getName(), false) + "/" + wsdlFileName);
                 wsdlURL = urlFile.getCanonicalFile().toURL();
             } else {   //fromJava
-
-                Project project = FileOwnerQuery.getOwner(fo);
-                invokeWsGen(service.getName(), project);  //generate the wsdl
-                AntProjectHelper helper = support.getAntProjectHelper();
-                EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                String propValue = props.get("build.generated.dir");  //NOI18N
-
-                PropertyEvaluator evaluator = helper.getStandardPropertyEvaluator();
-                String buildGenDir = evaluator.evaluate(propValue);
-                String relativePath = buildGenDir + File.separator + "wsgen" + File.separator + "service" + File.separator + "resources"; //NOI18N
-
-                FileObject wsdlDir = project.getProjectDirectory().getFileObject(relativePath);
-                FileObject wsdlFile = wsdlDir.getFileObject(service.getName() + ".wsdl");
-                if (wsdlFile != null) {
-                    File file = FileUtil.toFile(wsdlFile);
-                    wsdlURL = file.getCanonicalFile().toURL();
-                }
+              wsdlURL = new URL(node.getWsdlURL() );
 
             }
-            RestResourceGenerator generator = new RestResourceGenerator(fo.getParent(), wsdlURL);
+            RestResourceGenerator generator = new RestResourceGenerator(fo.getParent(), wsdlURL, packageName);
             generator.generate();
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
+    }
+
+    private String getPackageName(String implementationClass){
+        int index = implementationClass.lastIndexOf(".");
+        return implementationClass.substring(0, index);
     }
 
     private void invokeWsGen(String serviceName, Project project) {

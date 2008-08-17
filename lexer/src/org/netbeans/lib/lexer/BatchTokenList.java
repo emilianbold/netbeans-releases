@@ -145,7 +145,7 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
         return rawOffset;
     }
 
-    public int tokenOffsetByIndex(int index) {
+    public int tokenOffset(int index) {
         AbstractToken<T> token = existingToken(index);
         int offset;
         if (token.isFlyweight()) {
@@ -211,7 +211,7 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
     public int endOffset() {
         int cntM1 = tokenCount() - 1;
         if (cntM1 >= 0)
-            return tokenOffsetByIndex(cntM1) + tokenOrEmbeddingImpl(cntM1).token().length();
+            return tokenOffset(cntM1) + tokenOrEmbeddingImpl(cntM1).token().length();
         return 0;
     }
 

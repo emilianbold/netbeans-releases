@@ -134,6 +134,10 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public static final String JNLP_APPLET_WIDTH = "jnlp.applet.width";
     public static final String JNLP_APPLET_HEIGHT = "jnlp.applet.height";
     
+    // property to be set when enabling javawebstart to disable Compile on Save feature
+    // javawebstart project needs to be built completly before it could be run
+    public static final String COS_UNSUPPORTED_PROPNAME = "compile.on.save.unsupported.javawebstart";
+
     // special value to persist Ant script handling
     public static final String CB_URL_WEB_PROP_VALUE = "$$$$codebase";
     
@@ -148,7 +152,14 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     public static final String extResSuffixes[] = new String[] { "href", "name", "version" };
     public static final String appletParamsSuffixes[] = new String[] { "name", "value" };
-    
+
+    public static final String CONFIG_LABEL_PROPNAME = "$label";
+    public static final String CONFIG_TARGET_RUN_PROPNAME = "$target.run";
+    public static final String CONFIG_TARGET_DEBUG_PROPNAME = "$target.debug";
+
+    public static final String CONFIG_TARGET_RUN = "jws-run";
+    public static final String CONFIG_TARGET_DEBUG = "jws-debug";
+
     private DescType selectedDescType = null;
     
     // Models 

@@ -72,6 +72,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * Manage a set of CompilerSets. The CompilerSets are dynamically created based on which compilers
@@ -122,6 +123,8 @@ public class CompilerSetManager {
     private final String hkey;
     private Object state;
     private int platform = -1;
+    private Task remoteInitialization;
+    
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     /**
@@ -162,11 +165,6 @@ public class CompilerSetManager {
             }
         }
         
-        if (csm.state == STATE_UNINITIALIZED && !SwingUtilities.isEventDispatchThread()) {
-            log.fine("CSM.getDefault: Doing deferred remote setup");
-            csm.sets.clear();
-            csm.initRemoteCompilerSets(key);
-        }
         if (no_compilers) {
             DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 new NoCompilersPanel(),
@@ -234,7 +232,7 @@ public class CompilerSetManager {
             state = STATE_COMPLETE;
         } else {
             log.fine("CSM.init: initializing remote compiler set for: " + hkey);
-            initRemoteCompilerSets(hkey);
+            initRemoteCompilerSets(hkey, false);
         }
     }
 
@@ -250,6 +248,18 @@ public class CompilerSetManager {
         return state == STATE_UNINITIALIZED;
     }
 
+    public synchronized void initialize() {
+        if (isUninitialized()) {
+            log.fine("CSM.getDefault: Doing remote setup from EDT?" + SwingUtilities.isEventDispatchThread());
+            this.sets.clear();
+            initRemoteCompilerSets(this.hkey, true);
+            if (remoteInitialization != null) {
+                remoteInitialization.waitFinished();
+                remoteInitialization = null;
+            }
+        }
+    }
+    
     public int getPlatform() {
         if (platform < 0) {
             if (hkey.equals(LOCALHOST)) {
@@ -285,7 +295,7 @@ public class CompilerSetManager {
             return PlatformTypes.PLATFORM_GENERIC;
         }
     }
-
+    
     public CompilerSetManager deepCopy() {
         waitForCompletion(); // in case its a remote connection...
         List<CompilerSet> setsCopy =  new ArrayList<CompilerSet>();
@@ -365,18 +375,24 @@ public class CompilerSetManager {
     }
 
     /** Initialize remote CompilerSets */
-    private void initRemoteCompilerSets(final String key) {
+    private synchronized void initRemoteCompilerSets(final String key, boolean connect) {
+        if (state == STATE_COMPLETE) {
+            return;
+        }
+        if (remoteInitialization != null) {
+            return;
+        }
         final CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
-        ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        ServerList registry = Lookup.getDefault().lookup(ServerList.class);
         assert registry != null;
         assert provider != null;
         ServerRecord record = registry.get(key);
         assert record != null;
 
         log.warning("CSM.initRemoteCompilerSets for " + key + " [" + state + "]");
-        record.validate();
+        record.validate(connect);
         if (record.isOnline()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            remoteInitialization = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     provider.init(key);
                     platform = provider.getPlatform();
@@ -439,13 +455,9 @@ public class CompilerSetManager {
                         setsCopy = new ArrayList<CompilerSet>();
                         setsCopy.addAll(sets);
                     }
-                    provider.loadCompilerSetData(setsCopy);
-                    // TODO: this should be upgraded to error reporting
-                    // about absence of tool chain on remote host
-                    // also compilersetmanager without compiler sets
-                    // should be handled gracefully
                     log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
                     state = STATE_COMPLETE;
+                    provider.loadCompilerSetData(setsCopy);
                 }
             });
         } else {

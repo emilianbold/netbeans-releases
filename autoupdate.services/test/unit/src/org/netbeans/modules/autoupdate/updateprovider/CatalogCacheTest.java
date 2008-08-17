@@ -76,8 +76,8 @@ public class CatalogCacheTest extends NbTestCase {
     
     public void testCompareOriginalAndCache () throws IOException, SAXException {
         assertEquals ("Number of items is same in both places.",
-                AutoupdateCatalogParser.getUpdateItems(URL_TO_TEST_CATALOG, URL_TO_TEST_CATALOG).size (),
-                AutoupdateCatalogParser.getUpdateItems (cache.writeCatalogToCache("test-catalog", URL_TO_TEST_CATALOG), URL_TO_TEST_CATALOG).size ());
+                AutoupdateCatalogParser.getUpdateItems(URL_TO_TEST_CATALOG, null).size (),
+                AutoupdateCatalogParser.getUpdateItems (cache.writeCatalogToCache("test-catalog", URL_TO_TEST_CATALOG), null).size ());
     }
     
     public void testGetCatalogURL () throws IOException {

@@ -84,6 +84,7 @@ public class DerivationClassifierWidget extends UMLNodeWidget implements Propert
         setOpaque(true);
         ResourceValue.initResources(getResourcePath(), this);
         setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
     }
 
     private DefaultContextPaletteModel initializeContextPalette()
@@ -108,6 +109,7 @@ public class DerivationClassifierWidget extends UMLNodeWidget implements Propert
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
+        super.propertyChange(event);
         nameWidget.propertyChange(event);
     }
     

@@ -99,6 +99,7 @@ public class JavaTypeProvider implements TypeProvider {
     }
     
     public void cleanup() {
+        isCanceled = false;
         cache = null;
         if (pathListener != null)
             GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(pathListener);
@@ -135,6 +136,7 @@ public class JavaTypeProvider implements TypeProvider {
 //    }
 
     public void computeTypeNames(Context context, Result res) {
+        isCanceled = false;
         String text = context.getText();
         SearchType searchType = context.getSearchType();
         

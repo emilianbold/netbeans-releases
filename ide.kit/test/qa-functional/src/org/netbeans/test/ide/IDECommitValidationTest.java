@@ -88,7 +88,7 @@ public class IDECommitValidationTest extends JellyTestCase {
         if (blacklistEnabled) {
             conf = conf.addTest("testBlacklistedClassesHandler");
         }
-        conf = conf.addTest("testInitGCProjects");
+        conf = conf.addTest("testInitGC");
         conf = conf.addTest("testMainMenu");
         conf = conf.addTest("testHelp");
         conf = conf.addTest("testOptions");
@@ -106,7 +106,8 @@ public class IDECommitValidationTest extends JellyTestCase {
         conf = conf.addTest("testXML");
         conf = conf.addTest("testDb");
         conf = conf.addTest("testWindowSystem");
-        conf = conf.addTest("testGCProjects");
+//        conf = conf.addTest("testGCDocuments");
+//        conf = conf.addTest("testGCProjects");
         // not in commit suite because it needs net connectivity
         // suite.addTest(new IDEValidation("testPlugins"));
         return NbModuleSuite.create(conf);

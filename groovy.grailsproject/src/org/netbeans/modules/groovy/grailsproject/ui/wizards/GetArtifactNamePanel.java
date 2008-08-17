@@ -66,48 +66,56 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         String dirPrefix  = "";
         
         switch(cat){
-            case DOMAIN:
+            case GRAILSAPP_DOMAIN:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_DOMAIN")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewDomain"));
                 subDirName = "domain";
                 dirPrefix = "grails-app" + File.separatorChar;
                 break;
-            case CONTROLLERS:
+            case GRAILSAPP_CONTROLLERS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_CONTROLLERS")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewController"));
                 subDirName = "controllers";
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "Controller";
                 break;
-            case SERVICES:
+            case GRAILSAPP_SERVICES:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SERVICES")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewService"));
                 subDirName = "services";
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "Service";
                 break; 
-            case VIEWS:
+            case GRAILSAPP_VIEWS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_VIEWS")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewView"));
                 subDirName = "views";
                 dirPrefix = "grails-app" + File.separatorChar;
                 break;    
-            case TAGLIB:
+            case GRAILSAPP_TAGLIB:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewTaglib"));
                 subDirName = "taglib";
                 dirPrefix = "grails-app" + File.separatorChar;
                 suffix = "TagLib";
                 break;    
-            case INTEGRATION_TESTS:
-                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
+            case TEST_INTEGRATION:
+                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_INTEGRATION")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewIntegrationTest"));
                 subDirName = "integration";
                 dirPrefix = "test" + File.separatorChar;
                 suffix = "Tests";
                 break;
-            case UNIT_TESTS:
-                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
+            case TEST_UNIT:
+                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_UNIT")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewUnitTest"));
                 subDirName = "unit";
                 dirPrefix = "test" + File.separatorChar;
                 suffix = "UnitTests";
                 break;
             case SCRIPTS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SCRIPTS")); // NOI18N
+                setTitle(NbBundle.getMessage(GetArtifactNamePanel.class,"TXT_NewScript"));
                 subDirName = "scripts";
                 break;    
             }
@@ -220,6 +228,11 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
     private javax.swing.JTextField projectTextField;
     // End of variables declaration//GEN-END:variables
 
+
+    private void setTitle(String title) {
+        putClientProperty("NewFileWizard_Title", title); // NOI18N
+        getAccessibleContext().setAccessibleName(title);
+    }
     
     public void insertUpdate(DocumentEvent e) {
         updateTexts( e ) ;
@@ -241,7 +254,14 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 
         if ( doc == classNameTextField.getDocument() ) {
             
-            fileName = baseDir + File.separatorChar + classNameTextField.getText() + suffix + ".groovy";
+            String artifactName = classNameTextField.getText();
+            // there can be package name as part of the artifact name,
+            // we don't have package chooser in this wizard
+            if (artifactName.indexOf('.') != -1) {
+                artifactName = artifactName.replace('.', File.separatorChar);
+            }
+            
+            fileName = baseDir + File.separatorChar + artifactName + suffix + ".groovy";
             createdFileTextField.setText(fileName);
             projectTextField.setText(project.getProjectDirectory().getName());
             

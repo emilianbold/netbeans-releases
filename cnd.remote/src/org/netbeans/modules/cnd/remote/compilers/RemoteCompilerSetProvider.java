@@ -55,13 +55,14 @@ import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager
 public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
     private CompilerSetScriptManager manager;
-    private Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private String hkey;
     
     public void init(String hkey) {
         this.hkey = hkey;
         manager = new CompilerSetScriptManager();
         new RemoteScriptSupport(hkey, manager);
+
     }
     
     public int getPlatform() {

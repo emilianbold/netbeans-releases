@@ -431,7 +431,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         String wsdlFilePath = jTextFieldWSDLFile.getText().trim();
 
         if (wsdlFilePath.length() == 0) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, // NOI18N
                     NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_EnterWsdlName")); // NOI18N
             return false; // unspecified WSDL file
         }
