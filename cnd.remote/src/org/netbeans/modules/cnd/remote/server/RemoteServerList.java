@@ -297,11 +297,11 @@ public class RemoteServerList implements ServerList {
         if (SwingUtilities.isEventDispatchThread()) {
             log.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
         }
-        String cmd = "PATH=/bin:/usr/bin:$PATH test -x " + path; // NOI18N
+        String cmd = "test -x " + path; // NOI18N
         int exit_status = RemoteCommandSupport.run(hkey, cmd);
         if (exit_status != 0 && !IpeUtils.isPathAbsolute(path)) {
             // Validate 'path' against user's PATH.
-            cmd = "PATH=/bin:/usr/bin:$PATH test -x " + "`which " + path + "`"; // NOI18N
+            cmd = "test -x " + "`which " + path + "`"; // NOI18N
             exit_status = RemoteCommandSupport.run(hkey, cmd);
         }
         return exit_status == 0;

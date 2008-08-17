@@ -50,6 +50,7 @@ import org.netbeans.api.lexer.Token;
 public interface CppTokenProcessor {
     void start(int startOffset, int firstTokenOffset);
     void end(int offset, int lastTokenOffset);
+    int getLastSeparatorOffset();
 
     /**
      *

@@ -75,6 +75,9 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
                     public boolean isValid() {
                         return true;
                     }
+
+                    public void cancel() {
+                    }
                 };
             }
         } catch (DataObjectNotFoundException ex)  {

@@ -129,7 +129,13 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                                         //try {
                                         java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
                                         CommandRunner mgr = new CommandRunner(ip);
-                                        retVal.initializeData(getDisplayName(), mgr.getResourceData(getDisplayName()));
+                                        if (!GlassfishModule.JDBC_RESOURCE.equals(resource.getCommandSuffix())) {
+                                            retVal.initializeData(getDisplayName(), mgr.getResourceData(getDisplayName()));
+                                        } else {
+                                            // jdbc resources need to get connection pool data also, so we cannot
+                                            // filter by the name of the resource here.
+                                            retVal.initializeData(getDisplayName(), mgr.getResourceData(null));
+                                        }
                                     //}
                                     }
                                 }

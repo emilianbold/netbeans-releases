@@ -57,11 +57,6 @@ while [ -h "$PRG" ]; do
     fi
 done
 
-CND=`dirname "$PRG"`
-cd ${CND}
-CND=`pwd`
-cd $OLDPWD
-
 while [ -n "$1" ]
 do
     case "$1" in
@@ -117,8 +112,13 @@ do
     shift
 done
 
-DEFAULT_NB="${CND}/../nbbuild/netbeans"
-NBDIST="${NBDIST-${DEFAULT_NB}}"
+if [ -z "${NBDIST}" ]; then
+	CND=`dirname "$PRG"`
+	cd ${CND}
+	CND=`pwd`
+	cd $OLDPWD
+	NBDIST="${CND}/../nbbuild/netbeans"
+fi
 
 if [ -z "${NBDIST}" ]; then
 	echo "Please specify NBDIST environment variable; it should point to Netbeans installation"

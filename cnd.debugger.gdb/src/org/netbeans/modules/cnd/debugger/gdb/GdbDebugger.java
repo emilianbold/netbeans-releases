@@ -2614,6 +2614,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         if (conf.isDynamicLibraryConfiguration()) {
                             String proot = FileUtil.getFileDisplayName(proj.getProjectDirectory());
                             String output = proot + "/" + conf.getLinkerConfiguration().getOutputValue();
+                            output = conf.expandMacros(output); // expand macros (FIXUP: needs verification)
                             if (output.equals(path)) {
                                 this.project = proj;
                                 return true;

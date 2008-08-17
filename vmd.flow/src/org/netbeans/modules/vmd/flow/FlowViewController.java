@@ -92,8 +92,6 @@ public class FlowViewController implements DesignDocumentAwareness {
                     return super.requestFocusInWindow();
             }
         };
-        // vlv: print
-        visual.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
 
         toolbar = new JToolBar ();
         toolbar.setFloatable (false);
@@ -218,6 +216,9 @@ public class FlowViewController implements DesignDocumentAwareness {
 
                 visual.removeAll ();
                 if (view != null) {
+		    // Fix for #142397 - Only visible part of Flow View is printed
+		    view.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+
                     JScrollPane scroll = new JScrollPane (view);
                     scroll.getHorizontalScrollBar ().setUnitIncrement (64);
                     scroll.getHorizontalScrollBar ().setBlockIncrement (256);

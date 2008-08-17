@@ -219,6 +219,8 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
                 }
             }, getScene());
         }
+        
+        super.initializeNode(presentation);
     }
 
     @Override

@@ -127,6 +127,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         }
 
         setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
     }
 
     private Widget createActivityPartitionView(IActivityPartition partitionElement)
@@ -158,6 +159,8 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
 
         partitionPanel = new Widget(scene);
         partitionPanel.setMinimumSize(new Dimension(100, 85));
+        partitionPanel.setForeground(null);
+        
         // TODO: need to find a way to figure out the exisiting orientation of sub parttition
         setOrientation(SeparatorWidget.Orientation.VERTICAL); 
         if (!PersistenceUtil.isDiagramLoading())
@@ -472,6 +475,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
                                String propDisplayName)
         {
             super(scene, propID, propDisplayName);
+            setForeground(null);
         }
 
         @Override
