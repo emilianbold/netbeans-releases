@@ -2305,7 +2305,13 @@ public class CodeCompleter implements CodeCompletionHandler {
                 methodName = request.prefix;
             }
             
-            Set<IndexedMethod> methods = index.getMethods(methodName, declaringClass.getName(), NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
+            Set<IndexedMethod> methods;
+            
+            if(methodName.equals("")) {
+                methods = index.getMethods(".*", declaringClass.getName(), NameKind.REGEXP, EnumSet.allOf(SearchScope.class));
+            } else {
+                methods = index.getMethods(methodName, declaringClass.getName(), NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
+            }
 
             if (methods.size() == 0) {
                 LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
