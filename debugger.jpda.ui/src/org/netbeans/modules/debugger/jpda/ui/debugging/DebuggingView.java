@@ -321,7 +321,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         }
         if (threadsListener == null) {
             threadsListener = ThreadsListener.getDefault();
-            threadsListener.setDebuggingView(this);
+            if (threadsListener != null) {
+                threadsListener.setDebuggingView(this);
+            }
         }
         if (engine != null) {
             final JPDADebugger deb = engine.lookupFirst(null, JPDADebugger.class);
@@ -352,7 +354,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 this.debugger = null;
                 this.session = null;
             }
-            threadsListener.changeDebugger(null);
+            if (threadsListener != null) {
+                threadsListener.changeDebugger(null);
+            }
         }
         Node root;
         if (model == null) {
@@ -434,7 +438,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     @Override
     protected void componentHidden() {
         super.componentHidden ();
-        viewModelListener.destroy ();
+        if (viewModelListener != null) {
+            viewModelListener.destroy ();
+        }
     }
 
     @Override
@@ -539,7 +545,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             sessionComboBox.addItem(new SessionItem(null));
         }
         sessionComboBox.setSelectedItem(new SessionItem(dm.getCurrentSession()));
-        //sessionComboBox.setEnabled(model.getSize() > 1);
+        sessionComboBox.setVisible(model.getSize() > 1);
         sessionComboBox.addActionListener(sessionsComboListener);
         sessionComboBox.addPopupMenuListener(sessionsComboListener);
     }
@@ -761,8 +767,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             mainScrollPane.revalidate();
             mainPanel.revalidate();
             treeView.repaint();
-
-            updateSessionsComboBox(); // [TODO]
         }
 
         private void addPanels(Object jpdaObject, boolean current, boolean atBreakpoint,
