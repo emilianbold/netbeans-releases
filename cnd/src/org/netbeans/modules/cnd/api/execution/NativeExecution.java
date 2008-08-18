@@ -43,9 +43,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.LocalNativeExecution;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.openide.util.Lookup;
@@ -118,7 +122,36 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
     
     public abstract void stop();
     
-    protected final String getUnbufferName(int platform) {
+    public final String[] prepareEnvironment(String[] envp, boolean unbuffer) {
+        List<String> envpList = new ArrayList<String>();
+        if (envp != null) {
+            envpList.addAll(Arrays.asList(envp));
+        }
+        envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
+
+        if (unbuffer) {
+            int platformType  = (host == null) ? PlatformInfo.localhost().getPlatform() : PlatformInfo.getDefault(host).getPlatform();
+            String unbufferPath = getUnbufferPath(platformType);
+            if (unbufferPath != null) {
+                if (platformType == PlatformTypes.PLATFORM_MACOSX) {
+                    envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
+                    envpList.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
+                } else if (platformType == PlatformTypes.PLATFORM_WINDOWS) {
+                    //TODO: issue #144106
+                } else {
+                    envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
+                }
+            }
+        }
+        return envpList.toArray(new String[envpList.size()]);
+    }
+
+    // override in descendants
+    protected String getUnbufferPath(int platformType) {
+        return null;
+    }
+    
+    protected static String getUnbufferName(int platform) {
         switch (platform) {
             case PlatformTypes.PLATFORM_LINUX : return "unbuffer-Linux-x86.so"; // NOI18N
             case PlatformTypes.PLATFORM_SOLARIS_SPARC : return "unbuffer-SunOS-sparc.so"; // NOI18N
