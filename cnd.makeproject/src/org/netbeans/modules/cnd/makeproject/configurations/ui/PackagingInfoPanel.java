@@ -469,6 +469,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
             } else {
                 assert false;
             }
+            elem.setDefaultValue(false);
         }
     }
     /** Look up i18n strings here */

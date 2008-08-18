@@ -47,17 +47,20 @@ public class InfoElement {
     private String name;
     private String value;
     private boolean mandatory;
+    private boolean defaultValue;
     
     public InfoElement(String name, String value) {
         this.name = name;
         this.value = value;
         this.mandatory = false;
+        this.defaultValue = false;
     }
     
-    public InfoElement(String name, String value, boolean mandatory) {
+    public InfoElement(String name, String value, boolean mandatory, boolean defaultValue) {
         this.name = name;
         this.value = value;
         this.mandatory = mandatory;
+        this.defaultValue = defaultValue;
     }
 
     public String getName() {
@@ -82,5 +85,13 @@ public class InfoElement {
 
     public void setMandatory(boolean mandatory) {
         this.mandatory = mandatory;
+    }
+
+    public boolean isDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(boolean defaultValue) {
+        this.defaultValue = defaultValue;
     }
 }

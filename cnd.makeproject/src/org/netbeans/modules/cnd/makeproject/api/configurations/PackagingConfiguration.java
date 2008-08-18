@@ -42,6 +42,8 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
@@ -53,6 +55,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.PackagingNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement.FileType;
+import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -92,42 +95,71 @@ public class PackagingConfiguration {
     }
     
     public void setDefaultValues() {
-        if (files.getValue().size() == 0) {
-            String perm = MakeOptions.getInstance().getDefExePerm();
-            String packageDir = "MyPackage/bin"; // NOI18N
-            
-            if (makeConfiguration.isMakefileConfiguration()) {
-                perm = MakeOptions.getInstance().getDefExePerm();
-                packageDir = "MyPackage/bin"; // NOI18N
-            } else if (makeConfiguration.isApplicationConfiguration()) {
-                perm = MakeOptions.getInstance().getDefExePerm();
-                packageDir = "MyPackage/bin"; // NOI18N
-            } else if (makeConfiguration.isLibraryConfiguration()) {
-                perm = MakeOptions.getInstance().getDefFilePerm();
-                packageDir = "MyPackage/lib"; // NOI18N
-            }
-            else {
-                assert false;
-            }
-            FileElement elem = new FileElement(
-                    FileType.FILE,
-                    "${OUTPUT_PATH}", // NOI18N
-                    packageDir + "/${OUTPUT_BASENAME}", // NOI18N
-                    perm,
-                    MakeOptions.getInstance().getDefOwner(),
-                    MakeOptions.getInstance().getDefGroup());
-            elem.setDefaultValue(true);
-            files.add(elem);
+        // Init default values
+        String perm = MakeOptions.getInstance().getDefExePerm();
+        String packageDir = "MyPackage/bin"; // NOI18N
+
+        if (makeConfiguration.isMakefileConfiguration()) {
+            perm = MakeOptions.getInstance().getDefExePerm();
+            packageDir = "MyPackage/bin"; // NOI18N
+        } else if (makeConfiguration.isApplicationConfiguration()) {
+            perm = MakeOptions.getInstance().getDefExePerm();
+            packageDir = "MyPackage/bin"; // NOI18N
+        } else if (makeConfiguration.isLibraryConfiguration()) {
+            perm = MakeOptions.getInstance().getDefFilePerm();
+            packageDir = "MyPackage/lib"; // NOI18N
         }
+        else {
+            assert false;
+        }
+        FileElement elem = new FileElement(
+                FileType.FILE,
+                "${OUTPUT_PATH}", // NOI18N
+                packageDir + "/${OUTPUT_BASENAME}", // NOI18N
+                perm,
+                MakeOptions.getInstance().getDefOwner(),
+                MakeOptions.getInstance().getDefGroup());
+        elem.setDefaultValue(true);
+        files.add(elem);
+        
+        String defArch = getString("DefaultArchictureValue");
+        if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
+            defArch = "i386"; // NOI18N
+        }
+        else if (makeConfiguration.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC) {
+            defArch = "sparc"; // NOI18N
+        }
+        List<InfoElement> headerList = getHeader().getValue();
+        headerList.add(new InfoElement("PKG", "MyPackage", true, true)); // NOI18N
+        headerList.add(new InfoElement("NAME", "Package description ...", true, true)); // NOI18N
+        headerList.add(new InfoElement("ARCH", defArch, true, true)); // NOI18N
+        headerList.add(new InfoElement("CATEGORY", "application", true, true)); // NOI18N
+        headerList.add(new InfoElement("VERSION", "1.0", true, true)); // NOI18N
+        headerList.add(new InfoElement("BASEDIR", "/opt", false, true)); // NOI18N
+        headerList.add(new InfoElement("PSTAMP", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), false, true)); // NOI18N
+        headerList.add(new InfoElement("CLASSES", "none", false, true)); // NOI18N
     }
     
     public boolean isModified() {
-        if (files.getValue().size() == 0) {
+        if (getType().getModified()) {
+            return true;
+        }
+        if (files.getValue().size() != 1) {
             return true;
         }
         for (FileElement elem : (List<FileElement>)files.getValue()) {
             if (!elem.isDefaultValue()) {
                 return true;
+            }
+        }
+        if (getType().getValue() == TYPE_SVR4_PACKAGE) {
+            if (header.getValue().size() != 8) {
+                return true;
+            }
+            for (InfoElement elem : (List<InfoElement>)header.getValue()) {
+                if (!elem.isDefaultValue()) {
+                    return true;
+                }
             }
         }
         return false;

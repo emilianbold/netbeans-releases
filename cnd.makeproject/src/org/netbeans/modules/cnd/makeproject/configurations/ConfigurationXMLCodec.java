@@ -251,6 +251,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(PACK_ELEMENT)) {
             currentPackagingConfiguration = ((MakeConfiguration)currentConf).getPackagingConfiguration();
             currentPackagingConfiguration.getFiles().getValue().clear();
+            //currentPackagingConfiguration.getHeader().getValue().clear();
+        } else if (element.equals(PACK_INFOS_LIST_ELEMENT)) {
+            currentPackagingConfiguration.getHeader().getValue().clear();
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration)currentConf).getArchiverConfiguration();
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
@@ -312,7 +315,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String name = atts.getValue(NAME_ATTR); // NOI18N
             String value = atts.getValue(VALUE_ATTR); // NOI18N
             String mandatory = atts.getValue(MANDATORY_ATTR); // NOI18N
-            InfoElement infoElement = new InfoElement(name, value, mandatory.equals(TRUE_VALUE));
+            InfoElement infoElement = new InfoElement(name, value, mandatory.equals(TRUE_VALUE), false);
             if (currentPackagingConfiguration != null)
                 currentPackagingConfiguration.getHeader().add(infoElement);
         }
