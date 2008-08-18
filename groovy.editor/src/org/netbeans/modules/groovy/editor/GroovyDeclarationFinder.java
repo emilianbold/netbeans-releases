@@ -43,7 +43,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.Trees;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -94,7 +93,6 @@ import org.netbeans.modules.gsf.api.NameKind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.netbeans.api.java.source.ui.ElementOpen;
-import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
     
 /**
  *
@@ -699,7 +697,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder{
             }
             if (fqn != null) {
                 for (IndexedMethod method : methods) {
-                    if (fqn.equals(method.getClz())) {
+                    if (fqn.equals(method.getIn())) {
                         candidates.add(method);
                     }
                 }
