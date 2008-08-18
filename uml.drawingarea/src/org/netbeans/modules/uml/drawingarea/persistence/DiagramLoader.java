@@ -737,7 +737,14 @@ class DiagramLoader
             Point position = null;
             Dimension size = null;
             String peid = reader.getAttributeValue(null, "xmi.id");
-            NodeInfo parentNodeInfo = graphNodeReaderStack.peek().getNodeInfo();
+            
+            GraphNodeReader nodeReader = graphNodeReaderStack.peek();
+            NodeInfo parentNodeInfo = null;
+            if(nodeReader != null)
+            {
+                parentNodeInfo = graphNodeReaderStack.peek().getNodeInfo();
+            }
+            
             if (parentNodeInfo == null)
                 return;
             while (reader.hasNext())
@@ -986,7 +993,8 @@ class DiagramLoader
                 break;
             }
         }
-        if (connID != null && !nodeID.equals(""))
+        
+        if (connID != null && nodeID != null && !nodeID.equals(""))
         {
             for (IPresentationElement pE : presEltList)
             {
