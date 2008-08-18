@@ -742,7 +742,7 @@ class DiagramLoader
             NodeInfo parentNodeInfo = null;
             if(nodeReader != null)
             {
-                parentNodeInfo = graphNodeReaderStack.peek().getNodeInfo();
+                parentNodeInfo = nodeReader.getNodeInfo();
             }
             
             if (parentNodeInfo == null)
