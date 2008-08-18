@@ -88,8 +88,7 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
         return name;
     }
 
-    // package
-    CsmType getDefaultValue() {
+    public CsmType getDefaultValue() {
         return defaultValue;
     }
     

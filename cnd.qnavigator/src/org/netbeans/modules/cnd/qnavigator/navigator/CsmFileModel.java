@@ -29,7 +29,6 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.Action;
@@ -56,8 +55,8 @@ public class CsmFileModel {
         this.actions = actions;
     }
 
-    public void setFile(CsmFile csmFile){
-        buildModel(csmFile);
+    public boolean setFile(CsmFile csmFile){
+        return buildModel(csmFile);
     }
     
     public Node[] getNodes() {
@@ -73,51 +72,106 @@ public class CsmFileModel {
         return filter;
     }
 
-    public void addOffset(Node node, CsmOffsetable element) {
+    public void addOffset(Node node, CsmOffsetable element, List<IndexOffsetNode> lineNumberIndex) {
         lineNumberIndex.add(new IndexOffsetNode(node,element.getStartOffset(), element.getEndOffset()));
     }
     
-    private void buildModel(CsmFile csmFile) {
-        clear();
+    private boolean buildModel(CsmFile csmFile) {
+        boolean res = true;
+        List<CppDeclarationNode> newList = new ArrayList<CppDeclarationNode>();
+        List<IndexOffsetNode> newLineNumberIndex = new ArrayList<IndexOffsetNode>();
         if (csmFile != null && csmFile.isValid()) {
             if (filter.isApplicableInclude()) {
                 for (CsmInclude element : csmFile.getIncludes()) {
-                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false);
+                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, newLineNumberIndex);
                     if (node != null) {
-                        list.add(node);
+                        newList.add(node);
                     }
                 }
             }
             if (filter.isApplicableMacro()) {
                 for (CsmMacro element : csmFile.getMacros()) {
-                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false);
+                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, newLineNumberIndex);
                     if (node != null) {
-                        list.add(node);
+                        newList.add(node);
                     }
                 }
             }
             for (CsmOffsetableDeclaration element : csmFile.getDeclarations()) {
                 if (filter.isApplicable(element)) {
-                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false);
+                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, newLineNumberIndex);
                     if (node != null) {
-                        list.add(node);
+                        newList.add(node);
                     }
                 }
             }
         }
         if (csmFile != null &&  csmFile.isValid()) {
-            Collections.<CppDeclarationNode>sort(list);
-            Collections.<IndexOffsetNode>sort(lineNumberIndex);
-            resetScope();
+            Collections.<CppDeclarationNode>sort(newList);
+            Collections.<IndexOffsetNode>sort(newLineNumberIndex);
+            resetScope(newLineNumberIndex);
+            if (isNeedChange(newLineNumberIndex)) {
+                clear();
+                list.addAll(newList);
+                lineNumberIndex.addAll(newLineNumberIndex);
+                //System.out.println("Set new navigator model");
+            } else {
+                resetScope(lineNumberIndex);
+                res = false;
+                //System.out.println("Reset navigator model");
+            }
         } else {
-            list.clear();
-            lineNumberIndex.clear();
+            clear();
         }
+        newList.clear();
+        newLineNumberIndex.clear();
+        return res;
     }
 
-    private void resetScope(){
+    private boolean isNeedChange(List<IndexOffsetNode> newLineNumberIndex){
+        if (newLineNumberIndex.size() != lineNumberIndex.size()) {
+            return true;
+        }
+        int i = 0;
+        for (IndexOffsetNode n1 : lineNumberIndex) {
+            if (newLineNumberIndex.size() <= i) {
+                return true;
+            }
+            IndexOffsetNode n2 = newLineNumberIndex.get(i);
+            if (!compareNodeContent(n1, n2)) {
+                return true;
+            }
+            i++;
+        }
+        i = 0;
+        for (IndexOffsetNode n1 : lineNumberIndex) {
+            if (newLineNumberIndex.size() <= i) {
+                return true;
+            }
+            IndexOffsetNode n2 = newLineNumberIndex.get(i);
+            updateNodeContent(n1, n2);
+            i++;
+        }
+        return false;
+    }
+    
+    private boolean compareNodeContent(IndexOffsetNode n1, IndexOffsetNode n2){
+        CppDeclarationNode d1 = (CppDeclarationNode) n1.getNode();
+        CppDeclarationNode d2 = (CppDeclarationNode) n2.getNode();
+        return d1.getName().equals(d2.getName());
+    }
+
+    private void updateNodeContent(IndexOffsetNode n1, IndexOffsetNode n2){
+        CppDeclarationNode d1 = (CppDeclarationNode) n1.getNode();
+        CppDeclarationNode d2 = (CppDeclarationNode) n2.getNode();
+        d1.resetNode(d2);
+        n1.resetContent(n2);
+    }
+
+    
+    private void resetScope(List<IndexOffsetNode> newLineNumberIndex){
         Stack<IndexOffsetNode> stack = new Stack<IndexOffsetNode>();
-        for(IndexOffsetNode node : lineNumberIndex){
+        for(IndexOffsetNode node : newLineNumberIndex){
             while (!stack.empty()) {
                 IndexOffsetNode scope = stack.peek();
                 if (node.getStartOffset() >= scope.getStartOffset() &&

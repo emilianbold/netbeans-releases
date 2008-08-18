@@ -84,7 +84,7 @@ public abstract class CsmReferenceRepository {
      *      self declaration object in collection
      * @return references for target object, empty collection if not found
      */
-    public abstract Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds);
+    public abstract Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds, Interrupter interrupter);
 
     /**
      * look for references of target object in project
@@ -94,7 +94,7 @@ public abstract class CsmReferenceRepository {
      *      self declaration object in collection
      * @return references for target object, empty collection if not found
      */
-    public abstract Collection<CsmReference> getReferences(CsmObject target, CsmFile file, Set<CsmReferenceKind> kinds);
+    public abstract Collection<CsmReference> getReferences(CsmObject target, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter);
     
     /**
      * look for references of target objects in project
@@ -114,7 +114,11 @@ public abstract class CsmReferenceRepository {
      * @return references for target objects in file sorted from beginning, 
      *          empty collection if no references
      */
-    public abstract Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds);
+    public abstract Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter);
+
+    public interface Interrupter {
+        boolean cancelled();
+    }
     
     //
     // Implementation of the default Repository
@@ -123,19 +127,19 @@ public abstract class CsmReferenceRepository {
         Empty() {
         }
 
-        public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds) {
+        public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
             return Collections.<CsmReference>emptyList();
         }
 
-        public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, Set<CsmReferenceKind> kinds) {
+        public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
             return Collections.<CsmObject, Collection<CsmReference>>emptyMap();
         }
 
-        public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, Set<CsmReferenceKind> kinds) {
+        public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
             return Collections.<CsmReference>emptyList();
         }
 
-        public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds) {
+        public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
             return Collections.<CsmReference>emptyList();
         }
     }    
