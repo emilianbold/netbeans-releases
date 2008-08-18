@@ -177,9 +177,6 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 // If we are currently in a string literal.
                 case ISI_STRING:
                     switch (actChar) {
-                        case '\n':
-                            state = INIT;
-                            return factory.createToken(SQLTokenId.INCOMPLETE_STRING, input.readLength(), PartType.START);
                         case '\'': // NOI18N
                             state = INIT;
                             return factory.createToken(SQLTokenId.STRING);
