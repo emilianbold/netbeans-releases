@@ -81,6 +81,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -627,18 +628,23 @@ public class FileObjects {
     
     
     public static String getRelativePath (final File root, final File fo) {
-        final String rootPath = root.getAbsolutePath();
-        final String foPath = fo.getAbsolutePath();
-        assert foPath.startsWith(rootPath) : String.format("getRelativePath(%s, %s)", rootPath, foPath);
-        int index = rootPath.length();
-        if (rootPath.charAt(index-1)!=File.separatorChar) {
-            index++;
-        }            
-        int foIndex = foPath.length();
-        if (foIndex <= index) {
-            return "";  //NOI18N
+        try {
+            final String rootPath = root.getCanonicalPath();
+            final String foPath = fo.getCanonicalPath();
+            assert foPath.startsWith(rootPath) : String.format("getRelativePath(%s, %s)", rootPath, foPath);
+            int index = rootPath.length();
+            if (rootPath.charAt(index - 1) != File.separatorChar) {
+                index++;
+            }
+            int foIndex = foPath.length();
+            if (foIndex <= index) {
+                return ""; //NOI18N
+            }
+            return foPath.substring(index);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return ""; //NOI18N
         }
-        return foPath.substring(index);
     }           
     
     private static class RegularFileObject extends FileBase {
