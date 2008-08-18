@@ -943,7 +943,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     // Implement List SelectionListener
     public void valueChanged(ListSelectionEvent ev) {
 
-        if (!ev.getValueIsAdjusting()) { // we don't want the event until its finished
+        if (!ev.getValueIsAdjusting() && !updating) { // we don't want the event until its finished
             if (ev.getSource() == lstDirlist) {
                 onCompilerSetChanged();
             }
