@@ -71,11 +71,12 @@ public class SubprojectsGroup extends Group {
      * but this could be changed later.
      * The display name is by default that of the superproject.
      */
-    public static SubprojectsGroup create(Project project) throws FileStateInvalidException {
+    public static SubprojectsGroup create(String name, Project project) throws FileStateInvalidException {
         String path = project.getProjectDirectory().getURL().toExternalForm();
-        String id = sanitizeNameAndUniquifyForId(ProjectUtils.getInformation(project).getName());
+        String id = sanitizeNameAndUniquifyForId(name);
         LOG.log(Level.FINE, "Creating: {0}", id);
         Preferences p = NODE.node(id);
+        p.put(KEY_NAME, name);
         p.put(KEY_KIND, KIND);
         p.put(KEY_PATH, path);
         p.put(KEY_MAIN, path);

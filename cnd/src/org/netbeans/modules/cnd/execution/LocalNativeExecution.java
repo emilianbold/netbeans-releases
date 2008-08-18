@@ -61,7 +61,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 
 /**
  *  A support class for helping execution of an executable, a makefile, or a script.
@@ -95,7 +97,8 @@ public class LocalNativeExecution extends NativeExecution {
             String arguments,
             String[] envp,
             PrintWriter out,
-            Reader in) throws IOException, InterruptedException {
+            Reader in,
+            boolean unbuffer) throws IOException, InterruptedException {
         String commandInterpreter;
         String commandLine;
         int rc = -1;
@@ -116,15 +119,26 @@ public class LocalNativeExecution extends NativeExecution {
         // Start the build process and a build reader.
         NbProcessDescriptor desc = new NbProcessDescriptor(commandInterpreter, commandLine);
         
-        List nueEnvp;
+        // Updating environment variables
+        List<String> envpList = new ArrayList<String>();
         if (envp != null) {
-            nueEnvp = new ArrayList(Arrays.asList(envp));
-        } else {
-            nueEnvp = new ArrayList();
+            envpList.addAll(Arrays.asList(envp));
         }
-        nueEnvp.add("SPRO_EXPAND_ERRORS="); // NOI18N
+        envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
         
-        envp = (String[] ) nueEnvp.toArray(new String[0]);
+        if (unbuffer) {
+            String unbufferPath = getUnbufferPath();
+            if (unbufferPath != null) {
+                if (Utilities.isMac()) {
+                    envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
+                    envpList.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
+                } else {
+                    envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
+                }
+            }
+        }
+        envp = envpList.toArray(new String[envpList.size()]);
+
         executionProcess = desc.exec(null, envp, true, runDirFile);
         outputReaderThread = new OutputReaderThread(executionProcess.getErrorStream(), out);
         outputReaderThread.start();
@@ -165,6 +179,34 @@ public class LocalNativeExecution extends NativeExecution {
 //        if (executionProcess != null) {
 //            executionProcess.destroy();
 //        }
+    }
+    
+    private String getUnbufferPath() {
+        int platformType = PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).getPlatform();
+        String unbufferName = getUnbufferName(platformType);
+        if (unbufferName == null) {
+            return null;
+        }
+        File file = InstalledFileLocator.getDefault().locate("bin/" + unbufferName, null, false);
+        if (file != null && file.exists()) {
+            return fixPath(file.getAbsolutePath());
+        } else {
+            log.warning("unbuffer: " + unbufferName + " not found");
+            return null;
+        }
+    }
+
+    private String fixPath(String path) {
+        // TODO: implement
+        /*
+        if (isCygwin() && path.charAt(1) == ':') {
+            return "/cygdrive/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
+        } else if (isMinGW() && path.charAt(1) == ':') {
+            return "/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
+        } else {
+            return path;
+        }*/
+        return path;
     }
     
     

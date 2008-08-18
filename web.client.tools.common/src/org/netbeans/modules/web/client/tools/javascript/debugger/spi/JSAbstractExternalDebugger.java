@@ -38,9 +38,12 @@
  */
 package org.netbeans.modules.web.client.tools.javascript.debugger.spi;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -52,12 +55,12 @@ import org.netbeans.modules.web.client.tools.common.dbgp.DebuggerServer;
 import org.netbeans.modules.web.client.tools.common.dbgp.Feature;
 import org.netbeans.modules.web.client.tools.common.dbgp.HttpMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.Message;
+import org.netbeans.modules.web.client.tools.common.dbgp.ResponseMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.SourcesMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status.StatusResponse;
 import org.netbeans.modules.web.client.tools.common.dbgp.StreamMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.UnsufficientValueException;
 import org.netbeans.modules.web.client.tools.common.dbgp.WindowsMessage;
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSBreakpoint;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerConsoleEvent;
@@ -181,6 +184,12 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
                 suspensionPointHandler.interrupt();
                 suspensionPointHandler = null;
             }
+            
+            if (httpMessageHandler != null) {
+                httpMessageHandler.interrupt();
+                httpMessageHandler = null;
+            }
+            
             setDebuggerState(JSDebuggerState.DISCONNECTED_USER);
         }
     }
@@ -260,6 +269,20 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
     protected JSProperty[] getPropertiesImpl(JSCallStackFrame callStackFrame, String fullName) {
         return DbgpUtils.getJSProperties(callStackFrame, proxy.getProperty(fullName, callStackFrame.getDepth()));
     }
+    
+    protected InputStream getInputStreamForURLImpl(URL url) {
+        if (proxy != null && url != null) {
+            try {
+                byte[] bytes = proxy.getSource(url.toURI());
+                if (bytes != null) {
+                    return new ByteArrayInputStream(bytes);
+                }
+            } catch (URISyntaxException use) {
+                Log.getLogger().log(Level.INFO, use.getMessage(), use);
+            }
+        }
+        return null;
+    }    
 
     private void handleSourcesMessage(SourcesMessage sourcesMessage) {
         setSources(JSFactory.getJSSources(sourcesMessage.getSources()));
@@ -290,7 +313,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         DebuggerProxy proxy;
 
         HttpMessageHandler(DebuggerProxy proxy, String id) {
-            super("Http Mesasge Handler");  //NOI18N
+            super("Http Message Handler");  //NOI18N
             this.setDaemon(true);
             this.proxy = proxy;
         }
@@ -298,7 +321,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         @Override
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
-            while (proxy.isActive()) {
+            while (proxy.isHttpQueueActive()) {
                 Message message = getNextMessage();
                 if (message != null) {
                     handle(message);
@@ -306,7 +329,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
             }
             Log.getLogger().log(Level.FINEST, "Ending " + getName());   //NOI18N
         }
-
+        
         private Message getNextMessage() {
             return  proxy.getHttpMessage();
         }
@@ -315,6 +338,8 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
             // Spontaneous messages
             if (message instanceof HttpMessage) {
                 handleHttpMessage((HttpMessage) message);
+                return;
+            } else if (message instanceof ResponseMessage) {
                 return;
             } else {
                 Logger.getLogger(this.getName()).info("Something Seems Wrong");
@@ -336,7 +361,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         @Override
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
-            while (proxy.isActive()) {
+            while (proxy.isSuspensionQueueActive()) {
                 Message message = getNextMessage();
                 if (message != null) {
                     handle(message);

@@ -120,57 +120,59 @@ public final class JaxWsDataObject extends MultiDataObject {
         JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         if (service!=null && wss != null) {
             String serviceName = service.getName();
-            FileObject localWsdlFolder = wss.getLocalWsdlFolderForService(serviceName, false);
-            if (localWsdlFolder != null) {
-                // removing local wsdl and xml artifacts
-                FileLock lock = null;
-                FileObject clientArtifactsFolder = localWsdlFolder.getParent();
-                try {
-                    lock = clientArtifactsFolder.lock();
-                    clientArtifactsFolder.delete(lock);
-                } finally {
-                    if (lock != null) {
-                        lock.releaseLock();
+            if (serviceName != null) {
+                FileObject localWsdlFolder = wss.getLocalWsdlFolderForService(serviceName, false);
+                if (localWsdlFolder != null) {
+                    // removing local wsdl and xml artifacts
+                    FileLock lock = null;
+                    FileObject clientArtifactsFolder = localWsdlFolder.getParent();
+                    try {
+                        lock = clientArtifactsFolder.lock();
+                        clientArtifactsFolder.delete(lock);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
                     }
-                }
-                // removing wsdl and xml artifacts from WEB-INF/wsdl
-                FileObject wsdlFolder = wss.getWsdlFolder(false);
-                if (wsdlFolder != null) {
-                    FileObject serviceWsdlFolder = wsdlFolder.getFileObject(serviceName);
-                    if (serviceWsdlFolder != null) {
-                        try {
-                            lock = serviceWsdlFolder.lock();
-                            serviceWsdlFolder.delete(lock);
-                        } finally {
-                            if (lock != null) {
-                                lock.releaseLock();
+                    // removing wsdl and xml artifacts from WEB-INF/wsdl
+                    FileObject wsdlFolder = wss.getWsdlFolder(false);
+                    if (wsdlFolder != null) {
+                        FileObject serviceWsdlFolder = wsdlFolder.getFileObject(serviceName);
+                        if (serviceWsdlFolder != null) {
+                            try {
+                                lock = serviceWsdlFolder.lock();
+                                serviceWsdlFolder.delete(lock);
+                            } finally {
+                                if (lock != null) {
+                                    lock.releaseLock();
+                                }
                             }
                         }
                     }
+                    // cleaning java artifacts
+                    FileObject buildImplFo = project.getProjectDirectory().getFileObject(BUILD_IMPL_XML_PATH);
+                    try {
+                        ExecutorTask wsimportTask = ActionUtils.runTarget(buildImplFo, new String[]{"wsimport-service-clean-" + serviceName}, null); //NOI18N
+                        wsimportTask.waitFinished();
+                    } catch (java.io.IOException ex) {
+                        ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    } catch (IllegalArgumentException ex) {
+                        ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                    }
                 }
-                // cleaning java artifacts
-                FileObject buildImplFo = project.getProjectDirectory().getFileObject(BUILD_IMPL_XML_PATH);
-                try {
-                    ExecutorTask wsimportTask = ActionUtils.runTarget(buildImplFo, new String[]{"wsimport-service-clean-" + serviceName}, null); //NOI18N
-                    wsimportTask.waitFinished();
-                } catch (java.io.IOException ex) {
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
-                } catch (IllegalArgumentException ex) {
-                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
-                }
-            }
 
-            // removing service from jax-ws.xml
-            wss.removeService(serviceName);
+                // removing service from jax-ws.xml
+                wss.removeService(serviceName);
 
-            // remove non JSR109 entries
-            Boolean isJsr109 = project.getLookup().lookup(JaxWsModel.class).getJsr109();
-            if (isJsr109 != null && !isJsr109.booleanValue()) {
-                if (service.getWsdlUrl() != null) {
-                    //if coming from wsdl
-                    serviceName = service.getServiceName();
+                // remove non JSR109 entries
+                Boolean isJsr109 = project.getLookup().lookup(JaxWsModel.class).getJsr109();
+                if (isJsr109 != null && !isJsr109.booleanValue()) {
+                    if (service.getWsdlUrl() != null) {
+                        //if coming from wsdl
+                        serviceName = service.getServiceName();
+                    }
+                    wss.removeNonJsr109Entries(serviceName);
                 }
-                wss.removeNonJsr109Entries(serviceName);
             }
         }
     }

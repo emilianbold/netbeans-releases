@@ -372,6 +372,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 if (!projectRoot.exists()) {
                     project = createProject(projectName, getProjectType(), getJavaEEversion());
                 } else {
+                    openProjects(projectRoot.getAbsolutePath());
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(projectRoot));
                     assertNotNull("FO cannot be null", fo); //NOI18N
                     project = ProjectManager.getDefault().findProject(fo);
@@ -616,7 +617,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         ProjectRootNode node = new ProjectsTabOperator().getProjectRootNode(projectName);
         node.performPopupAction(actionName);
         OutputTabOperator oto = new OutputTabOperator(projectName);
-        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 300000); //NOI18N
+        JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         oto.waitText("(total time: "); //NOI18N
         dumpOutput();
         assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N

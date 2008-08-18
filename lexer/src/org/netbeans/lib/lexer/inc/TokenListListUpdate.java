@@ -245,10 +245,16 @@ final class TokenListListUpdate<T extends TokenId> {
 
     @Override
     public String toString() {
-        return " modTokenListIndex=" + modTokenListIndex + // NOI18N
-                "; Rem:" + removedTokenListCount + // NOI18N
-                " Add:" + addedTokenLists.size() + // NOI18N
-                " Size:" + tokenListList.size(); // NOI18N
+        StringBuilder sb = new StringBuilder(80);
+        sb.append(" modTokenListIndex=").append(modTokenListIndex).append("; "); // NOI18N
+        if (isTokenListsMod()) {
+            sb.append("Rem:").append(removedTokenListCount); // NOI18N
+            sb.append(" Add:").append(addedTokenLists.size()); // NOI18N
+        } else { // no TL mod
+            sb.append("NoTLMod");
+        }
+        sb.append(" Size:").append(tokenListList.size()); // NOI18N
+        return sb.toString();
     }
 
 }

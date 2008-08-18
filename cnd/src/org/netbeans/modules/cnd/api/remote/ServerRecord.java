@@ -54,6 +54,10 @@ public interface ServerRecord {
     public boolean isRemote();
     
     public boolean isOnline();
+
+    public boolean isOffline();
+
+    public boolean isDeleted();
     
-    public void validate();
+    public void validate(boolean force);
 }

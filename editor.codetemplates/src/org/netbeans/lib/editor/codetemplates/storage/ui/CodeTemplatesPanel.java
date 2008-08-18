@@ -163,6 +163,14 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         for(String l : languages) {
             cbLanguage.addItem(l);
         }
+        if (languages.isEmpty ()) {
+            cbLanguage.setEnabled (false);
+            bNew.setEnabled (false);
+            bRemove.setEnabled (false);
+            tTemplates.setEnabled (false);
+            tabPane.setEnabled (false);
+            cbExpandTemplateOn.setEnabled (false);
+        }
         KeyStroke expander = model.getExpander ();
         if (KeyStroke.getKeyStroke (KeyEvent.VK_SPACE, KeyEvent.SHIFT_MASK).equals (expander))
             cbExpandTemplateOn.setSelectedIndex (1);

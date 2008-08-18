@@ -66,7 +66,7 @@ public class WindowsStandalone50Installation implements Installation {
     }
     
     public String[] getStartCommand() {
-        return new String[] { basePath + "/bin/mysqld-nt.exe", ""}; // NOI18N
+        return new String[] { basePath + "/bin/mysqld-nt.exe", "--console"}; // NOI18N
     }
 
     public String[] getStopCommand() {

@@ -75,7 +75,7 @@ public class SequenceDiagramLayoutAction extends AbstractAction
             public void run()
             {
                 SQDDiagramEngineExtension engine=(SQDDiagramEngineExtension) scene.getEngine();
-                engine.layout();
+                engine.layout(false);
             }
         }.start();
     }

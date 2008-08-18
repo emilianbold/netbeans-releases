@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="27">
+<configurationDescriptor version="47">
   <logicalFolder name="root" displayName="root" projectFiles="true">
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -29,7 +29,6 @@
         <ccCompilerTool>
         </ccCompilerTool>
         <linkerTool>
-          <output>dist/Debug/io</output>
           <linkerLibItems>
           </linkerLibItems>
         </linkerTool>
@@ -49,7 +48,6 @@
           <developmentMode>5</developmentMode>
         </ccCompilerTool>
         <linkerTool>
-          <output>dist/Release/io</output>
           <linkerLibItems>
           </linkerLibItems>
         </linkerTool>

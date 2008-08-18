@@ -61,8 +61,11 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     //just prevents from gc, do not delete
     private OperationContainer container = Containers.forAvailable();
     private OperationContainer containerCustom = Containers.forCustomInstall ();
+    private static String col0, col1, col2, col3;
     
-    /** Creates a new instance of AvailableTableModel */
+    /** Creates a new instance of AvailableTableModel
+     * @param units 
+     */
     public AvailableTableModel (List<UpdateUnit> units) {
         setUnits(units);
     }
@@ -147,13 +150,25 @@ public class AvailableTableModel extends UnitCategoryTableModel {
     public String getColumnName(int column) {
         switch (column) {
             case 0 :
-                return getBundle ("AvailableTableModel_Columns_Install");
+                if (col0 == null) {
+                    col0 = getBundle ("AvailableTableModel_Columns_Install");
+                }
+                return col0;
             case 1 :
-                return getBundle ("AvailableTableModel_Columns_Name");
+                if (col1 == null) {
+                    col1 = getBundle ("AvailableTableModel_Columns_Name");
+                }
+                return col1;
             case 2 :
-                return getBundle("AvailableTableModel_Columns_Category");
+                if (col2 == null) {
+                    col2 = getBundle("AvailableTableModel_Columns_Category");
+                }
+                return col2;
             case 3 :
-                return getBundle ("AvailableTableModel_Source_Category");
+                if (col3 == null) {
+                    col3 = getBundle ("AvailableTableModel_Source_Category");
+                }
+                return col3;
         }
         
         assert false;

@@ -47,9 +47,9 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import java.io.File;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
@@ -96,7 +96,10 @@ public class CreateMIDlet extends PerformanceTestCase {
         Node pNode = new ProjectsTabOperator().getProjectRootNode(testProjectName);
         pNode.select();
 
+        // Workaround for issue 143497
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         wizard.selectCategory("MIDP"); //NOI18N
         wizard.selectFileType("MIDlet"); //NOI18N
         wizard.next();
@@ -113,7 +116,7 @@ public class CreateMIDlet extends PerformanceTestCase {
 
     @Override
     protected void shutdown() {
-        ProjectSupport.closeProject(testProjectName);
+        //ProjectSupport.closeProject(testProjectName);
     }
 
 //    public static void main(java.lang.String[] args) {

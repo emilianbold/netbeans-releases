@@ -128,14 +128,14 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         lstDevHosts.setCellRenderer(new MyCellRenderer());
     }
 
-    private void revalidateRecord(final String entry, String password) {
+    private void revalidateRecord(final String entry, String password, boolean rememberPassword) {
         final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(entry);
         if (!record.isOnline()) {
             record.resetOfflineState(); // this is a do-over
             setButtons(false);
             hideReason();            
             RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(entry, true);
-            userInfo.setPassword(password);
+            userInfo.setPassword(password, rememberPassword);
             phandle = ProgressHandleFactory.createHandle("");
             pbarStatusPanel.removeAll();
             pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
@@ -215,12 +215,9 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 return;
             }
             if (!model.contains(entry)) {
-                model.addElement(entry);                
-                if (dlg.isDefault()) {
-                    defaultIndex = model.getSize() - 1;
-                }                
-                lstDevHosts.setSelectedValue(entry, true);                
-                revalidateRecord(entry, dlg.getPassword());
+                model.addElement(entry);                              
+                lstDevHosts.setSelectedValue(entry, true);
+                revalidateRecord(entry, dlg.getPassword(), dlg.isRememberPassword());
             }
         }
     }
@@ -239,6 +236,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btRemoveServer.setEnabled(enable);
         btPathMapper.setEnabled(enable);
         btSetAsDefault.setEnabled(enable);
+        btRetry.setEnabled(enable);
     }
 
     /** Helps the AddServerDialog know when to enable/disable the OK button */
@@ -484,7 +482,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRetryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRetryActionPerformed
-        this.revalidateRecord((String)lstDevHosts.getSelectedValue(), "");
+        this.revalidateRecord((String)lstDevHosts.getSelectedValue(), null, false);
     }//GEN-LAST:event_btRetryActionPerformed
 
 

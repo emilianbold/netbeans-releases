@@ -146,10 +146,10 @@ public class ImportCDCProjectWizardIterator implements TemplateWizard.Iterator {
         platformInstall = PlatformInstallPanel.isPlatformInstalled(CDCPlatform.PLATFORM_CDC) ^ true;
         if (platformInstall){
             platformPanel = new PlatformInstallPanel.WizardPanel(CDCPlatform.PLATFORM_CDC);
-            ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", CDC55TYPE.equals(prjType) ? NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_Import55Project") : NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_ImportToolkitProject"));
+            ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", CDC55.equals(prjType) ? NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_Import55Project") : NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_ImportToolkitProject"));
         }
         sourcesPanel = new ImportCDCProjectPanel.WizardPanel(prjType);
-        ((JComponent)sourcesPanel.getComponent()).putClientProperty("NewProjectWizard_Title", CDC55TYPE.equals(prjType) ? NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_Import55Project") : NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_ImportToolkitProject"));
+        ((JComponent)sourcesPanel.getComponent()).putClientProperty("NewProjectWizard_Title", CDC55.equals(prjType) ? NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_Import55Project") : NbBundle.getMessage(ImportCDCProjectWizardIterator.class, "TXT_ImportToolkitProject"));
         projectPanel = new ProjectPanel.WizardPanel(false, true);        
         currentIndex = 0;
         updateStepsList();

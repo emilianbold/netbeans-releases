@@ -285,6 +285,8 @@ public class PackageWidget extends ContainerNode
                 }
             }
         });
+        
+        super.initializeNode(pe);
     }
 
     protected void updateStereotypes(List<String> stereotypes)
@@ -325,6 +327,7 @@ public class PackageWidget extends ContainerNode
     {
 //        nameWidget.propertyChange(event);
 
+        super.propertyChange(event);
         IElement element = (IElement) event.getSource();
         String propName = event.getPropertyName();
         if (element instanceof IPackage)
@@ -457,7 +460,7 @@ public class PackageWidget extends ContainerNode
                 totalHeight += childBounds.height;
             }
 
-            System.out.println("Total Height = " + totalHeight);
+//            System.out.println("Total Height = " + totalHeight);
             Rectangle bounds = widget.getClientArea();
             
             int y = (bounds.height / 2) - (totalHeight / 2);

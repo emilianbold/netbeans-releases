@@ -56,10 +56,10 @@ public interface IImplementation extends IRealization
 	/**
 	 * property Contract
 	*/
-	public IInterface getContract();
+	public IClassifier getContract();
 
 	/**
 	 * property Contract
 	*/
-	public void setContract( IInterface value );
+	public void setContract( IClassifier value );
 }

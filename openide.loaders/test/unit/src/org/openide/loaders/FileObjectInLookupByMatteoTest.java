@@ -53,6 +53,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MIMEResolver;
@@ -64,6 +65,7 @@ import org.openide.util.Lookup;
  *
  * @author Matteo Di Giovinazzo
  */
+@RandomlyFails // NB-Core-Build #1114, #1115
 public class FileObjectInLookupByMatteoTest extends NbTestCase {
 
     private static final int PRIMARY_FILES_COUNT = 10;

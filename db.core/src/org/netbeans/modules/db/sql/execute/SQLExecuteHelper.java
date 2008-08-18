@@ -42,7 +42,6 @@
 package org.netbeans.modules.db.sql.execute;
 
 import org.netbeans.modules.db.sql.history.SQLHistory;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -55,7 +54,6 @@ import org.netbeans.modules.db.dataview.api.DataView;
 import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.util.Exceptions;
 
 /**
  * Support class for executing SQL statements.
@@ -85,12 +83,7 @@ public final class SQLExecuteHelper {
         
         List<SQLExecutionResult> results = new ArrayList<SQLExecutionResult>();
         long totalExecutionTime = 0;
-        String url = null;
-        try {
-            url = conn.getJDBCConnection().getMetaData().getURL();
-        } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        String url = conn.getDatabaseURL();
 
         for (Iterator i = statements.iterator(); i.hasNext();) {
             
@@ -212,7 +205,7 @@ public final class SQLExecuteHelper {
             sqlLength = sql.length();
             parse();
         }
-        
+
         private void parse() {
             checkDelimiterStatement();
             while (pos < sqlLength) {
@@ -234,6 +227,8 @@ public final class SQLExecuteHelper {
                             state = STATE_MAYBE_LINE_COMMENT;
                         } else if (ch == '/') {
                             state = STATE_MAYBE_BLOCK_COMMENT;
+                        } else if (ch == '#') {
+                            state = STATE_LINE_COMMENT;
                         } else if (ch == '\'') {
                             state = STATE_STRING;
                         }
@@ -252,8 +247,6 @@ public final class SQLExecuteHelper {
                     case STATE_LINE_COMMENT:
                         if (ch == '\n') {
                             state = STATE_MEANINGFUL_TEXT;
-                            // avoid appending the final \n to the result
-                            pos++;
                             continue;
                         } 
                         break;
@@ -303,16 +296,17 @@ public final class SQLExecuteHelper {
                     statement.setLength(0);
                     rawStartOffset = pos + delimiter.length(); // skip the delimiter
                     pos += delimiter.length();
-                    
-                    // See if the next statement changes the delimiter
-                    // Note how we skip over a 'delimiter' statement - it's not
-                    // something we send to the server.
-                    checkDelimiterStatement();
                 } else if (state == STATE_MEANINGFUL_TEXT || state == STATE_STRING) {
                     // don't append leading whitespace
                     if (statement.length() > 0 || !Character.isWhitespace(ch)) {
                         // remember the position of the first appended char
                         if (statement.length() == 0) {
+                            // See if the next statement changes the delimiter
+                            // Note how we skip over a 'delimiter' statement - it's not
+                            // something we send to the server.
+                            if (checkDelimiterStatement()) {
+                                continue;
+                            }
                             startOffset = pos;
                             endOffset = pos;
                             startLine = line;
@@ -345,15 +339,15 @@ public final class SQLExecuteHelper {
          * delimiter statement, as this shouldn't be passed on to the 
          * database.
          */
-        private void checkDelimiterStatement() {
+        private boolean checkDelimiterStatement() {
             skipWhitespace();
                         
             if ( pos == sqlLength) {
-                return;
+                return false;
             }
             
             if ( ! isToken(DELIMITER_TOKEN)) {
-                return;
+                return false;
             }
             
             // Skip past the delimiter token
@@ -369,7 +363,7 @@ public final class SQLExecuteHelper {
             }
             
             if ( pos == endPos ) {
-                return;
+                return false;
             }
             
             delimiter = sql.substring(pos, endPos);
@@ -377,6 +371,8 @@ public final class SQLExecuteHelper {
             pos = endPos;
             statement.setLength(0);
             rawStartOffset = pos;
+
+            return true;
         }
         
         private void skipWhitespace() {
@@ -482,5 +478,6 @@ public final class SQLExecuteHelper {
         public List<StatementInfo> getStatements() {
             return Collections.unmodifiableList(statements);
         }
+        
     }
 }

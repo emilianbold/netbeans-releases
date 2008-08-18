@@ -15,6 +15,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -34,19 +35,12 @@
                   <Component id="userNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Group type="102" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="developmentComboBox" pref="374" max="32767" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="passwordField" alignment="1" pref="374" max="32767" attributes="0"/>
-                          <Component id="userNameField" alignment="1" pref="374" max="32767" attributes="0"/>
-                          <Component id="databaseNameField" alignment="0" pref="374" max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
+                  <Component id="developmentComboBox" pref="374" max="32767" attributes="0"/>
+                  <Component id="passwordField" alignment="1" pref="374" max="32767" attributes="0"/>
+                  <Component id="userNameField" alignment="1" pref="374" max="32767" attributes="0"/>
+                  <Component id="databaseNameField" alignment="0" pref="374" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>

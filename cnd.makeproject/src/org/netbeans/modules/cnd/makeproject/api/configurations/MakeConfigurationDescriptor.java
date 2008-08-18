@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,12 +61,13 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.loaders.HDataLoader;
+import org.netbeans.modules.cnd.loaders.CndMIMEResolver;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
@@ -349,7 +349,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     public Item findExternalItemByPath(String path) {
         // Try first as-is
-        Item item = (Item) externalFileItems.findItemByPath(path);
+        Item item = externalFileItems.findItemByPath(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
@@ -496,18 +496,14 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         this.sourceEncoding = sourceEncoding;
     }
 
-    public Collection<String> getAdditionalExtensions() {
-        return Collections.<String>emptyList();
+    /**
+     * Check needed header extensions and store list in the NB/project properties.
+     * @param needAdd list of needed extensions of header files.
+     */
+    public void addAdditionalHeaderExtensions(Collection<String> needAdd) {
+        ((MakeProject)getProject()).addAdditionalHeaderExtensions(needAdd);
     }
-
-    public void addAdditionalExtensions(Collection<String> headerFileExtensions) {
-        // TODO see http://www.netbeans.org/issues/show_bug.cgi?id=127150
-        // 1. store additional header extensions in the project properties.
-        // 2. add project open hook that guarantee the extensions in the HDataLoader extensions.
-        // Next line was moved from discovery.
-        HDataLoader.getInstance().addExtensions(headerFileExtensions);
-    }
-
+    
     private class SaveRunnable implements Runnable {
 
         public boolean ret = false;
@@ -536,6 +532,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
         }
 
+        updateExtensionList();
         if (!getModified()) {
             return true;
         }
@@ -598,7 +595,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             Document doc = data.getOwnerDocument();
 
             // Remove old node
-            NodeList nodeList = data.getElementsByTagName("make-dep-projects"); // NOI18N
+            NodeList nodeList = data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECTS);
             if (nodeList != null && nodeList.getLength() > 0) {
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     Node node = nodeList.item(i);
@@ -622,6 +619,31 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
+    private void updateExtensionList(){
+        Set<String> h = MakeProject.createExtensionSet();
+        Set<String> c = MakeProject.createExtensionSet();
+        Set<String> cpp = MakeProject.createExtensionSet();
+        for(Item item : getProjectItems()){
+            String path = item.getPath();
+            int i = path.lastIndexOf('.');
+            if (i > 0) {
+                String ext = path.substring(i+1);
+                if (ext.length()>0) {
+                    if (!h.contains(ext) && !c.contains(ext) && !cpp.contains(ext)) {
+                        if (CndMIMEResolver.isHeaderExtension(ext)){
+                            h.add(ext);
+                        } else if (CndMIMEResolver.isMimeTypeExtension(MIMENames.C_MIME_TYPE, ext)) {
+                            c.add(ext);
+                        } else if (CndMIMEResolver.isMimeTypeExtension(MIMENames.CPLUSPLUS_MIME_TYPE, ext)) {
+                            cpp.add(ext);
+                        }
+                    }
+                }
+            }
+        }
+        ((MakeProject) getProject()).updateExtensions(c, cpp, h);
+    }
+    
     /**
      * Returns project locations (rel or abs) or all subprojects in all configurations.
      */
@@ -790,7 +812,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             FileObject fo = FileUtil.toFileObject(new File(baseDir));
             try {
                 Project project = ProjectManager.getDefault().findProject(fo);
-                nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
+                nativeProject = project.getLookup().lookup(NativeProject.class);
             } catch (Exception e) {
                 // This may be ok. The project could have been removed ....
                 System.err.println("getNativeProject " + e);
@@ -848,7 +870,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
             if (notify) {
                 // Notify that list has changed
-                MakeSources makeSources = (MakeSources) getProject().getLookup().lookup(MakeSources.class);
+                MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
                 if (makeSources != null) {
                     makeSources.sourceRootsChanged();
                 }
@@ -891,7 +913,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             getNativeProject().fireFilesAdded(filesAdded);
             if (notify) {
                 // Notify that list has changed
-                MakeSources makeSources = (MakeSources) getProject().getLookup().lookup(MakeSources.class);
+                MakeSources makeSources = getProject().getLookup().lookup(MakeSources.class);
                 if (makeSources != null) {
                     makeSources.sourceRootsChanged();
                 }

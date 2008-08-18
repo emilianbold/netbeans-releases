@@ -9,10 +9,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
-import javax.ws.rs.ProduceMime;
+import javax.ws.rs.Produces;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Consumes;
 import org.codehaus.jettison.json.JSONString;
 
 /**
@@ -35,7 +35,7 @@ public class CI1Cl {
      * @return an instance of org.codehaus.jettison.json.JSONString
      */
     @GET
-    @ProduceMime("application/json")
+    @Produces("application/json")
     public JSONString getJson(@PathParam("CI1URI")
     String CI1URI) {
         //TODO return proper representation object
@@ -49,7 +49,7 @@ public class CI1Cl {
      * @return an HTTP response with content of the updated or created resource.
      */
     @PUT
-    @ConsumeMime("application/json")
+    @Consumes("application/json")
     public void putJson(@PathParam("CI1URI")
     String CI1URI, JSONString content) {
     }

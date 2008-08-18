@@ -51,6 +51,8 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.drawingarea.widgets.Container;
 
 /**
  *
@@ -116,6 +118,18 @@ public class ResizeToContentAction extends SceneNodeAction
             Set selectedObjs = scene.getSelectedObjects();
             if (selectedObjs.size() > 0) 
             {
+                for (Object object: selectedObjs)
+                {
+                    Widget widget = scene.findWidget(object);
+                    if (!(widget instanceof UMLNodeWidget))
+                    {
+                        return false;
+                    }
+                    if (widget instanceof Container || !((UMLNodeWidget)widget).isResizable())
+                    {
+                        return false;
+                    }                
+                }
                 return true;
             }
         }

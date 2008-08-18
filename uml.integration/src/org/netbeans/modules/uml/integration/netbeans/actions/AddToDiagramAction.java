@@ -48,7 +48,7 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.requirementsframework.IRequirement;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
-import org.netbeans.modules.uml.requirements.ADRequirementsManager;
+//import org.netbeans.modules.uml.requirements.ADRequirementsManager;
 import org.netbeans.modules.uml.ui.controls.projecttree.IProjectTreeItem;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;

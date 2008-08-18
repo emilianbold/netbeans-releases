@@ -124,6 +124,7 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener,org.
                 staticTextWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
                 staticTextWidget.setLabel(staticText);
                 staticTextWidget.setVisible(true);
+                staticTextWidget.setForeground(null);
                 addChild(staticTextWidget);
             }
 
@@ -180,6 +181,11 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener,org.
                 IBehavioralFeature feature = (IBehavioralFeature) data;
                 isAbstract = feature.getIsAbstract();
             }
+            
+            // Set the label widgets to use the parents foreground colors.
+            className.setForeground(null);
+            stereotypeWidget.setForeground(null);
+            taggedValuesWidget.setForeground(null);
         }
     }
 

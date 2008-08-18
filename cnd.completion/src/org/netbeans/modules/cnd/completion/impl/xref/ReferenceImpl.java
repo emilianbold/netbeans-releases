@@ -56,6 +56,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private final Token token;
     private CsmObject target = null;
     private CsmObject owner = null;
+    private boolean findDone  = false;
     private final int offset;
     private CsmReferenceKind kind;
     
@@ -68,14 +69,15 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     }
 
     public CsmObject getReferencedObject() {
-        if (isValid() && target == null) {
-            target = ReferencesSupport.findReferencedObject(super.getContainingFile(), super.getDocument(), this.offset, token);
+        if (!findDone && isValid()) {
+            target = ReferencesSupport.instance().findReferencedObject(super.getContainingFile(), super.getDocument(), this.offset, token);
+            findDone = true;
         }
         return target;
     }
 
     public CsmObject getOwner() {
-        if (isValid() && owner == null) {
+        if (owner == null && isValid()) {
             owner = ReferencesSupport.findOwnerObject(super.getContainingFile(), super.getDocument(), this.offset, token);
         }
         return owner;
@@ -83,7 +85,14 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     @Override
     public String getText() {
-        return token.text().toString();
+        CharSequence cs = token.text();
+        if (cs == null) {
+            // Token.text() can return null if the token has been removed.
+            // We want to avoid NPE (see IZ#143591).
+            return ""; // NOI18N
+        } else {
+            return cs.toString();
+        }
     }
     
     @Override

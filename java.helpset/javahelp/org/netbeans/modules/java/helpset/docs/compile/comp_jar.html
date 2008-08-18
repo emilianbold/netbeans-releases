@@ -4,7 +4,8 @@
 *     Use is subject to license terms.
 -->
 <html>
-    <head>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>Building a JAR File</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
@@ -23,10 +24,17 @@
         <param name="textFontWeight" value="bold">
         <param name="textColor" value="blue">
     </object>, the IDE builds a JAR file from your project sources every time you 
-    run the Build command. The JAR file is generated to the <tt>dist</tt> directory 
-    of your project folder. </p>
-    
+    run the Build command or the Clean and Build command. The JAR file is
+    generated to the <tt>dist</tt> directory of your project folder. </p>
+   
         <ul class="note">
+          <li>The Build command is disabled when the Compile on Save feature
+          is enabled for a project. When you save a file, the file is compiled,
+          but the JAR file is not repackaged with the new version of the
+          class file. If you want to be able to rebuild the JAR file without
+          doing a full clean and build of the project,
+          <a href="comp_project.html#disable-compileonsave">disable Compile on Save</a>
+          for the project and use the Build command.</li>
         <li>For <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
         <param name="content" value="../project/csh/glossary_standard.html">
         <param name="viewerActivator" value="javax.help.LinkLabel">

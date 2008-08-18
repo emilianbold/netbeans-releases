@@ -21,11 +21,11 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Component id="debugServerJCheckBox" pref="645" max="32767" attributes="0"/>
+              <Component id="debugServerJCheckBox" pref="650" max="32767" attributes="0"/>
               <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-              <Component id="debugClientJCheckBox" pref="656" max="32767" attributes="0"/>
+              <Component id="debugClientJCheckBox" pref="661" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
@@ -54,7 +54,7 @@
               <Component id="internetExplorerRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="noSupportedBrowserLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="371" max="32767" attributes="0"/>
+              <EmptySpace pref="375" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -111,6 +111,14 @@
           <ResourceString bundle="org/netbeans/modules/web/client/tools/impl/projects/Bundle.properties" key="CustomizerDebug.firefoxRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/client/tools/impl/projects/Bundle.properties" key="CustomizerDebug.firefoxRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/client/tools/impl/projects/Bundle.properties" key="ACSD_FF_RadioButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JRadioButton" name="internetExplorerRadioButton">
       <Properties>
@@ -124,6 +132,14 @@
           <ResourceString bundle="org/netbeans/modules/web/client/tools/impl/projects/Bundle.properties" key="CustomizerDebug.internetExplorerRadioButton.tooltip" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/client/tools/impl/projects/Bundle.properties" key="CustomizerDebug.internetExplorerRadioButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/client/tools/impl/projects/Bundle.properties" key="ACSD_IE_RadioButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="noSupportedBrowserLabel">
       <Properties>

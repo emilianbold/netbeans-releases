@@ -145,7 +145,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.87</specification-version>
+                        <specification-version>0.88</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -305,6 +305,11 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.ruby.platform</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.ruby.project</code-name-base>
                         <compile-dependency/>
                         <test/>
                     </test-dependency>

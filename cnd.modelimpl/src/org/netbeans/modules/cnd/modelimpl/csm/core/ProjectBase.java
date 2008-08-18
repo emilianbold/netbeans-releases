@@ -102,6 +102,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     /** Creates a new instance of CsmProjectImpl */
     protected ProjectBase(ModelImpl model, Object platformProject, String name) {
+        RepositoryUtils.openUnit(createProjectKey(platformProject));
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         init(model, platformProject);
@@ -153,11 +154,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected static void cleanRepository(Object platformProject, boolean articicial) {
-        Key key = KeyUtilities.createProjectKey(getUniqueName(platformProject).toString());
+        Key key = createProjectKey(platformProject);
         RepositoryUtils.closeUnit(key, null, true);
     }
 
-    public static ProjectBase readInstance(ModelImpl model, Object platformProject, String name) {
+    private static Key createProjectKey(Object platfProj) {
+        return KeyUtilities.createProjectKey(getUniqueName(platfProj).toString());
+    }
+
+    protected static ProjectBase readInstance(ModelImpl model, Object platformProject, String name) {
 
         long time = 0;
         if( TraceFlags.TIMING ) {
@@ -166,7 +171,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
 
         assert TraceFlags.PERSISTENT_REPOSITORY;
-        Key key = KeyUtilities.createProjectKey(getUniqueName(platformProject).toString());
+        Key key = createProjectKey(platformProject);
         RepositoryUtils.openUnit(key);
         Persistent o = RepositoryUtils.get(key);
         if( o != null ) {
@@ -1239,7 +1244,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<Key> res = new ArrayList<Key>();
         if (platformProject instanceof NativeProject){
             for(NativeProject nativeLib : ((NativeProject)platformProject).getDependences()){
-                final Key key = KeyUtilities.createProjectKey(getUniqueName(nativeLib).toString());
+                final Key key = createProjectKey(nativeLib);
                 if (key != null) {
                     res.add(key);
                 }

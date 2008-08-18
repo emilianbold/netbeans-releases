@@ -66,7 +66,8 @@ public class UMLMultilineLabelWidget extends MultilineLabelWidget
     private String propDisplayName;
     private ResourceType[] customizableResTypes = new ResourceType[] {
         ResourceType.FONT,
-        ResourceType.FOREGROUND }; 
+        ResourceType.FOREGROUND, 
+        ResourceType.BACKGROUND }; 
     
     public UMLMultilineLabelWidget(Scene scene,
             String propertyID, String propDisplayName) {
@@ -81,8 +82,8 @@ public class UMLMultilineLabelWidget extends MultilineLabelWidget
     }
 
     private void init(String propertyID, String displayName) {
-        setForeground((Color)null); 
-        setBackground((Paint)null);
+        setForeground(null); 
+        setBackground(null);
         propId = propertyID;
         ResourceValue.initResources(propertyID, this);
         propDisplayName = displayName;

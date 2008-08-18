@@ -59,10 +59,10 @@ public class RemoteServerSetup {
     private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final String REMOTE_SCRIPT_DIR = ".netbeans/6.5/cnd2/scripts/"; // NOI18N
     private static final String LOCAL_SCRIPT_DIR = "src/scripts/"; // NOI18N
-    private static final String GET_SCRIPT_INFO = "PATH=/bin:/usr/bin:$PATH  grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null 2> /dev/null"; // NOI18N
-    private static final String DOS2UNIX_CMD = "PATH=/bin:/usr/bin:$PATH  dos2unix " + REMOTE_SCRIPT_DIR; // NOI18N
-    private static final String GET_LIB_INFO = "PATH=/bin:/usr/bin:$PATH  ls -1 2>&1 "; // NOI18N
-    private static final String REMOTE_LIB_DIR = ".netbeans/6.5/cnd2/lib/"; // NOI18N
+    private static final String GET_SCRIPT_INFO = "grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null 2> /dev/null"; // NOI18N
+    private static final String DOS2UNIX_CMD = "dos2unix " + REMOTE_SCRIPT_DIR; // NOI18N
+    private static final String GET_LIB_INFO = "ls -1 2>&1 "; // NOI18N
+    public static final String REMOTE_LIB_DIR = ".netbeans/6.5/cnd2/lib/"; // NOI18N
     
     private final Map<String, Double> scriptSetupMap;
     private final Map<String, String> binarySetupMap;
@@ -77,13 +77,17 @@ public class RemoteServerSetup {
         
         // Script setup map
         scriptSetupMap = new HashMap<String, Double>();
-        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.5)); // NOI18N
+        scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.7)); // NOI18N
         
         // Binary setup map
+        // TODO: this should be done in gdb module (see IZ 144053)
         binarySetupMap = new HashMap<String, String>();
         binarySetupMap.put(".netbeans/6.5/cnd2/lib/GdbHelper-Linux-x86.so", "bin/GdbHelper-Linux-x86.so"); // NOI18N
         binarySetupMap.put(".netbeans/6.5/cnd2/lib/GdbHelper-SunOS-x86.so", "bin/GdbHelper-SunOS-x86.so"); // NOI18N
         binarySetupMap.put(".netbeans/6.5/cnd2/lib/GdbHelper-SunOS-sparc.so", "bin/GdbHelper-SunOS-sparc.so"); // NOI18N
+        binarySetupMap.put(".netbeans/6.5/cnd2/lib/unbuffer-Linux-x86.so", "bin/unbuffer-Linux-x86.so"); // NOI18N
+        binarySetupMap.put(".netbeans/6.5/cnd2/lib/unbuffer-SunOS-x86.so", "bin/unbuffer-SunOS-x86.so"); // NOI18N
+        binarySetupMap.put(".netbeans/6.5/cnd2/lib/unbuffer-SunOS-sparc.so", "bin/unbuffer-SunOS-sparc.so"); // NOI18N
         
         updateMap = new HashMap<String, List<String>>();
     }
@@ -113,10 +117,10 @@ public class RemoteServerSetup {
             if (path.equals(REMOTE_SCRIPT_DIR)) {
                 log.fine("RSS.setup: Creating ~/" + REMOTE_SCRIPT_DIR);
                 int exit_status = RemoteCommandSupport.run(hkey,
-                        "PATH=/bin:/usr/bin:$PATH mkdir -p " + REMOTE_SCRIPT_DIR); // NOI18N
+                        "mkdir -p " + REMOTE_SCRIPT_DIR); // NOI18N
                 if (exit_status == 0) {
                     for (String key : scriptSetupMap.keySet()) {
-                        log.fine("RSS.setup: Copying" + path + " to " + hkey);
+                        log.fine("RSS.setup: Copying " + path + " to " + hkey);
                         File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
                         RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
                         RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key);
@@ -127,7 +131,7 @@ public class RemoteServerSetup {
             } else if (path.equals(REMOTE_LIB_DIR)) {
                 log.fine("RSS.setup: Creating ~/" + REMOTE_LIB_DIR);
                 int exit_status = RemoteCommandSupport.run(hkey,
-                        "PATH=/bin:/usr/bin:$PATH mkdir -p " + REMOTE_LIB_DIR); // NOI18N
+                        "mkdir -p " + REMOTE_LIB_DIR); // NOI18N
                 if (exit_status == 0) {
                     bupdate = true;
                     for (String key : binarySetupMap.keySet()) {
@@ -164,12 +168,13 @@ public class RemoteServerSetup {
             }
         }
         if (bupdate) {
-            RemoteCommandSupport.run(hkey, "PATH=/bin:/usr/bin:$PATH chmod 755 " + REMOTE_LIB_DIR + "/*.so");
+            RemoteCommandSupport.run(hkey, "chmod 755 " + REMOTE_LIB_DIR + "/*.so"); //NOI18N
         }
     }
     
     private List<String> getScriptUpdates(List<String> list) {
         RemoteCommandSupport support = new RemoteCommandSupport(hkey, GET_SCRIPT_INFO);
+        support.run();
         if (!support.isFailed()) {
             log.fine("RSS.needsSetupOrUpdate: GET_SCRIPT_INFO returned " + support.getExitStatus());
             if (support.getExitStatus() == 0) {
@@ -214,6 +219,7 @@ public class RemoteServerSetup {
     
     private List<String> getBinaryUpdates(List<String> list) {
         RemoteCommandSupport support = new RemoteCommandSupport(hkey, GET_LIB_INFO + getBinarySetupFiles());
+        support.run();
         if (!support.isFailed()) {
             log.fine("RSS.getBinaryUpdates: GET_LIB_INFO returned " + support.getExitStatus());
             if (support.isCancelled()) {
@@ -222,12 +228,15 @@ public class RemoteServerSetup {
                 String val = support.toString();
                 int count = 0;
                 for (String line : val.split("\n")) { // NOI18N
-                    int pos = line.indexOf(':');
-                    if (pos > 0) {
+                    int pos1 = line.indexOf(':');
+                    if (pos1 > 0) {
                         if (count++ == 0) {
                             list.add(REMOTE_LIB_DIR);
                         }
-                        list.add(line.substring(0, pos));
+                        int pos2 = line.indexOf(':', pos1 + 1);
+                        if (pos2 > 0) {
+                            list.add(line.substring(pos1 + 1, pos2).trim());
+                        }
                     }
                 }
             }

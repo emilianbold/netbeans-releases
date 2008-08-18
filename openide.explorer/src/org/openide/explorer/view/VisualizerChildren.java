@@ -91,7 +91,6 @@ final class VisualizerChildren extends Object {
      * @return true if there is non-null object inside
      */
     private final boolean recomputeIndexes(VisualizerNode tn) {
-        assert tn == null || this.parent == tn.getParent() : "tn must be our child!"; // NOI18N
 
         boolean isNonNull = false;
         for (int i = 0; i < visNodes.size(); i++) {
@@ -153,14 +152,13 @@ final class VisualizerChildren extends Object {
      */
     public int getIndex(final javax.swing.tree.TreeNode p1) {
         VisualizerNode visNode = (VisualizerNode) p1;
-        if (visNode.getParent() != this.parent) {
-            return -1;
-        }
-
-        if (visNode.indexOf == -1) {
+        if (visNode.indexOf != -1) {
+            if (visNode.indexOf >= visNodes.size() || visNodes.get(visNode.indexOf) != visNode) {
+                return -1;
+            }
+        } else {
             recomputeIndexes(visNode);
         }
-        assert visNode.indexOf != -1 : dumpIndexes(visNode); // NOI18N
         return visNode.indexOf;
     }
 

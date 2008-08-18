@@ -47,6 +47,8 @@ import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
  * modified action to handle case when ends points should be handled by this acxtion
@@ -103,7 +105,17 @@ public final class MoveControlPointAction extends WidgetAction.LockedAdapter {
     }
 
     public State mouseDragged (Widget widget, WidgetMouseEvent event) {
-        return move (widget, event.getPoint ());
+        State state =  move (widget, event.getPoint ());
+        if (state.isConsumed ())
+        {
+            //mark the diagram dirty after moving the control point
+            Scene scene = widget.getScene();
+            if (scene instanceof DesignerScene)
+            {
+                ((DesignerScene)scene).getDiagram().setDirty(true);
+            }
+        }
+        return state;
     }
 
     private State move (Widget widget, Point newLocation) {

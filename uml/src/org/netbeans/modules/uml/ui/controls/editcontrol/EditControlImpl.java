@@ -402,12 +402,8 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
              }
           });
 
-          m_Field.addInputMethodListener(this);
       }
-      else
-      {
-          m_Field.getDocument().addDocumentListener(new EditControlDocumentListener(getAssociatedParent()));
-      }
+      m_Field.addInputMethodListener(this);
    }
 
    private void handleTypedKey(KeyEvent e)
@@ -427,7 +423,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
    public void handleTypedChar(char ch) {
       //something is typed
       int currPos = getCurrentPosition();
-      m_InitialLoc = getCurrentPosition();
+      m_InitialLoc = currPos;
       //System.out.println("handleTypedChar:currPos1="+currPos);
       
       IEditControlField field = getCurrentField();
@@ -644,8 +640,8 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
         boolean selectedText = false;
         m_ControlDown = e.isControlDown();
         m_ShiftDown = e.isShiftDown();
-        m_LastKey = e.getKeyCode();
-        int pos = getCurrentPosition();
+        m_LastKey = keyCode;
+        int pos = m_InitialLoc;
         if (keyCode == KeyEvent.VK_ENTER)
         {
             //Ctrl-Enter create a newline in multi-line editor
@@ -653,7 +649,13 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
             {
                 if( m_IsMultiline)
                 {
+                    IEditControlField ecf = getCurrentField();  
                     m_Field.replaceSelection("\n");
+                   
+                    if (ecf != null)
+                    {
+                        ecf.setText(m_Field.getText());
+                    } 
                 }
                 consumeEvent = true;
                 resetSel = false;
@@ -1110,7 +1112,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
            JTextArea field = new JTextArea();
            field.setLineWrap(true);
            field.setWrapStyleWord(true);
-           field.setDocument(doc);
+           //field.setDocument(doc);
            m_Field = field;
 
            //Fix 132234
@@ -1159,9 +1161,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
             handleHint();
          }
       });
-      //setLayout(new BorderLayout());
-      //add(m_Field, BorderLayout.CENTER);
-      //m_Panel.add(m_Button);
+      
       m_Button.setBounds(0, 0, 15, 3);
       setOpaque(false);
       add(m_Panel, BorderLayout.SOUTH);
