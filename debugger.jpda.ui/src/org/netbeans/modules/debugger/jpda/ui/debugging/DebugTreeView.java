@@ -184,7 +184,8 @@ public class DebugTreeView extends BeanTreeView {
         }
 
         Color origColor = g.getColor();
-        JPDADebugger debugger = ThreadsListener.getDefault().getDebugger();
+        ThreadsListener threadsListener = ThreadsListener.getDefault();
+        JPDADebugger debugger = threadsListener != null ? threadsListener.getDebugger() : null;
         JPDAThread currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
         if (currentThread != null && !currentThread.isSuspended()) {
             currentThread = null;
