@@ -55,6 +55,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import org.hibernate.HibernateException;
 import org.hibernate.QueryException;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.query.HQLQueryPlan;
@@ -200,7 +201,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                     } catch (IllegalArgumentException ie) {
                         logger.log(Level.INFO, "", ie);
                         showSQLError("MalformedQuery");
-                    } catch (NullPointerException se) { // Database related exception!
+                    } catch (HibernateException se) { // Database related exception!
                         logger.log(Level.INFO, "", se);
                         showSQLError("DbError");
                     } catch (Exception e) {
@@ -357,11 +358,9 @@ public final class HQLEditorTopComponent extends TopComponent {
                 StringWriter sWriter = new StringWriter();
                 PrintWriter pWriter = new PrintWriter(sWriter);
                 t.printStackTrace(pWriter);
-                errorTextArea.append(sWriter.toString());
                 errorTextArea.append(
                         removeHibernateModuleCodelines(sWriter.toString()));
-                logger.log(
-                        Level.INFO, "", t);
+
             }
 
         }
