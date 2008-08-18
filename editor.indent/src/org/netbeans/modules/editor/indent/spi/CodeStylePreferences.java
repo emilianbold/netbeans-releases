@@ -62,18 +62,67 @@ import org.openide.loaders.DataObject;
 import org.openide.util.WeakListeners;
 
 /**
+ * Provides access to formatting settings for a document or file. The formatting
+ * settings can either be stored globally in the IDE or they can be stored in a
+ * project owning the document. The settings are provided in form of a
+ * <code>java.util.prefs.Prefernces</code> instance.
+ *
+ * <p><b>Typical usecase</b>: This class is typically called from an implementation
+ * of {@link IndentTask} or {@link ReformatTask}, which needs to know formatting
+ * setting in order to do its job. The implementation is given a context object
+ * with a <code>javax.swing.text.Document</code> instance where the formatting is
+ * taking place. The implementation should call {@link #get(javax.swing.text.Document)}
+ * and {@link #getPreferences()} in order to get <code>Preferences</code> with
+ * formatting settings.
+ * 
+ * <p>The infrastructure will take care of providing the right <code>Preferences</code>
+ * instance from either <code>MimeLookup</code> or a project depending on the formatted
+ * document and user's choice. It is important <b>not</b> to cache the <code>Preferences</code>
+ * instance, because a different instance may be provided in the future if a user
+ * changes his mind in using global or per-project formatting settings.
  *
  * @author Vita Stejskal
  * @since 1.9
  */
 public final class CodeStylePreferences {
 
+    /**
+     * Gets <code>CodeStylePreferences</code> for a document. This is the prefered
+     * method to use. Whenever you have both <code>Document</code> and its
+     * <code>FileObject</code> always use this method and provide the <code>Document</code>
+     * instance.
+     *
+     * @param doc The document to get <code>CodeStylePreferences</code> for,
+     *   can be <code>null</code>. If <code>null</code>, the method will return
+     *   global preferences for 'all languages'.
+     *   
+     * @return The <code>CodeStylePreferences</code>, never <code>null</code>.
+     */
     public static CodeStylePreferences get(Document doc) {
-        return get(doc, (String) doc.getProperty("mimeType")); //NOI18N
+        if (doc != null) {
+            return get(doc, (String) doc.getProperty("mimeType")); //NOI18N
+        } else {
+            return get(null, null);
+        }
     }
 
+    /**
+     * Gets <code>CodeStylePreferences</code> for a file. If you also have a
+     * <code>Document</code> instance you should use the {@link #get(javax.swing.text.Document)}
+     * method.
+     *
+     * @param file The file to get <code>CodeStylePreferences</code> for,
+     *   can be <code>null</code>. If <code>null</code>, the method will return
+     *   global preferences for 'all languages'.
+     *   
+     * @return The <code>CodeStylePreferences</code>, never <code>null</code>.
+     */
     public static CodeStylePreferences get(FileObject file) {
-        return get(file, file.getMIMEType()); //NOI18N
+        if (file != null) {
+            return get(file, file.getMIMEType()); //NOI18N
+        } else {
+            return get(null, null);
+        }
     }
     
     public Preferences getPreferences() {
@@ -201,14 +250,15 @@ public final class CodeStylePreferences {
     }
 
     private static final FileObject findFileObject(Document doc) {
-        Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
-        if (sdp instanceof DataObject) {
-            return ((DataObject) sdp).getPrimaryFile();
-        } else if (sdp instanceof FileObject) {
-            return (FileObject) sdp;
-        } else {
-            return null;
+        if (doc != null) {
+            Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+            if (sdp instanceof DataObject) {
+                return ((DataObject) sdp).getPrimaryFile();
+            } else if (sdp instanceof FileObject) {
+                return (FileObject) sdp;
+            }
         }
+        return null;
     }
 
     private static String s2s(Object o) {
