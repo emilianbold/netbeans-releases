@@ -64,7 +64,7 @@ public class FmtTabsIndents extends javax.swing.JPanel {
     }
     
     public static PreferencesCustomizer.Factory getController() {
-        return new CategorySupport.Factory("tabs-and-indents", FmtTabsIndents.class, //NOI18N
+        return new CategorySupport.Factory(PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class, //NOI18N
                 org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "SAMPLE_Indents"), // NOI18N
                 new String[] { FmtOptions.rightMargin, "30" }
                 ); // NOI18N

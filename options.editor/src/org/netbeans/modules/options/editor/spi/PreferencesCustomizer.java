@@ -63,6 +63,12 @@ import org.openide.util.HelpCtx;
 public interface PreferencesCustomizer {
 
     /**
+     * The id of a customizer that controls settings such as tab size, indent
+     * size, right margin, etc.
+     */
+    static final String TABS_AND_INDENTS_ID = "tabs-and-indents"; //NOI18N
+
+    /**
      * Gets an id that will uniquely identify this customizer.
      *
      * @return The customizer's identification.
