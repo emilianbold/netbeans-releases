@@ -670,6 +670,7 @@ public class MakeActionProvider implements ActionProvider {
                                 CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                                 outputFile = customToolConfiguration.getOutputs().getValue();
                             }
+                            outputFile = conf.expandMacros(outputFile);
                             // Clean command
                             String commandLine = "rm -rf " + outputFile; // NOI18N
                             String args = ""; // NOI18N

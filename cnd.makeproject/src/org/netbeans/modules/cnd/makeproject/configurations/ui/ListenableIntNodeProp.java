@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,57 +31,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
-package org.netbeans.modules.java.queries;
-
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 
 /**
  *
- * @author Tomas Zezula
+ * @author Sergey Grinev
  */
-public class SFBQImpl2Result implements SourceForBinaryQueryImplementation2.Result {
-    
-    private final SourceForBinaryQuery.Result delegate;
-    
-    public SFBQImpl2Result (final SourceForBinaryQuery.Result result) {
-        assert result != null;
-        this.delegate = result;
+public class ListenableIntNodeProp extends IntNodeProp {
+
+    private final PropertyChangeSupport pcs;
+
+    public ListenableIntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String txt1, String txt2, String txt3) {
+        super(intConfiguration, canWrite, txt1, txt2, txt3);
+        pcs = new PropertyChangeSupport(this);
     }
 
-    public boolean preferSources() {
-        //Preserve the old behavior from 4.0 to 6.1, ignore sources inside archives
-        final FileObject[] roots = this.delegate.getRoots();
-        for (FileObject root : roots) {
-            if (root == null) {
-                //Issue #139894: SQBQ.Result.getRoots() contains null
-                throw new NullPointerException("SFBQ.Result: "+delegate.getClass().getName() +" returned null in roots.");
-            }
-            if (FileUtil.getArchiveFile(root) != null) {
-                return false;
-            }
-        }
-        return true;
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
     }
 
-    public FileObject[] getRoots () {
-        return this.delegate.getRoots();
+    public void remotePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
     }
 
-    public void addChangeListener(ChangeListener l) {
-        this.delegate.addChangeListener(l);
-    }
-
-    public void removeChangeListener(ChangeListener l) {
-        this.delegate.removeChangeListener(l);
+    @Override
+    public void setValue(Object v) {
+        Object oldV = getValue();
+        super.setValue(v);
+        pcs.firePropertyChange(getName(), oldV, v);
     }
 }

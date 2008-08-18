@@ -35,7 +35,7 @@
 				<tocitem text="Working with MIDlets">
 					<tocitem text="About MIDlets" target="me.midlet_about" />
                                         <tocitem text="Working with MIDlets" target="me.midlet_working" />
-					<tocitem text="Adding MIDlets to a Project Configuration" target="me.prop_setMIDlet" />
+					<tocitem text="Adding MIDlets to a Project Configuration" target="me.proj_quickref" />
 					<tocitem text="Adding Push Registry Entries" target="me.prop_setpushregistry" />
 					<tocitem text="About Push Registry Entries" target="me.pushregistry_about" />
 					<tocitem text="Adding API Permissions" target="me.prop_addAPI" />
@@ -98,7 +98,7 @@
 					<tocitem text="Customizing the Project Platform Properties" target="me.prop_setplatform" />
 					<tocitem text="Customizing the Application Descriptor (JAD) Attributes" target="me.prop_set_jad" />
 					<tocitem text="About Application Descriptor (JAD) Attributes" target="me.jad_about" />
-					<tocitem text="Adding MIDlets to a Project Configuration" target="me.prop_setMIDlet" />
+					<tocitem text="Adding MIDlets to a Project Configuration" target="me.proj_quickref" />
 					<tocitem text="Customizing Build Options" target="me.prop_customize_build" />
 					<tocitem text="Adding Libraries and Resources" target="me.prop_addlibrary" />
 				</tocitem>
