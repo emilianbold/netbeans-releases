@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -49,6 +49,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
 import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
@@ -60,7 +61,7 @@ import org.openide.util.Lookup;
  * @author gordonp
  */
 public class RemoteNativeExecution extends NativeExecution {
-    
+
     /**
      * Execute an executable, a makefile, or a script
      * @param runDir absolute path to directory from where the command should be executed
@@ -86,7 +87,7 @@ public class RemoteNativeExecution extends NativeExecution {
             envpList.addAll(Arrays.asList(envp));
         }
         envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
-        
+
         if (unbuffer) {
             int platformType = PlatformInfo.getDefault(host).getPlatform();
             String unbufferPath = getUnbufferPath(platformType);
@@ -107,7 +108,7 @@ public class RemoteNativeExecution extends NativeExecution {
         }
         return support == null ? -1 : support.getExitStatus();
     }
-    
+
     public void stop() {
     }
 
@@ -128,7 +129,7 @@ public class RemoteNativeExecution extends NativeExecution {
         if (unbufferName != null) {
             path += unbufferName;
             // check file existence
-            if (new File(path).exists()) {
+            if (HostInfoProvider.getDefault().fileExists(host, path)) {
                 return path;
             } else {
                 log.warning("unbuffer: " + path + " does not exist");
