@@ -70,7 +70,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     public CsmObject getReferencedObject() {
         if (!findDone && isValid()) {
-            target = ReferencesSupport.findReferencedObject(super.getContainingFile(), super.getDocument(), this.offset, token);
+            target = ReferencesSupport.instance().findReferencedObject(super.getContainingFile(), super.getDocument(), this.offset, token);
             findDone = true;
         }
         return target;
