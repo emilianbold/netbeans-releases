@@ -628,23 +628,18 @@ public class FileObjects {
     
     
     public static String getRelativePath (final File root, final File fo) {
-        try {
-            final String rootPath = root.getCanonicalPath();
-            final String foPath = fo.getCanonicalPath();
-            assert foPath.startsWith(rootPath) : String.format("getRelativePath(%s, %s)", rootPath, foPath);
-            int index = rootPath.length();
-            if (rootPath.charAt(index - 1) != File.separatorChar) {
-                index++;
-            }
-            int foIndex = foPath.length();
-            if (foIndex <= index) {
-                return ""; //NOI18N
-            }
-            return foPath.substring(index);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        final String rootPath = FileUtil.normalizeFile (root).getPath ();
+        final String foPath = FileUtil.normalizeFile (fo).getPath();
+        assert foPath.startsWith(rootPath) : String.format("getRelativePath(%s, %s)", rootPath, foPath);
+        int index = rootPath.length();
+        if (rootPath.charAt(index - 1) != File.separatorChar) {
+            index++;
+        }
+        int foIndex = foPath.length();
+        if (foIndex <= index) {
             return ""; //NOI18N
         }
+        return foPath.substring(index);
     }           
     
     private static class RegularFileObject extends FileBase {
