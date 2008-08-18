@@ -315,7 +315,7 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
     }
 
     public final int modCount() {
-        return rootTokenList().modCount();
+        return rootTokenList().modCount() + base.extraModCount;
     }
     
     public InputAttributes inputAttributes() {

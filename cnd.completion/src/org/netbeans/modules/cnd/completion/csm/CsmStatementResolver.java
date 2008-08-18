@@ -72,11 +72,11 @@ public class CsmStatementResolver {
      */
     public static boolean findInnerObject(CsmStatement stmt, int offset, CsmContext context) {
         if( stmt == null ) {
-            print("STATEMENT is null"); //NOI18N
+            if (CsmUtilities.DEBUG) print("STATEMENT is null"); //NOI18N
             return false;
         } 
         if (!CsmOffsetUtilities.isInObject(stmt, offset)) {
-            print("Offset " + offset+ " is not in statement " + stmt); //NOI18N
+            if (CsmUtilities.DEBUG) print("Offset " + offset+ " is not in statement " + stmt); //NOI18N
             return false;
         }
         // update context of passed statements
@@ -125,7 +125,7 @@ public class CsmStatementResolver {
         else if( kind == CsmStatement.Kind.RETURN ) {
         }
         else  {
-            print("unexpected statement kind"); //NOI18N
+            if (CsmUtilities.DEBUG) print("unexpected statement kind"); //NOI18N
         }
         return true;
     }
@@ -165,16 +165,16 @@ public class CsmStatementResolver {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called";
 
         if (CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
-            print("in CONDITION of if statement "); //NOI18N
+            if (CsmUtilities.DEBUG) print("in CONDITION of if statement "); //NOI18N
             CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
             return true;
         }
         if (findInnerObject(stmt.getThen(), offset, context)) {
-            print("in THEN: "); //NOI18N
+            if (CsmUtilities.DEBUG) print("in THEN: "); //NOI18N
             return true;
         }
         if (findInnerObject(stmt.getElse(), offset, context)) {
-            print("in ELSE: ");     //NOI18N        
+            if (CsmUtilities.DEBUG) print("in ELSE: ");     //NOI18N        
             return true;
         }
         return false;
@@ -186,7 +186,7 @@ public class CsmStatementResolver {
         List<CsmDeclaration> decls = stmt.getDeclarators();
         CsmDeclaration declObject = CsmOffsetUtilities.findObject(decls, context, offset);
         if (declObject != null) {
-            print("we have declarator " + declObject); //NOI18N
+            if (CsmUtilities.DEBUG) print("we have declarator " + declObject); //NOI18N
             return true;
         }
         return false;
@@ -195,7 +195,7 @@ public class CsmStatementResolver {
     private static boolean findInner(CsmLoopStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
         if (CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
-            print("in condition of loop statement isPostCheck()=" + stmt.isPostCheck()); //NOI18N
+            if (CsmUtilities.DEBUG) print("in condition of loop statement isPostCheck()=" + stmt.isPostCheck()); //NOI18N
             CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
             return true;
         }
@@ -205,16 +205,16 @@ public class CsmStatementResolver {
     private static boolean findInner(CsmForStatement stmt, int offset, CsmContext context) {
         assert (CsmOffsetUtilities.isInObject(stmt, offset)) : "we must be in statement when called"; //NOI18N
         if (findInnerObject(stmt.getInitStatement(), offset, context)) {
-            print("in INIT of for statement"); //NOI18N
+            if (CsmUtilities.DEBUG) print("in INIT of for statement"); //NOI18N
             return true;
         }
         if (CsmOffsetUtilities.isInObject(stmt.getIterationExpression(), offset)) {
-            print("in ITERATION  of for statement"); //NOI18N
+            if (CsmUtilities.DEBUG) print("in ITERATION  of for statement"); //NOI18N
             CsmContextUtilities.updateContextObject(stmt.getIterationExpression(), offset, context);
             return true;
         }
         if (CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
-            print("in CONDITION of for statement "); //NOI18N
+            if (CsmUtilities.DEBUG) print("in CONDITION of for statement "); //NOI18N
             CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
             return true;
         }        

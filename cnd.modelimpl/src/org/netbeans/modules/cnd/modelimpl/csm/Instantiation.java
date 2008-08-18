@@ -74,23 +74,19 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         // create mapping map
         if (CsmKindUtilities.isTemplate(declaration)) {
             Iterator<CsmType> typeIter = instType.getInstantiationParams().iterator();
-            for (CsmTemplateParameter param : ((CsmTemplate)declaration).getTemplateParameters()) {
-                if (!typeIter.hasNext()) {
-                    if (param instanceof TemplateParameterImpl) {
-                        TemplateParameterImpl pi = (TemplateParameterImpl) param;
-                        CsmType defaultType = pi.getDefaultValue();
+            for (CsmTemplateParameter param : ((CsmTemplate) declaration).getTemplateParameters()) {
+                if (typeIter.hasNext()) {
+                    mapping.put(param, typeIter.next());
+                } else {
+                    CsmType defaultType = param.getDefaultValue();
+                    if (defaultType != null) {
+                        defaultType = TemplateUtils.checkTemplateType(defaultType, ((CsmTemplate) declaration));
+                        defaultType = Instantiation.createType(defaultType, this);
                         if (defaultType != null) {
-                            defaultType = TemplateUtils.checkTemplateType(defaultType, ((CsmTemplate) declaration));
-                            defaultType = Instantiation.createType(defaultType, this);
-                            if (defaultType != null) {
-                                mapping.put(param, defaultType);
-                                continue;
-                            }
+                            mapping.put(param, defaultType);
                         }
                     }
-                    break;
-                }
-                mapping.put(param, typeIter.next());
+                }                
             }
         }
     }

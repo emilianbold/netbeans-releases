@@ -74,6 +74,9 @@ public class SQLExecuteHelperTest extends NbTestCase {
         // splitting
         assertSplit(" ;; ; ", new String[0]);
         assertSplit("/* comment */ select foo; /* comment */ select bar -- comment", new String[] { "select foo", "select bar" });
+
+        // newlines in strings
+        assertSplit("select 'foo\nbar';", new String[] { "select 'foo\nbar'" });
         
         // test changing the delimiter
         assertSplit("select delimiter foo; " +
