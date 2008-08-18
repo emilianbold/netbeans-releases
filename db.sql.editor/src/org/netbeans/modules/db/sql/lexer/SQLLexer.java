@@ -72,6 +72,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
     private final LexerRestartInfo info;
     private final LexerInput input;
     private final TokenFactory<SQLTokenId> factory;
+
     private int state = INIT;
     private int startQuoteChar = -1;
 
@@ -307,6 +308,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 break;
 
             case ISI_IDENTIFIER:
+                startQuoteChar = -1;
                 id = testKeyword(input.readText());
                 break;
 

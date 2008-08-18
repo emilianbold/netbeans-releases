@@ -63,7 +63,7 @@ public class SaveDiagram implements SaveCookie {
     }
 
     public synchronized void save() throws IOException {
-        System.out.println(" !!!!!!!!!!!! Begin Saving... !!!!!!!!!!!!!!!!!!");
+//        System.out.println(" !!!!!!!!!!!! Begin Saving... !!!!!!!!!!!!!!!!!!");
         //custom logic to save uml diagrams
         if (scene != null) {
             PersistenceManager pMgr = new PersistenceManager(fileObj);
@@ -74,6 +74,6 @@ public class SaveDiagram implements SaveCookie {
         if (dobj instanceof UMLDiagramDataObject) {
             ((UMLDiagramDataObject)dobj).setDirty(false, scene);
         }
-         System.out.println(" !!!!!!!!!!!! END Saving... !!!!!!!!!!!!!!!!!!");
+//         System.out.println(" !!!!!!!!!!!! END Saving... !!!!!!!!!!!!!!!!!!");
     }
 }

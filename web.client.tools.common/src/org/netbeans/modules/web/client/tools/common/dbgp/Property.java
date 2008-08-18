@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.netbeans.modules.web.client.tools.common.dbgp.Message.Encoding;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
 
 import sun.misc.BASE64Encoder;
@@ -159,7 +160,11 @@ public class Property extends BaseMessageChildElement {
     }
     
     public String getStringValue() throws UnsufficientValueException {
-        return new String(getValue());
+        try {
+            return new String(getValue(), "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            return new String(getValue());
+        }
     }
 
     public static boolean equals( Property one , Property two ) {

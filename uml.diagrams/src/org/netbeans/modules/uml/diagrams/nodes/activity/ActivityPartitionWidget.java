@@ -82,14 +82,13 @@ import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
-import org.netbeans.modules.uml.drawingarea.widgets.ContainerWithCompartments;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Thuy
  */
-public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeWidget,ContainerWithCompartments
+public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeWidget
 {
 
     private Scene scene;
@@ -128,6 +127,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         }
 
         setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
     }
 
     private Widget createActivityPartitionView(IActivityPartition partitionElement)
@@ -159,6 +159,8 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
 
         partitionPanel = new Widget(scene);
         partitionPanel.setMinimumSize(new Dimension(100, 85));
+        partitionPanel.setForeground(null);
+        
         // TODO: need to find a way to figure out the exisiting orientation of sub parttition
         setOrientation(SeparatorWidget.Orientation.VERTICAL); 
         if (!PersistenceUtil.isDiagramLoading())
@@ -473,6 +475,7 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
                                String propDisplayName)
         {
             super(scene, propID, propDisplayName);
+            setForeground(null);
         }
 
         @Override

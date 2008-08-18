@@ -211,6 +211,7 @@ public class TabbedController extends OptionsPanelController {
             for (Lookup.Item<AdvancedOption> item : options.allItems()) {
                 AdvancedOption o = item.getInstance();
                 OptionsPanelController c = o.create();
+                if (c == null) continue;
                 String id = item.getId().substring(item.getId().lastIndexOf('/') + 1);
                 id2Controller.put(id, c);
                 controllers2Options.put(c, o);

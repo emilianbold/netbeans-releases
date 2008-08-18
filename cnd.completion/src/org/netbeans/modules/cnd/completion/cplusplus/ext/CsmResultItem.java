@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
 import java.util.Iterator;
-import org.netbeans.editor.Settings;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -68,19 +67,19 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -93,6 +92,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
@@ -356,17 +356,18 @@ public abstract class CsmResultItem
     
     // Compares include directives dy file names
     private boolean isIncludesEqual(String inc1, String inc2) {
-        normalizeInclude(inc1);
-        normalizeInclude(inc2);
+        inc1 = normalizeInclude(inc1);
+        inc2 = normalizeInclude(inc2);
         return (inc1.equals(inc2));
     }
     
     // Normailizes include directive string
-    private void normalizeInclude(String inc) {
+    private String normalizeInclude(String inc) {
         inc.toLowerCase();
         inc = inc.replaceAll("[\\s\n]+", " "); // NOI18N
         inc = inc.replaceAll("[<>\"]", "\""); // NOI18N
         inc = inc.trim();
+        return inc;
     }
 
     // Says is it forward declarartion or not
@@ -842,21 +843,24 @@ public abstract class CsmResultItem
             this.substituteExp = substituteExp;
             this.isDeclaration = isDeclaration;
             this.modifiers = convertCsmModifiers(ctr);
-            CsmParameter[] prms = (CsmParameter[]) ctr.getParameters().toArray(new CsmParameter[0]);
-            for (int i=0; i<prms.length; i++) {
-                CsmParameter prm = (CsmParameter) prms[i];
-                CsmType type = prm.getType();
+            int i = 0;
+            for (Object prm : ctr.getParameters() ) {
+                if (prm == null){
+                    continue;
+                }
+                CsmType type = ((CsmParameter)prm).getType();
                 if (type == null) {
                     // only var args parameters could have null types
-                    assert (prm.isVarArgs());
-                    params.add(new ParamStr("", "" , prm.getName().toString(), true, KEYWORD_COLOR)); //NOI18N
+                    assert (((CsmParameter)prm).isVarArgs());
+                    params.add(new ParamStr("", "" , ((CsmParameter)prm).getName().toString(), true, KEYWORD_COLOR)); //NOI18N
                     varArgIndex = i;
-                } else {
+                 } else {
                     // XXX may be need full name as the first param
                     // FIXUP: too expensive to call getClassifier here!
                     String strFullName = type.getText().toString();// type.getClassifier().getName();
-                    params.add(new ParamStr(strFullName, type.getText().toString() , prm.getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
+                    params.add(new ParamStr(strFullName, type.getText().toString(), ((CsmParameter)prm).getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
                 }
+                i++;
             }           
             // TODO
 //            CsmClass excepts[] = ctr.getExceptions();
@@ -1008,13 +1012,11 @@ public abstract class CsmResultItem
                             text = getItemText();
                             boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
                             boolean addClosingParen = false;
-                            Formatter f = doc.getFormatter();
-                            if (f instanceof ExtFormatter) {
-                                Object o = ((ExtFormatter) f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
-                                o = Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
-                                if ((o instanceof Boolean) && ((Boolean) o).booleanValue()) {
-                                    addClosingParen = true;
-                                }
+
+                            String mimeType = CsmCompletionUtils.getMimeType(doc);
+                            if (mimeType != null) {
+                                Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+                                addClosingParen = prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
                             }
 
                             if (addParams) {

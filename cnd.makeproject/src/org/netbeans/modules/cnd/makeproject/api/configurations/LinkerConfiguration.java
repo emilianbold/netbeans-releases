@@ -413,7 +413,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             outputName = platform.getLibraryName(outputName);
         }
         outputName = ConfigurationSupport.makeNameLegal(outputName);
-	return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + getMakeConfiguration().getVariant() + "/" + outputName; // NOI18N 
+	return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/" + outputName; // NOI18N 
     }
     
     /*

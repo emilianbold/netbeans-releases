@@ -71,11 +71,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
-import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -203,14 +200,21 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         try {
             // find last separator position
-            final int lastSepOffset = sup.getLastCommandSeparator(offset);
-            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset);
+            int lastSepatorOffset = sup.getLastSeparatorOffset();
+            final int lastSepOffset;
+            if (lastSepatorOffset >=0 && lastSepatorOffset < offset){
+                lastSepOffset = lastSepatorOffset;
+            } else {
+                lastSepOffset = sup.getLastCommandSeparator(offset);
+            }
+            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, sup.getLastSeparatorOffset());
             tp.setJava15(true);
             doc.runAtomic(new Runnable() {
                 public void run() {
                     CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
                 }
             });
+            sup.setLastSeparatorOffset(tp.getLastSeparatorOffset());
 //            boolean cont = true;
 //            while (cont) {
 //                sup.tokenizeText(tp, ((lastSepOffset < offset) ? lastSepOffset + 1 : offset), offset, true);
@@ -334,21 +338,6 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //					    classDisplayOffset);
 //	}
 //	return result;
-    }
-
-    // ================= help methods for sorting csm results =================
-    protected static boolean isCaseSensitive(Class kitClass) {
-        boolean b = SettingsUtil.getBoolean(kitClass,
-            ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
-            ExtSettingsDefaults.defaultCompletionCaseSensitive);
-        return b;
-    }
-
-    protected static boolean isNaturalSort(Class kitClass) {
-        boolean b = SettingsUtil.getBoolean(kitClass,
-            ExtSettingsNames.COMPLETION_NATURAL_SORT,
-            ExtSettingsDefaults.defaultCompletionNaturalSort);
-        return b;
     }
 
     // ================= help methods to generate CsmCompletionResult ==========
@@ -1055,7 +1044,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                             CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS |
                                                             CompletionResolver.RESOLVE_GLOB_NAMESPACES |
                                                             CompletionResolver.RESOLVE_LIB_CLASSES |
-                                                            CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
+                                                            CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS |
+                                                            CompletionResolver.RESOLVE_LOCAL_CLASSES);
                                 } else {
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                 }

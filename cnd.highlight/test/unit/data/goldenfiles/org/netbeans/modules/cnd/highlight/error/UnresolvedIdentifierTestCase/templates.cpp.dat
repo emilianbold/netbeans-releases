@@ -3,5 +3,4 @@ WARNING templates.cpp [156-161]: Unable to resolve identifier sayHi
 WARNING templates.cpp [176-187]: Unable to resolve identifier sayHiStatic
 WARNING templates.cpp [242-253]: Unable to resolve identifier doSomething
 WARNING templates.cpp [268-269]: Unable to resolve identifier n
-WARNING templates.cpp [271-272]: Unable to resolve identifier m
 WARNING templates.cpp [369-372]: Unable to resolve identifier foo

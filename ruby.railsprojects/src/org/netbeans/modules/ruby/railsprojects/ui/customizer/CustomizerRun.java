@@ -55,13 +55,13 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -79,6 +79,7 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
+import org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -95,7 +96,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private final JTextField[] configFields;
     private final String[] configPropsKeys;
     
-    private final Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
+    private final Map<String, Map<String, String>> configs;
     private final RailsProjectProperties uiProperties;
     private PlatformChangeListener platformListener;
     
@@ -103,9 +104,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         this.uiProperties = uiProperties;
         initComponents();
 
-        this.project = uiProperties.getProject();
-        
-        configs = uiProperties.RUN_CONFIGS;
+        this.project = uiProperties.getRailsProject();
+        configs = uiProperties.getRunConfigs();
         
         configFields = new JTextField[] {
             portField,
@@ -118,11 +118,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         configPropsKeys = new String[] {
             RailsProjectProperties.RAILS_PORT,
             RailsProjectProperties.RAKE_ARGS
-//            RailsProjectProperties.RAILS_ENV
         };
         assert configFields.length == configPropsKeys.length;
         
-        configChanged(uiProperties.activeConfig);
+        configChanged(uiProperties.getActiveConfig());
         
         configCombo.setRenderer(new DefaultListCellRenderer() {
             public @Override Component getListCellRendererComponent(JList list, Object value,
@@ -181,7 +180,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             });
         }
 
-        this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
+        this.originalEncoding = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
         if (this.originalEncoding == null) {
             this.originalEncoding = Charset.defaultCharset().name();
         }
@@ -195,7 +194,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             this.encoding.addItemListener(new java.awt.event.ItemListener() {
 
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
-                    javax.swing.JComboBox combo = (javax.swing.JComboBox) e.getSource();
+                    JComboBox combo = (JComboBox) e.getSource();
                     combo.setPopupVisible(false);
                 }
             });
@@ -208,11 +207,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         });
         platforms.setSelectedItem(uiProperties.getPlatform());
         String serverId = project.evaluator().getProperty(RailsProjectProperties.RAILS_SERVERTYPE);
-        RubyInstance server = ServerRegistry.getDefault().getServer(serverId, uiProperties.getPlatform());
-        if (server != null) {
-            serverComboBox.setSelectedItem(server);
-            uiProperties.setServer(server);
-        }
+        selectServer(serverId);
         serverComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 handleServerChanged();
@@ -222,8 +217,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         initRailsEnvCombo();
     }
     
+    private void handleRailsEnvChanged() {
+        String env = (String) railsEnvCombo.getSelectedItem();
+        uiProperties.setRailsEnvironment(env, getSelectedConfig());
+    }
+
     private void handleServerChanged() {
-        uiProperties.setServer((RubyInstance) serverComboBox.getSelectedItem());
+        RubyInstance server = (RubyInstance) serverComboBox.getSelectedItem();
+        uiProperties.setServer(server, getSelectedConfig());
     }
     
     private void initRailsEnvCombo() {
@@ -241,14 +242,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         Collections.sort(environments);
         railsEnvCombo.setModel(new DefaultComboBoxModel(environments.toArray(new String[environments.size()]))); //NOI18N
         String definedEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
-        if (definedEnv != null && !"".equals(definedEnv.trim())) {
-            railsEnvCombo.setSelectedItem(definedEnv);
-        } else {
-            railsEnvCombo.setSelectedIndex(-1);
-        }
+        selectRailsEnv(definedEnv);
         railsEnvCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                uiProperties.setRailsEnvironment((String) railsEnvCombo.getSelectedItem());
+                handleRailsEnvChanged();
             }
         });
     }
@@ -293,6 +290,21 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             config = null;
         }
         return config;
+    }
+
+    private void selectServer(String serverId) {
+        RubyInstance server = ServerRegistry.getDefault().getServer(serverId, uiProperties.getPlatform());
+        if (server != null) {
+            serverComboBox.setSelectedItem(server);
+        }
+    }
+
+    private void selectRailsEnv(final String definedEnv) {
+        if (definedEnv != null && !"".equals(definedEnv.trim())) {
+            railsEnvCombo.setSelectedItem(definedEnv);
+        } else {
+            railsEnvCombo.setSelectedIndex(-1);
+        }
     }
 
     public HelpCtx getHelpCtx() {
@@ -509,45 +521,27 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }// </editor-fold>//GEN-END:initComponents
 
     private void portFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_portFieldActionPerformed
-    // TODO add your handling code here:
-}//GEN-LAST:event_portFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_portFieldActionPerformed
 
     private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
         String config = getSelectedConfig();
         assert config != null;
         configs.put(config, null);
         configChanged(null);
-        uiProperties.activeConfig = null;
+        uiProperties.setActiveConfig(null);
     }//GEN-LAST:event_configDelActionPerformed
 
     private void configNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configNewActionPerformed
-        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
-                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.prompt"),
-                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.title"));
-        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
-            return;
-        }
-        String name = d.getInputText();
-        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
-        if (configs.get(config) != null) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.duplicate", config),
-                    NotifyDescriptor.WARNING_MESSAGE));
-            return;
-        }
-        Map<String,String> m = new HashMap<String,String>();
-        if (!name.equals(config)) {
-            m.put("$label", name); // NOI18N
-        }
-        configs.put(config, m);
+        String config = CustomizerSupport.askForNewConfiguration(configs);
         configChanged(config);
-        uiProperties.activeConfig = config;
+        uiProperties.setActiveConfig(config);
     }//GEN-LAST:event_configNewActionPerformed
 
     private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
         String config = getSelectedConfig();
         configChanged(config);
-        uiProperties.activeConfig = config;
+        uiProperties.setActiveConfig(config);
     }//GEN-LAST:event_configComboActionPerformed
 
     private void manageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageButtonActionPerformed
@@ -560,7 +554,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
     private void initServerComboBox(){
         serverComboBox.setModel(new RailsServerManager.ServerListModel(getPlatform()));
-        uiProperties.setServer((RubyInstance) serverComboBox.getSelectedItem());
+        String serverID = configs.get(getSelectedConfig()).get(RailsProjectProperties.RAILS_SERVERTYPE);
+        if (serverID != null) {
+            selectServer(serverID);
+        }
     }
     
     private RubyPlatform getPlatform() {
@@ -608,6 +605,18 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 activePlatformID = def.get(RailsProjectProperties.PLATFORM_ACTIVE);
             }
             platforms.setSelectedItem(RubyPlatformManager.getPlatformByID(activePlatformID));
+
+            String serverID = active.get(RailsProjectProperties.RAILS_SERVERTYPE);
+            if (serverID == null) {
+                serverID = def.get(RailsProjectProperties.RAILS_SERVERTYPE);
+            }
+            selectServer(serverID);
+
+            String environment = active.get(RailsProjectProperties.RAILS_ENV);
+            if (environment == null) {
+                environment = def.get(RailsProjectProperties.RAILS_ENV);
+            }
+            selectRailsEnv(environment);
         } // else ??
         configDel.setEnabled(activeConfig != null);
     }
@@ -711,4 +720,5 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             throw new UnsupportedOperationException();
         }
     }
+
 }

@@ -42,6 +42,8 @@
 package org.netbeans.lib.lexer;
 
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.lib.lexer.inc.TokenHierarchyUpdate;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -72,6 +74,9 @@ import org.netbeans.spi.lexer.LanguageHierarchy;
  */
 
 public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbedding<T> {
+
+    // -J-Dorg.netbeans.lib.lexer.EmbeddingContainer.level=FINE
+    private static final Logger LOG = Logger.getLogger(EmbeddingContainer.class.getName());
 
     /**
      * Get embedded token list.
@@ -170,6 +175,9 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
                 // Preceding code should ensure that (prevEtl.nextEmbeddedTokenList == null)
                 // so no need to call etl.setNextEmbeddedTokenList(prevEtl.nextEmbeddedTokenList())
                 ec.addEmbeddedTokenList(prevEtl, etl, true);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("@@@@@@@@@@ NATURAL-EMBEDDING-CREATED: " + etl.dumpInfo(null) + '\n');
+                }
 
                 if (initTokensInNew) {
                     if (embedding.joinSections()) {
@@ -259,6 +267,10 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
             etl = new EmbeddedTokenList<ET>(
                     ec, embeddedLanguagePath, embedding);
             ec.addEmbeddedTokenList(null, etl, false);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("@@@@@@@@@@ EXPLICIT-EMBEDDING-CREATED: " + etl.dumpInfo(null) + '\n');
+            }
+
             
             // Fire the embedding creation to the clients
             // Threading model may need to be changed if necessary
@@ -458,7 +470,15 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
     private void markRemoved() {
         // Set cachedModCount to LexerUtilsConstants.MOD_COUNT_REMOVED which should not occur
         // for regular cases which should force existing token sequences to be invalidated.
-        this.cachedModCount = LexerUtilsConstants.MOD_COUNT_REMOVED;
+        cachedModCount = LexerUtilsConstants.MOD_COUNT_REMOVED;
+        // Also clear extraModCount of all contained ETLs so that their extraModCount
+        // does not increase the cachedModCount in a way that the total count would match
+        // some token-sequence's modCount.
+        EmbeddedTokenList etl = firstEmbeddedTokenList;
+        while (etl != null && etl != EmbeddedTokenList.NO_DEFAULT_EMBEDDING) {
+            etl.resetExtraModCount();
+            etl = etl.nextEmbeddedTokenList();
+        }
     }
     
     public void markRemoved(int branchTokenStartOffset) {
@@ -623,7 +643,7 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
         ) {
             TokenList<T> parentTokenList = branchToken.tokenList();
             if (parentTokenList == null) { // branch token removed from its parent token list
-                cachedModCount = LexerUtilsConstants.MOD_COUNT_REMOVED;
+                markRemoved();
             } else if (parentTokenList.getClass() == EmbeddedTokenList.class) { // deeper level embedding
                 EmbeddedTokenList<T> parentEtl = (EmbeddedTokenList<T>)parentTokenList;
                 cachedModCount = parentEtl.embeddingContainer().updateStatusImpl(rootModCount);

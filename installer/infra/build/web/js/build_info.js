@@ -48,7 +48,7 @@ var LOAD_GOOGLE_ANALYTICS_CODE = 0;
 
 function add_download_tabs() {
 	add_download_tab("6.1", "http://download.netbeans.org/netbeans/6.1/final/");
-	add_download_tab("6.5M1", "http://bits.netbeans.org/netbeans/6.5/m1/");
+	add_download_tab("6.5 Beta", "http://download.netbeans.org/netbeans/6.5/beta/");
 	add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }

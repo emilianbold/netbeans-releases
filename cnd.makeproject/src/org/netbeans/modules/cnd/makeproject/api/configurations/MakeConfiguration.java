@@ -369,7 +369,7 @@ public class MakeConfiguration extends Configuration {
     // Cloning
     @Override
     public Object clone() {
-        MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue());
+        MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue(), getDevelopmentHost().getName());
         super.cloneConf(clone);
         clone.setCloneOf(this);
 
@@ -663,6 +663,18 @@ public class MakeConfiguration extends Configuration {
             output = FilePathAdaptor.normalize(output);
             return output;
         }
+    }
+    
+    public String expandMacros(String val) {
+        // Substitute macros
+        int i = val.indexOf(("${PLATFORM}")); // NOI18N
+        if (i == 0) {
+            val = getVariant() + val.substring(i);
+        }
+        else if (i > 0) {
+            val = val.substring(0, i) + getVariant() + val.substring(i+11);
+        }
+        return val;
     }
 //
 //    private String[] getCompilerSetDisplayNames() {

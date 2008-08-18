@@ -117,8 +117,8 @@
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-groovy">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/editor/resources/groovydoc.png"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/editor/resources/groovydoc.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"/>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>

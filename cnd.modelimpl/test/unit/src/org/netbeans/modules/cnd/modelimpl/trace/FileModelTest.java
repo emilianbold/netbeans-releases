@@ -420,6 +420,21 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("resolver_typedef_string.cc"); // NOI18N
     }
 
+    public void testTemplateInnerClassDtorDefinition() throws Exception {
+        performTest("template_inner_class_dtor_definition.cc"); // NOI18N
+    }
+
+    // #143611 If a class inherits some template *specialization*, unresolved IDs appear
+    public void testTemplateSpecializationInheritance_1() throws Exception {
+        performTest("template_spec_inherited_1.cc"); // NOI18N
+    }
+    
+    // #144156 Template specialization functions: incorrect navigation between definitions and declarations
+    public void testTemplateFunctionSpecialization() throws Exception {
+        performTest("template_fun_spec.cc"); // NOI18N
+    }
+
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -440,10 +455,6 @@ public class FileModelTest extends TraceModelTestBase {
 	    return FileModelTest.class;
 	}
 	
-	public void testTemplateInnerClassDtorDefinition() throws Exception {
-	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
-	}
-
         @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests

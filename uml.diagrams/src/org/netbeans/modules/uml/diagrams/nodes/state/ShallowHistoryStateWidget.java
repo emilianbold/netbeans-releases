@@ -81,6 +81,8 @@ public class ShallowHistoryStateWidget extends InitialStateWidget
         layer.addChild(labelWidget);
         circleWidget.addChild(layer, 1);
         setCurrentView(circleWidget);
+        
+        super.initializeNode(presentation);
     }
 
     public String getWidgetID()

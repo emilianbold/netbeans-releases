@@ -61,7 +61,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 
 /**
  *  A support class for helping execution of an executable, a makefile, or a script.
@@ -117,27 +119,26 @@ public class LocalNativeExecution extends NativeExecution {
         // Start the build process and a build reader.
         NbProcessDescriptor desc = new NbProcessDescriptor(commandInterpreter, commandLine);
         
-        List nueEnvp;
+        // Updating environment variables
+        List<String> envpList = new ArrayList<String>();
         if (envp != null) {
-            nueEnvp = new ArrayList(Arrays.asList(envp));
-        } else {
-            nueEnvp = new ArrayList();
+            envpList.addAll(Arrays.asList(envp));
         }
-        nueEnvp.add("SPRO_EXPAND_ERRORS="); // NOI18N
+        envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
         
         if (unbuffer) {
             String unbufferPath = getUnbufferPath();
             if (unbufferPath != null) {
                 if (Utilities.isMac()) {
-                    nueEnvp.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
-                    nueEnvp.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
+                    envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
+                    envpList.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
                 } else {
-                    nueEnvp.add("LD_PRELOAD=" + unbufferPath); // NOI18N
+                    envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
                 }
             }
         }
-        
-        envp = (String[] ) nueEnvp.toArray(new String[0]);
+        envp = envpList.toArray(new String[envpList.size()]);
+
         executionProcess = desc.exec(null, envp, true, runDirFile);
         outputReaderThread = new OutputReaderThread(executionProcess.getErrorStream(), out);
         outputReaderThread.start();
@@ -181,26 +182,18 @@ public class LocalNativeExecution extends NativeExecution {
     }
     
     private String getUnbufferPath() {
-        String name = "bin/unbuffer-" + getOsName() + "-" + getOsArch() + "." + getExtension(); // NOI18N
-        File file = InstalledFileLocator.getDefault().locate(name, null, false);
+        int platformType = PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).getPlatform();
+        String unbufferName = getUnbufferName(platformType);
+        if (unbufferName == null) {
+            return null;
+        }
+        File file = InstalledFileLocator.getDefault().locate("bin/" + unbufferName, null, false);
         if (file != null && file.exists()) {
             return fixPath(file.getAbsolutePath());
         } else {
+            log.warning("unbuffer: " + unbufferName + " not found");
             return null;
         }
-    }
-
-    private static String getOsArch() {
-        String orig = System.getProperty("os.arch"); // NOI18N
-        return (orig.equals("i386") || orig.equals("i686")) ? "x86" : orig; // NOI18N
-    }
-
-    private static String getOsName() {
-        return System.getProperty("os.name").replace(" ", "_"); // NOI18N
-    }
-
-    private static String getExtension() {
-        return Utilities.isWindows() ? "dll" : Utilities.getOperatingSystem() == Utilities.OS_MAC ? "dylib" : "so"; // NOI18N
     }
 
     private String fixPath(String path) {

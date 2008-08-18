@@ -50,7 +50,6 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.text.Collator;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -74,7 +73,6 @@ import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.SourceRoots;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -88,7 +86,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private final JTextField[] configFields;
     private final String[] configPropsKeys;
     
-    private final Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
+    private final Map<String, Map<String, String>> configs;
     private final RubyProjectProperties uiProperties;
     private PlatformComponentFactory.PlatformChangeListener platformListener;
 
@@ -96,9 +94,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         this.uiProperties = uiProperties;
         initComponents();
 
-        this.project = uiProperties.getProject();
-        
-        configs = uiProperties.RUN_CONFIGS;
+        project = uiProperties.getRubyProject();
+        configs = uiProperties.getRunConfigs();
         
         configFields = new JTextField[] {
             jTextFieldMainClass,
@@ -127,7 +124,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         };
         assert configFields.length == configPropsKeys.length;
         
-        configChanged(uiProperties.activeConfig);
+        configChanged(uiProperties.getActiveConfig());
         
         configCombo.setRenderer(new DefaultListCellRenderer() {
             public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -154,7 +151,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     configPropsKeys[i], configLabels[i], configFields[i]));
         }
 
-        jButtonMainClass.addActionListener( new MainClassListener( project.getSourceRoots(), jTextFieldMainClass ) );
+        jButtonMainClass.addActionListener(new MainClassListener(project.getSourceRoots(), jTextFieldMainClass));
         platforms.setSelectedItem(uiProperties.getPlatform());
         updateEnabled();
     }
@@ -447,37 +444,19 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         assert config != null;
         configs.put(config, null);
         configChanged(null);
-        uiProperties.activeConfig = null;
+        uiProperties.setActiveConfig(null);
     }//GEN-LAST:event_configDelActionPerformed
 
     private void configNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configNewActionPerformed
-        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
-                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.prompt"),
-                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.title"));
-        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
-            return;
-        }
-        String name = d.getInputText();
-        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
-        if (configs.get(config) != null) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.duplicate", config),
-                    NotifyDescriptor.WARNING_MESSAGE));
-            return;
-        }
-        Map<String,String> m = new HashMap<String,String>();
-        if (!name.equals(config)) {
-            m.put("$label", name); // NOI18N
-        }
-        configs.put(config, m);
+        String config = CustomizerSupport.askForNewConfiguration(configs);
         configChanged(config);
-        uiProperties.activeConfig = config;
+        uiProperties.setActiveConfig(config);
     }//GEN-LAST:event_configNewActionPerformed
 
     private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
         String config = getSelectedConfig();
         configChanged(config);
-        uiProperties.activeConfig = config;
+        uiProperties.setActiveConfig(config);
     }//GEN-LAST:event_configComboActionPerformed
 
     private void jButtonWorkingDirectoryBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWorkingDirectoryBrowseActionPerformed

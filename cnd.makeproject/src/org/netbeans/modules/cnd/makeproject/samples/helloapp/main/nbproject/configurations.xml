@@ -26,7 +26,6 @@
     <conf name="Debug" type="1">
       <compileType>
         <linkerTool>
-          <output>dist/Debug/main</output>
           <linkerLibItems>
             <linkerLibProjectItem>
               <makeArtifact PL="../hello1lib"
@@ -37,7 +36,7 @@
                             WD="../hello1lib"
                             BC="${MAKE} -f Makefile CONF=Debug"
                             CC="${MAKE} -f Makefile CONF=Debug clean"
-                            OP="dist/Debug/libhello1lib.a">
+                            OP="dist/Debug/${PLATFORM}/libhello1lib.a">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -49,7 +48,7 @@
                             WD="../hello2lib"
                             BC="${MAKE} -f Makefile CONF=Debug"
                             CC="${MAKE} -f Makefile CONF=Debug clean"
-                            OP="dist/Debug/libhello2lib.a">
+                            OP="dist/Debug/${PLATFORM}/libhello2lib.a">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -61,7 +60,7 @@
                             WD="../hello3lib"
                             BC="${MAKE}  -f Makefile CONF=Debug"
                             CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="dist/Debug/X-LIBPREFIX-Xhello3lib.X-LIBSUFFIX-X">
+                            OP="dist/Debug/${PLATFORM}/X-LIBPREFIX-Xhello3lib.X-LIBSUFFIX-X">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -73,7 +72,7 @@
                             WD="../hello4lib"
                             BC="${MAKE}  -f Makefile CONF=Debug"
                             CC="${MAKE}  -f Makefile CONF=Debug clean"
-                            OP="dist/Debug/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X">
+                            OP="dist/Debug/${PLATFORM}/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>
@@ -92,7 +91,6 @@
           <developmentMode>5</developmentMode>
         </ccCompilerTool>
         <linkerTool>
-          <output>dist/Release/main</output>
           <linkerLibItems>
             <linkerLibProjectItem>
               <makeArtifact PL="../hello1lib"
@@ -103,7 +101,7 @@
                             WD="../hello1lib"
                             BC="${MAKE} -f Makefile CONF=Release"
                             CC="${MAKE} -f Makefile CONF=Release clean"
-                            OP="dist/Release/libhello1lib.a">
+                            OP="dist/Release/${PLATFORM}/libhello1lib.a">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -115,7 +113,7 @@
                             WD="../hello2lib"
                             BC="${MAKE} -f Makefile CONF=Release"
                             CC="${MAKE} -f Makefile CONF=Release clean"
-                            OP="dist/Release/libhello2lib.a">
+                            OP="dist/Release/${PLATFORM}/libhello2lib.a">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -127,7 +125,7 @@
                             WD="../hello3lib"
                             BC="${MAKE}  -f Makefile CONF=Release"
                             CC="${MAKE}  -f Makefile CONF=Release clean"
-                            OP="dist/Release/X-LIBPREFIX-Xhello3lib.X-LIBSUFFIX-X">
+                            OP="dist/Release/${PLATFORM}/X-LIBPREFIX-Xhello3lib.X-LIBSUFFIX-X">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -139,7 +137,7 @@
                             WD="../hello4lib"
                             BC="${MAKE}  -f Makefile CONF=Release"
                             CC="${MAKE}  -f Makefile CONF=Release clean"
-                            OP="dist/Release/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X">
+                            OP="dist/Release/${PLATFORM}/X-LIBPREFIX-Xhello4lib.X-LIBSUFFIX-X">
               </makeArtifact>
             </linkerLibProjectItem>
           </linkerLibItems>

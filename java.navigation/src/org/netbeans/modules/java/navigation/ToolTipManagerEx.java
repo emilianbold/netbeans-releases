@@ -425,23 +425,25 @@ final class ToolTipManagerEx extends MouseAdapter implements MouseMotionListener
         if (insideComponent == null) {
             // Drag exit
         } 
-        if (window != null && event.getSource() == window) {
+        else if (window != null && event.getSource() == window) {
 	  // if we get an exit and have a heavy window
 	  // we need to check if it if overlapping the inside component
             Container insideComponentWindow = insideComponent.getTopLevelAncestor();
-            Point location = event.getPoint();
-            SwingUtilities.convertPointToScreen(location, window);
+            if (insideComponentWindow != null) {
+                Point location = event.getPoint();
+                SwingUtilities.convertPointToScreen(location, window);
 
-            location.x -= insideComponentWindow.getX();
-            location.y -= insideComponentWindow.getY();
-            
-            location = SwingUtilities.convertPoint(null,location,insideComponent);
-            if (location.x >= 0 && location.x < insideComponent.getWidth() &&
-               location.y >= 0 && location.y < insideComponent.getHeight()) {
-                shouldHide = false;
-            } else {
-	        shouldHide = true;
-	    }
+                location.x -= insideComponentWindow.getX();
+                location.y -= insideComponentWindow.getY();
+
+                location = SwingUtilities.convertPoint(null,location,insideComponent);
+                if (location.x >= 0 && location.x < insideComponent.getWidth() &&
+                   location.y >= 0 && location.y < insideComponent.getHeight()) {
+                    shouldHide = false;
+                } else {
+                    shouldHide = true;
+                }
+            }
         } else if(event.getSource() == insideComponent && tipWindow != null) {
 	    Window win = SwingUtilities.getWindowAncestor(insideComponent);
 	    if (win != null) {	// insideComponent may have been hidden (e.g. in a menu)

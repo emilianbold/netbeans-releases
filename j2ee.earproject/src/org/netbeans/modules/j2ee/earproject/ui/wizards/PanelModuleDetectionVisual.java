@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,13 +63,16 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.earproject.ModuleType;
+import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -134,31 +138,37 @@ public class PanelModuleDetectionVisual extends JPanel {
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
-        File project = getProject(wizardDescriptor);
+        // #143772 - we need to check whether the directory is not already NB project, but NOT j2ee module
         for (Vector<String> module : modules) {
-            if (isModuleForbidden(project, module.get(REL_PATH_INDEX))) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
-                        getMessage("MSG_ModuleLocationAlreadyExists")); //NOI18N
+            String moduleDirectory = module.get(REL_PATH_INDEX);
+            if (isForbiddenProject(moduleDirectory)) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(PanelModuleDetectionVisual.class, "MSG_ModuleNotJavaEEModule", moduleDirectory));
                 return false;
             }
         }
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null); // NOI18N
         return true;
     }
-    
-    /** Get the project directory. */
-    private File getProject(WizardDescriptor wizardDescriptor) {
-        return (File) wizardDescriptor.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
+
+    // return true for nb project which is not java ee module
+    private boolean isForbiddenProject(String moduleDirectory) {
+        File module = FileUtil.normalizeFile(new File(eaLocation, moduleDirectory));
+        Project project = null;
+        try {
+            project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(module));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (project == null) {
+            // not nb project at all
+            return false;
+        }
+        return !EarProjectUtil.isJavaEEModule(project);
     }
-    
-    // #87604
-    /** Return <code>true</code> if the module location already exists in the project directory. */
-    private boolean isModuleForbidden(File project, String module) {
-        String moduleName = new File(project, module).getName();
-        File forbiddenLocation = new File(project, moduleName);
-        return forbiddenLocation.exists();
-    }
-    
+
     void store(WizardDescriptor wd) {
         Map<FileObject, ModuleType> userModules =
                 new HashMap<FileObject, ModuleType>();
