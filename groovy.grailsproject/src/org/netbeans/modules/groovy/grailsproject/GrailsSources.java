@@ -73,7 +73,14 @@ import org.openide.util.NbBundle;
 public class GrailsSources extends FileChangeAdapter implements Sources {
 
     //  those are dirs in project root we already know and create specific source groups
-    private static final List KNOWN_FOLDERS = Arrays.asList( "grails-app", "web-app", "lib", "src", "test" ); // NOI18N
+    private static final List KNOWN_FOLDERS = Arrays.asList(
+            "grails-app", // NOI18N
+            "lib", // NOI18N
+            "scripts", // NOI18N
+            "src", // NOI18N
+            "test", // NOI18N
+            "web-app" // NOI18N
+            );
 
     private final FileObject projectDir;
     private final ChangeSupport changeSupport = new ChangeSupport(this);

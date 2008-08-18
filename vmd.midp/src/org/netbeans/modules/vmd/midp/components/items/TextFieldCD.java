@@ -150,7 +150,10 @@ public class TextFieldCD extends ComponentDescriptor {
                 // code
                 createSetterPresenter(),
                 // screen
-                new TextFieldDisplayPresenter());
+                new TextFieldDisplayPresenter(),
+                //accept
+                DatabindingItemAcceptPresenter.create(PROP_TEXT, ItemCD.PROP_LABEL)
+                );
     }
 
     public static class TextFieldConstraintsParameter extends MidpParameter {

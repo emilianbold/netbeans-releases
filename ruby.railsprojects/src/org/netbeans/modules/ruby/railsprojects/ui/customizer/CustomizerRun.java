@@ -62,6 +62,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -117,7 +118,6 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         configPropsKeys = new String[] {
             RailsProjectProperties.RAILS_PORT,
             RailsProjectProperties.RAKE_ARGS
-//            RailsProjectProperties.RAILS_ENV
         };
         assert configFields.length == configPropsKeys.length;
         
@@ -194,7 +194,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             this.encoding.addItemListener(new java.awt.event.ItemListener() {
 
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
-                    javax.swing.JComboBox combo = (javax.swing.JComboBox) e.getSource();
+                    JComboBox combo = (JComboBox) e.getSource();
                     combo.setPopupVisible(false);
                 }
             });
@@ -207,11 +207,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         });
         platforms.setSelectedItem(uiProperties.getPlatform());
         String serverId = project.evaluator().getProperty(RailsProjectProperties.RAILS_SERVERTYPE);
-        RubyInstance server = ServerRegistry.getDefault().getServer(serverId, uiProperties.getPlatform());
-        if (server != null) {
-            serverComboBox.setSelectedItem(server);
-            uiProperties.setServer(server);
-        }
+        selectServer(serverId);
         serverComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 handleServerChanged();
@@ -221,8 +217,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         initRailsEnvCombo();
     }
     
+    private void handleRailsEnvChanged() {
+        String env = (String) railsEnvCombo.getSelectedItem();
+        uiProperties.setRailsEnvironment(env, getSelectedConfig());
+    }
+
     private void handleServerChanged() {
-        uiProperties.setServer((RubyInstance) serverComboBox.getSelectedItem());
+        RubyInstance server = (RubyInstance) serverComboBox.getSelectedItem();
+        uiProperties.setServer(server, getSelectedConfig());
     }
     
     private void initRailsEnvCombo() {
@@ -240,14 +242,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         Collections.sort(environments);
         railsEnvCombo.setModel(new DefaultComboBoxModel(environments.toArray(new String[environments.size()]))); //NOI18N
         String definedEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
-        if (definedEnv != null && !"".equals(definedEnv.trim())) {
-            railsEnvCombo.setSelectedItem(definedEnv);
-        } else {
-            railsEnvCombo.setSelectedIndex(-1);
-        }
+        selectRailsEnv(definedEnv);
         railsEnvCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                uiProperties.setRailsEnvironment((String) railsEnvCombo.getSelectedItem());
+                handleRailsEnvChanged();
             }
         });
     }
@@ -292,6 +290,21 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             config = null;
         }
         return config;
+    }
+
+    private void selectServer(String serverId) {
+        RubyInstance server = ServerRegistry.getDefault().getServer(serverId, uiProperties.getPlatform());
+        if (server != null) {
+            serverComboBox.setSelectedItem(server);
+        }
+    }
+
+    private void selectRailsEnv(final String definedEnv) {
+        if (definedEnv != null && !"".equals(definedEnv.trim())) {
+            railsEnvCombo.setSelectedItem(definedEnv);
+        } else {
+            railsEnvCombo.setSelectedIndex(-1);
+        }
     }
 
     public HelpCtx getHelpCtx() {
@@ -559,7 +572,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
     private void initServerComboBox(){
         serverComboBox.setModel(new RailsServerManager.ServerListModel(getPlatform()));
-        uiProperties.setServer((RubyInstance) serverComboBox.getSelectedItem());
+        String serverID = configs.get(getSelectedConfig()).get(RailsProjectProperties.RAILS_SERVERTYPE);
+        if (serverID != null) {
+            selectServer(serverID);
+        }
     }
     
     private RubyPlatform getPlatform() {
@@ -607,6 +623,18 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 activePlatformID = def.get(RailsProjectProperties.PLATFORM_ACTIVE);
             }
             platforms.setSelectedItem(RubyPlatformManager.getPlatformByID(activePlatformID));
+
+            String serverID = active.get(RailsProjectProperties.RAILS_SERVERTYPE);
+            if (serverID == null) {
+                serverID = def.get(RailsProjectProperties.RAILS_SERVERTYPE);
+            }
+            selectServer(serverID);
+
+            String environment = active.get(RailsProjectProperties.RAILS_ENV);
+            if (environment == null) {
+                environment = def.get(RailsProjectProperties.RAILS_ENV);
+            }
+            selectRailsEnv(environment);
         } // else ??
         configDel.setEnabled(activeConfig != null);
     }
@@ -710,4 +738,5 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             throw new UnsupportedOperationException();
         }
     }
+
 }

@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import org.netbeans.api.lexer.LanguagePath;
@@ -318,6 +319,7 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
             //are we formatting from the beginning of doc or a subsection
             int line = Utilities.getLineOffset(basedoc, startOffset);
             if(line > 0) {
+                boolean nested = isSubSectionToFormatNested(basedoc, startOffset);
                 //we are formatting a subsection
                 int precedingWordLoc = Utilities.getFirstNonWhiteBwd(basedoc, startOffset) ;
                 int previousLine = Utilities.getLineOffset(basedoc, precedingWordLoc);
@@ -332,12 +334,12 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
                 } else
                     previousLineIndentation = Utilities.getRowIndent(basedoc, startOffset);
                 //the section being formatted should be idented wrt to previous line's indentation
-                if(previousLineIndentation < spacesPerTab )
-                    incrIndentLevelBy =1;
-                else if(previousLineIndentation > spacesPerTab || previousLineIndentation == spacesPerTab){
+              
                     int div = previousLineIndentation / spacesPerTab;
-                    incrIndentLevelBy = div +1;
-                }
+                    if(nested)
+                       incrIndentLevelBy = div +1;
+                    else
+                        incrIndentLevelBy = div;
                 
             }
             TokenHierarchy tokenHierarchy = TokenHierarchy.get(basedoc);
@@ -436,5 +438,30 @@ public class XMLLexerFormatter extends TagBasedLexerFormatter {
         }
     }
     
+       
+    private boolean isSubSectionToFormatNested(BaseDocument baseDoc, int startOffset){
+      AbstractDocument doc = (AbstractDocument)baseDoc;
+      doc.readLock();
+      try {
+          TokenHierarchy th = TokenHierarchy.get(doc);
+          TokenSequence ts = th.tokenSequence();
+          ts.move(startOffset);
+          while(ts.movePrevious()) {
+              Token t = ts.token();
+              if(t.id() == XMLTokenId.PI_END)
+                  return false;
+              String tagText = t.text().toString();
+              if(tagText.startsWith("</") || tagText.equals("/>"))
+                  return false;
+              if(tagText.startsWith("<"))
+                  return true;
+          }
+      } catch  (Exception ex) {
+          //return false anyway
+      } finally {
+          doc.readUnlock();
+      }
+      return false;
+  }
    
 }

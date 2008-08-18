@@ -247,26 +247,24 @@ public abstract class ABEAbstractNode extends AbstractNode
     }
     
     public Action[] getActions(boolean b) {
-        if(uiNode){
-            if(getAXIComponent().isReadOnly()){
-                //filter out refactor action if this is a readonly file
-                SystemAction[] ret = new SystemAction[ALL_ACTIONS.length];
-                for(int i = 0; i < ALL_ACTIONS.length; i++){
-                    String name = null;
-                    if(ALL_ACTIONS[i] != null)
-                        name = (String)ALL_ACTIONS[i].getValue(Action.NAME);
-                                
-                    if(name != null && name.equals("Refactor") ){
-                        ret[i] = null;
-                    }else{
-                        ret[i] = ALL_ACTIONS[i];
-                    }
+        if(!uiNode)
+            return SUB_ACTIONS;            
+        if(getAXIComponent() != null && getAXIComponent().isReadOnly()) {
+            //filter out refactor action if this is a readonly file
+            SystemAction[] ret = new SystemAction[ALL_ACTIONS.length];
+            for(int i = 0; i < ALL_ACTIONS.length; i++) {
+                String name = null;
+                if(ALL_ACTIONS[i] != null)
+                    name = (String)ALL_ACTIONS[i].getValue(Action.NAME);
+                if(name != null && name.equals("Refactor") ) {
+                    ret[i] = null;
+                } else {
+                    ret[i] = ALL_ACTIONS[i];
                 }
-                return ret;
             }
-            return ALL_ACTIONS;
-        } else
-            return SUB_ACTIONS;
+            return ret;
+        }
+        return ALL_ACTIONS;
     }
     
     private static final GotoType[] GOTO_TYPES = new GotoType[] {

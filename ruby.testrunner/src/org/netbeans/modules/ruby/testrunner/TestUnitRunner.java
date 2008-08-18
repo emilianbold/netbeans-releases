@@ -176,7 +176,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         // this takes care of loading our custom TestTask, which in turn passes
         // the custom test runner as an option for the task. This is needed since
         // the test run is forked to a different process (by Rake::TestTask) than rake itself
-        task.addRakeParameters("-r " + getScript(RUNNER_SCRIPT_NAME).getAbsolutePath()); //NOI18N
+        task.addRakeParameters("-r \"" + getScript(RUNNER_SCRIPT_NAME).getAbsolutePath() + "\""); //NOI18N
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 locator,

@@ -110,7 +110,7 @@ public final class TokenHierarchyUpdate {
                 assert (text != null);
                 incTokenList.setInputSourceText(eventInfo.originalText());
                 // Dump all contents
-                LOG.finest(operation.toString());
+                LOG.finest("\n\nBEFORE UPDATE:\n" + operation.toString() + '\n');
                 // Return the original text
                 incTokenList.setInputSourceText(text);
             }
@@ -118,7 +118,7 @@ public final class TokenHierarchyUpdate {
             StringBuilder sb = new StringBuilder(150);
             sb.append("<<<<<<<<<<<<<<<<<< LEXER CHANGE START ------------------\n"); // NOI18N
             sb.append(eventInfo.modificationDescription(false));
-            TokenHierarchyUpdate.LOG.fine(sb.toString());
+            LOG.fine(sb.toString());
         }
 
         updateImpl(incTokenList, operation.rootChildrenLanguages());
@@ -130,12 +130,13 @@ public final class TokenHierarchyUpdate {
                 // Check consistency of the whole token hierarchy
                 String error = operation.checkConsistency();
                 if (error != null) {
-                    String msg = "!!!CONSISTENCY-ERROR!!!: " + error + "\n";
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        throw new IllegalStateException(msg);
-                    } else {
-                        LOG.finer(msg);
+                    String msg = "\n!!!CONSISTENCY-ERROR!!!: " + error + "\n\n" + // NOI18N
+                            "INCONSISTENT TOKEN HIERARCHY:\n" + operation + "\n\n";
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine(msg);
                     }
+                    operation.setInactiveAfterInconsistency();    
+                    throw new IllegalStateException("INCONSISTENCY in token hierarchy occurred"); // NOI18N
                 } else {
                     extraMsg = "(TokenHierarchy Check OK) ";
                 }
@@ -144,8 +145,7 @@ public final class TokenHierarchyUpdate {
         }
 
         if (LOG.isLoggable(Level.FINEST)) {
-            LOG.finest("AFTER UPDATE:\n");
-            LOG.finest(operation.toString());
+            LOG.finest("\n\nAFTER UPDATE:\n" + operation.toString() + '\n');
         }
     }
 

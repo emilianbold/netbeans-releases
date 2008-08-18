@@ -8,7 +8,7 @@
 #ifndef _resolver_typedef_string_H
 #define	_resolver_typedef_string_H
 
-namespace std {
+namespace std_2 {
     template<typename _Alloc>
     class allocator;
     
@@ -20,20 +20,20 @@ namespace std {
     class basic_string {
     };
     
-    typedef std::basic_string<char> string;
+    typedef std_2::basic_string<char> string;
 }
 
-namespace std {
+namespace std_2 {
     typedef basic_string<wchar_t> wstring;
 }
 
-using std::string;
+using std_2::string;
 
-std :: wstring write(string str);
+std_2 :: wstring wrt_2(string str);
 
-namespace A {
+namespace resolver_typedef_string {
   string read();
-  using namespace std;
+  using namespace std_2;
   class ClassA {
 
   public:

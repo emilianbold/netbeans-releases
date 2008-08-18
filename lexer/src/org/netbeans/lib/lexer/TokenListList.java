@@ -331,11 +331,11 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(2048);
-        sb.append("TokenListList for ");
-        sb.append(languagePath().mimePath());
         if (joinSections()) {
-            sb.append(", joinSections");
+            sb.append("J");
         }
+        sb.append("TLL for \"");
+        sb.append(languagePath().mimePath()).append('"');
         if (hasChildren()) {
             sb.append(", hasChildren");
         }

@@ -117,27 +117,26 @@ public class LocalNativeExecution extends NativeExecution {
         // Start the build process and a build reader.
         NbProcessDescriptor desc = new NbProcessDescriptor(commandInterpreter, commandLine);
         
-        List nueEnvp;
+        // Updating environment variables
+        List<String> envpList = new ArrayList<String>();
         if (envp != null) {
-            nueEnvp = new ArrayList(Arrays.asList(envp));
-        } else {
-            nueEnvp = new ArrayList();
+            envpList.addAll(Arrays.asList(envp));
         }
-        nueEnvp.add("SPRO_EXPAND_ERRORS="); // NOI18N
+        envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
         
         if (unbuffer) {
             String unbufferPath = getUnbufferPath();
             if (unbufferPath != null) {
                 if (Utilities.isMac()) {
-                    nueEnvp.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
-                    nueEnvp.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
+                    envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
+                    envpList.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
                 } else {
-                    nueEnvp.add("LD_PRELOAD=" + unbufferPath); // NOI18N
+                    envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
                 }
             }
         }
-        
-        envp = (String[] ) nueEnvp.toArray(new String[0]);
+        envp = envpList.toArray(new String[envpList.size()]);
+
         executionProcess = desc.exec(null, envp, true, runDirFile);
         outputReaderThread = new OutputReaderThread(executionProcess.getErrorStream(), out);
         outputReaderThread.start();

@@ -85,6 +85,9 @@ public class GetProjectLocationPanel extends WizardSettingsPanel implements Docu
         
         projectLocationTextField.getDocument().addDocumentListener( this );
         projectNameTextField.getDocument().addDocumentListener( this );
+
+        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"TXT_NewGrailsApp")); // NOI18N
+        getAccessibleContext ().setAccessibleName (NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"TXT_NewGrailsApp")); // NOI18N
         
     }
     

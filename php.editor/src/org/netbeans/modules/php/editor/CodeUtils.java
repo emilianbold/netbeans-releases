@@ -38,8 +38,14 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.io.IOException;
 import java.util.Map;
+import org.netbeans.modules.gsf.api.CancellableTask;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SourceModel;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
@@ -57,9 +63,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -105,10 +113,42 @@ public class CodeUtils {
     
     private static String findClassNameEnclosingDeclaration(PHPParseResult context,
             IndexedConstant variable) {
-        // this function is only supposed to be called for the currently edited file
-        assert context.getFile().getFileObject().equals(variable.getFileObject());
-        
-        ASTNode node = Utils.getNodeAtOffset(context.getProgram(),
+        if (context.getFile().getFileObject().equals(variable.getFileObject())){
+            return findClassNameEnclosingDeclaration(context.getProgram(), variable);
+        }
+
+        SourceModel model = SourceModelFactory.getInstance().getModel(variable.getFileObject());
+
+        ClassNameExtractor task = new ClassNameExtractor(variable);
+
+        try {
+            model.runUserActionTask(task, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return task.className;
+    }
+    
+    private static class ClassNameExtractor implements CancellableTask<CompilationInfo> {
+        IndexedConstant variable;
+        String className;
+
+        public ClassNameExtractor(IndexedConstant variable) {
+            this.variable = variable;
+        }
+
+        public void cancel() {}
+
+        public void run(CompilationInfo parameter) throws Exception {
+            Program program = Utils.getRoot(parameter);
+            className = findClassNameEnclosingDeclaration(program, variable);
+        }
+    }
+    
+    private static String findClassNameEnclosingDeclaration(Program program,
+            IndexedConstant variable) {    
+        ASTNode node = Utils.getNodeAtOffset(program,
                 variable.getOffset(), ClassDeclaration.class);
 
         if (node instanceof ClassDeclaration) {

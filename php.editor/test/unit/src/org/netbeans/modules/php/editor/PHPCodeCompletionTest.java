@@ -54,7 +54,31 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testPhpContextWithPrefix() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "^GL", false);
     }
+    
+    public void testComments1() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.php", "one line ^", false);
+    }
+    
+    public void testComments2() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.php", "multiline comment ^", false);
+    }
+    
+    public void testComments3() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.php", "PHPDoc comment ^", false);
+    }
 
+    public void testFunctionReturnType1() throws Exception {
+        checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_self->^", false);
+    }
+    
+    public void testFunctionReturnType2() throws Exception {
+        checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_standalone_function->^", false);
+    }
+    
+    public void testFunctionReturnType3() throws Exception {
+        checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_static_method->^", false);
+    }
+    
     public void testPhpContext2() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }

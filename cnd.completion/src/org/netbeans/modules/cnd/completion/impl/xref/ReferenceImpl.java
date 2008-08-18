@@ -56,6 +56,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private final Token token;
     private CsmObject target = null;
     private CsmObject owner = null;
+    private boolean findDone  = false;
     private final int offset;
     private CsmReferenceKind kind;
     
@@ -68,14 +69,15 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     }
 
     public CsmObject getReferencedObject() {
-        if (isValid() && target == null) {
+        if (!findDone && isValid()) {
             target = ReferencesSupport.findReferencedObject(super.getContainingFile(), super.getDocument(), this.offset, token);
+            findDone = true;
         }
         return target;
     }
 
     public CsmObject getOwner() {
-        if (isValid() && owner == null) {
+        if (owner == null && isValid()) {
             owner = ReferencesSupport.findOwnerObject(super.getContainingFile(), super.getDocument(), this.offset, token);
         }
         return owner;
