@@ -534,7 +534,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
-        System.err.println(res);
+//        System.err.println(res);
         assertEquals(removeWhitespaces(golden), removeWhitespaces(res));
     }
     

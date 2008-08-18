@@ -125,7 +125,11 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     }
     
     private CsmObject resolve(Resolver resolver) {
-        return ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASSIFIER);
+        CsmObject result = ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASSIFIER);
+        if (result == null) {
+            result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(nameParts, getContainingFile(), getStartOffset());
+        }
+        return result;
     }
 
     public Collection<CsmScopeElement> getScopeElements() {

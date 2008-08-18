@@ -145,8 +145,6 @@ public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements 
         suspendOnErrorsCheckBox = new javax.swing.JCheckBox();
         suspendOnDebuggerKeywordCheckBox = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
-        bypassConstructor = new javax.swing.JCheckBox();
-        EnableStepFilters = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(showFunctionsCheckBox, org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "NbJSPreferencesPanelProvider.showFunctionsCheckBox.text")); // NOI18N
         showFunctionsCheckBox.setMaximumSize(new java.awt.Dimension(122, 22));
@@ -164,12 +162,6 @@ public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements 
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "NbJSPreferencesPanelProvider.Debugging.text")); // NOI18N
 
-        bypassConstructor.setText(org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "NbJSPreferencesPanelProvider.bypassConstructor.text")); // NOI18N
-        bypassConstructor.setEnabled(false);
-
-        EnableStepFilters.setText(org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "NbJSPreferencesPanelProvider.EnableStepFilters.text")); // NOI18N
-        EnableStepFilters.setEnabled(false);
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -177,46 +169,37 @@ public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements 
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel1)
-                .add(57, 57, 57)
+                .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(showFunctionsCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(showConstantsCheckBox)
-                    .add(bypassConstructor)
-                    .add(EnableStepFilters))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(suspendOnFirstLineCheckBox)
                     .add(suspendOnExceptionsCheckBox)
-                    .add(suspendOnErrorsCheckBox)
-                    .add(suspendOnDebuggerKeywordCheckBox))
-                .addContainerGap(127, Short.MAX_VALUE))
+                    .add(suspendOnFirstLineCheckBox)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(suspendOnDebuggerKeywordCheckBox)
+                            .add(suspendOnErrorsCheckBox))
+                        .add(18, 18, 18)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(showFunctionsCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(showConstantsCheckBox))))
+                .addContainerGap(107, Short.MAX_VALUE))
         );
-
-        layout.linkSize(new java.awt.Component[] {suspendOnDebuggerKeywordCheckBox, suspendOnErrorsCheckBox, suspendOnExceptionsCheckBox, suspendOnFirstLineCheckBox}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(suspendOnFirstLineCheckBox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(suspendOnExceptionsCheckBox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(suspendOnErrorsCheckBox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(suspendOnDebuggerKeywordCheckBox))
-                    .add(layout.createSequentialGroup()
-                        .add(showFunctionsCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showConstantsCheckBox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(bypassConstructor)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(EnableStepFilters))
-                    .add(jLabel1))
-                .addContainerGap(156, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(suspendOnDebuggerKeywordCheckBox)
+                    .add(showConstantsCheckBox))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(suspendOnErrorsCheckBox)
+                    .add(showFunctionsCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(suspendOnExceptionsCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(suspendOnFirstLineCheckBox)
+                .addContainerGap(155, Short.MAX_VALUE))
         );
 
         showFunctionsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSPreferencesPanelProvider.class, "A11Y_CKBX_ShowFunctions")); // NOI18N
@@ -235,8 +218,6 @@ public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements 
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox EnableStepFilters;
-    private javax.swing.JCheckBox bypassConstructor;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JCheckBox showConstantsCheckBox;
     private javax.swing.JCheckBox showFunctionsCheckBox;

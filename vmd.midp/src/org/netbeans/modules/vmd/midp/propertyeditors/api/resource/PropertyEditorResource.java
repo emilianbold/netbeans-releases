@@ -84,7 +84,8 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public class PropertyEditorResource extends PropertyEditorUserCode implements PropertyEditorElement {
-
+    
+    //TODO This Map is memory leak!!
     private Map<String, DesignComponent> createdComponents;
     private final TypeID componentTypeID;
     private String noneComponentAsText;
@@ -287,6 +288,14 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     }
 
     @Override
+    public void init(DesignComponent component) {
+        perElement.setDesignDocument(component.getDocument());
+        super.init(component);
+    }
+    
+    
+
+    @Override
     public String[] getTags() {
         Set<String> components = getComponentsMap().keySet();
         List<String> tags = new ArrayList<String>(components.size() + 2);
@@ -300,6 +309,7 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         return tags.toArray(new String[tags.size()]);
     }
 
+    @Override
     public Boolean canEditAsText() {
         return null;
     }
@@ -317,6 +327,22 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
           } else if (databindingElement != null) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).resetValuesInModel(_component);
         }
+    }
+    
+    @Override
+    public boolean executeInsideWriteTransaction() {
+        if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
+            return false;
+        }
+        return super.executeInsideWriteTransaction();
+    }
+    
+    @Override
+    public boolean isExecuteInsideWriteTransactionUsed() {
+        if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
+            return true;
+        }
+        return super.isExecuteInsideWriteTransactionUsed();
     }
 
     public String getTextForPropertyValue() {

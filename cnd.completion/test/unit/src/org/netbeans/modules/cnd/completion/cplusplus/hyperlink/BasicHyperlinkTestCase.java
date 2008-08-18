@@ -51,6 +51,10 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ139600() throws Exception {
+        performTest("main.c", 35, 15, "main.c", 35, 5); // funPtr in int (*funPtr)();
+    }
+
     public void testVarInFunWithInitalization() throws Exception {
         performTest("main.c", 19, 10, "main.c", 19, 5); // iiii in int iiii = fun(null, null);
     }
@@ -120,9 +124,9 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.c", 34, 36, "main.c", 32, 5);
 
         // global variable
-        performTest("main.c", 33, 14, "main.c", 37, 1);
-        performTest("main.c", 34, 12, "main.c", 37, 1);
-        performTest("main.c", 34, 28, "main.c", 37, 1);
+        performTest("main.c", 33, 14, "main.c", 38, 1);
+        performTest("main.c", 34, 12, "main.c", 38, 1);
+        performTest("main.c", 34, 28, "main.c", 38, 1);
     }
 
     public void testConstParameter() throws Exception {
@@ -331,7 +335,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#138683 : function typedef are not recognized
         performTest("IZ138683.cc", 4, 24, "IZ138683.cc", 2, 1);
     }
-    
+
     public void testLabels() throws Exception {
         // IZ#141135 : Labels within code bocks are unresolved
         performTest("labels.cc", 3, 12, "labels.cc", 4, 5);
@@ -368,6 +372,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ137897.cc", 2, 26, "IZ137897.cc", 2, 16);
         performTest("IZ137897.cc", 2, 43, "IZ137897.cc", 2, 34);
         performTest("IZ137897.cc", 3, 30, "IZ137897.cc", 3, 24);
+    }
+
+    public void testIZ143226() throws Exception {
+        // IZ#143226 : Incorrect error in the editor
+        performTest("IZ143226.cc", 3, 6, "IZ143226.cc", 2, 5);
+        performTest("IZ143226.cc", 3, 18, "IZ143226.cc", 2, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

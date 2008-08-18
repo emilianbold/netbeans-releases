@@ -154,6 +154,7 @@ public class ChoiceGroupCD extends ComponentDescriptor {
                         }
                     }
                 },
+                DatabindingItemAcceptPresenter.create(ItemCD.PROP_LABEL),
                 // screen
                 new ChoiceGroupDisplayPresenter()
         );

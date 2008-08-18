@@ -137,7 +137,13 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
             putValueJavaType.set(String.class.getName());
         }
         try {
-            super.put(key, value);
+            synchronized(lock) {
+                if (key != null && value != null && value.equals(getSpi(key))) {
+                    return;
+                } else {
+                    super.put(key, value);
+                }
+            }
         } finally {
             if (putValueJavaType.get().equals(String.class.getName())) {
                 putValueJavaType.remove();

@@ -41,20 +41,31 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.source.BuildArtifactMapper;
+import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTargetImpl;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,6 +92,8 @@ public final class DeployOnSaveManager {
     private static final int DELAY = 300;
 
     private static DeployOnSaveManager instance;
+
+    private final WeakHashMap<J2eeModuleProvider, CompileOnSaveListener> listeners = new WeakHashMap<J2eeModuleProvider, CompileOnSaveListener>();
 
     /**
      * We need a custom thread factory because the default one stores the
@@ -124,12 +137,84 @@ public final class DeployOnSaveManager {
         return instance;
     }
 
+    public void startListening(J2eeModuleProvider j2eeProvider) {
+        synchronized (this) {
+            if (listeners.containsKey(j2eeProvider)) {
+                // this is due to EAR childs :(
+                if (j2eeProvider instanceof J2eeApplicationProvider) {
+                    stopListening(j2eeProvider);
+                } else {
+                    LOGGER.log(Level.FINE, "Already listening on {0}", j2eeProvider);
+                    return;
+                }
+            }
+
+            List<J2eeModuleProvider> providers = new ArrayList<J2eeModuleProvider>(4);
+            providers.add(j2eeProvider);
+
+            if (j2eeProvider instanceof J2eeApplicationProvider) {
+                Collections.addAll(providers,
+                        ((J2eeApplicationProvider) j2eeProvider).getChildModuleProviders());
+            }
+
+            // get all binary urls
+            List<URL> urls = new ArrayList<URL>();
+            for (J2eeModuleProvider provider : providers) {
+                for (FileObject file : provider.getSourceFileMap().getSourceRoots()) {
+                    URL url = URLMapper.findURL(file, URLMapper.EXTERNAL);
+                    if (url != null) {
+                        urls.add(url);
+                    }
+                }
+            }
+
+            // register CLASS listener
+            CompileOnSaveListener listener = new CompileOnSaveListener(j2eeProvider, urls);
+            for (URL url :urls) {
+                BuildArtifactMapper.addArtifactsUpdatedListener(url, listener);
+            }
+
+            // register WEB listener
+            J2eeModuleProvider.DeployOnSaveSupport support = j2eeProvider.getDeployOnSaveSupport();
+            if (support != null) {
+                support.addArtifactListener(listener);
+            }
+
+            listeners.put(j2eeProvider, listener);
+        }
+    }
+
+    public void stopListening(J2eeModuleProvider j2eeProvider) {
+        synchronized (this) {
+            CompileOnSaveListener removed = listeners.remove(j2eeProvider);
+            if (removed == null) {
+                LOGGER.log(Level.FINE, "Not listening on {0}", j2eeProvider);
+            } else {
+                for (URL url : removed.getRegistered()) {
+                    BuildArtifactMapper.removeArtifactsUpdatedListener(url, removed);
+                }
+
+                J2eeModuleProvider.DeployOnSaveSupport support = j2eeProvider.getDeployOnSaveSupport();
+                if (support != null) {
+                    support.removeArtifactListener(removed);
+                }
+            }
+        }
+    }
+
     public static boolean isServerStateSupported(ServerInstance si) {
         return si.isRunning() && !si.isSuspended();
     }
 
     public void notifyInitialDeployment(J2eeModuleProvider provider) {
         synchronized (this) {
+            if (listeners.containsKey(provider)) {
+                // this is due to EAR childs :(
+                if (provider instanceof J2eeApplicationProvider) {
+                    startListening(provider);
+                }
+            }
+
             if (!lastDeploymentStates.containsKey(provider)) {
                 lastDeploymentStates.put(provider, DeploymentState.MODULE_UPDATED);
             }
@@ -159,6 +244,26 @@ public final class DeployOnSaveManager {
             }
 
             current = EXECUTOR.submit(new DeployTask(delayed));
+        }
+    }
+
+    private static final class CompileOnSaveListener implements ArtifactsUpdated, ArtifactListener {
+
+        private final J2eeModuleProvider provider;
+
+        private final List<URL> registered;
+
+        public CompileOnSaveListener(J2eeModuleProvider provider, List<URL> registered) {
+            this.provider = provider;
+            this.registered = registered;
+        }
+
+        public List<URL> getRegistered() {
+            return registered;
+        }
+
+        public void artifactsUpdated(Iterable<File> artifacts) {
+            DeployOnSaveManager.getDefault().submitChangedArtifacts(provider, artifacts);
         }
     }
 

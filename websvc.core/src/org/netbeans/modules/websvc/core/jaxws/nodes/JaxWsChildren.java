@@ -52,6 +52,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
@@ -107,6 +109,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
+import org.openide.NotifyDescriptor;
 import org.xml.sax.SAXException;
 
 /*
@@ -134,14 +137,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
         this.service = service;
         this.srcRoot=srcRoot;
         this.implClass = implClass;
-    }
-
-// Retouche
-//    public ComponentMethodViewStrategy createViewStrategy() {
-//        WSComponentMethodViewStrategy strategy = WSComponentMethodViewStrategy.instance();
-//        return strategy;
-//    }
-//    
+    } 
     
     private List<ExecutableElement> getPublicMethods(CompilationController controller, TypeElement classElement) throws IOException {
         List<? extends Element> members = classElement.getEnclosedElements();
@@ -161,7 +157,11 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
         if (isFromWsdl()) {
             try {
                 FileObject localWsdlFolder = getJAXWSSupport().getLocalWsdlFolderForService(service.getName(),false);
-                assert localWsdlFolder!=null:"Cannot find folder for local wsdl file"; //NOI18N
+                if (localWsdlFolder == null) {
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO,"missing folder for wsdl file"); // NOI18
+                    updateKeys();
+                    return;
+                }
                 FileObject wsdlFo =
                     localWsdlFolder.getFileObject(service.getLocalWsdlFile());
                 if (wsdlFo==null) return;
@@ -380,7 +380,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                 buf.append(buf.length() == 0 ? paramType : ", "+paramType);
             }
             n.setShortDescription(
-                    NbBundle.getMessage(JaxWsClientChildren.class,"TXT_operationDesc",method.getReturnType(),method.getOperationName(),buf.toString()));
+                    NbBundle.getMessage(JaxWsChildren.class,"TXT_operationDesc",method.getReturnType(),method.getOperationName(),buf.toString()));
             return new Node[]{n};
         }
         return new Node[0];
@@ -471,11 +471,11 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                     ErrorManager.getDefault().notify(ex);
                 } catch (UnknownHostException ex) {
                     ErrorManager.getDefault().annotate(ex,
-                            NbBundle.getMessage(JaxWsClientChildren.class,"MSG_ConnectionProblem"));
+                            NbBundle.getMessage(JaxWsChildren.class,"MSG_ConnectionProblem"));
                     return;
                 } catch (IOException ex) {
                     ErrorManager.getDefault().annotate(ex,
-                            NbBundle.getMessage(JaxWsClientChildren.class,"MSG_ConnectionProblem"));
+                            NbBundle.getMessage(JaxWsChildren.class,"MSG_ConnectionProblem"));
                     return;
                 }
                 
@@ -512,8 +512,15 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                     }
                 }
             }
+            FileObject localWsdlFolder = getJAXWSSupport().getLocalWsdlFolderForService(service.getName(),false);
+            if (localWsdlFolder == null) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(JaxWsChildren.class,"MSG_RefreshWithReplaceWsdl"), //NOI18N
+                        NotifyDescriptor.WARNING_MESSAGE));
+                return;
+            }
             FileObject wsdlFo = 
-                getJAXWSSupport().getLocalWsdlFolderForService(service.getName(),false).getFileObject(service.getLocalWsdlFile());
+                localWsdlFolder.getFileObject(service.getLocalWsdlFile());
             wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlFo.getURL());
             String packageName = service.getPackageName();
             if (packageName!=null && service.isPackageNameForceReplace()) {

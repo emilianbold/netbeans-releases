@@ -174,7 +174,7 @@ public class EntityView extends Widget
             
             int r = (int) Math.ceil(radius);
             Graphics2D g = getGraphics();
-            g.setColor(getForeground());
+            g.setColor(Color.BLACK);
             
             int midX = bounds.x + (int)(bounds.width / 2);
             int midY = bounds.y + (int)(bounds.height / 2);
@@ -184,7 +184,6 @@ public class EntityView extends Widget
             g.drawOval(midX - r, ovalTop, 2 * r, 2 * r);
             g.drawLine(midX - r + halfArm, midY + r + 4, midX + r - halfArm, midY + r + 4);
             g.drawLine(midX, midY  + 3 + r, midX, midY + r - 1);
-//            g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
         }
     }
 

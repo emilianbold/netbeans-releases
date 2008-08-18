@@ -105,8 +105,8 @@ public class XMLCodeCompletion_0002 extends XMLCodeCompletion {
 
       CImportClickData[] aimpData =
       {
-        new CImportClickData( true, 1, 0, 2, 3, "Unknown import table state after first click, number of rows: ", null ),
-        new CImportClickData( true, 2, 0, 2, 4, "Unknown import table state after second click, number of rows: ", null ),
+        new CImportClickData( true, 1, 0, 2, 3, "Unknown import table state after first click, number of rows: ", null, 5000 ),
+        new CImportClickData( true, 2, 0, 2, 4, "Unknown import table state after second click, number of rows: ", null, 5000 ),
         new CImportClickData( true, 3, 1, 1, 4, "Unknown to click on checkbox. #", null )
       };
 

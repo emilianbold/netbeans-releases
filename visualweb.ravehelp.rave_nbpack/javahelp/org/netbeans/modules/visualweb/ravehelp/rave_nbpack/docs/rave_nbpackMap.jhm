@@ -128,6 +128,11 @@
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/create/tag/framework/struts/file_ActionPanel1.html"/>
 	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/create/tag/framework/struts/file_FormBeanNewPanel.html"/>
 	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetProjectLocationStep" url="web/create/tag/framework/grails/NewGrailsProjectWizard.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-controller" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-domain-class" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-script" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-service" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-unit-test" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
 	<mapID target="projrave_a11y_navigation_editor_shortcuts" url="a11y/navigation_editor_shortcuts.html"/>
 	<mapID target="projrave_a11y_query_editor_shortcuts" url="a11y/query_editor_shortcuts.html"/>
 	<mapID target="projrave_components_about_complibs" url="components/about_complibs.html"/>
@@ -638,7 +643,6 @@
 	<mapID target="tagfile_create" url="web/create/tag/tagfile/tagfile_create.html"/>
 	<mapID target="taghandler_create" url="web/create/tag/taghandler/taghandler_create.html"/>
 	<mapID target="taghandler_edit" url="web/create/tag/taghandler/taghandler_edit.html"/>
-	<mapID target="taglib_create_separate" url="web/create/tag/taglib/taglib_create_separate.html"/>
 	<mapID target="tld_create" url="web/create/tag/tld/tld_create.html"/>
 	<mapID target="tld_edit" url="web/create/tag/tld/tld_edit.html"/>
 	<mapID target="webapps_idesupport" url="web/about/webapps_idesupport.html"/>

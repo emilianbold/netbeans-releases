@@ -55,15 +55,15 @@ public class MeasureJ2SEMenusTest {
         System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEMenusTest");
 
         s.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MainMenu.class)
-        //.addTest(MainSubMenus.class)
-        //.addTest(EditorDownButtonPopupMenu.class)
-        //.addTest(FilesViewPopupMenu.class)
-        //.addTest(FormInspectorNodePopupMenu.class)
-        //.addTest(ProjectsViewPopupMenu.class)
-        .addTest(ProjectsViewSubMenus.class)
-        //.addTest(RuntimeViewPopupMenu.class)
-        //.addTest(SourceEditorPopupMenu.class)
-        //.addTest(ToolsMenu.class)
+        //--.addTest(MainSubMenus.class)
+        .addTest(EditorDownButtonPopupMenu.class)
+        .addTest(FilesViewPopupMenu.class)
+        .addTest(FormInspectorNodePopupMenu.class)
+        .addTest(ProjectsViewPopupMenu.class)
+        //--.addTest(ProjectsViewSubMenus.class)
+        .addTest(RuntimeViewPopupMenu.class)
+        .addTest(SourceEditorPopupMenu.class)
+        .addTest(ToolsMenu.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return s;

@@ -213,13 +213,31 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         final DesignComponent _component = component.get();
         if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).saveToModel(_component);
+            
             return;
         } else if (databindingElement != null) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).resetValuesInModel(_component);
         }
+        
         super.customEditorOKButtonPressed();
     }
 
+    @Override
+    public boolean executeInsideWriteTransaction() {
+        if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
+            return false;
+        }
+        return super.executeInsideWriteTransaction();
+    }
+    
+    @Override
+    public boolean isExecuteInsideWriteTransactionUsed() {
+        if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
+            return true;
+        }
+        return super.isExecuteInsideWriteTransactionUsed();
+    }
+    
     private String getValueAsText(PropertyValue value) {
         Date date = new Date();
         Object valueValue = value.getPrimitiveValue();

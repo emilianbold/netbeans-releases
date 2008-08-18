@@ -506,7 +506,9 @@ public class DatabaseConnection implements DBConnection {
             cni.connect(this);
         } catch (Exception exc) {
             try {
-                getConnection().close();
+                if (getConnection() != null) {
+                    getConnection().close();
+                }
             } catch (SQLException e) {
                 LOGGER.log(Level.FINE, null, e);
             }

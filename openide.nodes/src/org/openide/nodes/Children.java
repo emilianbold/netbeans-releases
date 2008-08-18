@@ -150,7 +150,10 @@ public abstract class Children extends Object {
      */
     EntrySupport createEntrySource() {
         return lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
-        //return new EntrySupport.Lazy(this);
+    }
+    
+    boolean isLazy() {
+        return lazySupport;
     }
 
     /**

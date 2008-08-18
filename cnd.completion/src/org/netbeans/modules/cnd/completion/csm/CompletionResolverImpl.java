@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.completion.csm;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -55,7 +56,6 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
@@ -212,15 +212,15 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (fun != null) {
                 CsmUID uid = fun.getUID();
                 key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
-                Result res = cache.get(key);
+                Result res = getCache().get(key);
                 if (res != null) {
                     result = res;
                     return;
                 } else {
-                    Iterator<CacheEntry> it = cache.keySet().iterator();
+                    Iterator<CacheEntry> it = getCache().keySet().iterator();
                     if (it.hasNext()) {
                         if (!it.next().function.equals(uid)){
-                            cache.clear();
+                            getCache().clear();
                         }
                     }
                 }
@@ -228,15 +228,15 @@ public class CompletionResolverImpl implements CompletionResolver {
                 CsmVariable var = (CsmVariable) context.getLastObject();
                 CsmUID uid = var.getUID();
                 key = new CacheEntry(resolveTypes, hideTypes, strPrefix, uid);
-                Result res = cache.get(key);
+                Result res = getCache().get(key);
                 if (res != null) {
                     result = res;
                     return;
                 } else {
-                    Iterator<CacheEntry> it = cache.keySet().iterator();
+                    Iterator<CacheEntry> it = getCache().keySet().iterator();
                     if (it.hasNext()) {
                         if (!it.next().function.equals(uid)){
-                            cache.clear();
+                            getCache().clear();
                         }
                     }
                 }
@@ -246,7 +246,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         resolveContext(prj, resImpl, fun, context, offset, strPrefix, match);
         result = buildResult(context, resImpl);
         if (key != null){
-            cache.put(key, result);
+            getCache().put(key, result);
         }
         //long timeEnd = System.nanoTime();
         //System.out.println("get gesolve list time "+(timeEnd -timeStart)+" objects "+result.size()); //NOI18N
@@ -305,7 +305,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
         } else if (needContextClasses(context, offset)) {
             resImpl.classesEnumsTypedefs = getClassesEnums(context, prj, strPrefix, match, offset,true);
-            if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
+            if (!needNestedClassifiers(context, offset) && isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
         }
         if (needTemplateParameters(context, offset)) {
             resImpl.templateParameters = getTemplateParameters(context, strPrefix, match);
@@ -317,7 +317,9 @@ public class CompletionResolverImpl implements CompletionResolver {
             boolean staticContext = fun == null ? true : CsmBaseUtilities.isStaticContext(fun);
 
             if (needClassElements(context, offset)) {
-                CsmClass clazz = CsmBaseUtilities.getFunctionClass(fun);
+                //if (fun == null) System.err.printf("\nFunction is null. Offset: %d Context:\n%s \n", offset, context.toString());
+                CsmClass clazz = (fun == null) ? null : CsmBaseUtilities.getFunctionClass(fun);
+                clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
                 if (clazz != null) {
                     // get class variables visible in this method
                     resImpl.classFields = contResolver.getFields(clazz, fun, strPrefix, staticContext, match, true,false);
@@ -336,7 +338,8 @@ public class CompletionResolverImpl implements CompletionResolver {
                         if (resImpl.classesEnumsTypedefs == null) {
                             resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
                         }
-                        resImpl.classesEnumsTypedefs.addAll(innerCls);
+                        innerCls.addAll(resImpl.classesEnumsTypedefs);
+                        resImpl.classesEnumsTypedefs = innerCls;
                         if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
                     }
                 }
@@ -370,7 +373,8 @@ public class CompletionResolverImpl implements CompletionResolver {
                     if (resImpl.classesEnumsTypedefs == null) {
                         resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
                     }
-                    resImpl.classesEnumsTypedefs.addAll(innerCls);
+                    innerCls.addAll(resImpl.classesEnumsTypedefs);
+                    resImpl.classesEnumsTypedefs = innerCls;
                     if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
                 }
             }
@@ -469,7 +473,6 @@ public class CompletionResolverImpl implements CompletionResolver {
                 hideTypes &= ~RESOLVE_FILE_PRJ_MACROS;
                 hideTypes &= ~RESOLVE_GLOB_NAMESPACES;
                 hideTypes &= ~RESOLVE_CLASSES;
-                hideTypes &= ~RESOLVE_TEMPLATE_PARAMETERS;
                 hideTypes &= ~RESOLVE_GLOB_VARIABLES;
                 hideTypes &= ~RESOLVE_GLOB_FUNCTIONS;
                 hideTypes &= ~RESOLVE_GLOB_ENUMERATORS;
@@ -781,11 +784,11 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
             if(!match) {
                 resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
+                resolveTypes |= RESOLVE_LOCAL_VARIABLES;
                 resolveTypes |= RESOLVE_GLOB_VARIABLES;
                 resolveTypes |= RESOLVE_CLASS_FIELDS;
                 resolveTypes |= RESOLVE_CLASS_ENUMERATORS;
             }
-            resolveTypes |= RESOLVE_LOCAL_VARIABLES;
         }
     }
 
@@ -1444,7 +1447,17 @@ public class CompletionResolverImpl implements CompletionResolver {
         return out;
     }
 
-    private static Map<CacheEntry, Result> cache = new ConcurrentHashMap<CacheEntry, Result>();
+    //private static Map<CacheEntry, Result> cache = new ConcurrentHashMap<CacheEntry, Result>();
+    private static ThreadLocal<Map<CacheEntry, Result>> threadCache = new ThreadLocal<Map<CacheEntry, Result>>();
+    private static synchronized Map<CacheEntry, Result> getCache(){
+        Map<CacheEntry, Result> cache = threadCache.get();
+        if (cache == null) {
+            cache = new HashMap<CacheEntry, Result>();
+            threadCache.set(cache);
+        }
+        return cache;
+    }
+        
     private static class CacheEntry {
         private int resolve;
         private int hide;

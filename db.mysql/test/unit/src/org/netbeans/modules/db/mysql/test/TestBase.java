@@ -45,6 +45,8 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.db.api.sql.execute.SQLExecutionInfo;
+import org.netbeans.modules.db.api.sql.execute.StatementExecutionInfo;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
@@ -60,7 +62,6 @@ public class TestBase extends NbTestCase  {
     private String url;
     private String schema;
     private String dbname;
-    private Exception exc = null;
 
     private static String DRIVER_CLASSNAME = "com.mysql.jdbc.Driver";
 
@@ -83,7 +84,10 @@ public class TestBase extends NbTestCase  {
         System.setProperty("netbeans.dirs", clusterDir.getAbsolutePath());
         
         getProperties();
-
+        setUrl();
+    }
+        
+    private void setUrl() {
         url = "jdbc:mysql://" + host + ":" + port + "/" + dbname;
     }
 
@@ -110,10 +114,6 @@ public class TestBase extends NbTestCase  {
         if (dbconn == null) {
             dbconn = DatabaseConnection.create(driver, url, user, schema, password, true);
             ConnectionManager.getDefault().addConnection(dbconn);
-
-            while (ConnectionManager.getDefault().getConnection(dbconn.getName()) == null) {
-                Thread.sleep(1000);
-            }
         }
 
 
@@ -157,11 +157,6 @@ public class TestBase extends NbTestCase  {
         password = System.getProperty("mysql.password", null);
         dbname = System.getProperty("mysql.dbname", null);
 
-        if (dbname == null) {
-            System.out.println("foo");
-        }
-
-
         String message = "\nPlease set the following in nbproject/private/private.properties:\n" +
                 "test-unit-sys-prop.mysql.host=<mysql-hostname> [optional, default=localhost]\n" +
                 "test-unit-sys-prop.mysql.port=<mysql-port-number> [optional, default=3306]\n" +
@@ -169,8 +164,8 @@ public class TestBase extends NbTestCase  {
                 "test-unit-sys-prop.mysql.password=<database-password> [optional, default=empty]\n" +
                 "test-unit-sys-prop.mysql.dbname=<database-name>\n" +
                 "Here is an example:\n" +
-                "test-unit-sys-prop.mysql.dbname=test" +
-                "test-unit-sys-prop.mysql.password=root" +
+                "test-unit-sys-prop.mysql.dbname=test\n" +
+                "test-unit-sys-prop.mysql.password=root\n" +
                 "test-unit-sys-prop.mysql.port=8889";
 
 
@@ -178,5 +173,27 @@ public class TestBase extends NbTestCase  {
             fail("mysql.dbname was not set. " + message);
         }
     }
+    
+    public void checkExecution(SQLExecutionInfo info) throws Exception {
+        assertNotNull(info);
+
+        if (info.hasExceptions()) {
+            for (StatementExecutionInfo stmtinfo : info.getStatementInfos()) {
+                if (stmtinfo.hasExceptions()) {
+                    System.err.println("The following SQL had exceptions:");
+                } else {
+                    System.err.println("The following SQL executed cleanly:");
+                }
+                System.err.println(stmtinfo.getSQL());
+
+                for (Throwable t : stmtinfo.getExceptions()) {
+                    t.printStackTrace();
+                }
+            }
+
+            throw new Exception("Executing SQL generated exceptions - see output for details");
+        }        
+    }
+
 
 }

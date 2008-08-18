@@ -127,6 +127,12 @@ public final class JsfForm implements ActiveEditorDrop {
                 int len = targetComponent.getDocument().getLength() - position1;
                 boolean containsFView = targetComponent.getText(0, position0).contains("<f:view>")
                     && targetComponent.getText(position1, len).contains("</f:view>");
+                
+                String prefixHtml = JSFPaletteUtilities.findJsfHtmlPrefix(targetComponent);
+                if (!containsFView) {
+                    String prefixCore = JSFPaletteUtilities.findJsfCorePrefix(targetComponent);
+                }
+                
                 String body = createBody(targetComponent, !containsFView);
                 JSFPaletteUtilities.insert(body, targetComponent);
             } catch (IOException ioe) {
@@ -410,7 +416,7 @@ public final class JsfForm implements ActiveEditorDrop {
             stringBuffer.append(MessageFormat.format(template, args));
         } else if ( isRelationship == JpaControllerUtil.REL_TO_MANY && (formType == FORM_TYPE_EDIT || formType == FORM_TYPE_NEW) ) {
             if (isOtherSideRedundantWithItsPkFields) {
-                String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText escape=\"false\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsString''][{3}.{3}.{2}].jsfcrud_invoke'}'\" title=\"{0}\" />\n";
+                String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText escape=\"false\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getCollectionAsString''][{3}.{3}.{2} == null ? jsfcrud_null : {3}.{3}.{2}].jsfcrud_invoke'}'\" title=\"{0}\" />\n";
                 Object[] args = new Object [] {name, simpleEntityName, propName, variable.substring(0, variable.lastIndexOf('.'))};
                 stringBuffer.append(MessageFormat.format(template, args));
             }

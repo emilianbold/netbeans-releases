@@ -47,11 +47,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 
 /**
  * Run a remote command. This remote command should <b>not</b> expect input. The output
  * from the command is stored in a StringWriter and can be gotten via toString().
- * 
+ *
  * @author gordonp
  */
 public class RemoteCommandSupport extends RemoteConnectionSupport {
@@ -63,16 +65,16 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
     public static int run(String key, String cmd) {
         RemoteCommandSupport support = new RemoteCommandSupport(key, cmd);
-        int rc = support.getExitStatus();
-        support.disconnect();
-        return rc;
+        return support.run();
     }
 
     public RemoteCommandSupport(String key, String cmd, Map<String, String> env, int port) {
         super(key, port);
         this.cmd = cmd;
         this.env = env;
+    }
 
+    public int run() {
         if (!isFailedOrCancelled()) {
             log.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + key);
             try {
@@ -97,11 +99,14 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                 is.close();
                 setExitStatus(channel.getExitStatus());
             } catch (JSchException jse) {
+                log.warning("Jsch failure during running " + cmd);
             } catch (IOException ex) {
+                log.warning("IO failure during running " + cmd);
             } finally {
                 disconnect();
             }
         }
+        return getExitStatus();
     }
 
     public RemoteCommandSupport(String key, String cmd) {
@@ -121,25 +126,39 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         }
     }
 
+    public void setPreserveCommand(boolean value) {
+        preserveCommand = value;
+    }
+
+    private boolean preserveCommand = false;
+
     @Override
     protected Channel createChannel() throws JSchException {
         ChannelExec echannel = (ChannelExec) session.openChannel("exec"); // NOI18N
         StringBuilder cmdline = new StringBuilder();
 
-        if (env != null) {
-            for (String ev : env.keySet()) {
-                // The following code is important! But ChannelExec.setEnv(...) was added after JSch 0.1.24,
-                // so it can't be used until we get an updated version of JSch.
-                //echannel.setEnv(var, val); // not in 0.1.24
+        if (!preserveCommand) {
+            if (env != null) {
+                // we can't use ssh env routine cause it allows only vars described by AllowEnv in /etc/ssh/sshd_config
+                // echannel.setEnv(ev, env.get(ev));
 
-                //as a workaround
-                cmdline.append( ev + "=\"" + env.get(ev) + "\";" ); // NOI18N
+                // so we do next
+                cmdline.append(ShellUtils.prepareExportString(key, env));
             }
 
+            String pathName = "PATH";//PlatformInfo.getDefault(key).getPathName();
+            if (env == null || env.get(pathName) == null) {
+                String exportCommand = RemoteHostInfoProvider.getHostInfo(key).isCshShell() + " "; // NOI18N
+                cmdline.append(exportCommand).append(pathName).append("=/bin:/usr/bin:$PATH;");
+            }
+        } else {
+            assert env==null || env.size() == 0; // if one didn't want command to be changed but provided env he should be aware of doing something wrong
         }
+
+
         cmdline.append(cmd);
 
-        echannel.setCommand(cmdline.toString());
+        echannel.setCommand(cmd);
         echannel.setInputStream(null);
         echannel.setErrStream(System.err);
         echannel.connect();

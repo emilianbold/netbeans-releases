@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.cnd.makeproject;
 
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
+import java.awt.Frame;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
@@ -88,6 +90,7 @@ import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
+import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -198,12 +201,12 @@ public class MakeActionProvider implements ActionProvider {
         return supportedActions;
     }
     
-    public void invokeAction( String command, Lookup context) throws IllegalArgumentException {
+    public void invokeAction( final String command, final Lookup context) throws IllegalArgumentException {
         // Basic info
         ProjectInformation info = project.getLookup().lookup(ProjectInformation.class);
-        String projectName = info.getDisplayName();
-        MakeConfigurationDescriptor pd = getProjectDescriptor();
-        MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
+        final String projectName = info.getDisplayName();
+        final MakeConfigurationDescriptor pd = getProjectDescriptor();
+        final MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
         
         if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
@@ -232,47 +235,89 @@ public class MakeActionProvider implements ActionProvider {
             }
             return;
         }
-        
-        if (!conf.getDevelopmentHost().isLocalhost()) {
+
+        // vv: leaving all logic to be later called from EDT
+        // (although I'm not sure all of below need to be done in EDT)
+        Runnable actionWorker = new Runnable() {
+            public void run() {
+                // Add actions to do
+                ArrayList actionEvents = new ArrayList();
+                if (command.equals(COMMAND_BATCH_BUILD)) {
+                    BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(pd.getConfs().getConfs());
+                    String batchCommand = batchConfigurationSelector.getCommand();
+                    Configuration[] confs = batchConfigurationSelector.getSelectedConfs();
+                    if (batchCommand != null && confs != null) {
+                        for (int i = 0; i < confs.length; i++)
+                            addAction(actionEvents, projectName, pd, (MakeConfiguration)confs[i], batchCommand, context);
+                    } else {
+                        // Close button
+                        return;
+                    }
+                } else {
+                    addAction(actionEvents, projectName, pd, conf, command, context);
+                }
+
+                // Execute actions
+                if (actionEvents.size() > 0) {
+                    ProjectActionSupport.fireActionPerformed((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
+                }
+            }
+        };
+        if (conf.getDevelopmentHost().isLocalhost()) {
+            actionWorker.run();
+        } else {
             String hkey = conf.getDevelopmentHost().getName();
             ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
             assert registry != null;
             ServerRecord record = registry.get(hkey);
             assert record != null;
-            if (!record.isOnline()) {
-                initServerRecord(record);
-                return;
-            }
-        }
-        
-        // Add actions to do
-        ArrayList actionEvents = new ArrayList();
-        if (command.equals(COMMAND_BATCH_BUILD)) {
-            BatchConfigurationSelector batchConfigurationSelector = new BatchConfigurationSelector(pd.getConfs().getConfs());
-            String batchCommand = batchConfigurationSelector.getCommand();
-            Configuration[] confs = batchConfigurationSelector.getSelectedConfs();
-            if (batchCommand != null && confs != null) {
-                for (int i = 0; i < confs.length; i++)
-                    addAction(actionEvents, projectName, pd, (MakeConfiguration)confs[i], batchCommand, context);
-            } else {
-                // Close button
-                return;
-            }
-        } else {
-            addAction(actionEvents, projectName, pd, conf, command, context);
-        }
-        
-        // Execute actions
-        if (actionEvents.size() > 0)
-            ProjectActionSupport.fireActionPerformed((ProjectActionEvent[])actionEvents.toArray(new ProjectActionEvent[actionEvents.size()]));
+            invokeRemoteHostAction(record, actionWorker);
+        }        
     }
 
-    private void initServerRecord(ServerRecord record) {
-        String message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
-        int res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
-        if (res == JOptionPane.YES_OPTION) {
-            // start validation phase
-            record.validate();
+    private void invokeRemoteHostAction(final ServerRecord record, final Runnable actionWorker) {
+        if (!record.isDeleted() && record.isOnline()) {
+            actionWorker.run();
+        } else {
+            String message;
+            int res = JOptionPane.NO_OPTION;
+            if (record.isDeleted()) {
+                message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getName());
+                res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
+                if (res == JOptionPane.YES_OPTION) {
+                    ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                    assert registry != null;
+                    registry.addServer(record.getName(), false, true);
+                }
+            } else if (!record.isOnline()) {
+                message = MessageFormat.format(getString("ERR_NeedToInitializeRemoteHost"), record.getName());
+                res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_Connect"), JOptionPane.YES_NO_OPTION);
+            }
+            if (res == JOptionPane.YES_OPTION) {
+                // start validation phase
+                final Frame mainWindow = WindowManager.getDefault().getMainWindow();
+                Runnable csmWorker = new Runnable() {
+                    public void run() {
+                        try {
+                            record.validate(true);
+                            // initialize compiler sets for remote host if needed
+                            CompilerSetManager csm = CompilerSetManager.getDefault(record.getName());
+                            csm.initialize(true);
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
+                    }                    
+                };
+                Runnable edtWorker = new Runnable() {
+                    public void run() {
+                        if (record.isOnline()) {
+                            actionWorker.run();
+                        }
+                    }                    
+                };
+                String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Configure_Host_Progress", record.getName());
+                ModalMessageDlg.runLongTask(mainWindow, csmWorker, edtWorker, NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Configure_Host"), msg);
+            }
         }
     }
     
@@ -625,6 +670,7 @@ public class MakeActionProvider implements ActionProvider {
                                 CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                                 outputFile = customToolConfiguration.getOutputs().getValue();
                             }
+                            outputFile = conf.expandMacros(outputFile);
                             // Clean command
                             String commandLine = "rm -rf " + outputFile; // NOI18N
                             String args = ""; // NOI18N
@@ -863,7 +909,7 @@ public class MakeActionProvider implements ActionProvider {
             assert serverList != null;
             ServerRecord record = serverList.get(hkey);
             assert record != null;
-            record.validate();
+            record.validate(false);
             if (!record.isOnline()) {
                 lastValidation = false;
                 runBTA = true;
@@ -871,15 +917,14 @@ public class MakeActionProvider implements ActionProvider {
             // TODO: all validation below works, but it may be more efficient to make a verifying script
         }
 
+        boolean unknownCompilerSet = false;
         if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
             // Confiiguration was created with unknown tool set. Use the now default one.
+            unknownCompilerSet = true;
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
             if (cs == null) {
-                cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csconf.getOption());
-            }
-            if (cs == null && CompilerSetManager.getDefault(hkey).getCompilerSets().size() > 0) {
-                cs = CompilerSetManager.getDefault(hkey).getCompilerSet(0);
+                cs = CompilerSetManager.getDefault(hkey).getDefaultCompilerSet();
             }
             runBTA = true;
         } else if (csconf.isValid()) {
@@ -910,7 +955,7 @@ public class MakeActionProvider implements ActionProvider {
                 runBTA = true;
             }
         } else {
-            if(serverList != null) {
+            if(serverList != null && !unknownCompilerSet) {
                 if (!serverList.isValidExecutable(hkey, makeTool.getPath())) {
                     runBTA=true;
                 }
@@ -970,7 +1015,7 @@ public class MakeActionProvider implements ActionProvider {
                 // User can't change anything in BTA for remote host yet,
                 // so showing above dialog will only confuse him
                 NotifyDescriptor nd = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", cs.getName(), conf.getDevelopmentHost().getName()));
+                        NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", csname, conf.getDevelopmentHost().getName()));
                 DialogDisplayer.getDefault().notify(nd);
                 lastValidation = false;
             }
@@ -1009,6 +1054,12 @@ public class MakeActionProvider implements ActionProvider {
         
         if (errormsg != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+            if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
+                MakeCustomizerProvider makeCustomizerProvider = (MakeCustomizerProvider)project.getLookup().lookup(MakeCustomizerProvider.class);
+                if (makeCustomizerProvider != null) {
+                    makeCustomizerProvider.showCustomizer("Packaging"); // NOI18N
+                }
+            }
             return false;
         }
         

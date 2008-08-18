@@ -45,6 +45,7 @@ package org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -54,6 +55,8 @@ import javax.swing.JComponent;
 import org.netbeans.modules.uml.common.generics.IteratorT;
 import org.netbeans.modules.uml.core.eventframework.EventBlocker;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivity;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityPartition;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IRegion;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IState;
@@ -68,6 +71,7 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.IStructuredClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
@@ -651,28 +655,42 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
          }
          else if (pElement instanceof IState)
          {
-            IState cpState = (IState) pElement;
-            ETList < IRegion > cpRegions = cpState.getContents();
-            if (cpRegions != null)
-            {
-               int count = cpRegions.size();
-               for (int i = 0; i < count; i++)
-               {
-                  IRegion cpRegion = cpRegions.get(i);
-                  ETList < INamedElement > elems = cpRegion.getOwnedElements();
-                  if (elems != null)
-                  {
-                     if (retObj != null)
-                     {
-                        retObj.addAll(elems);
-                     }
-                     else
-                     {
-                        retObj = elems;
-                     }
-                  }
-               }
-            }
+             // Since the composite state will include the children naturally
+             // we can not include them as part of the CDFS.  
+         }
+         else if(pElement instanceof IActivityGroup)
+         {
+             // Since activity group and partion nodes include the children 
+             // naturally we can not include them as part of the CDFS.
+         }
+         else if(pElement instanceof IActivity)
+         {
+             retObj = new ETArrayList < INamedElement >();
+             
+             IActivity activity = (IActivity)pElement;
+             List<IActivityNode> nodes = activity.getNodes();
+             for(IActivityNode node : nodes)
+             {
+                 if(node.getGroups().size() == 0)
+                 {
+                     retObj.add(node);
+                 }
+             }
+             
+         }
+         else if(pElement instanceof IClassifier)
+         {
+             retObj = new ETArrayList < INamedElement >();
+             
+             IClassifier classifier = (IClassifier)pElement;
+             List<INamedElement> children = classifier.getOwnedElements();
+             for(INamedElement child : children)
+             {
+                 if (child instanceof IClassifier)
+                 {
+                     retObj.add((IClassifier) child);
+                 }
+             }
          }
          else if (pElement instanceof INamespace)
          {
@@ -857,52 +875,65 @@ catch (IOException ex) {
       }
       
       ETList < INamedElement > ownedElements = getOwnedElements(pOwnerElement);
-      if ((ownedElements != null) && 
-          !(pOwnerElement instanceof IClassifier) && 
-          !(pOwnerElement instanceof IBehavioralFeature))
+      if (ownedElements != null) 
       {
          ETArrayList<IElement> elements = new ETArrayList<IElement>(ownedElements.size());
          elements.addAll(ownedElements);
          ETList < IElement > validElems = validateElementsForDiagram(pDiagram, elements);
          if (validElems != null)
          {
-            int count = validElems.size();
-            if (count > 0)
-            {
-               if (pOwnerElement instanceof IInteraction || pOwnerElement instanceof IActivity || pOwnerElement instanceof IStateMachine)
-               {
-                  pElements.remove(pOwnerElement);
-               }
-               else
-               {
-                  //ask the user
-                  IQuestionDialog dialog = new SwingQuestionDialogImpl();
-                  String title = loadString("IDS_DEPTHDIALOGTITLE");
-                  String message = loadString("IDS_DEPTHDIALOGMSG");
-                  dialog.setDefaultButton(IQuestionDialog.IDOK);
-                  QuestionResponse result = dialog.displaySimpleQuestionDialogWithCheckbox(MessageDialogKindEnum.SQDK_YESNO, MessageIconKindEnum.EDIK_ICONWARNING, message, "", title, MessageResultKindEnum.SQDRK_RESULT_YES, false);
-                  
-                  if (result.getResult() == MessageResultKindEnum.SQDRK_RESULT_NO)
-                  {
+             // IZ 139502 We should always remove theses objects from the list, 
+             // since they are not model elements that have presentation.
+             boolean prompt = true;
+             if (pOwnerElement instanceof IInteraction || 
+                 pOwnerElement instanceof IActivity || 
+                 pOwnerElement instanceof IStateMachine)
+             {
+                 pElements.remove(pOwnerElement);
+                 prompt = false;
+             }
+
+             int count = validElems.size();
+             if (count > 0)
+             {
+                 //ask the user
+                 int toInclude = MessageResultKindEnum.SQDRK_RESULT_YES;
+                 if(prompt == true)
+                 {
+                     IQuestionDialog dialog = new SwingQuestionDialogImpl();
+                     String title = loadString("IDS_DEPTHDIALOGTITLE");
+                     String message = loadString("IDS_DEPTHDIALOGMSG");
+                     dialog.setDefaultButton(IQuestionDialog.IDOK);
+                     QuestionResponse result = dialog.displaySimpleQuestionDialogWithCheckbox(MessageDialogKindEnum.SQDK_YESNO, 
+                                                                             MessageIconKindEnum.EDIK_ICONWARNING, 
+                                                                             message, 
+                                                                             "", 
+                                                                             title, 
+                                                                             MessageResultKindEnum.SQDRK_RESULT_YES, 
+                                                                             false);
+                     toInclude = result.getResult();
+                 }
+
+                 if (toInclude == MessageResultKindEnum.SQDRK_RESULT_NO)
+                 {
                      // Don't include the child elements
                      count = 0;
-                  }
-                  else
-                  {
+                 }
+                 else
+                 {
                      // Remove the owner so we don't get so many nested links, if that owner
                      // is an IPackage
                      if (pOwnerElement instanceof IPackage)
                      {
-                        pElements.remove(pOwnerElement);
+                         pElements.remove(pOwnerElement);
                      }
-                  }
-               }
+                 }
 
-               for (int i = 0; i < count; i++)
-               {
-                  pElements.add(validElems.get(i));
-               }
-            }
+                 for (int i = 0; i < count; i++)
+                 {
+                     pElements.add(validElems.get(i));
+                 }
+             }
          }
       }
       return pElements;
@@ -1240,7 +1271,7 @@ catch (IOException ex) {
          // Deselect everything
          pDiagram.selectAll(false);
          
-         engine.layout();
+         engine.layout(true);
          
 //         // Set the default mode to be selection
 //         // TODO: Do we still need to set the mode to perform layout.

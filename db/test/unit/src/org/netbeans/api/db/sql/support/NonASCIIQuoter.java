@@ -62,4 +62,13 @@ public class NonASCIIQuoter extends Quoter {
             return identifier;
         }
     }
+
+    @Override
+    public String quoteAlways(String identifier) {
+        if (!alreadyQuoted(identifier)) {
+            return quoteString + identifier + quoteString;
+        } else {
+            return identifier;
+        }
+    }
 }

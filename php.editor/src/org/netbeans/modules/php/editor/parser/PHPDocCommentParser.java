@@ -65,17 +65,17 @@ public class PHPDocCommentParser {
      * @return
      */
     public PHPDocBlock parse(final int startOffset, final int endOffset, final String comment) {
+        List<PHPDocTag> tags = new ArrayList<PHPDocTag>(); // list of tags
+        String blockDescription = "";   // description of the block
         if (comment == null || comment.length() == 0) {
-            return null;
+            // issue #142644
+            return new PHPDocBlock(startOffset, endOffset, blockDescription, tags);
         }
 
         Matcher matcher = pattern.matcher(comment);
         int index = 0;
-        String blockDescription = "";   // description of the block
         String line = "";               // one line of the blog
-        String description = "";        // temporary holder for description of block description or tag
-        List<PHPDocTag> tags = new ArrayList<PHPDocTag>(); // list of tags
-
+        String description = "";        // temporary holder for description of block description or tag        
         PHPDocTag.Type lastTag = null;
 
         while (matcher.find()) {

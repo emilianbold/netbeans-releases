@@ -38,20 +38,19 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes;
 
+import org.netbeans.modules.uml.drawingarea.widgets.*;
 import java.util.Collection;
 
 /**
  *
  * @author Sheryl Su
  */
-public interface CompositeWidget
+public interface CompositeWidget extends ContainerWithCompartments
 {
     public Collection<CompartmentWidget> getCompartmentWidgets();
     
     public boolean isHorizontalLayout();
     
     public void removeCompartment(CompartmentWidget widget);
-    
-    public void notifyCompartmentWidgetAdded();
-    
+            
 }

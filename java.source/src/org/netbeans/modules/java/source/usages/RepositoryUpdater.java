@@ -986,6 +986,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         try {
             result.load(in);
+        } catch (IllegalArgumentException iae) {
+            //Issue #138704: Invalid unicode encoding in attribute file.
+            //Return newly constructed Properties, the result
+            //may already contain some pairs.
+            LOGGER.warning("Broken attribute file: " + f.getAbsolutePath());    //NOI18N
+            return new Properties();
         } finally {
             in.close();
         }
@@ -3143,7 +3149,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                         }
                         
-                        if (TasklistSettings.isTasklistEnabled() && activeTuple.file != null) {
+                        if (TasklistSettings.isTasklistEnabled() && activeTuple.file != null && !activeTuple.virtual) {
                             toRefresh.addAll(TaskCache.getDefault().dumpErrors(rootFo.getURL(), u.toURL(), activeTuple.file, diag));
                         }
                         Log.instance(jt.getContext()).nerrors = 0;
@@ -3437,6 +3443,73 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         } finally {
             in.close();
         }
+    }
+    
+    private static Collection<? extends ElementHandle<TypeElement>> readRefFile (final File f) throws IOException {
+        final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
+        BufferedReader in = new BufferedReader (new InputStreamReader ( new FileInputStream (f), "UTF-8"));
+        try {
+            String binaryName;
+            while ((binaryName=in.readLine())!=null) {
+                result.add(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, binaryName));
+            }
+        } finally {
+            in.close();
+        }
+        return result;
+    }
+    
+    public static Collection<? extends ElementHandle<TypeElement>> getRelatedFiles (final File source, final File root) throws IOException {
+        assert source != null;
+        assert root != null;
+        List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>>();
+        String path = FileObjects.getRelativePath(root, source);
+        File cache = Index.getClassFolder(root.toURI().toURL());
+        File f = new File (cache,path+'.'+FileObjects.RX);      //NOI18N
+        boolean rf = false;
+        if (f.exists()) {
+            rf = true;                                   
+            result.addAll(RepositoryUpdater.readRefFile(f));
+        }
+        int index = path.lastIndexOf('.');                      //NOI18N
+        if (index>0) {
+            path = path.substring(0, index);
+        }
+        f = new File (cache,path+'.'+FileObjects.RS);           //NOI18N
+        if (f.exists()) {
+            rf = true;
+            result.addAll(RepositoryUpdater.readRefFile(f));
+
+        }
+        if (!rf) {            
+            index = path.lastIndexOf (File.separatorChar);
+            final String parentPath = index == -1 ? "" : path.substring(0,index);
+            final String parentPackage = FileObjects.convertFolder2Package(parentPath,File.separatorChar);
+            final File container = new File (cache,parentPath);
+            final String name = path.substring(index+1);
+            String[] patterns = new String[] {
+                name + '.',     //NOI18N
+                name + '$'      //NOI18N
+            };
+            final File[] content  = container.listFiles();
+            if (content != null) {
+                for (File file : content) {
+                    String fname = file.getName();
+                    for (int i=0; i< patterns.length; i++) {
+                        if (fname.startsWith(patterns[i])) {
+                            index = fname.lastIndexOf('.');
+                            if (index > 0) {
+                                fname = fname.substring(0,index);
+                            }
+                            String binName = parentPackage.length() == 0 ? fname : parentPackage + '.' + fname; //NOI18N
+                            result.add (ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, binName));
+                            break;
+                        }
+                    }
+                }                
+            }                                    
+        }
+        return result;
     }
     
     private static ClassPath.Entry getClassPathEntry (final ClassPath cp, final URL root) {

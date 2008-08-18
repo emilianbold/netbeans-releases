@@ -2870,6 +2870,7 @@ org.netbeans.modules.db.util.Base64
 org.netbeans.modules.dbapi.DbNodeLoaderImpl
 org.netbeans.modules.dbschema.jdbcimpl.DBschemaDataLoader
 org.netbeans.modules.dbschema.jdbcimpl.DBschemaDataObject
+org.netbeans.modules.debugger.jpda.actions.CheckDeadlocksAction
 org.netbeans.modules.debugger.jpda.heapwalk.actions.ClassesCountsViewAction
 org.netbeans.modules.debugger.jpda.projects.AST2Bytecode$OperationCreationDelegate
 org.netbeans.modules.debugger.jpda.projects.DebuggerAnnotation
@@ -2898,6 +2899,7 @@ org.netbeans.modules.debugger.jpda.ui.actions.EvaluateAction$EnableListener
 org.netbeans.modules.debugger.jpda.ui.actions.SourcesViewAction
 org.netbeans.modules.debugger.jpda.ui.actions.ToggleBreakpointActionProvider
 org.netbeans.modules.debugger.jpda.ui.actions.ToggleMethodFieldBreakpointAction
+org.netbeans.modules.debugger.jpda.ui.debugging.ThreadsHistoryAction
 org.netbeans.modules.debugger.ui.DebuggerModule
 org.netbeans.modules.debugger.ui.Utils
 org.netbeans.modules.debugger.ui.actions.AddBreakpointAction
@@ -4228,6 +4230,7 @@ org.netbeans.modules.project.uiapi.ActionsFactory
 org.netbeans.modules.project.uiapi.OpenProjectsTrampoline
 org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline
 org.netbeans.modules.project.uiapi.Utilities
+org.netbeans.modules.projectapi.Installer
 org.netbeans.modules.projectapi.ProjectSharabilityQuery
 org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation
 org.netbeans.modules.projectapi.TimedWeakReference

@@ -111,7 +111,7 @@ public final class BeforeSaveTasks {
     }
     
     private void runTasks() {
-        doc.runAtomic (new Runnable () {
+        doc.runAtomicAsUser (new Runnable () {
             public void run () {
                 CompoundEdit atomicEdit = EditorPackageAccessor.get().markAtomicEditsNonSignificant(doc);
                 // Since these are before-save actions they should generally not prevent

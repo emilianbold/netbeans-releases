@@ -99,6 +99,7 @@ public final class StyleBuilderTopComponent extends TopComponent {
         NO_RULE_SELECTED_PANEL = makeMsgPanel(NbBundle.getMessage(StyleBuilderAction.class, "Out_Of_Rule"));
         BROKEN_MODEL_PANEL = makeMsgPanel(NbBundle.getMessage(StyleBuilderAction.class, "Broken_Model"));
         
+        setPanelMode(OUT_OF_RULE);
     }
     
      public void setContent(CssRuleContext content){

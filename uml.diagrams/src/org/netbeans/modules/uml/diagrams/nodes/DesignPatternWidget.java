@@ -85,7 +85,7 @@ public class DesignPatternWidget extends UMLNodeWidget
     private UMLNameWidget nameWidget = null;
     private TemplateWidget parameterWidget = null;
     private TemplateContainerWidget parameterContainerWidget = null;
-    private CustomizableWidget bodyWidget = null;
+    private DesignPatternBodyWidget bodyWidget = null;
     private String bodyWidgetID = "DesignPatternWidgetBody";
     private String parameterContainerWidgetID = "DesignPatternParameterContainerWidget";
 
@@ -107,6 +107,7 @@ public class DesignPatternWidget extends UMLNodeWidget
         ICollaboration c = (ICollaboration) presentation.getFirstSubject();
         setCurrentView(createView(c));
         setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
         getScene().validate();
     }
 
@@ -363,11 +364,11 @@ public class DesignPatternWidget extends UMLNodeWidget
         }
     }
 
-    public class DesignPatternBodyWidget extends CustomizableWidget {
+    public class DesignPatternBodyWidget extends Widget {
 
         public DesignPatternBodyWidget(Scene scene, String id, String name)
         {
-            super(scene, id, name);
+            super(scene);
         }
         
         protected void paintBorder()
@@ -397,7 +398,7 @@ public class DesignPatternWidget extends UMLNodeWidget
                 float midX = bounds.width / 2;
                 
                 Color bgColor = (Color)bg;
-                GradientPaint paint = new GradientPaint(midX, 0, LIGHT_FILL_COLOR,
+                GradientPaint paint = new GradientPaint(midX, 0, Color.WHITE,
                                                         midX, bounds.height, 
                                                         bgColor);
                 g.setPaint(paint);

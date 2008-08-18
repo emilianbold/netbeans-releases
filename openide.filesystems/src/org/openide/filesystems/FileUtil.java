@@ -77,6 +77,7 @@ import javax.swing.filechooser.FileSystemView;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -1442,7 +1443,7 @@ public final class FileUtil extends Object {
                 LOG.log(Level.FINE, file.toString(), e);
             }
             // #135547 - on Windows Vista map "Documents and Settings\<username>\My Documents" to "Users\<username>\Documents"
-            if((Utilities.getOperatingSystem() & (Utilities.OS_FREEBSD << 1)) != 0) { //TODO replace with Utilities.OS_WINVISTA
+            if((Utilities.getOperatingSystem() & Utilities.OS_WINVISTA) != 0) {
                 if(retVal == null) {
                     retVal = file;
                 }
@@ -1560,6 +1561,7 @@ public final class FileUtil extends Object {
      * @since 4.48
      */
     public static FileObject getArchiveFile(FileObject fo) {
+        Parameters.notNull("fo", fo);   //NOI18N
         try {
             FileSystem fs = fo.getFileSystem();
 

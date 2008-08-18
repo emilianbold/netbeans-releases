@@ -118,7 +118,7 @@ public final class ElementUtilities {
     
     /**
      * Returns the type element within which this member or constructor
-     * is declared. Does not accept pakages
+     * is declared. Does not accept packages
      * If this is the declaration of a top-level type (a non-nested class
      * or interface), returns null.
      *
@@ -127,6 +127,10 @@ public final class ElementUtilities {
      * @throws IllegalArgumentException if the provided element is a package element
      */
     public TypeElement enclosingTypeElement( Element element ) throws IllegalArgumentException {
+        return enclosingTypeElementImpl(element);
+    }
+    
+    static TypeElement enclosingTypeElementImpl( Element element ) throws IllegalArgumentException {
 	
 	if( element.getKind() == ElementKind.PACKAGE ) {
 	    throw new IllegalArgumentException();
@@ -161,10 +165,10 @@ public final class ElementUtilities {
         return delegate.getImplementationOf(method, origin);
     }
     
-    /**Returns true if the given element is syntetic.
+    /**Returns true if the given element is synthetic.
      * 
      *  @param element to check
-     *  @return true if and only if the given element is syntetic, false otherwise
+     *  @return true if and only if the given element is synthetic, false otherwise
      */
     public boolean isSynthetic(Element element) {
         return (((Symbol) element).flags() & Flags.SYNTHETIC) != 0 || (((Symbol) element).flags() & Flags.GENERATEDCONSTR) != 0;

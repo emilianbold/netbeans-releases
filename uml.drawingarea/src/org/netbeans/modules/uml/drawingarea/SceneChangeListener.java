@@ -66,12 +66,12 @@ public class SceneChangeListener extends ObjectSceneListenerAdapter {
 
     @Override
     public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
-        dobj.setDirty(true, scene);
+        if(!PersistenceUtil.isDiagramLoading())
+            dobj.setDirty(true, scene); //during loading some elements may be removed from the scene
     }
 
     @Override
     public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState previousState, ObjectState newState) {
-        System.out.println("Hello State Changed");
     }
 
 }

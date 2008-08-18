@@ -195,7 +195,23 @@ public final class GemPanel extends JPanel {
         LOGGER.finer("Cancelling all running GemPanel tasks");
         // TODO: implement
     }
-    
+
+    private static void updateGemDescription(final JList list, final JTextPane pane, final JButton button) {
+        Object o = list.getSelectedValue();
+        if (o instanceof Gem) { // Could be "Please Wait..." String
+            button.setEnabled(true);
+            if (pane != null) {
+                updateGemDescription(pane, (Gem) o);
+            }
+            return;
+        } else {
+            if (pane != null) {
+                pane.setText("");
+            }
+            button.setEnabled(false);
+        }
+    }
+
     private static void updateGemDescription(JTextPane pane, Gem gem) {
         assert EventQueue.isDispatchThread();
 
@@ -265,6 +281,7 @@ public final class GemPanel extends JPanel {
         reloadNewButton.setEnabled(true);
         reloadInstalledButton.setEnabled(true);
         reloadReposButton.setEnabled(true);
+        manageButton.setEnabled(true);
     }
 
     private void setEnabled(TabIndex tab, boolean enabled) {
@@ -392,7 +409,7 @@ public final class GemPanel extends JPanel {
             return;
         }
 
-        GemListModel model = new GemListModel(gems, getGemFilter(tab));
+        GemListModel model = new GemListModel(gems, getGemFilter());
         list.clearSelection();
         list.setModel(model);
         list.invalidate();
@@ -926,23 +943,39 @@ public final class GemPanel extends JPanel {
     }//GEN-LAST:event_proxyButtonActionPerformed
 
     private void searchNewTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNewTextActionPerformed
-        applyFilter(newList, TabIndex.NEW);
+        applyFilter(searchNewText.getText());
     }//GEN-LAST:event_searchNewTextActionPerformed
 
     private void searchUpdatedTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchUpdatedTextActionPerformed
-        applyFilter(updatedList, TabIndex.UPDATED);
+        applyFilter(searchUpdatedText.getText());
     }//GEN-LAST:event_searchUpdatedTextActionPerformed
 
     private void searchInstTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchInstTextActionPerformed
-        applyFilter(installedList, TabIndex.INSTALLED);
+        applyFilter(searchInstText.getText());
     }//GEN-LAST:event_searchInstTextActionPerformed
 
-    private void applyFilter(JList installedList, TabIndex tabIndex) {
-        GemListModel gemModel = (GemListModel) installedList.getModel();
-        gemModel.applyFilter(getGemFilter(tabIndex));
-        setTabTitle(tabIndex, gemModel);
+    private void applyFilter(final String filter) {
+        applyFilter(TabIndex.NEW, filter, searchNewText, newList, newDesc, installButton);
+        applyFilter(TabIndex.UPDATED, filter, searchUpdatedText, updatedList, updatedDesc, updateButton);
+        applyFilter(TabIndex.INSTALLED, filter, searchInstText, installedList, installedDesc, uninstallButton);
     }
 
+    private void applyFilter(final TabIndex tab, final String filter,
+            final JTextField searchField, final JList list,
+            final JTextPane desc, final JButton button) {
+        // keep search filter fields in sync
+        searchField.setText(filter);
+
+        GemListModel gemModel = (GemListModel) list.getModel();
+        gemModel.applyFilter(filter);
+        setTabTitle(tab, gemModel);
+
+        if (list.getSelectedValue() == null) {
+            list.setSelectedIndex(0);
+        }
+        updateGemDescription(list, desc, button);
+    }
+    
     private void reloadReposButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadReposButtonActionPerformed
         getGemManager().reset();
         refreshGemLists();
@@ -1181,25 +1214,11 @@ public final class GemPanel extends JPanel {
         updateTasksQueue.post(updateTask);
     }
 
-    private String getGemFilter(TabIndex tab) {
+    private String getGemFilter() {
         assert EventQueue.isDispatchThread();
-
-        String filter = null;
-        JTextField tf;
-        if (tab == TabIndex.INSTALLED) {
-            tf = searchInstText;
-        } else if (tab == TabIndex.UPDATED) {
-            tf = searchUpdatedText;
-        } else {
-            assert tab == TabIndex.NEW;
-            tf = searchNewText;
-        }
-        filter = tf.getText().trim();
-        if (filter.length() == 0) {
-            filter = null;
-        }
-
-        return filter;
+        // filter field are kept in sync, does not matter which one is used
+        String filter = searchInstText.getText().trim();
+        return filter.length() == 0 ? null : filter;
     }
 
     private RubyPlatform getSelectedPlatform() {
@@ -1233,19 +1252,7 @@ public final class GemPanel extends JPanel {
             if (ev.getValueIsAdjusting()) {
                 return;
             }
-            Object o = list.getSelectedValue();
-            if (o instanceof Gem) { // Could be "Please Wait..." String
-                button.setEnabled(true);
-                if (pane != null) {
-                    updateGemDescription(pane, (Gem) o);
-                }
-                return;
-            } else {
-                if (pane != null) {
-                    pane.setText("");
-                }
-                button.setEnabled(false);
-            }
+            updateGemDescription(list, pane, button);
         }
     }
 

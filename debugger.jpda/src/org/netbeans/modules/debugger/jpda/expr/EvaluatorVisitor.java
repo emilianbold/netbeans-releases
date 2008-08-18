@@ -82,6 +82,7 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.InvalidStackFrameException;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -307,13 +308,17 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
             } else {
                 objectReference = evaluationContext.getFrame().thisObject();
-                type = objectReference.referenceType();
-                if (enclosingClass != null) {
-                    ReferenceType enclType = findEnclosingType(type, enclosingClass);
-                    if (enclType != null) {
-                        ObjectReference enclObject = findEnclosingObject(arg0, objectReference, enclType, null, methodName);
-                        if (enclObject != null) type = enclObject.referenceType();
+                if (objectReference != null) {
+                    type = objectReference.referenceType();
+                    if (enclosingClass != null) {
+                        ReferenceType enclType = findEnclosingType(type, enclosingClass);
+                        if (enclType != null) {
+                            ObjectReference enclObject = findEnclosingObject(arg0, objectReference, enclType, null, methodName);
+                            if (enclObject != null) type = enclObject.referenceType();
+                        }
                     }
+                } else {
+                    type = null;
                 }
             }
             if (objectReference == null) {
@@ -1368,6 +1373,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         }
                     } catch (NativeMethodException nmex) {
                         // ignore - no arguments available
+                    } catch (InvalidStackFrameException ex) {
                     }
                     return (Value) Assert2.error(arg0, "unknownVariable", paramName);
                 }
@@ -1427,6 +1433,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         if (outerRef == null) return null;
         object = (ObjectReference) object.getValue(outerRef);
+        if (object == null) return null;
         return findEnclosingObject(arg0, object, type, fieldName, methodName);
     }
 

@@ -46,8 +46,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.ProduceMime;
-import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Context;
@@ -87,7 +87,7 @@ public class CustomerResource {
      * @return an instance of CustomerConverter
      */
     @GET
-    @ProduceMime({"application/xml", "application/json"})
+    @Produces({"application/xml", "application/json"})
     public CustomerConverter get(@QueryParam("expandLevel")
     @DefaultValue("1")
     int expandLevel) {
@@ -105,7 +105,7 @@ public class CustomerResource {
      * @param data an CustomerConverter entity that is deserialized from a XML stream
      */
     @PUT
-    @ConsumeMime({"application/xml", "application/json"})
+    @Consumes({"application/xml", "application/json"})
     public void put(CustomerConverter data) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {

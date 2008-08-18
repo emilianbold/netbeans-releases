@@ -1652,7 +1652,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     javaEngineProvider.getSession ().setCurrentLanguage (stratum);
                 lastStratumn = stratum;
             } catch (AbsentInformationException e) {
-                System.out.println("NoInformationException");
             }
     }
 

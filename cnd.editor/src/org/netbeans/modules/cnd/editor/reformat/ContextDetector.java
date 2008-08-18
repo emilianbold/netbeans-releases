@@ -171,6 +171,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                     case TRUE:
                     case INT_LITERAL:
                     case LONG_LITERAL:
+                    case LONG_LONG_LITERAL:
                     case FLOAT_LITERAL:
                     case DOUBLE_LITERAL:
                     case UNSIGNED_LITERAL:

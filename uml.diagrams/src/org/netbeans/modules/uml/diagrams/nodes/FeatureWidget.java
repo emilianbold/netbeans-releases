@@ -41,6 +41,7 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.UIManager;
@@ -170,7 +171,8 @@ public abstract class FeatureWidget extends CustomizableWidget
             setOpaque(false);
             if((label != null) && (getParentWidget() != null))
             {
-                label.setForeground(getParentWidget().getForeground());
+                //label.setForeground(getParentWidget().getForeground());
+                label.setForeground(null);
                 //label.closeEditorCommitChanges();//
             }
             
@@ -205,6 +207,9 @@ public abstract class FeatureWidget extends CustomizableWidget
         label.setAlignment(alignment);
         label.setLabel(formatedStr);
         addChild(label);
+        
+        // Use the parents foreground color.
+        label.setForeground(null);
         
         if(alignment == Alignment.CENTER)
         {

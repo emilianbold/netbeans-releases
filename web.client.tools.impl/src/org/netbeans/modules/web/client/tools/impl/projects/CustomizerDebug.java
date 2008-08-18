@@ -87,6 +87,11 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
             Preferences prefs = NbPreferences.forModule(DebugConstants.class);
             String testSet = prefs.get(DebugConstants.CLIENT_DEBUG, null);
             
+            String defBrowser = (ffBrowserSupported || !ieBrowserSupported) ? 
+                WebClientToolsProjectUtils.Browser.FIREFOX.name() : WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name();
+
+            globalBrowser = WebClientToolsProjectUtils.Browser.valueOf(prefs.get(DebugConstants.BROWSER, defBrowser));
+            
             // looks strange, but the 'debug client-side' dialog when Debug is invoked
             // shouldn't be forced to not appear by this automatic action
             boolean useGlobal = !prefs.getBoolean(DebugConstants.DISPLAY_CONFIG, true);
@@ -95,11 +100,6 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
                 if (!clientDebug) {
                     serverDebug = true;
                 }
-
-                String defBrowser = (ffBrowserSupported || !ieBrowserSupported) ? 
-                    WebClientToolsProjectUtils.Browser.FIREFOX.name() : WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name();
-
-                globalBrowser = WebClientToolsProjectUtils.Browser.valueOf(prefs.get(DebugConstants.BROWSER, defBrowser));
             }
         }
         
@@ -195,10 +195,10 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 645, Short.MAX_VALUE)
+                .add(debugServerJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 650, Short.MAX_VALUE)
                 .add(22, 22, 22))
             .add(layout.createSequentialGroup()
-                .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 656, Short.MAX_VALUE)
+                .add(debugClientJCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 661, Short.MAX_VALUE)
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .add(24, 24, 24)
@@ -222,11 +222,15 @@ public final class CustomizerDebug extends JPanel implements ActionListener {
                 .add(internetExplorerRadioButton)
                 .add(18, 18, 18)
                 .add(noSupportedBrowserLabel)
-                .addContainerGap(371, Short.MAX_VALUE))
+                .addContainerGap(375, Short.MAX_VALUE))
         );
 
         debugServerJCheckBox.getAccessibleContext().setAccessibleDescription("null");
         debugClientJCheckBox.getAccessibleContext().setAccessibleDescription("null");
+        firefoxRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.firefoxRadioButton.text")); // NOI18N
+        firefoxRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACSD_FF_RadioButton")); // NOI18N
+        internetExplorerRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "CustomizerDebug.internetExplorerRadioButton.text")); // NOI18N
+        internetExplorerRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerDebug.class, "ACSD_IE_RadioButton")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void debugServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugServerActionPerformed

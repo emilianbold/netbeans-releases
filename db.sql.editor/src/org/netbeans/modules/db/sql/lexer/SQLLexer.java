@@ -72,6 +72,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
     private final LexerRestartInfo info;
     private final LexerInput input;
     private final TokenFactory<SQLTokenId> factory;
+
     private int state = INIT;
     private int startQuoteChar = -1;
 
@@ -96,6 +97,9 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                             break;
                         case '/':
                             state = ISA_SLASH;
+                            break;
+                        case '#':
+                            state = ISI_LINE_COMMENT;
                             break;
                         case '=':
                         case '>':
@@ -173,9 +177,6 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 // If we are currently in a string literal.
                 case ISI_STRING:
                     switch (actChar) {
-                        case '\n':
-                            state = INIT;
-                            return factory.createToken(SQLTokenId.INCOMPLETE_STRING, input.readLength(), PartType.START);
                         case '\'': // NOI18N
                             state = INIT;
                             return factory.createToken(SQLTokenId.STRING);
@@ -307,6 +308,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                 break;
 
             case ISI_IDENTIFIER:
+                startQuoteChar = -1;
                 id = testKeyword(input.readText());
                 break;
 

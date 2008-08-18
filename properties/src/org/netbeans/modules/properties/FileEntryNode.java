@@ -54,6 +54,8 @@ import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -79,7 +81,8 @@ public class FileEntryNode extends AbstractNode {
      * @param ch children container for the node
      */
     public FileEntryNode (PresentableFileEntry entry, Children ch) {
-        super (ch);
+        super (ch, new ProxyLookup(entry.getCookieSet().getLookup(),
+                                   Lookups.singleton(entry.getFile())));
         this.entry = entry;
         
         PropL propListener = new PropL ();
@@ -89,7 +92,7 @@ public class FileEntryNode extends AbstractNode {
         
         super.setName (entry.getName ());
     }
-    
+
     private String getBundleString(String s){
         return NbBundle.getMessage(FileEntryNode.class, s);
     }
@@ -170,21 +173,6 @@ public class FileEntryNode extends AbstractNode {
         }
     }
     
-    /** Get a cookie.
-     * First of all {@link PresentableFileEntry#getCookie} is
-     * called. If it produces non-<code>null</code> result, that is returned.
-     * Otherwise the superclass is tried.
-     * @return the cookie or <code>null</code>
-     */
-    public <T extends Node.Cookie> T getCookie(Class<T> cl) {
-        T c = entry.getCookie(cl);
-        if (c != null) {
-            return c;
-        } else {
-            return super.getCookie (cl);
-        }
-    }
-
     /** Initializes sheet of properties. Allows subclasses to
      * overwrite it.
      * @return the default sheet to use

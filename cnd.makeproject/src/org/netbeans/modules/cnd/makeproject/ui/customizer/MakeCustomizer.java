@@ -609,8 +609,14 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         
         Vector descriptions = new Vector();
-        descriptions.add(createGeneralDescription(project));
-        descriptions.add(createBuildDescription(project));
+        CustomizerNode node = createGeneralDescription(project);
+        if (node != null) {
+            descriptions.add(node);
+        }
+        node = createBuildDescription(project);
+        if (node != null) {
+            descriptions.add(node);
+        }
         // Add customizer nodes
         if (includeRunDebugDescriptions) {
             if (!descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Run"))) { // NOI18N
@@ -621,8 +627,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             }
     //      descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes(false));
             CustomizerNode advanced = getAdvancedCutomizerNode(descriptions);
-            if (advanced != null)
+            if (advanced != null) {
                 descriptions.add(advanced);
+            }
         }
         if (includeMakefileDescription) {
             //descriptions.add(createMakefileDescription(project));
@@ -657,8 +664,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         Vector advancedNodes = new Vector();
         List<CustomizerNode> nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes();
         for (CustomizerNode node : nodes) {
-            if (!descriptions.contains(node))
+            if (node != null && !descriptions.contains(node)) {
                 advancedNodes.add(node);
+            }
         }
         if (advancedNodes.size() == 0)
             return null;
@@ -1082,13 +1090,25 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     
     private String getSelectedHostName() {
         String host;
-        if (configurationComboBox.getSelectedIndex() == configurationItems.length) {
-            // All Configurations is selected.
-            // Which host to use? localhost...
-            host = CompilerSetManager.LOCALHOST;
-        } else {
+        if (configurationComboBox.getSelectedIndex() < configurationItems.length) {
             MakeConfiguration conf = (MakeConfiguration) configurationComboBox.getSelectedItem();
             host = conf.getDevelopmentHost().getName();
+        } else {
+            // All or Multiple Configurations are selected.
+            // Which host to use? let's calculate
+            host = CompilerSetManager.LOCALHOST;
+            if (selectedConfigurations != null && selectedConfigurations.length > 0) {
+                for (int i = 0; i < selectedConfigurations.length; i++) {
+                    MakeConfiguration conf = (MakeConfiguration) selectedConfigurations[i];
+                    if (conf.getDevelopmentHost().isLocalhost()) {
+                        host = CompilerSetManager.LOCALHOST;
+                        // found localhost => can break and does not check others
+                        break;
+                    } else {
+                        host = conf.getDevelopmentHost().getName();
+                    }
+                }
+            }
         }
         return host;
     }

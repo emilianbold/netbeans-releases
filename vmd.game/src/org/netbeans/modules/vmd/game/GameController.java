@@ -695,13 +695,11 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			});
 			
 			//get user to fix invalid image resources - i.e. those with null URLs
-			Collection<ImageResource> imageResources = gameDesign.getImageResources();
-			for (ImageResource imageResource : imageResources) {
-				if (imageResource.getURL() == null) {
-					DesignComponent imageResourceDC = designIdMap.get(imageResource);
-					this.validateImageResource(imageResource, imageResourceDC);
-				}
-			}
+                        if (!validateImages(gameDesign)){
+			//gameDesign.getMainView().closeEditor(gameDesign);
+                            context.getCloneableEditorSupport().close();
+                            return;
+                        }
 			gameDesign.getMainView().addEditorManagerListener(gameEditorView);
 			view = gameDesign.getMainView().getRootComponent();
 
@@ -712,6 +710,41 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		this.panel.validate();
 	}
 	
+    private boolean validateImages(GlobalRepository gameDesign) {
+        boolean imagesFixed = true;
+	Map<ImageResource, String> updatedResources = new HashMap<ImageResource, String>();
+        Collection<ImageResource> imageResources = gameDesign.getImageResources();
+        for (ImageResource imageResource : imageResources) {
+            if (imageResource.getURL() == null) {
+                DesignComponent imageResourceDC = designIdMap.get(imageResource);
+                if (! this.validateImageResource(imageResource, imageResourceDC, updatedResources)){
+                    imagesFixed = false;
+                    break;
+                }
+            }
+        }
+        if (imagesFixed){
+            fixUpdatedImagesInDocument(updatedResources);
+        }
+        return imagesFixed;
+    }
+    
+    private void fixUpdatedImagesInDocument(final Map<ImageResource, String> updatedResources) {
+        document.getTransactionManager().writeAccess(new Runnable() {
+
+            public void run() {
+                for (ImageResource imageResource : updatedResources.keySet()) {
+                    DesignComponent imageResourceDC = designIdMap.get(imageResource);
+                    String newPath = updatedResources.get(imageResource);
+                    
+                    changeMap.put(imageResourceDC.getComponentID(), ImageResourceCD.PROPERTY_IMAGE_PATH);
+                    imageResourceDC.writeProperty(ImageResourceCD.PROPERTY_IMAGE_PATH,
+                            MidpTypes.createStringValue(newPath));
+                }
+            }
+        });
+    }
+        
 	private void removeListeners(Object... objectsOfInterest) {
 		for (Object o : objectsOfInterest) {
 			if (DEBUG_UNDO) System.out.println("removeListeners on: " + o); // NOI18N
@@ -1004,7 +1037,18 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		return imageResource;
 	}
 		
-	private void validateImageResource(ImageResource imageResource, final DesignComponent imageResourceDC) {
+        /**
+         * validates and get user to fix invalid image resources - i.e. those with null URLs
+         * @param imageResource
+         * @param imageResourceDC
+         * @param updatedUrls
+         * @return was image fixed or not
+         */
+	private boolean validateImageResource(ImageResource imageResource, 
+                final DesignComponent imageResourceDC,
+                Map<ImageResource, String> updatedResources) 
+        {
+                boolean imageFixed = false;
 		FileObject fo;
 		URL imgResUrl;
 		final String imgResPath = imageResource.getRelativeResourcePath();
@@ -1019,7 +1063,6 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 					System.out.println("root: " + entry.getValue() + ", path: " + entry.getKey()); // NOI18N
 				}
 			}
-			
 			final SelectImageForLayerDialog dialog = new SelectImageForLayerDialog(
 					NbBundle.getMessage(GameController.class, "GameController.SelectImageDialog.description1_txt", imgResPath),
 					//"Multiple images found matching the relative path: " + imgResPath,
@@ -1028,30 +1071,22 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			
 			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(GameController.class, "GameController.SelectImageDialog.title"));
 			dd.setValid(false);
-			dd.setButtonListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					if (e.getSource() == NotifyDescriptor.CANCEL_OPTION) {
-						//XXX close the document - user did not choose one of the available images
-					}
-				}
-			});
+			dd.setButtonListener(dialog);
 			dialog.setDialogDescriptor(dd);
 			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
 			d.setVisible(true);
-			
-			fo = dialog.getValue();
-			final String newPath = "/" + FileUtil.getRelativePath(imagesMap.get(fo), fo);
-			if (DEBUG) System.out.println("Setting new path: " + newPath); // NOI18N
-			
-			document.getTransactionManager().writeAccess(new Runnable() {
-				public void run() {
-					changeMap.put(imageResourceDC.getComponentID(), ImageResourceCD.PROPERTY_IMAGE_PATH);
-					imageResourceDC.writeProperty(ImageResourceCD.PROPERTY_IMAGE_PATH, 
-							MidpTypes.createStringValue(newPath));
-                }
-			});
-			
-			if (DEBUG_UNDO) System.out.println("Set new path: " + newPath); // NOI18N
+                        
+                        fo = dialog.getValue();
+                            
+                        //user did not choose one of the available images
+			if (dialog.isCancelled() || fo == null){
+                            return imageFixed;
+                        }
+                            
+                        final String newPath = "/" + FileUtil.getRelativePath(imagesMap.get(fo), fo);
+                        if (DEBUG) System.out.println("Setting new path: " + newPath); // NOI18N
+                        updatedResources.put(imageResource, newPath);
+                        if (DEBUG_UNDO) System.out.println("Set new path: " + newPath); // NOI18N
 		}
 		else if (imagesMap.isEmpty()) {
 			//image is no longer on the classpath - prompt the user to select a replacement image
@@ -1068,28 +1103,20 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			
 			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(GameController.class, "GameController.SelectImageDialog.title"));
 			dd.setValid(false);
-			dd.setButtonListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					if (e.getSource() == NotifyDescriptor.CANCEL_OPTION) {
-						//XXX close the document - missing image could not be recovered by the user
-					}
-				}
-			});
+			dd.setButtonListener(dialog);
 			dialog.setDialogDescriptor(dd);
 			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
 			d.setVisible(true);
 			
 			fo = dialog.getValue();
-			final String newPath = images.get(fo);
+        		//missing image could not be recovered by the user
+			if (dialog.isCancelled() || fo == null){
+                            return imageFixed;
+                        }
+                        
+                        final String newPath = images.get(fo);
 			if (DEBUG) System.out.println("Setting new path: " + newPath); // NOI18N
-			
-			document.getTransactionManager().writeAccess(new Runnable() {
-				public void run() {
-					changeMap.put(imageResourceDC.getComponentID(), ImageResourceCD.PROPERTY_IMAGE_PATH);
-					imageResourceDC.writeProperty(ImageResourceCD.PROPERTY_IMAGE_PATH, 
-							MidpTypes.createStringValue(newPath));
-                }
-			});
+                        updatedResources.put(imageResource, newPath);
 			if (DEBUG_UNDO) System.out.println("Set new path: " + newPath); // NOI18N
 		}
 		else {
@@ -1098,15 +1125,18 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			if (DEBUG) System.out.println("Found single matching image ULR: " + fo.getPath()); // NOI18N
 		}
 		
-		try {
-			imgResUrl = fo.getURL();
-			imageResource.setURL(imgResUrl);
-		} catch (FileStateInvalidException e) {
-			throw new RuntimeException(e);
-		}
-		
+            try {
+                if (fo != null) {
+                    imgResUrl = fo.getURL();
+                    imageResource.setURL(imgResUrl);
+                    imageFixed = true;
+                }
+            } catch (FileStateInvalidException e) {
+                throw new RuntimeException(e);
+            }
+            return imageFixed;
 	}
-	
+        
 	private Scene constructScene(DesignComponent sceneDC) {
 		String name = (String) sceneDC.readProperty(SceneCD.PROPERTY_NAME).getPrimitiveValue();
 		//if GlobalRepository already has a scene of that name it must have been already constructed

@@ -105,11 +105,11 @@ public class CheckoutUITest extends JellyTestCase{
     public static Test suite() {
          return NbModuleSuite.create(
                  NbModuleSuite.createConfiguration(CheckoutUITest.class).addTest(
-                    "testInvokeClose",
-                    "testChangeAccessTypes",
-                    "testIncorrentUrl",
-                    "testAvailableFields",
-                    "testRepositoryFolder"
+//                    "testInvokeClose",
+                    "testChangeAccessTypes"//,
+//                    "testIncorrentUrl",
+//                    "testAvailableFields",
+//                    "testRepositoryFolder"
                  )
                  .enableModules(".*")
                  .clusters(".*")
@@ -133,26 +133,26 @@ public class CheckoutUITest extends JellyTestCase{
         Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
-        Thread.sleep(2000);
+        Thread.sleep(100);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVN);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_SVN);
         rso.txtPassword().setText(RepositoryStepOperator.ITEM_SVN);
-        Thread.sleep(2000);
+        Thread.sleep(100);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_SVNSSH);
-        Thread.sleep(2000);
+        Thread.sleep(100);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTP);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_HTTP);
         rso.txtPassword().setText(RepositoryStepOperator.ITEM_HTTP);
-        Thread.sleep(2000);
+        Thread.sleep(100);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_HTTPS);
         rso.txtPassword().setText(RepositoryStepOperator.ITEM_HTTPS);
-        Thread.sleep(2000);
+        Thread.sleep(100);
         co.btCancel().pushNoBlock();
     }
     
