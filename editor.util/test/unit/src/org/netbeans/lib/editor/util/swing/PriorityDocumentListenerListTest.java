@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,55 +39,56 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.editor.util.random;
+package org.netbeans.lib.editor.util.swing;
 
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.PlainDocument;
-import javax.swing.undo.UndoManager;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.editor.util.random.TestDocument;
 
-/**
- * Testing document implementation.
- * <br/>
- * It populates modification text into the document event which is useful for the lexer.
- *
- * @author mmetelka
- */
-public class TestDocument extends PlainDocument {
-    
-    public TestDocument() {
-        UndoManager undoManager = new UndoManager();
-        addUndoableEditListener(undoManager);
-        putProperty(UndoManager.class, undoManager);
-        super.addDocumentListener(org.netbeans.lib.editor.util.swing.DocumentUtilities.initPriorityListening(this));
+public class PriorityDocumentListenerListTest extends NbTestCase {
+
+    public PriorityDocumentListenerListTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    protected void insertUpdate(DefaultDocumentEvent chng, AttributeSet attr) {
-        super.insertUpdate(chng, attr);
-        DocumentUtilities.addEventPropertyStorage(chng);
-        try {
-            DocumentUtilities.putEventProperty(chng, String.class,
-                    getText(chng.getOffset(), chng.getLength()));
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-            throw new IllegalStateException(e.toString());
-        }
+    public void testAddListenerDuringFire() throws Exception {
+        TestDocument doc = new TestDocument();
+        DocL docL = new DocL(doc);
+        docL.run();
     }
 
-    @Override
-    protected void removeUpdate(DefaultDocumentEvent chng) {
-        super.removeUpdate(chng);
-        DocumentUtilities.addEventPropertyStorage(chng);
-        try {
-            DocumentUtilities.putEventProperty(chng, String.class,
-                    getText(chng.getOffset(), chng.getLength()));
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-            throw new IllegalStateException(e.toString());
+    private static final class DocL implements DocumentListener {
+        
+        private TestDocument doc;
+        
+        private boolean shouldNotFire;
+
+        DocL(TestDocument doc) {
+            this.doc = doc;
         }
+        
+        void run() throws Exception {
+            DocumentUtilities.addPriorityDocumentListener(doc, this, DocumentListenerPriority.CARET_UPDATE);
+            doc.insertString(0, "ahoj", null);
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            if (shouldNotFire) {
+                fail("Not expected to be fired.");
+            }
+            DocL docL2 = new DocL(doc);
+            docL2.shouldNotFire = true;
+            DocumentUtilities.addPriorityDocumentListener(doc, docL2, DocumentListenerPriority.LEXER);
+            DocumentUtilities.addPriorityDocumentListener(doc, docL2, DocumentListenerPriority.AFTER_CARET_UPDATE);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+        }
+
     }
 
 }
