@@ -400,6 +400,7 @@
                 <package>org.netbeans.modules.ruby.rubyproject.rake</package>
                 <package>org.netbeans.modules.ruby.rubyproject.spi</package>
                 <package>org.netbeans.modules.ruby.rubyproject.ui</package>
+                <package>org.netbeans.modules.ruby.rubyproject.ui.customizer</package>
             </friend-packages>
         </data>
     </configuration>

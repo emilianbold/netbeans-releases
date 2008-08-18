@@ -89,3 +89,10 @@ void
 SingletonHolder<T2, CreationPolicy2, L2, M2, X2>::DestroySingleton() {
     T2 t;
 }
+
+// IZ 144050 : inner type should have priority over global one
+class A {};
+template <class A> class B { 
+    A::sometype member;
+};
+

@@ -222,7 +222,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             return Collections.<CsmReference>emptyList();
         }
         CsmFile file = ref.getContainingFile();
-        Collection<CsmReference> out = CsmReferenceRepository.getDefault().getReferences(resolved, file, CsmReferenceKind.ALL);
+        Collection<CsmReference> out = CsmReferenceRepository.getDefault().getReferences(resolved, file, CsmReferenceKind.ALL, null);
         return out;
     }
     

@@ -186,7 +186,7 @@ public class GroovyTypeSearcher implements TypeSearcher {
                 }
             } else {
                 isLibrary = true;
-                Logger.getLogger(GroovyTypeSearcher.class.getName()).fine("No fileobject for " + element.toString() + " with fileurl=" + element.getFilenameUrl());
+                Logger.getLogger(GroovyTypeSearcher.class.getName()).fine("No fileobject for " + element.toString() + " with fileurl=" + element.getFileUrl());
             }
             if (projectName == null) {
                 projectName = "";
