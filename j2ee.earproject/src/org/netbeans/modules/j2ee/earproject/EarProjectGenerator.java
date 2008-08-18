@@ -370,6 +370,14 @@ public final class EarProjectGenerator {
             final String platformName, final FileObject subprojectRoot)
             throws IllegalArgumentException, IOException {
         
+        // #87604 & #143772 - check first whether the module is not already a project
+        Project existingProject = getExistingJ2EEModuleProject(subprojectRoot);
+        if (existingProject != null) {
+            EarProjectProperties.addJ2eeSubprojects(p, new Project[] { existingProject });
+            return existingProject;
+        }
+        
+        // module is not a project
         FileObject javaRoot = getJavaRoot(subprojectRoot);
         File srcFolders[] = getSourceFolders(javaRoot);
         File subProjDir = FileUtil.normalizeFile(
@@ -397,6 +405,15 @@ public final class EarProjectGenerator {
         return subProject;
     }
     
+    // get existing project but only java ee module
+    private Project getExistingJ2EEModuleProject(final FileObject projectDirectory) throws IOException {
+        Project project = ProjectManager.getDefault().findProject(projectDirectory);
+        if (EarProjectUtil.isJavaEEModule(project)) {
+            return project;
+        }
+        return null;
+    }
+
     private AntProjectHelper addAppClientModule(final FileObject javaRoot, final FileObject subprojectRoot, final File subProjDir, final String platformName) throws IOException {
         FileObject docBaseFO = FileUtil.createFolder(subprojectRoot, DEFAULT_DOC_BASE_FOLDER);
         File docBase = FileUtil.toFile(docBaseFO);

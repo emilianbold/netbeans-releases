@@ -74,8 +74,8 @@ import static org.netbeans.modules.print.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.02.14
  */
-final class Option extends Dialog implements FocusListener, Macro.Listener, Percent.Listener {
-  Option(Preview preview) {
+final class Attribute extends Dialog implements FocusListener, Macro.Listener, Percent.Listener {
+  Attribute(Preview preview) {
     myPreview = preview;
 
     myBorderColorValue = Config.getDefault().getBorderColor();
@@ -169,6 +169,7 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
     Config.getDefault().setTextFont(myTextFontValue);
     Config.getDefault().setBackgroundColor(myBackgroundColorValue);
     Config.getDefault().setLineSpacing(getDouble(myLineSpacing.getValue()));
+    Config.getDefault().setSelection(mySelection.isSelected());
     Config.getDefault().setAsEditor(myAsEditor.isSelected());
 
     double zoom = 0.0;
@@ -450,21 +451,21 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
   }
 
   public void pressed(Macro macro) {
-    mySelectedField = getSelectedTextField();
+    myCurrentField = getCurrentTextField();
 //out(field);
 
-    if (mySelectedField != null) {
+    if (myCurrentField != null) {
 //out("Set macro: " + macro);
-//out("   select: " + mySelectedField.getSelectionStart() + " " + mySelectedField.getSelectionEnd());
-      String text = mySelectedField.getText();
-      String head = text.substring(0, mySelectedField.getSelectionStart());
-      String tail = text.substring(mySelectedField.getSelectionEnd(), text.length());
+//out("   select: " + myCurrentField.getSelectionStart() + " " + myCurrentField.getSelectionEnd());
+      String text = myCurrentField.getText();
+      String head = text.substring(0, myCurrentField.getSelectionStart());
+      String tail = text.substring(myCurrentField.getSelectionEnd(), text.length());
 
-      mySelectedField.setText(head + macro.getName() + tail);
+      myCurrentField.setText(head + macro.getName() + tail);
     }
   }
 
-  private JTextField getSelectedTextField() {
+  private JTextField getCurrentTextField() {
     if (myHeaderLeft.hasFocus()) {
       return myHeaderLeft;
     }
@@ -580,7 +581,7 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
     );
     panel.add(myBackgroundColor, c);
     
-    // []
+    // as editor
     c.gridy++;
     c.weightx = 1.0;
     c.insets = new Insets(0, 0, 0, 0);
@@ -596,17 +597,26 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
     });
     panel.add(myAsEditor, c);
 
-    // []
-    panel.add(new JLabel(), c);
+    // selection
+    mySelection = createCheckBox(
+      new ButtonAction(i18n("LBL_Selection"), i18n("TLT_Selection")) { // NOI18N
+        public void actionPerformed(ActionEvent event) {}
+      }
+    );
+    mySelection.addItemListener(new ItemListener() {
+      public void itemStateChanged(ItemEvent event) {
+        updateText();
+      }
+    });
+    panel.add(mySelection, c);
 
-    // label
+    // line spacing
     c.weightx = 0.0;
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     myLineSpacingLabel = createLabel(i18n("LBL_Line_Spacing")); // NOI18N
     panel.add(myLineSpacingLabel, c);
 
-    // line spacing
     c.anchor = GridBagConstraints.WEST;
     c.insets = new Insets(0, LARGE_SIZE, TINY_SIZE, 0);
     double value = Config.getDefault().getLineSpacing();
@@ -723,20 +733,25 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
     };
   }
 
-  private void updateText() {
-    boolean enabled = !myAsEditor.isSelected();
+  private void updateAttribute() {
+  }
 
-    myLineNumbers.setEnabled(enabled);
-    myWrapLines.setEnabled(enabled);
-    myUseColor.setEnabled(enabled);
-    myUseFont.setEnabled(enabled);
-    myTextFont.setEnabled(enabled);
-    myTextColor.setEnabled(enabled);
-    myTextFontColorLabel.setEnabled(enabled);
-    myBackgroundColor.setEnabled(enabled);
-    myBackgroundColorLabel.setEnabled(enabled);
-    myLineSpacing.setEnabled(enabled);
-    myLineSpacingLabel.setEnabled(enabled);
+  private void updateText() {
+    boolean editor = myAsEditor.isSelected();
+    boolean selection = mySelection.isSelected();
+
+    mySelection.setEnabled( !editor);
+    myLineNumbers.setEnabled( !editor);
+    myWrapLines.setEnabled( !editor);
+    myUseColor.setEnabled( !editor && !selection);
+    myUseFont.setEnabled( !editor && !selection);
+    myTextFont.setEnabled( !editor);
+    myTextColor.setEnabled( !editor);
+    myTextFontColorLabel.setEnabled( !editor);
+    myBackgroundColor.setEnabled( !editor);
+    myBackgroundColorLabel.setEnabled( !editor);
+    myLineSpacing.setEnabled( !editor);
+    myLineSpacingLabel.setEnabled( !editor);
   }
 
   private String getString(int value) {
@@ -873,6 +888,7 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
     myWrapLines.setSelected(Config.getDefault().isWrapLines());
     myUseFont.setSelected(Config.getDefault().isUseFont());
     myUseColor.setSelected(Config.getDefault().isUseColor());
+    mySelection.setSelected(Config.getDefault().isSelection());
     myAsEditor.setSelected(Config.getDefault().isAsEditor());
 
     updateText();
@@ -930,6 +946,7 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
   private Font myTextFontValue;
   private Color myTextColorValue;
   private Color myBackgroundColorValue;
+  private JCheckBox mySelection;
   private JCheckBox myAsEditor;
   private JLabel myTextFontColorLabel;
   private JLabel myBackgroundColorLabel;
@@ -938,7 +955,7 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
   private Percent myZoomFactor;
   private JTextField myZoomWidth;
   private JTextField myZoomHeight;
-  private JTextField mySelectedField;
+  private JTextField myCurrentField;
   private JRadioButton myFitToPage;
 
   private Preview myPreview;

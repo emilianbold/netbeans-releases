@@ -78,8 +78,13 @@ import org.openide.util.NbBundle;
 public class HQLEditorController {
 
     private Logger logger = Logger.getLogger(HQLEditorController.class.getName());
-    HQLEditorTopComponent editorTopComponent = null;
-    FileObject outputDir = null;
+    private HQLEditorTopComponent editorTopComponent = null;
+
+    private enum AnnotationAccessType {
+
+        FIELD_TYPE,
+        METHOD_TYPE;
+    };
 
     public void executeHQLQuery(final String hql,
             final FileObject configFileObject,
@@ -191,7 +196,6 @@ public class HQLEditorController {
         return null;
     }
 
-
     private org.w3c.dom.Document getW3CDocument(org.dom4j.Document document) {
         try {
             return new org.dom4j.io.DOMWriter().write(document);
@@ -282,24 +286,71 @@ public class HQLEditorController {
     private List<Class> getRelatedPOJOClasses(Class clazz, List<String> annotatedPOJOClassNameList,
             CustomClassLoader ccl, Project project) {
         List<Class> relatedPOJOClasses = new ArrayList<Class>();
-        getRelatedPOJOClasses(clazz, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+        getRelatedPOJOClassesByType(clazz, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
         return relatedPOJOClasses;
     }
 
-    private void getRelatedPOJOClasses(Class clazz, List<String> annotatedPOJOClassNameList, List<Class> relatedPOJOClasses,
+    private void getRelatedPOJOClassesByType(Class clazz, List<String> annotatedPOJOClassNameList, List<Class> relatedPOJOClasses,
             CustomClassLoader ccl, Project project) {
-      
+
+        AnnotationAccessType annotationAccessType = findAnnotationAccessType(clazz);
+        if (annotationAccessType == AnnotationAccessType.METHOD_TYPE) {
+            logger.info("Annotation Access type for " + clazz.getName() + " is : METHOD_TYPE");
+            getRelatedPOJOClassesByMethodType(clazz, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+        } else {
+            logger.info("Annotation Access type for " + clazz.getName() + " is : FIELD_TYPE");
+            getRelatedPOJOClassesByFieldType(clazz, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+        }
+    }
+
+    // Annotation access type can be field or method type.
+    // Determines by the position of @Id or @EmbeddedId. 
+    private AnnotationAccessType findAnnotationAccessType(Class clazz) {
+
+        for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
+            if (field.isAnnotationPresent(javax.persistence.Id.class) ||
+                    field.isAnnotationPresent(javax.persistence.EmbeddedId.class)) {
+                return AnnotationAccessType.FIELD_TYPE;
+            }
+        }
+        return AnnotationAccessType.METHOD_TYPE;
+    //TODO Support java collection types.
+    }
+
+    private void getRelatedPOJOClassesByMethodType(Class clazz, List<String> annotatedPOJOClassNameList, List<Class> relatedPOJOClasses,
+            CustomClassLoader ccl, Project project) {
+
         for (java.lang.reflect.Method m : clazz.getMethods()) {
             if (m.isAnnotationPresent(javax.persistence.ManyToOne.class) || m.isAnnotationPresent(javax.persistence.OneToOne.class) ||
                     m.isAnnotationPresent(javax.persistence.OneToMany.class)) {
                 logger.info("Found relationship in " + m.getName() + " method of " + clazz.getName() + " related POJO.");
                 try {
                     Class relatedPOJOClass = m.getReturnType();
-                    logger.info("Related POJO Class " + relatedPOJOClass.getName());
+                    // Check for Java collection and Map types.
+                    if (java.util.Collection.class.isAssignableFrom(relatedPOJOClass)) {
+                        try {
+                            Class returnClassType = (Class) ((java.lang.reflect.ParameterizedType) m.getGenericReturnType()).getActualTypeArguments()[0];
+                            logger.info("Method return type is java.util.Collection");
+                            if (!returnClassType.equals(java.lang.Object.class)) {
+                                logger.info("Re-assigning related class to " + returnClassType);
+                                relatedPOJOClass = returnClassType;
+                            }
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } else if (java.util.Map.class.isAssignableFrom(relatedPOJOClass)) {
+                        logger.info("Accessor method return type is java.util.Map");
+                    }
+                    
                     if (annotatedPOJOClassNameList.contains(relatedPOJOClass.getName())) {
+                        logger.info("Related POJO Class " + relatedPOJOClass.getName());
+                        if (relatedPOJOClasses.contains(relatedPOJOClass)) {
+                            logger.info("Already processed " + relatedPOJOClass + ". Skipping.");
+                            continue;
+                        }
                         logger.info("adding to related POJO class list " + relatedPOJOClass);
                         relatedPOJOClasses.add(relatedPOJOClass);
-                        getRelatedPOJOClasses(relatedPOJOClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+                        getRelatedPOJOClassesByType(relatedPOJOClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
 
                     }
                     // Add other side classes of relation, if targetEntity defined.
@@ -307,16 +358,16 @@ public class HQLEditorController {
                     if (oneToManyAnnotation != null) {
                         Class targetEntityClass = oneToManyAnnotation.targetEntity();
                         if (targetEntityClass != null && (!targetEntityClass.getName().equals("void"))) {
-                            if(relatedPOJOClasses.contains(targetEntityClass)) {
+                            if (relatedPOJOClasses.contains(targetEntityClass)) {
                                 // Already processed class
-                                logger.info("Already processed " + targetEntityClass + ". Returning.");
-                                return;
+                                logger.info("Already processed " + targetEntityClass + ". Skipping.");
+                                continue;
                             }
                             targetEntityClass = processMatchingClass(targetEntityClass.getName(), ccl, project);
                             if (targetEntityClass != null) {
-                                
+                                logger.info("adding to related POJO class list from targetEntity : " + targetEntityClass);
                                 relatedPOJOClasses.add(targetEntityClass);
-                                getRelatedPOJOClasses(targetEntityClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+                                getRelatedPOJOClassesByType(targetEntityClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
                             }
                         }
                     }
@@ -325,15 +376,16 @@ public class HQLEditorController {
                     if (manyToOneAnnotation != null) {
                         Class targetEntityClass = manyToOneAnnotation.targetEntity();
                         if (targetEntityClass != null && (!targetEntityClass.getName().equals("void"))) {
-                            if(relatedPOJOClasses.contains(targetEntityClass)) {
+                            if (relatedPOJOClasses.contains(targetEntityClass)) {
                                 // Already processed class
-                                logger.info("Already processed " + targetEntityClass + ". Returning.");
-                                return;
+                                logger.info("Already processed " + targetEntityClass + ". Skipping.");
+                                continue;
                             }
                             targetEntityClass = processMatchingClass(targetEntityClass.getName(), ccl, project);
                             if (targetEntityClass != null) {
+                                logger.info("adding to related POJO class list from targetEntity : " + targetEntityClass);
                                 relatedPOJOClasses.add(targetEntityClass);
-                                getRelatedPOJOClasses(targetEntityClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+                                getRelatedPOJOClassesByType(targetEntityClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
                             }
                         }
                     }
@@ -341,20 +393,120 @@ public class HQLEditorController {
                     if (oneToOneAnnotation != null) {
                         Class targetEntityClass = oneToOneAnnotation.targetEntity();
                         if (targetEntityClass != null && (!targetEntityClass.getName().equals("void"))) {
-                            if(relatedPOJOClasses.contains(targetEntityClass)) {
+                            if (relatedPOJOClasses.contains(targetEntityClass)) {
                                 // Already processed class
-                                logger.info("Already processed " + targetEntityClass + ". Returning.");
-                                return;
+                                logger.info("Already processed " + targetEntityClass + ". Skipping.");
+                                continue;
                             }
                             targetEntityClass = processMatchingClass(targetEntityClass.getName(), ccl, project);
                             if (targetEntityClass != null) {
+                                logger.info("adding to related POJO class list from targetEntity : " + targetEntityClass);
                                 relatedPOJOClasses.add(targetEntityClass);
-                                getRelatedPOJOClasses(targetEntityClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+                                getRelatedPOJOClassesByType(targetEntityClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
                             }
                         }
                     }
                 } catch (IllegalArgumentException illegalArgumentException) {
                     logger.log(Level.INFO, "Accessor method is not annotated", illegalArgumentException);
+                }
+
+            }
+        }
+    }
+
+    private void getRelatedPOJOClassesByFieldType(Class clazz, List<String> annotatedPOJOClassNameList,
+            List<Class> relatedPOJOClasses, CustomClassLoader ccl, Project project) {
+        // Process declared variables.
+        for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
+            if (field.isAnnotationPresent(javax.persistence.ManyToOne.class) || field.isAnnotationPresent(javax.persistence.OneToOne.class) ||
+                    field.isAnnotationPresent(javax.persistence.OneToMany.class)) {
+                logger.info("Found relationship in " + field.getName() + " field of " + clazz.getName() + " related POJO.");
+                try {
+                    Class relatedPOJOClass = field.getType();
+                    // Check for Java collection and Map types.
+                    if (java.util.Collection.class.isAssignableFrom(relatedPOJOClass)) {
+                        try {
+                            Class returnClassType = (Class) ((java.lang.reflect.ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+                            logger.info("Field type is java.util.Collection");
+                            if (!returnClassType.equals(java.lang.Object.class)) {
+                                logger.info("Re-assigning related class to " + returnClassType);
+                                relatedPOJOClass = returnClassType;
+                            }
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } else if (java.util.Map.class.isAssignableFrom(relatedPOJOClass)) {
+                        logger.info("Field type is java.util.Map");
+                    }
+
+                    if (annotatedPOJOClassNameList.contains(relatedPOJOClass.getName())) {
+                        logger.info("Related POJO Class " + relatedPOJOClass.getName());
+                        if (relatedPOJOClasses.contains(relatedPOJOClass)) {
+                            logger.info("Already processed " + relatedPOJOClass + ". Skipping.");
+                            continue;
+                        }
+                        logger.info("adding to related POJO class list " + relatedPOJOClass);
+                        relatedPOJOClasses.add(relatedPOJOClass);
+                        getRelatedPOJOClassesByType(relatedPOJOClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+
+                    }
+                    // Add other side classes of relation, if targetEntity defined.
+                    javax.persistence.OneToMany oneToManyAnnotation = field.getAnnotation(javax.persistence.OneToMany.class);
+                    if (oneToManyAnnotation != null) {
+                        Class targetEntityClass = oneToManyAnnotation.targetEntity();
+                        if (targetEntityClass != null && (!targetEntityClass.getName().equals("void"))) {
+                            if (relatedPOJOClasses.contains(targetEntityClass)) {
+                                // Already processed class
+                                logger.info("Already processed " + targetEntityClass + ". Skipping.");
+                                continue;
+                            }
+                            targetEntityClass = processMatchingClass(targetEntityClass.getName(), ccl, project);
+                            if (targetEntityClass != null) {
+                                logger.info("adding to related POJO class list from targetEntity : " + targetEntityClass);
+                                relatedPOJOClasses.add(targetEntityClass);
+                                getRelatedPOJOClassesByType(targetEntityClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+                            }
+                        }
+                    }
+
+                    javax.persistence.ManyToOne manyToOneAnnotation = field.getAnnotation(javax.persistence.ManyToOne.class);
+                    if (manyToOneAnnotation != null) {
+                        Class targetEntityClass = manyToOneAnnotation.targetEntity();
+                        if (targetEntityClass != null && (!targetEntityClass.getName().equals("void"))) {
+                            if (!relatedPOJOClasses.contains(targetEntityClass)) {
+                                targetEntityClass = processMatchingClass(targetEntityClass.getName(), ccl, project);
+                                if (targetEntityClass != null) {
+                                    logger.info("adding to related POJO class list from targetEntity : " + targetEntityClass);
+                                    relatedPOJOClasses.add(targetEntityClass);
+                                    getRelatedPOJOClassesByType(targetEntityClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+                                }
+                            } else {
+                                logger.info("Already processed " + targetEntityClass + ". Skipping.");
+                                continue;
+                            }
+                        } else {
+                            // No targetEntity defined.
+                        }
+                    }
+                    javax.persistence.OneToOne oneToOneAnnotation = field.getAnnotation(javax.persistence.OneToOne.class);
+                    if (oneToOneAnnotation != null) {
+                        Class targetEntityClass = oneToOneAnnotation.targetEntity();
+                        if (targetEntityClass != null && (!targetEntityClass.getName().equals("void"))) {
+                            if (relatedPOJOClasses.contains(targetEntityClass)) {
+                                // Already processed class
+                                logger.info("Already processed " + targetEntityClass + ". Skipping.");
+                                continue;
+                            }
+                            targetEntityClass = processMatchingClass(targetEntityClass.getName(), ccl, project);
+                            if (targetEntityClass != null) {
+                                logger.info("adding to related POJO class list from targetEntity : " + targetEntityClass);
+                                relatedPOJOClasses.add(targetEntityClass);
+                                getRelatedPOJOClassesByType(targetEntityClass, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
+                            }
+                        }
+                    }
+                } catch (IllegalArgumentException illegalArgumentException) {
+                    logger.log(Level.INFO, "Field is not annotated", illegalArgumentException);
                 }
 
             }

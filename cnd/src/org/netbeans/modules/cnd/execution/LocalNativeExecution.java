@@ -61,7 +61,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 
 /**
  *  A support class for helping execution of an executable, a makefile, or a script.
@@ -180,26 +182,18 @@ public class LocalNativeExecution extends NativeExecution {
     }
     
     private String getUnbufferPath() {
-        String name = "bin/unbuffer-" + getOsName() + "-" + getOsArch() + "." + getExtension(); // NOI18N
-        File file = InstalledFileLocator.getDefault().locate(name, null, false);
+        int platformType = PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).getPlatform();
+        String unbufferName = getUnbufferName(platformType);
+        if (unbufferName == null) {
+            return null;
+        }
+        File file = InstalledFileLocator.getDefault().locate("bin/" + unbufferName, null, false);
         if (file != null && file.exists()) {
             return fixPath(file.getAbsolutePath());
         } else {
+            log.warning("unbuffer: " + unbufferName + " not found");
             return null;
         }
-    }
-
-    private static String getOsArch() {
-        String orig = System.getProperty("os.arch"); // NOI18N
-        return (orig.equals("i386") || orig.equals("i686")) ? "x86" : orig; // NOI18N
-    }
-
-    private static String getOsName() {
-        return System.getProperty("os.name").replace(" ", "_"); // NOI18N
-    }
-
-    private static String getExtension() {
-        return Utilities.isWindows() ? "dll" : Utilities.getOperatingSystem() == Utilities.OS_MAC ? "dylib" : "so"; // NOI18N
     }
 
     private String fixPath(String path) {
