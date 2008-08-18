@@ -41,7 +41,15 @@
 
 package org.netbeans.modules.groovy.editor;
 
+import java.util.EnumSet;
+import java.util.Set;
+import org.netbeans.modules.groovy.editor.elements.IndexedMethod;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import org.netbeans.modules.gsf.api.Index.SearchScope;
+import org.netbeans.modules.gsf.api.NameKind;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -61,20 +69,29 @@ public class GroovyIndexerTest extends GroovyTestBase {
     public void testIsIndexable1() throws Exception {
         checkIsIndexable("testfiles/BookmarkController.groovy", true);
     }
-    
+
     public void testQueryPath() throws Exception {
         GroovyIndexer indexer = new GroovyIndexer();
         assertTrue(indexer.acceptQueryPath("/foo/bar/baz"));
         assertFalse(indexer.acceptQueryPath("/foo/jruby/lib/ruby/gems/1.8/gems"));
         assertFalse(indexer.acceptQueryPath("/foo/netbeans/ruby2/rubystubs/0.2"));
     }
-    
+
     public void testIndex1() throws Exception {
         checkIndexer("testfiles/BookmarkController.groovy");
     }
 
     public void testIndex2() throws Exception {
         checkIndexer("testfiles/Hello.groovy");
+    }
+
+    public void testMethods1() throws Exception {
+        FileObject fo = getTestFile("testfiles/GroovyClass1.groovy");
+        GsfTestCompilationInfo info = getInfo(fo);
+        initializeRegistry();
+        GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+        Set<IndexedMethod> methods = index.getMethods("m", "demo.GroovyClass1", NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
+        assertTrue(methods.size() == 3);
     }
 
 }
