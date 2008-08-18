@@ -444,7 +444,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
         if (category == null) {
             category = (EntryWrapper)styleComboBox.getItemAt(0);
         }
-        JEditorPane previewPane = topController.getPreviewPane();
+        JEditorPane previewPane = (JEditorPane) topController.getPreviewComponent();
         if (loaded) {
             PreviewPreferences p = new PreviewPreferences(category.preferences,
                     category.preferences.getLanguage(), category.preferences.getStyleId());

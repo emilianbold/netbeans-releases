@@ -49,9 +49,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.netbeans.modules.options.editor.spi.PreviewProvider;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -64,8 +68,9 @@ public final class CustomizerSelector {
     public static final String PROP_MIMETYPE = "CustomizerSelector.PROP_MIMETYPE"; //NOI18N
     public static final String PROP_CUSTOMIZER = "CustomizerSelector.PROP_CUSTOMIZER"; //NOI18N
 
-    public CustomizerSelector(PreferencesFactory pf) {
+    public CustomizerSelector(PreferencesFactory pf, boolean acceptOldControllers) {
         this.pf = pf;
+        this.acceptOldControllers = acceptOldControllers;
     }
     
     public synchronized String getSelectedMimeType() {
@@ -120,6 +125,11 @@ public final class CustomizerSelector {
                 Collection<? extends PreferencesCustomizer.Factory> factories = l.lookupAll(PreferencesCustomizer.Factory.class);
                 if (!factories.isEmpty()) {
                     mimeTypes.add(mimeType);
+                } else if (acceptOldControllers) {
+                    Collection<? extends OptionsPanelController> controllers = l.lookupAll(OptionsPanelController.class);
+                    if (!controllers.isEmpty()) {
+                        mimeTypes.add(mimeType);
+                    }
                 }
             }
         }
@@ -151,6 +161,7 @@ public final class CustomizerSelector {
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final PreferencesFactory pf;
+    private final boolean acceptOldControllers;
 
     private String selectedMimeType;
     private String selectedCustomizerId;
@@ -173,19 +184,33 @@ public final class CustomizerSelector {
         
         if (mimeType.length() > 0) {
             Lookup l = Lookups.forPath(FOLDER + mimeType);
+            Preferences prefs = pf.getPreferences(mimeType);
+            
+            // collect factories
             Collection<? extends PreferencesCustomizer.Factory> factories = l.lookupAll(PreferencesCustomizer.Factory.class);
-
             for(PreferencesCustomizer.Factory f : factories) {
-                Preferences prefs = pf.getPreferences(mimeType);
                 PreferencesCustomizer c = f.create(prefs);
-
+                
                 if (c.getId().equals("tabs-and-indents")) { //NOI18N
                     Preferences allLangPrefs = pf.getPreferences(""); //NOI18N
                     c = new IndentationPanelController(MimePath.parse(mimeType), pf, prefs, allLangPrefs, c);
                 }
-
+                
                 list.add(c);
                 c2p.put(c, prefs);
+            }
+            
+            // if permitted, collect old controllers
+            if (acceptOldControllers) {
+                Collection<? extends OptionsPanelController> controllers = l.lookupAll(OptionsPanelController.class);
+                for(OptionsPanelController controller : controllers) {
+                    PreferencesCustomizer c = controller instanceof PreviewProvider ?
+                        new WrapperCustomizerWithPreview(controller) :
+                        new WrapperCustomizer(controller);
+
+                    list.add(c);
+                    c2p.put(c, prefs);
+                }
             }
         } else {
             Preferences prefs = pf.getPreferences(mimeType);
@@ -193,8 +218,69 @@ public final class CustomizerSelector {
             list.add(c);
             c2p.put(c, prefs);
         }
-        
+
         return list;
     }
 
+    // this is here only to support C/C++ panels, because they don't use PreferencesCustomizer.Factory
+    // Instead they save formatting settings to their own module storage (NbPreferences). They
+    // also use subnodes for formatting profiles, which is not supported by the Preferences
+    // implementation in MimeLookup.
+
+    /* package */ static class WrapperCustomizer implements PreferencesCustomizer {
+
+        private final OptionsPanelController controller;
+        private JComponent component;
+
+        public WrapperCustomizer(OptionsPanelController controller) {
+            this.controller = controller;
+        }
+
+        public String getId() {
+            return controller.getClass() + "@" + Integer.toHexString(System.identityHashCode(controller)); //NOI18N
+        }
+
+        public String getDisplayName() {
+            return getComponent().getName();
+        }
+
+        public HelpCtx getHelpCtx() {
+            return controller.getHelpCtx();
+        }
+
+        public JComponent getComponent() {
+            if (component == null) {
+                component = controller.getComponent(Lookup.EMPTY);
+                controller.update();
+            }
+            return component;
+        }
+
+        public void applyChanges() {
+            controller.applyChanges();
+        }
+
+        public void cancel() {
+            controller.cancel();
+        }
+    } // End of WrapperCustomizer class
+
+    private static final class WrapperCustomizerWithPreview extends WrapperCustomizer implements PreviewProvider {
+
+        private final PreviewProvider provider;
+        
+        public WrapperCustomizerWithPreview(OptionsPanelController controller) {
+            super(controller);
+            this.provider = (PreviewProvider) controller;
+        }
+
+        public JComponent getPreviewComponent() {
+            return provider.getPreviewComponent();
+        }
+
+        public void refreshPreview() {
+            provider.refreshPreview();
+        }
+
+    } // End of WrapperCustomizerWithPreview class
 }

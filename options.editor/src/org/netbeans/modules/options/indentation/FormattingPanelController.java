@@ -87,7 +87,7 @@ public final class FormattingPanelController extends OptionsPanelController impl
         synchronized (this) {
             LOG.fine("update"); //NOI18N
             destroyPreferences();
-            selector = new CustomizerSelector(this);
+            selector = new CustomizerSelector(this, true);
             panel.setSelector(selector);
             fire = changed;
             changed = false;
@@ -109,7 +109,9 @@ public final class FormattingPanelController extends OptionsPanelController impl
                 pp.silence();
 
                 if (mimeType.length() > 0) {
-                    assert pp.get(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) != null;
+                    // there can be no tabs-and-indents customizer
+                    //assert pp.get(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) != null;
+
                     if (!pp.getBoolean(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false)) {
                         // remove the basic settings if a language is not overriding the 'all languages' values
                         pp.remove(SimpleValueNames.EXPAND_TABS);
@@ -128,6 +130,12 @@ public final class FormattingPanelController extends OptionsPanelController impl
                     pp.flush();
                 } catch (BackingStoreException ex) {
                     LOG.log(Level.WARNING, "Can't flush preferences for '" + mimeType + "'", ex); //NOI18N
+                }
+                
+                for(PreferencesCustomizer c : selector.getCustomizers(mimeType)) {
+                    if (c instanceof CustomizerSelector.WrapperCustomizer) {
+                        ((CustomizerSelector.WrapperCustomizer) c).applyChanges();
+                    }
                 }
             }
             
@@ -148,6 +156,15 @@ public final class FormattingPanelController extends OptionsPanelController impl
         
         synchronized (this) {
             LOG.fine("cancel"); //NOI18N
+
+            for(String mimeType : mimeTypePreferences.keySet()) {
+                for(PreferencesCustomizer c : selector.getCustomizers(mimeType)) {
+                    if (c instanceof CustomizerSelector.WrapperCustomizer) {
+                        ((CustomizerSelector.WrapperCustomizer) c).cancel();
+                    }
+                }
+            }
+                
             destroyPreferences();
             panel.setSelector(null);
             fire = changed;

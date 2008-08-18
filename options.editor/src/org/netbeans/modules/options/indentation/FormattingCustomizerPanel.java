@@ -277,7 +277,7 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     /** Creates new form CodeStyleCustomizerPanel */
     private FormattingCustomizerPanel(Lookup context) {
         this.pf = new ProjectPreferencesFactory(context.lookup(Project.class));
-        this.selector = new CustomizerSelector(pf);
+        this.selector = new CustomizerSelector(pf, false);
         this.panel = new FormattingPanel();
         this.panel.setSelector(selector);
 
