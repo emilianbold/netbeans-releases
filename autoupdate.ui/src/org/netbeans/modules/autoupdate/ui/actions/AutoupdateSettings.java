@@ -74,12 +74,13 @@ public class AutoupdateSettings {
     private static final Logger err = Logger.getLogger (AutoupdateSettings.class.getName ());
     private static final String PROP_IDE_IDENTITY = "ideIdentity"; // NOI18N
     private static final String PROP_SUPER_IDENTITY = "superId"; // NOI18N
+    private static final String PROP_QUALIFIED_IDENTITY = "qualifiedId"; // NOI18N
     private static final String PROP_PERIOD = "period"; // NOI18N
     private static final String PROP_LAST_CHECK = "lastCheckTime"; // NOI18N
     private static final String DEFAULT_NETBEANS_DIR = ".netbeans"; // NOI18N
     private static final String SUPER_IDENTITY_FILE_NAME = ".superId"; // NOI18N
     private static final char IDE_ID_DELIMETER = '0'; // NOI18N
-    private static final char SUPER_ID_DELIMETER = '_'; // NOI18N
+    private static final char QUALIFIED_ID_DELIMETER = '_'; // NOI18N
     
     public static final int EVERY_STARTUP = 0;
     public static final int EVERY_DAY = 1;
@@ -101,6 +102,7 @@ public class AutoupdateSettings {
     };
     
     private static int checkInterval = 0;
+    private static String superId;
 
     private AutoupdateSettings () {
     }
@@ -118,10 +120,11 @@ public class AutoupdateSettings {
             newIdeIdentity = modifyIdeIdentityIfNeeded ((String) oldIdeIdentity);
         }
         tempIdeIdentity = newIdeIdentity;
-        if (! newIdeIdentity.equals (oldIdeIdentity) || ! existsSuperIdentity ()) {
+        if (! newIdeIdentity.equals (oldIdeIdentity) || ! existsSuperIdentity () || getPreferences ().get (PROP_QUALIFIED_IDENTITY, null) == null) {
             err.log (Level.FINE, "Put new value of PROP_IDE_IDENTITY to " + newIdeIdentity);
             getPreferences ().put (PROP_IDE_IDENTITY, newIdeIdentity);
-            getPreferences ().put (PROP_SUPER_IDENTITY, getSuperIdentity (newIdeIdentity));
+            getPreferences ().put (PROP_SUPER_IDENTITY, getSuperIdentity ());
+            getPreferences ().put (PROP_QUALIFIED_IDENTITY, getQualifiedIdentity (newIdeIdentity));
         }
         return;
     }
@@ -291,12 +294,14 @@ public class AutoupdateSettings {
     }
 
     
-    private static String getSuperIdentity (String ideIdentity) {
+    private static String getSuperIdentity () {
+        if (superId != null) {
+            return superId;
+        }
         File superFile = getSuperFile ();
         if (superFile == null) {
-            return ideIdentity;
+            err.log (Level.FINE, "superFile is returns null.");
         }
-        String superId = null;
         if (superFile.exists ()) {
             // read existing super Id
             InputStream is = null;
@@ -338,10 +343,20 @@ public class AutoupdateSettings {
             }
         }
         if (superId != null) {
-            err.log (Level.FINE, "Returns whole Id: " + ideIdentity + SUPER_ID_DELIMETER + superId);
-            return ideIdentity + SUPER_ID_DELIMETER + superId;
+            err.log (Level.FINE, "Returns Super Id: " + superId);
+            return superId;
         } else {
-            err.log (Level.FINE, "Was problem while handling Super Id. Returns only original Id: " + ideIdentity);
+            err.log (Level.FINE, "Was problem while handling Super Id. Returns null");
+            return null;
+        }
+    }
+    
+    private static String getQualifiedIdentity (String ideIdentity) {
+        if (getSuperIdentity () != null) {
+            err.log (Level.FINE, "Returns Qualified Id: " + ideIdentity + QUALIFIED_ID_DELIMETER + getSuperIdentity ());
+            return ideIdentity + QUALIFIED_ID_DELIMETER + getSuperIdentity ();
+        } else {
+            err.log (Level.FINE, "Was problem while handling Qualified Id. Returns only original Id: " + ideIdentity);
             return ideIdentity;
         }
 
