@@ -209,33 +209,47 @@
 
 
         onExamineResponse: function( aNsISupport ){
-            var DEBUG_METHOD = (false & DEBUG);
+            var DEBUG_METHOD = (true & DEBUG);
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
-            if (DEBUG_METHOD) {
-                NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);
-            }
+            if (DEBUG_METHOD) { NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);}
             var id = requestsId.getId(request)
-            if( id )  {
-                delete requestsId[id];
-
-                var activity = createResponseActivity(request, id);
-                if ( activity ) {
-                  sendExamineNetResponse(activity);
-                } else if (DEBUG_METHOD){
-                  NetBeans.Logger.log("net.onExamineResponse - activity is null");
-                }
+            if ( id ) {
+              var xhrRequest = request.notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
+              if( xhrRequest ){
+                    xhrRequest.onreadystatechange = function () {
+                      if (xhrRequest.readyState == 4) {
+                         if(xhrRequest.status == 200) {
+                            if ( DEBUG_METHOD ) { NetBeans.Logger.log("net.onExamineResponse - id:" + id);}
+                            if ( DEBUG_METHOD ) { NetBeans.Logger.log("net.onExamineResponse - request:" + request);}
+                            processExamineResponse(request, id, xhrRequest);
+                         } else {if ( DEBUG_METHOD ) { NetBeans.Logger.log("net.onExamineResponse - failure to load responseText \n");}}
+                       }
+                   };
+              } else {
+                  processExamineResponse(request, id, null);
+              }
+              delete requestsId[id];
+              return;
             } else if (DEBUG_METHOD){
                   NetBeans.Logger.log("net.onExamineResponse - Did not recognize response for: " + request.URI.asciiSpec);
             }
         }
     }
+        
+    function processExamineResponse( request, id, xhrRequest){
+          var DEBUG_METHOD = (true & DEBUG);
+          if (DEBUG_METHOD){ NetBeans.Logger.log("net.processExaminResponse: ");}
+          if( xhrRequest){
+            if (DEBUG_METHOD){ NetBeans.Logger.log("net.processExaminResponse: xhrRequest" + xhrRequest.responseText);}
+          }
 
-//    function print_requests_array ( myArray ){
-//        for ( var i in myArray )
-//        {
-//            NetBeans.Logger.log("   " + myArray[i].URI.asciiSpec);
-//        }
-//    }
+          var activity = createResponseActivity(request, id, xhrRequest);
+          if (DEBUG_METHOD){ NetBeans.Logger.log("net.processExaminResponse: activity created");}
+          if ( activity ) {
+            sendExamineNetResponse(activity);
+          } else if (DEBUG_METHOD){ NetBeans.Logger.log("net.onExamineResponse - activity is null"); }
+
+    }
 
     function createRequestActivity(request, id){
         var DEBUG_METHOD = (false & DEBUG);
@@ -258,12 +272,14 @@
         return activity;
     }
 
-    function createResponseActivity (request, id) {
-        var DEBUG_METHOD = (false & DEBUG);
+    function createResponseActivity (request, id, xhrRequest) {
+        var DEBUG_METHOD = (true & DEBUG);
 
         if( !request || !id){
             throw new Error("net.createResponseActivity - Something is null request:" + request + " id:" + id);
         }
+
+
 
         var activity = new NetActivity();
         activity.uuid = id;
@@ -273,14 +289,25 @@
         activity.url = request.URI.asciiSpec;
         if (!activity.mimeType) {
             activity.mimeType = getMimeType(request);
-            if( DEBUG_METHOD && ! activity.mimeType ){ NetBeans.Logger.log("Activity mime type is null for:" + activity.url); }
+           // if( DEBUG_METHOD && ! activity.mimeType ){ NetBeans.Logger.log("Activity mime type is null for:" + activity.url); }
         }
         activity.size = request.contentLength;
-
-        activity.responseText = getResponseText(request);
-        activity.status = request.responseStatus;
-        activity.category = getRequestCategory(request);
-        if ( DEBUG_METHOD ){ NetBeans.Logger.log("Response Status:" + request.responseStatus);}
+        if( xhrRequest){
+            activity.category = "xhr"; // Temporary using this string since getRequestCategory returns html if called a second time.  Still not sure why.
+            activity.responseText = xhrRequest.responseText;
+            activity.status = request.responseStatus;
+            if (DEBUG_METHOD){
+                NetBeans.Logger.log("net.createResponseActivity: xhrRequest:" + xhrRequest.responseText);
+                NetBeans.Logger.log("net.createResponseActivity: responseStatus:" + request.responseStatus);
+                NetBeans.Logger.log("net.createResponseActivity: xhrRequest.status:" + xhrRequest.status);
+            }
+        } else {
+            activity.category = getRequestCategory(request);
+            if( DEBUG_METHOD && ! activity.mimeType ){ NetBeans.Logger.log("Activity category:" + activity.category); }
+            activity.responseText = getResponseText(request);
+            activity.status = request.responseStatus;
+        }
+        //if ( DEBUG_METHOD ){ NetBeans.Logger.log("Response Status:" + request.responseStatus);}
          /* Response File Loaded: */
         if (activity.status == "304") {
             NetBeans.Logger.log("CACHED ENTRY");
@@ -391,21 +418,26 @@
     }
 
     function getResponseText ( aRequest ) {
-        var DEBUG_METHOD = false & DEBUG;
+        var DEBUG_METHOD = true & DEBUG;
         var responseText;
         var category = getRequestCategory(aRequest);
 
         if (category == "image"){
             return "IMAGE";
         }
-
-        if (category == "xhr"){
+        
+        if (DEBUG_METHOD){ NetBeans.Logger.log("net.getResponseText.category: " + category);}
+        /* Double check xhr is redundant but I am leaving it in for now. */
+        if ( category == "xhr"){
           var xhrRequest = aRequest.notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
+          if (DEBUG_METHOD){ NetBeans.Logger.log("net.getResponseText.XHR: " + xhrRequest);}
           if( xhrRequest && xhrRequest.responseText ){
-              if (DEBUG_METHOD){ NetBeans.Logger.log("net.getResponseText - RESPONSE TEXT: " + responseText);}
-              return responseText;
+              if (DEBUG_METHOD){ NetBeans.Logger.log("net.getResponseText.XHR- RESPONSE TEXT: " + xhrRequest.responseText);}
+              return xhrRequest.responseText;
           } 
-        } 
+        }
+
+        //Initiates a Get Request to Determine Response Text
         responseText = myContext.sourceCache.loadText(aRequest.URI.asciiSpec, aRequest.requestMethod);
         if (DEBUG_METHOD){NetBeans.Logger.log("net.getResponseText - RESPONSE TEXT: " + responseText); }
         return responseText;
@@ -760,7 +792,7 @@
         netActivity.max = max;
         netActivity.total = total;
         netActivity.maxTotal = maxTotal;
-        loadXmlActivityResponse( netActivity, activity);
+        loadXmlActivityResponse(netActivity, activity);
         if( DEBUG ){
             NetBeans.Logger.log(netActivity.toXMLString());
         }
@@ -839,8 +871,6 @@
         }
 
         var headerValue = null;
-        // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
-        // there can be even charset specified. So, use indexOf rather than just "==".
         try {
             headerValue = request.contentType;
         } catch(exc) {
@@ -849,6 +879,8 @@
         if ( !headerValue ){
             headerValue = findHeader(headers, "Content-Type");
         }
+        // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
+        // there can be even charset specified. So, use indexOf rather than just "==".
         return (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0);
     }
 
