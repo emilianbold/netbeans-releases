@@ -594,10 +594,9 @@ public class ProjectXMLManagerTest extends TestBase {
     }
 
     /** add dependency from newDepProj to testingProject
-     * Used in core/tasklist/.../TodoTest.java
+     * @see org.netbeans.modules.tasklist.todo.ToDoTest
      */
-    public static void addDependecy(final NbModuleProject testingProject, NbModuleProject newDepPrj) throws IOException, MutexException, Exception {
-        final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
+    public static void addDependency(final NbModuleProject testingProject, NbModuleProject newDepPrj) throws IOException, MutexException, Exception {
         ModuleEntry me = testingProject.getModuleList().getEntry(
                 newDepPrj.getCodeNameBase());
         final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
