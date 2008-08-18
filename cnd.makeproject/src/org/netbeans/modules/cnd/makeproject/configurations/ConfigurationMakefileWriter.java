@@ -541,6 +541,8 @@ public class ConfigurationMakefileWriter {
         if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration()) {
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
+            bw.write(".dep.inc: .depcheck-impl\n"); // NOI18N
+            bw.write("\n"); // NOI18N
             bw.write("include .dep.inc\n"); // NOI18N
         }
     }
