@@ -228,6 +228,12 @@ stringvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel$
                         <attr name="position" intvalue="1600"/>
                     </file>
                 </folder>
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-gsf-GsfDataLoader.instance">
+                        <attr name="position" intvalue="89998"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.project.resources.Bundle"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>
