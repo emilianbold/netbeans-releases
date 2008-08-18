@@ -73,6 +73,7 @@ public class JunitTestCase extends JellyTestCase {
         System.out.println("########  " + getName() + "  #######");
         openDataProjects("JunitTestProject");
         new Action(null, "Set as Main Project").perform(new ProjectsTabOperator().getProjectRootNode("JunitTestProject"));
+        ProjectSupport.waitScanFinished();
         err = getLog();
         log = getRef();
         JemmyProperties.getProperties().setOutput(new TestOut(null,
