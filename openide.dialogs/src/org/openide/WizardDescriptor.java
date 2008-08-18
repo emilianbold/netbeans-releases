@@ -1286,8 +1286,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 Panel old = data.current;
                 data.current.storeSettings(data.getSettings(this));
                 if (! old.equals (data.current)) {
-// temporary rollback due to broken tests                    
-//                    currentPanelWasChangedWhileStoreSettings = true;
+                    currentPanelWasChangedWhileStoreSettings = true;
                 }
             }
         }
@@ -1341,15 +1340,16 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private void lazyValidate(final WizardDescriptor.Panel panel, final Runnable onValidPerformer) {
-        if (currentPanelWasChangedWhileStoreSettings) {
-            currentPanelWasChangedWhileStoreSettings = false;
-            return ;
-        }
 
         Runnable validationPeformer = new Runnable() {
             public void run() {
                 
                 err.log (Level.FINE, "validationPeformer entry."); // NOI18N
+                if (currentPanelWasChangedWhileStoreSettings) {
+                    currentPanelWasChangedWhileStoreSettings = false;
+                    err.log (Level.FINE, "validationPeformer interupt because currentPanelWasChangedWhileStoreSettings"); // NOI18N
+                    return ;
+                }
                 ValidatingPanel v = (ValidatingPanel) panel;
 
                 try {
