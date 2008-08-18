@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,13 +43,11 @@ package org.netbeans.core.windows.services;
 
 import java.awt.Dialog;
 import java.awt.EventQueue;
-import java.awt.Window;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -72,6 +70,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         super (testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         dd = new DialogDisplayerImpl (RESULT);
         closeOwner = new JButton ("Close this dialog");
@@ -147,7 +146,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
             fail ("This means that the AWT blocked timeouted - e.g. no time out implemented in the dd.notify at all");
         }
 
-        assertEquals ("Returns as closed, if cannot access AWT", nd.CLOSED_OPTION, res);
+        assertEquals ("Returns as closed, if cannot access AWT", NotifyDescriptor.CLOSED_OPTION, res);
         
         synchronized (b) {
             b.notify ();
@@ -156,6 +155,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         }
     }
     
+    @RandomlyFails
     public void testLeafDialog () throws Exception {
         boolean leaf = true;
         DialogDescriptor ownerDD = new DialogDescriptor (pane, "Owner", true, new Object[] {closeOwner}, null, 0, null, null, leaf);
@@ -207,6 +207,7 @@ public class DialogDisplayerImplTest extends NbTestCase {
         assertFalse ("Child is dead too", child.isVisible ());
     }
     
+    @RandomlyFails
     public void testNonLeafDialog () throws Exception {
         boolean leaf = false;
         DialogDescriptor ownerDD = new DialogDescriptor (pane, "Owner", true, new Object[] {closeOwner}, null, 0, null, null, leaf);
