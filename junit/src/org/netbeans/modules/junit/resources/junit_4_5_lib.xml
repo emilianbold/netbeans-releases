@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -47,11 +47,11 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.junit.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.libs.junit4/modules/ext/junit-4.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.junit4/modules/ext/junit-4.5.jar!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/junit/junit/4.1/junit-4.1.pom</resource>
+        <resource>http://repo1.maven.org/maven2/junit/junit/4.4/junit-4.4.pom</resource>
     </volume>
 </library>
