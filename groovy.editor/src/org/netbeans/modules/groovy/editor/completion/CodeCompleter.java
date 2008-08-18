@@ -1570,10 +1570,12 @@ public class CodeCompleter implements CodeCompletionHandler {
     /**
      * Complete the Groovy and Java types available at this position.
      *
-     * This could be either
+     * This could be either:
      *
-     * 1.) Completing all available Types in a given package for import statements or
-     *    giving fqn names.
+     * 1.) Completing all available Types in a given package. This is used for:
+     *  
+     * 1.1) import statements completion
+     * 1.2) If you simply want to give the fq-name for something.
      *
      * 2.) Complete the types which are available without having to give a fqn:
      *
@@ -1663,30 +1665,34 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         if (mn != null) {
             String packageName = mn.getPackageName();
+            LOG.log(Level.FINEST, "We are living in package : {0} ", packageName);
 
             GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
             if (index != null) {
 
-                if (packageName != null) {
-                    if (packageName.endsWith(".")) {
-                        packageName = packageName.substring(0, packageName.length() - 1);
+                // This retrieves all classes from index:
+                Set<IndexedClass> classes = index.getClasses("", NameKind.PREFIX, true, false, false);
+
+                if (classes.size() == 0) {
+                    LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
+                } else {
+                    LOG.log(Level.FINEST, "Found this number of classes : {0} ", classes.size());
+                    
+                    List<String> typelist = new ArrayList<String>();
+                    
+                    for (IndexedClass indexedClass : classes) {
+                        LOG.log(Level.FINEST, "FQN classname from index : {0} ", indexedClass.getName());
+                        
+                        // remove duplicates
+                        addIfNotIn(typelist, indexedClass.getName());
                     }
-
-                    LOG.log(Level.FINEST, "Index found, looking up package : {0} ", packageName);
-
-                    // This retrieves all classes from index:
-                    Set<IndexedClass> classes = index.getClasses("", NameKind.PREFIX, true, false, false);
-
-                    if (classes.size() == 0) {
-                        LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
-                    } else {
-                        LOG.log(Level.FINEST, "Found this number of classes : {0} ", classes.size());
-                        for (IndexedClass indexedClass : classes) {
-                            
-                            addToProposalUsingFilter(proposals, request, indexedClass.getName());
-                        }
+                    
+                    for (String type : typelist) {
+                        // now finally add to proposals
+                        addToProposalUsingFilter(proposals, request, type);
                     }
+                        
                 }
             }
         }
