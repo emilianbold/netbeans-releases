@@ -89,15 +89,15 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
     
     @Override 
     public boolean equals(Object o) {
-        if (o instanceof IndexedClass) {
-            return ((IndexedClass) o).classFqn.equals(classFqn);
+        if (o instanceof IndexedClass && classFqn != null) {
+            return classFqn.equals(((IndexedClass) o).classFqn);
         }
-        return false;
+        return super.equals(o);
     }
     
     @Override
     public int hashCode() {
-        return classFqn.hashCode();
+        return classFqn == null ? super.hashCode() : classFqn.hashCode();
     }
     
     public static String decodeFlags(int flags) {
