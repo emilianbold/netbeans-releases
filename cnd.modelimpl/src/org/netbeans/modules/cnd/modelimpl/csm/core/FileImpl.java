@@ -124,13 +124,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * It's a map since we need to eliminate duplications 
      */
     private Map<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
-    private ReadWriteLock  declarationsLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock  declarationsLock = new ReentrantReadWriteLock();
 
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
-    private ReadWriteLock includesLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock includesLock = new ReentrantReadWriteLock();
 
     private Map<NameSortedKey, CsmUID<CsmMacro>> macros = createMacros();
-    private ReadWriteLock macrosLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock macrosLock = new ReentrantReadWriteLock();
     
     private int errorCount = 0;
     
@@ -147,7 +147,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private final Object stateLock = new Object();
     
-    private Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
+    private final Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
     
     private long lastParsed = Long.MIN_VALUE;
     
@@ -159,9 +159,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * This is necessary for finding definitions/declarations 
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
-    private Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>();
-    private Collection<CsmUID<CsmVariable>> staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>();
-    private ReadWriteLock  staticLock = new ReentrantReadWriteLock();
+    private final Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>();
+    private final Collection<CsmUID<CsmVariable>> staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>();
+    private final ReadWriteLock  staticLock = new ReentrantReadWriteLock();
     
     private List<CsmReference> lastMacroUsages;
     
