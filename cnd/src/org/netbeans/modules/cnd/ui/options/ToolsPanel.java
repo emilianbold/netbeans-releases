@@ -530,9 +530,18 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 cbFamily.addItem(cf);
             cbFamily.setSelectedItem(cs.getCompilerFlavor());
         } else {
-            tfBaseDirectory.setText(""); // NOI18N
-            btBaseDirectory.setEnabled(false);
             cbFamily.removeAllItems();
+            ServerRecord record = null;
+            if (serverList != null) {
+                record = serverList.get(hkey);
+            }            
+            boolean devhostValid = serverList == null || (record != null & record.isOnline());            
+            String errorMsg = "";
+            if (!devhostValid) {
+                errorMsg = NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey);
+            }
+            lblErrors.setText("<html>" + errorMsg + "</html>"); //NOI18N
+            updateToolsControls(false, false, true);
             return;
         }
         if (currentCompilerSet != null && currentCompilerSet != cs) {
@@ -737,29 +746,36 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 repaint();
             }
             if (!isRemoteHostSelected() && new File(tfBaseDirectory.getText()).exists()) {
-                updateToolsControls(true, true);
+                updateToolsControls(true, true, false);
             }
             else {
-                updateToolsControls(false, isRemoteHostSelected());
+                updateToolsControls(false, isRemoteHostSelected(), false);
             }
 
             return valid;
         }
     }
 
-    private void updateToolsControls(boolean enable, boolean versionEnabled) {
+    private void updateToolsControls(boolean enable, boolean versionEnabled, boolean cleanText) {
         btCBrowse.setEnabled(enable);
         btCppBrowse.setEnabled(enable);
         btFortranBrowse.setEnabled(enable);
         btMakeBrowse.setEnabled(enable);
         btDebuggerBrowse.setEnabled(enable);
         btVersions.setEnabled(versionEnabled);
-        tfMakePath.setEditable(enable);
-        tfGdbPath.setEditable(enable);
-        tfBaseDirectory.setEditable(enable);
-        tfCPath.setEditable(enable);
-        tfCppPath.setEditable(enable);
-        tfFortranPath.setEditable(enable);        
+        updateTextField(tfMakePath, enable, cleanText);
+        updateTextField(tfGdbPath, enable, cleanText);
+        updateTextField(tfBaseDirectory, enable, cleanText);
+        updateTextField(tfCPath, enable, cleanText);
+        updateTextField(tfCppPath, enable, cleanText);
+        updateTextField(tfFortranPath, enable, cleanText);
+    }
+    
+    private void updateTextField(JTextField tf, boolean editable, boolean cleanText) {
+        if (cleanText) {
+            tf.setText("");
+        }
+        tf.setEditable(editable);
     }
     /**
      * Lets caller know if any data has been changed.
@@ -927,7 +943,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     // Implement List SelectionListener
     public void valueChanged(ListSelectionEvent ev) {
 
-        if (!ev.getValueIsAdjusting()) { // we don't want the event until its finished
+        if (!ev.getValueIsAdjusting() && !updating) { // we don't want the event until its finished
             if (ev.getSource() == lstDirlist) {
                 onCompilerSetChanged();
             }
@@ -1724,7 +1740,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     Runnable longTask = new Runnable() {
         public void run() {
             CompilerSetManager newCsm = CompilerSetManager.create(hkey);
-            newCsm.initialize();
+            newCsm.initialize(false);
             copiedManagers.put(hkey, newCsm);
             List<CompilerSet> list = csm.getCompilerSets();
             for (CompilerSet cs : list) {

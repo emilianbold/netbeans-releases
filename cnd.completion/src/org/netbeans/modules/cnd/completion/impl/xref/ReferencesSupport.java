@@ -44,7 +44,11 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -87,7 +91,10 @@ import org.openide.util.UserQuestionException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
+import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
+import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
@@ -98,8 +105,21 @@ import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
  * @author Vladimir Voskresensky
  */
 public final class ReferencesSupport {
-
+    
+    private static ReferencesSupport instance = new ReferencesSupport();
+    
     private ReferencesSupport() {
+        progressListener = new CsmProgressAdapter(){
+            @Override
+            public void fileParsingStarted(CsmFile file) {
+                clearFileReferences(file);
+            }
+        };
+        CsmListeners.getDefault().addProgressListener(progressListener);
+    }
+    
+    public static ReferencesSupport instance(){
+        return instance;
     }
 
     /**
@@ -134,7 +154,7 @@ public final class ReferencesSupport {
         return doc instanceof BaseDocument ? (BaseDocument)doc : null;
     }
 
-    public static CsmObject findReferencedObject(CsmFile csmFile, BaseDocument doc, int offset) {
+    public CsmObject findReferencedObject(CsmFile csmFile, BaseDocument doc, int offset) {
         return findReferencedObject(csmFile, doc, offset, null);
     }
 
@@ -143,7 +163,7 @@ public final class ReferencesSupport {
         return csmOwner;
     }
 
-    /*package*/ static CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc, final int offset, Token<CppTokenId> jumpToken) {
+    /*package*/ CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc, final int offset, Token<CppTokenId> jumpToken) {
         CsmObject csmItem = null;
         // emulate hyperlinks order
         // first ask includes handler if offset in include sring token
@@ -171,7 +191,15 @@ public final class ReferencesSupport {
 
         // if failed => ask declarations handler
         if (csmItem == null) {
-            csmItem = findDeclaration(csmFile, doc, jumpToken, offset);
+            int key = jumpToken.offset(null);
+            if (key < 0) {
+                key = offset;
+            }
+            csmItem = getReferencedObject(csmFile, key);
+            if (csmItem == null) {
+                csmItem = findDeclaration(csmFile, doc, jumpToken, key);
+                putReferencedObject(csmFile, key, csmItem);
+            }
         }
         return csmItem;
     }
@@ -535,4 +563,44 @@ public final class ReferencesSupport {
         }
         return kind[0];
     }
+
+    private final CsmProgressListener progressListener;
+    private final ReadWriteLock  cacheLock = new ReentrantReadWriteLock();
+    private Map<CsmFile, Map<Integer,CsmObject>> cache = new HashMap<CsmFile, Map<Integer,CsmObject>>();
+    private CsmObject getReferencedObject(CsmFile file, int offset){
+        try {
+            cacheLock.readLock().lock();
+            Map<Integer,CsmObject> map = cache.get(file);
+            if (map != null) {
+                return map.get(offset);
+            }
+            return null;
+        } finally {
+            cacheLock.readLock().unlock();
+        }
+    }
+
+    private void putReferencedObject(CsmFile file, int offset, CsmObject object){
+        try {
+            cacheLock.writeLock().lock();
+            Map<Integer,CsmObject> map = cache.get(file);
+            if (map == null) {
+                map = new HashMap<Integer,CsmObject>();
+                cache.put(file, map);
+            }
+            map.put(offset, object);
+        } finally {
+            cacheLock.writeLock().unlock();
+        }
+    }
+
+    private void clearFileReferences(CsmFile file){
+        try {
+            cacheLock.writeLock().lock();
+            cache.remove(file);
+        } finally {
+            cacheLock.writeLock().unlock();
+        }
+    }
+
 }

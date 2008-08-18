@@ -184,6 +184,7 @@ public enum CppTokenId implements TokenId {
 
     INT_LITERAL(null, "number"), // NOI18N
     LONG_LITERAL(null, "number"), // NOI18N
+    LONG_LONG_LITERAL(null, "number"), // NOI18N
     FLOAT_LITERAL(null, "number"), // NOI18N
     DOUBLE_LITERAL(null, "number"), // NOI18N
     UNSIGNED_LITERAL(null, "number"), // NOI18N
@@ -395,6 +396,7 @@ public enum CppTokenId implements TokenId {
             EnumSet<CppTokenId> l = EnumSet.of(
                 CppTokenId.INT_LITERAL,
                 CppTokenId.LONG_LITERAL,
+                CppTokenId.LONG_LONG_LITERAL,
                 CppTokenId.FLOAT_LITERAL,
                 CppTokenId.DOUBLE_LITERAL,
                 CppTokenId.UNSIGNED_LITERAL,

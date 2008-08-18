@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -80,6 +81,7 @@ class DocRenderer {
 
     private static final String TD_STYLE = "style=\"text-aling:left; border-width: 1px;padding: 1px;border-style: solid;border-color: gray;padding:3px\" ";  //NOI18N
     private static final String TABLE_STYLE= "style=\"border-style:solid; border-color: black; border-width: 1px; width: 100%; border-collapse: collapse;\""; //NOI18N
+    private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
 
     static String document(CompilationInfo info, ElementHandle element) {
         if (element instanceof PHPDOCTagElement) {
@@ -110,25 +112,31 @@ class DocRenderer {
             location = NbBundle.getMessage(PHPCodeCompletion.class, "PHPPlatform");
         } else {
             FileObject fobj = indexedElement.getFile().getFileObject();
-            Project project = FileOwnerQuery.getOwner(fobj);
-            
-            if (project != null){
-                // find the appropriate source root
-                Sources sources= ProjectUtils.getSources(project);
-                // TODO the PHPSOURCE constatnt has to be published in the project api
-                SourceGroup[] groups = sources.getSourceGroups("PHPSOURCE");       //NOI18N
-                for (int i = 0; i < groups.length; i++) {
-                    if (groups[i].contains(fobj)) {
-                        location = FileUtil.getRelativePath(groups[i].getRootFolder(), fobj);
-                        break;
-                    }
-                }
-                if (location  == null) {
-                    // just to be sure, that the relative location was resolved
-                    location = fobj.getPath();
-                }
+
+            if (fobj == null) {
+                LOGGER.warning(String.format("%s .getFile().getFileObject() returned null for element %s defined in %s", 
+                        indexedElement.getClass().getSimpleName(), indexedElement.getName(), indexedElement.getFilenameUrl()));
             } else {
-                location = indexedElement.getFilenameUrl();
+                Project project = FileOwnerQuery.getOwner(fobj);
+
+                if (project != null) {
+                    // find the appropriate source root
+                    Sources sources = ProjectUtils.getSources(project);
+                    // TODO the PHPSOURCE constatnt has to be published in the project api
+                    SourceGroup[] groups = sources.getSourceGroups("PHPSOURCE");       //NOI18N
+                    for (int i = 0; i < groups.length; i++) {
+                        if (groups[i].contains(fobj)) {
+                            location = FileUtil.getRelativePath(groups[i].getRootFolder(), fobj);
+                            break;
+                        }
+                    }
+                    if (location == null) {
+                        // just to be sure, that the relative location was resolved
+                        location = fobj.getPath();
+                    }
+                } else {
+                    location = indexedElement.getFilenameUrl();
+                }
             }
         }
 

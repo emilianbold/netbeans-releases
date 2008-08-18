@@ -45,13 +45,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.vmd.api.codegen.CodeGlobalLevelPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorUIManagerSupport;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
@@ -84,7 +82,7 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author karolharezlak
+ * @author Karol Harezlak
  */
 public class SVGButtonEventSourceCD extends ComponentDescriptor {
 
@@ -118,9 +116,9 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
                 // info
                 InfoPresenter.create(new SVGButtonEventSourceResolver()),
                 // inspector
-                //InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)), new ScreenMoveArrayAcceptPresenter(ListCD.PROP_ELEMENTS, ListElementEventSourceCD.TYPEID),
                 //code
-                new ImportCodePresenterSupport("org.netbeans.microedition.svg.SVGActionListener", "org.netbeans.microedition.svg.SVGComponent;"), //NOI18N
+                new ImportCodePresenterSupport("org.netbeans.microedition.svg.SVGActionListener"), //NOI18N
+                new ImportCodePresenterSupport("org.netbeans.microedition.svg.SVGComponent"), //NOI18N
                 GoToSourcePresenter.createForwarder(PROP_SVGBUTTON),
                 // flow
                 new SVGButtonEventSourcePinPresenter(),

@@ -104,12 +104,16 @@ public class ConstantPool {
                         break;
                     case TAG_LONG:
                         entry = new EntryLong(in.readLong());
+                        entries.add(entry);
+                        entry = new EntryNULL(); // Long takes TWO constant pool entries!?!
                         break;
                     case TAG_FLOAT:
                         entry = new EntryFloat(in.readFloat());
                         break;
                     case TAG_DOUBLE:
                         entry = new EntryDouble(in.readDouble());
+                        entries.add(entry);
+                        entry = new EntryNULL(); // Double takes TWO constant pool entries!?!
                         break;
                     case TAG_CLASS:
                         entry = new EntryClass(in.readShort());

@@ -144,6 +144,7 @@ import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -1275,13 +1276,31 @@ public final class WebProject implements Project, AntProjectListener {
 
     }
 
+    /**
+     * This class handle copying of web resources to appropriate place in build
+     * dir. User is not forced to perform redeploy on JSP change. This
+     * class is also used in true Deploy On Save.
+     *
+     * Class should not request project lock from FS listener methods
+     * (deadlock prone).
+     */
     public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener, DeployOnSaveSupport {
+
         private FileObject docBase = null;
 
+        private String docBaseValue = null;
+
+        private FileObject webInf = null;
+
+        private String webInfValue = null;
+
+        private String buildWeb = null;
+
         private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<ArtifactListener>();
-        
+
         /** Creates a new instance of CopyOnSaveSupport */
         public CopyOnSaveSupport() {
+            super();
         }
 
         public void addArtifactListener(ArtifactListener listener) {
@@ -1291,119 +1310,180 @@ public final class WebProject implements Project, AntProjectListener {
         public void removeArtifactListener(ArtifactListener listener) {
             listeners.remove(listener);
         }
-        
+
         public void initialize() throws FileStateInvalidException {
             docBase = getWebModule().getDocumentBase();
+            docBaseValue = evaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
+            webInf = getWebModule().getWebInf();
+            webInfValue = evaluator().getProperty(WebProjectProperties.WEBINF_DIR);
+            buildWeb = evaluator().getProperty(WebProjectProperties.BUILD_WEB_DIR);
+
+            FileSystem docBaseFileSystem = null;
             if (docBase != null) {
-                docBase.getFileSystem().addFileChangeListener(this);
+                docBaseFileSystem = docBase.getFileSystem();
+                docBaseFileSystem.addFileChangeListener(this);
             }
-            ProjectInformation info = (ProjectInformation) getLookup().lookup(ProjectInformation.class);
-            info.addPropertyChangeListener (this);
+
+            if (webInf != null) {
+                if (!webInf.getFileSystem().equals(docBaseFileSystem)) {
+                    webInf.getFileSystem().addFileChangeListener(this);
+                }
+            }
+
+            LOGGER.log(Level.FINE, "Web directory is {0}", docBaseValue);
+            LOGGER.log(Level.FINE, "WEB-INF directory is {0}", webInfValue);
+
+            WebProject.this.evaluator().addPropertyChangeListener(this);
         }
 
         public void cleanup() throws FileStateInvalidException {
+            FileSystem docBaseFileSystem = null;
             if (docBase != null) {
-                docBase.getFileSystem().removeFileChangeListener(this);
+                docBaseFileSystem = docBase.getFileSystem();
+                docBaseFileSystem.removeFileChangeListener(this);
             }
+            if (webInf != null) {
+                if (!webInf.getFileSystem().equals(docBaseFileSystem)) {
+                    webInf.getFileSystem().removeFileChangeListener(this);
+                }
+            }
+            WebProject.this.evaluator().removePropertyChangeListener(this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(WebProjectProperties.WEB_DOCBASE_DIR)) {
+            if (WebProjectProperties.WEB_DOCBASE_DIR.equals(evt.getPropertyName())
+                    || WebProjectProperties.WEBINF_DIR.equals(evt.getPropertyName())) {
                 try {
                     cleanup();
                     initialize();
                 } catch (org.openide.filesystems.FileStateInvalidException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
+                    LOGGER.log(Level.INFO, null, e);
                 }
-            }
-        }
-    
-        /** Fired when a file is changed.
-        * @param fe the event describing context where action has taken place
-        */
-        public void fileChanged (FileEvent fe) {
-            try {
-                handleCopyFileToDestDir(fe.getFile());
-            }
-            catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+            } else if (WebProjectProperties.BUILD_WEB_DIR.equals(evt.getPropertyName())) {
+                // TODO copy all files ?
+                Object value = evt.getNewValue();
+                buildWeb = value == null ? null : value.toString();
             }
         }
 
-        public void fileDataCreated (FileEvent fe) {
+        @Override
+        public void fileChanged(FileEvent fe) {
             try {
                 handleCopyFileToDestDir(fe.getFile());
-            }
-            catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, null, e);
             }
         }
-        
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            try {
+                handleCopyFileToDestDir(fe.getFile());
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, null, e);
+            }
+        }
+
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             try {
                 FileObject fo = fe.getFile();
-                FileObject docBase = getWebModule().getDocumentBase();
+                handleCopyFileToDestDir(fo);
+
+                FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, false, true);
+                FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
+
+                if (webInf != null && FileUtil.isParentOf(webInf, fo)
+                        && !(webInf.getParent() != null && webInf.getParent().equals(docBase))) {
+                    // inside webinf
+                    FileObject parent = fo.getParent();
+                    String path;
+                    if (FileUtil.isParentOf(webInf, parent)) {
+                        path = FileUtil.getRelativePath(webInf, fo.getParent())
+                                + "/" + fe.getName() + "." + fe.getExt(); // NOI18N
+                    } else {
+                        path = fe.getName() + "." + fe.getExt(); // NOI18N
+                    }
+                    path = "WEB-INF/" + path;
+
+                    if (!isSynchronizationAppropriate(path))  {
+                        return;
+                    }
+                    handleDeleteFileInDestDir(path);
+                }
+
                 if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
                     // inside docbase
-                    handleCopyFileToDestDir(fo);
                     FileObject parent = fo.getParent();
                     String path;
                     if (FileUtil.isParentOf(docBase, parent)) {
-                        path = FileUtil.getRelativePath(docBase, fo.getParent()) +
-                            "/" + fe.getName() + "." + fe.getExt();
+                        path = FileUtil.getRelativePath(docBase, fo.getParent())
+                                + "/" + fe.getName() + "." + fe.getExt(); // NOI18N
+                    } else {
+                        path = fe.getName() + "." + fe.getExt(); // NOI18N
                     }
-                    else {
-                        path = fe.getName() + "." + fe.getExt();
-                    }
-                    if (!isSynchronizationAppropriate(path)) 
+                    if (!isSynchronizationAppropriate(path))  {
                         return;
+                    }
                     handleDeleteFileInDestDir(path);
                 }
-            }
-            catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, null, e);
             }
         }
-        
+
+        @Override
         public void fileDeleted(FileEvent fe) {
             try {
                 FileObject fo = fe.getFile();
-                FileObject docBase = getWebModule().getDocumentBase();
+
+                FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, false, true);
+                FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
+
+                if (webInf != null && FileUtil.isParentOf(webInf, fo)
+                        && !(webInf.getParent() != null && webInf.getParent().equals(docBase))) {
+                    // inside webInf
+                    String path = "WEB-INF/" + FileUtil.getRelativePath(webInf, fo); // NOI18N
+                    if (!isSynchronizationAppropriate(path)) {
+                        return;
+                    }
+                    handleDeleteFileInDestDir(path);
+                }
                 if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
                     // inside docbase
                     String path = FileUtil.getRelativePath(docBase, fo);
-                    if (!isSynchronizationAppropriate(path)) 
+                    if (!isSynchronizationAppropriate(path)) {
                         return;
+                    }
                     handleDeleteFileInDestDir(path);
                 }
-            }
-            catch (IOException e) {
-                Logger.getLogger("global").log(Level.INFO, null, e);
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, null, e);
             }
         }
-        
+
         private boolean isSynchronizationAppropriate(String filePath) {
-            if (filePath.startsWith("WEB-INF/classes")) {
+            if (filePath.startsWith("WEB-INF/classes")) { // NOI18N
                 return false;
             }
-            if (filePath.startsWith("WEB-INF/src")) {
+            if (filePath.startsWith("WEB-INF/src")) { // NOI18N
                 return false;
             }
-            if (filePath.startsWith("WEB-INF/lib")) {
+            if (filePath.startsWith("WEB-INF/lib")) { // NOI18N
                 return false;
             }
             return true;
         }
-        
+
         private void fireArtifactChange(Iterable<File> files) {
             for (ArtifactListener listener : listeners) {
                 listener.artifactsUpdated(files);
             }
         }
-        
+
         private void handleDeleteFileInDestDir(String resourcePath) throws IOException {
             File deleted = null;
-            FileObject webBuildBase = getWebModule().getContentDirectory();
+            FileObject webBuildBase = buildWeb == null ? null : helper.resolveFileObject(buildWeb);
             if (webBuildBase != null) {
                 // project was built
                 FileObject toDelete = webBuildBase.getFileObject(resourcePath);
@@ -1414,58 +1494,78 @@ public final class WebProject implements Project, AntProjectListener {
             }
             fireArtifactChange(Collections.singleton(deleted));
         }
-        
-        /** Copies a content file to an appropriate  destination directory, 
-         * if applicable and relevant.
-         */
+
         private void handleCopyFileToDestDir(FileObject fo) throws IOException {
-            if (!fo.isVirtual()) {
-                FileObject docBase = getWebModule().getDocumentBase();
-                if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
-                    // inside docbase
-                    String path = FileUtil.getRelativePath(docBase, fo);
-                    if (!isSynchronizationAppropriate(path)) 
+            if (fo.isVirtual()) {
+                return;
+            }
+
+            FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, false, true);
+            FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
+
+            if (webInf != null && FileUtil.isParentOf(webInf, fo)
+                    && !(webInf.getParent() != null && webInf.getParent().equals(docBase))) {
+                handleCopyFileToDestDir("WEB-INF", webInf, fo); // NOI18N
+            }
+            if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
+                handleCopyFileToDestDir(null, docBase, fo);
+            }
+        }
+
+        private void handleCopyFileToDestDir(String prefix, FileObject baseDir, FileObject fo) throws IOException {
+            if (fo.isVirtual()) {
+                return;
+            }
+
+            if (baseDir != null && FileUtil.isParentOf(baseDir, fo)) {
+                // inside docbase
+                String path = FileUtil.getRelativePath(baseDir, fo);
+                if (prefix != null) {
+                    path = prefix + "/" + path;
+                }
+                if (!isSynchronizationAppropriate(path)) {
+                    return;
+                }
+
+                FileObject webBuildBase = buildWeb == null ? null : helper.resolveFileObject(buildWeb);
+                if (webBuildBase != null) {
+                    // project was built
+                    if (FileUtil.isParentOf(baseDir, webBuildBase) || FileUtil.isParentOf(webBuildBase, baseDir)) {
+                        //cannot copy into self
                         return;
-                    FileObject webBuildBase = getWebModule().getContentDirectory();
-                    if (webBuildBase != null) {
-                        // project was built
-                        if (FileUtil.isParentOf(docBase, webBuildBase) || FileUtil.isParentOf(webBuildBase, docBase)) {
-                            //cannot copy into self
-                            return;
-                        }
-                        FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
-                        assert destFile != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + fo.isFolder();
-                        if (!fo.isFolder()) {
-                            InputStream is = null;
-                            OutputStream os = null;
-                            FileLock fl = null;
-                            try {
-                                is = fo.getInputStream();
-                                fl = destFile.lock();
-                                os = destFile.getOutputStream(fl);
-                                FileUtil.copy(is, os);
+                    }
+                    FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
+                    assert destFile != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + fo.isFolder();
+                    if (!fo.isFolder()) {
+                        InputStream is = null;
+                        OutputStream os = null;
+                        FileLock fl = null;
+                        try {
+                            is = fo.getInputStream();
+                            fl = destFile.lock();
+                            os = destFile.getOutputStream(fl);
+                            FileUtil.copy(is, os);
+                        } finally {
+                            if (is != null) {
+                                is.close();
                             }
-                            finally {
-                                if (is != null) {
-                                    is.close();
-                                }
-                                if (os != null) {
-                                    os.close();
-                                }
-                                if (fl != null) {
-                                    fl.releaseLock();
-                                }
-                                File file = FileUtil.toFile(destFile);
-                                fireArtifactChange(Collections.singleton(file));
+                            if (os != null) {
+                                os.close();
                             }
-                            //System.out.println("copied + " + FileUtil.copy(fo.getInputStream(), destDir, fo.getName(), fo.getExt()));
+                            if (fl != null) {
+                                fl.releaseLock();
+                            }
+                            File file = FileUtil.toFile(destFile);
+                            fireArtifactChange(Collections.singleton(file));
                         }
                     }
                 }
             }
         }
 
-        /** Returns the destination (parent) directory needed to create file with relative path path under webBuilBase
+        /**
+         * Returns the destination (parent) directory needed to create file
+         * with relative path path under webBuilBase
          */
         private FileObject ensureDestinationFileExists(FileObject webBuildBase, String path, boolean isFolder) throws IOException {
             FileObject current = webBuildBase;

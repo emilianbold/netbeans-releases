@@ -119,8 +119,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             System.err.println("function ast " + ast.getText() + " without childs in file " + file.getAbsolutePath());            
         }
         if (!isStatic()) {
-            for( CsmFunction fu : ((FileImpl) file).getStaticFunctionDeclarations() ) {
-                if( name.equals(fu.getName()) ) {
+            CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(
+                               name.toString(), true, true, false);
+            Iterator<CsmFunction> it = CsmSelect.getDefault().getStaticFunctions(file, filter);
+            while(it.hasNext()){
+                CsmFunction fun = it.next();
+                if( name.equals(fun.getName()) ) {
                     // we don't check signature here since file-level statics
                     // is C-style construct
                     setStatic(true); 

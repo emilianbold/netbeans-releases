@@ -45,8 +45,6 @@ import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
@@ -71,6 +69,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.Uploa
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 // XXX upload files combobox is invisible for NB 6.5
@@ -233,9 +232,10 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     @Override
     protected void validateFields() {
         String url = urlTextField.getText();
+        String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
 
-        String err = RunAsValidator.validateWebFields(url, null, args);
+        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(project.getWebRootDirectory()), indexFile, args);
         if (err != null) {
             validateCategory(err);
             return;

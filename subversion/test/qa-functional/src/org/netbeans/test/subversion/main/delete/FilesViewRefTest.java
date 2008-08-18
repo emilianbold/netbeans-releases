@@ -171,6 +171,7 @@ public class FilesViewRefTest extends JellyTestCase {
             assertEquals("Wrong status in Versioning View", expected.length, result);
             Exception e = null;
             try {
+                Thread.sleep(1500);
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "a|b|BClass.java");
             } catch (Exception ex) {
                 e = ex;
@@ -178,6 +179,7 @@ public class FilesViewRefTest extends JellyTestCase {
             assertNotNull("Unexpected behavior - File shouldn't be in explorer!!!", e);
             e = null;
             try {
+                Thread.sleep(1500);
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp.a.b|BClass.java");
             } catch (Exception ex) {
                 e = ex;
