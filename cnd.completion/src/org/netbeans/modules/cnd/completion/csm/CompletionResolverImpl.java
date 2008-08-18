@@ -305,7 +305,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
         } else if (needContextClasses(context, offset)) {
             resImpl.classesEnumsTypedefs = getClassesEnums(context, prj, strPrefix, match, offset,true);
-            if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
+            if (!needNestedClassifiers(context, offset) && isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
         }
         if (needTemplateParameters(context, offset)) {
             resImpl.templateParameters = getTemplateParameters(context, strPrefix, match);
@@ -338,7 +338,8 @@ public class CompletionResolverImpl implements CompletionResolver {
                         if (resImpl.classesEnumsTypedefs == null) {
                             resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
                         }
-                        resImpl.classesEnumsTypedefs.addAll(innerCls);
+                        innerCls.addAll(resImpl.classesEnumsTypedefs);
+                        resImpl.classesEnumsTypedefs = innerCls;
                         if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
                     }
                 }
@@ -372,7 +373,8 @@ public class CompletionResolverImpl implements CompletionResolver {
                     if (resImpl.classesEnumsTypedefs == null) {
                         resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
                     }
-                    resImpl.classesEnumsTypedefs.addAll(innerCls);
+                    innerCls.addAll(resImpl.classesEnumsTypedefs);
+                    resImpl.classesEnumsTypedefs = innerCls;
                     if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
                 }
             }
@@ -471,7 +473,6 @@ public class CompletionResolverImpl implements CompletionResolver {
                 hideTypes &= ~RESOLVE_FILE_PRJ_MACROS;
                 hideTypes &= ~RESOLVE_GLOB_NAMESPACES;
                 hideTypes &= ~RESOLVE_CLASSES;
-                hideTypes &= ~RESOLVE_TEMPLATE_PARAMETERS;
                 hideTypes &= ~RESOLVE_GLOB_VARIABLES;
                 hideTypes &= ~RESOLVE_GLOB_FUNCTIONS;
                 hideTypes &= ~RESOLVE_GLOB_ENUMERATORS;
