@@ -58,12 +58,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.modules.InstalledFileLocator;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 
 /**
  *  A support class for helping execution of an executable, a makefile, or a script.
@@ -119,28 +114,6 @@ public class LocalNativeExecution extends NativeExecution {
         // Start the build process and a build reader.
         NbProcessDescriptor desc = new NbProcessDescriptor(commandInterpreter, commandLine);
 
-        // Updating environment variables
-        List<String> envpList = new ArrayList<String>();
-        if (envp != null) {
-            envpList.addAll(Arrays.asList(envp));
-        }
-        envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
-
-        if (unbuffer) {
-            String unbufferPath = getUnbufferPath();
-            if (unbufferPath != null) {
-                if (Utilities.isMac()) {
-                    envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
-                    envpList.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
-                } else if (Utilities.isWindows()) {
-                    //TODO: issue #144106
-                } else {
-                    envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
-                }
-            }
-        }
-        envp = envpList.toArray(new String[envpList.size()]);
-
         executionProcess = desc.exec(null, envp, true, runDirFile);
         outputReaderThread = new OutputReaderThread(executionProcess.getErrorStream(), out);
         outputReaderThread.start();
@@ -183,8 +156,8 @@ public class LocalNativeExecution extends NativeExecution {
 //        }
     }
 
-    private String getUnbufferPath() {
-        int platformType = PlatformInfo.getDefault(CompilerSetManager.LOCALHOST).getPlatform();
+    @Override
+    protected String getUnbufferPath(int platformType) {
         String unbufferName = getUnbufferName(platformType);
         if (unbufferName == null) {
             return null;
