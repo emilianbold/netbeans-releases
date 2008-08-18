@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -44,7 +44,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
+import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
 import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
+import org.openide.util.Lookup;
 
 /**
  * This implementation of NativeExecution provides execution on a remote server.
@@ -52,7 +56,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
  * @author gordonp
  */
 public class RemoteNativeExecution extends NativeExecution {
-    
+
     /**
      * Execute an executable, a makefile, or a script
      * @param runDir absolute path to directory from where the command should be executed
@@ -78,8 +82,34 @@ public class RemoteNativeExecution extends NativeExecution {
         }
         return support == null ? -1 : support.getExitStatus();
     }
-    
+
     public void stop() {
     }
 
+    @Override
+    protected String getUnbufferPath(int platformType) {
+        String path = null;
+        CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+        if (provider != null) {
+            int rc = provider.run(host, "echo $HOME", null); // NOI18N
+            if (rc == 0) {
+                path = provider.toString().trim(); // remote the newline
+            }
+        }
+        if (path == null) {
+            path = "/home/" + System.getProperty("user.name"); // NOI18N
+        }
+        path += "/" + RemoteServerSetup.REMOTE_LIB_DIR;
+        String unbufferName = getUnbufferName(platformType);
+        if (unbufferName != null) {
+            path += unbufferName;
+            // check file existence
+            if (HostInfoProvider.getDefault().fileExists(host, path)) {
+                return path;
+            } else {
+                log.warning("unbuffer: " + path + " does not exist");
+            }
+        }
+        return null;
+    }
 }

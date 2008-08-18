@@ -40,16 +40,12 @@
 package org.netbeans.modules.cnd.remote.ui;
 
 import java.awt.Dialog;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -115,21 +111,6 @@ public class AddServerDialog extends JPanel implements DocumentListener {
     }
 
     public void changedUpdate(DocumentEvent e) {
-    }
-    
-    public class PasswordSourceModel extends DefaultComboBoxModel {
-        
-        public PasswordSourceModel() {
-            addElement(NbBundle.getMessage(AddServerDialog.class, "LBL_PSM_TypeitOnce"));
-            addElement(NbBundle.getMessage(AddServerDialog.class, "LBL_PSM_TypeitAlways"));
-            ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-            for (ServerRecord record : serverList.getRecords()) {
-                String user = record.getUserName();
-                if (user != null) {
-                    addElement(NbBundle.getMessage(AddServerDialog.class, "FMT_SharedPasswordSource", record.getServerName(), user));
-                }
-            }
-        }
     }
 
     /** This method is called from within the constructor to

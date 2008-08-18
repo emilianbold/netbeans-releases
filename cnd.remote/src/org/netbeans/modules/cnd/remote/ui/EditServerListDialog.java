@@ -147,7 +147,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    record.init(false, pcs);
+                    record.init(pcs);
                     phandle.finish();
                     // back to EDT to work with Swing
                     SwingUtilities.invokeLater(new Runnable() {
@@ -236,6 +236,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btRemoveServer.setEnabled(enable);
         btPathMapper.setEnabled(enable);
         btSetAsDefault.setEnabled(enable);
+        btRetry.setEnabled(enable);
     }
 
     /** Helps the AddServerDialog know when to enable/disable the OK button */

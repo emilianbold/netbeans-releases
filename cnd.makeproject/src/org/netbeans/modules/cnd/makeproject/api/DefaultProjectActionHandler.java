@@ -307,7 +307,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 String[] env = pae.getProfile().getEnvironment().getenv();
                 boolean showInput = pae.getID() == ProjectActionEvent.RUN;
                 MakeConfiguration conf = (MakeConfiguration) pae.getConfiguration();
-                String key = conf.getDevelopmentHost().getDisplayName();
+                String key = conf.getDevelopmentHost().getName();
                 
                 if (!conf.getDevelopmentHost().isLocalhost()) {
                     // Make sure the project root is visible remotely
@@ -326,7 +326,8 @@ public class DefaultProjectActionHandler implements ActionListener {
                 }
                 
                 PlatformInfo pi = PlatformInfo.getDefault(conf.getDevelopmentHost().getName());
-                
+
+                boolean unbuffer = false;
                 if (pae.getID() == ProjectActionEvent.RUN) {
                     int conType = pae.getProfile().getConsoleType().getValue();
                     if (pae.getProfile().getTerminalType() == null || pae.getProfile().getTerminalPath() == null) { 
@@ -345,6 +346,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) { 
                         args = pae.getProfile().getArgsFlat();
                         exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
+                        unbuffer = true;
                     } else {
                         showInput = false;
                         if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
@@ -437,7 +439,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                         pae.getActionName(),
                         pae.getID() == ProjectActionEvent.BUILD,
                         showInput,
-                        pae.getProfile().getConsoleType().getValue() == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
+                        unbuffer);
                 projectExecutor.addExecutionListener(this);
                 if (rcfile != null) {
                     projectExecutor.setExitValueOverride(rcfile);

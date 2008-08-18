@@ -58,7 +58,7 @@ public abstract class BasicCompiler extends Tool {
         storagePrefix += RemoteUtils.getHostName(getHostKey()) + "/"; //NOI18N
     }
 
-    private String storagePrefix = System.getProperty("netbeans.user") + "var/cache/cnd2/includes-cache/"; //NOI18N
+    private String storagePrefix = System.getProperty("netbeans.user") + "/var/cache/cnd2/includes-cache/"; //NOI18N
 
     public String getStoragePrefix() {
         return storagePrefix;

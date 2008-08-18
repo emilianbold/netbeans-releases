@@ -103,6 +103,9 @@ public class SQLSyntax extends Syntax {
                         case '/':
                             state = ISA_SLASH;
                             break;
+                        case '#':
+                            state = ISI_LINE_COMMENT;
+                            break;
                         case '=':
                         case '>':
                         case '<':
@@ -172,9 +175,6 @@ public class SQLSyntax extends Syntax {
                 //if we are currently in a string literal
                 case ISI_STRING:
                     switch (actChar) { 
-                        case '\n':
-                            state = INIT;
-                            return SQLTokenContext.INCOMPLETE_STRING;
                         case '\'': // NOI18N
                             offset++;
                             state = INIT;
@@ -317,6 +317,7 @@ public class SQLSyntax extends Syntax {
                     return SQLTokenContext.WHITESPACE;
             case ISI_IDENTIFIER:
                 state = INIT;
+                startQuoteChar = -1;
                 TokenID tid = 
                         matchKeyword(buffer, tokenOffset, offset - tokenOffset);
                 if(tid != null) {
@@ -333,7 +334,7 @@ public class SQLSyntax extends Syntax {
                 // stay in block-comment state
                 return SQLTokenContext.BLOCK_COMMENT; 
             case ISI_STRING:
-                return SQLTokenContext.STRING; // hold the state
+                return SQLTokenContext.INCOMPLETE_STRING;
             case ISA_ZERO:
             case ISI_INT:
                 state = INIT;
@@ -410,6 +411,39 @@ public class SQLSyntax extends Syntax {
         }
     }
 
+    @Override
+    public void loadInitState() {
+        startQuoteChar = -1;
+        super.loadInitState();
+    }
+
+    @Override
+    public StateInfo createStateInfo() {
+        return new SQLStateInfo();
+    }
+
+    @Override
+    public void loadState(StateInfo stateInfo) {
+        startQuoteChar = ((SQLStateInfo) stateInfo).getStartQuoteChar();
+        super.loadState(stateInfo);
+    }
+
+    @Override
+    public void storeState(StateInfo stateInfo) {
+        ((SQLStateInfo)stateInfo).setStartQuoteChar(startQuoteChar);
+        super.storeState(stateInfo);
+    }
+
+    @Override
+    public int compareState(StateInfo stateInfo) {
+        if (stateInfo != null) {
+            if (((SQLStateInfo)stateInfo).getStartQuoteChar() == startQuoteChar) {
+                return super.compareState(stateInfo);
+            }
+        }
+        return DIFFERENT_STATE;
+    }
+
     private static boolean isStartQuoteChar(int start) {
         return start == '\"' || // SQL-99
                start == '`' ||  // MySQL
@@ -437,5 +471,18 @@ public class SQLSyntax extends Syntax {
         }
         
         return null;
+    }
+
+    private static final class SQLStateInfo extends BaseStateInfo {
+
+        private int startQuoteChar;
+
+        public int getStartQuoteChar() {
+            return startQuoteChar;
+        }
+
+        public void setStartQuoteChar(int startQuoteChar) {
+            this.startQuoteChar = startQuoteChar;
+        }
     }
 }

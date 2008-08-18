@@ -46,6 +46,7 @@ import java.sql.ResultSet;
 import org.junit.Before;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.junit.NbTestCase;
@@ -59,29 +60,12 @@ import org.openide.util.Lookup;
  * @author David
  */
 public class TestBase extends NbTestCase  {
-    private String url;
+    private String database;
     private String user;
     private String password;
-    private String driverClassName;
-    private String schema;
-    private String jarpath;
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-
-    public String getSchema() {
-        return schema;
-    }
-
-    public void setSchema(String schema) {
-        this.schema = schema;
-    }
+    private String host;
+    private String port;
+    private static final String JARPATH="nbinst:///modules/ext/mysql-connector-java-5.1.6-bin.jar";
 
     private JDBCDriver jdbcDriver;
     private DatabaseConnection dbconn;
@@ -109,8 +93,28 @@ public class TestBase extends NbTestCase  {
         JDBCDriver driver = getJDBCDriver();
 
         if (dbconn == null) {
-            dbconn = DatabaseConnection.create(driver, url, user, schema, password, true);
+            String url = "jdbc:mysql://" + host + ":" + port + "/";
+            if (database != null) {
+                url += database;
+            }
+            dbconn = DatabaseConnection.create(driver, url, user, null, password, true);
             ConnectionManager.getDefault().addConnection(dbconn);
+            try {
+                ConnectionManager.getDefault().connect(dbconn);
+            } catch (DatabaseException e) {
+                System.err.println("Unable to connect to the database");
+                System.err.println("Please make sure the properties are set correctly in private.properties");
+                System.err.println("Here are the possible values you can set:");
+                System.err.println("");
+                System.err.println("test-unit-sys-prop.db.user=<database-user> [default is root]");
+                System.err.println("test-unit-sys-prop.db.password=<database-password> [default is none]");
+                System.err.println("test-unit-sys-prop.db.host=<database-host> [default is localhost]");
+                System.err.println("test-unit-sys-prop.db.port=<database-port> [default is 3306]");
+                System.err.println("");
+                throw e;
+            }
+            assertTrue(dbconn.getJDBCConnection() != null);
+            assertFalse(dbconn.getJDBCConnection().isClosed());
         }
 
         return dbconn;
@@ -124,8 +128,9 @@ public class TestBase extends NbTestCase  {
 
     protected JDBCDriver getJDBCDriver() throws Exception {
         if (jdbcDriver == null) {
+            String driverClassName = "com.mysql.jdbc.Driver";
             jdbcDriver = JDBCDriver.create(driverClassName, driverClassName,
-                    driverClassName, new URL[]{ new URL(jarpath)});
+                    driverClassName, new URL[]{ new URL(JARPATH)});
             JDBCDriverManager.getDefault().addDriver(jdbcDriver);
         }
 
@@ -133,49 +138,16 @@ public class TestBase extends NbTestCase  {
     }
 
     protected void getProperties() throws Exception {
-        url = System.getProperty("db.url", null);
-        user = System.getProperty("db.user", null);
+        user = System.getProperty("db.user", "root");
         password = System.getProperty("db.password", null);
-        driverClassName = System.getProperty("db.driver.classname");
-        schema = System.getProperty("db.schema");
-
-        jarpath = System.getProperty("db.driver.jarpath", null);
-
-        String message = "\nPlease set the following in nbproject/private/private.properties:\n" +
-                "test-unit-sys-prop.db.url=<database-url>\n" +
-                "test-unit-sys-prop.db.user=<database-user>\n" +
-                "test-unit-sys-prop.db.password=<database-password> (optional)\n" +
-                "test-unit-sys-prop.db.schema=<database-schema>\n" +
-                "test-unit-sys-prop.db.driver.jarpath=<path-to-driver-jar-file> (can use 'nbinst:///' protocol',\n" +
-                "test-unit-sys-prop.db.driver.classname=<name-of-jdbc-driver-class>\n\n" +
-                "A template is available in test/private.properties.template";
-
-
-        if (url == null) {
-            fail("db.url was not set. " + message);
-        }
-        if (user == null) {
-            fail("db.user was not set.  " + message);
-        }
-        if (schema == null) {
-            fail("db.schema was not set.  " + message);
-        }
-        if (jarpath == null) {
-            fail("db.driver.jarpath was not set. " + message);
-        }
-        if (driverClassName == null) {
-            fail("db.driver.classname was not set. " + message);
-        }
+        host = System.getProperty("db.host", "localhost");
+        port = System.getProperty("db.port", "3306");
 
         // Make sure we the jar URL is valid
-        assertNotNull(new URL(jarpath).openStream());
+        assertNotNull(new URL(JARPATH).openStream());
 
     }
 
-    public boolean isMySQL() {
-        return driverClassName.equals("com.mysql.jdbc.Driver");
-    }
-    
     public void checkExecution(SQLExecutionInfo info) throws Exception {
         assertNotNull(info);
 
@@ -197,10 +169,14 @@ public class TestBase extends NbTestCase  {
         }        
     }
 
-    public boolean tableExists(DatabaseConnection dbconn, String tablename) throws Exception {
+    public boolean tableExists(DatabaseConnection dbconn, String database, String tablename) throws Exception {
         DatabaseMetaData md = dbconn.getJDBCConnection().getMetaData();
-        ResultSet rs = md.getTables(null, getSchema(), tablename, null);
+        ResultSet rs = md.getTables(null, database, tablename, null);
         return rs.next();        
+    }
+
+    public void setDatabase(String dbname) {
+        this.database = dbname;
     }
 
 }

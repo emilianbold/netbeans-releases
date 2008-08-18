@@ -1093,13 +1093,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES);
                                         if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
                                             res = compResolver.getResult();
-                                        }
-                                        List vars = new ArrayList();
-                                        res.addResulItemsToCol(vars);
-                                        if (vars.size() > 0) {
-                                            // get the first
-                                            CsmVariable varElem = (CsmVariable) vars.get(0);
-                                            lastType = varElem.getType();
+                                            List vars = new ArrayList();
+                                            res.addResulItemsToCol(vars);
+                                            if (vars.size() > 0) {
+                                                // get the first
+                                                CsmVariable varElem = (CsmVariable) vars.get(0);
+                                                lastType = varElem.getType();
+                                            }
                                         }
                                     }
                                 }

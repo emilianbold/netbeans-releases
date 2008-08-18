@@ -158,7 +158,6 @@ final class VisualizerChildren extends Object {
             }
         } else {
             recomputeIndexes(visNode);
-            assert visNode.indexOf != -1 : dumpIndexes(visNode); // NOI18N
         }
         return visNode.indexOf;
     }

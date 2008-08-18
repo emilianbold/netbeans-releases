@@ -41,10 +41,9 @@
 
 package org.netbeans.modules.cnd.makeproject;
 
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.text.MessageFormat;
@@ -55,9 +54,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
@@ -114,7 +111,6 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
@@ -300,43 +296,27 @@ public class MakeActionProvider implements ActionProvider {
             if (res == JOptionPane.YES_OPTION) {
                 // start validation phase
                 final Frame mainWindow = WindowManager.getDefault().getMainWindow();
-                final JDialog dialog = new JDialog(mainWindow, NbBundle.getMessage(ConfigureHostPanel.class, "DLG_TITLE_Configure_Host"), true);
-                final ConfigureHostPanel panel = new ConfigureHostPanel();
-
-                dialog.getContentPane().add(panel);
-                dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
-                dialog.pack();
-
-                Rectangle bounds = mainWindow.getBounds();
-
-                int middleX = bounds.x + bounds.width / 2;
-                int middleY = bounds.y + bounds.height / 2;
-
-                Dimension size = dialog.getPreferredSize();
-
-                dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
-                panel.setHost(record.getName());
-                RequestProcessor.getDefault().post(new Runnable() {
+                Runnable csmWorker = new Runnable() {
                     public void run() {
                         try {
                             record.validate(true);
+                            // initialize compiler sets for remote host if needed
+                            CompilerSetManager csm = CompilerSetManager.getDefault(record.getName());
+                            csm.initialize(true);
                         } catch(Exception e) {
                             e.printStackTrace();
-                        } finally {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    // hide dialog and run action if successfully connected
-                                    dialog.setVisible(false);
-                                    dialog.dispose();
-                                    if (record.isOnline()) {
-                                        actionWorker.run();
-                                    }
-                                }
-                            });
                         }
-                    }
-                }, 100); // delay to be in time for displaying dialog
-                dialog.setVisible(true);
+                    }                    
+                };
+                Runnable edtWorker = new Runnable() {
+                    public void run() {
+                        if (record.isOnline()) {
+                            actionWorker.run();
+                        }
+                    }                    
+                };
+                String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Configure_Host_Progress", record.getName());
+                ModalMessageDlg.runLongTask(mainWindow, csmWorker, edtWorker, NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Configure_Host"), msg);
             }
         }
     }
@@ -690,6 +670,7 @@ public class MakeActionProvider implements ActionProvider {
                                 CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                                 outputFile = customToolConfiguration.getOutputs().getValue();
                             }
+                            outputFile = conf.expandMacros(outputFile);
                             // Clean command
                             String commandLine = "rm -rf " + outputFile; // NOI18N
                             String args = ""; // NOI18N
@@ -936,15 +917,14 @@ public class MakeActionProvider implements ActionProvider {
             // TODO: all validation below works, but it may be more efficient to make a verifying script
         }
 
+        boolean unknownCompilerSet = false;
         if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
             // Confiiguration was created with unknown tool set. Use the now default one.
+            unknownCompilerSet = true;
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
             if (cs == null) {
-                cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csconf.getOption());
-            }
-            if (cs == null && CompilerSetManager.getDefault(hkey).getCompilerSets().size() > 0) {
-                cs = CompilerSetManager.getDefault(hkey).getCompilerSet(0);
+                cs = CompilerSetManager.getDefault(hkey).getDefaultCompilerSet();
             }
             runBTA = true;
         } else if (csconf.isValid()) {
@@ -975,7 +955,7 @@ public class MakeActionProvider implements ActionProvider {
                 runBTA = true;
             }
         } else {
-            if(serverList != null) {
+            if(serverList != null && !unknownCompilerSet) {
                 if (!serverList.isValidExecutable(hkey, makeTool.getPath())) {
                     runBTA=true;
                 }
@@ -1035,7 +1015,7 @@ public class MakeActionProvider implements ActionProvider {
                 // User can't change anything in BTA for remote host yet,
                 // so showing above dialog will only confuse him
                 NotifyDescriptor nd = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", cs.getName(), conf.getDevelopmentHost().getName()));
+                        NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", csname, conf.getDevelopmentHost().getName()));
                 DialogDisplayer.getDefault().notify(nd);
                 lastValidation = false;
             }

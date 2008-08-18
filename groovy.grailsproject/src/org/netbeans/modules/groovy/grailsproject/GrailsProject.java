@@ -71,6 +71,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.groovy.grails.api.GrailsConstants;
 import org.netbeans.modules.groovy.grailsproject.ui.TemplatesImpl;
+import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -126,6 +127,7 @@ public final class GrailsProject implements Project {
                 new AuxiliaryConfigurationImpl(),
                 getSearchInfo(projectDir),
                 new RecommendedTemplatesImpl(),
+                new GroovyFeatureImpl(),
                 logicalView, //Logical view of project implementation
                 cpProvider
             );
@@ -300,5 +302,14 @@ public final class GrailsProject implements Project {
         }
         
     }
+
+    private static final class GroovyFeatureImpl implements GroovyFeature {
+
+        public boolean isGroovyEnabled() {
+            return true;
+        }
+        
+    }
+
 
 }

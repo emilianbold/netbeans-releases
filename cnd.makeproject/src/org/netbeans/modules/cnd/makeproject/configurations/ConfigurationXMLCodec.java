@@ -281,6 +281,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String bc = getString(atts.getValue("BC"));        // NOI18N
             String cc = getString(atts.getValue("CC"));        // NOI18N
             String op = getString(atts.getValue("OP"));        // NOI18N
+            op = ((MakeConfiguration)currentConf).expandMacros(op); // if it is a sample, $(PLATFORM} is stored in output
 
             LibraryItem.ProjectItem projectItem = new LibraryItem.ProjectItem(new MakeArtifact(
                     pl,

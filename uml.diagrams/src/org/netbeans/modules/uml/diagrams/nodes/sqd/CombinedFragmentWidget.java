@@ -184,21 +184,25 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
     
     @Override
     public void initializeNode(IPresentationElement presentation) {
-        //
-        ICombinedFragment src = (ICombinedFragment) presentation.getFirstSubject();
-        String name = ((BaseElement)src).getAttributeValue("interactionOperator");
-        if (name == null || name.length() == 0) {
-            name = "assert";
-        }
-        setOperator(name);
-        //add all necessary operands
+        // Since the interaction boundary widget extends the the CombinedFragmentWidge
+        // we have to make sure the element type is not an interaction object.
+        if(presentation.getFirstSubject() instanceof ICombinedFragment)
+        {
+            ICombinedFragment src = (ICombinedFragment) presentation.getFirstSubject();
+            String name = ((BaseElement)src).getAttributeValue("interactionOperator");
+            if (name == null || name.length() == 0) {
+                name = "assert";
+            }
+            setOperator(name);
+            //add all necessary operands
 
-        for (IInteractionOperand i : src.getOperands()) {
-            //i.createGuard();
-            InteractionOperandWidget w=addOperand(i);
-            getScene().validate();
+            for (IInteractionOperand i : src.getOperands()) {
+                //i.createGuard();
+                InteractionOperandWidget w=addOperand(i);
+                getScene().validate();
+            }
         }
-    
+        super.initializeNode(presentation);
     }
 
     @Override

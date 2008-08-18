@@ -246,6 +246,11 @@ public class ConfigurationMakefileWriter {
 	if (conf.getArchiverConfiguration().getTool().getModified())
 	    bw.write("AR=" + conf.getArchiverConfiguration().getTool().getValue() + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
+        
+        bw.write("# Macros\n"); // NOI18N
+        bw.write("PLATFORM=" + conf.getVariant() + "\n"); // NOI18N
+        bw.write("\n"); // NOI18N
+        
         bw.write("# Include project Makefile\n"); // NOI18N
         bw.write("include " + projectDescriptor.getProjectMakefileName() + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
@@ -536,6 +541,8 @@ public class ConfigurationMakefileWriter {
         if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration()) {
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
+            bw.write(".dep.inc: .depcheck-impl\n"); // NOI18N
+            bw.write("\n"); // NOI18N
             bw.write("include .dep.inc\n"); // NOI18N
         }
     }
@@ -557,7 +564,7 @@ public class ConfigurationMakefileWriter {
     }
     
     public static String getObjectDir(MakeConfiguration conf) {
-        return MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + '/' + conf.getVariant(); // UNIX path
+        return MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + '/' + "${PLATFORM}"; // UNIX path
     }
     
     private String getObjectFiles(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf) {
@@ -634,6 +641,7 @@ public class ConfigurationMakefileWriter {
         
         bw.write("# Macros\n"); // NOI18N
         bw.write("TOP=" + "`pwd`" + "\n"); // NOI18N
+        bw.write("PLATFORM=" + conf.getVariant() + "\n"); // NOI18N
         bw.write("TMPDIR=" + tmpdir + "\n"); // NOI18N
         String projectOutput = conf.getOutputValue();
         if (projectOutput == null || projectOutput.length() == 0) {

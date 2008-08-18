@@ -42,7 +42,6 @@
 package org.netbeans.modules.db.sql.execute;
 
 import org.netbeans.modules.db.sql.history.SQLHistory;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -55,7 +54,6 @@ import org.netbeans.modules.db.dataview.api.DataView;
 import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.util.Exceptions;
 
 /**
  * Support class for executing SQL statements.
@@ -85,12 +83,7 @@ public final class SQLExecuteHelper {
         
         List<SQLExecutionResult> results = new ArrayList<SQLExecutionResult>();
         long totalExecutionTime = 0;
-        String url = null;
-        try {
-            url = conn.getJDBCConnection().getMetaData().getURL();
-        } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        String url = conn.getDatabaseURL();
 
         for (Iterator i = statements.iterator(); i.hasNext();) {
             
@@ -288,7 +281,7 @@ public final class SQLExecuteHelper {
                         break;
                         
                     case STATE_STRING:
-                        if (ch == '\n' || ch == '\'') {
+                        if (ch == '\'') {
                             state = STATE_MEANINGFUL_TEXT;
                         }
                         break;

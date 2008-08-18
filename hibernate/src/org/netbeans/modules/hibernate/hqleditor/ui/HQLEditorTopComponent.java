@@ -650,6 +650,7 @@ public final class HQLEditorTopComponent extends TopComponent {
 
         executionPanel.add(resultContainerPanel, "card2");
 
+        sqlEditorPane.setEditable(false);
         jScrollPane2.setViewportView(sqlEditorPane);
 
         executionPanel.add(jScrollPane2, "card1");
