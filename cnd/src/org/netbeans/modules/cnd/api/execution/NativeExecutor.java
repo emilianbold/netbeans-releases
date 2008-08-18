@@ -213,11 +213,12 @@ public class NativeExecutor implements Runnable {
         try {
             // Execute the selected command
             nativeExecution = NativeExecution.getDefault(host).getNativeExecution();
+            String[] preparedEnvp = nativeExecution.prepareEnvironment(envp, unbuffer);
             rc = nativeExecution.executeCommand(
                     runDirFile,
                     executable,
                     arguments,
-                    envp,
+                    preparedEnvp,
                     out,
 		    showInput ? io.getIn() : null,
                     unbuffer);

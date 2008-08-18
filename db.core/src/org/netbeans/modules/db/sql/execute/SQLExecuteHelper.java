@@ -281,7 +281,7 @@ public final class SQLExecuteHelper {
                         break;
                         
                     case STATE_STRING:
-                        if (ch == '\n' || ch == '\'') {
+                        if (ch == '\'') {
                             state = STATE_MEANINGFUL_TEXT;
                         }
                         break;
