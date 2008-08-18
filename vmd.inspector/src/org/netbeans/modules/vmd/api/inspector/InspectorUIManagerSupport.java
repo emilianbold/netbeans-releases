@@ -36,49 +36,54 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.vmd.midp.components.databinding;
+package org.netbeans.modules.vmd.api.inspector;
 
-import org.netbeans.modules.vmd.midp.components.*;
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
-import org.netbeans.modules.vmd.midp.codegen.MidpDataSetBodyCodePresenter;
+import java.beans.PropertyVetoException;
+import org.netbeans.modules.vmd.api.io.DataObjectContext;
+import org.netbeans.modules.vmd.api.io.ProjectUtils;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.inspector.InspectorManagerView;
+import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author Karol Harezlak
+ * @author karolharezlak
  */
-public class DataSetCD extends ComponentDescriptor {
+public final class InspectorUIManagerSupport {
 
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.databinding.DataSet"); //NOI18N
+    public static void selectNodesInInspector(DesignDocument document, String nameToSelect) {
+        DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
+        ExplorerManager manager = InspectorManagerView.getExplorerManager(context);
+        if (manager == null)
+            return;
+        Node rootNode = manager.getRootContext();
+        Node nodeToSelect = dive(rootNode, nameToSelect);
+        if (nodeToSelect != null) {
+            try {
+                manager.setSelectedNodes(new Node[]{nodeToSelect});
+            } catch (PropertyVetoException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
-    @Override
-    public TypeDescriptor getTypeDescriptor() {
-        return new TypeDescriptor(DataSetAbstractCD.TYPEID, TYPEID, true, true);
     }
 
-    @Override
-    public VersionDescriptor getVersionDescriptor() {
-        return MidpVersionDescriptor.MIDP_2;
-    }
-
-    @Override
-    public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
+    private static Node dive(Node parentNode, String nameToSelect) {
+        Children children = parentNode.getChildren();
+        for (Node node : children.getNodes()) {
+            if (node.getHtmlDisplayName().equals(nameToSelect) || node.getDisplayName().equals(nameToSelect)) {
+                return node;
+            }
+            if (node.getChildren() != null) {
+                Node nodeToSelect = dive(node, nameToSelect);
+                if (nodeToSelect != null)
+                    return nodeToSelect;
+            }
+        }
         return null;
-    }
 
-    @Override
-    protected List<? extends Presenter> createPresenters() {
-
-        return Arrays.asList(
-                // code
-                MidpDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code") //NOI18N
-                );
     }
 }
-
