@@ -215,7 +215,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
                     model.addElement( new ArtifactItem( artifacts[i], uris[j]));
                 }
             }
-            jListArtifacts.setSelectionInterval(0, model.size());            
+            jListArtifacts.setSelectionInterval(0, model.size() - 1);            
         }
     }
     

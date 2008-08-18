@@ -459,6 +459,17 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ141105_std_vector.cc", 20, 11, "IZ141105_std_vector.cc", 3, 5);
     }
     
+    public void testTemplateParameterPriority() throws Exception {
+        // IZ#144050 : inner type should have priority over global one
+        performTest("templateParameters.h", 96, 5, "templateParameters.h", 95, 11); 
+    }
+
+    public void testInnerTypePriority() throws Exception {
+        // IZ#144050 : inner type should have priority over global one
+        performTest("IZ144050.cc", 8, 43, "IZ144050.cc", 8, 5); 
+        performTest("IZ144050.cc", 12, 24, "IZ144050.cc", 8, 5); 
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

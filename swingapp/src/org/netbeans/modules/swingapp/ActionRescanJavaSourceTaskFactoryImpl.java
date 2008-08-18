@@ -80,6 +80,12 @@ public class ActionRescanJavaSourceTaskFactoryImpl extends EditorAwareJavaSource
         }
 
         public void run(CompilationInfo info) throws Exception {
+            if (!AppFrameworkSupport.isFrameworkLibAvailable(file)
+                    || (AppFrameworkSupport.getApplicationClassName(file, false) == null)) {
+                // Issue 143617 - avoid repeated scanning for application class
+                // in projects where the application class is not present
+                return;
+            }
             ActionManager am = ActionManager.getActionManager(file);
             if(am != null && AppFrameworkSupport.getClassNameForFile(file) != null) {
                 am.lazyRescan(file);

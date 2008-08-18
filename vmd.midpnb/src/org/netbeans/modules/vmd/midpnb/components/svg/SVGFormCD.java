@@ -80,6 +80,7 @@ import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormFileChangePres
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGLabelCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGRadioButtonCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGSliderCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGSpinnerCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGTextFieldCD;
 import org.netbeans.modules.vmd.midpnb.general.SVGFileAcceptPresenter;
@@ -181,7 +182,6 @@ public class SVGFormCD extends ComponentDescriptor {
                         return CodeReferencePresenter.generateAccessCode(getComponent()) + ".getSvgCanvas ()"; // NOI18N
                     }
                 },
-                MidpCodePresenterSupport.createAddImportPresenter(),
                 createSetterPresenter(),
                 new SVGFormPresenterCodeClassInitHeaderFooterPresenter(),
                 // delete
@@ -195,8 +195,6 @@ public class SVGFormCD extends ComponentDescriptor {
                 );
     }
     
-    
-
     private class SVGFormPresenterCodeClassInitHeaderFooterPresenter extends CodeClassInitHeaderFooterPresenter {
 
         @Override
@@ -225,6 +223,8 @@ public class SVGFormCD extends ComponentDescriptor {
                 } else if (component.getType() == SVGRadioButtonCD.TYPEID) {
                     generateSVGFormAddComponentCode(section, getComponent(), component);
                 } else if (component.getType() == SVGTextFieldCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), component);
+                } else if (component.getType() == SVGSliderCD.TYPEID) {
                     generateSVGFormAddComponentCode(section, getComponent(), component);
                 }
             }

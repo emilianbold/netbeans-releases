@@ -41,6 +41,7 @@ package org.netbeans.modules.web.client.tools.common.dbgp;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.web.client.tools.common.launcher.Utils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -57,45 +58,86 @@ public class HttpMessage extends Message {
         super(node);
     }
 
+    private String id;
     public String getId() {
-        return getChild(getNode(), "id").getChildNodes().item(0).getNodeValue();
+        if ( id == null ){
+            id = getChild(getNode(), "id").getChildNodes().item(0).getNodeValue();
+        }
+        return id;
     }
 
+    private String timeStamp;
     public String getTimeStamp() {
         //Joelle: We should change this to a Date
-        return getChild(getNode(), "timestamp").getFirstChild().getNodeValue();
+        if( timeStamp == null ){
+            timeStamp = getChild(getNode(), "timestamp").getFirstChild().getNodeValue();
+        }
+        return timeStamp;
     }
 
-    public String getResponseText() {
-        Node responseTextNode = getChild(getNode(), "responseText");
-        if (responseTextNode != null && responseTextNode.getFirstChild() != null) {
-            String value = responseTextNode.getFirstChild().getNodeValue();
-            if (value != null && !value.equals("null")) {
-                byte[] bytes = Message.getDecodedBytes(Encoding.BASE64, value);
-                //        Message.checkValue(bytes, getSize());
-                return new String(bytes);
+    private String encoding;
+    public String getContentEncoding() {
+        if ( encoding == null ){
+            Map<String, String> map = getHeader();
+            if (map != null) {
+                encoding = map.get("Content-Encoding");
             }
         }
-        return null;
-    }
+        return encoding;
 
-    public String getType() {
-        return getChild(getNode(), "type").getFirstChild().getNodeValue();
     }
-
-    public String getUrl() {
-        return getChild(getNode(), "url").getFirstChild().getNodeValue();
-    }
-
-    public String getMethodType() {
-        return getChild(getNode(), "method").getFirstChild().getNodeValue();
-    }
-
-    public String getPostText() {
-        if (getChild(getNode(), "postText") != null) {
-            return getChild(getNode(), "postText").getFirstChild().getNodeValue();
+    private String responseText;
+    public String getResponseText() {
+        if (responseText == null) {
+            Node responseTextNode = getChild(getNode(), "responseText");
+            if (responseTextNode != null && responseTextNode.getFirstChild() != null) {
+                String value = responseTextNode.getFirstChild().getNodeValue();
+                if (value != null && !value.equals("null")) {
+                    byte[] data = Message.getDecodedBytes(Encoding.BASE64, value);
+                    String strEnc = getContentEncoding();
+//                if( "gzip".equalsIgnoreCase(strEnc) ){
+//                    data = Utils.GUnzipper(data);
+//                }
+                    //        Message.checkValue(bytes, getSize());
+                    responseText = new String(data);
+                }
+            }
         }
-        return null;
+        return responseText;
+    }
+
+    private String type;
+    public String getType() {
+        if (type == null ) {
+            type = getChild(getNode(), "type").getFirstChild().getNodeValue();
+        }
+        return type;
+    }
+
+    private String url;
+    public String getUrl() {
+        if( url == null ){
+            url = getChild(getNode(), "url").getFirstChild().getNodeValue();
+        }
+        return url;
+    }
+
+    private String methodType;
+    public String getMethodType() {
+        if( methodType == null) {
+            methodType = getChild(getNode(), "method").getFirstChild().getNodeValue();
+        }
+        return methodType;
+    }
+
+    private String postText;
+    public String getPostText() {
+        if ( postText == null ){
+            if (getChild(getNode(), "postText") != null) {
+                postText = getChild(getNode(), "postText").getFirstChild().getNodeValue();
+            }
+        }
+        return postText;
     }
 
     public boolean isLoadTriggerByUser() {

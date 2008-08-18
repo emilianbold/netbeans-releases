@@ -321,7 +321,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         }
         if (threadsListener == null) {
             threadsListener = ThreadsListener.getDefault();
-            threadsListener.setDebuggingView(this);
+            if (threadsListener != null) {
+                threadsListener.setDebuggingView(this);
+            }
         }
         if (engine != null) {
             final JPDADebugger deb = engine.lookupFirst(null, JPDADebugger.class);
@@ -352,7 +354,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 this.debugger = null;
                 this.session = null;
             }
-            threadsListener.changeDebugger(null);
+            if (threadsListener != null) {
+                threadsListener.changeDebugger(null);
+            }
         }
         Node root;
         if (model == null) {
@@ -434,7 +438,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     @Override
     protected void componentHidden() {
         super.componentHidden ();
-        viewModelListener.destroy ();
+        if (viewModelListener != null) {
+            viewModelListener.destroy ();
+        }
     }
 
     @Override
@@ -524,24 +530,28 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     }
     
     void updateSessionsComboBox() {
-        sessionComboBox.removeActionListener(sessionsComboListener);
-        sessionComboBox.removePopupMenuListener(sessionsComboListener);
-        ComboBoxModel model = sessionComboBox.getModel();
-        sessionComboBox.removeAllItems();
-        DebuggerManager dm = DebuggerManager.getDebuggerManager();
-        Session[] sessions = dm.getSessions();
-        for (int x = 0; x < sessions.length; x++) {
-            if (isJPDASession(sessions[x])) {
-                sessionComboBox.addItem(new SessionItem(sessions[x]));
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                sessionComboBox.removeActionListener(sessionsComboListener);
+                sessionComboBox.removePopupMenuListener(sessionsComboListener);
+                ComboBoxModel model = sessionComboBox.getModel();
+                sessionComboBox.removeAllItems();
+                DebuggerManager dm = DebuggerManager.getDebuggerManager();
+                Session[] sessions = dm.getSessions();
+                for (int x = 0; x < sessions.length; x++) {
+                    if (isJPDASession(sessions[x])) {
+                        sessionComboBox.addItem(new SessionItem(sessions[x]));
+                    }
+                }
+                if (model.getSize() == 0) {
+                    sessionComboBox.addItem(new SessionItem(null));
+                }
+                sessionComboBox.setSelectedItem(new SessionItem(dm.getCurrentSession()));
+                sessionComboBox.setVisible(model.getSize() > 1);
+                sessionComboBox.addActionListener(sessionsComboListener);
+                sessionComboBox.addPopupMenuListener(sessionsComboListener);
             }
-        }
-        if (model.getSize() == 0) {
-            sessionComboBox.addItem(new SessionItem(null));
-        }
-        sessionComboBox.setSelectedItem(new SessionItem(dm.getCurrentSession()));
-        //sessionComboBox.setEnabled(model.getSize() > 1);
-        sessionComboBox.addActionListener(sessionsComboListener);
-        sessionComboBox.addPopupMenuListener(sessionsComboListener);
+        });
     }
     
     // **************************************************************************
@@ -761,8 +771,6 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             mainScrollPane.revalidate();
             mainPanel.revalidate();
             treeView.repaint();
-
-            updateSessionsComboBox(); // [TODO]
         }
 
         private void addPanels(Object jpdaObject, boolean current, boolean atBreakpoint,

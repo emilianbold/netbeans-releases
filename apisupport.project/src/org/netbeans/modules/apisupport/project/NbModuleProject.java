@@ -202,7 +202,7 @@ public final class NbModuleProject implements Project {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
-        lookup = new LazyLookup(new Info(), aux, helper, fileBuilt, sourcesHelper); //NOI18N
+        lookup = createLookup(new Info(), aux, helper, fileBuilt, sourcesHelper);
     }
     
     public @Override String toString() {
@@ -254,39 +254,6 @@ public final class NbModuleProject implements Project {
         return  LookupProviderSupport.createCompositeLookup(baseLookup, "Projects/org-netbeans-modules-apisupport-project/Lookup"); //NOI18N
     }
 
- 
-
- // in 6.5 the ProjectInformation icon is used in project open dialog.
-   // however we don't want this call to initiate the comple lookup of the project
-   //as that's time consuming and suboptimal to do for all projects in the filechooser.
-   private class LazyLookup extends ProxyLookup {
-       AuxiliaryConfiguration aux;
-       AntProjectHelper helper;
-       FileBuiltQueryImplementation fileBuilt;
-       SourcesHelper sourcesHelper;
-       private ProjectInformation info;
-       private Lookup lookup;
-       boolean initialized = false;
-       LazyLookup(ProjectInformation info, AuxiliaryConfiguration aux, AntProjectHelper helper, FileBuiltQueryImplementation fileBuilt, final SourcesHelper sourcesHelper) {
-           setLookups(Lookups.fixed(info));
-           this.aux = aux;
-           this.helper = helper;
-           this.fileBuilt = fileBuilt;
-           this.sourcesHelper = sourcesHelper;
-           this.info = info;
-       }
-
-       @Override
-       protected synchronized void beforeLookup(Template<?> template) {
-           if (!initialized &&
-               (! (ProjectInformation.class.equals(template.getType())))) {
-               initialized = true;
-               lookup = createLookup(info, aux, helper, fileBuilt, sourcesHelper);
-               setLookups(lookup);
-           }
-           super.beforeLookup(template);
-       }
-   }
 
 
     public FileObject getProjectDirectory() {

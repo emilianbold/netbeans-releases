@@ -55,7 +55,7 @@ public class ShellUtils {
         return prepareExportString(isCshShell, env);
     }
 
-    static String prepareExportString(boolean isCshShell, Map<String, String> env) {
+    public static String prepareExportString(boolean isCshShell, Map<String, String> env) {
         StringBuilder cmdline = new StringBuilder();
         String exportCommand = getExportCommand(isCshShell);
         String middleFix = isCshShell ? " " : "="; // NOI18N
