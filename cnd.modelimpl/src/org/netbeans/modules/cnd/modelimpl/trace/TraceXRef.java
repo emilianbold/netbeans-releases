@@ -173,7 +173,7 @@ public class TraceXRef extends TraceModel {
                 CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(object, true);
                 CsmObject decl = decDef[0];
                 CsmObject def = decDef[1];                
-                Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), CsmReferenceKind.ALL);
+                Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), CsmReferenceKind.ALL, null);
                 if (super.isShowTime()) {
                     time = System.currentTimeMillis() - time;
                 }            
