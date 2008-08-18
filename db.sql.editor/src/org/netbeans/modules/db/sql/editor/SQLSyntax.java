@@ -103,6 +103,9 @@ public class SQLSyntax extends Syntax {
                         case '/':
                             state = ISA_SLASH;
                             break;
+                        case '#':
+                            state = ISI_LINE_COMMENT;
+                            break;
                         case '=':
                         case '>':
                         case '<':

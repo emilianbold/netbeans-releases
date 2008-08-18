@@ -82,6 +82,16 @@ public class SQLLexerTest extends NbTestCase {
         System.out.println(dumpTokens(seq));
     }
 
+    public void testComments() throws Exception {
+        Document doc = new ModificationTextDocument();
+        doc.insertString(0, "-- line comment\n# mysql comment\n/* block \ncomment*/", null);
+        doc.putProperty(Language.class, SQLTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence seq = hi.tokenSequence();
+        seq = hi.tokenSequence();
+        System.out.println(dumpTokens(seq));
+    }
+
     private CharSequence dumpTokens(TokenSequence<?> seq) {
         StringBuilder builder = new StringBuilder();
         Token token = null;

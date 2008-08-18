@@ -98,6 +98,9 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                         case '/':
                             state = ISA_SLASH;
                             break;
+                        case '#':
+                            state = ISI_LINE_COMMENT;
+                            break;
                         case '=':
                         case '>':
                         case '<':
