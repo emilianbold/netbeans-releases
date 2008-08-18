@@ -1345,19 +1345,20 @@ public class WizardDescriptor extends DialogDescriptor {
             public void run() {
                 
                 err.log (Level.FINE, "validationPeformer entry."); // NOI18N
-                if (currentPanelWasChangedWhileStoreSettings) {
-                    currentPanelWasChangedWhileStoreSettings = false;
-                    err.log (Level.FINE, "validationPeformer interupt because currentPanelWasChangedWhileStoreSettings"); // NOI18N
-                    return ;
-                }
                 ValidatingPanel v = (ValidatingPanel) panel;
 
                 try {
                     // try validation current panel
-                    v.validate();
+                    if (currentPanelWasChangedWhileStoreSettings) {
+                        err.log (Level.FINE, "validationPeformer interupt because currentPanelWasChangedWhileStoreSettings"); // NOI18N
+                        currentPanelWasChangedWhileStoreSettings = false;
+                    } else {
+                        v.validate();
+                        err.log (Level.FINE, "validation passed successfully."); // NOI18N
+                    }
                     validationRuns = false;
 
-                    // validation succesfull
+                    // validation was successful
                     if (SwingUtilities.isEventDispatchThread ()) {
                         err.log (Level.FINE, "Runs onValidPerformer directly in EDT."); // NOI18N
                         onValidPerformer.run();
