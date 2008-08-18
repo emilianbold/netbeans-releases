@@ -79,6 +79,7 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
 
 	public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
 	    RunProfile runProfile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
+            boolean isRemote = false
 	    return runProfile != null ? runProfile.getSheet() : null;
 	    //return configurationDescriptor.getSheet(project, configuration);
 	}
