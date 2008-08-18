@@ -248,7 +248,7 @@ public class CompilerSetManager {
         return state == STATE_UNINITIALIZED;
     }
 
-    public synchronized void initialize() {
+    public synchronized void initialize(boolean save) {
         if (isUninitialized()) {
             log.fine("CSM.getDefault: Doing remote setup from EDT?" + SwingUtilities.isEventDispatchThread());
             this.sets.clear();
@@ -256,6 +256,11 @@ public class CompilerSetManager {
             if (remoteInitialization != null) {
                 remoteInitialization.waitFinished();
                 remoteInitialization = null;
+            }
+        }
+        if (save) {
+            synchronized (MASTER_LOCK) {
+                saveToDisk();
             }
         }
     }
@@ -268,7 +273,7 @@ public class CompilerSetManager {
                 waitForCompletion();
             }
         }
-        return platform;
+        return platform == -1 ? PlatformTypes.PLATFORM_NONE : platform;
     }
 
     public void waitForCompletion() {
@@ -354,6 +359,8 @@ public class CompilerSetManager {
         // but we should choose "GNU vs SS" based on "NB vs SS" knowledge
         if (!sets.isEmpty()) {
             setDefault(sets.get(0));
+        } else {
+            add(CompilerSet.createEmptyCompilerSet(getPlatform()));            
         }
     }
 

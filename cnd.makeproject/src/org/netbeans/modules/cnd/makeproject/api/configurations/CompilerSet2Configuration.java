@@ -73,10 +73,10 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     public CompilerSet2Configuration(DevelopmentHostConfiguration developmentHostConfiguration) {
         this.developmentHostConfiguration = developmentHostConfiguration;
         String csName = getCompilerSetManager().getDefaultCompilerSet().getName();
-        if (csName.length() == 0) {
-            if (getCompilerSetManager().getCompilerSetNames().size() > 0)
+        if (csName == null || csName.length() == 0) {
+            if (getCompilerSetManager().getCompilerSetNames().size() > 0) {
                 csName = getCompilerSetManager().getCompilerSet(0).getName();
-            else {
+            } else {
                 if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS)
                     csName = "Sun"; // NOI18N
                 else
