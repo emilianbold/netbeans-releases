@@ -184,9 +184,6 @@ public class Depr_MimeLookupTest extends NbTestCase {
                 "Editors/text/jsp/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance");
         
         TestUtilities.deleteFile(getWorkDir(),
-                "Editors/text/x-java/text/xml/testLookupTwo/org-netbeans-modules-editor-mimelookup-impl-TestLookupObjectTwo.instance");
-        
-        TestUtilities.deleteFile(getWorkDir(),
                 "Editors/text/html/text/xml/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance");
 
         TestUtilities.deleteFile(getWorkDir(),
@@ -506,8 +503,6 @@ public class Depr_MimeLookupTest extends NbTestCase {
         checkLookupTemplate(lookup, TestLookupObjectTwo.class, 0);
 
         // testing issue #58941
-        TestUtilities.deleteFile(getWorkDir(),
-                "Editors/text/xml/text/jsp/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance");
         TestUtilities.deleteFile(getWorkDir(),
                 "Editors/text/jsp/testLookup/org-netbeans-modules-editor-mimelookup-impl-TestLookupObject.instance");
         checkLookupTemplate(lookup, TestLookupObject.class, 0);
