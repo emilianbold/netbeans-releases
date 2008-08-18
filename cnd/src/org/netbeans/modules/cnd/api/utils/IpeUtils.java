@@ -766,6 +766,9 @@ public class IpeUtils {
 		string.charAt(i) == '-' ||
 		string.charAt(i) == '.' ||
 		string.charAt(i) == '/' ||
+		string.charAt(i) == '$' ||
+		string.charAt(i) == '{' ||
+		string.charAt(i) == '}' ||
 		string.charAt(i) == '\\') {
             }
             else {

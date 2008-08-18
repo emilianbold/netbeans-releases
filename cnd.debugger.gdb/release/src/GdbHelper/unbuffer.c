@@ -39,4 +39,15 @@
  * made subject to such option by the copyright holder.
  */
 
-_isatty(int fd) {return 1;}
+//_isatty(int fd) {return 1;}
+
+#include <stdio.h>
+
+static void __attribute__ ((constructor)) \
+  lib_init(void);
+
+static void lib_init(void) {
+    //fprintf(stderr, "Output buffering disabled...\n");
+    setbuf(stdout, NULL);
+    return;
+}

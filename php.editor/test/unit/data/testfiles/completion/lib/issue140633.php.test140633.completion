@@ -3,3 +3,4 @@ echo $_COOKI|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 VARIABLE   $_COOKIE                                   PHP Platform
+KEYWORD    return                                     null

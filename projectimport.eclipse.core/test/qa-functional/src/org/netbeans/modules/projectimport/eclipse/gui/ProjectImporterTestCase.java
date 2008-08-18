@@ -143,6 +143,10 @@ public abstract class ProjectImporterTestCase  extends NbTestCase {
         String nodeName = Bundle.getStringTrimmed("org.netbeans.modules.web.project.Bundle", "LBL_Node_DocBase");
         validateProjectNode(projectName, nodeName);
     }
+    protected void validateLibrary(String projectName, String libraryName) {
+        String librariesNode = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle", "CTL_LibrariesNode");
+        validateProjectNode(projectName,librariesNode+"|"+libraryName);
+    }    
     private void validateProjectNode(String projectName,String nodeName) {
         pto = new ProjectsTabOperator();
         try {

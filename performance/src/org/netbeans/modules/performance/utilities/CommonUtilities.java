@@ -227,9 +227,8 @@ public class CommonUtilities {
     }
     
     public static void closeTaskWindow() {
-        OutputOperator oo=new OutputOperator();
-        OutputTabOperator oto=oo.getOutputTab("Tasks");
-        oto.close();
+        TopComponentOperator tco = new TopComponentOperator("Tasks");
+        tco.close();
     }
     
     private static void closeToolbar(String menu){

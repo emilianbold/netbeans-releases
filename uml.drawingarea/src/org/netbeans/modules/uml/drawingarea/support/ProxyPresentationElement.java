@@ -48,6 +48,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IReference;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ITaggedValue;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.PresentationElement;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
@@ -57,7 +58,7 @@ import org.netbeans.modules.uml.core.support.umlutils.ETList;
  *
  * @author treyspiva
  */
-public class ProxyPresentationElement implements IPresentationElement
+public class ProxyPresentationElement extends PresentationElement
 {
     private IPresentationElement element = null;
     private String proxyType = "";
@@ -701,12 +702,22 @@ public class ProxyPresentationElement implements IPresentationElement
 
     public IVersionableElement duplicate()
     {
-        return element.duplicate();
+        IVersionableElement dup =  element.duplicate();
+        
+        IVersionableElement retVal = dup;
+        
+        if(dup instanceof IPresentationElement)
+        {
+            retVal = new ProxyPresentationElement((IPresentationElement)dup,
+                                                  proxyType);
+        }
+        
+        return retVal;
     }
 
     public void delete()
     {
-        element.delete();
+        super.delete();
     }
 
     @Override

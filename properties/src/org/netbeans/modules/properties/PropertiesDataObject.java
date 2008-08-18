@@ -312,11 +312,15 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
      */                                                           
     @Override
     protected Node createNodeDelegate () {
-        PropertiesChildren pc = new PropertiesChildren();
+        return new PropertiesDataNode(this);
+    }
 
-        // properties node - creates new types
-        DataNode dn = new PropertiesDataNode(this, pc);
-        return dn;
+    Children getChildren() {
+        return new PropertiesChildren();
+    }
+
+    boolean isMultiLocale() {
+        return secondaryEntries().size() > 0;
     }
 
     /** Returns a structural view of this data object */
@@ -350,6 +354,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
 
         /** Listens to changes on the dataobject */
         private PropertyChangeListener propertyListener = null;
+        private PropertyChangeListener weakPropListener = null;
 
         
         /** Constructor.*/
@@ -395,13 +400,23 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
                 propertyListener = new PropertyChangeListener () {
                     public void propertyChange(PropertyChangeEvent evt) {
                         if(PROP_FILES.equals(evt.getPropertyName())) {
+                            if (isMultiLocale()) {
                             mySetKeys();
+                            } else {
+                                // These children are only used for two or more locales.
+                                // If only default locale is left, disconnect the listener.
+                                // This children object is going to be removed, but
+                                // for some reason it causes problems setting new keys here.
+                                if (propertyListener != null) {
+                                    PropertiesDataObject.this.removePropertyChangeListener(weakPropListener);
+                                    propertyListener = null;
+                        }
+                    }
                         }
                     }
                 }; 
-
-                PropertiesDataObject.this.addPropertyChangeListener(
-                    WeakListeners.propertyChange(propertyListener, PropertiesDataObject.this));
+                weakPropListener = WeakListeners.propertyChange(propertyListener, PropertiesDataObject.this);
+                PropertiesDataObject.this.addPropertyChangeListener(weakPropListener);
             }
         }
 

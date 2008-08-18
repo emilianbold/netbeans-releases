@@ -422,7 +422,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                     }
                 }
 
-                resultSet.setAnchorOffset(queryAnchorOffset = res.getSubstituteOffset() + 1);
+                resultSet.setAnchorOffset(queryAnchorOffset = res.getSubstituteOffset());
                 resultSet.setToolTip(queryToolTip = new MethodParamsTipPaintComponent(list, idx));
             }
             resultSet.finish();

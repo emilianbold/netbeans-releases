@@ -83,6 +83,9 @@ public class ThreadsListener extends DebuggerManagerAdapter {
         if (currentDebugger == deb) {
             return;
         }
+        if (debuggingView == null) {
+            return;
+        }
         if (currentDebugger != null) {
             InfoPanel infoPanel = debuggingView.getInfoPanel();
             infoPanel.setShowDeadlock(false);
@@ -167,8 +170,11 @@ public class ThreadsListener extends DebuggerManagerAdapter {
         if (deb != null) {
             DebuggerListener listener = new DebuggerListener(deb);
             debuggerToListener.put(deb, listener);
+            if (debuggingView != null) {
+                        debuggingView.updateSessionsComboBox();
+                    }
+            }
         }
-    }
 
     @Override
     public synchronized void engineRemoved(DebuggerEngine engine) {
@@ -179,8 +185,11 @@ public class ThreadsListener extends DebuggerManagerAdapter {
                 listener.unregister();
             }
             debuggerToListener.remove(listener);
+            if (debuggingView != null) {
+                        debuggingView.updateSessionsComboBox();
+                    }
+            }
         }
-    }
     
     // **************************************************************************
     // inner classes
@@ -249,11 +258,14 @@ public class ThreadsListener extends DebuggerManagerAdapter {
                     } else {
                         removeBreakpointHit(thread);
                     }
-                    if (debugger == currentDebugger) {
+                    if (debugger == currentDebugger && debuggingView != null) {
                         debuggingView.refreshView(); // [TODO]
                     }
                 } else if (JPDAThread.PROP_SUSPENDED.equals(propName)) {
-                    if (debugger == currentDebugger) {
+                    if (!thread.isSuspended()) {
+                        removeBreakpointHit(thread);
+                    }
+                    if (debugger == currentDebugger && debuggingView != null) {
                         debuggingView.refreshView(); // [TODO]
                     }
                 } else if ("lockerThreads".equals(propName)) { // NOI18N
@@ -300,9 +312,6 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             threads.clear();
             currentThreadsHistory.clear();
             hits.clear();
-            if (lockerThreads != null) {
-                lockerThreads.clear();
-            }
             lockedThread = null;
             debugger.removePropertyChangeListener(this);
             debugger.getThreadsCollector().getDeadlockDetector().removePropertyChangeListener(this);
@@ -320,7 +329,7 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             if (thread != null && !hits.contains(thread)) {
                 // System.out.println("Hit added: " + thread.getName());
                 hits.add(thread);
-                if (debugger == currentDebugger) {
+                if (debugger == currentDebugger && debuggingView != null) {
                     debuggingView.getInfoPanel().addBreakpointHit(thread, hits.size());
                 }
             }
@@ -330,14 +339,14 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             if (thread != null && hits.contains(thread)) {
                 // System.out.println("Hit removed: " + thread.getName());
                 hits.remove(thread);
-                if (debugger == currentDebugger) {
+                if (debugger == currentDebugger && debuggingView != null) {
                     debuggingView.getInfoPanel().removeBreakpointHit(thread, hits.size());
                 }
             }
         }
 
         private void setShowDeadlock(boolean detected) {
-            if (debugger == currentDebugger) {
+            if (debugger == currentDebugger && debuggingView != null) {
                 debuggingView.getInfoPanel().setShowDeadlock(detected);
             }
         }
@@ -345,7 +354,7 @@ public class ThreadsListener extends DebuggerManagerAdapter {
         private void setShowThreadLocks(JPDAThread thread, List<JPDAThread> currLockerThreads) {
             lockerThreads = currLockerThreads;
             lockedThread = thread;
-            if (debugger == currentDebugger) {
+            if (debugger == currentDebugger && debuggingView != null) {
                 debuggingView.getInfoPanel().setShowThreadLocks(thread, lockerThreads);
             }
         }

@@ -111,8 +111,8 @@ public class PackagingConfiguration {
             }
             FileElement elem = new FileElement(
                     FileType.FILE,
-                    "$OUTPUT_PATH", // NOI18N
-                    packageDir + "/$OUTPUT_BASENAME", // NOI18N
+                    "${OUTPUT_PATH}", // NOI18N
+                    packageDir + "/${OUTPUT_BASENAME}", // NOI18N
                     perm,
                     MakeOptions.getInstance().getDefOwner(),
                     MakeOptions.getInstance().getDefGroup());
@@ -298,7 +298,7 @@ public class PackagingConfiguration {
             outputName = platform.getLibraryName(outputName);
         }
         outputName = ConfigurationSupport.makeNameLegal(outputName);
-        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + getMakeConfiguration().getVariant() + "/"; // NOI18N 
+        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/"; // NOI18N 
 
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             outputPath += outputName + ".pkg"; // NOI18N // FIXUP 

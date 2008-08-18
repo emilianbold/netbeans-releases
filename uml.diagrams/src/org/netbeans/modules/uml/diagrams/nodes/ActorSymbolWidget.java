@@ -58,6 +58,9 @@ public class ActorSymbolWidget extends CustomizableWidget{
 
     public ActorSymbolWidget(Scene scene, String id, String name) {
         super(scene,id,name);
+        
+        setBackground(null);
+        setForeground(null);
         setCustomizableResourceTypes(new ResourceType[]{ResourceType.BACKGROUND,ResourceType.FOREGROUND});
     }
     

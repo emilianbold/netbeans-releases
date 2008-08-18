@@ -1,13 +1,13 @@
 #include "resolver_class_string.h"
 
-std::wstring write(string str)
+std_1::wstring wrt_1(string str)
 {
-    using std::wstring;
+    using std_1::wstring;
     wstring out;
     return out;
 }
 
-namespace A {
+namespace resolver_class_string {
     string read() {
         string str;
         return str;
@@ -15,7 +15,7 @@ namespace A {
 
 }
 
-using std::wstring;
+using std_1::wstring;
 
 wstring ClassA::read() const {    
     wstring str;

@@ -356,17 +356,18 @@ public abstract class CsmResultItem
     
     // Compares include directives dy file names
     private boolean isIncludesEqual(String inc1, String inc2) {
-        normalizeInclude(inc1);
-        normalizeInclude(inc2);
+        inc1 = normalizeInclude(inc1);
+        inc2 = normalizeInclude(inc2);
         return (inc1.equals(inc2));
     }
     
     // Normailizes include directive string
-    private void normalizeInclude(String inc) {
+    private String normalizeInclude(String inc) {
         inc.toLowerCase();
         inc = inc.replaceAll("[\\s\n]+", " "); // NOI18N
         inc = inc.replaceAll("[<>\"]", "\""); // NOI18N
         inc = inc.trim();
+        return inc;
     }
 
     // Says is it forward declarartion or not
@@ -842,21 +843,24 @@ public abstract class CsmResultItem
             this.substituteExp = substituteExp;
             this.isDeclaration = isDeclaration;
             this.modifiers = convertCsmModifiers(ctr);
-            CsmParameter[] prms = (CsmParameter[]) ctr.getParameters().toArray(new CsmParameter[0]);
-            for (int i=0; i<prms.length; i++) {
-                CsmParameter prm = (CsmParameter) prms[i];
-                CsmType type = prm.getType();
+            int i = 0;
+            for (Object prm : ctr.getParameters() ) {
+                if (prm == null){
+                    continue;
+                }
+                CsmType type = ((CsmParameter)prm).getType();
                 if (type == null) {
                     // only var args parameters could have null types
-                    assert (prm.isVarArgs());
-                    params.add(new ParamStr("", "" , prm.getName().toString(), true, KEYWORD_COLOR)); //NOI18N
+                    assert (((CsmParameter)prm).isVarArgs());
+                    params.add(new ParamStr("", "" , ((CsmParameter)prm).getName().toString(), true, KEYWORD_COLOR)); //NOI18N
                     varArgIndex = i;
-                } else {
+                 } else {
                     // XXX may be need full name as the first param
                     // FIXUP: too expensive to call getClassifier here!
                     String strFullName = type.getText().toString();// type.getClassifier().getName();
-                    params.add(new ParamStr(strFullName, type.getText().toString() , prm.getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
+                    params.add(new ParamStr(strFullName, type.getText().toString(), ((CsmParameter)prm).getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
                 }
+                i++;
             }           
             // TODO
 //            CsmClass excepts[] = ctr.getExceptions();

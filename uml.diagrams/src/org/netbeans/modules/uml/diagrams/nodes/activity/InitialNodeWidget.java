@@ -82,6 +82,7 @@ public class InitialNodeWidget extends ControlNodeWidget
                 getActions().removeAction(0);
             }
         }
+        super.initializeNode(presentation);
     }
 
     public String getWidgetID()

@@ -42,7 +42,6 @@
 package org.netbeans.modules.db.sql.execute;
 
 import org.netbeans.modules.db.sql.history.SQLHistory;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -55,7 +54,6 @@ import org.netbeans.modules.db.dataview.api.DataView;
 import org.netbeans.modules.db.sql.history.SQLHistoryManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.util.Exceptions;
 
 /**
  * Support class for executing SQL statements.
@@ -85,12 +83,7 @@ public final class SQLExecuteHelper {
         
         List<SQLExecutionResult> results = new ArrayList<SQLExecutionResult>();
         long totalExecutionTime = 0;
-        String url = null;
-        try {
-            url = conn.getJDBCConnection().getMetaData().getURL();
-        } catch (SQLException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        String url = conn.getDatabaseURL();
 
         for (Iterator i = statements.iterator(); i.hasNext();) {
             
@@ -178,7 +171,6 @@ public final class SQLExecuteHelper {
         private static final int STATE_BLOCK_COMMENT = 4;
         private static final int STATE_MAYBE_END_BLOCK_COMMENT = 5;
         private static final int STATE_STRING = 6;
-        private static final int STATE_END_COMMENT = 7;
         
         private String sql;
         private int sqlLength;
@@ -255,8 +247,6 @@ public final class SQLExecuteHelper {
                     case STATE_LINE_COMMENT:
                         if (ch == '\n') {
                             state = STATE_MEANINGFUL_TEXT;
-                            // avoid appending the final \n to the result
-                            pos++;
                             continue;
                         } 
                         break;

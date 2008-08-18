@@ -41,6 +41,7 @@
 package org.netbeans.modules.print.ui;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Graphics;
@@ -456,6 +457,21 @@ public final class UI {
     return clipboard;
   }
   
+  public static boolean isDigit(char c) {
+    return "0123456789".indexOf(c) != -1; // NOI18N
+  }
+
+  public static void show(Container container, String indent) {
+    out((container.isShowing() ? "[[ " : "") + indent + container.getClass().getName()); // NOI18N
+    Component [] components = container.getComponents();
+
+    for (Component component : components) {
+      if (component instanceof Container) {
+        show((Container) component, "    " + indent); // NOI18N
+      }
+    }
+  }
+
   public static void startTimeln() {
     tim();
     startTime();

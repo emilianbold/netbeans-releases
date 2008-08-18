@@ -66,6 +66,11 @@ public class NestedType extends TypeImpl {
         super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
         this.parentType = parent;
     }
+    
+    public NestedType(CsmType parent, CsmType type) {
+        super(type);
+        this.parentType = parent;
+    }
 
     @Override
     public CsmClassifier getClassifier(Resolver parent) {
@@ -115,7 +120,10 @@ public class NestedType extends TypeImpl {
         return res;
     }
 
-
+    /*package local*/ CsmType getParent() {
+        return parentType;
+    }
+    
     /*
      * Classifier text should contain specialization of the parent classifier
      */

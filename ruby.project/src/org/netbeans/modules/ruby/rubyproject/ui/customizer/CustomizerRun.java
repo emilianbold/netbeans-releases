@@ -96,9 +96,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         this.uiProperties = uiProperties;
         initComponents();
 
-        this.project = uiProperties.getProject();
-        
-        configs = uiProperties.RUN_CONFIGS;
+        project = uiProperties.getRubyProject();
+        configs = uiProperties.getRunConfigs();
         
         configFields = new JTextField[] {
             jTextFieldMainClass,
@@ -127,7 +126,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         };
         assert configFields.length == configPropsKeys.length;
         
-        configChanged(uiProperties.activeConfig);
+        configChanged(uiProperties.getActiveConfig());
         
         configCombo.setRenderer(new DefaultListCellRenderer() {
             public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -154,7 +153,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     configPropsKeys[i], configLabels[i], configFields[i]));
         }
 
-        jButtonMainClass.addActionListener( new MainClassListener( project.getSourceRoots(), jTextFieldMainClass ) );
+        jButtonMainClass.addActionListener(new MainClassListener(project.getSourceRoots(), jTextFieldMainClass));
         platforms.setSelectedItem(uiProperties.getPlatform());
         updateEnabled();
     }
@@ -447,7 +446,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         assert config != null;
         configs.put(config, null);
         configChanged(null);
-        uiProperties.activeConfig = null;
+        uiProperties.setActiveConfig(null);
     }//GEN-LAST:event_configDelActionPerformed
 
     private void configNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configNewActionPerformed
@@ -471,13 +470,13 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         }
         configs.put(config, m);
         configChanged(config);
-        uiProperties.activeConfig = config;
+        uiProperties.setActiveConfig(config);
     }//GEN-LAST:event_configNewActionPerformed
 
     private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
         String config = getSelectedConfig();
         configChanged(config);
-        uiProperties.activeConfig = config;
+        uiProperties.setActiveConfig(config);
     }//GEN-LAST:event_configComboActionPerformed
 
     private void jButtonWorkingDirectoryBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWorkingDirectoryBrowseActionPerformed

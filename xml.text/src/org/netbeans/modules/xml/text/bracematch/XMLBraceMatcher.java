@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.text.bracematch;
 import java.util.Stack;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -106,7 +107,7 @@ public class XMLBraceMatcher implements BracesMatcher {
         try {
             TokenHierarchy th = TokenHierarchy.get(doc);
             TokenSequence ts = th.tokenSequence();
-            Token token = findTokenAtContext(ts);
+            Token token = findTokenAtContext(ts, searchOffset);
             int start = ts.offset();
             if(token == null)
                 return null;
@@ -171,7 +172,7 @@ public class XMLBraceMatcher implements BracesMatcher {
         try {
             TokenHierarchy th = TokenHierarchy.get(doc);
             TokenSequence ts = th.tokenSequence();
-            Token token = findTokenAtContext(ts);
+            Token token = findTokenAtContext(ts, searchOffset);
             if(token == null) return null;
             XMLTokenId id = (XMLTokenId)token.id();
             switch(id) {
@@ -213,8 +214,8 @@ public class XMLBraceMatcher implements BracesMatcher {
         return null;
     }
     
-    private Token findTokenAtContext(TokenSequence ts) {
-        ts.move(searchOffset);
+    private static Token findTokenAtContext(TokenSequence ts, int offset) {
+        ts.move(offset);
         Token token = ts.token();
         //there are cases when this could be null
         //in which case use the next one.
@@ -406,4 +407,47 @@ public class XMLBraceMatcher implements BracesMatcher {
         }
         return null;
     }    
+    
+    /**
+     * Checks to see if an end tag exists for a start tag at a given offset.
+     * @param document
+     * @param offset
+     * @return true if an end tag is found for the start, false otherwise.
+     */
+    public static boolean hasEndTag(Document document, int offset, String startTag) {
+        AbstractDocument doc = (AbstractDocument)document;
+        doc.readLock();
+        try {
+            TokenHierarchy th = TokenHierarchy.get(doc);
+            TokenSequence ts = th.tokenSequence();
+            Token token = findTokenAtContext(ts, offset);
+            Stack<String> stack = new Stack<String>();
+            while(ts.moveNext()) {
+                Token t = ts.token();
+                if(XMLTokenId.TAG != t.id())
+                    continue;
+                String tag = t.text().toString();
+                if(">".equals(tag))
+                    continue;
+                if(stack.empty()) {
+                    if(("</"+startTag).equals(tag)) {
+                        stack.empty();
+                        stack = null;
+                        return true;
+                    }
+                } else {                
+                    if(tag.equals("/>") || ("</"+stack.peek()).equals(tag)) {
+                        stack.pop();
+                        continue;
+                    }
+                }
+                stack.push(tag.substring(1));
+            }            
+        } finally {
+            doc.readUnlock();
+        }
+        
+        return false;
+    }
+    
 }
