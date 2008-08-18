@@ -97,7 +97,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
         // start to track Main Window status bar
         stt.start();
         // increase timeout to 60 seconds when waiting for status bar text
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 90000);
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
         // find servlet node in Projects view
         try {
             openProjects(new File(getDataDir(), SAMPLE_WEB_PROJECT_NAME).getAbsolutePath());
