@@ -1144,18 +1144,27 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     private String createPoolName(String url, String vendorName, String username){
         UrlData urlData = new UrlData(url);
-        String poolName = vendorName + "_" + username + WizardConstants.__ConnPoolSuffix; //NOI18N
-        String dbName = urlData.getDatabaseName();
+        StringBuffer poolName = new StringBuffer(vendorName);
+        String dbName = getDatabaseName(urlData);
         if (dbName != null) {
-            poolName = vendorName + "_" + dbName + "_" + username + WizardConstants.__ConnPoolSuffix; //NOI18N
-        }else{
-            String altdbName = urlData.getAlternateDBName();
-            if (altdbName != null) {
-                poolName = vendorName + "_" + altdbName + "_" + username + WizardConstants.__ConnPoolSuffix; //NOI18N
-            }
+            poolName.append("_" + dbName); //NOI18N
         }
-        return poolName;
+        if (username != null) {
+            poolName.append("_" + username); //NOI18N
+        }
+        poolName.append(WizardConstants.__ConnPoolSuffix); 
+        return poolName.toString(); 
     }
+
+    private static String getDatabaseName(UrlData urlData) {
+        String databaseName = urlData.getDatabaseName();
+        if (databaseName == null) {
+            databaseName = urlData.getAlternateDBName();
+        }
+
+        return databaseName;
+    }
+    
     /**
      * Implementation of Message Destination API in ConfigurationSupport
      * @return returns Set of SunMessageDestination's(JMS Resources) present in this J2EE project

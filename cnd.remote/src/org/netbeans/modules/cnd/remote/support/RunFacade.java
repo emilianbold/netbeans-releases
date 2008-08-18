@@ -103,8 +103,9 @@ public abstract class RunFacade {
         @Override
         public int doRun(String command) {
             RemoteCommandSupport support = new RemoteCommandSupport(hkey, command);
+            int result = support.run();
             output = support.toString();
-            return support.getExitStatus();
+            return result;
         }
     }
 }

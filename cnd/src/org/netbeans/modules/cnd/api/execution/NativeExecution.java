@@ -43,7 +43,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.execution.LocalNativeExecution;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.openide.util.Lookup;
@@ -55,7 +57,7 @@ import org.openide.util.Lookup;
  * @author gordonp
  */
 public abstract class NativeExecution extends ExecutionSupport implements NativeExecutionProvider {
-    
+    protected static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N
     private static NativeExecution instance;
     
     protected String host;
@@ -102,7 +104,7 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
      * @param envp environment variables (name-value pairs of the form ABC=123)
      * @param out Output
      * @param io Input
-     * @param parseOutput true if output should be parsed for compiler errors
+     * @param unbuffer - true if stdout unbuffering is needed
      * @return completion code
      */
     public abstract int executeCommand(
@@ -111,9 +113,21 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
             String arguments,
             String[] envp,
             PrintWriter out,
-            Reader in) throws IOException, InterruptedException;
+            Reader in,
+            boolean unbuffer) throws IOException, InterruptedException;
     
     public abstract void stop();
+    
+    protected final String getUnbufferName(int platform) {
+        switch (platform) {
+            case PlatformTypes.PLATFORM_LINUX : return "unbuffer-Linux-x86.so"; // NOI18N
+            case PlatformTypes.PLATFORM_SOLARIS_SPARC : return "unbuffer-SunOS-sparc.so"; // NOI18N
+            case PlatformTypes.PLATFORM_SOLARIS_INTEL : return "unbuffer-SunOS-x86.so"; // NOI18N
+            case PlatformTypes.PLATFORM_WINDOWS : return "unbuffer-Windows_XP-x86.dll"; // NOI18N
+            case PlatformTypes.PLATFORM_MACOSX : return "unbuffer-Mac_OS_X-x86.dylib"; // NOI18N
+            default: log.warning("unbuffer search: unknown platform number " + platform); return null;
+        }
+    }
     
     /**
      * Simple class whose sole purpose is to let us instantiate a NativeExecution so we can
@@ -122,7 +136,7 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
     private static class SimpleNativeExecution extends NativeExecution {
         
         @Override
-        public int executeCommand(File runDirFile, String executable, String arguments, String[] envp, PrintWriter out, Reader in) throws IOException, InterruptedException {
+        public int executeCommand(File runDirFile, String executable, String arguments, String[] envp, PrintWriter out, Reader in, boolean unbuffer) throws IOException, InterruptedException {
             throw new UnsupportedOperationException("Not supported.");
         }
 

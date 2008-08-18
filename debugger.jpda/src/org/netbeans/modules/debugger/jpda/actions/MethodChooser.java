@@ -1,6 +1,7 @@
 package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
@@ -437,7 +438,12 @@ public class MethodChooser implements KeyListener, MouseListener,
         if (vm == null) return ;
         final int line = bpLocation.lineNumber("Java");
         CallStackFrameImpl csf = (CallStackFrameImpl) debugger.getCurrentCallStackFrame();
-        if (csf != null && csf.getStackFrame().location().equals(bpLocation)) {
+        boolean condition = false;
+        try {
+            condition = csf != null && csf.getStackFrame().location().equals(bpLocation);
+        } catch (InvalidStackFrameException e) {
+        }
+        if (condition) {
             // We're on the line from which the method is called
             traceLineForMethod(methodName, line);
         } else {

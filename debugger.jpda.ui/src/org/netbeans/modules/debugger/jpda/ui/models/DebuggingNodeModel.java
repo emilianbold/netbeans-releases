@@ -161,7 +161,8 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             JPDAThread t = (JPDAThread) node;
             watch(t);
             JPDAThread currentThread = debugger.getCurrentThread();
-            if (t == currentThread && !DebuggingTreeExpansionModelFilter.isExpanded(debugger, node)) {
+            if (t == currentThread && (!DebuggingTreeExpansionModelFilter.isExpanded(debugger, node) ||
+                    !t.isSuspended())) {
                 return BoldVariablesTableModelFilterFirst.toHTML(
                         getDisplayName(t, showPackageNames),
                         true, false, c);
@@ -211,8 +212,10 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         String frame = null;
         if (t.isSuspended () && (t.getStackDepth () > 0)) {
             try { 
-                CallStackFrame sf = t.getCallStack (0, 1) [0];
-                frame = CallStackNodeModel.getCSFName (null, sf, showPackageNames);
+                CallStackFrame[] sf = t.getCallStack (0, 1);
+                if (sf.length > 0) {
+                    frame = CallStackNodeModel.getCSFName (null, sf[0], showPackageNames);
+                }
             } catch (AbsentInformationException e) {
             }
         }
@@ -413,7 +416,7 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
         }
         if (node instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) node;
-            return CallStackNodeModel.getCSFName (null, sf, true);
+            return CallStackNodeModel.getCSFToolTipText(sf);
         }
         if (node instanceof JPDAThreadGroup) {
             return ((JPDAThreadGroup) node).getName ();
@@ -465,9 +468,6 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
     }
 
     private void fireNodeChanged (Object node) {
-        if (preferences.getBoolean(DebuggingTreeModel.SHOW_SUSPENDED_THREADS_ONLY, false)) {
-            node = TreeModel.ROOT;
-        }
         List<ModelListener> ls;
         synchronized (listeners) {
             ls = new ArrayList<ModelListener>(listeners);
@@ -576,7 +576,11 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             public void run() {
                 JPDAThread thread = tr.get();
                 if (thread != null) {
-                    fireNodeChanged(thread);
+                    if (preferences.getBoolean(DebuggingTreeModel.SHOW_SUSPENDED_THREADS_ONLY, false)) {
+                        fireNodeChanged(TreeModel.ROOT);
+                    } else {
+                        fireNodeChanged(thread);
+                    }
                     boolean shouldExpand;
                     synchronized (this) {
                         shouldExpand = ThreadStateUpdater.this.shouldExpand;
@@ -618,6 +622,9 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
                 }
                 if (currentThread != null) {
                     fireNodeChanged(currentThread);
+                }
+                if (preferences.getBoolean(DebuggingTreeModel.SHOW_SUSPENDED_THREADS_ONLY, false)) {
+                    fireNodeChanged(TreeModel.ROOT);
                 }
             }
             if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(evt.getPropertyName())) {

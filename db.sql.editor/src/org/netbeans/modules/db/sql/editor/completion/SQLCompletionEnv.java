@@ -162,29 +162,65 @@ public class SQLCompletionEnv {
         }
     }
 
+    /**
+     * Walks the token sequence backwards from the caret offset trying
+     * to find the SQL clause at the caret offset.
+     */
     private void computeContext() {
         int offset = seq.move(caretOffset);
         if (offset > 0) {
             seq.moveNext();
         }
+        boolean wasBy = false;
         for (;;) {
             if (!seq.movePrevious()) {
                 return;
             }
             if (seq.token().id() == SQLTokenId.KEYWORD) {
                 CharSequence keyword = seq.token().text();
-                if (StringUtils.textEqualsIgnoreCase("FROM", keyword)) { // NOI18N
-                    context = Context.FROM;
+                if (!wasBy) {
+                    if (StringUtils.textEqualsIgnoreCase("FROM", keyword)) { // NOI18N
+                        context = Context.FROM;
+                        return;
+                    } else if (StringUtils.textEqualsIgnoreCase("ON", keyword)) { // NOI18N
+                        context = Context.JOIN_CONDITION;
+                        return;
+                    } else if (StringUtils.textEqualsIgnoreCase("SELECT", keyword)) { // NOI18N
+                        context = Context.SELECT;
+                        return;
+                    } else if (StringUtils.textEqualsIgnoreCase("WHERE", keyword)) { // NOI18N
+                        context = Context.WHERE;
+                        return;
+                    } else if (StringUtils.textEqualsIgnoreCase("HAVING", keyword)) { // NOI18N
+                        context = Context.HAVING;
+                        return;
+                    } else if (StringUtils.textEqualsIgnoreCase("BY", keyword)) { // NOI18N
+                        wasBy = true;
+                        continue;
+                    } else if (StringUtils.textEqualsIgnoreCase("GROUP", keyword)) { // NOI18N
+                        // After GROUP, but before BY.
+                        return;
+                    } else if (StringUtils.textEqualsIgnoreCase("ORDER", keyword)) { // NOI18N
+                        // After ORDER, but before BY.
+                        return;
+                    }
+                } else {
+                    if (StringUtils.textEqualsIgnoreCase("GROUP", keyword)) { // NOI18N
+                        context = Context.GROUP_BY;
+                    } else if (StringUtils.textEqualsIgnoreCase("ORDER", keyword)) { // NOI18N
+                        context = Context.ORDER_BY;
+                    }
                     return;
-                } else if (StringUtils.textEqualsIgnoreCase("ON", keyword)) { // NOI18N
-                    context = Context.JOIN_CONDITION;
-                    return;
-                } else if (StringUtils.textEqualsIgnoreCase("SELECT", keyword)) { // NOI18N
-                    context = Context.SELECT;
-                    return;
-                } else if (StringUtils.textEqualsIgnoreCase("WHERE", keyword)) { // NOI18N
-                    context = Context.WHERE;
-                    return;
+                }
+            } else if (wasBy) {
+                switch (seq.token().id()) {
+                    case WHITESPACE:
+                    case LINE_COMMENT:
+                    case BLOCK_COMMENT:
+                        continue;
+                    default:
+                        // Expected a keyword before BY, such as GROUP or ORDER.
+                        return;
                 }
             }
         }
@@ -196,6 +232,7 @@ public class SQLCompletionEnv {
         FROM,
         JOIN_CONDITION,
         WHERE,
+        GROUP_BY,
         HAVING,
         ORDER_BY
     }

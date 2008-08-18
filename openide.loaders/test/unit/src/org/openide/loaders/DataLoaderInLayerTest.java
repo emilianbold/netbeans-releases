@@ -63,6 +63,7 @@ import org.openide.util.lookup.Lookups;
 /** Check what can be done when registering loaders in layer.
  * @author Jaroslav Tulach
  */
+@RandomlyFails
 public class DataLoaderInLayerTest extends NbTestCase {
 
     public DataLoaderInLayerTest(String name) {

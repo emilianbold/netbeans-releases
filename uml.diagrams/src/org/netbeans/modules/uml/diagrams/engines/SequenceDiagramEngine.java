@@ -1394,7 +1394,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
     }
 
     @Override
-    public void layout() {
+    public void layout(boolean save) {
         revalidateSceneWithWait();
         ArrayList<LifelineWidget> lifelines=new ArrayList<LifelineWidget>();
         Collection<IPresentationElement> pesTmp=getScene().getNodes();

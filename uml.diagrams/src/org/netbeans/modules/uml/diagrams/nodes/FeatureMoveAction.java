@@ -81,7 +81,7 @@ public class FeatureMoveAction extends WidgetAction.Adapter
     @Override
     public State mouseReleased(Widget widget, WidgetMouseEvent event)
     {
-        System.out.println("Mouse Released");
+//        System.out.println("Mouse Released");
         return State.REJECTED;
     }
     

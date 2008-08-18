@@ -557,7 +557,7 @@ public class CompletionUtil {
                 }
                 if(t.id() == XMLTokenId.VALUE && lastNS != null) {
                     String value = t.text().toString();
-                    if(value.startsWith("'") || value.startsWith("\""))
+                    if(value.length() >= 2 && (value.startsWith("'") || value.startsWith("\"")))
                         value = value.substring(1, value.length()-1);
                     map.put(value, CompletionUtil.getPrefixFromXMLNS(lastNS));
                     lastNS = null;

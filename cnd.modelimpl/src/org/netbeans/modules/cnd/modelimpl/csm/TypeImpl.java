@@ -108,6 +108,26 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         this.arrayDepth = (byte) arrayDepth;
         this._const = _const;
     }
+    
+    // package-local
+    TypeImpl(CsmType type) {
+        super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
+
+        this.pointerDepth = (byte) type.getPointerDepth();
+        this.reference = type.isReference();
+        this.arrayDepth = (byte) type.getArrayDepth();
+        this._const = type.isConst();
+
+        if (type instanceof TypeImpl) {
+            TypeImpl ti = (TypeImpl) type;
+            this.classifierUID = ti.classifierUID;
+            this.qname = ti.qname;
+            this.classifierText = ti.classifierText;
+            if (!ti.instantiationParams.isEmpty()) {
+                this.instantiationParams.addAll(ti.instantiationParams);
+            }
+        }
+    }    
 
      /*TypeImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
         this(null, pointerDepth, reference, arrayDepth, ast, file, null);
@@ -156,6 +176,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
         return !instantiationParams.isEmpty();
     }
 
+    /** Though it returns the same for now, it's better if its name differs */
+    protected boolean isInstantiationOrSpecialization() {
+        return !instantiationParams.isEmpty();
+    }
+
     public boolean isTemplateBased() {
         CsmClassifier classifier = getClassifier();
         if (CsmKindUtilities.isTypedef(classifier)) {
@@ -184,7 +209,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     }
 
     public String getCanonicalText() {
-	return decorateText(getClassifierText(), this, true, null).toString();
+        CharSequence text = getClassifierText();
+        if (isInstantiationOrSpecialization()) {
+            text = text.toString() + getInstantiationText(this);
+        }
+	return decorateText(text, this, true, null).toString();
     }
 
     // package
@@ -314,9 +343,33 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     protected CsmClassifier renderClassifier(CharSequence[] qname, Resolver parent) {
         CsmClassifier result = null;
         Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
-        CsmObject o = resolver.resolve(qname, Resolver.CLASSIFIER);
-        if( CsmKindUtilities.isClassifier(o) ) {
-            result = (CsmClassifier) o;
+        if (isInstantiationOrSpecialization()) {
+            CharSequence[] specializationQname = new CharSequence[qname.length];
+            int last = qname.length - 1;
+            StringBuilder sb = new StringBuilder(qname[last]);
+            sb.append('<');
+            for (int i = 0; i < instantiationParams.size(); i++) {
+                CsmType type = instantiationParams.get(i);
+                if (i > 0) {
+                    sb.append(',');
+                }
+                sb.append(type.getCanonicalText());
+            }
+            sb.append('>');
+            specializationQname[last] = sb.toString();
+            for (int i = 0; i < last; i++) {
+                specializationQname[i] = qname[i];
+            }
+            CsmObject o = resolver.resolve(specializationQname, Resolver.CLASSIFIER);
+            if( CsmKindUtilities.isClassifier(o) ) {
+                result = (CsmClassifier) o;
+            }
+        }
+        if (result == null) {
+            CsmObject o = resolver.resolve(qname, Resolver.CLASSIFIER);
+            if( CsmKindUtilities.isClassifier(o) ) {
+                result = (CsmClassifier) o;
+            }
         }
         if( result == null ) {
             result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(qname, getContainingFile(), getStartOffset());

@@ -62,7 +62,7 @@ public class SyntaxTree {
                 // create tag node, push it on stack
                 // add opening tag node
                 
-                String tagName = extractTagName(element.text());
+                String tagName = ((SyntaxElement.Named)element).getName();
                 int openingTagEndOffset = element.offset() + element.length();
                 
                 AstNode newTagNode = new AstNode(tagName, AstNode.NodeType.TAG,
@@ -85,7 +85,7 @@ public class SyntaxTree {
                 // add closing tag node
                 // pop current node from the stack
                 
-                String tagName = extractTagName(element.text());                
+                String tagName = ((SyntaxElement.Named)element).getName();        
                 int lastMatchedTag = nodeStack.size() - 1;
                 
                 while (!tagName.equals(nodeStack.get(lastMatchedTag).name()) && lastMatchedTag > 0){
@@ -156,25 +156,6 @@ public class SyntaxTree {
         }
     }
 
-    private static String extractTagName(String text) {
-        int beginIndex = 1;
-        
-        if (text.length() > 1 && text.charAt(1) == '/'){
-            beginIndex ++;
-        }
-        
-        int endIndex = beginIndex;
-        
-        while (!Character.isWhitespace(text.charAt(endIndex)) 
-                && text.charAt(endIndex) != '/'
-                && text.charAt(endIndex) != '>'
-                && endIndex < text.length()){
-            endIndex ++;
-        }
-        
-        return text.substring(beginIndex, endIndex);
-    }
-    
     private static AstNode.NodeType intToNodeType(int type){
         switch (type) {
             case SyntaxElement.TYPE_COMMENT:

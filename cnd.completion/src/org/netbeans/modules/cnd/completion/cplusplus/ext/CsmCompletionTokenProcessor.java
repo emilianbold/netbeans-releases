@@ -134,8 +134,9 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
     private boolean java15;
     private int nrQuestions = 0;
 
-    CsmCompletionTokenProcessor(int endScanOffset) {
+    CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset) {
         this.endScanOffset = endScanOffset;
+        this.lastSeparatorOffset = lastSeparatorOffset;
     }
 
     /**
@@ -1966,6 +1967,8 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
             if (tokenID == CppTokenId.IDENTIFIER) {
                 pushExp(createTokenExp(VARIABLE));
                 errorState = false;
+            } else {
+                lastSeparatorOffset = tokenOffset;
             }
         }
 
@@ -1973,6 +1976,12 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
         return false;
     }
 
+    private int lastSeparatorOffset = -1;
+    
+    public int getLastSeparatorOffset() {
+        return lastSeparatorOffset;
+    }
+    
     public void start(int startOffset, int firstTokenOffset) {
     }
 
@@ -1991,6 +2000,8 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
                 case SEMICOLON:
+                case LBRACE:
+                case RBRACE:
                     pushExp(CsmCompletionExpression.createEmptyVariable(
                         bufferStartPos + bufferOffsetDelta + offset));
                     errorState = false;

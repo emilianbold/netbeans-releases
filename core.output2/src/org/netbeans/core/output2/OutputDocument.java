@@ -387,29 +387,11 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
     }
     
     public Element getElement(int index) {
-        //Thanks to Mila Metelka for pointing out that Swing documents always
-        //are expected to have a trailing empty element
-        /*if (getLines().getLineCount() == 0) {
-            return new EmptyElement(OutputDocument.this);
-        }*/
-        synchronized (getLines().readLock()) {
-            if (index > lastPostedLine) {
-                lastPostedLine = index;
-            }
-        }
-        return new ODElement (index);
+        return new ODElement(index);
     }
     
     public int getElementCount() {
-        int result;
-        synchronized (getLines().readLock()) {
-            result = getLines().getLineCount();
-            lastPostedLine = result;
-        }
-        if (result == 0) {
-            result = 1;
-        }
-        return result;
+        return Math.max(1, getLines().getLineCount());
     }
     
     public int getElementIndex(int offset) {
@@ -437,49 +419,52 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
     }
 
     private volatile DO lastEvent = null;
-    private int lastPostedLine = -1;
-    private int lastPostedLength = -1;
-    private int lastFiredLine = -1;
-    private int lastFiredlength = -1;
+    private int lastFiredLineCount = 0;
+    private int lastFiredLength = 0;
     public void stateChanged(ChangeEvent changeEvent) {
-        if (Controller.VERBOSE) Controller.log (changeEvent != null ? "Document got change event from writer" : "Document timer polling");
+        assert SwingUtilities.isEventDispatchThread();
+
+        if (Controller.VERBOSE) Controller.log(changeEvent != null ? "Document got change event from writer" : "Document timer polling");
         if (dlisteners.isEmpty()) {
-            if (Controller.VERBOSE) Controller.log ("listeners empty, not firing");
+            if (Controller.VERBOSE) Controller.log("listeners empty, not firing");
             return;
         }
-        if (getLines().checkDirty(true)) {
+        Lines lines = getLines();
+        if (lines.checkDirty(true)) {
             if (lastEvent != null && !lastEvent.isConsumed()) {
-                if (Controller.VERBOSE) Controller.log ("Last event not consumed, not firing");
+                if (Controller.VERBOSE) Controller.log("Last event not consumed, not firing");
                 return;
             }
-            boolean noPostedLine = lastPostedLine == - 1;
 
-            int lineCount = getLines().getLineCount();
-            int size = getLines().getCharCount() + inBuffer.length();
-            lastPostedLine = lineCount;
-            lastPostedLength = size;
-            
-            if (Controller.VERBOSE) Controller.log ("Document may fire event - last fired getLine=" + lastFiredLine + " getLine count now " + lineCount);
-            if ((lastFiredLine != lastPostedLine  || lastPostedLength != lastFiredlength) || noPostedLine) {
-                lastEvent = new DO(Math.max(0, lastFiredLine == lastPostedLine ? lastFiredLine - 1 : lastFiredLine), noPostedLine);
-//                evts.add (lastEvent);
-                Mutex.EVENT.readAccess (new Runnable() {
-                    public void run() {
-                        if (Controller.VERBOSE) Controller.log("Firing document event on EQ with start index " + lastEvent.start);
-                        fireDocumentEvent (lastEvent);
-                    }
-                });
-                lastFiredLine = lastPostedLine;
-                lastFiredlength = lastPostedLength;
-            } else {
-                if (Controller.VERBOSE) Controller.log ("Line count is still " + lineCount + " - not firing");
+            int lineCount = lines.getLineCount();
+            int size = lines.getCharCount() + inBuffer.length();
+
+            if (size == lastFiredLength) {
+                // nothing changed
+                if (Controller.VERBOSE) Controller.log("Size is same " + size + " - not firing");
+                return;
             }
+
+            boolean lastLineChanged = lastFiredLineCount == lineCount;
+            if (lastFiredLineCount > 0 && lineCount > lastFiredLineCount) {
+                int lastFiredLineEnd = lines.getLineStart(lastFiredLineCount);
+                if (lastFiredLineEnd > lastFiredLength) {
+                    lastLineChanged = true;
+                }
+            }
+
+            lastEvent = new DO(lastLineChanged ? lastFiredLineCount - 1 : lastFiredLineCount);
+            lastFiredLineCount = lineCount;
+            lastFiredLength = size;
+
+            if (Controller.VERBOSE) Controller.log("Firing document event on EQ with start index " + lastEvent.first);
+            fireDocumentEvent(lastEvent);
         } else {
-            if (Controller.VERBOSE) Controller.log ("Writer says it is not dirty, firing no change");
+            if (Controller.VERBOSE) Controller.log("Writer says it is not dirty, firing no change");
         }
         updateTimerState();
-    }    
-    
+    }
+
     private boolean updatingTimerState = false;
     private synchronized void updateTimerState() {
         if (updatingTimerState) {
@@ -716,16 +701,13 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
     }
 
     public class DO implements DocumentEvent, DocumentEvent.ElementChange {
-        private int start;
         private int offset = -1;
         private int length = -1;
         private int lineCount = -1;
         private boolean consumed = false;
-        private boolean initial = false;
         private int first = -1;
-        DO (int start, boolean initial) {
-            this.start = start;
-            this.initial = initial;
+        DO(int start) {
+            this.first = start;
             if (start < 0) {
                 throw new IllegalArgumentException ("Illogical start: " + start);
             }
@@ -736,22 +718,16 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
             // when this method is called from 2 threads? but that should not be happening
             assert SwingUtilities.isEventDispatchThread() : "Should be accessed from AWT only or we have a synchronization problem"; //NOI18N
             if (!consumed) {
-//                synchronized (writer) {
-                    consumed = true;
-                    if (Controller.VERBOSE) Controller.log ("EVENT CONSUMED: " + start);
-                    int charsWritten = getLines().getCharCount() + inBuffer.length();
-                    if (initial) {
-                        first = 0;
-                        offset = 0;
-                        lineCount = getLines().getLineCount();
-                        length = charsWritten;
-                    } else {
-                        first = start;
-                        offset = getLines().getLineStart(first);
-                        lineCount = getLines().getLineCount() - first;
-                        length = charsWritten - offset;
-                    }
-//                }
+                consumed = true;
+                
+                // update lastFired info
+                lastFiredLineCount = getLines().getLineCount();
+                lastFiredLength = getLines().getCharCount() + inBuffer.length();
+
+                // fill event info
+                offset = getLines().getLineStart(first);
+                lineCount = lastFiredLineCount - first;
+                length = lastFiredLength - offset;
             }
         }
         
@@ -763,7 +739,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         public String toString() {
             boolean wasConsumed = isConsumed();
             calc();
-            return "Event: start=" + start + " first=" + first + " linecount=" + lineCount + " offset=" + offset + " length=" + length + " consumed=" + wasConsumed;
+            return "Event: first=" + first + " linecount=" + lineCount + " offset=" + offset + " length=" + length + " consumed=" + wasConsumed;
         }
         
         public DocumentEvent.ElementChange getChange(Element element) {
@@ -789,7 +765,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         }
         
         public DocumentEvent.EventType getType() {
-            return start == 0 ? DocumentEvent.EventType.CHANGE : 
+            return first == 0 ? DocumentEvent.EventType.CHANGE : 
                 DocumentEvent.EventType.INSERT;
         }
         
@@ -816,7 +792,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Action
         
         public int getIndex() {
             calc();
-            return start;
+            return first;
         }
     }
     

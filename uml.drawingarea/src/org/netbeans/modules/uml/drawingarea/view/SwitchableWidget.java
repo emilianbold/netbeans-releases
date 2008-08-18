@@ -103,6 +103,7 @@ public abstract class SwitchableWidget extends UMLNodeWidget
     {
         switchTo(DEFAULT, element);
         setIsInitialized(true);
+        super.initializeNode(element);
     }
 
     

@@ -41,12 +41,9 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
@@ -56,21 +53,17 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ImageUtilities;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
 
 /**
- * Action which shows Irb component.
+ * Action which shows IRB component.
  */
-public class IrbAction extends AbstractAction {
+public final class IrbAction extends CallableSystemAction {
     
     private static final boolean USE_JRUBY_CONSOLE = Boolean.getBoolean("irb.jruby"); // NOI18N
-    
-    public IrbAction() {
-        super(NbBundle.getMessage(IrbAction.class, "CTL_IrbAction"));
-        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(IrbTopComponent.ICON_PATH, true)));
-    }
     
     private boolean runIrbConsole(Project project) {
         PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
@@ -114,8 +107,9 @@ public class IrbAction extends AbstractAction {
         
         return true;
     }
-    
-    public void actionPerformed(ActionEvent evt) {
+
+    @Override
+    public void performAction() {
         if (USE_JRUBY_CONSOLE) {
             TopComponent win = IrbTopComponent.findInstance();
             win.open();
@@ -130,5 +124,20 @@ public class IrbAction extends AbstractAction {
             org.netbeans.modules.ruby.platform.Util.notifyLocalized(IrbAction.class, "IrbAction.not.project.in.context"); // NOI18N
         }
         
+    }
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(IrbAction.class, "CTL_IrbAction");
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+    
+    @Override
+    protected boolean asynchronous() {
+        return false;
     }
 }

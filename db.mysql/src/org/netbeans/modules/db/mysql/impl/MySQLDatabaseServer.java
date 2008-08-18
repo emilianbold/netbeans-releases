@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -88,6 +89,8 @@ import org.openide.util.Utilities;
 public class MySQLDatabaseServer implements DatabaseServer {
     // Synchronized on this
     private String displayName;
+    // Synchronized on this
+    private String shortDescription;
 
     // Synchronized on this
     private Task refreshTask;
@@ -112,7 +115,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
 
     final LinkedBlockingQueue<Runnable> commandQueue = new LinkedBlockingQueue<Runnable>();
     final ConnectionProcessor connProcessor = new ConnectionProcessor(commandQueue);
-    final ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    final CopyOnWriteArrayList<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
     // Cache this in cases where it is not being saved to disk
     // Synchronized on the instance (this)
@@ -257,19 +260,27 @@ public class MySQLDatabaseServer implements DatabaseServer {
     }
 
     private synchronized void updateDisplayName() {
-        String label;
+        String displayNameLabel;
+        String shortDescriptionLabel;
         if ( isConnected() ) {
-            label = "LBL_ServerDisplayName";
+            displayNameLabel = "LBL_ServerDisplayName";
+            shortDescriptionLabel = "LBL_ServerShortDescription";
         } else {
-            label = "LBL_ServerNotConnectedDisplayName";
+            displayNameLabel = "LBL_ServerNotConnectedDisplayName";
+            shortDescriptionLabel = "LBL_ServerNotConnectedShortDescription";
         }
-        setDisplayName(Utils.getMessage(
-                label, getHostPort(), getUser()));
+        String hostPort = getHostPort();
+        String user = getUser();
+        setDisplayName(Utils.getMessage(displayNameLabel, hostPort, user));
+        setShortDescription(Utils.getMessage(shortDescriptionLabel, hostPort, user));
     }
 
     public String getShortDescription() {
-        return Utils.getMessage(
-                "LBL_ServerShortDescription", getHostPort(), getUser());
+        return shortDescription;
+    }
+
+    private synchronized void setShortDescription(String shortDescription) {
+        this.shortDescription = shortDescription;
     }
 
     private String getHostPort() {

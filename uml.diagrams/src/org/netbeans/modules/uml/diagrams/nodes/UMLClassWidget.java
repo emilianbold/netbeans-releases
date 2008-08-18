@@ -896,12 +896,20 @@ public class UMLClassWidget  extends SwitchableWidget
             ObjectScene scene=(ObjectScene) getScene();
             operations.setFont(font.deriveFont(font.getStyle(), font.getSize()*.9f));
             members.setFont(font.deriveFont(font.getStyle(), font.getSize()*.9f));//? may it have sense to force plain for attributes?
-            //
+            
             for(Widget w:operations.getChildren())
             {
                 if(w instanceof OperationWidget)
                 {
                     w.setFont(operations.getFont());//update will be handled by hendler in operation widget
+                }
+            }
+            
+            for(Widget w:members.getChildren())
+            {
+                if(w instanceof AttributeWidget)
+                {
+                    w.setFont(members.getFont());//update will be handled by hendler in operation widget
                 }
             }
             classView.revalidate();

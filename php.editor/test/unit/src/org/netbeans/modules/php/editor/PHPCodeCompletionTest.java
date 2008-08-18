@@ -54,7 +54,31 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testPhpContextWithPrefix() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "^GL", false);
     }
+    
+    public void testComments1() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.php", "one line ^", false);
+    }
+    
+    public void testComments2() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.php", "multiline comment ^", false);
+    }
+    
+    public void testComments3() throws Exception {
+        checkCompletion("testfiles/completion/lib/comments.php", "PHPDoc comment ^", false);
+    }
 
+    public void testFunctionReturnType1() throws Exception {
+        checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_self->^", false);
+    }
+    
+    public void testFunctionReturnType2() throws Exception {
+        checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_standalone_function->^", false);
+    }
+    
+    public void testFunctionReturnType3() throws Exception {
+        checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_static_method->^", false);
+    }
+    
     public void testPhpContext2() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
@@ -89,6 +113,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
 
     public void test142051_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue142051.php", "echo \"Name2: \".$user2->^", false);
+    }
+    
+    public void test140633() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue140633.php", "echo $_COOKI^", false);
     }
 
     // #136092 Code completion doesn't show reference parameters
@@ -135,6 +163,16 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136188_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v2->^", false);
     }
+    
+    //#137033: Code completion for class identifier
+    public void test137033_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue137033.php", "class a^", false);
+    }
+    
+    public void test137033_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue137033.php", "interface a^", false);
+    }
+    
     public void test136188_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v3->^", false);
     }

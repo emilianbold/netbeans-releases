@@ -92,17 +92,16 @@ import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.EmbeddedPkSupport;
-import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
@@ -118,7 +117,6 @@ import org.netbeans.modules.web.jsf.palette.items.JsfTable;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.TypeInfo;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.MethodInfo;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
-import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -143,7 +141,7 @@ public class JSFClientGenerator {
     static final int PROGRESS_STEP_COUNT = 8;
     
     public static void generateJSFPages(ProgressContributor progressContributor, ProgressPanel progressPanel, final Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerPackage, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, final List<String> entities, final boolean ajaxify, String jpaControllerPackage, FileObject jpaControllerFileObject, FileObject converterFileObject, int progressIndex) throws IOException {
-        final boolean isInjection = true;//Util.isSupportedJavaEEVersion(project);
+        final boolean isInjection = Util.isContainerManaged(project); //Util.isSupportedJavaEEVersion(project);
         
 //        String simpleControllerName = JpaControllerUtil.simpleClassName(controllerClass);
         String simpleControllerName = controllerFileObject.getName();
@@ -252,22 +250,6 @@ public class JSFClientGenerator {
             
         final BaseDocument doc = new BaseDocument(false, "text/x-jsp");
         WebModule wm = WebModule.getWebModule(jsfRoot);
-        
-        //automatically add JSF framework if it is not added
-        JSFFrameworkProvider fp = new JSFFrameworkProvider();
-        if (!fp.isInWebModule(wm)) {
-            ExtenderController ec = ExtenderController.create();
-            String j2eeLevel = wm.getJ2eePlatformVersion();
-            ec.getProperties().setProperty("j2eeLevel", j2eeLevel);
-            J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-            if (moduleProvider != null) {
-                String serverInstanceID = moduleProvider.getServerInstanceID();
-                ec.getProperties().setProperty("serverInstanceID", serverInstanceID);
-            }
-            WebModuleExtender wme = fp.createWebModuleExtender(wm, ec);
-            wme.update();
-            wme.extend(wm);
-        }
         
         FileObject dd = wm.getDeploymentDescriptor();
         WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
@@ -502,7 +484,7 @@ public class JSFClientGenerator {
                 + "<f:view>\n<html>\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>Listing " + simpleEntityName + " Items</title>\n"
                 + styleAndScriptTags
-                + "\n</head>\n<body>\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
+                + "\n</head>\n<body>\n<h:panelGroup id=\"messagePanel\" layout=\"block\">\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n</h:panelGroup>\n ");
         listSb.append("<h1>Listing " + simpleEntityName + " Items</h1>\n");
         listSb.append("<h:form styleClass=\"jsfcrud_list_form\">\n");
         listSb.append("<h:outputText escape=\"false\" value=\"(No " + simpleEntityName + " Items Found)<br />\" rendered=\"#{" + managedBean + ".pagingInfo.itemCount == 0}\" />\n");
@@ -583,7 +565,7 @@ public class JSFClientGenerator {
                 + "<f:view>\n<html>\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>New " + simpleEntityName + "</title>\n"
                 + styleAndScriptTags
-                + "\n</head>\n<body>\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
+                + "\n</head>\n<body>\n<h:panelGroup id=\"messagePanel\" layout=\"block\">\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n</h:panelGroup>\n ");
         newSb.append("<h1>New " + simpleEntityName + "</h1>\n");
         newSb.append("<h:form>\n  <h:inputHidden id=\"validateCreateField\" validator=\"#{" + managedBean + ".validateCreate}\" value=\"value\"/>\n <h:panelGrid columns=\"2\">\n");
         
@@ -639,7 +621,7 @@ public class JSFClientGenerator {
                 + "<f:view>\n<html>\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>Editing " + simpleEntityName + "</title>\n"
                 + styleAndScriptTags
-                + "\n</head>\n<body>\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
+                + "\n</head>\n<body>\n<h:panelGroup id=\"messagePanel\" layout=\"block\">\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n</h:panelGroup>\n ");
         editSb.append("<h1>Editing " + simpleEntityName + "</h1>\n");
         editSb.append("<h:form>\n"
                 + "<h:panelGrid columns=\"2\">\n");
@@ -701,7 +683,7 @@ public class JSFClientGenerator {
                 + "<f:view>\n<html>\n<head>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" + encoding.name() + "\" />\n"
                 + "<title>" + simpleEntityName + " Detail</title>\n"
                 + styleAndScriptTags
-                + "\n</head>\n<body>\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n ");
+                + "\n</head>\n<body>\n<h:panelGroup id=\"messagePanel\" layout=\"block\">\n<h:messages errorStyle=\"color: red\" infoStyle=\"color: green\" layout=\"table\"/>\n</h:panelGroup>\n ");
         detailSb.append("<h1>" + simpleEntityName + " Detail</h1>\n");
         detailSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
         

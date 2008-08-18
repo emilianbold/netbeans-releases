@@ -1568,8 +1568,7 @@ class LayoutFeeder implements LayoutConstants {
         // add indent if needed
         int indent = LayoutRegion.distance(toAlignWith.getCurrentSpace(), interval.getCurrentSpace(),
                                            dimension, alignment, alignment);
-        assert indent == 0 || alignment == LEADING; // currently support indent only at the LEADING side
-        if (indent != 0 && alignment == LEADING) {
+        if (indent != 0) {
             LayoutInterval indentGap = new LayoutInterval(SINGLE);
             indentGap.setSize(Math.abs(indent));
             // [need to use default padding for indent gap]

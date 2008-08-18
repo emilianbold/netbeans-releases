@@ -38,8 +38,13 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes;
 
+import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Point;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Paint;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -53,7 +58,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.PresentationEleme
 import org.netbeans.modules.uml.core.metamodel.structure.Comment;
 import org.netbeans.modules.uml.core.metamodel.structure.IComment;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
-import org.netbeans.modules.uml.diagrams.border.NoteBorder;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -68,13 +72,14 @@ import org.openide.util.NbBundle;
 public class CommentWidget extends UMLNodeWidget implements PropertyChangeListener
 {
     private MultilineLabelWidget bodyLabel = null;
+    public static final int TAB_WIDTH = 11;
 
     public CommentWidget(Scene scene)
     {
         super(scene);
         addToLookup(initializeContextPalette());
         addToLookup(new DefaultWidgetContext("Comment"));
-        setPreferredBounds(new Rectangle(new Point(0,0),new Dimension(100, 60)));
+        setMinimumSize(new Dimension(100, 60));
     }
 
     public CommentWidget(Scene scene, IPresentationElement element)
@@ -82,46 +87,46 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
         this(scene);
         initializeNode(element);
     }
-    
+
     @Override
     public void initializeNode(IPresentationElement element)
     {
         bodyLabel = new MultilineEditableCompartmentWidget(getScene(),
-                getResourcePath(), 
-                NbBundle.getMessage(CommentWidget.class,"LBL_text")); 
-        
-        Border border = BorderFactory.createCompositeBorder(new NoteBorder(getForeground()));
-        bodyLabel.setBorder(border);
-        
-//        bodyLabel.setOpaque(true);
-        ResourceValue.initResources(getResourcePath(), bodyLabel);
-//        bodyLabel.setBackground(Color.WHITE);
+                getResourcePath(),
+                NbBundle.getMessage(CommentWidget.class, "LBL_body"));
 
+//        Border border = BorderFactory.createCompositeBorder(new NoteBorder(getForeground()));
+        Border border = BorderFactory.createEmptyBorder(TAB_WIDTH);
+        bodyLabel.setBorder(border);
+
+        ResourceValue.initResources(getResourcePath(), bodyLabel);
         setCurrentView(bodyLabel);
+        setOpaque(true);
+        
         //populate the comment text
         IElement elt = element.getFirstSubject();
         if (elt != null && elt instanceof IComment)
         {
-            bodyLabel.setLabel(((IComment)elt).getBody());
+            bodyLabel.setLabel(((IComment) elt).getBody());
         }
+        super.initializeNode(element);
     }
-
+    
     @Override
     public void propertyChange(PropertyChangeEvent evt)
     {
         DesignerScene scene = (DesignerScene) getScene();
         PresentationElement pe = (PresentationElement) scene.findObject(this);
         Comment comment = (Comment) pe.getFirstSubject();
-        
+
         bodyLabel.setLabel(comment.getBody());
     }
 
     @Override
-    public Dimension getDefaultMinimumSize() {
+    public Dimension getDefaultMinimumSize()
+    {
         return new Dimension(100, 60);
     }
-    
-    
 
     private DefaultContextPaletteModel initializeContextPalette()
     {
@@ -136,12 +141,87 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
     }
 
     @Override
-    public void load(NodeInfo nodeReader) {
+    public void load(NodeInfo nodeReader)
+    {
         super.load(nodeReader);
-        DesignerScene scene=(DesignerScene) getScene();
-        PresentationElement pe=(PresentationElement) scene.findObject(this);
-        Comment comment=(Comment) pe.getFirstSubject();
+        DesignerScene scene = (DesignerScene) getScene();
+        PresentationElement pe = (PresentationElement) scene.findObject(this);
+        Comment comment = (Comment) pe.getFirstSubject();
         bodyLabel.setLabel(comment.getBody());
     }
 
+    @Override
+    public void paintBackground()
+    {
+        Graphics2D graphics = getGraphics();
+        Rectangle bounds = getBounds();
+        assert bounds != null : "Error: bounds of RoundedRectangleWidget is null!";   // NOI18N
+
+        Paint previousPaint = graphics.getPaint();
+
+        Paint bgColor = getBackground();
+
+        if (UMLNodeWidget.useGradient())
+        {
+            Color bg = (Color) bgColor;
+            bgColor = new GradientPaint(
+                    0, 0, Color.WHITE,
+                    0, bounds.height, bg);
+        }
+        graphics.setPaint(bgColor);
+
+        graphics.fillPolygon(getPolygon());
+
+        if (previousPaint != graphics.getPaint())
+        {
+            graphics.setPaint(previousPaint);
+        }
+
+    }
+
+    @Override
+    public void paintWidget()
+    {
+        Graphics2D graphics = getGraphics();
+        graphics.setColor(Color.BLACK);
+        Rectangle bounds = getBounds();
+        Insets insets = getBorder().getInsets();
+        int leftBorder = bounds.x + insets.left;
+        int top = bounds.y + insets.top;
+        int rightBorder = bounds.x + bounds.width - insets.right - 1;
+        int tabStartX = rightBorder - TAB_WIDTH;
+        int bottom = bounds.y + bounds.height - insets.bottom - 1;
+        int tabBottom = top + TAB_WIDTH;
+        
+        graphics.drawLine(leftBorder, top, tabStartX, top);
+        graphics.drawLine(tabStartX, top, rightBorder, tabBottom);
+        graphics.drawLine(rightBorder, tabBottom, tabStartX, tabBottom);
+        graphics.drawLine(tabStartX, tabBottom, tabStartX, top);
+        graphics.drawLine(rightBorder, tabBottom, rightBorder, bottom);
+        graphics.drawLine(rightBorder, bottom, leftBorder, bottom);
+        graphics.drawLine(leftBorder, bottom, leftBorder, top);        
+    }
+
+    private Polygon getPolygon()
+    {
+        Rectangle bounds = getBounds();
+        Insets insets = getBorder().getInsets();
+        int leftBorder = bounds.x + insets.left;
+        int top = bounds.y + insets.top;
+        int rightBorder = bounds.x + bounds.width - insets.right - 1;
+        int tabStartX = rightBorder - TAB_WIDTH;
+        int bottom = bounds.y + bounds.height - insets.bottom - 1;
+        int tabBottom = top + TAB_WIDTH;
+
+        int[] xPoints =
+        {
+            leftBorder, tabStartX, rightBorder,rightBorder, leftBorder, 
+        };
+        int[] yPoints =
+        {
+            top, top, tabBottom, bottom, bottom
+        };
+
+        return new Polygon(xPoints, yPoints, xPoints.length);
+    }
 }

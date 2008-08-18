@@ -125,6 +125,14 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
      */
     public EmbeddedJoinInfo joinInfo; // 56 bytes
 
+    /**
+     * Extra mod count added to root-token-list's modCount to cover custom embedding creation
+     * that may lead to relexing parts of existing ETLs (for which token-sequences
+     * may already exist).
+     * Its value gets increased when some tokens in this ETL are replaced.
+     */
+    private int extraModCount;
+
     
     public EmbeddedTokenList(EmbeddingContainer<?> embeddingContainer,
             LanguagePath languagePath, LanguageEmbedding<T> embedding
@@ -155,7 +163,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         lexerInputOperation = null;
         trimStorageToSize();
     }
-    
+
     private void initLAState() {
         this.laState = (modCount() != LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT || testing)
                 ? LAState.empty() // Will collect LAState
@@ -277,7 +285,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
      * For token hierarchy snapshots the returned value is corrected
      * in the TokenSequence explicitly by adding TokenSequence.tokenOffsetDiff.
      */
-    public int tokenOffsetByIndex(int index) {
+    public int tokenOffset(int index) {
 //        embeddingContainer().checkStatusUpdated();
         return elementOffset(index);
     }
@@ -301,7 +309,11 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     public int modCount() {
         // Mod count of EC must be returned to allow custom removed embeddings to work
         //  - they set LexerUtilsConstants.MOD_COUNT_REMOVED as cachedModCount.
-        return embeddingContainer.cachedModCount();
+        return embeddingContainer.cachedModCount() + extraModCount;
+    }
+    
+    void resetExtraModCount() {
+        extraModCount = 0;
     }
     
     @Override
@@ -392,10 +404,12 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     }
 
     public void replaceTokens(TokenListChange<T> change, TokenHierarchyEventInfo eventInfo, boolean modInside) {
+        // Increase the extraModCount which helps to invalidate token-sequence in case
+        // when an explicit embedding was created in join-sections setup which can affect adjacent ETLs.
+        extraModCount++;
         int index = change.index();
         // Remove obsolete tokens (original offsets are retained)
         int removedTokenCount = change.removedTokenCount();
-        int rootModCount = rootTokenList().modCount();
         AbstractToken<T> firstRemovedToken = null;
         if (removedTokenCount > 0) {
             @SuppressWarnings("unchecked")
@@ -420,7 +434,6 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
                     token.setTokenList(null);
                     EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
                     if (ec != null) {
-                        assert (ec.cachedModCount() != rootModCount) : "ModCount already updated"; // NOI18N
                         ec.markRemoved(token.rawOffset());
                     }
                 }
@@ -504,7 +517,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         if (joinInfo != null) {
             sb.append("(").append(joinTokenCount()).append(')');
             sb.append(" JI:");
-            joinInfo.dumpInfo(sb);
+            joinInfo.dumpInfo(sb, this);
         }
         sb.append(", IHC=").append(System.identityHashCode(this));
         return sb;

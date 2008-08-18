@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 
 /**
@@ -68,14 +69,21 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
             channel.connect();
 
-            int read;
-            while ((read = in.read()) != -1) {
-                if (read == 10) { // from LocalNativeExecution (MAC conversion?)
-                    out.append('\n');
-                } else {
-                    out.append((char) read);
+            do {
+                int read;
+                while ((read = in.read()) != -1) {
+                    if (read == 10) { // from LocalNativeExecution (MAC conversion?)
+                        out.append('\n');
+                    } else {
+                        out.append((char) read);
+                    }
                 }
-            }
+                try {
+                    Thread.sleep(100); // according to jsch samples
+                } catch (Exception ee) {
+                }
+            } while (!channel.isClosed());
+
             out.flush();
             is.close();
             in.close();
@@ -101,22 +109,23 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             dircmd = "";
         }
 
-        String cmdline = dircmd + exe + " " + args + " 2>&1"; // NOI18N
+        StringBuilder command = new StringBuilder(); // NOI18N
 
-        for (String ev : envp) {
-            int pos = ev.indexOf('=');
-            String var = ev.substring(0, pos);
-            String val = ev.substring(pos + 1);
-            // The following code is important! But ChannelExec.setEnv(...) was added after JSch 0.1.24,
-            // so it can't be used until we get an updated version of JSch.
-            //echannel.setEnv(var, val); // not in 0.1.24
-
-            //as a workaround
-            cmdline = var + "=\"" + val + "\" " + cmdline; // NOI18N
+        if (envp != null) {
+            command.append(ShellUtils.prepareExportString(false, envp));
         }
 
+        command.append(exe).append(" ").append(args).append(" 2>&1");
+        command.insert(0, dircmd);
+
+        if (RemoteHostInfoProvider.getHostInfo(key).isCshShell()) {
+            // cshell doesn't support redirection error stream to output
+            command.insert(0, "bash -c '");
+            command.append("'");
+        }
         channel = createChannel();
-        ((ChannelExec) channel).setCommand(cmdline.replace('\\', '/'));
+        log.finest("RNES: running command: " + command);
+        ((ChannelExec) channel).setCommand(command.toString().replace('\\', '/'));
     }
 
     private final static class ReaderInputStream extends InputStream {

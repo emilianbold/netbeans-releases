@@ -44,11 +44,9 @@ import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -63,9 +61,8 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.classpath.GlobalIncludePathSupport;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
-import org.netbeans.modules.php.project.ui.LastUsedFolders;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -544,15 +541,7 @@ public class PhpOptionsPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(NbBundle.getMessage(PhpOptionsPanel.class, "LBL_SelectPhpInterpreter"));
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setCurrentDirectory(LastUsedFolders.getOptionsInterpreter());
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            File phpInterpreter = FileUtil.normalizeFile(chooser.getSelectedFile());
-            LastUsedFolders.setOptionsInterpreter(phpInterpreter);
-            phpInterpreterTextField.setText(phpInterpreter.getAbsolutePath());
-        }
+        Utils.browsePhpInterpreter(this, phpInterpreterTextField);
     }//GEN-LAST:event_browseButtonActionPerformed
 
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed

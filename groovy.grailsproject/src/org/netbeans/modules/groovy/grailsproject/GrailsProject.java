@@ -69,9 +69,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.modules.groovy.grails.api.GrailsConstants;
+import org.netbeans.modules.groovy.grailsproject.ui.TemplatesImpl;
+import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.w3c.dom.Element;
 
 
@@ -121,7 +126,8 @@ public final class GrailsProject implements Project {
                 new OpenHook(),
                 new AuxiliaryConfigurationImpl(),
                 getSearchInfo(projectDir),
-                // new TemplatesImpl(),
+                new RecommendedTemplatesImpl(),
+                new GroovyFeatureImpl(),
                 logicalView, //Logical view of project implementation
                 cpProvider
             );
@@ -184,7 +190,7 @@ public final class GrailsProject implements Project {
     private final class Info implements ProjectInformation {
 
         public Icon getIcon() {
-            Image image = Utilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png");
+            Image image = Utilities.loadImage(GrailsConstants.GRAILS_ICON_16x16);
             return new ImageIcon(image);
         }
 
@@ -263,4 +269,47 @@ public final class GrailsProject implements Project {
         
     }
             
+    private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
+        
+        // List of primarily supported templates
+        
+        private static final String[] RECOMMENDED_TYPES = new String[] {
+            "groovy",               // NOI18N
+            "java-classes",         // NOI18N
+            "XML",                  // NOI18N
+            "simple-files"          // NOI18N        
+        };
+        
+        private static final String[] PRIVILEGED_NAMES = new String[] {
+            TemplatesImpl.DOMAIN_CLASS,
+            TemplatesImpl.CONTROLLER,
+            TemplatesImpl.INTEGRATION_TEST,
+            TemplatesImpl.GANT_SCRIPT,
+            TemplatesImpl.SERVICE,
+            TemplatesImpl.TAG_LIB,
+            TemplatesImpl.UNIT_TEST,
+            "Templates/Other/Folder",
+            "Templates/Other/properties.properties",
+            "simple-files"
+        };
+        
+        public String[] getRecommendedTypes() {
+            return RECOMMENDED_TYPES;
+        }
+        
+        public String[] getPrivilegedTemplates() {
+            return PRIVILEGED_NAMES;
+        }
+        
+    }
+
+    private static final class GroovyFeatureImpl implements GroovyFeature {
+
+        public boolean isGroovyEnabled() {
+            return true;
+        }
+        
+    }
+
+
 }

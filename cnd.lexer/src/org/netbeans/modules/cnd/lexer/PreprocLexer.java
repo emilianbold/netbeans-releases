@@ -70,7 +70,11 @@ public final class PreprocLexer extends CndLexer {
     private static final int EXPRESSION         = DIRECTIVE_NAME + 1;
     private static final int INCLUDE_DIRECTIVE  = EXPRESSION + 1;
     private static final int OTHER              = INCLUDE_DIRECTIVE + 1;
-    
+
+    // shift is the number of bits enough to mask all states
+    private static final int SHIFT = 3;
+    private static final int MASK  = 0x7; // ~((~0) << SHIFT)
+     
     private int state = INIT;
     private final Filter<CppTokenId> preprocFilter;
     private final Filter<CppTokenId> keywordsFilter;
@@ -86,11 +90,20 @@ public final class PreprocLexer extends CndLexer {
 
     @Override
     public Object state() {
-        return Integer.valueOf(state);
+        Integer baseState = super.getState();
+        int baseValue = baseState == null ? 0 : baseState.intValue();
+        int value = (baseValue << SHIFT) | state;
+        return Integer.valueOf(value);
     }
-    
+   
     private void fromState(Integer state) {
-        this.state = state == null ? INIT : state.intValue();
+        if (state == null) {
+            this.state = INIT;
+            super.setState(null);
+        } else {
+            this.state = state.intValue() & MASK;
+            super.setState(state.intValue() >> SHIFT);
+        }
     }
 
     @Override

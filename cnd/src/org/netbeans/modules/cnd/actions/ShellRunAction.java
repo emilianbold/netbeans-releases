@@ -161,7 +161,8 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             tabName,
             "Run", // NOI18N
             false,
-            true);
+            true,
+            false);
 
         new ShellExecuter(nativeExecutor).execute();
     }

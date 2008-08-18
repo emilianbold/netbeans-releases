@@ -70,167 +70,162 @@ public class CSSFormatter implements Formatter {
         reindent(doc, startOffset, endOffset);
     }
 
-    public void reindent(Document document, int startOffset, int endOffset) {
-        BaseDocument bdoc = (BaseDocument) document;
+    public void reindent(final Document document, final int startOffset, final int endOffset) {
+        final BaseDocument bdoc = (BaseDocument) document;
 
-        //XXX still using the old formatting API, the new one is a subject of change in next version of netbeans.
-        org.netbeans.editor.Formatter editorFormatter = bdoc.getFormatter();
-//        try {
-//            editorFormatter.indentLock();
-        try {
-            int indentLevel = IndentUtils.indentLevelSize(document);
-            int lastLine = Utilities.getLineOffset(bdoc, bdoc.getLength());
-            int indents[] = new int[lastLine + 1];
-            int indentShift[] = new int[lastLine + 1];
-            boolean formattableLines[] = new boolean[lastLine + 1];
-            bdoc.atomicLock();
-            int lineBegin = Utilities.getRowStart(bdoc, startOffset);
-            //int firstLineOffset = Utilities.getLineOffset(bdoc, startOffset);
-            //int lastLineOffset = Utilities.getLineOffset(bdoc, endOffset);
+        bdoc.runAtomic(new Runnable() {
 
-            //XXX wrong impl - it needs to operate on multiple token sequences???
-            //does the infrastructure call me separately for each ts or just once?
-            TokenHierarchy th = TokenHierarchy.get(bdoc);
+            public void run() {
+                //XXX still using the old formatting API, the new one is a subject of change in next version of netbeans.
+                org.netbeans.editor.Formatter editorFormatter = bdoc.getFormatter();
+                try {
+                    int indentLevel = IndentUtils.indentLevelSize(document);
+                    int lastLine = Utilities.getLineOffset(bdoc, bdoc.getLength());
+                    int indents[] = new int[lastLine + 1];
+                    int indentShift[] = new int[lastLine + 1];
+                    boolean formattableLines[] = new boolean[lastLine + 1];
+                    int lineBegin = Utilities.getRowStart(bdoc, startOffset);
+                    //int firstLineOffset = Utilities.getLineOffset(bdoc, startOffset);
+                    //int lastLineOffset = Utilities.getLineOffset(bdoc, endOffset);
 
-            for (LanguagePath languagePath : (Set<LanguagePath>) th.languagePaths()) {
-                if (languagePath.innerLanguage() == CSSTokenId.language()) {
-                    for (TokenSequence ts : (List<TokenSequence>) th.tokenSequenceList(languagePath, 0, bdoc.getLength())) {
-                        TextBounds tsBounds = findTokenSequenceBounds(bdoc, ts);
-                        
-                        if (tsBounds.getAbsoluteEnd() < startOffset || tsBounds.getAbsoluteStart() > endOffset
-                                || tsBounds.getStartPos() == -1){ // empty CSS section
-                            continue;
-                        }
-                        
-                        if (startOffset == endOffset) {
-                            //enter pressed - indent just the line under cursor
-                            if (lineBegin == 1) {
-                                //pressed on first line - do not indent
-                                return;
-                            }
+                    //XXX wrong impl - it needs to operate on multiple token sequences???
+                    //does the infrastructure call me separately for each ts or just once?
+                    TokenHierarchy th = TokenHierarchy.get(bdoc);
 
-                            //go back and find first line with ident(ifier) or '{' char - and indent accordingly 
-                            // ident = 0
-                            // { = +1
-                            ts.move(lineBegin);
-                            while (ts.movePrevious()) {
-                                Token t = ts.token();
-                                if (t.id() == CSSTokenId.IDENT ||
-                                        t.id() == CSSTokenId.RBRACE) {
-                                    //we are on a line with css rule item e.g. color:red; 
-                                    //where the property name is of IDENT token type
-                                    //..or.. we are just after end of a rule ("}" token)
-                                    //=> use the same indent level
-                                    int indent = Utilities.getRowIndent(bdoc, t.offset(th));
-                                    editorFormatter.changeRowIndent(bdoc, lineBegin, indent);
-                                    return;
-                                } else if (t.id() == CSSTokenId.LBRACE) {
-                                    // just rule beginning before current position - increase indent
-                                    int indent = Utilities.getRowIndent(bdoc, t.offset(th));
+                    for (LanguagePath languagePath : (Set<LanguagePath>) th.languagePaths()) {
+                        if (languagePath.innerLanguage() == CSSTokenId.language()) {
+                            for (TokenSequence ts : (List<TokenSequence>) th.tokenSequenceList(languagePath, 0, bdoc.getLength())) {
+                                TextBounds tsBounds = findTokenSequenceBounds(bdoc, ts);
 
-                                    //XXX or should I use the this.indentSize() instead????
-                                    editorFormatter.changeRowIndent(bdoc, lineBegin, indent + indentLevel);
-                                    return;
+                                if (tsBounds.getAbsoluteEnd() < startOffset || tsBounds.getAbsoluteStart() > endOffset || tsBounds.getStartPos() == -1) { // empty CSS section
+                                    continue;
                                 }
-                            }
-                        } else {
-                            //user peformed reformat on a selection or the whole text
-                            
-                            int firstLineOffset = tsBounds.getStartLine();
-                            int lastLineOffset = tsBounds.getEndLine();
-                            
-                            int firstLineOriginalIndent = Utilities.getRowIndent(bdoc, tsBounds.getStartPos());
-                            
-                            for (int line = firstLineOffset; line <= lastLineOffset; line ++){
-                                indentShift[line] = firstLineOriginalIndent;
-                                formattableLines[line] = true;
-                            }
 
-                            //contains <line_start_offset; indent_level> pairs
-                            int indent = 0;
-                            for (int line = firstLineOffset; line <= lastLineOffset; line++) {
-                                int indents_index = line;
-                                if (indents_index == 0) {
-                                    //do we start inside a rule?
-
-                                    Token[] ruleBoundaries = findRule(ts, lineBegin);
-                                    if (ruleBoundaries != null) {
-                                        //yes, we start in a rule
-                                        indent = Utilities.getRowIndent(bdoc, ruleBoundaries[0].offset(th));
-                                        //and add the content indent
-                                        indent = indent + indentLevel;
+                                if (startOffset == endOffset) {
+                                    //enter pressed - indent just the line under cursor
+                                    if (lineBegin == 1) {
+                                        //pressed on first line - do not indent
+                                        return;
                                     }
-                                }
 
-                                //identify the line content
-                                int lStart = Utilities.getRowStartFromLineOffset(bdoc, line);
-                                int lEnd = Utilities.getRowEnd(bdoc, lStart);
-                                ts.move(lStart);
-                                int ruleStart = -1;
-                                int ruleEnd = -1;
-                                int ident = -1;
-                                while (ts.moveNext() && ts.offset() < lEnd) {
-                                    Token t = ts.token();
-                                    if (t.id() == CSSTokenId.LBRACE) {
-                                        ruleStart = ts.offset();
-                                    } else if (t.id() == CSSTokenId.RBRACE) {
-                                        ruleEnd = ts.offset();
-                                    } else if (t.id() == CSSTokenId.IDENT) {
-                                        ident = ts.offset();
-                                    }
-                                }
+                                    //go back and find first line with ident(ifier) or '{' char - and indent accordingly 
+                                    // ident = 0
+                                    // { = +1
+                                    ts.move(lineBegin);
+                                    while (ts.movePrevious()) {
+                                        Token t = ts.token();
+                                        if (t.id() == CSSTokenId.IDENT ||
+                                                t.id() == CSSTokenId.RBRACE) {
+                                            //we are on a line with css rule item e.g. color:red; 
+                                            //where the property name is of IDENT token type
+                                            //..or.. we are just after end of a rule ("}" token)
+                                            //=> use the same indent level
+                                            int indent = Utilities.getRowIndent(bdoc, t.offset(th));
+                                            editorFormatter.changeRowIndent(bdoc, lineBegin, indent);
+                                            return;
+                                        } else if (t.id() == CSSTokenId.LBRACE) {
+                                            // just rule beginning before current position - increase indent
+                                            int indent = Utilities.getRowIndent(bdoc, t.offset(th));
 
-                                if (ruleStart != -1 && ruleEnd == -1) {
-                                    //rule started
-                                    indents[indents_index] = indent;
-                                    //increase indent of the content
-                                    indent = indent + indentLevel;
-                                } else if (ruleStart == -1 && ruleEnd != -1) {
-                                    //rule ended
-
-                                    //test if there is an identifier before the rule closing symbol
-                                    //in such case do not lower the indent of the line
-                                    if (ident != -1 && ident < ruleEnd) {
-                                        //sg. like "color: red; }" on the line
-                                        indents[indents_index] = indent;
-                                        indent = indent - indentLevel;
-                                    } else {
-                                        indent = indent - indentLevel;
-                                        indents[indents_index] = indent;
+                                            //XXX or should I use the this.indentSize() instead????
+                                            editorFormatter.changeRowIndent(bdoc, lineBegin, indent + indentLevel);
+                                            return;
+                                        }
                                     }
                                 } else {
-                                    //just text inside or outside of a rule
-                                    indents[indents_index] = indent;
-                                }
+                                    //user peformed reformat on a selection or the whole text
 
+                                    int firstLineOffset = tsBounds.getStartLine();
+                                    int lastLineOffset = tsBounds.getEndLine();
+
+                                    int firstLineOriginalIndent = Utilities.getRowIndent(bdoc, tsBounds.getStartPos());
+
+                                    for (int line = firstLineOffset; line <= lastLineOffset; line++) {
+                                        indentShift[line] = firstLineOriginalIndent;
+                                        formattableLines[line] = true;
+                                    }
+
+                                    //contains <line_start_offset; indent_level> pairs
+                                    int indent = 0;
+                                    for (int line = firstLineOffset; line <= lastLineOffset; line++) {
+                                        int indents_index = line;
+                                        if (indents_index == 0) {
+                                            //do we start inside a rule?
+
+                                            Token[] ruleBoundaries = findRule(ts, lineBegin);
+                                            if (ruleBoundaries != null) {
+                                                //yes, we start in a rule
+                                                indent = Utilities.getRowIndent(bdoc, ruleBoundaries[0].offset(th));
+                                                //and add the content indent
+                                                indent = indent + indentLevel;
+                                            }
+                                        }
+
+                                        //identify the line content
+                                        int lStart = Utilities.getRowStartFromLineOffset(bdoc, line);
+                                        int lEnd = Utilities.getRowEnd(bdoc, lStart);
+                                        ts.move(lStart);
+                                        int ruleStart = -1;
+                                        int ruleEnd = -1;
+                                        int ident = -1;
+                                        while (ts.moveNext() && ts.offset() < lEnd) {
+                                            Token t = ts.token();
+                                            if (t.id() == CSSTokenId.LBRACE) {
+                                                ruleStart = ts.offset();
+                                            } else if (t.id() == CSSTokenId.RBRACE) {
+                                                ruleEnd = ts.offset();
+                                            } else if (t.id() == CSSTokenId.IDENT) {
+                                                ident = ts.offset();
+                                            }
+                                        }
+
+                                        if (ruleStart != -1 && ruleEnd == -1) {
+                                            //rule started
+                                            indents[indents_index] = indent;
+                                            //increase indent of the content
+                                            indent = indent + indentLevel;
+                                        } else if (ruleStart == -1 && ruleEnd != -1) {
+                                            //rule ended
+
+                                            //test if there is an identifier before the rule closing symbol
+                                            //in such case do not lower the indent of the line
+                                            if (ident != -1 && ident < ruleEnd) {
+                                                //sg. like "color: red; }" on the line
+                                                indents[indents_index] = indent;
+                                                indent = indent - indentLevel;
+                                            } else {
+                                                indent = indent - indentLevel;
+                                                indents[indents_index] = indent;
+                                            }
+                                        } else {
+                                            //just text inside or outside of a rule
+                                            indents[indents_index] = indent;
+                                        }
+
+                                    }
+                                }
                             }
                         }
+
                     }
+
+                    int firstLineWithinFormattingRange = Utilities.getLineOffset(bdoc, startOffset);
+                    int lastLineWithinFormattingRange = Utilities.getLineOffset(bdoc, endOffset);
+
+                    //apply the formatting
+                    for (int line = firstLineWithinFormattingRange; line <= lastLineWithinFormattingRange; line++) {
+                        if (formattableLines[line]) {
+                            int lStart = Utilities.getRowStartFromLineOffset(bdoc, line);
+                            editorFormatter.changeRowIndent(bdoc, lStart, indents[line] + indentShift[line]);
+                        }
+                    }
+
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
 
             }
-
-            int firstLineWithinFormattingRange = Utilities.getLineOffset(bdoc, startOffset);
-            int lastLineWithinFormattingRange = Utilities.getLineOffset(bdoc, endOffset);
-
-            //apply the formatting
-            for (int line = firstLineWithinFormattingRange; line <= lastLineWithinFormattingRange; line++) {
-                if (formattableLines[line]) {
-                    int lStart = Utilities.getRowStartFromLineOffset(bdoc, line);
-                    editorFormatter.changeRowIndent(bdoc, lStart, indents[line] + indentShift[line]);
-                }
-            }
-            
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            bdoc.atomicUnlock();
-        }
-//        } finally {
-//            editorFormatter.indentUnlock();
-//        }
-
-
+        });
     }
 
     /** 

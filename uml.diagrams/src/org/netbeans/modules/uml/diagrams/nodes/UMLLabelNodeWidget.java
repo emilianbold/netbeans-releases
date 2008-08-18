@@ -38,7 +38,9 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes;
 
+import java.awt.Color;
 import java.awt.Font;
+import java.awt.Point;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.LabelNode;
 import java.beans.PropertyChangeEvent;
@@ -56,7 +58,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelNode
 {
-    private UMLLabelWidget labelWidget;
+    private MovableLabelWidget labelWidget;
     
     public UMLLabelNodeWidget(Scene scene)
     {
@@ -68,12 +70,13 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
         super(scene,defResource);        
     }
     
-    public UMLLabelWidget getLabelWidget()
+    public MovableLabelWidget getLabelWidget()
     {
         if (labelWidget == null && getObject()!=null)
         {
             labelWidget = new MovableLabelWidget(getScene(), this, getObject().getFirstSubject(), getResourcePath(), loc("NodeLabel"));
             labelWidget.setVisible(false);
+            labelWidget.setForeground(null);
             Widget parent = getParentWidget();
             if (parent != null)
                 parent.addChild(parent.getChildren().indexOf(this) + 1, labelWidget);
@@ -97,6 +100,15 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
         }
 
         super.propertyChange(event);
+    }
+
+    @Override
+    protected void notifyForegroundChanged(Color newColor)
+    {
+        super.notifyForegroundChanged(newColor);
+        
+        Widget label = getLabelWidget();
+        label.setForeground(newColor);
     }
 
     
@@ -144,5 +156,23 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
             getLabelWidget().setFont(font);
             revalidate();//to update dependencies
        }
+    }
+    
+    public void duplicate(boolean setBounds, Widget target)
+    {
+        assert target instanceof UMLLabelNodeWidget;
+        super.duplicate(setBounds, target);
+        MovableLabelWidget oldLabel = getLabelWidget();
+        UMLLabelWidget newLabel = ((UMLLabelNodeWidget) target).getLabelWidget();
+        newLabel.setVisible(oldLabel.isVisible());
+
+        double dx = oldLabel.getCenterDx();
+        double dy = oldLabel.getCenterDy();
+        ((MovableLabelWidget) newLabel).updateDistance(dx, dy);
+
+        Point p = new Point(target.convertLocalToScene(target.getPreferredLocation()).x + (int) dx,
+                target.convertLocalToScene(target.getPreferredLocation()).y + (int) dy);
+        p = newLabel.getParentWidget().convertSceneToLocal(p);
+        newLabel.setPreferredLocation(p);
     }
 }

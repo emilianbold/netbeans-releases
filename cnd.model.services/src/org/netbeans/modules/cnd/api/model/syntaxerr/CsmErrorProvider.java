@@ -42,6 +42,9 @@ package org.netbeans.modules.cnd.api.model.syntaxerr;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -85,50 +88,61 @@ public abstract class CsmErrorProvider {
     private static final boolean ASYNC = getBoolean("cnd.csm.errors.async", true);
 
     private static abstract class BaseMerger extends CsmErrorProvider {
+
         protected final Lookup.Result<CsmErrorProvider> res;
+
         public BaseMerger() {
             res = Lookup.getDefault().lookupResult(CsmErrorProvider.class);
         }
+
+        protected abstract void getErrorsImpl(Request request, Response response);
+
+        @Override
+        public void getErrors(Request request, Response response) {
+            if (ENABLE) {
+                if (! isPartial(request.getFile())) {
+                    getErrorsImpl(request, response);
+                }
+            }
+            response.done();
+        }
+
     }
 
     private static class SynchronousMerger extends BaseMerger {
         
         @Override
-        public void getErrors(Request request, Response response) {
-            if (ENABLE) {
-                for( CsmErrorProvider provider : res.allInstances() ) {
-                    if (request.isCancelled()) {
-                        break;
-                    }
-                    provider.getErrors(request, response);
+        public void getErrorsImpl(Request request, Response response) {
+            for( CsmErrorProvider provider : res.allInstances() ) {
+                if (request.isCancelled()) {
+                    break;
                 }
+                provider.getErrors(request, response);
             }
-            response.done();
         }
     }
 
     private static class AsynchronousMerger extends BaseMerger {
 
         @Override
-        public void getErrors(final Request request, final Response response) {
-            if (ENABLE) {
-                final Collection<RequestProcessor.Task> tasks = new ArrayList<RequestProcessor.Task>();
-                for( final CsmErrorProvider provider : res.allInstances() ) {
-                    if (request.isCancelled()) {
-                        break;
-                    }
-                    RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
+        public void getErrorsImpl(final Request request, final Response response) {
+            final Collection<RequestProcessor.Task> tasks = new ArrayList<RequestProcessor.Task>();
+            for( final CsmErrorProvider provider : res.allInstances() ) {
+                if (request.isCancelled()) {
+                    break;
+                }
+                RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        if (!request.isCancelled()){
                             provider.getErrors(request, response);
                         }
-                    });
-                    tasks.add(task);
-                }
-                for (RequestProcessor.Task task : tasks) {
-                    task.waitFinished();
-                }
+                    }
+                });
+                tasks.add(task);
             }
-            response.done();
+            for (RequestProcessor.Task task : tasks) {
+                task.waitFinished();
+            }
         }
     }
     
@@ -145,5 +159,28 @@ public abstract class CsmErrorProvider {
             result = Boolean.parseBoolean(value);
         }
         return result;
+    }
+
+    /**
+     * Determines whether this file contains part of some declaration,
+     * i.e. whether it was included in the middle of some other declaration
+     */
+    private static boolean isPartial(CsmFile isIncluded) {
+        //Collection<CsmFile> files = CsmIncludeHierarchyResolver.getDefault().getFiles(isIncluded);
+        Collection<CsmReference> directives = CsmIncludeHierarchyResolver.getDefault().getIncludes(isIncluded);
+        for (CsmReference directive : directives) {
+            if (directive != null  ) {
+                int offset = directive.getStartOffset();
+                CsmFile containingFile = directive.getContainingFile();
+                if (containingFile != null) {
+                    for (CsmOffsetableDeclaration decl : containingFile.getDeclarations()) {
+                        if (decl.getStartOffset() <= offset && offset < decl.getEndOffset()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+	return false;
     }
 }

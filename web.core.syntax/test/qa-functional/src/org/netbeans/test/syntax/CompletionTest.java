@@ -123,7 +123,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class CompletionTest extends J2eeTestCase {
 
-    private static final boolean GENERATE_GOLDEN_FILES = true;//generate golden files, or test
+    private static final boolean GENERATE_GOLDEN_FILES = false;//generate golden files, or test
     private static boolean projectsOpened = false;//open test projects
     protected final static List XML_EXTS = Arrays.asList(new String[]{"html", "tld", "xhtml"});
     protected final static List JSP_EXTS = Arrays.asList(new String[]{"jsp", "tag", "jspf", "tagf", "jspx", "tagx"});

@@ -902,7 +902,7 @@ public final class ParseProjectXml extends Task {
         }
         String cluster = module.getClusterName();
         if (cluster != null) { // #68716
-            if ((includedClusters != null && !includedClusters.isEmpty() && !includedClusters.contains(cluster)) ||
+            if ((includedClusters != null && !includedClusters.isEmpty() && ! ModuleSelector.clusterMatch(includedClusters, cluster)) ||
                     ((includedClusters == null || includedClusters.isEmpty()) && excludedClusters != null && excludedClusters.contains(cluster))) {
                 throw new BuildException("The module " + cnb + " cannot be compiled against because it is part of the cluster " + cluster +
                                          " which has been excluded from the target platform in your suite configuration", getLocation());
@@ -1236,6 +1236,7 @@ public final class ParseProjectXml extends Task {
                 replaceAll("\\*\\*", "(.+/)?").
                 replaceAll("\\*", "");
         Pattern p = Pattern.compile("(" + corePattern + ")[^/]+\\.class");
+        boolean foundAtLeastOneEntry = false;
         // E.g.: (org/netbeans/api/foo/|org/netbeans/spi/foo/)[^/]+\.class
         OutputStream os = new FileOutputStream(ppjar);
         try {
@@ -1267,6 +1268,7 @@ public final class ParseProjectXml extends Task {
                         if (!p.matcher(path).matches()) {
                             continue;
                         }
+                        foundAtLeastOneEntry = true;
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         byte[] buf = new byte[4096];
                         int read;
@@ -1289,6 +1291,11 @@ public final class ParseProjectXml extends Task {
             zos.close();
         } finally {
             os.close();
+        }
+        if (!foundAtLeastOneEntry) {
+            ppjar.delete();
+            throw new BuildException("The JARs " + jars + " contain no classes in the supposed public packages " +
+                    pubpkgs + " and so cannot be compiled against", getLocation());
         }
         return ppjar;
     }

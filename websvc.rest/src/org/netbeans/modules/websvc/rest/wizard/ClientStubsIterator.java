@@ -50,6 +50,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.codegen.ClientStubsGenerator;
+import org.netbeans.modules.websvc.rest.codegen.JMakiRestWidgetGenerator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -129,10 +130,14 @@ public final class ClientStubsIterator implements WizardDescriptor.Instantiating
                     try {
                         if(isProjectSelected) {
                             for (Project project : projectsToStub) {
-                                result.addAll(new ClientStubsGenerator(stubRoot, stubFolder, project, createJmaki, overwrite).generate(pHandle));
+                                if(createJmaki)
+                                    result.addAll(new JMakiRestWidgetGenerator(stubRoot, stubFolder, project, createJmaki, overwrite).generate(pHandle));
+                                else
+                                    result.addAll(new ClientStubsGenerator(stubRoot, stubFolder, project, overwrite).generate(pHandle));
                             }
                         } else {
-                            result.addAll(new ClientStubsGenerator(stubRoot, stubFolder, wadlFile, createJmaki, overwrite).generate(pHandle));
+                            if(!createJmaki)
+                                result.addAll(new ClientStubsGenerator(stubRoot, stubFolder, wadlFile.getInputStream(), overwrite).generate(pHandle));
                         }
                     } catch(Exception iox) {
                         Exceptions.printStackTrace(iox);

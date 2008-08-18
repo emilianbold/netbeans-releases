@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -272,11 +273,11 @@ public class ElementCustomizationPanel extends JPanel implements ItemListener
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(typeLbl)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(typeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 172, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 144, Short.MAX_VALUE)
+                                .add(typeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 106, Short.MAX_VALUE)
                         .add(restoreBtn))
                     .add(layout.createSequentialGroup()
-                        .add(previewPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+                        .add(previewPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 171, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 233, Short.MAX_VALUE)
@@ -314,7 +315,7 @@ public class ElementCustomizationPanel extends JPanel implements ItemListener
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(fontLbl)
@@ -328,7 +329,7 @@ public class ElementCustomizationPanel extends JPanel implements ItemListener
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(bgcolorLbl)
                             .add(bgComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, previewPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, previewPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -725,9 +726,27 @@ private void restoreBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             } else
             {
                 IPresentationElement element = ((IPresentationElement) ((ObjectScene) w.getScene()).findObject(w));
-                String name = element.getFirstSubject().getExpandedElementType();
+                String elementName = element.getFirstSubject().getExpandedElementType();
+                
+                String name = elementName;
+                try
+                {
+                    name = NbBundle.getMessage(ElementCustomizationPanel.class, elementName);
+                }
+                catch(MissingResourceException e)
+                {
+                    // Since the goal of using a resource file is not to allow
+                    // the model element name to be translated (they have
+                    // been marked with NOI18N) but to put space in the element
+                    // names that are really to words.  For example 
+                    // CombinedFragment.  Therefore there will be some that
+                    // are missing.  
+                    //
+                    // So simply use the model elements name.
+                }
+                
                 setText(name);
-                String imageName = CommonResourceManager.instance().getIconDetailsForElementType(name);
+                String imageName = CommonResourceManager.instance().getIconDetailsForElementType(elementName);
                 imageName = imageName.substring(imageName.lastIndexOf("/") + 1);
                 setIcon(ImageUtil.instance().getIcon(imageName));
             }

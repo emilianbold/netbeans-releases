@@ -235,6 +235,9 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             if (ConnectionList.getDefault().contains(dbconn)) {
                 return;
             }
+            
+            ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
+            addChild(ninfo);
 
             ConnectionList.getDefault().add(dbconn);
         }

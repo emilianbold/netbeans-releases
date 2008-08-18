@@ -152,7 +152,12 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
     }
     
     public int getColumnPosition() {
-        return (Integer)getProperty("ordpos");
+        Object ordpos = getProperty("ordpos");
+        if (ordpos == null) {
+            return 0;
+        } else {
+            return (Integer)ordpos;
+        }
     }
 
     // catalog,schema,tablename,name,datatype,typename,
@@ -271,6 +276,11 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
         }
         
         if ( ! (o2 instanceof ColumnNodeInfo) ) {
+            return super.compareTo(o2);
+        }
+
+        if (getColumnPosition() == 0) {
+            // The database is not telling us ordinal positions, so sort by name
             return super.compareTo(o2);
         }
         

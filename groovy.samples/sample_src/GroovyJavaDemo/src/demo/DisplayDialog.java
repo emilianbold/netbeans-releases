@@ -6,7 +6,7 @@ public class DisplayDialog extends javax.swing.JDialog {
     public static final int RET_OK = 1;
 
     //Step 1: Initialize the Groovy class:
-    Display display = new Display();
+    DisplayProvider display = new DisplayProvider();
 
     public DisplayDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);

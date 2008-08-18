@@ -49,6 +49,7 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.NbModuleSuite;
@@ -154,7 +155,10 @@ public class AddNewEnterprise extends PerformanceTestCase {
     }
     
     public void prepare(){
+        // Workaround for issue 143497
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         wizard.selectCategory(file_category);
         wizard.selectFileType(file_type);
         

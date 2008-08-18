@@ -101,8 +101,10 @@ public class ContainerWidget extends Widget
         if(scene instanceof DesignerScene)
         {
             DesignerScene sc=(DesignerScene) scene;
-            setForeground(sc.getMainLayer().getForeground());
-            setBackground(sc.getMainLayer().getBackground());
+            // Inherit the foreground and background properties from the parent
+            // node.
+            setForeground(null);
+            setBackground(null);
             setFont(sc.getMainLayer().getFont());
             //need to add font/colors listener to scene to get updates, but currently inheritance from scene
         }

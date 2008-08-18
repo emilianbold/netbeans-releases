@@ -347,7 +347,7 @@ public abstract class CommonConfigurationXMLCodec
     
     private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
 	xes.elementOpen(TOOLS_SET_ELEMENT);
-	xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getDisplayName());
+	xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getName());
         xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
         if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault())
             xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
@@ -606,7 +606,7 @@ public abstract class CommonConfigurationXMLCodec
 
     
     private static void writePackaging(XMLEncoderStream xes, PackagingConfiguration packagingConfiguration) {
-        if (packagingConfiguration.getFiles().getValue().size() == 0) {
+        if (!packagingConfiguration.isModified()) {
             return;
         }
 	xes.elementOpen(PACK_ELEMENT);

@@ -305,56 +305,82 @@ public class TSDiagramConverter
             addNodeToScene(ninfo);
         }
         addEdgestWithValidationWait();
+        scene.revalidate();
         scene.validate();
    }
     
     private void addEdgestWithValidationWait()
     {
-        new AfterValidationExecutor(new ActionProvider() {
-
-            public void perfomeAction() {
-                if(diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
-                {
-                    addEdgesSequenceDiagram();
-                }
-                else
-                {
-                    addEdgesGeneral();
-                }
-                processContainmentWithValidationWait();
-                scene.validate();
-            }
-        },scene);
+        ActionProviderImplOne actProvOne = new ActionProviderImplOne();
+        new AfterValidationExecutor(actProvOne, scene);
     }
+    
+    private class ActionProviderImplOne implements ActionProvider
+    {
+        public ActionProviderImplOne()
+        {
+        }
+
+        public void perfomeAction()
+        {
+            if (diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
+            {
+                addEdgesSequenceDiagram();
+            }
+            else
+            {
+                addEdgesGeneral();
+            }
+            processContainmentWithValidationWait();
+            scene.revalidate();
+            scene.validate();
+        }
+    }
+    
     private void processContainmentWithValidationWait()
     {
-        new AfterValidationExecutor(new ActionProvider() {
+        ActionProviderImplTwo actProvTwo = new ActionProviderImplTwo();
+        new AfterValidationExecutor(actProvTwo, scene);
+    }
+    
+    private class ActionProviderImplTwo implements ActionProvider
+    {
+        public ActionProviderImplTwo()
+        {
+        }
 
-            public void perfomeAction() {
-                for(Widget w:widgetsList)
+        public void perfomeAction()
+        {
+            for (Widget w : widgetsList)
+            {
+                if (w instanceof ContainerNode && w instanceof UMLNodeWidget)
                 {
-                    if(w instanceof ContainerNode && w instanceof UMLNodeWidget)
+                    ObjectScene scene = (ObjectScene) w.getScene();
+                    IPresentationElement pe = (IPresentationElement) scene.findObject(w);
+                    if (pe.getFirstSubject() instanceof ICombinedFragment)
                     {
-                        ObjectScene scene=(ObjectScene) w.getScene();
-                        IPresentationElement pe=(IPresentationElement) scene.findObject(w);
-                        if(pe.getFirstSubject() instanceof ICombinedFragment)continue;//TBD need to solve concurrent modification issue
-                         ContainerNode cont=(ContainerNode) w;
-                         cont.getContainer().calculateChildren(false);
+                        continue; //TBD need to solve concurrent modification issue
                     }
+                    ContainerNode cont = (ContainerNode) w;
+                    cont.getContainer().calculateChildren(false);
                 }
-                scene.validate();
-                scene.getDiagram().setDirty(true);
-                try {
-                    scene.getDiagram().save();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                processArchiveWithValidationWait();
-                scene.revalidate();
-                scene.validate();
-                PersistenceUtil.setDiagramLoading(false);
             }
-        }, scene);
+            scene.validate();
+            scene.getDiagram().setDirty(true);
+//                scene.getEngine().getTopComponent().setDiagramDirty(true);
+            try
+            {
+                scene.getDiagram().save();
+            }
+            catch (IOException ex)
+            {
+                Exceptions.printStackTrace(ex);
+            }
+            processArchiveWithValidationWait();
+            scene.revalidate();
+            scene.validate();
+            PersistenceUtil.setDiagramLoading(false);
+        }
     }
     
     private void processArchiveWithValidationWait()
@@ -393,6 +419,7 @@ public class TSDiagramConverter
             }
         }
         if(messagesInfo.size()>0)addMessagesToSQD(messagesInfo);
+        scene.validate();
     }
     
     private void archiveTSDiagram()
@@ -627,7 +654,7 @@ public class TSDiagramConverter
                     else if(sourcePE!=null && targetPE!=null)
                     {
                         //shouldn't happens
-                        System.out.println("****WARNING: both ends of association class link exist");
+//                        System.out.println("****WARNING: both ends of association class link exist");
                     }
                     else
                     {
@@ -900,7 +927,7 @@ public class TSDiagramConverter
                         }
                         catch(java.lang.IllegalArgumentException ex)
                         {
-                            System.out.println("***WARNING: "+ex);
+//                            System.out.println("***WARNING: "+ex);
                         }
                     }                        
                 }
@@ -1204,7 +1231,7 @@ public class TSDiagramConverter
                                 }
                                 else
                                 {
-                                    System.out.println("***WARNING: UNKNOWN ORIENTATION: "+orientation);
+//                                    System.out.println("***WARNING: UNKNOWN ORIENTATION: "+orientation);
                                 }
                             }
                             if("Transitions".equals(value))
@@ -1279,7 +1306,7 @@ public class TSDiagramConverter
             {
                 case 11:
                     //it's name for activity edge with lightning, after addition of support in 6.5 need to add some info here
-                    System.out.println("***WARNING: Unsupported lightning on signal to invocation edge");
+//                    System.out.println("***WARNING: Unsupported lightning on signal to invocation edge");
                 case 1://for names of smth on all diagrams
                 case 12://for names of smth on all diagrams
                     typeInfo=AbstractLabelManager.NAME;
@@ -1341,7 +1368,7 @@ public class TSDiagramConverter
                 default:
                     throw new UnsupportedOperationException("Converter can't handle label kind: "+tsType);
             }
-            System.out.println("LABEL: "+typeInfo+":"+type);
+//            System.out.println("LABEL: "+typeInfo+":"+type);
             if(typeInfo==null)continue;//unsupported yet
             if(endLabel)
             {
@@ -1358,7 +1385,7 @@ public class TSDiagramConverter
                 }
                 else if(elt!=null && elt instanceof ITransition)
                 {
-                    System.out.println("***WARNING: unsupported pre/postcondition label was skipped");
+//                    System.out.println("***WARNING: unsupported pre/postcondition label was skipped");
                     continue;//pre-post transitions unsupported yet
                 }
                 else

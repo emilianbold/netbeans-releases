@@ -2920,7 +2920,7 @@ public class CasualDiff {
     }
     
     private boolean matchLiteral(JCLiteral t1, JCLiteral t2) {
-        return t1.typetag == t2.typetag && t1.value.equals(t2.value);
+        return t1.typetag == t2.typetag && (t1.value == t2.value || (t1.value != null && t1.value.equals(t2.value)));
     }
 
     private boolean matchTypeApply(JCTypeApply t1, JCTypeApply t2) {

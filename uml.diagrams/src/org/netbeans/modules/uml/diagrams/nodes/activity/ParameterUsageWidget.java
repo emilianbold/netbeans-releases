@@ -96,6 +96,7 @@ public class ParameterUsageWidget extends ActivityNodeWidget
             enableStereoTypeWidget(element);
 
             Widget editorPanel = new Widget(scene);
+            editorPanel.setForeground(null);
             editorPanel.setLayout(
                     LayoutFactory.createHorizontalFlowLayout(
                     LayoutFactory.SerialAlignment.JUSTIFY, 0));
@@ -119,6 +120,7 @@ public class ParameterUsageWidget extends ActivityNodeWidget
             setCurrentView(mainView);
             setFont(getCurrentView().getFont());
         }
+        super.initializeNode(presentation);
     }
 
     public String getWidgetID()
