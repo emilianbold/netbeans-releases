@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,30 +37,14 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hibernate.service;
-
-import org.netbeans.modules.hibernate.service.spi.HibernateEnvironmentImpl;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
-import org.netbeans.modules.hibernate.service.spi.HibernateVerificationWarningOverrider;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-
+package org.netbeans.modules.j2ee.jpa.verification.api;
 
 /**
- * The class extends project lookup to include additional instances of 
- * Hibernate artifacts. This class is registered in the project's lookup.
+ * To identify JPA verification warnings
  * 
- * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
+ * @author Dongmei Cao
  */
-public class HibernateProjectLookupExtender implements LookupProvider {
-
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        HibernateEnvironment hibernateEnvironment = new HibernateEnvironmentImpl(project);
-        HibernateVerificationWarningOverrider warningOverrider = new HibernateVerificationWarningOverrider(project);
-        return Lookups.fixed(new Object[]{hibernateEnvironment, warningOverrider});
-    }
+public class JPAVerificationWarningIds {
+    public static final String NO_PERSISTENCE_UNIT_WARNING = "no_persitence_unit_warning";
 
 }
