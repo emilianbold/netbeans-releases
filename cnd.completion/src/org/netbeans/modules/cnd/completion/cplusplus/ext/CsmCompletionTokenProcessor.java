@@ -1845,7 +1845,9 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                         break;
 
                     case LONG_LITERAL:
+                    case LONG_LONG_LITERAL:
                     case UNSIGNED_LONG_LITERAL:
+                    case UNSIGNED_LONG_LONG_LITERAL:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("long"); // NOI18N
                         break;
