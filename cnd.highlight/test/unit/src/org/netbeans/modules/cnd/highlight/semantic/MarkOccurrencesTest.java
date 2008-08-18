@@ -92,6 +92,6 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
     }
     
     protected Collection<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
-        return MarkOccurrencesHighlighter.getOccurrences(testFile, offset);
+        return MarkOccurrencesHighlighter.getOccurrences(testFile, offset, null);
     }
 }

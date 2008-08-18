@@ -59,6 +59,8 @@ import org.rubyforge.debugcommons.model.RubyValue;
 import org.rubyforge.debugcommons.model.RubyVariable;
 
 public final class ToolTipAnnotation extends Annotation implements Runnable {
+
+    private static final Boolean SKIP_BALLOON_EVAL = Boolean.getBoolean("ruby.debugger.skip.balloon.evaluation"); // NOI18N
     
     private Part lp;
     private EditorCookie ec;
@@ -66,20 +68,23 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
     public String getShortDescription() {
         RubySession session = Util.getCurrentSession();
         if (session == null) { return null; }
-        Part lp = (Part) getAttachedAnnotatable();
-        if (lp == null) { return null; }
-        Line line = lp.getLine();
+        Part _lp = (Part) getAttachedAnnotatable();
+        if (_lp == null) { return null; }
+        Line line = _lp.getLine();
         DataObject dob = DataEditorSupport.findDataObject(line);
         if (dob == null) { return null; }
-        EditorCookie ec = dob.getCookie(EditorCookie.class);
-        if (ec == null) { return null; }
-        this.lp = lp;
-        this.ec = ec;
+        EditorCookie _ec = dob.getCookie(EditorCookie.class);
+        if (_ec == null) { return null; }
+        this.lp = _lp;
+        this.ec = _ec;
         RequestProcessor.getDefault().post(this);
         return null;
     }
     
     public void run() {
+        if (SKIP_BALLOON_EVAL) {
+            return;
+        }
         if (lp == null || ec == null) { return; }
         StyledDocument doc;
         try {

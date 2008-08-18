@@ -1,11 +1,11 @@
-class Test1 {
+class TestSamePackage1 {
     def method1() {}
 }
 
-class Test2 {
+class TestSamePackage2 {
     def method2() {}
 }
 
 def runner () {
-    println Tes
+    println TestSamePack
 }

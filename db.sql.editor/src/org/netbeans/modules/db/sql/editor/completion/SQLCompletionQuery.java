@@ -152,7 +152,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         if (context == null) {
             return;
         }
-        SQLStatement statement = SQLStatementAnalyzer.analyze(env.getTokenSequence());
+        SQLStatement statement = SQLStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
         fromClause = statement.getTablesInEffect(env.getCaretOffset());
 
         Identifier ident = findIdentifier();

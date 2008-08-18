@@ -678,6 +678,20 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
              }
              
          }
+         else if(pElement instanceof IClassifier)
+         {
+             retObj = new ETArrayList < INamedElement >();
+             
+             IClassifier classifier = (IClassifier)pElement;
+             List<INamedElement> children = classifier.getOwnedElements();
+             for(INamedElement child : children)
+             {
+                 if (child instanceof IClassifier)
+                 {
+                     retObj.add((IClassifier) child);
+                 }
+             }
+         }
          else if (pElement instanceof INamespace)
          {
             retObj = ((INamespace) pElement).getOwnedElements();
@@ -861,9 +875,7 @@ catch (IOException ex) {
       }
       
       ETList < INamedElement > ownedElements = getOwnedElements(pOwnerElement);
-      if ((ownedElements != null) && 
-          !(pOwnerElement instanceof IStructuredClassifier) && 
-          !(pOwnerElement instanceof IBehavioralFeature))
+      if (ownedElements != null) 
       {
          ETArrayList<IElement> elements = new ETArrayList<IElement>(ownedElements.size());
          elements.addAll(ownedElements);

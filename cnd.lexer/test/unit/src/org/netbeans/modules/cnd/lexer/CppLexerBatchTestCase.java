@@ -179,7 +179,7 @@ public class CppLexerBatchTestCase extends TestCase {
     }
 
     public void testNumberLiterals() {
-        String text = "0 00 09 1 12 0L 1l 12L 0x1 0xf 0XdE 0Xbcy" +
+        String text = "0 00 09 1 12 0L 1l 12L 0LL 1ll 0x1 0xf 0XdE 0Xbcy" +
                 " 09.5 1.5f 1.6F 6u 7U 7e3 6.1E-7f .3 3614090360UL 3614090360ul 0xffffffffull 0x1234l 0x1234L";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
         TokenSequence<?> ts = hi.tokenSequence();
@@ -198,6 +198,10 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LONG_LITERAL, "1l");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LONG_LITERAL, "12L");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LONG_LONG_LITERAL, "0LL");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LONG_LONG_LITERAL, "1ll");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT_LITERAL, "0x1");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
@@ -808,6 +812,45 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "L2");
 
         assertFalse(ts.moveNext());
+    }
+
+    public void testStrings() {
+        // IZ#144221: IDE highlights L' ' and L" " as wrong code
+        String text = "L\"\\x20\\x9\\xD\\xA\" L' ' L'\\x20'";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();      
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.STRING_LITERAL, "L\"\\x20\\x9\\xD\\xA\"");  
+        TokenSequence<?> es = ts.embedded();
+
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.PREFIX, "L");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.DOUBLE_QUOTE, "\"");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.HEX_ESCAPE, "\\x20");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.HEX_ESCAPE, "\\x9");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.HEX_ESCAPE, "\\xD");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.HEX_ESCAPE, "\\xA");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.DOUBLE_QUOTE, "\"");
+        assertFalse("No more tokens", es.moveNext());
+
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.CHAR_LITERAL, "L' '");
+        es = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.PREFIX, "L");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.SINGLE_QUOTE, "'");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.SINGLE_QUOTE, "'");
+        assertFalse("No more tokens", es.moveNext());
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.CHAR_LITERAL, "L'\\x20'");
+        es = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.PREFIX, "L");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.SINGLE_QUOTE, "'");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.HEX_ESCAPE, "\\x20");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.SINGLE_QUOTE, "'");
+        assertFalse("No more tokens", es.moveNext());
+        
+        assertFalse("No more tokens", ts.moveNext());
     }
 
     public void testSpecial() {
