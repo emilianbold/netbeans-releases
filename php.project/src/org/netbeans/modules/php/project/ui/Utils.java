@@ -399,6 +399,13 @@ public final class Utils {
     }
 
     /**
+     * @see #browseFolderFile(org.openide.filesystems.FileObject, javax.swing.JTextField)
+     */
+    public static void browseFolderFile(File folder, JTextField textField) {
+        browseFolderFile(FileUtil.toFileObject(folder), textField);
+    }
+
+    /**
      * Browse for a file from the given directory and return the relative path or <code>null</code> if nothing selected.
      * @param folder folder to browse files from.
      * @param preselected the preselected value, can be null.
@@ -478,7 +485,10 @@ public final class Utils {
             secure = preselected.replace(File.separatorChar, '/'); // NOI18N
             if (removeExtension) {
                 // e.g. searching in nodes => no file extension can be there
-                secure = secure.substring(0, secure.lastIndexOf(".")); // NOI18N
+                int idx = secure.lastIndexOf("."); // NOI18N
+                if (idx != -1) {
+                    secure = secure.substring(0, idx);
+                }
             }
         }
         return secure;

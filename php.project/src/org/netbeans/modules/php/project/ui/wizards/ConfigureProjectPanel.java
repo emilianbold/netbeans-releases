@@ -56,7 +56,6 @@ import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -235,9 +234,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         changeSupport.removeChangeListener(l);
     }
 
-    public FileObject getSourcesFolder() {
+    public File getSourcesFolder() {
         getComponent();
-        return FileUtil.toFileObject(new File(configureProjectPanelVisual.getSourcesLocation().getSrcRoot()));
+        return FileUtil.normalizeFile(new File(configureProjectPanelVisual.getSourcesLocation().getSrcRoot()));
     }
 
     public String getSourcesFolderName() {
