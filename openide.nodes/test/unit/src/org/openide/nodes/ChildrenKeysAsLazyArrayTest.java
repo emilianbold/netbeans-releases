@@ -41,22 +41,22 @@
 
 package org.openide.nodes;
 
-
-
 /** Test whether Children.Keys inherited all functionality from Children.Array.
- * @author Jaroslav Tulach
+ * @author Jesse Glick
  */
-public class ChildrenFilterAsLazyArrayTest extends ChildrenArrayTest {
-    public ChildrenFilterAsLazyArrayTest (String s) {
+public class ChildrenKeysAsLazyArrayTest extends ChildrenArrayTest {
+    public ChildrenKeysAsLazyArrayTest (String s) {
         super (s);
     }
 
     @Override
     protected Children.Array createChildren () {
-        // the demonstrate issue #141356, uncomment and use next line with Keys(true)
-        Node orig = new AbstractNode (new ChildrenKeysTest.Keys (true));
-        return new FilterNode.Children (orig);
+        return new Children.Keys (true) {
+            protected Node[] createNodes (Object obj) {
+                fail ("This should not get called as we are using just Children.Array functions of the keys");
+                return null;
+            }
+        };
     }
     
 }
-

@@ -48,11 +48,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import org.openide.util.Enumerations;
 import org.openide.util.Mutex;
 
@@ -98,9 +98,11 @@ public abstract class Children extends Object {
     * object may be used by all such nodes.
     */
     public static final Children LEAF = new Empty();
+
+    static final Logger LOG = Logger.getLogger(Children.class.getName());
     
     /** access to entries/nodes */
-    private EntrySupport entrySupport;
+    EntrySupport entrySupport;
 
     /** parent node for all nodes in this list (can be null) */
     Node parent;
@@ -143,7 +145,7 @@ public abstract class Children extends Object {
         }
     }
     
-    final boolean lazySupport;
+    boolean lazySupport;
     /**
      * Creates appropriate entry support for this children.
      * Overriden in Children.Keys to sometimes make lazy support.
@@ -154,6 +156,9 @@ public abstract class Children extends Object {
     
     boolean isLazy() {
         return lazySupport;
+    }
+    
+    void checkSupport() {
     }
 
     /**
@@ -410,6 +415,7 @@ public abstract class Children extends Object {
      * @since org.openide.nodes 7.5
      */
     public final Node getNodeAt(int index) {
+        checkSupport();
         return entrySupport().getNodeAt(index);
     }
 
@@ -425,6 +431,7 @@ public abstract class Children extends Object {
 
     //  private static String off = ""; // NOI18N
     public final Node[] getNodes() {
+        checkSupport();
         return entrySupport().getNodes(false);
     }
 
@@ -456,6 +463,7 @@ public abstract class Children extends Object {
      * @return array of nodes
      */
     public Node[] getNodes(boolean optimalResult) {
+        checkSupport();
         return entrySupport().getNodes(optimalResult);
     }
 
@@ -463,6 +471,7 @@ public abstract class Children extends Object {
     * @return the count
     */
     public final int getNodesCount() {
+        checkSupport();
         return entrySupport().getNodesCount(false);
     }
 
@@ -473,6 +482,7 @@ public abstract class Children extends Object {
      * @since org.openide.nodes 7.6
      */
     public int getNodesCount(boolean optimalResult) {
+        checkSupport();
         return entrySupport().getNodesCount(optimalResult);
     }
 
@@ -594,7 +604,7 @@ public abstract class Children extends Object {
         * we cannot synchronize on this instance because it is public
         * and somebody else could synchronize too.
         */
-        private Entry nodesEntry;
+        Entry nodesEntry;
 
         /** vector of added children */
         protected Collection<Node> nodes;
@@ -705,6 +715,10 @@ public abstract class Children extends Object {
         * state of the nodes appropriatelly.
         */
         protected final void refresh() {
+            checkSupport();
+            if (lazySupport) {
+                return;
+            }
             MUTEX.postWriteRequest(new Runnable() {
                     public void run() {
                         refreshImpl();
@@ -712,7 +726,7 @@ public abstract class Children extends Object {
                 }
             );
         }
-
+        
         /** Getter for the entry.
         */
         final Entry getNodesEntry() {
@@ -1275,6 +1289,35 @@ public abstract class Children extends Object {
             return k;
         }
 
+        @Override
+        void checkSupport() {
+            if (lazySupport && nodes != null && nodes.size() > 0) {
+                changeSupportToDefault();
+            }
+        }
+
+        void changeSupportToDefault() {
+            if (!lazySupport) {
+                return;
+            }
+            try {
+                Children.PR.enterWriteAccess();
+                LOG.warning("Fallbacking entry support from lazy to default - Children.Array method was used");
+                List<Entry> entries = entrySupport().getEntries();
+                boolean init = entrySupport().isInitialized();
+                entrySupport = null;
+                lazySupport = false;
+                nodesEntry = createNodesEntry();
+                entries.add(before ? 0 : entries.size(), nodesEntry);
+                entrySupport().setEntries(entries);
+                if (init) {
+                    entrySupport.getNodesCount(false);
+                }
+            } finally {
+                Children.PR.exitWriteAccess();
+            }
+        }
+
         /**
          * @deprecated Do not use! Just call {@link #setKeys(Collection)} with a larger set.
          */
@@ -1282,7 +1325,7 @@ public abstract class Children extends Object {
         @Override
         public boolean add(Node[] arr) {
             if (lazySupport) {
-                return false;
+                changeSupportToDefault();
             }
             return super.add(arr);
         }
