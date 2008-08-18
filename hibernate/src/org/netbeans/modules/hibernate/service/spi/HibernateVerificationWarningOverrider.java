@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -37,30 +37,40 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hibernate.service;
+package org.netbeans.modules.hibernate.service.spi;
 
-import org.netbeans.modules.hibernate.service.spi.HibernateEnvironmentImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
-import org.netbeans.modules.hibernate.service.spi.HibernateVerificationWarningOverrider;
-import org.netbeans.spi.project.LookupProvider;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-
+import org.netbeans.modules.j2ee.jpa.verification.api.JPAVerificationWarningIds;
+import org.netbeans.modules.j2ee.jpa.verification.api.VerificationWarningOverrider;
 
 /**
- * The class extends project lookup to include additional instances of 
- * Hibernate artifacts. This class is registered in the project's lookup.
+ * To override specific verification warning
  * 
- * @author Vadiraj Deshpande (Vadiraj.Deshpande@Sun.COM)
+ * @author Dongmei Cao
  */
-public class HibernateProjectLookupExtender implements LookupProvider {
-
-    public Lookup createAdditionalLookup(Lookup baseContext) {
-        Project project = baseContext.lookup(Project.class);
-        HibernateEnvironment hibernateEnvironment = new HibernateEnvironmentImpl(project);
-        HibernateVerificationWarningOverrider warningOverrider = new HibernateVerificationWarningOverrider(project);
-        return Lookups.fixed(new Object[]{hibernateEnvironment, warningOverrider});
+public class HibernateVerificationWarningOverrider implements VerificationWarningOverrider {
+    
+    private Project project;
+    
+    public HibernateVerificationWarningOverrider(Project project) {
+        this.project = project;
     }
+
+    public boolean suppressWarning(String warningId) {
+        System.out.println( ".............HibernateWarningOverrider.supressWarning(): " + warningId );
+        if(warningId.equals(JPAVerificationWarningIds.NO_PERSISTENCE_UNIT_WARNING)) {
+            HibernateEnvironment env = project.getLookup().lookup( HibernateEnvironment.class);
+            if(env != null && !env.getAllHibernateConfigFileObjects().isEmpty()) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+        
+    }
+
 
 }
