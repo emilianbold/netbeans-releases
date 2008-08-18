@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = true;
+    const DEBUG = false;
 
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -209,7 +209,7 @@
 
 
         onExamineResponse: function( aNsISupport ){
-            var DEBUG_METHOD = (true & DEBUG);
+            var DEBUG_METHOD = (false & DEBUG);
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
             if (DEBUG_METHOD) { NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);}
             var id = requestsId.getId(request)
@@ -237,12 +237,8 @@
     }
         
     function processExamineResponse( request, id, xhrRequest){
-          var DEBUG_METHOD = (true & DEBUG);
+          var DEBUG_METHOD = (false & DEBUG);
           if (DEBUG_METHOD){ NetBeans.Logger.log("net.processExaminResponse: ");}
-          if( xhrRequest){
-            if (DEBUG_METHOD){ NetBeans.Logger.log("net.processExaminResponse: xhrRequest" + xhrRequest.responseText);}
-          }
-
           var activity = createResponseActivity(request, id, xhrRequest);
           if (DEBUG_METHOD){ NetBeans.Logger.log("net.processExaminResponse: activity created");}
           if ( activity ) {
@@ -265,27 +261,27 @@
         if ( activity.method == "post" || activity.method == "POST") {
             activity.postText = getPostText(activity, request, myContext, activity.requestHeaders);
         } else {
-            if (DEBUG_METHOD) NetBeans.Logger.log("netBeans.onModifyRequest - request.name:" + request.name);
             activity.urlParams = parseURLParams(request.name);
-            if (DEBUG_METHOD) NetBeans.Logger.log("netBeans.onModifyRequest - urlParams:" + activity.urlParams);
+            if (DEBUG_METHOD){
+                NetBeans.Logger.log("netBeans.onModifyRequest - request.name:" + request.name);
+                NetBeans.Logger.log("netBeans.onModifyRequest - urlParams:" + activity.urlParams);
+            } 
         }
         return activity;
     }
 
     function createResponseActivity (request, id, xhrRequest) {
-        var DEBUG_METHOD = (true & DEBUG);
+        var DEBUG_METHOD = (false & DEBUG);
 
         if( !request || !id){
             throw new Error("net.createResponseActivity - Something is null request:" + request + " id:" + id);
         }
 
-
-
         var activity = new NetActivity();
+        activity.time = nowTime();
         activity.uuid = id;
         activity.name = request.name;
         activity.responseHeaders = getHttpResponseHeaders(request);
-        activity.time = nowTime();
         activity.url = request.URI.asciiSpec;
         if (!activity.mimeType) {
             activity.mimeType = getMimeType(request);
@@ -303,7 +299,6 @@
             }
         } else {
             activity.category = getRequestCategory(request);
-            if( DEBUG_METHOD && ! activity.mimeType ){ NetBeans.Logger.log("Activity category:" + activity.category); }
             activity.responseText = getResponseText(request);
             activity.status = request.responseStatus;
         }
@@ -418,7 +413,7 @@
     }
 
     function getResponseText ( aRequest ) {
-        var DEBUG_METHOD = true & DEBUG;
+        var DEBUG_METHOD = false & DEBUG;
         var responseText;
         var category = getRequestCategory(aRequest);
 
@@ -426,17 +421,6 @@
             return "IMAGE";
         }
         
-        if (DEBUG_METHOD){ NetBeans.Logger.log("net.getResponseText.category: " + category);}
-        /* Double check xhr is redundant but I am leaving it in for now. */
-        if ( category == "xhr"){
-          var xhrRequest = aRequest.notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
-          if (DEBUG_METHOD){ NetBeans.Logger.log("net.getResponseText.XHR: " + xhrRequest);}
-          if( xhrRequest && xhrRequest.responseText ){
-              if (DEBUG_METHOD){ NetBeans.Logger.log("net.getResponseText.XHR- RESPONSE TEXT: " + xhrRequest.responseText);}
-              return xhrRequest.responseText;
-          } 
-        }
-
         //Initiates a Get Request to Determine Response Text
         responseText = myContext.sourceCache.loadText(aRequest.URI.asciiSpec, aRequest.requestMethod);
         if (DEBUG_METHOD){NetBeans.Logger.log("net.getResponseText - RESPONSE TEXT: " + responseText); }
@@ -458,7 +442,9 @@
     }
 
     function getRequestCategoryFromMime(mimeType){
+        var DEBUG_METHOD = false & DEBUG;
         var category = mimeCategoryMap[mimeType];
+        if (DEBUG_METHOD){ NetBeans.Logger.log("net.getRequestCategoryFromMime.category: " + category);}
         return category;
     }
 
