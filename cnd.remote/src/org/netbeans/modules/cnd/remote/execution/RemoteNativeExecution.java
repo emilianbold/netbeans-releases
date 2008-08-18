@@ -124,12 +124,15 @@ public class RemoteNativeExecution extends NativeExecution {
             path = "/home/" + System.getProperty("user.name"); // NOI18N
         }
         path += "/" + RemoteServerSetup.REMOTE_LIB_DIR;
-        switch (platformType) {
-            case PlatformTypes.PLATFORM_LINUX : return path + "unbuffer-Linux-x86.so"; // NOI18N
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC : return path + "unbuffer-SunOS-sparc.so"; // NOI18N
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL : return path + "unbuffer-SunOS-x86.so"; // NOI18N
-            case PlatformTypes.PLATFORM_WINDOWS : return path + "unbuffer-Windows_XP-x86.dll"; // NOI18N
-            case PlatformTypes.PLATFORM_MACOSX : return path + "unbuffer-Mac_OS_X-x86.dylib"; // NOI18N
+        String unbufferName = getUnbufferName(platformType);
+        if (unbufferName != null) {
+            path += unbufferName;
+            // check file existence
+            if (new File(path).exists()) {
+                return path;
+            } else {
+                log.warning("unbuffer: " + path + " does not exist");
+            }
         }
         return null;
     }
