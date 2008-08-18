@@ -75,10 +75,6 @@ public class WebLogic9IntegrationProvider extends WebLogicIntegrationProvider {
         return true;
     }
 
-    public boolean supportsJVM(TargetPlatformEnum jvm) {
-        return true;
-    }
-
     protected int getAttachWizardPriority() {
         return 40;
     }
