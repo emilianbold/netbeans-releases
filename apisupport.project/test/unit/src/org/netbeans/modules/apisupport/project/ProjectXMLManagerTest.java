@@ -96,6 +96,7 @@ public class ProjectXMLManagerTest extends TestBase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
@@ -381,7 +382,7 @@ public class ProjectXMLManagerTest extends TestBase {
         final ProjectXMLManager testingPXM = new ProjectXMLManager(testingProject);
         ManifestManager.PackageExport[] publicPackages = testingPXM.getPublicPackages();
         assertEquals("number of public packages", 1, publicPackages.length);
-        final String[] newPP = new String[] { publicPackages[0].getPackage(), "org.netbeans.examples.modules" };
+        final String[] newPP = {publicPackages[0].getPackage(), "org.netbeans.examples.modules._.čau99"};
         
         // apply and save project
         boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
@@ -394,7 +395,7 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectManager.getDefault().saveProject(testingProject);
         ManifestManager.PackageExport[] newPublicPackages = testingPXM.getPublicPackages();
         assertEquals("number of new public packages", 2, newPublicPackages.length);
-        Collection newPPs = Arrays.asList(new String[] {"org.netbeans.examples.modules", "org.netbeans.examples.modules.misc"});
+        Collection newPPs = Arrays.asList(newPP);
         assertTrue(newPPs.contains(newPublicPackages[0].getPackage()));
         assertTrue(newPPs.contains(newPublicPackages[1].getPackage()));
         assertNull("there must not be friend", testingPXM.getFriends());
