@@ -252,7 +252,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         List<Value> argVals = new ArrayList<Value>(args.size());
         for (ExpressionTree arg : args) {
             Mirror argValue = arg.accept(this, evaluationContext);
-            if (!(argValue instanceof Value)) {
+            if (argValue != null && !(argValue instanceof Value)) {
                 Assert2.error(arg, "Not a value");
             }
             argVals.add((Value) argValue);
