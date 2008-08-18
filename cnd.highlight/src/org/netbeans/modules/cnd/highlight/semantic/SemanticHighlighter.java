@@ -124,6 +124,8 @@ public final class SemanticHighlighter extends HighlighterBase {
                         i.remove();
                     }
                 }
+                // to show inactive code and macros first
+                getHighlightsBag(doc).setHighlights(newBag);
                 // here we invoke the collectors
                 if (!entities.isEmpty()) {
                     CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
