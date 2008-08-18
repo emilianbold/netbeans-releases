@@ -58,7 +58,6 @@ public class HibernateVerificationWarningOverrider implements VerificationWarnin
     }
 
     public boolean suppressWarning(String warningId) {
-        System.out.println( ".............HibernateWarningOverrider.supressWarning(): " + warningId );
         if(warningId.equals(JPAVerificationWarningIds.NO_PERSISTENCE_UNIT_WARNING)) {
             HibernateEnvironment env = project.getLookup().lookup( HibernateEnvironment.class);
             if(env != null && !env.getAllHibernateConfigFileObjects().isEmpty()) {
