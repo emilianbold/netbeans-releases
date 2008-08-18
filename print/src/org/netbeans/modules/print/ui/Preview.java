@@ -530,6 +530,9 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   private double getAllWidthScale() {
+    if (myPapers.size() == 0) {
+      return 1.0;
+    }
     int w = myPapers.get(0).getPaperWidth() + GAP_SIZE;
 
     if ( !isSingleMode()) {
@@ -820,7 +823,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   private void option() {
-    new Option(this).show();
+    new Attribute(this).show();
   }
 
   private int getPaperNumber(String text) {
