@@ -43,6 +43,7 @@ package org.netbeans.modules.groovy.editor;
 
 import java.util.EnumSet;
 import java.util.Set;
+import org.netbeans.modules.groovy.editor.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.elements.IndexedMethod;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
@@ -88,10 +89,25 @@ public class GroovyIndexerTest extends GroovyTestBase {
     public void testMethods1() throws Exception {
         FileObject fo = getTestFile("testfiles/GroovyClass1.groovy");
         GsfTestCompilationInfo info = getInfo(fo);
-        initializeRegistry();
         GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+
+        // get methods starting with 'm'
         Set<IndexedMethod> methods = index.getMethods("m", "demo.GroovyClass1", NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
-        assertTrue(methods.size() == 3);
+        assertEquals(3, methods.size());
+
+        // get all methods from class
+        methods = index.getMethods(".*", "demo.GroovyClass1", NameKind.REGEXP, EnumSet.allOf(SearchScope.class));
+        assertEquals(4, methods.size());
+    }
+
+    public void testClasses() throws Exception {
+        FileObject fo = getTestFile("testfiles/Hello.groovy");
+        GsfTestCompilationInfo info = getInfo(fo);
+        GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+
+        // get all classes
+        Set<IndexedClass> classes = index.getClasses(".*", NameKind.REGEXP, true, false, false);
+        assertEquals(6, classes.size());
     }
 
 }
