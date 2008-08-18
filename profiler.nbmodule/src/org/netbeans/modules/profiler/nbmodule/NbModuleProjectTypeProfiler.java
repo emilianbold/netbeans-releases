@@ -51,11 +51,14 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.lib.profiler.common.Profiler;
+import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 
 
@@ -199,7 +202,14 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
             final String profiledClass = SourceUtils.getToplevelClassName(profiledClassFile);
             props.setProperty("profile.class", profiledClass); //NOI18N
         }
-
-        // not applicable for NBM projects
+        if (Utilities.isUnix()) {
+            String agentArg = props.getProperty("profiler.info.jvmargs.agent");
+            if (agentArg.indexOf(' ') != -1) {
+                // Profiler is installed in directory with space on Unix (Linux, Solaris, Mac OS X)
+                // create temporary link in /tmp directory and use it instead of directory with space
+                String libsDir = Profiler.getDefault().getLibsDir();
+                props.setProperty("profiler.info.jvmargs.agent", IntegrationUtils.fixLibsDirPath(libsDir, agentArg));
+            }
+        }
     }
 }
