@@ -44,7 +44,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.db.sql.history.SQLHistory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -90,11 +89,18 @@ public class SQLHistoryManagerTest extends NbTestCase {
     }
 
     /** Called before every test case. */
+    @Override
     public void setUp() {       
     }
 
     /** Called after every test case. */
+    @Override
     public void tearDown() {
+        try {
+            clearWorkDir();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public void testUpdateListRemoveEqualNumber() {

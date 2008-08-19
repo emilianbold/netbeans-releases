@@ -93,6 +93,11 @@ public class SQLHistoryPersistenceManagerTest extends NbTestCase {
 
     /** Called after every test case. */
     public void tearDown() {
+        try {
+            clearWorkDir();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     /** Test testExecuteStatements passes if no exceptions occur. */
