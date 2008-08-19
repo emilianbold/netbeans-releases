@@ -24,13 +24,6 @@
 				<tocitem text="UML Design Center" target="uml_design_using_design_center" />
 				<tocitem text="Diagram Toolbar" target="uml_basics_toolbars" />
 				<tocitem text="Pop-Up Menus: Diagram Editor" target="uml_basics_contextual_menus_uml_diagram_editor" />
-				<tocitem text="Keyboard Shortcuts: UML Modeling" target="uml_basics_shortcuts_uml_keyboard">
-					<tocitem text="Keyboard Shortcuts: UML Diagram Editor" target="uml_basics_shortcuts_diagram_editor" />
-					<tocitem text="Keyboard Shortcuts: Working with UML Diagram Elements" target="uml_basics_shortcuts_diag_elements" />
-					<tocitem text="Keyboard Shortcuts: UML Modeling Palette" target="uml_basics_shortcuts_palette" />
-					<tocitem text="Keyboard Shortcuts: UML Documentation Window" target="uml_basics_shortcuts_doc_window" />
-					<tocitem text="Keyboard Shortcuts: UML Design Center" target="uml_basics_shortcuts_design_center" />
-				</tocitem>
 				<tocitem text="Diagram Editor Navigation" target="uml_basics_diagram_window_navigation" />
 			</tocitem>
 			<tocitem text="Configuration: UML Modeling" target="uml_prefs_configuring_uml_modeling">
