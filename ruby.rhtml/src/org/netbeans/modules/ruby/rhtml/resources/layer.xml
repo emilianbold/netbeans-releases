@@ -145,7 +145,6 @@
                     </folder>
                 </folder>
                 
-                <file name="Settings.settings" url="RhtmlOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.editor.RhtmlKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.ruby.rhtml.editor.RhtmlKit"/>
