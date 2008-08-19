@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.html;
+package org.netbeans.modules.html.editor;
 
 import java.util.List;
 import javax.swing.text.Document;
@@ -50,9 +50,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.CompletionQuery;
-import org.netbeans.editor.ext.CompletionQuery.ResultItem;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery;
 import org.netbeans.editor.ext.html.HTMLCompletionQuery.HTMLResultItem;
