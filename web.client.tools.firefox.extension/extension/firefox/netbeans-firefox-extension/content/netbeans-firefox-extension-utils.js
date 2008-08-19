@@ -231,6 +231,13 @@
           return converter.ConvertFromUnicode(unicode) + converter.Finish();
     }
     
+    this.convertUTF8ToUnicode = function(utf8) {
+          var converter = this.CCIN(NetBeans.Constants.ScriptableUnicodeConverterCID,
+                                    NetBeans.Constants.ScriptableUnicodeConverterIF);
+          converter.charset = "UTF-8";
+          return converter.ConvertToUnicode(utf8) + converter.Finish();
+    }    
+    
     this.isFF2 = function() {
         return getFirefoxVersion() == 2;
     }
