@@ -41,16 +41,9 @@
 	<mapID target="uml_basics_navigation_windows" url="basics/navigation_windows.html"/>
 	<mapID target="uml_basics_palette" url="basics/palette.html"/>
 	<mapID target="uml_basics_properties_window" url="basics/properties_window.html"/>
-	<mapID target="uml_basics_shortcuts_uml_keyboard" url="basics/uml_kybd_shortcuts.html"/>
-	<mapID target="uml_basics_shortcuts_design_center" url="basics/design_center_kbshortcuts.html"/>
-	<mapID target="uml_basics_shortcuts_palette" url="basics/palette_kbshortcuts.html"/>
-	<mapID target="uml_basics_shortcuts_diag_elements" url="basics/diag_elements_kbshortcuts.html"/>
-	<mapID target="uml_basics_shortcuts_doc_window" url="basics/doc_window_kbshortcuts.html"/>
-	<mapID target="uml_basics_shortcuts_diagram_editor" url="basics/diagram_editor_kbshortcuts.html"/>
 	<mapID target="uml_basics_source_editor" url="basics/source_editor.html"/>
 	<mapID target="uml_basics_toolbars" url="basics/toolbars.html"/>
 	<mapID target="uml_basics_understanding_projects_diagrams" url="basics/understanding_projects_diagrams.html"/>
-	<mapID target="uml_basics_diag_elements_kbshortcuts" url="basics/diag_elements_kbshortcuts.html"/>
 	<mapID target="uml_credits" url="credits.html"/>
 	<mapID target="uml_design_about_design_patterns" url="design/about_design_patterns.html"/>
 	<mapID target="uml_design_allowing_multiple_participants" url="design/allowing_multiple_participants.html"/>
