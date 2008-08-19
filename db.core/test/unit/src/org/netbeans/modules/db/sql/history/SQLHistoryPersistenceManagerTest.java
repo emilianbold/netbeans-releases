@@ -103,6 +103,8 @@ public class SQLHistoryPersistenceManagerTest extends NbTestCase {
             FileObject fo = FileUtil.toFileObject(getWorkDir());
             sqlHistoryList.add(new SQLHistory("jdbc:// oracle", "select * from PERSON", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
             SQLHistoryPersistenceManager.getInstance().create(fo, sqlHistoryList);
+        } catch (SQLHistoryException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         } catch (ParseException pe) {
@@ -121,6 +123,8 @@ public class SQLHistoryPersistenceManagerTest extends NbTestCase {
             sqlHistoryList.add(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
             fo = FileUtil.toFileObject(getWorkDir());
             SQLHistoryPersistenceManager.getInstance().create(fo, sqlHistoryList);
+        } catch (SQLHistoryException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         } catch (ParseException pe) {
