@@ -555,7 +555,7 @@ class SQLExecutionHelper {
         }
         long executionTime = System.currentTimeMillis() - startTime;
 
-        String execTimeStr = millisecondsToSeconds(executionTime);
+        String execTimeStr = SQLExecutionHelper.millisecondsToSeconds(executionTime);
         mLogger.log(Level.FINE,"Executed Successfully in" +execTimeStr+" seconds");
         dataView.setInfoStatusText(NbBundle.getMessage(SQLExecutionHelper.class,"MSG_execution_success", execTimeStr));
 
@@ -570,7 +570,7 @@ class SQLExecutionHelper {
         return queryString.trim().toUpperCase().startsWith("SELECT"); // NOI18N
     }
 
-    private String millisecondsToSeconds(long ms) {
+    static String millisecondsToSeconds(long ms) {
         NumberFormat fmt = NumberFormat.getInstance();
         fmt.setMaximumFractionDigits(3);
         return fmt.format(ms / 1000.0);
