@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.project;
+package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -49,11 +49,13 @@ import java.io.OutputStream;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.ejbjarproject.test.ProjectUtil;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.web.project.test.ProjectUtil;
-import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -67,67 +69,45 @@ public class CopyOnSaveSupportTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        System.setProperty("netbeans.user", getWorkDirPath());
+    }
+
     public void testSingleDir() throws Exception {
         File projectFile = ProjectUtil.getProjectAsFile(this, "CopyOnSaveTest");
         FileObject projectFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(projectFile));
         Project project = ProjectManager.getDefault().findProject(projectFileObject);
 
-        WebProject webProject = (WebProject) project;
-        WebProjectTest.openProject(webProject);
+        EjbJarProject ejbProject = (EjbJarProject) project;
+        openProject(ejbProject);
 
         try {
-            singleBasicTest(projectFileObject, "web");
+            singleBasicTest(projectFileObject, "src/conf");
         } finally {
-            WebProjectTest.closeProject(webProject);
+            closeProject(ejbProject);
         }
     }
 
-    public void testSeparateWebInf() throws Exception {
+
+    public void testChangedMeta() throws Exception {
         File projectFile = ProjectUtil.getProjectAsFile(this, "CopyOnSaveTest");
         FileObject projectFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(projectFile));
         final Project project = ProjectManager.getDefault().findProject(projectFileObject);
 
-        final WebProject webProject = (WebProject) project;
-        WebProjectTest.openProject(webProject);
-
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                try {
-                    UpdateHelper helper = webProject.getUpdateHelper();
-                    EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    props.put(WebProjectProperties.WEB_DOCBASE_DIR, "web_1");
-                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                    ProjectManager.getDefault().saveProject(project);
-                } catch (IOException e) {
-                    fail("Could not configure web docbase");
-                }
-            }
-        });
+        final EjbJarProject webProject = (EjbJarProject) project;
+        openProject(webProject);
 
         try {
-            singleBasicTest(projectFileObject, "web_1");
-        } finally {
-            WebProjectTest.closeProject(webProject);
-        }
-    }
-
-    public void testChangedWeb() throws Exception {
-        File projectFile = ProjectUtil.getProjectAsFile(this, "CopyOnSaveTest");
-        FileObject projectFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(projectFile));
-        final Project project = ProjectManager.getDefault().findProject(projectFileObject);
-
-        final WebProject webProject = (WebProject) project;
-        WebProjectTest.openProject(webProject);
-
-        try {
-            singleBasicTest(projectFileObject, "web");
+            singleBasicTest(projectFileObject, "src/conf");
 
             ProjectManager.mutex().postWriteRequest(new Runnable() {
                 public void run() {
                     try {
                         UpdateHelper helper = webProject.getUpdateHelper();
                         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        props.put(WebProjectProperties.WEB_DOCBASE_DIR, "web_1");
+                        props.put(EjbJarProjectProperties.META_INF, "src/conf2");
                         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                         ProjectManager.getDefault().saveProject(project);
                     } catch (IOException e) {
@@ -136,20 +116,19 @@ public class CopyOnSaveSupportTest extends NbTestCase {
                 }
             });
 
-            singleBasicTest(projectFileObject, "web_1");
+            singleBasicTest(projectFileObject, "src/conf2");
         } finally {
-            WebProjectTest.closeProject(webProject);
+            closeProject(webProject);
         }
     }
 
-    private void singleBasicTest(FileObject projectFileObject, String webPrefix) throws Exception {
-        File projectFile = FileUtil.toFile(projectFileObject);
+    private void singleBasicTest(FileObject projectFileObject, String metaPrefix) throws Exception {
+        File sampleXml = new File(getDataDir(), "ejb-jar.xml");
+        FileObject sampleXmlFileObject = FileUtil.toFileObject(sampleXml);
 
-        File sampleJsp = new File(getDataDir(), "sample.jsp");
-        FileObject sampleJspFileObject = FileUtil.toFileObject(sampleJsp);
-
-        File destFile = new File(new File(projectFile, webPrefix), "sample.jsp");
-        FileObject toCheck = projectFileObject.getFileObject("build/web/sample.jsp");
+        File destFolder = FileUtil.toFile(projectFileObject.getFileObject(metaPrefix));
+        File destFile = new File(destFolder, "ejb-jar-backup.xml");
+        FileObject toCheck = projectFileObject.getFileObject("build/jar/META-INF/ejb-jar-backup.xml");
         if (toCheck != null) {
             toCheck.delete();
         }
@@ -157,18 +136,19 @@ public class CopyOnSaveSupportTest extends NbTestCase {
         FileObject webFileObject = FileUtil.toFileObject(destFile.getParentFile());
 
         // copy file
-        FileObject destFileObject = FileUtil.copyFile(sampleJspFileObject, webFileObject, "sample");
-        toCheck = projectFileObject.getFileObject("build/web/sample.jsp");
-        assertFile(FileUtil.toFile(toCheck), sampleJsp);
+        FileObject destFileObject = FileUtil.copyFile(sampleXmlFileObject, webFileObject, "ejb-jar-backup");
+        toCheck = projectFileObject.getFileObject("build/jar/META-INF/ejb-jar-backup.xml");
+        assertFile(FileUtil.toFile(toCheck), sampleXml);
 
         // delete file
         destFileObject.delete();
         assertFalse(toCheck.isValid());
 
         // change file
-        File index = new File(new File(projectFile, webPrefix), "index.jsp");
+        destFolder = FileUtil.toFile(projectFileObject.getFileObject(metaPrefix));
+        File index = new File(destFolder, "ejb-jar.xml");
         FileObject indexFileObject = FileUtil.toFileObject(index);
-        InputStream is = new BufferedInputStream(new FileInputStream(sampleJsp));
+        InputStream is = new BufferedInputStream(new FileInputStream(sampleXml));
         try {
             OutputStream os = new BufferedOutputStream(indexFileObject.getOutputStream());
             try {
@@ -180,33 +160,26 @@ public class CopyOnSaveSupportTest extends NbTestCase {
             is.close();
         }
 
-        toCheck = projectFileObject.getFileObject("build/web/index.jsp");
-        assertFile(FileUtil.toFile(toCheck), sampleJsp);
+        toCheck = projectFileObject.getFileObject("build/jar/META-INF/ejb-jar.xml");
+        assertFile(FileUtil.toFile(toCheck), sampleXml);
 
         // cleanup a bit
         toCheck.delete();
+    }
 
-        // change file in WEB-INF
-        File sampleWebXml = new File(getDataDir(), "web.xml");
+    /**
+     * Accessor method for those who wish to simulate open of a project and in
+     * case of suite for example generate the build.xml.
+     */
+    public static void openProject(final EjbJarProject p) throws Exception {
+        ProjectOpenedHook hook = p.getLookup().lookup(ProjectOpenedHook.class);
+        assertNotNull("has an OpenedHook", hook);
+        ProjectOpenedTrampoline.DEFAULT.projectOpened(hook);
+    }
 
-        File webXml = new File(new File(new File(projectFile, "web"), "WEB-INF"), "web.xml");
-        FileObject webXmlFileObject = FileUtil.toFileObject(webXml);
-        is = new BufferedInputStream(new FileInputStream(sampleWebXml));
-        try {
-            OutputStream os = new BufferedOutputStream(webXmlFileObject.getOutputStream());
-            try {
-                FileUtil.copy(is, os);
-            } finally {
-                os.close();
-            }
-        } finally {
-            is.close();
-        }
-
-        toCheck = projectFileObject.getFileObject("build/web/WEB-INF/web.xml");
-        assertFile(FileUtil.toFile(toCheck), sampleWebXml);
-
-        // cleanup a bit
-        toCheck.delete();
+    public static void closeProject(final EjbJarProject p) throws Exception {
+        ProjectOpenedHook hook = p.getLookup().lookup(ProjectOpenedHook.class);
+        assertNotNull("has an OpenedHook", hook);
+        ProjectOpenedTrampoline.DEFAULT.projectClosed(hook);
     }
 }
