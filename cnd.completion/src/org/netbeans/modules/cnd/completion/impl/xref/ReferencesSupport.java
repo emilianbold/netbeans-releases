@@ -565,6 +565,7 @@ public final class ReferencesSupport {
     }
 
     private final CsmProgressListener progressListener;
+    private static final int MAX_CACHE_SIZE = 10;
     private final ReadWriteLock  cacheLock = new ReentrantReadWriteLock();
     private Map<CsmFile, Map<Integer,CsmObject>> cache = new HashMap<CsmFile, Map<Integer,CsmObject>>();
     private CsmObject getReferencedObject(CsmFile file, int offset){
@@ -585,6 +586,9 @@ public final class ReferencesSupport {
             cacheLock.writeLock().lock();
             Map<Integer,CsmObject> map = cache.get(file);
             if (map == null) {
+                if (cache.size() > MAX_CACHE_SIZE) {
+                    cache.clear();
+                }
                 map = new HashMap<Integer,CsmObject>();
                 cache.put(file, map);
             }
