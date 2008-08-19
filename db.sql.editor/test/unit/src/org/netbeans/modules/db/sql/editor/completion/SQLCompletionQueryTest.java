@@ -113,6 +113,8 @@ public class SQLCompletionQueryTest extends NbTestCase {
         suite.addTest(new SQLCompletionQueryTest("whereSimple"));
         suite.addTest(new SQLCompletionQueryTest("whereSchema"));
         suite.addTest(new SQLCompletionQueryTest("whereSchemaTable"));
+        suite.addTest(new SQLCompletionQueryTest("groupBySimple"));
+        suite.addTest(new SQLCompletionQueryTest("orderBySimple"));
 
         suite.addTest(new SQLCompletionQueryTest("selectSubquery"));
 
@@ -179,7 +181,7 @@ public class SQLCompletionQueryTest extends NbTestCase {
         }
         SQLCompletionQuery query = new SQLCompletionQuery(null);
         SQLCompletionEnv env = SQLCompletionEnv.create(sql, caretOffset);
-        for (SQLCompletionItem item : query.doQuery(env, metadata, SQLIdentifiersTestUtilities.createNonASCIIQuoter("\""), "\"")) {
+        for (SQLCompletionItem item : query.doQuery(env, metadata, SQLIdentifiersTestUtilities.createNonASCIIQuoter("\""))) {
             output.append(item.toString());
             output.append('\n');
         }

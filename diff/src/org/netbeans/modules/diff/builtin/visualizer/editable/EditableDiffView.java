@@ -811,9 +811,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (fo != null) {
             try {
                 DataObject dao = DataObject.find(fo);
-                EditorCookie ec = dao.getCookie(EditorCookie.class);
-                if (ec != null) {
-                    sdoc = ec.openDocument();
+                if (dao.getPrimaryFile() == fo) {
+                    EditorCookie ec = dao.getCookie(EditorCookie.class);
+                    if (ec != null) {
+                        sdoc = ec.openDocument();
+                    }
                 }
             } catch (Exception e) {
                 // fallback to other means of obtaining the source

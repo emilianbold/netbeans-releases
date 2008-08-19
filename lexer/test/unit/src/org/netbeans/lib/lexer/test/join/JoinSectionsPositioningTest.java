@@ -43,26 +43,16 @@ package org.netbeans.lib.lexer.test.join;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.PartType;
-import org.netbeans.lib.lexer.lang.TestJoinSectionsTopTokenId;
+import org.netbeans.lib.lexer.lang.TestJoinTopTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.lib.lexer.lang.TestJoinSectionsTextTokenId;
+import org.netbeans.lib.lexer.lang.TestJoinTextTokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
 
 /**
- * Test several simple lexer impls.
- *
- * <p>
- * Top lexer recognizes TestJoinSectionsTopTokenId.TAG  (text v zobacich)
- *                  and TestJoinSectionsTopTokenId.TEXT (everything else).
- *
- * TestJoinSectionsTopTokenId.TAG is branched into
- *                      TestJoinSectionsTextTokenId.BRACES "{...}"
- *                  and TestJoinSectionsTextTokenId.TEXT (everything else)
- * 
- * </p>
+ * Test joining of embedded sections.
  *
  * @author mmetelka
  */
@@ -81,10 +71,10 @@ public class JoinSectionsPositioningTest extends NbTestCase {
     private ModificationTextDocument initDocument() throws Exception {
         //             000000000011111111112222222222
         //             012345678901234567890123456789
-        String text = "a{b<cd>e}f<gh>i{}{j<kl>m}n<o>p<q>r";
+        String text = "a[b<cd>e]f<gh>i[][j<kl>m]n<o>p<q>r";
         ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, text, null);
-        doc.putProperty(Language.class,TestJoinSectionsTopTokenId.language());
+        doc.putProperty(Language.class,TestJoinTopTokenId.language());
         return doc;
     }
     
@@ -93,27 +83,27 @@ public class JoinSectionsPositioningTest extends NbTestCase {
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TEXT, "a{b", 0);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "a[b", 0);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TAG, "<cd>", 3);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TAG, "<cd>", 3);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TEXT, "e}f", 7);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "e]f", 7);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TAG, "<gh>", 10);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TAG, "<gh>", 10);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TEXT, "i{}{j", 14);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "i[][j", 14);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TAG, "<kl>", 19);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TAG, "<kl>", 19);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TEXT, "m}n", 23);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "m]n", 23);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TAG, "<o>", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TAG, "<o>", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TEXT, "p", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "p", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TAG, "<q>", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TAG, "<q>", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestJoinSectionsTopTokenId.TEXT, "r", -1);
+        LexerTestUtilities.assertTokenEquals(ts,TestJoinTopTokenId.TEXT, "r", -1);
         assertFalse(ts.moveNext());
         assertEquals(11, ts.tokenCount());
         
@@ -122,9 +112,9 @@ public class JoinSectionsPositioningTest extends NbTestCase {
         assertTrue(ts.moveNext()); // Over "a{b"
         TokenSequence<?> tse = ts.embedded();
         assertTrue(tse.moveNext());
-        LexerTestUtilities.assertTokenEquals(tse,TestJoinSectionsTextTokenId.TEXT, "a", 0);
+        LexerTestUtilities.assertTokenEquals(tse,TestJoinTextTokenId.TEXT, "a", 0);
         assertTrue(tse.moveNext());
-        LexerTestUtilities.assertTokenEquals(tse,TestJoinSectionsTextTokenId.BRACES, "{b", 1);
+        LexerTestUtilities.assertTokenEquals(tse,TestJoinTextTokenId.BRACKETS, "[b", 1);
         assertEquals(tse.token().partType(), PartType.START);
         assertFalse(tse.moveNext());
         
@@ -132,10 +122,10 @@ public class JoinSectionsPositioningTest extends NbTestCase {
         assertTrue(ts.moveNext()); // Over "e}f"
         TokenSequence<?> tse2 = ts.embedded();
         assertTrue(tse2.moveNext());
-        LexerTestUtilities.assertTokenEquals(tse2,TestJoinSectionsTextTokenId.BRACES, "e}", 7);
+        LexerTestUtilities.assertTokenEquals(tse2,TestJoinTextTokenId.BRACKETS, "e]", 7);
         assertEquals(tse2.token().partType(), PartType.END);
         assertTrue(tse2.moveNext());
-        LexerTestUtilities.assertTokenEquals(tse2,TestJoinSectionsTextTokenId.TEXT, "f", 9);
+        LexerTestUtilities.assertTokenEquals(tse2,TestJoinTextTokenId.TEXT, "f", 9);
         assertEquals(tse2.token().partType(), PartType.START);
         assertFalse(tse2.moveNext());
         
@@ -143,13 +133,13 @@ public class JoinSectionsPositioningTest extends NbTestCase {
         assertTrue(ts.moveNext()); // Over "i{}{j"
         TokenSequence<?> tse3 = ts.embedded();
         assertTrue(tse3.moveNext());
-        LexerTestUtilities.assertTokenEquals(tse3,TestJoinSectionsTextTokenId.TEXT, "i", 14);
+        LexerTestUtilities.assertTokenEquals(tse3,TestJoinTextTokenId.TEXT, "i", 14);
         assertEquals(tse3.token().partType(), PartType.END);
         assertTrue(tse3.moveNext());
-        LexerTestUtilities.assertTokenEquals(tse3,TestJoinSectionsTextTokenId.BRACES, "{}", 15);
+        LexerTestUtilities.assertTokenEquals(tse3,TestJoinTextTokenId.BRACKETS, "[]", 15);
         assertEquals(tse3.token().partType(), PartType.COMPLETE);
         assertTrue(tse3.moveNext());
-        LexerTestUtilities.assertTokenEquals(tse3,TestJoinSectionsTextTokenId.BRACES, "{j", 17);
+        LexerTestUtilities.assertTokenEquals(tse3,TestJoinTextTokenId.BRACKETS, "[j", 17);
         assertEquals(tse3.token().partType(), PartType.START);
         assertFalse(tse3.moveNext());
 
@@ -158,23 +148,23 @@ public class JoinSectionsPositioningTest extends NbTestCase {
         TokenSequence<?> tsej = ts.embeddedJoined();
         assertEquals(2, tsej.index());
         assertTrue(tsej.moveNext());
-        LexerTestUtilities.assertTokenEquals(tsej,TestJoinSectionsTextTokenId.TEXT, "fi", 9);
+        LexerTestUtilities.assertTokenEquals(tsej,TestJoinTextTokenId.TEXT, "fi", 9);
         assertEquals(9, tsej.token().offset(null)); // Assert also token.offset() besides TS.offset()
         assertEquals(tsej.token().partType(), PartType.COMPLETE);
         assertTrue(tsej.moveNext());
-        LexerTestUtilities.assertTokenEquals(tsej,TestJoinSectionsTextTokenId.BRACES, "{}", 15);
+        LexerTestUtilities.assertTokenEquals(tsej,TestJoinTextTokenId.BRACKETS, "[]", 15);
         assertEquals(tsej.token().partType(), PartType.COMPLETE);
         assertTrue(tsej.moveNext());
-        LexerTestUtilities.assertTokenEquals(tsej,TestJoinSectionsTextTokenId.BRACES, "{jm}", 17);
+        LexerTestUtilities.assertTokenEquals(tsej,TestJoinTextTokenId.BRACKETS, "[jm]", 17);
         assertEquals(tsej.token().partType(), PartType.COMPLETE);
 
         tsej.moveStart();
         assertTrue(tsej.moveNext());
-        LexerTestUtilities.assertTokenEquals(tsej,TestJoinSectionsTextTokenId.TEXT, "a", 0);
+        LexerTestUtilities.assertTokenEquals(tsej,TestJoinTextTokenId.TEXT, "a", 0);
         assertEquals(0, tsej.token().offset(null)); // Assert also token.offset() besides TS.offset()
         assertEquals(tsej.token().partType(), PartType.COMPLETE);
         assertTrue(tsej.moveNext());
-        LexerTestUtilities.assertTokenEquals(tsej,TestJoinSectionsTextTokenId.BRACES, "{be}", 1);
+        LexerTestUtilities.assertTokenEquals(tsej,TestJoinTextTokenId.BRACKETS, "[be]", 1);
         assertEquals(1, tsej.token().offset(null)); // Assert also token.offset() besides TS.offset()
         assertEquals(tsej.token().partType(), PartType.COMPLETE);
 //        assertFalse(tsej.moveNext());
@@ -232,7 +222,7 @@ public class JoinSectionsPositioningTest extends NbTestCase {
         String text = "a<b>c";
         ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, text, null);
-        doc.putProperty(Language.class, TestJoinSectionsTopTokenId.language());
+        doc.putProperty(Language.class, TestJoinTopTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());

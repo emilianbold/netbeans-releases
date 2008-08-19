@@ -159,7 +159,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         boolean showSystemThreads = preferences.getBoolean(SHOW_SYSTEM_THREADS, false);
         boolean showSuspendedThreadsOnly = preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false);
         if (!showSystemThreads || showSuspendedThreadsOnly) {
-            nodes = filterSystemThreads(nodes, !showSystemThreads, showSuspendedThreadsOnly);
+            nodes = filterThreadsAndGroups(nodes, !showSystemThreads, showSuspendedThreadsOnly);
         }
         boolean alphabet = preferences.getBoolean(SORT_ALPHABET, true);
         if (!alphabet) {
@@ -179,22 +179,46 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         return nodes;
     }
     
-    private Object[] filterSystemThreads(Object[] nodes, boolean filterSystem, boolean filterRunning) {
+    private Object[] filterThreadsAndGroups(Object[] nodes, boolean filterSystem, boolean filterRunning) {
         List list = null;
+        JPDAThread currentThread = debugger.getCurrentThread();
         for (Object node : nodes) {
             if (node instanceof JPDAThread) {
                 JPDAThread t = (JPDAThread)node;
                 watchState(t);
                 if (!t.isSuspended() && (filterSystem && isSystem(t) ||
-                        (filterRunning && t != debugger.getCurrentThread()))) {
+                        (filterRunning && t != currentThread))) {
                     if (list == null) {
                         list = new ArrayList(Arrays.asList(nodes));
                     }
                     list.remove(node);
                 } // if
-            } // if
+            } else if (filterRunning && node instanceof JPDAThreadGroup) {
+                if (!containsThread((JPDAThreadGroup)node, currentThread)) {
+                    if (list == null) {
+                        list = new ArrayList(Arrays.asList(nodes));
+                    }
+                    list.remove(node);
+                }
+            }
         } // for
         return (list != null) ? list.toArray() : nodes;
+    }
+
+    private boolean containsThread(JPDAThreadGroup group, JPDAThread currentThread) {
+        JPDAThread[] threads = group.getThreads();
+        for (int x = 0; x < threads.length; x++) {
+            if (threads[x].isSuspended() || threads[x] == currentThread) {
+                return true;
+            }
+        }
+        JPDAThreadGroup[] groups = group.getThreadGroups();
+        for (int x = 0; x < groups.length; x++) {
+            if (containsThread(groups[x], currentThread)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Object[] getTopLevelThreadsAndGroups() {

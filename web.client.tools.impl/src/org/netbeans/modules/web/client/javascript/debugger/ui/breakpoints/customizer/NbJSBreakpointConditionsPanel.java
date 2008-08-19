@@ -106,7 +106,6 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
         orCondition = breakpoint.getCondition();
         orFilterStyle = breakpoint.getHitCountFilteringStyle();
         orFilter = breakpoint.getHitCountFilter();
-        orFilterStyle = HIT_COUNT_FILTERING_STYLE.GREATER;
         FileObject fo = breakpoint.getFileObject();
 
         initConditionPanel(orCondition, orFilterStyle, orFilter);
@@ -143,9 +142,6 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
     }
 
     public void setHitCountFilteringStyle(HIT_COUNT_FILTERING_STYLE style) {
-        if ( !style.equals(HIT_COUNT_FILTERING_STYLE.GREATER)){
-            throw new UnsupportedOperationException("Currently we only support Greater than or Equal to functionality");
-        }
         cbHitStyle.setSelectedIndex((style != null) ? style.ordinal() : 0);
     }
 
@@ -155,7 +151,7 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
             tfHitCountFilter.setText(Integer.toString(hitCount));
         } else {
             cbWhenHitCount.setSelected(false);
-            tfHitCountFilter.setText("");
+            tfHitCountFilter.setText("1");
         }
         cbWhenHitCountActionPerformed(null);
     }
@@ -174,12 +170,8 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
     }
 
     public HIT_COUNT_FILTERING_STYLE getHitCountFilteringStyle() {
-        if (!cbWhenHitCount.isSelected()) {
-            return null;
-        } else {
-            return HIT_COUNT_FILTERING_STYLE.values()[cbHitStyle
-                    .getSelectedIndex()];
-        }
+        return HIT_COUNT_FILTERING_STYLE.values()[cbHitStyle
+                .getSelectedIndex()];
     }
 
     public int getHitCount() {
@@ -392,7 +384,6 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
     }// GEN-LAST:event_conditionCheckBoxActionPerformed
 
     private void cbHitStyleActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cbHitStyleActionPerformed
-    // TODO add your handling code here:
     }// GEN-LAST:event_cbHitStyleActionPerformed
 
     private javax.swing.JTextField tfConditionFieldForUI;
@@ -418,7 +409,7 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
             updated = true;
         }
 
-        if (newFilter != orFilter) {
+        if (newFilter != orFilter || newFilterStyle != orFilterStyle) {
             breakpoint.setHitCountFilter(newFilter, newFilterStyle);
             updated = true;
         }

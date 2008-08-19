@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
-import java.awt.Adjustable;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -76,7 +75,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
@@ -89,6 +87,8 @@ import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
@@ -122,7 +122,7 @@ import org.openide.windows.WindowManager;
  */
 public class DebuggingView extends TopComponent implements org.openide.util.HelpCtx.Provider,
        ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener, TreeModelListener,
-       AdjustmentListener, ChangeListener, MouseWheelListener {
+       AdjustmentListener, ChangeListener, MouseWheelListener, TreeSelectionListener {
 
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "debugging"; //NOI18N
@@ -226,6 +226,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         scrollBarPanel.setVisible(false);
         treeScrollBar.addAdjustmentListener(this);
         treeView.getViewport().addChangeListener(this);
+        treeView.getTree().addTreeSelectionListener(this);
 
         setSuspendTableVisible(preferences.getBoolean(FiltersDescriptor.SHOW_SUSPEND_TABLE, true));
     }
@@ -650,6 +651,21 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         if (e.getScrollType() == MouseWheelEvent.WHEEL_UNIT_SCROLL) {
             int totalScrollAmount = e.getUnitsToScroll() * scrollBar.getUnitIncrement();
             scrollBar.setValue(scrollBar.getValue() + totalScrollAmount);
+        }
+    }
+
+    // **************************************************************************
+    // implementation of TreeSelectionListener
+    // **************************************************************************
+    
+    public void valueChanged(TreeSelectionEvent e) {
+        TreePath path = e.getNewLeadSelectionPath();
+        if (path != null) {
+            JTree tree = treeView.getTree();
+            int row = tree.getRowForPath(path);
+            Rectangle rect = tree.getRowBounds(row);
+            JViewport viewport = mainScrollPane.getViewport();
+            ((JComponent)viewport.getView()).scrollRectToVisible(rect);
         }
     }
     

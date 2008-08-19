@@ -311,7 +311,6 @@ public class DebuggerProxy {
             ResponseMessage responseMessage = (ResponseMessage)message;
             int txID = responseMessage.getTransactionId();
             if( txID == -1) {
-                httpQueue.add(message);
                 suspensionPointQueue.add(message);
             }else {
                 //Ignore if the response is for a timed-out request
@@ -332,7 +331,7 @@ public class DebuggerProxy {
             suspensionPointQueue.add(message);
         } else if ( message instanceof HttpMessage ) {
 //            Log.getLogger().info("Receiving HttpMessage Id:" + ((HttpMessage)message).getId());
-            httpQueue.add((HttpMessage)message);
+            httpQueue.add(message);
         }
     }
     
@@ -344,6 +343,7 @@ public class DebuggerProxy {
         }
         Message message = Message.createMessage(statusText);
         handleMessage(message);
+        httpQueue.add(message);
     } 
 
     private class MessageHandler extends Thread {

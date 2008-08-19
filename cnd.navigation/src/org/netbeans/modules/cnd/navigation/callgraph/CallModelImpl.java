@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -192,7 +193,8 @@ public class CallModelImpl implements CallModel {
             final List<CsmOffsetable> list = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks((owner).getContainingFile());
             final HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
             references.accept((CsmScope)owner, new CsmFileReferences.Visitor() {
-                public void visit(CsmReference r, CsmReference prev, CsmReference parent) {
+                public void visit(CsmReferenceContext context) {
+                    CsmReference r = context.getReference();
                     if (r == null) {
                         return;
                     }

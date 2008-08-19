@@ -454,6 +454,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ143285_nested_classifiers.cc", 16, 16, "IZ143285_nested_classifiers.cc", 7, 13);
     }
 
+    public void testStdVector() throws Exception {
+        // IZ#141105 Code model can not resolve type for vector[i]
+        performTest("IZ141105_std_vector.cc", 20, 11, "IZ141105_std_vector.cc", 3, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

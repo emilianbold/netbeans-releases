@@ -126,6 +126,8 @@ public class ProjectHelper {
     private static final String XML_BINDING_BUILD_FILE_NAME = "xml_binding_build.xml"; //NOI18N
     private static final String FILE_OBJECT_SEPARATOR = "/"; // NOI18N
     private static final String XSL_RESOURCE = "org/netbeans/modules/xml/jaxb/resources/JAXBBuild.xsl"; //NOI18N
+    private static final String EJB_XSL_RESOURCE = "org/netbeans/modules/xml/jaxb/resources/JAXBBuild_ejb.xsl"; //NOI18N
+    private static final String WEB_XSL_RESOURCE = "org/netbeans/modules/xml/jaxb/resources/JAXBBuild_web.xsl"; //NOI18N
     private static final String BUILD_GEN_JAXB_DIR = "build/generated/addons/jaxb"; //NOI18N
     private static final String NON_JAVA_SE_CONFIG_DIR = "conf/xml-resources/jaxb"; //NOI18N
     private static final String JAVA_SE_CONFIG_DIR = "xml-resources/jaxb"; //NOI18N
@@ -150,9 +152,22 @@ public class ProjectHelper {
     public static void refreshBuildScript(Project prj) {
         try {
             Source xmlSource = new StreamSource(getXMLBindingConfigFile(prj));
-            Source xslSource = new StreamSource(
+            Source xslSource = null;
+            int projType = getProjectType(prj);
+            if (projType == PROJECT_TYPE_EJB){
+                xslSource = new StreamSource(
+                    ProjectHelper.class.getClassLoader().getResourceAsStream(
+                    EJB_XSL_RESOURCE));
+            } else if (projType == PROJECT_TYPE_WEB){
+                xslSource = new StreamSource(
+                    ProjectHelper.class.getClassLoader().getResourceAsStream(
+                    WEB_XSL_RESOURCE));
+            } else {
+                xslSource = new StreamSource(
                     ProjectHelper.class.getClassLoader().getResourceAsStream(
                     XSL_RESOURCE));
+            }
+
             Result result = new StreamResult(getXMLBindingBuildFile(prj));
             TransformerFactory fact = TransformerFactory.newInstance();
             try {

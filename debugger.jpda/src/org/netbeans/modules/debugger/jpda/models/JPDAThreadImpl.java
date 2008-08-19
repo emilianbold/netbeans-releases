@@ -1057,6 +1057,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
 
     public boolean checkForBlockingThreads() {
         try {
+            if (!threadReference.virtualMachine().canGetCurrentContendedMonitor() ||
+                !threadReference.virtualMachine().canGetMonitorInfo()) {
+                return false;
+            }
             //System.err.println("\""+getName()+"\".checkForBlockingThreads()");
             VirtualMachine vm = threadReference.virtualMachine();
             Map<ThreadReference, ObjectReference> lockedThreadsWithMonitors = null;
@@ -1108,6 +1112,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         } catch (VMDisconnectedException e) {
         } catch (InternalException e) {
         } catch (ObjectCollectedException e) {
+        } catch (IllegalThreadStateException ex) {
+            // Thrown when thread has exited
         }
         return false;
     }

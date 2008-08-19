@@ -29,16 +29,12 @@
 
 package clienteditor;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
 /**
  * Form that allows editing of information about one client.
  *
  * @author Jiri Vagner, Jan Stola
  */
 public class ClientEditor extends javax.swing.JPanel {
-    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     private Client client = Client.createTestClient();
 
     public ClientEditor() {
@@ -63,21 +59,9 @@ public class ClientEditor extends javax.swing.JPanel {
     public void setClient(Client client) {
         Client oldClient = this.client;
         this.client = client;
-        changeSupport.firePropertyChange("client", oldClient, client);
+        firePropertyChange("client", oldClient, client);
     }
 
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        super.addPropertyChangeListener(listener);
-        changeSupport.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-        super.removePropertyChangeListener(listener);
-        changeSupport.removePropertyChangeListener(listener);
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

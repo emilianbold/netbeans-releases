@@ -178,6 +178,7 @@ public abstract class CsmFileTaskFactory {
                 //if (OpenedEditors.SHOW_TIME) System.err.println("CsmFileTaskFactory: new task created: " + pr.getClass().toString());
                 csm2task.put(file, pr);
             }
+            pr.cancel();
             post(pr, file, phase, delay);
         }
     }
@@ -246,6 +247,7 @@ public abstract class CsmFileTaskFactory {
         };
         public abstract void run(Phase phase);
         public abstract boolean isValid();
+        public abstract void cancel();
 
     }
     
@@ -265,6 +267,9 @@ public abstract class CsmFileTaskFactory {
 
             public boolean isValid() {
                 return true;
+            }
+
+            public void cancel() {
             }
         };
     }

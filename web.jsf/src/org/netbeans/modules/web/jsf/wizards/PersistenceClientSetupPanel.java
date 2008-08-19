@@ -60,6 +60,7 @@ final class PersistenceClientSetupPanel implements WizardDescriptor.Panel, Wizar
     
     private WizardDescriptor wizardDescriptor;
     private PersistenceClientSetupPanelVisual component;
+    private boolean finishPanel = true;
     
     private Project project;
     /** Create the wizard panel descriptor. */
@@ -69,7 +70,11 @@ final class PersistenceClientSetupPanel implements WizardDescriptor.Panel, Wizar
     }
     
     public boolean isFinishPanel() {
-        return true;
+        return finishPanel;
+    }
+    
+    public void setFinishPanel(boolean finishPanel) {
+        this.finishPanel = finishPanel;
     }
 
     public Component getComponent() {

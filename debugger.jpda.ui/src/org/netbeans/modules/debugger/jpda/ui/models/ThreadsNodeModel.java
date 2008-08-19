@@ -326,9 +326,9 @@ public class ThreadsNodeModel implements NodeModel {
         public void propertyChange (PropertyChangeEvent e) {
             ThreadsNodeModel rm = getModel ();
             if (rm == null) return;
-            List nodes;
+            Set nodes;
             synchronized(currentNodes) {
-                nodes = new ArrayList(currentNodes);
+                nodes = new HashSet(currentNodes);
             }
             JPDAThread t = debugger.getCurrentThread();
             if (t != null) {

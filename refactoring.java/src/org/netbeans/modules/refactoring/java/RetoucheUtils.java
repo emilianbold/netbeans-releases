@@ -517,6 +517,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getElementHandle();
         } catch (IOException ex) {
@@ -528,6 +529,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getElementKind();
         } catch (IOException ex) {
@@ -540,6 +542,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getSimpleName();
         } catch (IOException ex) {
@@ -552,6 +555,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + handle.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(handle), true);
             return ff.getFileObject();
         } catch (IOException ex) {
@@ -563,6 +567,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph), true);
             return ff.getQualifiedName();
         } catch (IOException ex) {
@@ -574,6 +579,7 @@ public class RetoucheUtils {
         try {
             CompilerTask ff;
             JavaSource source = JavaSource.forFileObject(tph.getFileObject());
+            assert source!=null:"JavaSource.forFileObject(" + tph.getFileObject().getPath() + ") \n returned null";
             source.runUserActionTask(ff=new CompilerTask(tph, fqn), true);
             return ff.typeExist();
         } catch (IOException ex) {

@@ -198,7 +198,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
             InteractionOperandWidget w=addOperand(i);
             getScene().validate();
         }
-    
+        super.initializeNode(presentation);
     }
 
     @Override
