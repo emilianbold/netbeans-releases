@@ -37,33 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.cplusplus;
+package org.netbeans.modules.cnd.editor.reformat;
 
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.netbeans.modules.cnd.editor.reformat.Reformatter;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
  *
- * @author as204739
+ * @author Alexander Simon
  */
-public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
-
-    public CCNewFormatterSingleTestCase(String testMethodName) {
-        super(testMethodName);
+class QtExtension {
+    private boolean isQtObject = false;
+    QtExtension() {
     }
-
-    /**
-     * Perform reformatting of the whole document's text.
-     */
-    @Override
-    protected void reformat() {
-        Reformatter f = new Reformatter(getDocument(), CodeStyle.getDefault(getDocument()));
-        try {
-            f.reformat();
-        } catch (BadLocationException e) {
-            e.printStackTrace(getLog());
-            fail(e.getMessage());
-	}
+    boolean isQtObject(){
+        return isQtObject;
+    }
+    void checkQtObject(Token<CppTokenId> token){
+        if (!isQtObject) {
+            isQtObject = token.id() == IDENTIFIER && CharSequenceUtilities.equals(token.text(), "Q_OBJECT"); // NOI18N
+        }
+    }
+    boolean isSignals(Token<CppTokenId> token){
+        return token.id() == IDENTIFIER && CharSequenceUtilities.equals(token.text(), "signals"); // NOI18N
+    }
+    boolean isSlots(Token<CppTokenId> token){
+        return token.id() == IDENTIFIER && CharSequenceUtilities.equals(token.text(), "slots"); // NOI18N
     }
 }
