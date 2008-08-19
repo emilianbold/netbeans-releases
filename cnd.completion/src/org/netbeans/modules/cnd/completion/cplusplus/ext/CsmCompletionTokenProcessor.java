@@ -1951,9 +1951,11 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
             }
             case GENERIC_TYPE_OPEN:
             {
-                CsmCompletionExpression kwdExp = createTokenExp(TYPE);
-                kwdExp.setType(kwdType);
-                pushExp(kwdExp);
+                if (!"typename".equals(kwdType)) { // NOI18N
+                    CsmCompletionExpression kwdExp = createTokenExp(TYPE);
+                    kwdExp.setType(kwdType);
+                    pushExp(kwdExp);
+                }
                 errorState = false;
                 break;
             }
