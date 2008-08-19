@@ -60,18 +60,19 @@ public final class RunAsValidator {
     /**
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
      * @param url URL to validate, must end with "/" (slash).
+     * @param webRoot parent directory of the indexFile.
      * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
      * @param arguments arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
-    public static String validateWebFields(String url, String indexFile, String arguments) {
+    public static String validateWebFields(String url, File webRoot, String indexFile, String arguments) {
         String err = null;
         if (!Utils.isValidUrl(url)) {
             err = NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUrl");
         } else if (!url.endsWith("/")) { // NOI18N
             err = NbBundle.getMessage(RunAsValidator.class, "MSG_UrlNotTrailingSlash");
         } else {
-            err = validateIndexFile(indexFile, arguments);
+            err = validateIndexFile(webRoot, indexFile, arguments);
         }
         return err;
     }
@@ -108,15 +109,21 @@ public final class RunAsValidator {
 
     /**
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
-     * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
+     * @param webRoot parent directory of the indexFile.
+     * @param indexFile file name or even relative file path (to webRoot) to validate, can be <code>null</code>.
+     *                  <b>If it is <code>null</code> then no error message is returned.</b>
      * @param arguments arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
-    private static String validateIndexFile(String indexFile, String arguments) {
+    private static String validateIndexFile(File webRoot, String indexFile, String arguments) {
+        assert webRoot != null;
         if (indexFile != null) {
-            String name = new File(indexFile).getName();
-            if (!Utils.isValidFileName(name)) {
-                return NbBundle.getMessage(RunAsValidator.class, "MSG_IllegalIndexName");
+            if (indexFile.trim().length() == 0) {
+                return NbBundle.getMessage(RunAsValidator.class, "MSG_NoIndexFile");
+            }
+            File index = new File(webRoot, indexFile.replace('/', File.separatorChar)); // NOI18N
+            if (!index.isFile()) {
+                return NbBundle.getMessage(RunAsValidator.class, "MSG_IndexFileInvalid");
             }
         }
         //XXX validation for arguments?

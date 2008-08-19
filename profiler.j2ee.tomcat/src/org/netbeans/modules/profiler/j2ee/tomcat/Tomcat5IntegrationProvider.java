@@ -120,10 +120,6 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
         }
     }
 
-    public boolean supportsJVM(TargetPlatformEnum jvm) {
-        return true;
-    }
-
     public ValidationResult validateInstallation(final String targetOS, final String path) {
         ValidationResult retValue = super.validateInstallation(targetOS, path);
 

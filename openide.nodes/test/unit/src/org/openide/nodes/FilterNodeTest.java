@@ -808,6 +808,52 @@ public class FilterNodeTest extends NbTestCase {
         assertEquals("It is the filter node", n, all.iterator().next());
     }
     
-}
+    static class Keys extends Children.Keys {
 
+
+        public Keys(boolean lazy, String... args) {
+            super(lazy);
+            if (args != null && args.length > 0) {
+                setKeys(args);
+            }
+        }
+
+        public void keys(String... args) {
+            super.setKeys(args);
+        }
+
+        public void keys(Collection args) {
+            super.setKeys(args);
+        }
+
+        protected Node[] createNodes(Object key) {
+            AbstractNode an = new AbstractNode(Children.LEAF);
+            an.setName(key.toString());
+            return new Node[]{an};
+        }
+    }
+    
+    public void testChangeOriginalToAndFromLazy() {
+       
+        AbstractNode a = new AbstractNode (new Keys(false, "a", "b"));
+        AbstractNode b = new AbstractNode (new Keys(true, "la", "lb"));
+        AbstractNode c = new AbstractNode (new Keys(false, "A", "B"));
+    
+        FN fn = new FN(a);
+        assertFalse(fn.getChildren().isLazy());
+        assertEquals("a", fn.getChildren().getNodeAt(0).getName());
+        assertEquals("b", fn.getChildren().getNodeAt(1).getName());
+        
+        fn.changeCh(b, true);
+        assertTrue(fn.getChildren().isLazy());
+        assertEquals("la", fn.getChildren().getNodeAt(0).getName());
+        assertEquals("lb", fn.getChildren().getNodeAt(1).getName());
+        
+        fn.changeCh(c, true);
+        assertFalse(fn.getChildren().isLazy());
+        assertEquals("A", fn.getChildren().getNodeAt(0).getName());
+        assertEquals("B", fn.getChildren().getNodeAt(1).getName());
+    }    
+    
+}
 

@@ -40,7 +40,6 @@
  */
 package org.netbeans.jellytools.modules.junit.actions;
 
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.actions.Action;
 
 /**
@@ -59,7 +58,7 @@ public class ResultWindowViewAction extends Action {
     
     /** Creates a new instance of ResultWindowViewAction */
     public ResultWindowViewAction() {
-        super(menu, null, "org.netbeans.junit.output.ResultWindowOpenAction");
+        super(menu, null);
     }
     
     

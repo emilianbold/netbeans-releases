@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.openide.windows;
 
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.ContextGlobalProvider;
 import org.openide.util.lookup.Lookups;
@@ -69,7 +70,7 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
     private static volatile Lookup temporary;
     /** Temporarily provides different action map in the lookup.
      */
-    public static void blickActionMap (javax.swing.ActionMap map) {
+    public static void blinkActionMap(javax.swing.ActionMap map) {
         Object obj = Lookup.getDefault ().lookup (ContextGlobalProvider.class);
         if (obj instanceof GlobalActionContextImpl) {
             GlobalActionContextImpl g = (GlobalActionContextImpl)obj;
@@ -78,14 +79,27 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
                 Lookups.singleton (map),
                 Lookups.exclude (g.getLookup (), new Class[] { javax.swing.ActionMap.class }),
             };
-            
-            Lookup prev = temporary;
+
+            ProxyLookup pl = new ProxyLookup (arr);
             try {
-                temporary = new ProxyLookup (arr);
+                synchronized (g) {
+                    while (temporary != null) {
+                        try {
+                            g.wait();
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    temporary = pl;
+                }
                 Object q = org.openide.util.Utilities.actionsGlobalContext ().lookup (javax.swing.ActionMap.class);
                 assert q == map : "We really get map from the lookup. Map: " + map + " returned: " + q; // NOI18N
             } finally {
-                temporary = prev;
+                synchronized (g) {
+                    assert temporary == pl;
+                    temporary = null;
+                    g.notifyAll();
+                }
                 // fire the changes about return of the values back
                 org.openide.util.Utilities.actionsGlobalContext ().lookup (javax.swing.ActionMap.class);
             }

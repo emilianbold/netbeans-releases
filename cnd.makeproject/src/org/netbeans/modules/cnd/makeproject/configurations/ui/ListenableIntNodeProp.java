@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,11 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -36,32 +31,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
-package org.netbeans.lib.profiler.common.integration.exceptions;
-
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * @author Sergey Grinev
  */
-public class ModificationException extends IntegrationException {
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
+public class ListenableIntNodeProp extends IntNodeProp {
 
-    /** Creates a new instance of ModificationException */
-    public ModificationException() {
-        super();
+    private final PropertyChangeSupport pcs;
+
+    public ListenableIntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String txt1, String txt2, String txt3) {
+        super(intConfiguration, canWrite, txt1, txt2, txt3);
+        pcs = new PropertyChangeSupport(this);
     }
 
-    public ModificationException(String message) {
-        super(message);
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
     }
 
-    public ModificationException(Throwable cause) {
-        super(cause);
+    public void remotePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
     }
 
-    public ModificationException(String message, Throwable cause) {
-        super(message, cause);
+    @Override
+    public void setValue(Object v) {
+        Object oldV = getValue();
+        super.setValue(v);
+        pcs.firePropertyChange(getName(), oldV, v);
     }
 }
