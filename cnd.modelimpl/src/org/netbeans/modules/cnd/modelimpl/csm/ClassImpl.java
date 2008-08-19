@@ -513,13 +513,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 	kind = findKind(ast);
     }
 
-    @Override
     protected void init(CsmScope scope, AST ast) {
-	super.init(scope, ast);
+	initScope(scope, ast);
+        initQualifiedName(scope, ast);
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        new ClassAstRenderer().render(ast);
+        render(ast);
         leftBracketPos = initLeftBracketPos(ast);
         register(getScope(), false);
+    }
+
+    protected void render(AST ast) {
+        new ClassAstRenderer().render(ast);
+        leftBracketPos = initLeftBracketPos(ast);
     }
 
     public static ClassImpl create(AST ast, CsmScope scope, CsmFile file) {
