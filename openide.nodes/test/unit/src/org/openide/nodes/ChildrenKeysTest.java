@@ -1098,11 +1098,11 @@ public class ChildrenKeysTest extends NbTestCase {
         Keys k = new Keys (lazy(), new String[] { "Ahoj" });
         Node[] arr = new Node[] { Node.EMPTY.cloneNode () };
         boolean res = k.add (arr);
-        if (lazy()) {
+        /*if (lazy()) {
             assertFalse("Not supported in lazy mode", res);
             assertFalse("Removal is also unsupported", k.remove(arr));
             return;
-        }
+        }*/
         
         Node node = createNode (k);
         
