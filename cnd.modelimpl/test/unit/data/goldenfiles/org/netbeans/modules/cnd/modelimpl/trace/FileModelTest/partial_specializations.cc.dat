@@ -22,7 +22,7 @@ CLASS C<class T1,class T2> (C ) [1:1/0-3:3/68] lcurly=37 SCOPE: $Global$
                 t1 [2:18/51-2:23/56]  TYPE: C::T1 TEXT=T1  [2:18/51-2:20/53]  INIT: null  SCOPE: foo 
                 t2 [2:25/58-2:30/63]  TYPE: C::T2 TEXT=T2  [2:25/58-2:27/60]  INIT: null  SCOPE: foo 
             RETURNS void TEXT=void  [2:9/42-2:13/46]
-CLASS 111 C<int,class> (C<int,class> ) [5:1/70-7:3/133] lcurly=104 SCOPE: $Global$ 
+CLASS C<int,class> (C<int,class> ) [5:1/70-7:3/133] lcurly=104 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION foo [6:9/107-6:32/130] MethodImpl SCOPE: C 
