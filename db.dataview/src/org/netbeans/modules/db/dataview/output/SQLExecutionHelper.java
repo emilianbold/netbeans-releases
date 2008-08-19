@@ -555,7 +555,7 @@ class SQLExecutionHelper {
     private void getTotalCount(boolean isSelect, String sql, Statement stmt) {
         ResultSet cntResultSet = null;
         try {
-            if (isSelect && !isGroupByUsedInSelect(sql)) {
+            if (isSelect && !isGroupByUsedInSelect(sql) && !isDistinctUsedInSelect(sql)) {
                 if (isLimitUsedInSelect(sql)) {
                     try {
                         String lmtStr = sql.toUpperCase().split(LIMIT_CLAUSE)[1].trim();
@@ -590,6 +590,10 @@ class SQLExecutionHelper {
     private boolean isGroupByUsedInSelect(String sql) {
         return sql.toUpperCase().indexOf(" GROUP BY ") != -1; // NOI18N
     }
+
+    private boolean isDistinctUsedInSelect(String sql) {
+        return sql.toUpperCase().indexOf(" DISTINCT ") != -1; // NOI18N
+    }    
 
     static String millisecondsToSeconds(long ms) {
         NumberFormat fmt = NumberFormat.getInstance();
