@@ -203,7 +203,7 @@ public class FieldBreakpointsTest extends JellyTestCase {
             setBreakpointType(dialog, "Field");
             new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Field_Breakpoint_Type_Access"));
             new JCheckBoxOperator(dialog, 0).changeSelection(true);
-            new JEditorPaneOperator(dialog, 0).setText("UPDATE_TIME >= 1001");
+            new JEditorPaneOperator(dialog, 1).setText("UPDATE_TIME >= 1001");
             dialog.ok();
 
             EditorOperator eo = new EditorOperator("MemoryView.java");
@@ -213,7 +213,7 @@ public class FieldBreakpointsTest extends JellyTestCase {
             Utilities.startDebugger();
             int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:109", 0);
             new ContinueAction().perform();
-//            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lines + 1);
+            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", lines + 1);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -225,17 +225,17 @@ public class FieldBreakpointsTest extends JellyTestCase {
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
             setBreakpointType(dialog, "Field");
             String wrongname = "wrongname";
-            new JTextFieldOperator(dialog, 1).setText(wrongname);
+            new JTextFieldOperator(dialog, 0).setText(wrongname);
             dialog.ok();
 
             Utilities.startDebugger();
-//            int lines = Utilities.waitDebuggerConsole("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView." + wrongname, 0);
+            int lines = Utilities.waitDebuggerConsole("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView." + wrongname, 0);
             dialog = Utilities.newBreakpoint(36, 36);
             setBreakpointType(dialog, "Field");
             wrongname = "wrongname2";
-            new JTextFieldOperator(dialog, 1).setText(wrongname);
+            new JTextFieldOperator(dialog, 0).setText(wrongname);
             dialog.ok();
-//            Utilities.waitDebuggerConsole("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView." + wrongname, lines + 1);
+            Utilities.waitDebuggerConsole("Not able to submit breakpoint FieldBreakpoint examples.advanced.MemoryView." + wrongname, lines + 1);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

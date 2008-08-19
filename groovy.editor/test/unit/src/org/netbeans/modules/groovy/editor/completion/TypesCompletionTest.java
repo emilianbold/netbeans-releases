@@ -162,7 +162,7 @@ public class TypesCompletionTest extends GroovyTestBase {
     // test for types defined in the very same file
 
     public void testSamePackage1() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "SamePackage1.groovy", "println Tes^", false);
+        checkCompletion(TYPES_BASE + "" + "SamePackage1.groovy", "println TestSamePack^", false);
     }
 
 }

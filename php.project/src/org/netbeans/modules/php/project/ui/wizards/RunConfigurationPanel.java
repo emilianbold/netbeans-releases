@@ -260,7 +260,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         // index file for existing sources - if index file is empty, try to find existing index.php
         String indexFile = (String) descriptor.getProperty(INDEX_FILE);
         if (indexFile == null || indexFile.length() == 0) {
-            FileObject fo = sourcesFolderProvider.getSourcesFolder().getFileObject(DEFAULT_INDEX_FILE);
+            FileObject fo = FileUtil.toFileObject(sourcesFolderProvider.getSourcesFolder()).getFileObject(DEFAULT_INDEX_FILE);
             if (fo != null && fo.isValid()) {
                 runAsLocalWeb.setIndexFile(DEFAULT_INDEX_FILE);
                 runAsRemoteWeb.setIndexFile(DEFAULT_INDEX_FILE);
@@ -290,19 +290,15 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         getComponent();
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); // NOI18N
         String error = null;
-        String indexFile = null;
         switch (getRunAsType()) {
             case LOCAL:
                 error = validateRunAsLocalWeb();
-                indexFile = runAsLocalWeb.getIndexFile();
                 break;
             case REMOTE:
                 error = validateRunAsRemoteWeb();
-                indexFile = runAsRemoteWeb.getIndexFile();
                 break;
             case SCRIPT:
                 error = validateRunAsScript();
-                indexFile = runAsScript.getIndexFile();
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + getRunAsType();
@@ -313,16 +309,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             descriptor.putProperty(VALID, false);
             return false;
         }
-        switch (wizardType) {
-            case EXISTING:
-                error = validateIndexFile(indexFile);
-                if (error != null) {
-                    descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
-                    return false;
-                }
-                break;
-        }
-
         validateAsciiTexts();
 
         descriptor.putProperty(VALID, true);
@@ -367,7 +353,11 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsLocalWeb() {
-        String error = RunAsValidator.validateWebFields(runAsLocalWeb.getUrl(), null, null);
+        String indexFile = null;
+        if (wizardType == wizardType.EXISTING) {
+            indexFile = runAsLocalWeb.getIndexFile();
+        }
+        String error = RunAsValidator.validateWebFields(runAsLocalWeb.getUrl(), sourcesFolderProvider.getSourcesFolder(), indexFile, null);
         if (error != null) {
             return error;
         }
@@ -379,7 +369,11 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsRemoteWeb() {
-        String error = RunAsValidator.validateWebFields(runAsRemoteWeb.getUrl(), null, null);
+        String indexFile = null;
+        if (wizardType == wizardType.EXISTING) {
+            indexFile = runAsRemoteWeb.getIndexFile();
+        }
+        String error = RunAsValidator.validateWebFields(runAsRemoteWeb.getUrl(), sourcesFolderProvider.getSourcesFolder(), indexFile, null);
         if (error != null) {
             return error;
         }
@@ -400,18 +394,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
     private String validateRunAsScript() {
         return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), null, null);
-    }
-
-    private String validateIndexFile(String indexFile) {
-        if (indexFile.length() == 0) {
-            return NbBundle.getMessage(RunConfigurationPanel.class, "MSG_IllegalIndexName");
-        }
-        // we have to validate that the index file is a valid file
-        FileObject fo = sourcesFolderProvider.getSourcesFolder().getFileObject(indexFile);
-        if (fo == null || !fo.isValid()) {
-            return NbBundle.getMessage(RunConfigurationPanel.class, "MSG_IndexFileNotExists");
-        }
-        return null;
     }
 
     private String validateServerLocation() {

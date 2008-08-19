@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="junit-3.8.2.xml" url="junit_3_8_2_lib.xml"/>
-            <file name="junit-4.1.xml" url="junit_4_1_lib.xml"/>
+            <file name="junit-4.5.xml" url="junit_4_5_lib.xml"/>
         </folder>
     </folder>
 

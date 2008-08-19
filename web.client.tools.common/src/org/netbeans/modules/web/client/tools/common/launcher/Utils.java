@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.web.client.tools.common.launcher;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.zip.GZIPInputStream;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -118,6 +122,6 @@ public class Utils {
                     false));
         }
         return netbeansDotJpgFileObject;
-    }   
+    }
 
 }
