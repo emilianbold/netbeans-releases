@@ -175,6 +175,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
         set.setShortDescription(getString("HINT_TabsAndIndents")); // NOI18N
 	set.put(new IntNodeProp(language, preferences, EditorOptions.indentSize));
 	set.put(new BooleanNodeProp(language, preferences, EditorOptions.expandTabToSpaces));
+	set.put(new IntNodeProp(language, preferences, EditorOptions.tabSize));
 	set.put(new IntNodeProp(language, preferences, EditorOptions.statementContinuationIndent));
 	set.put(new PreprocessorIndentProperty(language, preferences, EditorOptions.indentPreprocessorDirectives));
 	set.put(new BooleanNodeProp(language, preferences, EditorOptions.sharpAtStartLine));

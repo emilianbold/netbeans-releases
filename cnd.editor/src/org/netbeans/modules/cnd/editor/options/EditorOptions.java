@@ -46,11 +46,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.Settings;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
@@ -71,6 +66,9 @@ public class EditorOptions {
             ex.printStackTrace();
         }
     }
+
+    private EditorOptions() {
+    }
     //indents
     /**
      * How many spaces should be added to the statement that continues
@@ -84,6 +82,9 @@ public class EditorOptions {
 
     public static final String expandTabToSpaces = "expandTabToSpaces"; // NOI18N 
     public static final boolean expandTabToSpacesDefault = true;
+
+    public static final String tabSize = "tabSize"; // NOI18N 
+    public static final int tabSizeDefault = 8;
 
     /**
      * Whether to indent preprocessors positioned at start of line.
@@ -315,6 +316,7 @@ public class EditorOptions {
         // Indents
         defaults.put(indentSize, indentSizeDefault);
         defaults.put(expandTabToSpaces, expandTabToSpacesDefault);
+        defaults.put(tabSize, tabSizeDefault);
         defaults.put(statementContinuationIndent,statementContinuationIndentDefault);
         defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
         defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
@@ -623,41 +625,6 @@ public class EditorOptions {
                 break;
         }
     }
-
-//    public static int getGlobalIndentSize(CodeStyle.Language language) {
-//        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
-//        if (f != null) {
-//            return f.getShiftWidth();
-//        }
-//        return 4;
-//    }
-
-    public static int getGlobalTabSize(CodeStyle.Language language) {
-        Formatter f = (Formatter)Settings.getValue(getKitClass(language), "formatter"); // NOI18N
-        if (f != null) {
-            return f.getTabSize();
-        }
-        return 4;
-    }
-    
-    private static Class<? extends EditorKit> cKitClass;
-    private static Class<? extends EditorKit> cppKitClass;
-    private static Class<? extends EditorKit> getKitClass(CodeStyle.Language language) {
-        if (language == CodeStyle.Language.C) {
-            if (cKitClass == null) {
-                EditorKit kit = MimeLookup.getLookup(MimePath.get("text/x-c")).lookup(EditorKit.class); //NOI18N
-                cKitClass = kit != null ? kit.getClass() : EditorKit.class;
-            }
-            return cKitClass;
-        } else {
-            if (cppKitClass == null) {
-                EditorKit kit = MimeLookup.getLookup(MimePath.get("text/x-c++")).lookup(EditorKit.class); //NOI18N
-                cppKitClass = kit != null ? kit.getClass() : EditorKit.class;
-            }
-            return cppKitClass;
-        }
-    }
-    
 
     public static CodeStyle createCodeStyle(CodeStyle.Language language, Preferences p) {
         CodeStyle.getDefault(language);
