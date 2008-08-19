@@ -408,7 +408,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
                         .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
                         .add(23, 23, 23))
                     .add(layout.createSequentialGroup()
-                        .add(showUrlCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(showUrlCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 121, Short.MAX_VALUE)
                         .add(454, 454, 454))))
         );
         layout.setVerticalGroup(
@@ -549,11 +549,15 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     }// </editor-fold>//GEN-END:initComponents
 
     private void templateComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_templateComboBoxItemStateChanged
-        setUpFields();
+        if (evt.getStateChange() == evt.SELECTED)
+        {
+            setUpFields();
+            changedUpdate(null);
+        }
     }//GEN-LAST:event_templateComboBoxItemStateChanged
 
     private void templateComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_templateComboBoxActionPerformed
-        setUpFields();
+        //setUpFields();
     }//GEN-LAST:event_templateComboBoxActionPerformed
 
 private void hostFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hostFieldActionPerformed
@@ -712,13 +716,12 @@ private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event
             showUrlCheckBox.setVisible(false);
             urlField.setVisible(true);
             urlLabel.setVisible(true);
+            setUrlField();
         } else {
             showUrl();
         }
 
-
         setFocus();
-        setUrlField();
         checkValid();
         resize();
     }
