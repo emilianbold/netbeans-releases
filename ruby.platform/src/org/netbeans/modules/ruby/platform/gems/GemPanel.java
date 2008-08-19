@@ -86,6 +86,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
+import static org.netbeans.modules.ruby.platform.gems.GemPanel.TabIndex.*;
+
 public final class GemPanel extends JPanel {
     
     private static final Logger LOGGER = Logger.getLogger(GemPanel.class.getName());
@@ -95,7 +97,14 @@ public final class GemPanel extends JPanel {
 
     /** Preference key for storing lastly selected platform. */
     private static final String LAST_PLATFORM_ID = "gemPanelLastPlatformID"; // NOI18N
-    static enum TabIndex { UPDATED, INSTALLED, NEW; }
+    
+    static enum TabIndex { 
+        UPDATED(0), INSTALLED(1), NEW(2);
+        
+        private final int position;
+        TabIndex(final int position) { this.position = position; }
+        private int getPosition() { return position; }
+    }
     
     private RequestProcessor updateTasksQueue;
 
@@ -166,7 +175,7 @@ public final class GemPanel extends JPanel {
 
         if (availableFilter != null) {
             searchNewText.setText(availableFilter);
-            gemsTab.setSelectedIndex(TabIndex.NEW.ordinal());
+            gemsTab.setSelectedIndex(NEW.getPosition());
         }
 
         PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
@@ -175,6 +184,7 @@ public final class GemPanel extends JPanel {
             }
         });
         platformChanged();
+        gemsTab.setSelectedIndex(INSTALLED.getPosition());
     }
 
     private void platformChanged() {
@@ -188,9 +198,9 @@ public final class GemPanel extends JPanel {
                 gemHomeValue.setForeground(PlatformComponentFactory.INVALID_PLAF_COLOR);
                 gemHomeValue.setText(GemManager.getNotInstalledMessage());
             }
-            updateList(TabIndex.INSTALLED, Collections.<Gem>emptyList());
-            updateList(TabIndex.NEW, Collections.<Gem>emptyList());
-            updateList(TabIndex.UPDATED, Collections.<Gem>emptyList());
+            updateList(INSTALLED, Collections.<Gem>emptyList());
+            updateList(NEW, Collections.<Gem>emptyList());
+            updateList(UPDATED, Collections.<Gem>emptyList());
             setEnabledGUI(false);
             hideProgressBars();
         } else {
@@ -321,9 +331,9 @@ public final class GemPanel extends JPanel {
     }
 
     private void setEnabledGUI(boolean enabled) {
-        setEnabled(TabIndex.INSTALLED, enabled);
-        setEnabled(TabIndex.NEW, enabled);
-        setEnabled(TabIndex.UPDATED, enabled);
+        setEnabled(INSTALLED, enabled);
+        setEnabled(NEW, enabled);
+        setEnabled(UPDATED, enabled);
     }
 
     private void enableReloadGUI() {
@@ -420,9 +430,9 @@ public final class GemPanel extends JPanel {
                 newGems.add(gem);
             }
         }
-        updateList(TabIndex.INSTALLED, installedGems);
-        updateList(TabIndex.NEW, newGems);
-        updateList(TabIndex.UPDATED, updatedGems);
+        updateList(INSTALLED, installedGems);
+        updateList(NEW, newGems);
+        updateList(UPDATED, updatedGems);
     }
     
     private void hideProgressBars() {
@@ -469,7 +479,7 @@ public final class GemPanel extends JPanel {
     }
     
     private void setTabTitle(TabIndex tab, GemListModel model) {
-        String tabTitle = gemsTab.getTitleAt(tab.ordinal());
+        String tabTitle = gemsTab.getTitleAt(tab.getPosition());
         String originalTabTitle = tabTitle;
         int index = tabTitle.lastIndexOf('(');
         if (index != -1) {
@@ -485,7 +495,7 @@ public final class GemPanel extends JPanel {
         }
         tabTitle = tabTitle + "(" + count + ")"; // NOI18N
         if (!tabTitle.equals(originalTabTitle)) {
-            gemsTab.setTitleAt(tab.ordinal(), tabTitle);
+            gemsTab.setTitleAt(tab.getPosition(), tabTitle);
         }
     }
 
@@ -982,9 +992,9 @@ public final class GemPanel extends JPanel {
     private void applyFilter() {
         assert EventQueue.isDispatchThread();
         removeFilterDocumentListeners();
-        applyFilter(TabIndex.NEW, searchNewText, newList, newDesc, installButton);
-        applyFilter(TabIndex.UPDATED, searchUpdatedText, updatedList, updatedDesc, updateButton);
-        applyFilter(TabIndex.INSTALLED, searchInstText, installedList, installedDesc, uninstallButton);
+        applyFilter(NEW, searchNewText, newList, newDesc, installButton);
+        applyFilter(UPDATED, searchUpdatedText, updatedList, updatedDesc, updateButton);
+        applyFilter(INSTALLED, searchInstText, installedList, installedDesc, uninstallButton);
         addFilterDocumentListeners();
     }
 
@@ -1197,9 +1207,9 @@ public final class GemPanel extends JPanel {
         newList.setModel(emptyModel);
         updatedList.setModel(emptyModel);
         installedList.setModel(emptyModel);
-        setTabTitle(TabIndex.INSTALLED, emptyModel);
-        setTabTitle(TabIndex.NEW, emptyModel);
-        setTabTitle(TabIndex.UPDATED, emptyModel);
+        setTabTitle(INSTALLED, emptyModel);
+        setTabTitle(NEW, emptyModel);
+        setTabTitle(UPDATED, emptyModel);
         final GemManager gemManager = getGemManager();
         Runnable updateTask = new Runnable() {
             public void run() {
