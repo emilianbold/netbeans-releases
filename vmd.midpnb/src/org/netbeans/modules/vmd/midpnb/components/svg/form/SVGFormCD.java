@@ -38,8 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.vmd.midpnb.components.svg;
+package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
+import org.netbeans.modules.vmd.midpnb.components.svg.*;
 import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.*;
@@ -48,10 +49,15 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
+import org.netbeans.modules.vmd.api.flow.FlowPinOrderPresenter;
+import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
@@ -73,16 +79,6 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditor
 import org.netbeans.modules.vmd.midpnb.actions.EditSVGFileAction;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.SVGImageAcceptTrensferableKindPresenter;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGCheckBoxCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComboBoxCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormFileChangePresneter;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGLabelCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGRadioButtonCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGSliderCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGSpinnerCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGTextFieldCD;
 import org.netbeans.modules.vmd.midpnb.general.SVGFileAcceptPresenter;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.SVGFormEditorElement;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGPlayerDisplayPresenter;
@@ -106,6 +102,8 @@ public class SVGFormCD extends ComponentDescriptor {
     public static final String PROP_RESET_ANIMATION_WHEN_STOPPED = "resetAnimationWhenStopped"; //NOI18N
 
     public static final String PROP_OLD_START_ANIM_IMMEDIATELY = "startAnimationImmideately"; //NOI18N
+    
+     private static final Comparator NAME_COMPERATOR = new EventComperator();
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -191,7 +189,9 @@ public class SVGFormCD extends ComponentDescriptor {
                 //actions
                 ActionsPresenter.create(20, SystemAction.get(EditSVGFileAction.class)),
                 //other
-                new SVGFormFileChangePresneter()
+                new SVGFormFileChangePresneter(),
+                //flow
+                new SVGButtonEventSourceOrder()        
                 );
     }
     
@@ -237,5 +237,45 @@ public class SVGFormCD extends ComponentDescriptor {
 
     }
     
+    class SVGButtonEventSourceOrder extends FlowPinOrderPresenter {
+        
+        static final String CATEGORY_ID = "SVGButton"; //NOI18N
+        
+        
+        @Override
+        public String getCategoryID() {
+            return CATEGORY_ID;
+        }
+
+        @Override
+        public String getCategoryDisplayName() {
+            return null; 
+        }
+
+        @Override
+        public List<FlowPinDescriptor> sortCategory(final ArrayList<FlowPinDescriptor> descriptors) {
+            
+            getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                public void run() {
+                    Collections.sort(descriptors, NAME_COMPERATOR);
+                }
+            });
+            
+            return descriptors;
+        }
+        
+    }
+    
+    private static  class EventComperator implements Comparator<FlowPinDescriptor> {
+
+        public int compare(FlowPinDescriptor d1, FlowPinDescriptor d2) {
+            String name1 = InfoPresenter.getDisplayName(d1.getRepresentedComponent());
+            String name2 = InfoPresenter.getDisplayName(d2.getRepresentedComponent());
+            
+            return name1.compareTo(name2);
+        }
+   
+     }
     
 }
