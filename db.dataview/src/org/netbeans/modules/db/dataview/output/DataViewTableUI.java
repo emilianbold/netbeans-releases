@@ -708,7 +708,7 @@ class DataViewTableUI extends JTable {
         public void valueChanged(ListSelectionEvent e) {
             if (e.getSource() == table.getSelectionModel() && table.getRowSelectionAllowed()) {
                 int first = e.getFirstIndex();
-                if (first >= 0) {
+                if (first >= 0 && tablePanel.isEditable()) {
                     tablePanel.enableDeleteBtn(true);
                 } else {
                     tablePanel.enableDeleteBtn(false);
