@@ -86,11 +86,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-/**
- * @todo Use a table instead of a list for the gem lists, use checkboxes to
- *   choose items to be uninstalled, and show the installation date (based on
- *   file timestamps)
- */
 public final class GemPanel extends JPanel {
     
     private static final Logger LOGGER = Logger.getLogger(GemPanel.class.getName());
