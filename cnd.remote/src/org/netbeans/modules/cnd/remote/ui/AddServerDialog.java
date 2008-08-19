@@ -67,7 +67,7 @@ public class AddServerDialog extends JPanel implements DocumentListener {
     }
     
     public boolean createNewRecord() {
-        DialogDescriptor dd = new DialogDescriptor((Object) this, NbBundle.getMessage(EditServerListDialog.class, "TITLE_AddNewServer"), true, 
+        DialogDescriptor dd = new DialogDescriptor((Object) this, NbBundle.getMessage(AddServerDialog.class, "TITLE_AddNewServer"), true, 
                     new Object[] { btnOK, DialogDescriptor.CANCEL_OPTION},
                     btnOK, DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
