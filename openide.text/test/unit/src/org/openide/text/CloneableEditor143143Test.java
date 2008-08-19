@@ -119,7 +119,8 @@ implements CloneableEditorSupport.Env {
         //Start asynchronous loading, it contains wait so document
         //loading is blocked till notifyAll below.
         Task prepare = support.prepareDocument();
-        
+        Thread.sleep(1000);
+
         UndoRedo u = support.getUndoRedo();
         //Check that following methods will return even if document is being loaded
         u.getUndoPresentationName();
