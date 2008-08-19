@@ -82,7 +82,7 @@ public class VersioningWindow extends PerformanceTestCase {
     
     @Override
     protected void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window") + '|' + 
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window") + '|' +
                Bundle.getStringTrimmed("org.netbeans.modules.versioning.Bundle","Menu/Window/Versioning") + '|' +
                Bundle.getStringTrimmed("org.netbeans.modules.versioning.system.cvss.ui.actions.status.Bundle", "BK0001"); // Window | Versioning | CVS
     }

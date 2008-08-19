@@ -59,7 +59,7 @@ import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSuppor
 import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;

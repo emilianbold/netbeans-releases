@@ -77,9 +77,9 @@ public class ReformatterImpl {
     
     LinkedList<Diff> reformat(){
         // cache tab size. it is expensive operation
-        tabSize = codeStyle.getGlobalTabSize();
+        tabSize = codeStyle.getTabSize();
         if (tabSize <= 1) {
-            tabSize = 4;
+            tabSize = 8;
         }
         ts.moveStart();
         Token<CppTokenId> previous = ts.lookPrevious();

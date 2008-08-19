@@ -84,11 +84,13 @@ public class FindInSourceEditor extends PerformanceTestCase {
     
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + Bundle.getStringTrimmed("org.openide.actions.Bundle","Find"); //Edit|Find...
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Edit") + "|" + Bundle.getStringTrimmed("org.openide.actions.Bundle","Find"); //Edit|Find...
         TITLE = Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "find");
+        //TITLE = "Find in Project";
         
         // open a java file in the editor
         editor = CommonUtilities.openFile("jEdit","bsh","Parser.java", true);
+        editor.clickMouse();
     }
     
     public void prepare() {
@@ -96,7 +98,7 @@ public class FindInSourceEditor extends PerformanceTestCase {
    }
     
     public ComponentOperator open(){
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU);
         return new NbDialogOperator(TITLE);
     }
 

@@ -380,6 +380,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ143226.cc", 3, 18, "IZ143226.cc", 2, 5);
     }
 
+    public void testIZ144154() throws Exception {
+        // IZ#144154 : nested typedef "type" is unresolved in Boost
+        performTest("IZ144154.cc", 24, 49, "IZ144154.cc", 12, 9);
+        performTest("IZ144154.cc", 57, 52, "IZ144154.cc", 31, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
