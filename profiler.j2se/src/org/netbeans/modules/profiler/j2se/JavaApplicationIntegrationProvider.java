@@ -46,6 +46,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import org.netbeans.modules.profiler.attach.providers.AbstractIntegrationProvider;
 import org.netbeans.modules.profiler.attach.providers.IntegrationCategorizer;
+import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;
 import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
 import org.netbeans.modules.profiler.attach.wizard.steps.NullWizardStep;
 
@@ -113,6 +114,13 @@ public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvi
     }
 
     public void modify(AttachSettings attachSettings) {
+    }
+
+    public boolean supportsJVM(TargetPlatformEnum jvm, AttachSettings attachSettings) {
+        if (attachSettings.isRemote() && attachSettings.getHostOS() == IntegrationUtils.PLATFORM_LINUX_OS && jvm.equals(TargetPlatformEnum.JDK_CVM)) {
+            return true;
+        }
+        return super.supportsJVM(jvm,attachSettings);
     }
 
     // <editor-fold defaultstate="collapsed" desc="WizardIntegrationProvider implementation">
