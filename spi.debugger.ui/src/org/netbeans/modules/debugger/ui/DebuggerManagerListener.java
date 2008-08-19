@@ -71,13 +71,13 @@ import org.openide.windows.WindowManager;
  * @author Jan Jancura
  */
 public class DebuggerManagerListener extends DebuggerManagerAdapter {
-    
+
     private List<DebuggerEngine> openedGroups = new LinkedList<DebuggerEngine>();
     private Map<DebuggerEngine, List<? extends Component>> openedComponents = new HashMap<DebuggerEngine, List<? extends Component>>();
     private Set<Reference<Component>> componentsInitiallyOpened = new HashSet<Reference<Component>>();
-    
+
     private static final List<Component> OPENED_COMPONENTS = new LinkedList<Component>();
-    
+
     @Override
     public synchronized void engineAdded (DebuggerEngine engine) {
         if (openedComponents.containsKey(engine) || openedGroups.contains(engine)) {
@@ -146,8 +146,11 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
 
     private void fillOpenedDebuggerComponents(Set<Reference<Component>> componentsInitiallyOpened) {
         // For simplicity, add all opened components. These will not be closed when finishing the debugging session.
-        for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
-            componentsInitiallyOpened.add(new WeakReference<Component>(tc));
+        TopComponent.Registry registry = TopComponent.getRegistry();
+        synchronized (registry) {
+            for (TopComponent tc : registry.getOpened()) {
+                componentsInitiallyOpened.add(new WeakReference<Component>(tc));
+            }
         }
     }
 
@@ -222,7 +225,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             });
         }
     }
-    
+
     static void closeDebuggerUI() {
         /*
         java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.jpda").fine("CLOSING TopComponentGroup...");
@@ -242,7 +245,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         }
         //java.util.logging.Logger.getLogger("org.netbeans.modules.debugger.jpda").fine("TopComponentGroup closed.");
     }
-    
+
     private static void doCloseDebuggerUI() {
         TopComponentGroup group = WindowManager.getDefault ().
                 findTopComponentGroup ("debugger"); // NOI18N

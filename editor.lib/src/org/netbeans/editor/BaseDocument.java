@@ -495,6 +495,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 //        System.out.println("~~~ " + s2s(this) + " created for '" + mimeType + "'");
 //
         setDocumentProperties(createDocumentProperties(getDocumentProperties()));
+        super.addDocumentListener(org.netbeans.lib.editor.util.swing.DocumentUtilities.initPriorityListening(this));
 
         putProperty(GapStart.class, getDocumentContent());
         putProperty(CharSequence.class, getDocumentContent().createCharSequenceView());
@@ -530,8 +531,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                               };
         findSupportChange(null); // update doc by find settings
 
-        // start listening
-        super.addDocumentListener(org.netbeans.lib.editor.util.swing.DocumentUtilities.initPriorityListening(this));
         FindSupport.getFindSupport().addPropertyChangeListener(findSupportListener);
         findSupportChange(null); // update doc by find settings
 
@@ -2121,7 +2120,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return super.toString() +
             ", mimeType = '" + mimeType + "'" + //NOI18N
             ", kitClass = " + deprecatedKitClass + // NOI18N
-            ", lenght = " + getLength(); // NOI18N
+            ", length = " + getLength(); // NOI18N
     }
 
     /** Detailed debug info about the document */

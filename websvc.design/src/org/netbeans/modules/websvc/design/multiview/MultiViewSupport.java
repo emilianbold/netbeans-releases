@@ -316,12 +316,16 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      */
     private void initWsdlDO(Service service) {
 
+        if(service == null){
+            return;
+        }
         DataObject dataObj = null;  // DataObject created from FileObject of WSDL file - null if WSDL don't exist
         FileObject wsdlFile = null;        // FileObject of WSDL file
-        String localWSDLFilePath = getService().getLocalWsdlFile();      // Local path to wsdl file,only part of path for URL wsdl
-        String serviceName = getService().getName();                     // Web service name
         String tempdir = System.getProperty("java.io.tmpdir");      // Tempdir
         FileObject primaryFile = getImplementationBean();
+        String localWSDLFilePath = service.getLocalWsdlFile();      // Local path to wsdl file,only part of path for URL wsdl
+        String serviceName = service.getName();                     // Web service name
+        
         // Detection if this is WSDL or Java case - later sets this propery null
         if (!(localWSDLFilePath == null)) {
             // Process of obtaining proper path to wsdl through JAXWSSupport and its methods,

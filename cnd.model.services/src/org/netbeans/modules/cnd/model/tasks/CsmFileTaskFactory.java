@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *  CsmFile analogue of CsmFileTaskFactory
@@ -66,7 +67,7 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class CsmFileTaskFactory {
     private final Map<FileObject, CsmFile> fobj2csm = new HashMap<FileObject, CsmFile>();
-    private final Map<CsmFile, PhaseRunner> csm2task = new HashMap<CsmFile, PhaseRunner>();
+    private final Map<CsmFile, Pair> csm2task = new HashMap<CsmFile, Pair>();
     private final ProgressListener progressListener = new ProgressListener();
     private final ModelListener modelListener = new ModelListener();
 
@@ -96,8 +97,8 @@ public abstract class CsmFileTaskFactory {
     }
 
     private void stateChangedImpl(List<FileObject> currentFiles) {
-        Map<CsmFile, PhaseRunner> toRemove = new HashMap<CsmFile, PhaseRunner>();
-        Map<CsmFile, PhaseRunner> toAdd = new HashMap<CsmFile, PhaseRunner>();
+        Map<CsmFile, Pair> toRemove = new HashMap<CsmFile, Pair>();
+        Map<CsmFile, Pair> toAdd = new HashMap<CsmFile, Pair>();
 
         synchronized (this) {
             List<FileObject> addedFiles = new ArrayList<FileObject>(currentFiles);
@@ -130,24 +131,30 @@ public abstract class CsmFileTaskFactory {
 
                 if (csmFile != null) {
                     PhaseRunner task = createTask(fileObject);
-
-                    toAdd.put(csmFile, task);
+                    Pair pair = new Pair(task);
+                    toAdd.put(csmFile, pair);
 
                     fobj2csm.put(fileObject, csmFile);
-                    csm2task.put(csmFile, task);
+                    csm2task.put(csmFile, pair);
                 }
             }
         }
 
 
-        for (Entry<CsmFile, PhaseRunner> e : toRemove.entrySet()) {
+        for (Entry<CsmFile, Pair> e : toRemove.entrySet()) {
             if (OpenedEditors.SHOW_TIME) System.err.println("CFTF: removing " + e.getKey().getAbsolutePath());
             if (e!=null && e.getValue()!=null ) {
+                PhaseRunner runner = e.getValue().runner;
+                Task task = e.getValue().task;
+                runner.cancel();
+                if (task != null) {
+                    task.cancel();
+                }
                 post(e.getValue(), e.getKey(), PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
             }
         }
 
-        for (Entry<CsmFile, PhaseRunner> e : toAdd.entrySet()) {
+        for (Entry<CsmFile, Pair> e : toAdd.entrySet()) {
             if (OpenedEditors.SHOW_TIME) System.err.println("CFTF: adding " + e.getKey().getAbsolutePath());
             post(e.getValue(), e.getKey(), e.getKey().isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT, DELAY);
         }
@@ -167,24 +174,28 @@ public abstract class CsmFileTaskFactory {
     }
     
     private final void runTask(CsmFile file, PhaseRunner.Phase phase, int delay) {
-        PhaseRunner pr = csm2task.get(file);
+        Pair pr = csm2task.get(file);
         
         if (pr!=null) {
-            if (!pr.isValid()) {
+            pr.runner.cancel();
+            if (pr.task != null) {
+                pr.task.cancel();
+            }
+            if (!pr.runner.isValid()) {
                 //if (OpenedEditors.SHOW_TIME) System.err.println("CsmFileTaskFactory: invalid task detected: " + pr.getClass().toString());
                 FileObject fo = CsmUtilities.getFileObject(file);
-                pr = createTask(fo);
-                assert pr.isValid();
+                PhaseRunner runner = createTask(fo);
+                assert runner.isValid();
+                pr = new Pair(runner);
                 //if (OpenedEditors.SHOW_TIME) System.err.println("CsmFileTaskFactory: new task created: " + pr.getClass().toString());
                 csm2task.put(file, pr);
             }
-            pr.cancel();
             post(pr, file, phase, delay);
         }
     }
     
-    private final void post(PhaseRunner pr, CsmFile file, PhaseRunner.Phase phase, int delay) {
-        WORKER.post(new CsmSafeRunnable( getRunnable(pr,phase), file), delay );
+    private final void post(Pair pr, CsmFile file, PhaseRunner.Phase phase, int delay) {
+        pr.task = WORKER.post(new CsmSafeRunnable( getRunnable(pr.runner, phase), file), delay );
     }
     
     private static RequestProcessor WORKER = new RequestProcessor("CsmFileTaskFactory", 1); //NOI18N
@@ -226,7 +237,7 @@ public abstract class CsmFileTaskFactory {
                 if (csm2task.get(f) != null) {
                     synchronized (this) {
                         runTask(f, PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
-                        csm2task.put(f, lazyRunner());
+                        csm2task.put(f, new Pair(lazyRunner()));
                     }
                 }
             }
@@ -248,7 +259,14 @@ public abstract class CsmFileTaskFactory {
         public abstract void run(Phase phase);
         public abstract boolean isValid();
         public abstract void cancel();
-
+    }
+    
+    private static final class Pair {
+        private final PhaseRunner runner;
+        private Task task;
+        private Pair(PhaseRunner runner) {
+            this.runner = runner;
+        }
     }
     
     private static final Runnable getRunnable(final PhaseRunner pr, final PhaseRunner.Phase phase) {

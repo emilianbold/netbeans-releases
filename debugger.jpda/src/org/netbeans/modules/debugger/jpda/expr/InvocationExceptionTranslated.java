@@ -93,8 +93,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     );
                 message = sr != null ? sr.value() : ""; // NOI18N
             } catch (InvalidExpressionException ex) {
-                Exceptions.printStackTrace(ex);
-                message = "";
+                return ex.getMessage();
             }
         }
         if (invocationMessage != null) {
@@ -117,8 +116,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     );
                 localizedMessage = sr == null ? "" : sr.value(); // NOI18N
             } catch (InvalidExpressionException ex) {
-                Exceptions.printStackTrace(ex);
-                localizedMessage = "";
+                return ex.getLocalizedMessage();
             }
         }
         if (invocationMessage != null) {
@@ -152,8 +150,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     cause = this;
                 }
             } catch (InvalidExpressionException ex) {
-                Exceptions.printStackTrace(ex);
-                cause = this;
+                return null;
             }
         }
         return (cause == this ? null : cause);
@@ -279,8 +276,8 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     stackTrace[i] = getStackTraceElement((ObjectReference) ar.getValue(i));
                 }
             } catch (InvalidExpressionException ex) {
-                Exceptions.printStackTrace(ex);
-                stackTrace = new StackTraceElement[0];
+                // Leave stackTrace unset to reload next time
+                return new StackTraceElement[0];
             }
         }
         return stackTrace;
@@ -302,8 +299,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 );
             declaringClass = sr.value();
         } catch (InvalidExpressionException ex) {
-            Exceptions.printStackTrace(ex);
-            declaringClass = "";
+            declaringClass = ex.getLocalizedMessage();
         }
         getMethod = ((ClassType) stElement.type ()).
                     concreteMethodByName ("getMethodName", "()Ljava/lang/String;");  // NOI18N
@@ -315,8 +311,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 );
             methodName = sr.value();
         } catch (InvalidExpressionException ex) {
-            Exceptions.printStackTrace(ex);
-            methodName = "";
+            methodName = ex.getLocalizedMessage();
         }
         getMethod = ((ClassType) stElement.type ()).
                     concreteMethodByName ("getFileName", "()Ljava/lang/String;");  // NOI18N
@@ -328,8 +323,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 );
             fileName = sr.value();
         } catch (InvalidExpressionException ex) {
-            Exceptions.printStackTrace(ex);
-            fileName = "";
+            fileName = ex.getLocalizedMessage();
         }
         getMethod = ((ClassType) stElement.type ()).
                     concreteMethodByName ("getLineNumber", "()I");  // NOI18N
@@ -341,7 +335,6 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 );
             lineNumber = iv.value();
         } catch (InvalidExpressionException ex) {
-            Exceptions.printStackTrace(ex);
             lineNumber = 0;
         }
         return new StackTraceElement(declaringClass, methodName, fileName, lineNumber);

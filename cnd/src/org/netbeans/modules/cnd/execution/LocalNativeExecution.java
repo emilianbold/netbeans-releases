@@ -58,9 +58,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.modules.InstalledFileLocator;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
 
 /**
@@ -70,14 +67,14 @@ public class LocalNativeExecution extends NativeExecution {
     /** Script file that merges stdout and stderr on Unix */
     private static File stdOutErrFile = null;
     private static boolean hasWarned = false;
-    
+
     private File runDirFile;
     private static ResourceBundle bundle = NbBundle.getBundle(LocalNativeExecution.class);
     private OutputReaderThread outputReaderThread = null; // Thread for running process
     private InputReaderThread inputReaderThread = null; // Thread for running process
     private Process executionProcess = null;
     private PrintWriter out;
-    
+
     /**
      * Execute an executable, a makefile, or a script
      * @param runDir absolute path to directory from where the command should be executed
@@ -100,42 +97,22 @@ public class LocalNativeExecution extends NativeExecution {
         String commandInterpreter;
         String commandLine;
         int rc = -1;
-        
+
         this.runDirFile = runDirFile;
         this.out = out;
-        
+
         if (!runDirFile.exists() || !runDirFile.isDirectory()) {
             String msg = MessageFormat.format(getString("NOT_A_VALID_BUILD_DIRECTORY"), new Object[] {runDirFile.getPath()}); // NOI18N
             NotifyDescriptor notifyDescriptor = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(notifyDescriptor);
             return -1;
         }
-        
+
         commandInterpreter = getStdOutErrFile().getPath();
         commandLine = executable + " " + arguments; // NOI18N
-        
+
         // Start the build process and a build reader.
         NbProcessDescriptor desc = new NbProcessDescriptor(commandInterpreter, commandLine);
-        
-        // Updating environment variables
-        List<String> envpList = new ArrayList<String>();
-        if (envp != null) {
-            envpList.addAll(Arrays.asList(envp));
-        }
-        envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
-        
-        if (unbuffer) {
-            String unbufferPath = getUnbufferPath();
-            if (unbufferPath != null) {
-                if (Utilities.isMac()) {
-                    envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
-                    envpList.add("DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
-                } else {
-                    envpList.add("LD_PRELOAD=" + unbufferPath); // NOI18N
-                }
-            }
-        }
-        envp = envpList.toArray(new String[envpList.size()]);
 
         executionProcess = desc.exec(null, envp, true, runDirFile);
         outputReaderThread = new OutputReaderThread(executionProcess.getErrorStream(), out);
@@ -163,10 +140,10 @@ public class LocalNativeExecution extends NativeExecution {
         } catch (InterruptedException ex2) {
             // On Windows join() throws InterruptedException if process was terminated/interrupted
         }
-        
+
         return rc;
     }
-    
+
     public void stop() {
         /*
         if (executionThread != null) {
@@ -178,28 +155,20 @@ public class LocalNativeExecution extends NativeExecution {
 //            executionProcess.destroy();
 //        }
     }
-    
-    private String getUnbufferPath() {
-        String name = "bin/unbuffer-" + getOsName() + "-" + getOsArch() + "." + getExtension(); // NOI18N
-        File file = InstalledFileLocator.getDefault().locate(name, null, false);
+
+    @Override
+    protected String getUnbufferPath(int platformType) {
+        String unbufferName = getUnbufferName(platformType);
+        if (unbufferName == null) {
+            return null;
+        }
+        File file = InstalledFileLocator.getDefault().locate("bin/" + unbufferName, null, false);
         if (file != null && file.exists()) {
             return fixPath(file.getAbsolutePath());
         } else {
+            log.warning("unbuffer: " + unbufferName + " not found");
             return null;
         }
-    }
-
-    private static String getOsArch() {
-        String orig = System.getProperty("os.arch"); // NOI18N
-        return (orig.equals("i386") || orig.equals("i686")) ? "x86" : orig; // NOI18N
-    }
-
-    private static String getOsName() {
-        return System.getProperty("os.name").replace(" ", "_"); // NOI18N
-    }
-
-    private static String getExtension() {
-        return Utilities.isWindows() ? "dll" : Utilities.getOperatingSystem() == Utilities.OS_MAC ? "dylib" : "so"; // NOI18N
     }
 
     private String fixPath(String path) {
@@ -214,22 +183,22 @@ public class LocalNativeExecution extends NativeExecution {
         }*/
         return path;
     }
-    
-    
+
+
     /** Helper class to read the input from the build */
     private static final class OutputReaderThread  extends Thread {
-        
+
         /** This is all output, not just stderr */
         private Reader err;
         private Writer output;
         private boolean cancel = false;
-        
+
         public OutputReaderThread(InputStream err, Writer output) {
             this.err = new InputStreamReader(err);
             this.output = output;
             setName("OutputReaderThread"); // NOI18N - Note NetBeans doesn't xlate "IDE Main"
         }
-        
+
         /**
          *  Reader proc to read the combined stdout and stderr from the build process.
          *  The output comes in on a single descriptor because the build process is started
@@ -241,41 +210,41 @@ public class LocalNativeExecution extends NativeExecution {
         public void run() {
             try {
                 int read;
-                
+
                 while ((read = err.read()) != (-1)) {
-                    if (cancel) { // 131739 
+                    if (cancel) { // 131739
                         return;
                     }
                     if (read == 10)
                         output.write("\n"); // NOI18N
                     else
                         output.write((char) read);
-                    //output.flush(); // 135380 
+                    //output.flush(); // 135380
                 }
                 output.flush();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
-        
+
         public void cancel() {
             cancel = true;
         }
     }
-    
+
     /** Helper class to read the input from the build */
     private static final class InputReaderThread extends Thread {
-        
+
         /** This is all output, not just stderr */
         private Reader in;
         private OutputStream pout;
-        
+
         public InputReaderThread(OutputStream pout, Reader in) {
             this.pout = pout;
             this.in = in;
             setName("inputReaderThread"); // NOI18N - Note NetBeans doesn't xlate "IDE Main"
         }
-        
+
         /**
          *  Reader proc to read input from Output2's input textfield and send it
          *  to the running process.
@@ -283,7 +252,7 @@ public class LocalNativeExecution extends NativeExecution {
         @Override
         public void run() {
             int ch;
-            
+
             try {
                 while ((ch = in.read()) != (-1)) {
                     pout.write((char) ch);
@@ -301,8 +270,8 @@ public class LocalNativeExecution extends NativeExecution {
             }
         }
     }
-    
-    
+
+
     /**
      * Find the script stdouterr.sh somewhere in the installation tree. It is needed to merge stdout and stderr
      * for for instance makefile execution.
@@ -310,13 +279,13 @@ public class LocalNativeExecution extends NativeExecution {
     public static File getStdOutErrFile() {
         if (stdOutErrFile == null) {
             String stderrCmd;
-            
+
             if( Utilities.isUnix()) {
                 stderrCmd = "bin/stdouterr.sh"; // NOI18N
             } else {
                 stderrCmd = "bin\\stdouterr.bat";   // NOI18N
             }
-            
+
             stdOutErrFile = InstalledFileLocator.getDefault().locate(stderrCmd, null, false);
             if (stdOutErrFile == null && !hasWarned) {
                 String msg = MessageFormat.format(getString("CANNOT_FIND_SCRIPT"), new Object[] {stderrCmd});
@@ -327,7 +296,7 @@ public class LocalNativeExecution extends NativeExecution {
         }
         return stdOutErrFile;
     }
-    
+
     private static String getString(String prop) {
         return bundle.getString(prop);
     }
