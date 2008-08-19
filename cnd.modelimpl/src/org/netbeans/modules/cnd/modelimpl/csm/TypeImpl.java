@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeClassifierProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -65,7 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  *
  * @author Vladimir Kvashin
  */
-public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeClassifierProvider {
+public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierProvider, SafeTemplateBasedProvider {
 
     private final byte pointerDepth;
     private final boolean reference;
@@ -73,7 +75,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     private final boolean _const;
     CharSequence classifierText;
 
-    final List<CsmType> instantiationParams = new ArrayList();
+    final List<CsmType> instantiationParams = new ArrayList<CsmType>();
 
     // FIX for lazy resolver calls
     CharSequence[] qname = null;
@@ -182,9 +184,22 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     }
 
     public boolean isTemplateBased() {
+        return isTemplateBased(new HashSet<CsmType>());
+    }
+
+    public boolean isTemplateBased(Set<CsmType> visited) {
         CsmClassifier classifier = getClassifier();
         if (CsmKindUtilities.isTypedef(classifier)) {
-            return ((CsmTypedef)classifier).getType().isTemplateBased();
+            if (visited.contains(this)) {
+                return false;
+            }
+            visited.add(this);
+            CsmType type = ((CsmTypedef)classifier).getType();
+            if (type instanceof SafeTemplateBasedProvider) {
+                return ((SafeTemplateBasedProvider)type).isTemplateBased(visited);
+            } else {
+                return type.isTemplateBased();
+            }
         }
         return false;
     }
