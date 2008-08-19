@@ -342,6 +342,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     public Action[] getActions(Object node) throws UnknownTypeException {
         return new Action[]{};
     }
+    
     private static final MethodColumn methodColumn = new MethodColumn();
     private static final SentColumn sentColumn = new SentColumn();
     private static final ResponseColumn resColumn = new ResponseColumn();
@@ -374,18 +375,12 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
             return String.class;
         }
 
-//
-//        private static final HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
-//        @Override
-//        public int getColumnWidth() {
-//            return httpMonitorPreferences.getMethodColumnWidth();
-//        }
-//
-//        @Override
-//        public void setColumnWidth(int newColumnWidth) {
-//            httpMonitorPreferences.setMethodColumnWidth(newColumnWidth);
-//        }
+        private static final HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
+        @Override
 
+        public int getColumnWidth () {
+            return properties.getInt (getID () + ".columnWidth", HttpMonitorPreferences.DEFAULT_METHOD_COLUMN_WIDTH);
+        }
 
     }
 
