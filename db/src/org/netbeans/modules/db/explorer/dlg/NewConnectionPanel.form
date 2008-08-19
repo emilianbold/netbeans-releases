@@ -67,7 +67,7 @@
                       <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="showUrlCheckBox" max="32767" attributes="1"/>
+                      <Component id="showUrlCheckBox" pref="121" max="32767" attributes="1"/>
                       <EmptySpace min="-2" pref="454" max="-2" attributes="0"/>
                   </Group>
               </Group>
