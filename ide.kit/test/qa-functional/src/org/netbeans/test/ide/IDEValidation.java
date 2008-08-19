@@ -186,6 +186,11 @@ public class IDEValidation extends JellyTestCase {
     private static final String SAMPLE2_CLASS_NAME = "SampleClass2"; // NOI18N
     // name of sample file 2
     private static final String SAMPLE2_FILE_NAME = SAMPLE2_CLASS_NAME+".java"; // NOI18N
+    
+    
+    public void testWriteAccess() throws Exception {
+        CountingSecurityManager.assertCounts("No writes during startup", 0);
+    }
 
     /** Test creation of java project. 
      * - open New Project wizard from main menu (File|New Project)

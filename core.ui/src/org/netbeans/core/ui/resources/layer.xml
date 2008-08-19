@@ -381,6 +381,8 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/session.gif"/>
             <attr name="helpID" stringvalue="org.netbeans.core.ControlPanelNode"/>
         </folder> <!-- Services -->
+        <folder name="Roots">
+        </folder>
     </folder>  <!-- UI -->
 
     <folder name="Windows2">
