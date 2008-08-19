@@ -70,7 +70,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
             "http://serverplugins.netbeans.org/glassfishv3/zipfilenamefornb65.txt"; // NOI18N
     private static final String V3_DOWNLOAD_PREFIX = "http://java.net/download/"; // NOI18N
     private static final String V3_DEFAULT_DOWNLOAD_URL = 
-            "http://java.net/download/glassfish/v3/promoted/glassfish-v3-prelude-b18.zip"; // NOI18N
+            "http://java.net/download/glassfish/v3/promoted/glassfish-v3-plugin.zip"; // NOI18N
     
     private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     private Retriever retriever;
