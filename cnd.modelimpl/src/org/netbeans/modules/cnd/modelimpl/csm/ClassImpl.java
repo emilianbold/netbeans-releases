@@ -105,7 +105,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     case CPPTokenTypes.LITERAL_template:
                         templateDescriptor = new TemplateDescriptor(
                                 TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this),
-                                '<' + TemplateUtils.getClassSpecializationSuffix(token) + '>');
+                                '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>');
                         break;
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
                         inheritances.add(new InheritanceImpl(token, getContainingFile(), ClassImpl.this));
@@ -513,13 +513,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 	kind = findKind(ast);
     }
 
-    @Override
     protected void init(CsmScope scope, AST ast) {
-	super.init(scope, ast);
+	initScope(scope, ast);
+        initQualifiedName(scope, ast);
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        new ClassAstRenderer().render(ast);
+        render(ast);
         leftBracketPos = initLeftBracketPos(ast);
         register(getScope(), false);
+    }
+
+    protected void render(AST ast) {
+        new ClassAstRenderer().render(ast);
+        leftBracketPos = initLeftBracketPos(ast);
     }
 
     public static ClassImpl create(AST ast, CsmScope scope, CsmFile file) {
