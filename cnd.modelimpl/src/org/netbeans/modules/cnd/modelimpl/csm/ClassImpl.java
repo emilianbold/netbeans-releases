@@ -105,7 +105,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     case CPPTokenTypes.LITERAL_template:
                         templateDescriptor = new TemplateDescriptor(
                                 TemplateUtils.getTemplateParameters(token, ClassImpl.this.getContainingFile(), ClassImpl.this),
-                                '<' + TemplateUtils.getClassSpecializationSuffix(token) + '>');
+                                '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>');
                         break;
                     case CPPTokenTypes.CSM_BASE_SPECIFIER:
                         inheritances.add(new InheritanceImpl(token, getContainingFile(), ClassImpl.this));

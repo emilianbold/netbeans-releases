@@ -211,10 +211,49 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     public String getCanonicalText() {
         CharSequence text = getClassifierText();
         if (isInstantiationOrSpecialization()) {
-            text = text.toString() + getInstantiationText(this);
+            text = text.toString() + getInstantiationCanonicalText();
         }
 	return decorateText(text, this, true, null).toString();
     }
+    
+    private CharSequence getInstantiationCanonicalText() {
+        StringBuilder sb = new StringBuilder();
+        if ( ! instantiationParams.isEmpty()) {
+            sb.append('<');
+            boolean first = true;
+            for (CsmType param : instantiationParams) {
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append(',');
+                }
+                sb.append(getCanonicalText(param));
+            }
+            sb.append('>');
+        }
+	return sb;
+    }
+    
+    private CharSequence getCanonicalText(CsmType type) {
+        CharSequence canonicalText = null;
+        if (type instanceof CsmTemplateParameterType) {
+            CsmTemplateParameterType parType = (CsmTemplateParameterType) type;
+            CsmTemplateParameter par = parType.getParameter();
+            if (CsmKindUtilities.isClassifierBasedTemplateParameter(par)) {
+                CsmType defType = (CsmType) par.getDefaultValue();
+                if (defType == null) {
+                    canonicalText = TemplateUtils.TYPENAME_STRING;
+                } else {
+                    canonicalText = getCanonicalText(defType);
+                }
+            }
+        }
+        if (canonicalText == null) {
+            canonicalText = type.getCanonicalText().toString();
+        }
+        return canonicalText;
+    }
+    
 
     // package
     CharSequence getOwnText() {
@@ -353,7 +392,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
                 if (i > 0) {
                     sb.append(',');
                 }
-                sb.append(type.getCanonicalText());
+                CharSequence canonicalText = getCanonicalText(type);
+                sb.append(canonicalText);
             }
             sb.append('>');
             specializationQname[last] = sb.toString();

@@ -74,7 +74,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         
 	AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
 	assert qIdToken != null;
-	qualifiedNameSuffix = TemplateUtils.getSpecializationSuffix(qIdToken);
+	qualifiedNameSuffix = TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters());
         initQualifiedName(scope, ast);
         
         register(getScope(), false);
