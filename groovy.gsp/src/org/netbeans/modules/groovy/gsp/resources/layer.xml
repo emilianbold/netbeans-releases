@@ -133,7 +133,6 @@
                     </folder>
                 </folder>
 
-                <file name="Settings.settings" url="GspOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.gsp.editor.GspKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit,org.netbeans.modules.groovy.gsp.editor.GspKit"/>
