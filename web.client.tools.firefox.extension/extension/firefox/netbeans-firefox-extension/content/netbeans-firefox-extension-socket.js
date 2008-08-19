@@ -152,7 +152,7 @@
                         // extract the command
                         var command = this.data.substr(0, end_pt);
                         // send the command to the Debugger
-                        listener.onDBGPCommand(command);
+                        listener.onDBGPCommand(NetBeans.Utils.convertUTF8ToUnicode(command));
                     }
                     // keep the remaining input
                     this.data = this.data.substr(end_pt + 1);
