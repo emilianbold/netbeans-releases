@@ -205,13 +205,27 @@ public abstract class BasicCompilerConfiguration {
 	this.commandLineConfiguration = commandLineConfiguration;
     }
 
-    public String getOutputFile(String filePath, MakeConfiguration conf, boolean expanded) {
+    public String getOutputFile(Item item, MakeConfiguration conf, boolean expanded) {
+        String filePath = item.getPath(true);
 	String fileName = filePath;
-	int i = fileName.lastIndexOf("."); // NOI18N
-	if (i >= 0)
-	    fileName = fileName.substring(0, i) + ".o"; // NOI18N
-	else
-	    fileName = fileName + ".o"; // NOI18N
+        String suffix = ".o"; // NOI18N
+        boolean append = false;
+        if (item.hasHeaderOrSourceExtension(false, false)) {
+            suffix = ".pch"; // NOI18N
+            ItemConfiguration itemConf = item.getItemConfiguration(conf);
+            if (conf.getCompilerSet().getCompilerSet() != null) {
+                BasicCompiler compiler = (BasicCompiler)conf.getCompilerSet().getCompilerSet().getTool(itemConf.getTool());
+                if (compiler != null) {
+                    suffix = compiler.getDescriptor().getPrecompiledHeaderSuffix();
+                    append = compiler.getDescriptor().getPrecompiledHeaderSuffixAppend();
+                }
+            }
+        }
+        int i = fileName.lastIndexOf('.'); // NOI18N
+        if (i >= 0 && !append)
+            fileName = fileName.substring(0, i) + suffix;
+        else
+            fileName = fileName + suffix;
 
 	String dirName;
         if (expanded)

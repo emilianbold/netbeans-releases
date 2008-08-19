@@ -473,6 +473,9 @@ public final class ToolchainManager {
         String[] getLanguageExtensionFlags();
         String[] getLibraryFlags();
         String getDependencyGenerationFlags();
+        String getPrecompiledHeaderFlags();
+        String getPrecompiledHeaderSuffix();
+        boolean getPrecompiledHeaderSuffixAppend();
     }
 
     public interface MakeDescriptor extends ToolDescriptor {
@@ -623,6 +626,9 @@ public final class ToolchainManager {
         private String macrosOutputParser;
         private String userMacroFlag;
         private String dependencyGenerationFlags;
+        private String precompiledHeaderFlags;
+        private String precompiledHeaderSuffix;
+        private boolean precompiledHeaderSuffixAppend;
         private DevelopmentMode developmentMode = new DevelopmentMode();
         private WarningLevel warningLevel = new WarningLevel();
         private Architecture architecture = new Architecture();
@@ -1087,8 +1093,12 @@ public final class ToolchainManager {
                 }
             } else if (path.endsWith(".strip")) { // NOI18N
                 c.strip = flags;
-            } else if (path.endsWith(".dependency_generation")) {
+            } else if (path.endsWith(".dependency_generation")) { // NOI18N
                 c.dependencyGenerationFlags = flags;
+            } else if (path.endsWith(".precompiled_header")) { // NOI18N
+                c.precompiledHeaderFlags = flags;
+                c.precompiledHeaderSuffix = attributes.getValue("suffix"); // NOI18N
+                c.precompiledHeaderSuffixAppend = Boolean.valueOf(attributes.getValue("append")); // NOI18N
             } else if (path.indexOf(".multithreading.")>0) { // NOI18N
                 MultiThreading m = c.multithreading;
                 if (path.endsWith(".none")) { // NOI18N
@@ -1277,6 +1287,9 @@ public final class ToolchainManager {
         public String[] getLanguageExtensionFlags() { return tool.languageExtension.values(); }
         public String[] getLibraryFlags() { return tool.library.values(); }
         public String getDependencyGenerationFlags() { return tool.dependencyGenerationFlags; }
+        public String getPrecompiledHeaderFlags() { return tool.precompiledHeaderFlags; }
+        public String getPrecompiledHeaderSuffix() { return tool.precompiledHeaderSuffix; }
+        public boolean getPrecompiledHeaderSuffixAppend() { return tool.precompiledHeaderSuffixAppend; }
     }
 
     private static final class ScannerDescriptorImpl  implements ScannerDescriptor {
