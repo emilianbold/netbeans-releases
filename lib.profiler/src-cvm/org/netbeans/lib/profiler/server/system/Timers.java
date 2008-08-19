@@ -22,7 +22,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -38,44 +37,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.ruby.rubyproject;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.event.ChangeListener;
-import org.openide.filesystems.FileObject;
-import org.netbeans.api.queries.FileBuiltQuery;
-import org.netbeans.spi.queries.FileBuiltQueryImplementation;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
+package org.netbeans.lib.profiler.server.system;
+
+/**
+ * Provides methods for obtaining various high-resolution system times.
+ * A version for CVM 
+ *
+ * @author  Misha Dmitriev
+ */
+public class Timers {
+  
+  /** Should be called at earliest possible time */
+  public static void initialize() {
+    getThreadCPUTimeInNanos();
+  }
+
+  
+  /** 
+   * "counts" instead of nanoseconds in this method are for compatibility with the previous
+   * versions of JFluid, that call a native method for system timer, which, in turn, returns
+   * the result in sub-microsecond "counts" on Windows.
+   */
+  public static native long getCurrentTimeInCounts();
+  
+  public static long getNoOfCountsInSecond() {
+    return 1000000000;
+  }
+
+  
+  public static native long getThreadCPUTimeInNanos();
 
 
-
-
-
-public class RubyFileBuiltQuery implements FileBuiltQueryImplementation {
-
-    public RubyFileBuiltQuery (RakeProjectHelper helper, PropertyEvaluator evaluator,
-                        SourceRoots sourceRoots, SourceRoots testRoots) {
-    }
-
-    public synchronized FileBuiltQuery.Status getStatus(FileObject file) {
-        return BUILT;
-    }
-    
-    private static final FileBuiltQuery.Status BUILT = new FileBuiltQuery.Status() {
-
-        public boolean isBuilt() {
-            return true;
-        }
-
-        public void addChangeListener(ChangeListener l) {
-            // No changes will ever be fired so don't bother with it
-        }
-
-        public void removeChangeListener(ChangeListener l) {
-            // No changes will ever be fired so don't bother with it
-        }
-    };
+  /** 
+   * WORKS ONLY ON UNIX, calls nanosleep(). On Solaris, this is more precise than the built-in Thread.sleep() call
+   * implementation that, at least in JDK 1.4.2, goes to select(3C). On Linux, it should be more precise, but it
+   * turns out that nanosleep() in this OS, at least in version 7.3 that I tested, has a resolution of at least 20ms.
+   * This seems to be a known issue; hopefully they fix it in future.
+   */
+  public static native void osSleep(int ns);
+ 
+  
+  /** 
+   * This is relevant only on Solaris. By default, the resolution of the thread local CPU timer is 10 ms. If we enable
+   * micro state accounting, it enables significantly (but possibly at a price of some overhead). So I turn it on only
+   * when thread CPU timestamps are really collected.
+   */
+  public static native void enableMicrostateAccounting(boolean v);
 }

@@ -52,7 +52,7 @@ public interface SQLHistoryModel {
         
     String getFilter();
     
-    List<SQLHistory> getSQLHistoryList();
+    List<SQLHistory> getSQLHistoryList() throws SQLHistoryException;
     
     void setSQLHistoryList(List<SQLHistory> sqlHistoryList);
     

@@ -75,7 +75,7 @@ public class ResultWindowOperator extends TopComponentOperator {
      * @return instance of ResultsWindowOperatorOperator
      */
     public static ResultWindowOperator invoke() {
-        invokeAction.perform();
+        new Action("Window|Output|JUnit Test Results" , null).perform();
         return new ResultWindowOperator();
     }
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,11 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -36,32 +31,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.profiler.common.integration.exceptions;
-
+package org.netbeans.modules.db.sql.history;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * @author jbaker
  */
-public class ModificationException extends IntegrationException {
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
-    /** Creates a new instance of ModificationException */
-    public ModificationException() {
-        super();
+public class SQLHistoryException extends Exception {
+    SQLHistoryException() {
     }
 
-    public ModificationException(String message) {
-        super(message);
+    SQLHistoryException(String msg) {
     }
 
-    public ModificationException(Throwable cause) {
-        super(cause);
-    }
-
-    public ModificationException(String message, Throwable cause) {
-        super(message, cause);
+    SQLHistoryException(String msg, Throwable cause) {
     }
 }

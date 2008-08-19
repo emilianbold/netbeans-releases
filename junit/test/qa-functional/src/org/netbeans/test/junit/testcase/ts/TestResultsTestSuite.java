@@ -62,9 +62,7 @@ public class TestResultsTestSuite extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(ResultsWindowTest.class, 
-                        "testResultWindowOpened",
-                        "testFilterButtonEnabled",
-                        "testFilterButtonEnabled")
+                        "testResultWindowOpened")
                 .enableModules(".*").clusters(".*"));
     } 
 }

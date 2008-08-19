@@ -434,7 +434,7 @@ public class ElementJavadoc {
                             ParamTag paramTag = inheritedParamTags.remove(pos);
                             List<Tag> tags = inheritedParamInlineTags.get(pos);
                             if (tags != null && !tags.isEmpty()) {
-                                List<Tag> inTags = paramTags.get(paramTag.parameterName());
+                                List<Tag> inTags = paramTags.get(pos);
                                 inTags.clear();
                                 for (Tag tag : paramTag.inlineTags()) {
                                     if (INHERIT_DOC_TAG.equals(tag.kind()))
