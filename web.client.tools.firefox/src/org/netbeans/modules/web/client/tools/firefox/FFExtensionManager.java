@@ -112,7 +112,9 @@ public class FFExtensionManager {
     private static final String CHECKSUM_FILENAME = "netbeans-firefox-extension.jar.MD5"; // NOI18N
     
     public static boolean installFirefoxExtensions(HtmlBrowser.Factory browser) {
-        File defaultProfile = FirefoxBrowserUtils.getDefaultProfile();
+        File customProfile = FirefoxBrowserUtils.getProfileFromPreferences();
+        File defaultProfile = customProfile != null ? customProfile : FirefoxBrowserUtils.getDefaultProfile();
+        
         if (defaultProfile == null) {
             Log.getLogger().severe("Could not find Firefox default profile.  Firefox debugging not available.");
             return false;

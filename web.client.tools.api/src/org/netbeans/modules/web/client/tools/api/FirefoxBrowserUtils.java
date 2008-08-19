@@ -51,11 +51,13 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -65,6 +67,8 @@ import org.openide.util.Utilities;
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
 public class FirefoxBrowserUtils {
+    
+    public static final String PROFILE_PREF = "firefox-defaultProfile"; // NOI18N
     
     private static final String APPDATA_CMD = "cmd /c echo %AppData%"; // NOI18N
 
@@ -80,6 +84,17 @@ public class FirefoxBrowserUtils {
         "/Library/Mozilla/Firefox/" // NOI18N
 
     };
+    
+    public static File getProfileFromPreferences() {
+        Preferences prefs = NbPreferences.forModule(FirefoxBrowserUtils.class);
+        String location = prefs.get(PROFILE_PREF, "");
+        if (location.length() > 0) {
+            File f = new File(location);
+            return f.isDirectory() ? f : null;
+        }
+        
+        return null;
+    }
     
     public static File getDefaultProfile() {
         String[] firefoxDirs = getLocationsForOS();

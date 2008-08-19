@@ -38,13 +38,8 @@
  */
 package org.netbeans.modules.web.client.tools.firefox;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.logging.Level;
 
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
@@ -67,6 +62,7 @@ public class FFJSDebugger extends JSAbstractExternalDebugger {
     protected void launchImpl(int port) {
         LaunchDescriptor launchDescriptor = new LaunchDescriptor(getBrowserExecutable());
         launchDescriptor.setURI(Utils.getDebuggerLauncherURI(port, getID()));
+        launchDescriptor.setArguments(getBrowserArguments());
         try {
             Launcher.launch(launchDescriptor);
         } catch (IOException ex) {

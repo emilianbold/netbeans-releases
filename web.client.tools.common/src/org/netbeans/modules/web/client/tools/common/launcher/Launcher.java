@@ -70,6 +70,15 @@ public class Launcher {
         List<String> command = new LinkedList<String>();
         command.addAll(Arrays.asList(launchDescriptor.getLaunchCommand()));
         
+        String arguments = launchDescriptor.getArguments();
+        if (arguments != null && arguments.trim().length() > 0) {
+            for (String arg : arguments.split("\\s")) {
+                if (arg.length() > 0) {
+                    command.add(arg);
+                }
+            }
+        }
+        
         for (String uri : launchDescriptor.getURIs()) {
             command.add(uri);
         }
@@ -91,6 +100,7 @@ public class Launcher {
 
         private String executablePath;
         private String[] computedExecutablePath;
+        private String arguments;
         private List<String> uriList;
 
         public LaunchDescriptor(String executablePath) {
@@ -122,6 +132,14 @@ public class Launcher {
         
         public void setURI(List<String> uriList) {
             this.uriList = uriList;
+        }
+        
+        public String getArguments() {
+            return arguments;
+        }
+        
+        public void setArguments(String arguments) {
+            this.arguments = arguments;
         }
         
         public List<String> getURIs() {

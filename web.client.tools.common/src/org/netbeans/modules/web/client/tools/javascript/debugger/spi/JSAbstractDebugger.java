@@ -300,6 +300,27 @@ public abstract class JSAbstractDebugger implements JSDebugger {
         return "firefox"; // NOI18N
     }
 
+    protected String getBrowserArguments() {
+        if (browser != null) {
+            try {
+                Method method = browser.getClass().getMethod("getBrowserExecutable");
+                NbProcessDescriptor processDescriptor = (NbProcessDescriptor) method.invoke(browser);
+                String arguments = processDescriptor.getArguments();
+                if (arguments != null) {
+                    arguments = arguments.replaceAll("(\\{URL\\})|(\\{params\\})", ""); // NOI18N
+                    return arguments;
+                }
+            } catch (SecurityException e) {
+            } catch (NoSuchMethodException e) {
+            } catch (IllegalArgumentException e) {
+            } catch (IllegalAccessException e) {
+            } catch (InvocationTargetException e) {
+            }
+        }
+        
+        return "";
+    }
+    
     public final void finish(boolean terminate) {
         sources.clear();
         finishImpl(terminate);
