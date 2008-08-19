@@ -62,6 +62,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -69,6 +70,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.UIResource;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -164,12 +166,16 @@ public final class GemPanel extends JPanel {
         }
         
         descriptionCheckbox.setSelected(RubyPreferences.shallFetchGemDescriptions());
+        
+        installedList.setCellRenderer(new GemListRenderer());
         installedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         installedList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(installedList, installedDesc, uninstallButton));
 
+        newList.setCellRenderer(new GemListRenderer());
         newList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         newList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(newList, newDesc, installButton));
 
+        updatedList.setCellRenderer(new GemListRenderer());
         updatedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         updatedList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(updatedList, updatedDesc, updateButton));
 
@@ -1370,5 +1376,56 @@ public final class GemPanel extends JPanel {
         }
         
     }
-    
+
+    /** Renders {@link Gem}. */
+    private static class GemListRenderer extends JLabel implements ListCellRenderer, UIResource {
+
+        public GemListRenderer() {
+            setOpaque(true);
+        }
+
+        public Component getListCellRendererComponent(JList list, Object value,
+                int index, boolean isSelected, boolean cellHasFocus) {
+            // #93658: GTK needs name to render cell renderer "natively"
+            setName("ComboBox.listRenderer"); // NOI18N
+            
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+
+            StringBuilder label = new StringBuilder(100);
+            Gem gem = ((Gem) value);
+            label.append("<html><b>"); // NOI18N
+            label.append(gem.getName());
+            label.append("</b>"); // NOI18N
+
+            if (gem.getInstalledVersionsAsString() != null) {
+                label.append(" ("); // NOI18N
+                label.append(gem.getInstalledVersionsAsString());
+                if (gem.getAvailableVersionsAsString() != null) {
+                    label.append(" => ").append(gem.getAvailableVersionsAsString()); // NOI18N
+                }
+                label.append(") "); // NOI18N
+            }
+
+            if (gem.getDescription() != null) {
+                label.append(": "); // NOI18N
+                label.append(gem.getDescription());
+            }
+
+            label.append("</html>"); // NOI18N
+            setText(label.toString());
+            return this;
+        }
+
+        // #93658: GTK needs name to render cell renderer "natively"
+        public @Override String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+    }
 }
