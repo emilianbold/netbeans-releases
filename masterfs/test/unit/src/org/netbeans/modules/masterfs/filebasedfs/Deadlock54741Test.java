@@ -56,7 +56,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * @author pzajac
  */
-public class Deadlock54741 extends NbTestCase {
+public class Deadlock54741Test extends NbTestCase {
     
     private static class DelFileChangeListener implements FileChangeListener {
         public void fileAttributeChanged(FileAttributeEvent fe) {
@@ -106,7 +106,7 @@ public class Deadlock54741 extends NbTestCase {
     }
     
     
-    public Deadlock54741(String testName) {
+    public Deadlock54741Test(String testName) {
         super(testName);
     }
     
@@ -153,7 +153,7 @@ public class Deadlock54741 extends NbTestCase {
         
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(Deadlock54741.class);
+        suite.addTestSuite(Deadlock54741Test.class);
          
         return new FileBasedFileSystemTest(suite);
     }

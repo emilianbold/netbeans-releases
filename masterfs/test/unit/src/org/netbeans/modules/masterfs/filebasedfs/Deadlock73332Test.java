@@ -56,15 +56,15 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  * @author Radek Matous
  */
-public class Deadlock73332 extends NbTestCase {
+public class Deadlock73332Test extends NbTestCase {
     private static FileObject folder;
     static {
-        System.setProperty("org.openide.util.Lookup", Deadlock73332.TestLookup.class.getName());
-        assertTrue(Lookup.getDefault().getClass().getName(),Lookup.getDefault() instanceof Deadlock73332.TestLookup);
+        System.setProperty("org.openide.util.Lookup", Deadlock73332Test.TestLookup.class.getName());
+        assertTrue(Lookup.getDefault().getClass().getName(),Lookup.getDefault() instanceof Deadlock73332Test.TestLookup);
     }
     
     
-    public Deadlock73332(String testName) {
+    public Deadlock73332Test(String testName) {
         super(testName);
     }
     
