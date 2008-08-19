@@ -157,6 +157,7 @@ CLASS      InheritableThreadLocal                     null
 CLASS      InputMismatchException                     null
 CLASS      InputStream                                null
 CLASS      InputStreamReader                          null
+CLASS      InsideClosure1                             null
 CLASS      InstantiationError                         null
 CLASS      InstantiationException                     null
 CLASS      Integer                                    null
@@ -170,6 +171,7 @@ CLASS      Iterable                                   null
 CLASS      Iterator                                   null
 CLASS      JarURLConnection                           null
 CLASS      JumboEnumSet                               null
+CLASS      KeywordAboveClass1                         null
 CLASS      LineNumberInputStream                      null
 CLASS      LineNumberReader                           null
 CLASS      LinkageError                               null
@@ -184,6 +186,7 @@ CLASS      Long                                       null
 CLASS      MalformedURLException                      null
 CLASS      Map                                        null
 CLASS      Math                                       null
+CLASS      MethodCompletionTestCase                   null
 CLASS      MissingFormatArgumentException             null
 CLASS      MissingFormatWidthException                null
 CLASS      MissingResourceException                   null
@@ -262,6 +265,11 @@ CLASS      Runtime                                    null
 CLASS      RuntimeException                           null
 CLASS      RuntimePermission                          null
 CLASS      Scanner                                    null
+CLASS      ScriptLong1                                null
+CLASS      ScriptLong2                                null
+CLASS      ScriptString1                              null
+CLASS      ScriptString2                              null
+CLASS      ScriptStringConst1                         null
 CLASS      SecureCacheResponse                        null
 CLASS      SecurityException                          null
 CLASS      SecurityManager                            null
@@ -354,6 +362,7 @@ CLASS      WeakHashMap                                null
 CLASS      WriteAbortedException                      null
 CLASS      Writer                                     null
 CLASS      XMLUtils                                   null
+CLASS      testClass1                                 null
 VARIABLE   it                                         Object
 KEYWORD    assert                                     null
 KEYWORD    boolean                                    null

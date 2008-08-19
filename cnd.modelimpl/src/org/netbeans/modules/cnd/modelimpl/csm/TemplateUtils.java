@@ -160,7 +160,20 @@ public class TemplateUtils {
                         // or parameter name, but not both.
                         fakeAST = AstUtil.createAST(parameterStart, child);
                     }
-                    res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, scope));
+                    if (child.getNextSibling() != null) {
+                        AST assign = child.getNextSibling();
+                        if (assign.getType() == CPPTokenTypes.ASSIGNEQUAL) {
+                            if (assign.getNextSibling() != null) {
+                                AST type = assign.getNextSibling();
+                                if (type.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
+                                    res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, scope, type));
+                                    parameterStart = null;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, scope));                    
                     parameterStart = null;
                     break;
                 case CPPTokenTypes.CSM_PARAMETER_DECLARATION:
@@ -210,8 +223,13 @@ public class TemplateUtils {
     }
     
     public static CsmType checkTemplateType(CsmType type, CsmScope scope) {
-        if (!(type instanceof TypeImpl)) {
+        if (!(type instanceof TypeImpl)) {            
             return type;
+        }
+
+        if (type instanceof NestedType) {
+            NestedType nestedType = (NestedType) type;
+            type = new NestedType(checkTemplateType(nestedType.getParent(), scope), nestedType);
         }
         
         // Check instantiation parameters

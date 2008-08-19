@@ -1,6 +1,6 @@
 #include "resolver_typedef_string.h"
 
-std_2::wstring write(string str)
+std_2::wstring wrt_2(string str)
 {
     using std_2::wstring;
     wstring out;

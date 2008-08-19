@@ -103,6 +103,7 @@
     const CONSTANTS_FILTER    = new RegExp("^[A-Z][A-Z_]*$");
     const JAVA_OBJECT_PATTERN = new RegExp("^Java(Array|Member|Object|Package)$");
     const WATCH_SRCIPT = '[Watch-script]';
+    const FUNCTION_ASSIGNMENT_PATTERN = new RegExp("([\\w\\.]+)\\s*[:=]\\s*$");
 
     var topWindow;
     var browser;
@@ -146,6 +147,8 @@
     var port;
     var sessionId;
 
+    var anonymousFunctionMap = [];
+    
     // FirebugDebugger
     const firebugDebugger = {
 
@@ -1429,10 +1432,57 @@
         var functionName = script.functionName;
         if ( !functionName )
             functionName = '';
+        else if (functionName == 'anonymous') {
+            functionName = getAnonymousFunctionName(script);
+            
+        }
         return functionName;
+    }    
+
+    function getAnonymousFunctionName(script) {
+        var fileName = script.fileName;
+        if ((fileName == '[Eval-script]') || fileName == WATCH_SRCIPT || (fileName.substr(0,11) == 'javascript:')) {
+            return 'anonymous';
+        }
+        
+        var key = "key:" + script.tag;
+        if (key in anonymousFunctionMap) {
+            return anonymousFunctionMap[key];
+        }
+        
+        // XXX performance?
+        var lines = currentFirebugContext.sourceCache.load(fileName);
+        var accumulatedText = "";
+        var matched = false;
+        var seeFunction;
+        
+        for (var i = 0; i < 2 && script.baseLineNumber-1-i >= 0; i++) {
+            accumulatedText = lines[script.baseLineNumber - 1 - i] + accumulatedText;
+            var functionPos = accumulatedText.lastIndexOf('function');
+            if (functionPos >= 0) {
+                if (seeFunction) {
+                    return 'anonymous';
+                }
+                seeFunction = true;
+                accumulatedText = accumulatedText.substring(0, functionPos);
+            }
+            
+            if (FUNCTION_ASSIGNMENT_PATTERN.test(accumulatedText)) {
+                matched = true;
+                break;
+            }
+        }
+        
+        if (matched) {
+            var regExpMatch = FUNCTION_ASSIGNMENT_PATTERN.exec(accumulatedText);
+            anonymousFunctionMap[key] = regExpMatch[1];
+            return regExpMatch[1];
+        }
+        
+        
+        return 'anonymous';
     }
-
-
+    
     // Format of the message is:
     // <windows>
     //   <window fileuri="http://..." />

@@ -986,6 +986,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         try {
             result.load(in);
+        } catch (IllegalArgumentException iae) {
+            //Issue #138704: Invalid unicode encoding in attribute file.
+            //Return newly constructed Properties, the result
+            //may already contain some pairs.
+            LOGGER.warning("Broken attribute file: " + f.getAbsolutePath());    //NOI18N
+            return new Properties();
         } finally {
             in.close();
         }

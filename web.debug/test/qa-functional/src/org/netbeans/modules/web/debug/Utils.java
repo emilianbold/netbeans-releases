@@ -313,8 +313,8 @@ public class Utils {
     public static void waitFinished(JellyTestCase test, String projectName, String target) {
         long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
         try {
-            // increase time to wait to 240 second (it fails on slower machines)
-            MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
+            // increase time to wait to 360 second (it fails on slower machines)
+            MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 360000);
             MainWindowOperator.getDefault().waitStatusText("Finished building "+projectName+" ("+target+")");
         } finally {
             // start status text tracer again because we use it further

@@ -56,7 +56,6 @@ import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.actions.DeleteAction;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
@@ -190,7 +189,6 @@ public final class ServiceNodeHandler  {
                             }
                             setKeys(keys);
                             synchronized (ServiceNodeHandler.this) {
-                                // tell the test that it is initialized
                                 fullyComputed = true;
                                 SUtil.log(SUtil.LOG_END_COMPUTE_KEYS);
                             }
@@ -388,7 +386,11 @@ public final class ServiceNodeHandler  {
         /** create new service (also creates new file)
          */
         void addService(String serviceName, String classServiceName) {
-            List<Service> services = allServicesMap.get(serviceName);
+            // #139887: when allServicesMap is null then we're called from <exported services> node
+            // and can safely use moduleServiceMap instead. As it offers only classes from this project, 
+            // it is also consistent regarding duplicate services.
+            TreeMap<String,List<Service>> usedMap = allServicesMap != null ? allServicesMap : moduleServiceMap;
+            List<Service> services = usedMap.get(serviceName);
             boolean exists = false;
             for (Service service : services) {
                 for (String className : service.getClasses()) {
@@ -444,6 +446,7 @@ public final class ServiceNodeHandler  {
                 setIconBaseWithExtension("org/netbeans/modules/apisupport/project/metainf/instance.png");
             }
         }
+        /* XXX #126577: not used
         Service getService() {
             // The parent node can be null
             if (getParentNode() != null) {
@@ -460,10 +463,11 @@ public final class ServiceNodeHandler  {
                 }
             }
             return null;
-        }
+        }*/
         @Override
         public Action[] getActions(boolean context) {
-            return new Action[] {DeleteAction.get(DeleteAction.class)};
+            // XXX cannot delete anyway, see ##126577: return new Action[] {DeleteAction.get(DeleteAction.class)};
+            return new Action[0];
         }
 
         @Override
@@ -497,6 +501,7 @@ public final class ServiceNodeHandler  {
         public boolean canCopy() {
             return false;
         }
+        /* XXX #126577: not used 
         @Override
         public void destroy() throws IOException {
             Service service = getService();
@@ -515,7 +520,7 @@ public final class ServiceNodeHandler  {
                 }
                 moduleService.removeClass(getName(),project);
             }
-        }
+        }*/
     }
 
     public ServiceNodeHandler(Project project, NbModuleProvider provider) {
@@ -680,7 +685,7 @@ public final class ServiceNodeHandler  {
      */
     private void updateNode(Service service) {
         String name = (service == null) ? null : service.getFileName();
-        if (moduleChild != null && moduleChild.fullyComputed &&moduleServiceMap != null ) {
+        if (moduleChild != null && moduleChild.fullyComputed && moduleServiceMap != null ) {
             if (prevModuleServicesCount == moduleServiceMap.size() && name != null ) {
                 // update only key
                 moduleChild.updateNode(name);

@@ -103,8 +103,10 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
 
     @Override
     protected void storeProperties(EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
-        privateProperties.remove(RAILS_SERVERTYPE);
-        projectProperties.setProperty(RAILS_SERVERTYPE, server.getServerUri());
+        if (server != null) {
+            privateProperties.remove(RAILS_SERVERTYPE);
+            projectProperties.setProperty(RAILS_SERVERTYPE, server.getServerUri());
+        }
         if (getRailsEnvironment() != null) {
             privateProperties.setProperty(RAILS_ENV, getRailsEnvironment());
         }

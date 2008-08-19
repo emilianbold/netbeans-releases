@@ -81,12 +81,13 @@ private:
     ScriptDebugger *m_pScriptDebugger;
     DWORD m_dwWebBrowserCookie;
     BOOL readCommand(char *cmdString);
-    void processCommand(string cmdString, DbgpConnection *pDbgpConnection);
+    void processCommand(char *cmdString, DbgpConnection *pDbgpConnection);
     void sendResponse(tstring xmlString);
     void sendWindowsMessage(IHTMLDocument2 *pHTMLDocument);
     void sendSourcesMessage(IHTMLDocument2 *pHTMLDocument);
     set<tstring> getFrameURLs(IHTMLDocument2 *pHTMLDocument, BOOL scriptOnly);
-    BOOL stringToBytes(tstring str, char **ppBytes, int *pBytesLen);
+    BOOL unicodeToUTF8(tstring str, char **ppBytes, int *pBytesLen);
+    BOOL UTF8toUnicode(char *str, TCHAR **ppChars);
     tstring encodeToBase64(tstring value);
 };
 

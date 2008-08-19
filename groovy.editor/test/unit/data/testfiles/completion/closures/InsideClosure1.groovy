@@ -5,7 +5,7 @@ boolean test() {
 
     (1..3).any {aa,ab -> println a}
 
-    [3,4,5].each {x1,x2,x3 -> println x}
+    [3,4,5].each {xu1,xu2,xu3 -> println xu}
 
     def t1 = {println i}
 

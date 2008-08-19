@@ -29,7 +29,7 @@ namespace std_2 {
 
 using std_2::string;
 
-std_2 :: wstring write(string str);
+std_2 :: wstring wrt_2(string str);
 
 namespace resolver_typedef_string {
   string read();

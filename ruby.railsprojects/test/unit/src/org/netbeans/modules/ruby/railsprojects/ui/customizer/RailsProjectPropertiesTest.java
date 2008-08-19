@@ -63,9 +63,8 @@ public class RailsProjectPropertiesTest extends RailsProjectTestBase {
 
     public void testPropertiesBasics() throws Exception {
         RailsProject project = createTestPlainProject();
-        RailsProjectProperties props = new RailsProjectProperties(
-                project, project.getUpdateHelper(), project.evaluator(),
-                project.getReferenceHelper(), project.getLookup().lookup(GeneratedFilesHelper.class));
+        RailsProjectProperties props = getProperties(project);
+        
         assertNull("initially null environment", props.getRailsEnvironment());
         assertNull("initially null environment property", project.evaluator().getProperty(RAILS_ENV));
         assertEquals("initially WEBRICK server", "WEBRICK", project.evaluator().getProperty(RAILS_SERVERTYPE));
@@ -98,12 +97,24 @@ public class RailsProjectPropertiesTest extends RailsProjectTestBase {
         jrubyConfigProps.setProperty(PLATFORM_ACTIVE, "JRuby");
         RubyProjectTestBase.storeProperties(jrubyConfigFO, jrubyConfigProps);
 
-        RailsProjectProperties props = new RailsProjectProperties(
-                project, project.getUpdateHelper(), project.evaluator(),
-                project.getReferenceHelper(), project.getLookup().lookup(GeneratedFilesHelper.class));
-
+        RailsProjectProperties props = getProperties(project);
         String platform = props.getRunConfigs().get(null).get(PLATFORM_ACTIVE);
         assertEquals("right platform", "Ruby", platform);
+    }
+    
+    public void testNPEIsNotThrownWhenPropertiesAreNotTouched() throws Exception {
+        RailsProject project = createTestPlainProject();
+        RailsProjectProperties props = getProperties(project);
+
+        assertEquals("initially WEBRICK server", "WEBRICK", project.evaluator().getProperty(RAILS_SERVERTYPE));
+        props.save();
+        assertEquals("initially WEBRICK server", "WEBRICK", project.evaluator().getProperty(RAILS_SERVERTYPE));
+    }
+
+    private RailsProjectProperties getProperties(final RailsProject project) {
+        return new RailsProjectProperties(
+                project, project.getUpdateHelper(), project.evaluator(),
+                project.getReferenceHelper(), project.getLookup().lookup(GeneratedFilesHelper.class));
     }
 
     private static class WebMockerServer implements RubyInstance {

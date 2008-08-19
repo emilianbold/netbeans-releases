@@ -112,15 +112,17 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         StringBuilder command = new StringBuilder(); // NOI18N
 
         if (envp != null) {
-            command.append(ShellUtils.prepareExportString(key, envp));
+            command.append(ShellUtils.prepareExportString(false, envp));
         }
 
-        command.append(exe).append(" ").append(args);
-        if (!RemoteHostInfoProvider.getHostInfo(key).isCshShell()) {
-            command.append(" 2>&1");
-        }
+        command.append(exe).append(" ").append(args).append(" 2>&1");
         command.insert(0, dircmd);
 
+        if (RemoteHostInfoProvider.getHostInfo(key).isCshShell()) {
+            // cshell doesn't support redirection error stream to output
+            command.insert(0, "bash -c '");
+            command.append("'");
+        }
         channel = createChannel();
         log.finest("RNES: running command: " + command);
         ((ChannelExec) channel).setCommand(command.toString().replace('\\', '/'));

@@ -92,6 +92,7 @@ import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -1174,8 +1175,10 @@ class J2SEActionProvider implements ActionProvider {
         }
         if (sourcesRoots.length > 0) {
             ClassPath bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
+            assert bootPath != null : assertPath (sourcesRoots[0], ClassPath.BOOT);
             ClassPath compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);
-            ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
+            assert compilePath != null : assertPath (sourcesRoots[0], ClassPath.BOOT);
+            ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.EXECUTE);
             if (J2SEProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
                 return MainClassStatus.SET_AND_VALID;
             }
@@ -1192,6 +1195,19 @@ class J2SEActionProvider implements ActionProvider {
             }
         }
         return MainClassStatus.SET_BUT_INVALID;
+    }
+    
+    private static String assertPath (
+        FileObject          fileObject,
+        String              pathType
+    ) {
+        StringBuilder sb = new StringBuilder ();
+        sb.append ("File: ").append (fileObject);
+        sb.append ("\nPath Type: ").append (pathType);
+        sb.append ("\nClassPathProviders: ");
+        for (ClassPathProvider impl  : Lookup.getDefault ().lookupResult (ClassPathProvider.class).allInstances ())
+            sb.append ("\n  ").append (impl);
+        return sb.toString ();
     }
 
     /**

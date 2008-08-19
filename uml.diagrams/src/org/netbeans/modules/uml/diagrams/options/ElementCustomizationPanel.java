@@ -6,6 +6,7 @@
 package org.netbeans.modules.uml.diagrams.options;
 
 import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import java.awt.Color;
 import java.awt.Component;
@@ -20,6 +21,7 @@ import java.beans.PropertyEditorManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -133,8 +135,16 @@ public class ElementCustomizationPanel extends JPanel implements ItemListener
         for (IPresentationElement e : elements)
         {
             Widget w = scene.addNode(e);
-            widgets[i++] = w;
+//            if(w != null)
+//            {
+                widgets[i++] = w;
+//            }
+//            else
+//            {
+//                scene.removeNode(e);
+//            }
         }       
+        Arrays.sort(widgets, new WidgetComparator());
         DefaultComboBoxModel model = new DefaultComboBoxModel(widgets);
         typeComboBox.setModel(model);
 
@@ -647,14 +657,17 @@ private void restoreBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
         Point location = w.convertLocalToScene(new Point());
         Rectangle rec = w.getClientArea();
-        blinkWidget.setPreferredLocation(location);
-        Insets insets = w.getBorder().getInsets();
-        blinkWidget.setPreferredBounds(new Rectangle((rec.x - insets.left),
-                rec.y - insets.top, rec.width + insets.left + insets.right,
-                rec.height + insets.bottom + insets.top));
-        
-        blinkSequence = 5;
-        task.schedule(0);
+        if(rec != null)
+        {
+            blinkWidget.setPreferredLocation(location);
+            Insets insets = w.getBorder().getInsets();
+            blinkWidget.setPreferredBounds(new Rectangle((rec.x - insets.left),
+                    rec.y - insets.top, rec.width + insets.left + insets.right,
+                    rec.height + insets.bottom + insets.top));
+
+            blinkSequence = 5;
+            task.schedule(0);
+        }
     }
 
     private String fontToString(Font f)
@@ -727,25 +740,9 @@ private void restoreBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             {
                 IPresentationElement element = ((IPresentationElement) ((ObjectScene) w.getScene()).findObject(w));
                 String elementName = element.getFirstSubject().getExpandedElementType();
+                String displayName = element.getFirstSubject().getDisplayElementType();
                 
-                String name = elementName;
-                try
-                {
-                    name = NbBundle.getMessage(ElementCustomizationPanel.class, elementName);
-                }
-                catch(MissingResourceException e)
-                {
-                    // Since the goal of using a resource file is not to allow
-                    // the model element name to be translated (they have
-                    // been marked with NOI18N) but to put space in the element
-                    // names that are really to words.  For example 
-                    // CombinedFragment.  Therefore there will be some that
-                    // are missing.  
-                    //
-                    // So simply use the model elements name.
-                }
-                
-                setText(name);
+                setText(displayName);
                 String imageName = CommonResourceManager.instance().getIconDetailsForElementType(elementName);
                 imageName = imageName.substring(imageName.lastIndexOf("/") + 1);
                 setIcon(ImageUtil.instance().getIcon(imageName));
@@ -755,6 +752,69 @@ private void restoreBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             setFont(list.getFont());
             setBorder(cellHasFocus ? UIManager.getBorder("List.focusCellHighlightBorder") : noFocusBorder);
             return this;
+        }
+    }
+
+    private static class WidgetComparator implements Comparator<Widget>
+    {
+
+        public WidgetComparator()
+        {
+        }
+
+        public int compare(Widget widget1, Widget widget2)
+        {
+            int retVal = 0;
+            // Put all NULLs to the back of the list.  We should never have
+            // a null widget, but just in case.
+            if ((widget1 == null) || (widget2 != null))
+            {
+                return retVal = -1;
+            }
+            else if ((widget1 != null) || (widget2 == null))
+            {
+                return retVal = 1;
+            }
+
+            // Always make the scene the first item in the list.
+            if (widget1 instanceof Scene)
+            {
+                retVal = 1;
+            }
+            else if (widget2 instanceof Scene)
+            {
+                retVal = -1;
+            }
+            else
+            {
+                Object data1 = ((ObjectScene) widget1.getScene()).findObject(widget1);
+                String widget1Name = "";
+                if (data1 instanceof IPresentationElement)
+                {
+                    IPresentationElement presentation = (IPresentationElement) data1;
+                    IElement subject = presentation.getFirstSubject();
+                    if (subject != null)
+                    {
+                        widget1Name = subject.getDisplayElementType();
+                    }
+                }
+
+                Object data2 = ((ObjectScene) widget2.getScene()).findObject(widget2);
+                String widget2Name = "";
+                if (data2 instanceof IPresentationElement)
+                {
+                    IPresentationElement presentation = (IPresentationElement) data2;
+                    IElement subject = presentation.getFirstSubject();
+                    if (subject != null)
+                    {
+                        widget2Name = subject.getDisplayElementType();
+                    }
+                }
+                retVal = widget2Name.compareTo(widget1Name);
+            }
+
+
+            return retVal;
         }
     }
 }

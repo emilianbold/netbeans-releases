@@ -642,10 +642,20 @@ class BracketCompletion {
             //#69524
             char chr = doc.getChars(dotPos,1)[0];
             if (chr == bracket){
-                doc.insertString(dotPos, "" + bracket , null); //NOI18N
-                doc.remove(dotPos, 1);
-                return true;
+                //#83044
+                if (dotPos > 0) {
+                    token = syntax.getTokenID (dotPos-1);
+                    if (    token == JavaTokenContext.STRING_LITERAL ||
+                            token == JavaTokenContext.CHAR_LITERAL
+                    ) {
+                        doc.insertString(dotPos, "" + bracket , null); //NOI18N
+                        doc.remove(dotPos, 1);
+                        return true;
+                    }
+                }
+                //end of #83044
             }
+            //end of #69524
         }
     }
     
