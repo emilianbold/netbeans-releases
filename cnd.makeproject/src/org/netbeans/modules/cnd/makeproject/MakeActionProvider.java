@@ -862,8 +862,11 @@ public class MakeActionProvider implements ActionProvider {
         if (item == null) {
             // try to find Item in associated data object if any
             try {
-                File file = FileUtil.toFile((node.getCookie(DataObject.class)).getPrimaryFile());
-                item = getProjectDescriptor().findItemByFile(file);
+                DataObject dao = node.getCookie(DataObject.class);
+                if (dao != null) {
+                    File file = FileUtil.toFile(dao.getPrimaryFile());
+                    item = getProjectDescriptor().findItemByFile(file);
+                }
             } catch (NullPointerException ex) {
                 // not found item
             }
