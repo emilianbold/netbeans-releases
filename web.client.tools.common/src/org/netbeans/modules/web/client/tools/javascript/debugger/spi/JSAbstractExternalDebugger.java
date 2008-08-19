@@ -111,10 +111,17 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         proxy.startDebugging();
 
         //Start the suspension point handler thread
+        startSuspensionThread();
+    }
+    
+    protected void startSuspensionThread() {
         suspensionPointHandler = new SuspensionPointHandler(proxy, getID());
-        httpMessageHandler = new HttpMessageHandler(proxy, getID());
         suspensionPointHandler.start();
-        httpMessageHandler.start();
+    }
+    
+    protected void startHttpMonitorThread() {
+        httpMessageHandler = new HttpMessageHandler(proxy, getID());
+        httpMessageHandler.start();              
     }
 
     protected abstract void launchImpl(int port);

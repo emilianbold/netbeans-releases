@@ -269,21 +269,21 @@ public class ClassBreakpointsTest extends JellyTestCase {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(73);
             setBreakpointType(dialog, "Class");
-            new JTextFieldOperator(dialog, 0).setText("examples.advanced.*");
+            new JEditorPaneOperator(dialog, 0).setText("examples.advanced.*");
             new JCheckBoxOperator(dialog, 0).changeSelection(true);
-            new JTextFieldOperator(dialog, 1).setText("*.MemoryView");
+            new JTextFieldOperator(dialog, 0).setText("*.MemoryView");
             dialog.ok();
 
             new DebugProjectAction().performMenu();
             Utilities.getDebugToolbar().waitComponentVisible(true);
             //Class breakpoint hit for class examples.advanced.Helper.");
-//            int lines = Utilities.waitDebuggerConsole("Class breakpoint hit for class examples.advanced.Helper", 0);
+            int lines = Utilities.waitDebuggerConsole("Class breakpoint hit for class examples.advanced.Helper", 0);
             new ContinueAction().performMenu();
-   //         lines = Utilities.waitDebuggerConsole("Class breakpoint hit for class examples.advanced.MemoryView$1.", lines + 1);
+            lines = Utilities.waitDebuggerConsole("Class breakpoint hit for class examples.advanced.MemoryView$1.", lines + 1);
             //Class breakpoint hit for class examples.advanced.MemoryView$1
-  //          lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:121.", lines + 1);
+            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:121.", lines + 1);
             new ContinueAction().performMenu();
-    //       Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines + 1);
+           Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines + 1);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

@@ -90,6 +90,7 @@ import org.openide.util.Utilities;
  * XXX - Rename to JavaFileObjects
  *
  * @author Petr Hrebejk
+ * @author Tomas Zezula
  */
 public class FileObjects {
     
@@ -631,12 +632,12 @@ public class FileObjects {
         final String foPath = fo.getAbsolutePath();
         assert foPath.startsWith(rootPath) : String.format("getRelativePath(%s, %s)", rootPath, foPath);
         int index = rootPath.length();
-        if (rootPath.charAt(index-1)!=File.separatorChar) {
+        if (rootPath.charAt(index - 1) != File.separatorChar) {
             index++;
-        }            
+        }
         int foIndex = foPath.length();
         if (foIndex <= index) {
-            return "";  //NOI18N
+            return ""; //NOI18N
         }
         return foPath.substring(index);
     }           

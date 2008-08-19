@@ -312,23 +312,17 @@ public class SvnClientFactory {
             return;
         }
                 
-        try {
-            System.loadLibrary("libapr-1");
-            LOG.fine("could load libapr-1.dll");
-            return; // lets assume all needed libraries are on java.library.path
-        } catch (Throwable t) {
-            LOG.fine("could not load libapr-1.dll");
-        }
-        
         File location = InstalledFileLocator.getDefault().locate("modules/lib/libsvnjavahl-1.dll", JAVAHL_MODULE_CODE_NAME, false);
         if(location == null) {
-            LOG.fine("could not find location for javahl library");
+            LOG.fine("could not find location for bundled javahl library");
             return; // can't do anything here
         }
+        // the library seems to be available in the netbeans install/user dir
+        // => set it up so that it will used by the svnClientAdapter
         LOG.fine("libsvnjavahl-1 located : " + location.getAbsolutePath());
         String locationPath = location.getParentFile().getAbsolutePath();
         // svnClientAdapter workaround - we have to explicitly load the
-        // libsvnjavahl-1 dependencies as sca tryies to get them via loadLibrary.
+        // libsvnjavahl-1 dependencies as svnClientAdapter  tryies to get them via loadLibrary.
         // That won't work i they aren't on java.library.path
         loadJavahlDependencies(locationPath);
 

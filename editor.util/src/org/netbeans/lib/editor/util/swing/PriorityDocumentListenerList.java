@@ -42,6 +42,8 @@
 package org.netbeans.lib.editor.util.swing;
 
 import java.util.EventListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -57,19 +59,27 @@ import org.netbeans.lib.editor.util.PriorityListenerList;
 
 class PriorityDocumentListenerList extends PriorityListenerList<DocumentListener> implements DocumentListener {
     
+    // -J-Dorg.netbeans.lib.editor.util.swing.PriorityDocumentListenerList.level=FINE
+    private static final Logger LOG = Logger.getLogger(PriorityDocumentListenerList.class.getName());
+    
     /**
      * Implementation of DocumentListener's method fires all the added
      * listeners according to their priority.
      */
     public void insertUpdate(DocumentEvent evt) {
+        logEvent(evt, "insertUpdate");
         // Fire the prioritized listeners
         EventListener[][] listenersArray = getListenersArray();
         for (int priority = listenersArray.length - 1; priority >= 0; priority--) {
+            logPriority(priority);
             EventListener[] listeners = listenersArray[priority];
             for (int i = listeners.length - 1; i >= 0; i--) {
-                ((DocumentListener)listeners[i]).insertUpdate(evt);
+                DocumentListener l = (DocumentListener) listeners[i];
+                logListener(l);
+                l.insertUpdate(evt);
             }
         }
+        logEventEnd("insertUpdate");
     }
 
     /**
@@ -77,14 +87,19 @@ class PriorityDocumentListenerList extends PriorityListenerList<DocumentListener
      * listeners according to their priority.
      */
     public void removeUpdate(DocumentEvent evt) {
+        logEvent(evt, "removeUpdate");
         // Fire the prioritized listeners
         EventListener[][] listenersArray = getListenersArray();
         for (int priority = listenersArray.length - 1; priority >= 0; priority--) {
+            logPriority(priority);
             EventListener[] listeners = listenersArray[priority];
             for (int i = listeners.length - 1; i >= 0; i--) {
-                ((DocumentListener)listeners[i]).removeUpdate(evt);
+                DocumentListener l = (DocumentListener) listeners[i];
+                logListener(l);
+                l.removeUpdate(evt);
             }
         }
+        logEventEnd("removeUpdate");
     }
 
     /**
@@ -92,13 +107,49 @@ class PriorityDocumentListenerList extends PriorityListenerList<DocumentListener
      * listeners according to their priority.
      */
     public void changedUpdate(DocumentEvent evt) {
+        logEvent(evt, "changedUpdate");
         // Fire the prioritized listeners
         EventListener[][] listenersArray = getListenersArray();
         for (int priority = listenersArray.length - 1; priority >= 0; priority--) {
+            logPriority(priority);
             EventListener[] listeners = listenersArray[priority];
             for (int i = listeners.length - 1; i >= 0; i--) {
-                ((DocumentListener)listeners[i]).changedUpdate(evt);
+                DocumentListener l = (DocumentListener) listeners[i];
+                logListener(l);
+                l.changedUpdate(evt);
             }
+        }
+        logEventEnd("changedUpdate");
+    }
+
+    private static void logEvent(DocumentEvent evt, String methodName) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("FIRING PriorityDocumentListenerList." + methodName + // NOI18N
+                    "() evt: type=" + evt.getType() + ", off=" + evt.getOffset() + // NOI18N
+                    ", len=" + evt.getLength() + "-----------------\n" + // NOI18N
+                    "doc: " + evt.getDocument() // NOI18N
+            );
+        }
+    }
+    
+    private static void logPriority(int priority) {
+        if (LOG.isLoggable(Level.FINE)) {
+            String prioMsg = (priority < DocumentListenerPriority.PRIORITIES.length)
+                    ? DocumentListenerPriority.PRIORITIES[priority].getDescription()
+                    : String.valueOf(priority);
+            LOG.fine("  " + prioMsg + ":\n"); // NOI18N
+        }
+    }
+    
+    private static void logEventEnd(String methodName) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("END-FIRING of " + methodName + "() ------------------------------------------------\n"); // NOI18N
+        }
+    }
+    
+    private static void logListener(DocumentListener l) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("    " + l.getClass() + '\n');
         }
     }
 

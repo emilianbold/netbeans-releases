@@ -683,18 +683,9 @@ final class LibrariesNode extends AbstractNode {
      *
      * @param opened wheter closed or opened icon should be returned.
      */
-    private static Image getTreeFolderIcon(boolean opened) {
-        Image base = null;
-        Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
-        if (baseIcon != null) {
-            base = Utilities.icon2Image(baseIcon);
-        } else {
-            base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263
-            if (base == null) { // fallback to our owns                
-                final Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
-                base = opened ? n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16) : n.getIcon(BeanInfo.ICON_COLOR_16x16);                                 
-            }
-        }
+    private static Image getTreeFolderIcon(boolean opened) {        
+        final Node n = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+        final Image base = opened ? n.getOpenedIcon(BeanInfo.ICON_COLOR_16x16) : n.getIcon(BeanInfo.ICON_COLOR_16x16);
         assert base != null;
         return base;
     }

@@ -57,13 +57,17 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
 
     private static final boolean ENABLED =
             getBoolean("cnd.identifier.error.provider", true); //NOI18N
+    private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.identifier.error.provider.times");
 
     @Override
     public void getErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        if (ENABLED && request.getFile().isParsed()) {
+        if (!request.isCancelled() && ENABLED && request.getFile().isParsed()) {
+            long start = System.currentTimeMillis();
+            if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() have started for file " + request.getFile().getAbsolutePath());
             CsmFileReferences.getDefault().accept(
                     request.getFile(), new ReferenceVisitor(request, response),
                     CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
+            if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + request.getFile().getAbsolutePath());
         }
         response.done();
     }
@@ -80,7 +84,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
 
         public void visit(CsmReferenceContext context) {
             CsmReference ref = context.getReference();
-            if (ref.getReferencedObject() == null) {
+            if (!request.isCancelled() && ref.getReferencedObject() == null) {
                 if (CsmFileReferences.isMacroBased(context)) {
                     return;
                 }

@@ -48,12 +48,12 @@ import javax.swing.Timer;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import junit.framework.TestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
 import org.netbeans.progress.spi.ProgressEvent;
 import org.netbeans.progress.spi.ProgressUIWorker;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -86,7 +86,7 @@ public class ProgressHandleFactoryTest extends TestCase {
         
     }
 
-    
+    @RandomlyFails // NB-Core-Build #1176
     public void testCustomComponentIsInitialized() {
         Controller.defaultInstance = new TestController();
         

@@ -378,7 +378,7 @@ public class ConfigurationMakefileWriter {
                 if (itemConfiguration.isCompilerToolConfiguration()) {
                     BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
-                    target = compilerConfiguration.getOutputFile(items[i].getPath(true), conf, false);
+                    target = compilerConfiguration.getOutputFile(items[i], conf, false);
                     if (compiler != null) {
                         String fromLinker = ""; // NOI18N
                         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
@@ -390,7 +390,17 @@ public class ConfigurationMakefileWriter {
                         if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
                             command = "${RM} $@.d\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
                         }
-                        command += "-o " + target + " "; // NOI18N
+                        if (items[i].hasHeaderOrSourceExtension(false, false)) {
+                            String flags = compiler.getDescriptor().getPrecompiledHeaderFlags();
+                            if (flags == null) {
+                                command = "# command to precompile header "; // NOI18N
+                                comment = "Current compiler does not support header precompilation"; // NOI18N
+                            } else {
+                                command += compiler.getDescriptor().getPrecompiledHeaderFlags() + " "; // NOI18N
+                            }
+                        } else {
+                            command += "-o " + target + " "; // NOI18N
+                        }
                         command += IpeUtils.escapeOddCharacters(items[i].getPath(true));
                     }
                     additionalDep = compilerConfiguration.getAdditionalDependencies().getValue();
@@ -541,6 +551,8 @@ public class ConfigurationMakefileWriter {
         if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration()) {
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
+            bw.write(".dep.inc: .depcheck-impl\n"); // NOI18N
+            bw.write("\n"); // NOI18N
             bw.write("include .dep.inc\n"); // NOI18N
         }
     }
@@ -576,9 +588,11 @@ public class ConfigurationMakefileWriter {
                     continue;
                 if (!itemConfiguration.isCompilerToolConfiguration())
                     continue;
+                if (items[x].hasHeaderOrSourceExtension(false, false))
+                    continue;
                 BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                 linkObjects.append(" \\\n\t"); // NOI18N
-                linkObjects.append(compilerConfiguration.getOutputFile(items[x].getPath(true), conf, false));
+                linkObjects.append(compilerConfiguration.getOutputFile(items[x], conf, false));
             }
         }
         return linkObjects.toString();

@@ -146,18 +146,18 @@ public final class GroovyIndex {
         final Set<IndexedClass> classes = new HashSet<IndexedClass>();
 
         for (SearchResult map : result) {
-            String clz = map.getValue(GroovyIndexer.CLASS_NAME);
+            String simpleName = map.getValue(GroovyIndexer.CLASS_NAME);
 
-            if (clz == null) {
+            if (simpleName == null) {
                 // It's probably a module
                 // XXX I need to handle this... for now punt
                 continue;
             }
 
             // Lucene returns some inexact matches, TODO investigate why this is necessary
-            if ((kind == NameKind.PREFIX) && !clz.startsWith(name)) {
+            if ((kind == NameKind.PREFIX) && !simpleName.startsWith(name)) {
                 continue;
-            } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !clz.regionMatches(true, 0, name, 0, name.length())) {
+            } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !simpleName.regionMatches(true, 0, name, 0, name.length())) {
                 continue;
             }
 
@@ -235,7 +235,7 @@ public final class GroovyIndex {
                 }
             }
 
-            classes.add(createClass(fqn, clz, map));
+            classes.add(createClass(fqn, simpleName, map));
         }
 
         return classes;
@@ -568,14 +568,14 @@ public final class GroovyIndex {
         return null;
     }
 
-    private IndexedClass createClass(String fqn, String clz, SearchResult map) {
+    private IndexedClass createClass(String fqn, String simpleName, SearchResult map) {
 
         // TODO - how do I determine -which- file to associate with the file?
         // Perhaps the one that defines initialize() ?
         String fileUrl = map.getPersistentUrl();
 
-        if (clz == null) {
-            clz = map.getValue(GroovyIndexer.CLASS_NAME);
+        if (simpleName == null) {
+            simpleName = map.getValue(GroovyIndexer.CLASS_NAME);
         }
 
         String attrs = map.getValue(GroovyIndexer.CLASS_ATTRS);
@@ -586,7 +586,7 @@ public final class GroovyIndex {
         }
 
         IndexedClass c =
-            IndexedClass.create(this, clz, fqn, fileUrl, attrs, flags);
+            IndexedClass.create(this, simpleName, fqn, fileUrl, attrs, flags);
 
         return c;
     }

@@ -78,7 +78,6 @@ public class DataSetCD extends ComponentDescriptor {
         return Arrays.asList(
                 // code
                 MidpDataSetBodyCodePresenter.create("/org/netbeans/modules/vmd/midp/codegen/dataset_java.code") //NOI18N
-                
                 );
     }
 }

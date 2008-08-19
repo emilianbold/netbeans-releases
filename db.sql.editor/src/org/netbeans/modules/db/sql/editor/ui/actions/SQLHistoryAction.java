@@ -63,8 +63,9 @@ public class SQLHistoryAction extends SQLExecutionBaseAction {
     }
 
     protected void actionPerformed(SQLExecution sqlExecution) {
-        FileObject databaseDir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
-        if (databaseDir == null || databaseDir.getChildren().length == 0) {    
+        FileObject historyRoot = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
+        historyRoot.refresh(true);
+        if (historyRoot == null || historyRoot.getChildren().length == 0) {    
             notifyNoSQLExecuted();
         } else {
             sqlExecution.showHistory();

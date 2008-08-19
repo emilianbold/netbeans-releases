@@ -55,7 +55,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Mutex;
 
 /**
  *
@@ -67,7 +66,6 @@ public class CopyOnSaveSupportTest extends NbTestCase {
         super(name);
     }
 
-
     public void testSingleDir() throws Exception {
         File projectFile = UtilsTest.getProjectAsFile(this, "CopyOnSaveTest");
         FileObject projectFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(projectFile));
@@ -77,43 +75,7 @@ public class CopyOnSaveSupportTest extends NbTestCase {
         WebProjectTest.openProject(webProject);
 
         try {
-            File sampleJsp = new File(getDataDir(), "Sample.jsp");
-            FileObject sampleJspFileObject = FileUtil.toFileObject(sampleJsp);
-
-            File destFile = new File(new File(projectFile, "web"), "Sample.jsp");
-            FileObject toCheck = projectFileObject.getFileObject("build/web/Sample.jsp");
-            if (toCheck != null) {
-                toCheck.delete();
-            }
-
-            FileObject webFileObject = FileUtil.toFileObject(destFile.getParentFile());
-
-            // copy file
-            FileObject destFileObject = FileUtil.copyFile(sampleJspFileObject, webFileObject, "Sample");
-            toCheck = projectFileObject.getFileObject("build/web/Sample.jsp");
-            assertFile(FileUtil.toFile(toCheck), sampleJsp);
-
-            // delete file
-            destFileObject.delete();
-            assertFalse(toCheck.isValid());
-
-            // change file
-            File index = new File(new File(projectFile, "web"), "index.jsp");
-            FileObject indexFileObject = FileUtil.toFileObject(index);
-            InputStream is = new BufferedInputStream(new FileInputStream(sampleJsp));
-            try {
-                OutputStream os = new BufferedOutputStream(indexFileObject.getOutputStream());
-                try {
-                    FileUtil.copy(is, os);
-                } finally {
-                    os.close();
-                }
-            } finally {
-                is.close();
-            }
-
-            toCheck = projectFileObject.getFileObject("build/web/index.jsp");
-            assertFile(FileUtil.toFile(toCheck), sampleJsp);
+            singleBasicTest(projectFileObject, "web");
         } finally {
             WebProjectTest.closeProject(webProject);
         }
@@ -142,45 +104,108 @@ public class CopyOnSaveSupportTest extends NbTestCase {
         });
 
         try {
-            File sampleJsp = new File(getDataDir(), "Sample.jsp");
-            FileObject sampleJspFileObject = FileUtil.toFileObject(sampleJsp);
-
-            File destFile = new File(new File(projectFile, "web_1"), "Sample.jsp");
-            FileObject toCheck = projectFileObject.getFileObject("build/web/Sample.jsp");
-            if (toCheck != null) {
-                toCheck.delete();
-            }
-
-            FileObject webFileObject = FileUtil.toFileObject(destFile.getParentFile());
-
-            // copy file
-            FileObject destFileObject = FileUtil.copyFile(sampleJspFileObject, webFileObject, "Sample");
-            toCheck = projectFileObject.getFileObject("build/web/Sample.jsp");
-            assertFile(FileUtil.toFile(toCheck), sampleJsp);
-
-            // delete file
-            destFileObject.delete();
-            assertFalse(toCheck.isValid());
-
-            // change file
-            File index = new File(new File(projectFile, "web_1"), "index.jsp");
-            FileObject indexFileObject = FileUtil.toFileObject(index);
-            InputStream is = new BufferedInputStream(new FileInputStream(sampleJsp));
-            try {
-                OutputStream os = new BufferedOutputStream(indexFileObject.getOutputStream());
-                try {
-                    FileUtil.copy(is, os);
-                } finally {
-                    os.close();
-                }
-            } finally {
-                is.close();
-            }
-
-            toCheck = projectFileObject.getFileObject("build/web/index.jsp");
-            assertFile(FileUtil.toFile(toCheck), sampleJsp);
+            singleBasicTest(projectFileObject, "web_1");
         } finally {
             WebProjectTest.closeProject(webProject);
         }
+    }
+
+    public void testChangedWeb() throws Exception {
+        File projectFile = UtilsTest.getProjectAsFile(this, "CopyOnSaveTest");
+        FileObject projectFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(projectFile));
+        final Project project = ProjectManager.getDefault().findProject(projectFileObject);
+
+        final WebProject webProject = (WebProject) project;
+        WebProjectTest.openProject(webProject);
+
+        try {
+            singleBasicTest(projectFileObject, "web");
+
+            ProjectManager.mutex().postWriteRequest(new Runnable() {
+                public void run() {
+                    try {
+                        UpdateHelper helper = webProject.getUpdateHelper();
+                        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        props.put(WebProjectProperties.WEB_DOCBASE_DIR, "web_1");
+                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                        ProjectManager.getDefault().saveProject(project);
+                    } catch (IOException e) {
+                        fail("Could not configure web docbase");
+                    }
+                }
+            });
+
+            singleBasicTest(projectFileObject, "web_1");
+        } finally {
+            WebProjectTest.closeProject(webProject);
+        }
+    }
+
+    private void singleBasicTest(FileObject projectFileObject, String webPrefix) throws Exception {
+        File projectFile = FileUtil.toFile(projectFileObject);
+
+        File sampleJsp = new File(getDataDir(), "sample.jsp");
+        FileObject sampleJspFileObject = FileUtil.toFileObject(sampleJsp);
+
+        File destFile = new File(new File(projectFile, webPrefix), "sample.jsp");
+        FileObject toCheck = projectFileObject.getFileObject("build/web/sample.jsp");
+        if (toCheck != null) {
+            toCheck.delete();
+        }
+
+        FileObject webFileObject = FileUtil.toFileObject(destFile.getParentFile());
+
+        // copy file
+        FileObject destFileObject = FileUtil.copyFile(sampleJspFileObject, webFileObject, "sample");
+        toCheck = projectFileObject.getFileObject("build/web/sample.jsp");
+        assertFile(FileUtil.toFile(toCheck), sampleJsp);
+
+        // delete file
+        destFileObject.delete();
+        assertFalse(toCheck.isValid());
+
+        // change file
+        File index = new File(new File(projectFile, webPrefix), "index.jsp");
+        FileObject indexFileObject = FileUtil.toFileObject(index);
+        InputStream is = new BufferedInputStream(new FileInputStream(sampleJsp));
+        try {
+            OutputStream os = new BufferedOutputStream(indexFileObject.getOutputStream());
+            try {
+                FileUtil.copy(is, os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            is.close();
+        }
+
+        toCheck = projectFileObject.getFileObject("build/web/index.jsp");
+        assertFile(FileUtil.toFile(toCheck), sampleJsp);
+
+        // cleanup a bit
+        toCheck.delete();
+
+        // change file in WEB-INF
+        File sampleWebXml = new File(getDataDir(), "web.xml");
+
+        File webXml = new File(new File(new File(projectFile, "web"), "WEB-INF"), "web.xml");
+        FileObject webXmlFileObject = FileUtil.toFileObject(webXml);
+        is = new BufferedInputStream(new FileInputStream(sampleWebXml));
+        try {
+            OutputStream os = new BufferedOutputStream(webXmlFileObject.getOutputStream());
+            try {
+                FileUtil.copy(is, os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            is.close();
+        }
+
+        toCheck = projectFileObject.getFileObject("build/web/WEB-INF/web.xml");
+        assertFile(FileUtil.toFile(toCheck), sampleWebXml);
+
+        // cleanup a bit
+        toCheck.delete();
     }
 }

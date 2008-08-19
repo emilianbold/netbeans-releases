@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = true;
+    const DEBUG = false;
 
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -211,31 +211,41 @@
         onExamineResponse: function( aNsISupport ){
             var DEBUG_METHOD = (false & DEBUG);
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
-            if (DEBUG_METHOD) {
-                NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);
-            }
+            if (DEBUG_METHOD) { NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);}
             var id = requestsId.getId(request)
-            if( id )  {
-                delete requestsId[id];
-
-                var activity = createResponseActivity(request, id);
-                if ( activity ) {
-                  sendExamineNetResponse(activity);
-                } else if (DEBUG_METHOD){
-                  NetBeans.Logger.log("net.onExamineResponse - activity is null");
-                }
+            if ( id ) {
+              var xhrRequest = request.notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
+              if( xhrRequest ){
+                    xhrRequest.onreadystatechange = function () {
+                      if (xhrRequest.readyState == 4) {
+                         if(xhrRequest.status == 200) {
+                            if ( DEBUG_METHOD ) { NetBeans.Logger.log("net.onExamineResponse - id:" + id);}
+                            if ( DEBUG_METHOD ) { NetBeans.Logger.log("net.onExamineResponse - request:" + request);}
+                            processExamineResponse(request, id, xhrRequest);
+                         } else {if ( DEBUG_METHOD ) { NetBeans.Logger.log("net.onExamineResponse - failure to load responseText \n");}}
+                       }
+                   };
+              } else {
+                  processExamineResponse(request, id, null);
+              }
+              delete requestsId[id];
+              return;
             } else if (DEBUG_METHOD){
                   NetBeans.Logger.log("net.onExamineResponse - Did not recognize response for: " + request.URI.asciiSpec);
             }
         }
     }
+        
+    function processExamineResponse( request, id, xhrRequest){
+          var DEBUG_METHOD = (false & DEBUG);
+          if (DEBUG_METHOD){ NetBeans.Logger.log("net.processExaminResponse: ");}
+          var activity = createResponseActivity(request, id, xhrRequest);
+          if (DEBUG_METHOD){ NetBeans.Logger.log("net.processExaminResponse: activity created");}
+          if ( activity ) {
+            sendExamineNetResponse(activity);
+          } else if (DEBUG_METHOD){ NetBeans.Logger.log("net.onExamineResponse - activity is null"); }
 
-//    function print_requests_array ( myArray ){
-//        for ( var i in myArray )
-//        {
-//            NetBeans.Logger.log("   " + myArray[i].URI.asciiSpec);
-//        }
-//    }
+    }
 
     function createRequestActivity(request, id){
         var DEBUG_METHOD = (false & DEBUG);
@@ -251,14 +261,16 @@
         if ( activity.method == "post" || activity.method == "POST") {
             activity.postText = getPostText(activity, request, myContext, activity.requestHeaders);
         } else {
-            if (DEBUG_METHOD) NetBeans.Logger.log("netBeans.onModifyRequest - request.name:" + request.name);
             activity.urlParams = parseURLParams(request.name);
-            if (DEBUG_METHOD) NetBeans.Logger.log("netBeans.onModifyRequest - urlParams:" + activity.urlParams);
+            if (DEBUG_METHOD){
+                NetBeans.Logger.log("netBeans.onModifyRequest - request.name:" + request.name);
+                NetBeans.Logger.log("netBeans.onModifyRequest - urlParams:" + activity.urlParams);
+            } 
         }
         return activity;
     }
 
-    function createResponseActivity (request, id) {
+    function createResponseActivity (request, id, xhrRequest) {
         var DEBUG_METHOD = (false & DEBUG);
 
         if( !request || !id){
@@ -266,21 +278,31 @@
         }
 
         var activity = new NetActivity();
+        activity.time = nowTime();
         activity.uuid = id;
         activity.name = request.name;
         activity.responseHeaders = getHttpResponseHeaders(request);
-        activity.time = nowTime();
         activity.url = request.URI.asciiSpec;
         if (!activity.mimeType) {
             activity.mimeType = getMimeType(request);
-            if( DEBUG_METHOD && ! activity.mimeType ){ NetBeans.Logger.log("Activity mime type is null for:" + activity.url); }
+           // if( DEBUG_METHOD && ! activity.mimeType ){ NetBeans.Logger.log("Activity mime type is null for:" + activity.url); }
         }
         activity.size = request.contentLength;
-
-        activity.responseText = getResponseText(request);
-        activity.status = request.responseStatus;
-        activity.category = getRequestCategory(request);
-        if ( DEBUG_METHOD ){ NetBeans.Logger.log("Response Status:" + request.responseStatus);}
+        if( xhrRequest){
+            activity.category = "xhr"; // Temporary using this string since getRequestCategory returns html if called a second time.  Still not sure why.
+            activity.responseText = xhrRequest.responseText;
+            activity.status = request.responseStatus;
+            if (DEBUG_METHOD){
+                NetBeans.Logger.log("net.createResponseActivity: xhrRequest:" + xhrRequest.responseText);
+                NetBeans.Logger.log("net.createResponseActivity: responseStatus:" + request.responseStatus);
+                NetBeans.Logger.log("net.createResponseActivity: xhrRequest.status:" + xhrRequest.status);
+            }
+        } else {
+            activity.category = getRequestCategory(request);
+            activity.responseText = getResponseText(request);
+            activity.status = request.responseStatus;
+        }
+        //if ( DEBUG_METHOD ){ NetBeans.Logger.log("Response Status:" + request.responseStatus);}
          /* Response File Loaded: */
         if (activity.status == "304") {
             NetBeans.Logger.log("CACHED ENTRY");
@@ -398,14 +420,8 @@
         if (category == "image"){
             return "IMAGE";
         }
-
-        if (category == "xhr"){
-          var xhrRequest = aRequest.notificationCallbacks.getInterface(NetBeans.Constants.XMLHttpRequestIF);
-          if( xhrRequest && xhrRequest.responseText ){
-              if (DEBUG_METHOD){ NetBeans.Logger.log("net.getResponseText - RESPONSE TEXT: " + responseText);}
-              return responseText;
-          } 
-        } 
+        
+        //Initiates a Get Request to Determine Response Text
         responseText = myContext.sourceCache.loadText(aRequest.URI.asciiSpec, aRequest.requestMethod);
         if (DEBUG_METHOD){NetBeans.Logger.log("net.getResponseText - RESPONSE TEXT: " + responseText); }
         return responseText;
@@ -426,7 +442,9 @@
     }
 
     function getRequestCategoryFromMime(mimeType){
+        var DEBUG_METHOD = false & DEBUG;
         var category = mimeCategoryMap[mimeType];
+        if (DEBUG_METHOD){ NetBeans.Logger.log("net.getRequestCategoryFromMime.category: " + category);}
         return category;
     }
 
@@ -760,7 +778,7 @@
         netActivity.max = max;
         netActivity.total = total;
         netActivity.maxTotal = maxTotal;
-        loadXmlActivityResponse( netActivity, activity);
+        loadXmlActivityResponse(netActivity, activity);
         if( DEBUG ){
             NetBeans.Logger.log(netActivity.toXMLString());
         }
@@ -839,8 +857,6 @@
         }
 
         var headerValue = null;
-        // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
-        // there can be even charset specified. So, use indexOf rather than just "==".
         try {
             headerValue = request.contentType;
         } catch(exc) {
@@ -849,6 +865,8 @@
         if ( !headerValue ){
             headerValue = findHeader(headers, "Content-Type");
         }
+        // The header value doesn't have to be alway exactly "application/x-www-form-urlencoded",
+        // there can be even charset specified. So, use indexOf rather than just "==".
         return (headerValue && headerValue.indexOf("application/x-www-form-urlencoded") == 0);
     }
 

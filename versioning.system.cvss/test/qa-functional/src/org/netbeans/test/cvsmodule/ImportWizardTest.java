@@ -519,7 +519,7 @@ public class ImportWizardTest extends JellyTestCase {
         in.close();
         folderToImportOper.setFolderToImport(getWorkDirPath());
         JFileChooserOperator browseFolder = folderToImportOper.browseFolderToImport();
-        assertEquals("Directory set in wizard not propagated to file chooser:", getWorkDir().getAbsolutePath(), browseFolder.getCurrentDirectory().getAbsolutePath()); // NOI18N
+        assertEquals("Directory set in wizard not propagated to file chooser:", getWorkDir().getAbsolutePath().toLowerCase(), browseFolder.getCurrentDirectory().getAbsolutePath().toLowerCase()); // NOI18N
         browseFolder.cancel();
         folderToImportOper.setImportMessage("Import message"); //NOI18N
         

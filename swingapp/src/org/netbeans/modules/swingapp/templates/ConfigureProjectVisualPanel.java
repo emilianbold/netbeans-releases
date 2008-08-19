@@ -49,6 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
@@ -65,7 +67,9 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -239,7 +243,22 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
             FileObject shellFolder = Repository.getDefault().getDefaultFileSystem().findResource(
                 "org-netbeans-modules-swingapp/appshells"); // NOI18N
             DataObject dobj = DataObject.find(shellFolder);
-            return dobj.getNodeDelegate();
+            return new FilterNode(dobj.getNodeDelegate(), new FilterNode.Children(dobj.getNodeDelegate()) {
+                @Override
+                protected Node[] createNodes(Node key) {
+                    try {
+                        String className = (String)fileFromNode(key).getAttribute("requiredClass"); // NOI18N
+                        if (className != null) {
+                            ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+                            classLoader.loadClass(className);
+                        }
+                        return new Node[] { copyNode(key) };
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    }
+                    return new Node[0];
+                }
+            });
         }
         catch (Exception ex) { // should not happen, but...
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

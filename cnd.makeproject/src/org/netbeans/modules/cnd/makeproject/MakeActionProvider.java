@@ -302,7 +302,7 @@ public class MakeActionProvider implements ActionProvider {
                             record.validate(true);
                             // initialize compiler sets for remote host if needed
                             CompilerSetManager csm = CompilerSetManager.getDefault(record.getName());
-                            csm.initialize();
+                            csm.initialize(true);
                         } catch(Exception e) {
                             e.printStackTrace();
                         }
@@ -659,17 +659,18 @@ public class MakeActionProvider implements ActionProvider {
                             String outputFile = null;
                             if (itemConfiguration.getTool() == Tool.CCompiler) {
                                 CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
-                                outputFile = cCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
+                                outputFile = cCompilerConfiguration.getOutputFile(item, conf, true);
                             } else if (itemConfiguration.getTool() == Tool.CCCompiler) {
                                 CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
-                                outputFile = ccCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
+                                outputFile = ccCompilerConfiguration.getOutputFile(item, conf, true);
                             } else if (itemConfiguration.getTool() == Tool.FortranCompiler) {
                                 FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
-                                outputFile = fortranCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
+                                outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, true);
                             } else if (itemConfiguration.getTool() == Tool.CustomTool) {
                                 CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                                 outputFile = customToolConfiguration.getOutputs().getValue();
                             }
+                            outputFile = conf.expandMacros(outputFile);
                             // Clean command
                             String commandLine = "rm -rf " + outputFile; // NOI18N
                             String args = ""; // NOI18N
@@ -861,8 +862,11 @@ public class MakeActionProvider implements ActionProvider {
         if (item == null) {
             // try to find Item in associated data object if any
             try {
-                File file = FileUtil.toFile((node.getCookie(DataObject.class)).getPrimaryFile());
-                item = getProjectDescriptor().findItemByFile(file);
+                DataObject dao = node.getCookie(DataObject.class);
+                if (dao != null) {
+                    File file = FileUtil.toFile(dao.getPrimaryFile());
+                    item = getProjectDescriptor().findItemByFile(file);
+                }
             } catch (NullPointerException ex) {
                 // not found item
             }
@@ -916,15 +920,14 @@ public class MakeActionProvider implements ActionProvider {
             // TODO: all validation below works, but it may be more efficient to make a verifying script
         }
 
+        boolean unknownCompilerSet = false;
         if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
             // Confiiguration was created with unknown tool set. Use the now default one.
+            unknownCompilerSet = true;
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);
             if (cs == null) {
-                cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csconf.getOption());
-            }
-            if (cs == null && CompilerSetManager.getDefault(hkey).getCompilerSets().size() > 0) {
-                cs = CompilerSetManager.getDefault(hkey).getCompilerSet(0);
+                cs = CompilerSetManager.getDefault(hkey).getDefaultCompilerSet();
             }
             runBTA = true;
         } else if (csconf.isValid()) {
@@ -955,7 +958,7 @@ public class MakeActionProvider implements ActionProvider {
                 runBTA = true;
             }
         } else {
-            if(serverList != null) {
+            if(serverList != null && !unknownCompilerSet) {
                 if (!serverList.isValidExecutable(hkey, makeTool.getPath())) {
                     runBTA=true;
                 }
@@ -1015,7 +1018,7 @@ public class MakeActionProvider implements ActionProvider {
                 // User can't change anything in BTA for remote host yet,
                 // so showing above dialog will only confuse him
                 NotifyDescriptor nd = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", cs.getName(), conf.getDevelopmentHost().getName()));
+                        NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", csname, conf.getDevelopmentHost().getName()));
                 DialogDisplayer.getDefault().notify(nd);
                 lastValidation = false;
             }

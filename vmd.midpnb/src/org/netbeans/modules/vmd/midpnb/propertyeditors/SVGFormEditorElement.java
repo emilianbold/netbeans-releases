@@ -71,12 +71,11 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorMessageAwareness;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
@@ -107,6 +106,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private DesignComponentWrapper wrapper;
     private PropertyEditorMessageAwareness messageAwareness;
     private WeakReference<DesignDocument> documentReferences;
+    private Map<String,String> pathMap;
     
     public SVGFormEditorElement() {
         paths = new HashMap<String, FileObject>();
@@ -116,6 +116,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         imageView = new SVGImageComponent();
         previewPanel.add(imageView, BorderLayout.CENTER);
         jTable1.setModel(new Model());
+        pathMap = new HashMap<String, String>();
     }
 
     @Override
@@ -219,18 +220,19 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     @Override
-    public void postSaveValue(final DesignComponent parentComponent) {
+    public void postSetValue(final DesignComponent parentComponent, final DesignComponent childComponent) {
          
         final FileObject[] svgImageFileObject = new FileObject[1];
         parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
-                DesignComponent childComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
-                if (childComponent == null) {
-                    return;
-                }
+//                DesignComponent childComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
+//                if (childComponent == null) {
+//                    return;
+//                }
                 PropertyValue propertyValue = childComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
                 if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
+                    //String svgImagePath = MidpTypes.getString(propertyValue);
                     Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(parentComponent.getDocument(), MidpTypes.getString(propertyValue));
                     Iterator<FileObject> iterator = images.keySet().iterator();
                     svgImageFileObject[0] = iterator.hasNext() ? iterator.next() : null;
@@ -719,6 +721,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
             String relativePath = convertFile(fo, null, true);
             if (relativePath != null) {
                 setText(relativePath);
+                pathMap.put(relativePath, fo.getPath());
                 pathTextComboBoxActionPerformed(null);
             } else {
                 String message = NbBundle.getMessage(SVGFormEditorElement.class, "MSG_FILE_EXIST"); // NOI18N

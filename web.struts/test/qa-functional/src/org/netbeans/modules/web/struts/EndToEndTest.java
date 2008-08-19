@@ -61,13 +61,13 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
@@ -87,7 +87,7 @@ import org.netbeans.junit.ide.ProjectSupport;
  *
  * @author Jiri Skrivanek
  */
-public class EndToEndTest extends JellyTestCase {
+public class EndToEndTest extends J2eeTestCase {
     
     public static final String PROJECT_NAME = "StrutsWebApplication";
     
@@ -98,6 +98,14 @@ public class EndToEndTest extends JellyTestCase {
     
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EndToEndTest.class);
+        conf = addServerTests(conf,"testSetupStrutsProject","testCreateLoginPage","testCreateLoginBean",
+                "testCreateLoginAction","testCreateSecurityManager","testCreateForward","testCreateShopPage",
+                "testCreateLogoutPage","testCreateForwardInclude","testRunApplication");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
+        
+        /*
         return NbModuleSuite.create(
             NbModuleSuite.createConfiguration(EndToEndTest.class)
             .addTest("testSetupStrutsProject")
@@ -113,6 +121,7 @@ public class EndToEndTest extends JellyTestCase {
             .enableModules(".*")
             .clusters(".*")
         );
+        */
     }
     
     /** Called before every test case. */
