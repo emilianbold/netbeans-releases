@@ -195,4 +195,12 @@
 	<mapID target="CandC++DisassemblyWIndow" url="CandC++ProjectBasics/CandC++DisassemblyWIndow.html"/>
 	<mapID target="ResolveBuildTools" url="CandC++ProjectBasics/ResolveBuildTools.html"/>
 	<mapID target="ProjectPropsBuild" url="WorkingWithCandC++Projects/ProjectPropsBuild.html"/>
+	<mapID target="ErrorHighlighting" url="EditingSourceFiles/ErrorHighlighting.html"/>
+	<mapID target="UsingCallGraph" url="EditingSourceFiles/UsingCallGraph.html"/>
+	<mapID target="CandC++MemoryWindow" url="CandC++ProjectBasics/CandC++MemoryWindow.html"/>
+	<mapID target="Packaging" url="CandC++ProjectBasics/Packaging.html"/>
+	<mapID target="RemoteDevelopment" url="WorkingWithCandC++Projects/RemoteDevelopment.html"/>
+	<mapID target="focus" url="images/focus.png"/>
+	<mapID target="error-glyph" url="images/error-glyph.png"/>
+	<mapID target="ProjectPropsPackaging" url="WorkingWithCandC++Projects/ProjectPropsPackaging.html"/>
 </map>
