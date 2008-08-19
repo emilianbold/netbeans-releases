@@ -659,13 +659,13 @@ public class MakeActionProvider implements ActionProvider {
                             String outputFile = null;
                             if (itemConfiguration.getTool() == Tool.CCompiler) {
                                 CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
-                                outputFile = cCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
+                                outputFile = cCompilerConfiguration.getOutputFile(item, conf, true);
                             } else if (itemConfiguration.getTool() == Tool.CCCompiler) {
                                 CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
-                                outputFile = ccCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
+                                outputFile = ccCompilerConfiguration.getOutputFile(item, conf, true);
                             } else if (itemConfiguration.getTool() == Tool.FortranCompiler) {
                                 FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
-                                outputFile = fortranCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
+                                outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, true);
                             } else if (itemConfiguration.getTool() == Tool.CustomTool) {
                                 CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                                 outputFile = customToolConfiguration.getOutputs().getValue();
