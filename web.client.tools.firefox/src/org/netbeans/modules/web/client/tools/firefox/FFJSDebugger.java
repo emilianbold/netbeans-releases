@@ -47,6 +47,7 @@ import org.netbeans.modules.web.client.tools.common.launcher.Utils;
 import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSAbstractExternalDebugger;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -62,7 +63,9 @@ public class FFJSDebugger extends JSAbstractExternalDebugger {
     protected void launchImpl(int port) {
         LaunchDescriptor launchDescriptor = new LaunchDescriptor(getBrowserExecutable());
         launchDescriptor.setURI(Utils.getDebuggerLauncherURI(port, getID()));
-        launchDescriptor.setArguments(getBrowserArguments());
+        if (!Utilities.isMac()) {
+            launchDescriptor.setArguments(getBrowserArguments());
+        }
         try {
             Launcher.launch(launchDescriptor);
         } catch (IOException ex) {
