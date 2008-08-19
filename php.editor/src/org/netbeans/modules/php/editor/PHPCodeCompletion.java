@@ -239,7 +239,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
             Arrays.asList(' ', '=', ';', '+', '-', '*', '/',
-                '%', '(', ')', '[', ']', '{', '}')); 
+                '%', '(', ')', '[', ']', '{', '}', '?')); 
 
     private boolean caseSensitive;
     private NameKind nameKind;

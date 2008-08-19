@@ -78,7 +78,7 @@ public class GotoClassDialog extends PerformanceTestCase {
     
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/GoTo") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.editor.java.Bundle","NAME_JavaFastOpenAction");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/GoTo") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.editor.java.Bundle","NAME_JavaFastOpenAction");
         TITLE = Bundle.getStringTrimmed("org.netbeans.editor.ext.java.Bundle", "JFO_title");
     }
     
