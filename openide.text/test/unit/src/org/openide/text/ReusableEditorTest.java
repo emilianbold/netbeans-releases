@@ -41,24 +41,21 @@
 
 package org.openide.text;
 
-
 import java.beans.PropertyChangeListener;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JEditorPane;
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.*;
-
 
 /** Testing the behavior of editor reusal framework.
  * The behavior was discussed thoroughly at issue 94607.
  *
  * @author Petr Nejedly
  */
+@RandomlyFails // timeout in NB-Core-Build #1187
 public class ReusableEditorTest extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");

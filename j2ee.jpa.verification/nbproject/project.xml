@@ -202,9 +202,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.hibernate</friend>
                 <package>org.netbeans.modules.j2ee.jpa.verification.api</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
