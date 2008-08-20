@@ -50,6 +50,7 @@ import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
+import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileFilter;
 
 import org.netbeans.api.debugger.Properties;
@@ -100,6 +101,10 @@ NodeActionsProvider {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         loadFilters ();
         updateCachedRoots();
+        DELETE_ACTION.putValue (
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke ("DELETE")
+        );
     }
 
 

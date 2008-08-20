@@ -66,21 +66,13 @@ public class SemanticHighlightingOptions {
     private static final String KEEP_MARKS = "KeepMarks"; // NOI18N
 
     public static final boolean SEMANTIC_ADVANCED = Boolean.getBoolean("cnd.semantic.advanced"); // NOI18N
-    
+
     private boolean getOption(String key, boolean defaultValue) {
         return preferences.getBoolean(key, defaultValue);
     }
 
     private void setOption(String key, boolean value) {
         preferences.putBoolean(key, value);
-    }
-    
-    public boolean isEnabled(String key) {
-        return getOption(key, true);
-    }
-    
-    public void setEnabled(String key, boolean value) {
-        setOption(key, value);
     }
     
     public boolean getEnableMarkOccurrences() {
