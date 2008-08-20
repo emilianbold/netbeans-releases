@@ -70,7 +70,6 @@ final class HttpMonitorTopComponent extends TopComponent {
     private HttpMonitorTopComponent() {
         LOG.entering(HttpMonitorTopComponent.class.getName(), "constructor");
         
-        
         initComponents();
         
         setName(NbBundle.getMessage(HttpMonitorTopComponent.class, "CTL_HttpMonitorTopComponent"));
@@ -108,12 +107,8 @@ final class HttpMonitorTopComponent extends TopComponent {
 
     private JComponent createActivitiesTable() {
         CompoundModel compoundModel = createViewCompoundModel(HttpMonitorUtility.getCurrentHttpMonitorModel());
-
         tableView = Models.createView(compoundModel);
-
         getActivityExplorerManager().addPropertyChangeListener(activityPropertyChangeListener);
-
-       
         return tableView;
     }
 
@@ -271,6 +266,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         LOG.entering(HttpMonitorTopComponent.class.getName(), "componentClosed");
         super.componentClosed();
         HttpMonitorUtility.setHttpMonitorOpened(false);
+        instance = null;
         LOG.exiting(HttpMonitorTopComponent.class.getName(), "componentClosed");
     }
 
@@ -769,7 +765,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                 setToolbarButtonsEnabled(true);
                 resetHttpActivitesModel(model);
             } else {
-                // The session was cleared
+                // The session was cleared and the model should be cleared.
                 setToolbarButtonsEnabled(false);
                 resetHttpActivitesModel(null);
             }
@@ -812,67 +808,4 @@ final class HttpMonitorTopComponent extends TopComponent {
         xhr_filterButton.setSelected(httpMonitorPreferences.isShowXHR());
     }
 
-    private class MapTableModel extends AbstractTableModel {
-
-        Map<String, String> map;
-        private static final int COL_COUNT = 2;
-        String[][] arrayOfMap;
-
-        public MapTableModel(Map<String, String> map) {
-            loadMapData(map);
-        }
-
-        public int getRowCount() {
-            return arrayOfMap[0].length;
-        }
-
-        public int getColumnCount() {
-            return COL_COUNT;
-        }
-
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            return arrayOfMap[columnIndex][rowIndex];
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            switch (column) {
-                case 0:
-                    return "Key";
-                case 1:
-                    return "Value";
-                default:
-                    throw new IllegalArgumentException("There is no such column id:" + column);
-            }
-        }
-
-        public void setMap(Map<String, String> map) {
-            loadMapData(map);
-            fireTableDataChanged();
-        }
-
-        public void loadMapData(Map<String, String> map) {
-            this.map = map;
-            arrayOfMap = new String[COL_COUNT][map.size()];
-            int i = 0;
-            for (String key : map.keySet()) {
-                arrayOfMap[0][i] = key;
-                arrayOfMap[1][i] = map.get(key);
-                i++;
-            }
-        }
-        List<TableModelListener> localListener = new ArrayList<TableModelListener>();
-
-        @Override
-        public void addTableModelListener(TableModelListener l) {
-            localListener.add(l);
-            super.addTableModelListener(l);
-        }
-
-        @Override
-        public void removeTableModelListener(TableModelListener l) {
-            localListener.remove(l);
-            super.removeTableModelListener(l);
-        }
-    }
 }
