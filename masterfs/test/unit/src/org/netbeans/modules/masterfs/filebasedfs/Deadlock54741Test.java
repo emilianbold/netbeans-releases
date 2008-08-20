@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.masterfs.filebasedfs;
 
-import org.netbeans.modules.masterfs.*;
 import java.io.File;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
@@ -57,7 +56,7 @@ import org.openide.filesystems.FileUtil;
 /**
  * @author pzajac
  */
-public class Deadlock54741 extends NbTestCase {
+public class Deadlock54741Test extends NbTestCase {
     
     private static class DelFileChangeListener implements FileChangeListener {
         public void fileAttributeChanged(FileAttributeEvent fe) {
@@ -107,12 +106,13 @@ public class Deadlock54741 extends NbTestCase {
     }
     
     
-    public Deadlock54741(String testName) {
+    public Deadlock54741Test(String testName) {
         super(testName);
     }
     
     public void testDeadLock () throws Exception {
-        File f = File.createTempFile("fff","fsdfsd");
+        clearWorkDir();
+        File f = File.createTempFile("fff", "fsdfsd", getWorkDir());
         FileObject tmpFo = FileUtil.toFileObject(f.getParentFile()); 
         assertNotNull(tmpFo);
       
@@ -123,13 +123,15 @@ public class Deadlock54741 extends NbTestCase {
         thread.start();
             
         try {
-            Thread.currentThread().sleep(2000);
+            Thread.sleep(2000);
             boolean isDeadlock [] = new boolean[1]; 
              makeDeadlock(tmpFo,f, isDeadlock);   
             Thread.sleep(2000);
             boolean isD = isDeadlock[0];
             // finish -> unlock thread
-            deleteRunnable.notify();
+            synchronized (deleteRunnable) {
+                deleteRunnable.notify();
+            }
             assertFalse("deadlock!!!",isD);    
         } catch (InterruptedException ie) {
             ie.printStackTrace();
@@ -139,17 +141,19 @@ public class Deadlock54741 extends NbTestCase {
     private Thread makeDeadlock(final FileObject fo, final File f,final boolean isDeadLock[]) {  
         isDeadLock[0] = true;
         Thread t = new Thread () {
+            @Override
             public void run() {
-                   fo.getFileObject(f.getName());
-                   isDeadLock[0] = false;
-        }};     
+                fo.getFileObject(f.getName());
+                isDeadLock[0] = false;
+            }
+        };
         t.start(); 
         return t;  
     }  
         
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(Deadlock54741.class);
+        suite.addTestSuite(Deadlock54741Test.class);
          
         return new FileBasedFileSystemTest(suite);
     }

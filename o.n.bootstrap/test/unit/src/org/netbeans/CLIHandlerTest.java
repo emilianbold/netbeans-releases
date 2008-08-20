@@ -345,10 +345,8 @@ public class CLIHandlerTest extends NbTestCase {
     }
     
     public void testCLIHandlersCanChangeLocationOfLockFile() throws Exception {
-        File f = File.createTempFile("suffix", "tmp").getParentFile();
-        final File dir = new File(f, "subdir");
-        dir.delete();
-        assertTrue(dir.exists() || dir.mkdir());
+        clearWorkDir();
+        final File dir = getWorkDir();
         
         class UserDir extends CLIHandler {
             private int cnt;
@@ -371,8 +369,6 @@ public class CLIHandlerTest extends NbTestCase {
         assertNotNull("res: ", res);
         assertEquals("Our command line handler is called once", 1, ud.cnt);
         assertEquals("Lock file is created in dir", dir, res.getLockFile().getParentFile());
-        
-        dir.delete();
     }
     
     public void testCLIHandlerCanStopEvaluation() throws Exception {

@@ -336,6 +336,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("IZ138551.cc"); // NOI18N
     }
 
+    public void testIZ144276() throws Exception {
+        // IZ 144276 : StackOverflowError on typedef C::C C;
+        performTest("IZ144276.cc"); // NOI18N
+    }
+
     public void testArrayCast() throws Exception {
         // IZ 138899 : parser fails on conversion "(int(*)[4][4])"
         performTest("array_cast.cc");

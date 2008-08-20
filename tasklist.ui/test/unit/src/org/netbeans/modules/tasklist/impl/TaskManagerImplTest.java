@@ -38,13 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.tasklist.impl;
 
 import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.tasklist.filter.TaskFilter;
-import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
 import org.netbeans.spi.tasklist.FileTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.PushTaskScanner.Callback;
@@ -65,6 +66,7 @@ public class TaskManagerImplTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         
@@ -121,6 +123,7 @@ public class TaskManagerImplTest extends NbTestCase {
         assertEquals(1, impl.getTasks().getTasks().size());
     }
 
+    @RandomlyFails // timeout in NB-Core-Build #1186
     public void testProviderCanRemoveTasks() throws Exception {
         final Callback[] cb = new Callback[1];
         final PushTaskScanner scanner = new PushTaskScanner("", "", null) {

@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/home/thp/netbeans-6.1-dev/main/cnd/javahelp/org/netbeans/modules/cnd/help">
+		<directory title="/home/ar34406/main/cnd/javahelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
@@ -23,6 +23,7 @@
 				<file title="CandC++DebuggingTasks.html"/>
 				<file title="CandC++DisassemblyWIndow.html"/>
 				<file title="CandC++LocalVariablesWindow.html"/>
+				<file title="CandC++MemoryWindow.html"/>
 				<file title="CandC++Options.html"/>
 				<file title="CandC++SessionsWindow.html"/>
 				<file title="CandC++ThreadsWindow.html"/>
@@ -38,6 +39,7 @@
 				<file title="FinishingCorC++DebugSession.html"/>
 				<file title="Libraries.html"/>
 				<file title="LinkerOptions.html"/>
+				<file title="Packaging.html"/>
 				<file title="Projects.html"/>
 				<file title="ResolveBuildTools.html"/>
 				<file title="RunningCorC++Project.html"/>
@@ -77,6 +79,7 @@
 				<file title="CreatingCodeTemplates.html"/>
 				<file title="DisablingAutoCodeCompletion.html"/>
 				<file title="EditingSourceFiles.html"/>
+				<file title="ErrorHighlighting.html"/>
 				<file title="FindingUsages.html"/>
 				<file title="FindUsagesDialog.html"/>
 				<file title="GoToDeclaration.html"/>
@@ -89,6 +92,7 @@
 				<file title="TypeView.html"/>
 				<file title="UsagesWindow.html"/>
 				<file title="UsingAbbreviations.html"/>
+				<file title="UsingCallGraph.html"/>
 				<file title="UsingClassView.html"/>
 				<file title="UsingCodeCompletion.html"/>
 				<file title="UsingHyperlinks.html"/>
@@ -126,8 +130,10 @@
 				<file title="CurrentSession.gif"/>
 				<file title="earProjectIcon.gif"/>
 				<file title="ejbjarProjectIcon.gif"/>
+				<file title="error-glyph.png"/>
 				<file title="expand.gif"/>
 				<file title="Field.gif"/>
+				<file title="focus.png"/>
 				<file title="j2seProject.gif"/>
 				<file title="LocalVariable.gif"/>
 				<file title="logical.png"/>
@@ -191,10 +197,12 @@
 				<file title="ProjectPropsGeneral.html"/>
 				<file title="ProjectPropsLinkerGeneral.html"/>
 				<file title="ProjectPropsMake.html"/>
+				<file title="ProjectPropsPackaging.html"/>
 				<file title="ProjectPropsParser.html"/>
 				<file title="ProjectPropsRequired.html"/>
 				<file title="ProjectPropsRunning.html"/>
 				<file title="ProjectTasks.html"/>
+				<file title="RemoteDevelopment.html"/>
 				<file title="SettingCandC++FileProperties.html"/>
 				<file title="SettingCandC++ProjectProperties.html"/>
 				<file title="SettingMainCorC++Project.html"/>
