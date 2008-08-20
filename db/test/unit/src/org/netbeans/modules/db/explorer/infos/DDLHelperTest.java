@@ -28,7 +28,7 @@
 package org.netbeans.modules.db.explorer.infos;
 
 import java.sql.Types;
-import org.netbeans.modules.db.util.DDLTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 import org.netbeans.modules.db.util.InfoHelper;
 
 /**

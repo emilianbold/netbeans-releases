@@ -37,8 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.util;
+package org.netbeans.modules.db.test;
 
+import org.netbeans.modules.db.test.DBTestBase;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.logging.Level;

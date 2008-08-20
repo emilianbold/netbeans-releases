@@ -43,7 +43,7 @@ package org.netbeans.api.db.explorer;
 
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.test.Util;
-import org.netbeans.modules.db.util.DBTestBase;
+import org.netbeans.modules.db.test.DBTestBase;
 
 /**
  *

@@ -27,7 +27,7 @@
  */
 package org.netbeans.modules.db.explorer.dlg;
 
-import org.netbeans.modules.db.util.DDLTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 public class AddViewDDLTest extends DDLTestBase {
 

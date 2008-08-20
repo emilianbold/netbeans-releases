@@ -27,7 +27,7 @@
  */
 package org.netbeans.api.db.sql.support;
 
-import org.netbeans.modules.db.util.DDLTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
  * @author <a href="mailto:david@vancouvering.com">David Van Couvering</a>

@@ -28,7 +28,7 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.util.Vector;
-import org.netbeans.modules.db.util.DDLTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 public class CreateTableDDLTest extends DDLTestBase {
 

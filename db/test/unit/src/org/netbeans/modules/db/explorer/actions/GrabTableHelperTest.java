@@ -36,7 +36,7 @@ import java.util.Vector;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.TableColumn;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.util.DDLTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 import org.netbeans.modules.db.util.InfoHelper;
 
 /**

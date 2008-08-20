@@ -25,7 +25,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.util;
+package org.netbeans.modules.db.test;
 
 import java.net.URL;
 import java.sql.Connection;

@@ -45,7 +45,7 @@ import java.net.URL;
 import java.sql.Driver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.netbeans.modules.db.test.Util;
-import org.netbeans.modules.db.util.DBTestBase;
+import org.netbeans.modules.db.test.DBTestBase;
 import org.openide.loaders.DataObject;
 
 /**
