@@ -47,8 +47,11 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JViewport;
@@ -131,6 +134,10 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
     private Router edgeRouter;
     private Router selfLinkRouter;
     public static String SceneDefaultWidgetID = "default";
+    
+    private ArrayList < IPresentationElement > lockedSelected = 
+            new ArrayList < IPresentationElement >();
+            
 
     public DesignerScene(IDiagram diagram,UMLDiagramTopComponent topcomponent)
     {
@@ -669,5 +676,20 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         }
         
         return set;
+    }
+    
+    public void addLockedSelected(IPresentationElement element)
+    {
+        lockedSelected.add(element);
+    }
+    
+    public void removeLockSelected(IPresentationElement element)
+    {
+        lockedSelected.remove(element);
+    }
+    
+    public List < IPresentationElement > getLockedSelected()
+    {
+        return Collections.unmodifiableList(lockedSelected);
     }
 }
