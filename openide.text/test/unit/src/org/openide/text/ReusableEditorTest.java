@@ -43,11 +43,9 @@ package org.openide.text;
 
 
 import java.beans.PropertyChangeListener;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JEditorPane;
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -72,11 +70,16 @@ public class ReusableEditorTest extends NbTestCase {
     public ReusableEditorTest(java.lang.String testName) {
         super(testName);
     }
-            
+
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
 
     /**
      * Prepares few editors at the test dispoition.
      */
+    @Override
     protected void setUp () {
         c1 = createSupport("c1");
         c2 = createSupport("c2");
