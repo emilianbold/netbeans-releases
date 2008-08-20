@@ -65,6 +65,11 @@ public abstract class HostInfoProvider {
      */
     public abstract boolean fileExists(String key, String path);
     
+    /**
+     * Returns dir where libraries are located
+     */
+    public abstract String getLibDir(String key);
+    
     /** Static method to obtain the provider.
      * @return the resolver
      */
@@ -106,6 +111,17 @@ public abstract class HostInfoProvider {
                 return System.getenv();
             } else if (provider != null) {
                 return provider.getEnv(key);
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+        
+        @Override
+        public String getLibDir(String key) {
+            if (CompilerSetManager.LOCALHOST.equals(key)) {
+                return null;
+            } else if (provider != null) {
+                return provider.getLibDir(key);
             } else {
                 throw new IllegalArgumentException();
             }
