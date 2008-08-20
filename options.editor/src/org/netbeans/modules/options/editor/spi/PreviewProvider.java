@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,58 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.options.indentation;
+package org.netbeans.modules.options.editor.spi;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
-
-import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
 
 /**
- * Contains information about Indentation Panel, and creates a new
- * instance of it.
+ * This interface should be implemented by all option customizers that wish
+ * to provide a preview of changes in the options they maintain.
  *
- * @author Jan Jancura
+ * <p>An example is the Editor -> Formatting panel in Tools-Options, which presents
+ * customizers for many mime types and these customizers have to share the same
+ * preview area. Each of those customizers should provide implementation of this
+ * interface in order to supply the contents of the preview area.
+ *
+ * <p>Typically option customizers are supplied in form of <code>OptionsPanelController</code>,
+ * which provides the customizer's UI component and allows to control it. If such
+ * a customizer wishes to provide a preview component it should do so by
+ * letting its <code>OptionsPanelController</code> implementation to also implement
+ * the <code>PreviewProvider</code> interface.
+ *
+ * @author Vita Stejskal
  */
-public final class Indentation extends OptionsCategory {
+public interface PreviewProvider {
 
-    private static String loc (String key) {
-        return NbBundle.getMessage (Indentation.class, key);
-    }
- 
+    /**
+     * Gets the component that will be used for previewing changes in the
+     * associated options panel.
+     *
+     * @return The preview component.
+     */
+    public JComponent getPreviewComponent();
 
-    private static Icon icon;
-    
-    public Icon getIcon () {
-        if (icon == null)
-            icon = new ImageIcon (
-                Utilities.loadImage 
-                    ("org/netbeans/modules/options/resources/indentation.png")
-            );
-        return icon;
-    }
-    
-    public String getCategoryName () {
-        return loc ("CTL_Indentation");
-    }
+    /**
+     * Refreshes the preview component. The implementation should use the current
+     * option values to refrfesh the preview component.
+     *
+     * <p>Normally option panels are responsible for refreshing their preview
+     * components whenever the options that they maintain are changed. This method
+     * take out this obligation. It is here for the options UI infrastructure
+     * to be able to enforece the preview refresh.
+     */
+    public void refreshPreview();
 
-    public String getTitle () {
-        return loc ("CTL_Indentation_Title");
-    }
-    
-    public String getDescription () {
-        return loc ("CTL_Indentation_Description");
-    }
-
-    public OptionsPanelController create () {
-        return new IndentationPanelController ();
-    }
 }
