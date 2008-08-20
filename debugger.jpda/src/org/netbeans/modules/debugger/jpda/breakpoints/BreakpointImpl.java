@@ -42,6 +42,7 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
@@ -379,7 +380,13 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                         activeStepRequests.remove(i);
                         continue;
                     }
-                    if (step.thread().status() == ThreadReference.THREAD_STATUS_ZOMBIE) {
+                    int stepThreadStatus;
+                    try {
+                        stepThreadStatus = step.thread().status();
+                    } catch (ObjectCollectedException ocex) {
+                        stepThreadStatus = ThreadReference.THREAD_STATUS_ZOMBIE;
+                    }
+                    if (stepThreadStatus == ThreadReference.THREAD_STATUS_ZOMBIE) {
                         thread.virtualMachine().eventRequestManager().deleteEventRequest(step);
                         debugger.getOperator().unregister(step);
                         activeStepRequests.remove(i);

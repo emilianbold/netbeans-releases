@@ -92,6 +92,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.modules.glassfish.eecommon.api.UrlData;
+import org.netbeans.modules.glassfish.eecommon.api.Utils;
 
 /**
  *
@@ -472,7 +473,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             servName.setValue(hostName);
         }
         jdbcConnectionPool.addPropertyElement(servName);
-        if (! portNumber.equals("")) { //NOI18N
+        if (Utils.notEmpty(portNumber)) { 
             PropertyElement portno = jdbcConnectionPool.newPropertyElement();
             portno.setName(WizardConstants.__PortNumber);
             portno.setValue(portNumber);
@@ -586,8 +587,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                     dbPwd = pl[i].getValue();
                 }
             }
-            if(hostName.equals(hostProp) && portNumber.equals(portProp) &&
-                    databaseName.equals(dbProp)){
+            
+            if (Utils.strEquivalent(hostName, hostProp) &&
+                    Utils.strEquivalent(portNumber, portProp) &&
+                    Utils.strEquivalent(databaseName, dbProp)){
                 if(dbUser != null && dbPwd != null && dbUser.equals(username) && dbPwd.equals(password)){
                     poolJndiName = connPool.getName();
                 }
@@ -1218,6 +1221,6 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             }
         }
         return resourceExists;
-    }
+    }    
 }
 

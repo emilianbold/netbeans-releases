@@ -68,8 +68,8 @@ import org.openide.util.RequestProcessor;
 public class SystemIncludesUtils {
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
-    public static void load(final String hkey, final List<CompilerSet> csList) {
-        RequestProcessor.getDefault().post(new Runnable() {
+    public static RequestProcessor.Task load(final String hkey, final List<CompilerSet> csList) {
+        return RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
                 ProgressHandle handle = ProgressHandleFactory.createHandle(getMessage("SIU_ProgressTitle") + " " + RemoteUtils.getHostName(hkey)); //NOI18N

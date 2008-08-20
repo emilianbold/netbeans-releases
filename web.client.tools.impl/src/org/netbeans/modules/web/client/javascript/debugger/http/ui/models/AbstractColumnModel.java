@@ -108,7 +108,7 @@ import org.netbeans.spi.viewmodel.ColumnModel;
          * @return column width of this column
          */
         public int getColumnWidth () {
-            return properties.getInt (getID () + ".columnWidth", 150);
+            return properties.getInt (getID () + ".columnWidth", 50);
         }
 
         /**
