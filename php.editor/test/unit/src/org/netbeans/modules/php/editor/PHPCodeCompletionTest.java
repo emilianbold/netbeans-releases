@@ -67,6 +67,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/class_member_visibility.php", "$tst->^", false);
     }
     
+    public void testInterfaces1() throws Exception {
+        checkCompletion("testfiles/completion/lib/interfaces.php", "$arg->^", false);
+    }
+    
     public void testComments1() throws Exception {
         checkCompletion("testfiles/completion/lib/comments.php", "one line ^", false);
     }
