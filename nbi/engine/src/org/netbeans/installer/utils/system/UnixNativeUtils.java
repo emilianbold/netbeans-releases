@@ -144,9 +144,17 @@ public class UnixNativeUtils extends NativeUtils {
         final String osName = System.getProperty("os.name");
         if (osName.endsWith("BSD")) {
             if (osName.equals("FreeBSD")) {
-                return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_X64 : Platform.FREEBSD_X86;
+                if(System.getProperty("os.arch").contains("ppc")) {
+                    return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_PPC: Platform.FREEBSD_PPC64;
+                } else {
+                    return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_X64 : Platform.FREEBSD_X86;
+                }
             } else {
-                return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_X64 : Platform.BSD_X86;
+                if(System.getProperty("os.arch").contains("ppc")) {
+                    return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_PPC64 : Platform.BSD_PPC;
+                } else {
+                    return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_X64 : Platform.BSD_X86;
+                }
             }
         } else {
             return Platform.UNIX;

@@ -67,12 +67,16 @@ public enum Platform {
     MACOSX_PPC64(OS_FAMILY_MACOSX, HARDWARE_PPC64, null, null, "Mac OS X PowerPC X64"),
     
     BSD(OS_FAMILY_BSD, null, null, null, "BSD"),
-    BSD_X86(OS_FAMILY_BSD, HARDWARE_X86, null, null, "BSD X86"),
+    BSD_X86(OS_FAMILY_BSD, HARDWARE_X86, null, null, "BSD X86"),    
     BSD_X64(OS_FAMILY_BSD, HARDWARE_X64, null, null, "BSD X64"),
+    BSD_PPC(OS_FAMILY_BSD, HARDWARE_PPC, null, null, "BSD PowerPC"),
+    BSD_PPC64(OS_FAMILY_BSD, HARDWARE_PPC64, null, null, "BSD PowerPC X64"),
     
     FREEBSD(OS_FAMILY_FREEBSD, null, null, null, "FreeBSD"),
     FREEBSD_X86(OS_FAMILY_FREEBSD, HARDWARE_X86, null, null, "FreeBSD X86"),
     FREEBSD_X64(OS_FAMILY_FREEBSD, HARDWARE_X64, null, null, "FreeBSD X64"),
+    FREEBSD_PPC(OS_FAMILY_BSD, HARDWARE_PPC, null, null, "FreeBSD PowerPC"),
+    FREEBSD_PPC64(OS_FAMILY_BSD, HARDWARE_PPC64, null, null, "FreeBSD PowerPC X64"),
     ;
     
     /////////////////////////////////////////////////////////////////////////////////
@@ -148,10 +152,11 @@ public enum Platform {
                     !OS_FAMILY_WINDOWS.equals(osFamily)) {
                 return true;
             }
-            if(platform.osFamily.equals(OS_FAMILY_BSD) && 
-                    (OS_FAMILY_FREEBSD.equals(osFamily) || 
-                    OS_FAMILY_MACOSX.equals(osFamily))) {
-                return true;
+            if(platform.osFamily.equals(OS_FAMILY_BSD)) {
+                boolean osFamilyMatches = OS_FAMILY_FREEBSD.equals(osFamily) || 
+                                           OS_FAMILY_MACOSX.equals(osFamily);
+                return osFamilyMatches && 
+                        (platform.hardwareArch==null || platform.hardwareArch.equals(hardwareArch));
             }
             return false;
         }
