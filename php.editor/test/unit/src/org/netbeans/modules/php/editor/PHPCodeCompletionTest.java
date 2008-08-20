@@ -168,6 +168,14 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue144409.php", "$tmp->^", false);
     }
     
+    public void testOptionalArgs_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/optional_args.php", "TestOptionalArgsClass::test^", false);
+    }
+    
+    public void testOptionalArgs_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/optional_args.php", "$foo = testOptionalArgsFunc^", false);
+    }
+    
     //#137033: Code completion for class identifier
     public void test137033_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue137033.php", "class a^", false);
