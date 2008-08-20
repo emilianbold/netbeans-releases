@@ -80,6 +80,10 @@ public abstract class CsmErrorProvider {
 
     public abstract void getErrors(Request request, Response response);
 
+    public static boolean isLibraryHeaderFile(CsmFile file) {
+        return (file != null) && file.isHeaderFile() && 
+                (file.getProject() != null) && file.getProject().isArtificial();
+    }
     //
     // Implementation part
     //
