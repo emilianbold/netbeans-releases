@@ -241,6 +241,7 @@
         <xsd:sequence>
             <xsd:element name="file" 
                          type="extended-uri-type" 
+                         minOccurs="0"
                          maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
