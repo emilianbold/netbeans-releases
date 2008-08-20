@@ -42,7 +42,7 @@
 package org.netbeans.modules.java.ui;
 
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
-import org.netbeans.spi.options.OptionsPanelController;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 
 /**
  *
@@ -55,8 +55,8 @@ public class FmtImports extends javax.swing.JPanel {
         initComponents();
     }
     
-    public static OptionsPanelController getController() {
-        return new CategorySupport(new FmtImports(), null);
+    public static PreferencesCustomizer.Factory getController() {
+        return new CategorySupport.Factory("imports", FmtImports.class, null);
     }
     
     /** This method is called from within the constructor to
