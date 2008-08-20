@@ -90,8 +90,8 @@ public class JAXBGenSourceClassPathProvider implements ClassPathProvider {
     }
     
     private ClassPath getClassPath(String classPathType) {
-        if (!((Boolean)inAPICall.get())){
-            try {
+        try {
+            if (!((Boolean)inAPICall.get())){
                 inAPICall.set(Boolean.TRUE);
                 Sources sources = project.getLookup().lookup(Sources.class);
                 SourceGroup[] groups = ProjectUtils.getSources(project).
@@ -100,9 +100,9 @@ public class JAXBGenSourceClassPathProvider implements ClassPathProvider {
                     return ClassPath.getClassPath(groups[0].getRootFolder(),
                             classPathType);
                 }
-            } finally{
-                inAPICall.remove();
             }
+        } finally{
+            inAPICall.remove();
         }
         return null;
     }
