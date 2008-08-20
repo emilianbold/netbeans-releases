@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,58 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.options.indentation;
+package org.netbeans.modules.cnd.editor.reformat;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-
-import org.netbeans.spi.options.OptionsCategory;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
+import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 
 /**
- * Contains information about Indentation Panel, and creates a new
- * instance of it.
  *
- * @author Jan Jancura
+ * @author Alexander Simon
  */
-public final class Indentation extends OptionsCategory {
-
-    private static String loc (String key) {
-        return NbBundle.getMessage (Indentation.class, key);
+class QtExtension {
+    private boolean isQtObject = false;
+    QtExtension() {
     }
- 
-
-    private static Icon icon;
-    
-    public Icon getIcon () {
-        if (icon == null)
-            icon = new ImageIcon (
-                Utilities.loadImage 
-                    ("org/netbeans/modules/options/resources/indentation.png")
-            );
-        return icon;
+    boolean isQtObject(){
+        return isQtObject;
     }
-    
-    public String getCategoryName () {
-        return loc ("CTL_Indentation");
+    void checkQtObject(Token<CppTokenId> token){
+        if (!isQtObject) {
+            isQtObject = token.id() == IDENTIFIER && CharSequenceUtilities.equals(token.text(), "Q_OBJECT"); // NOI18N
+        }
     }
-
-    public String getTitle () {
-        return loc ("CTL_Indentation_Title");
+    boolean isSignals(Token<CppTokenId> token){
+        return token.id() == IDENTIFIER && CharSequenceUtilities.equals(token.text(), "signals"); // NOI18N
     }
-    
-    public String getDescription () {
-        return loc ("CTL_Indentation_Description");
-    }
-
-    public OptionsPanelController create () {
-        return new IndentationPanelController ();
+    boolean isSlots(Token<CppTokenId> token){
+        return token.id() == IDENTIFIER && CharSequenceUtilities.equals(token.text(), "slots"); // NOI18N
     }
 }

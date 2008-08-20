@@ -47,7 +47,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
-import junit.framework.TestCase;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
@@ -59,7 +59,7 @@ import org.openide.util.Cancellable;
  *
  * @author Milos Kleint (mkleint@netbeans.org)
  */
-public class ProgressHandleFactoryTest extends TestCase {
+public class ProgressHandleFactoryTest extends NbTestCase {
 
     public ProgressHandleFactoryTest(String testName) {
         super(testName);

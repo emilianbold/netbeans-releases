@@ -1423,7 +1423,17 @@ public class FilterNode extends Node {
         @Override
         @Deprecated
         public boolean add(Node[] arr) {
+            if (isLazy()) {
+                changeSupportToDefault();
+            }
             return original.getChildren().add(arr);
+        }
+
+        @Override
+        void changeSupportToDefault() {
+            ((Children.Keys) original.getChildren()).changeSupportToDefault();
+            support = new DefaultSupport();
+            super.changeSupportToDefault();
         }
 
         /* Delegates to filter node.

@@ -41,16 +41,15 @@
 
 package org.openide.loaders;
 
-import junit.textui.TestRunner;
-
-import org.openide.filesystems.*;
-import org.openide.util.Lookup;
 import java.io.IOException;
-import java.util.*;
-import org.netbeans.junit.*;
-import java.beans.PropertyChangeListener;
 import javax.swing.Action;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.util.io.NbMarshalledObject;
+import org.openide.util.test.MockLookup;
 
 /** Check how the default behaviour of DataLoader without overriden
  * actionsContext works.
@@ -73,11 +72,14 @@ public class DataLoaderGetActionsCompatibilityTest extends NbTestCase {
      * Sets up the testing environment by creating testing folders
      * on the system file system.
      */
-    protected void setUp () throws Exception {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.loaders.DataLoaderGetActionsCompatibilityTest$Lkp");
-        assertEquals ("Our lookup is installed", Lookup.getDefault ().getClass (), Lkp.class);
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        MockLookup.setInstances(
+                new Repository(TestUtilHid.createLocalFileSystem(getWorkDir(), new String[0])),
+                new Pool());
         
-        MyDL loader = (MyDL)MyDL.getLoader (MyDL.class);
+        MyDL loader = MyDL.getLoader(MyDL.class);
 
         FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
         dfs.refresh (true);        
@@ -96,6 +98,7 @@ public class DataLoaderGetActionsCompatibilityTest extends NbTestCase {
     /**
      * Deletes the folders created in method setUp().
      */
+    @Override
     protected void tearDown() throws Exception {
         obj.getLoader ().setActions (new org.openide.util.actions.SystemAction[0]);
         
@@ -114,7 +117,7 @@ public class DataLoaderGetActionsCompatibilityTest extends NbTestCase {
     }
     
     public void testDefaultActionsUsedWhenCreatedForTheFirstTime () throws Exception {
-        SndDL loader = (SndDL)SndDL.getLoader (SndDL.class);
+        SndDL loader = SndDL.getLoader(SndDL.class);
         
         org.openide.util.actions.SystemAction[] arr = loader.getActions ();
         
@@ -176,34 +179,16 @@ public class DataLoaderGetActionsCompatibilityTest extends NbTestCase {
             return new MultiDataObject (primaryFile, this);
         }
         
+        @Override
         protected org.openide.util.actions.SystemAction[] defaultActions () {
             return new org.openide.util.actions.SystemAction[0];
         }
         
     } // end of MyDL
     
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp () throws Exception {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) throws Exception {
-            super (ic);
-            
-            TestUtilHid.destroyLocalFileSystem (Lkp.class.getName ());
-            ic.add (new Repository (TestUtilHid.createLocalFileSystem (Lkp.class.getName (), new String[0])));
-            ic.add (new Pool ());
-//            ic.add (new EM ());
-        }
-    }
-    
-    
     private static final class Pool extends DataLoaderPool {
         
-        protected java.util.Enumeration loaders () {
+        protected java.util.Enumeration<? extends DataLoader> loaders() {
             return org.openide.util.Enumerations.singleton (
                 DataLoader.getLoader(MyDL.class)
             );
@@ -264,6 +249,7 @@ public class DataLoaderGetActionsCompatibilityTest extends NbTestCase {
             getExtensions ().addExtension ("bla");
         }
         
+        @Override
         protected org.openide.util.actions.SystemAction[] defaultActions () {
             return new org.openide.util.actions.SystemAction[] {
                 org.openide.util.actions.SystemAction.get (org.openide.actions.CutAction.class),

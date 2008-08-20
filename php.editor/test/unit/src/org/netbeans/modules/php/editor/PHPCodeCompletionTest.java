@@ -240,4 +240,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testInsideClass_8() throws Exception {
         checkCompletion("testfiles/completion/lib/insideClass.php", "InsideClass::^", false);
     }
+    public void test140758() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue140758.php", "echo $_SERVER['^", false);
+    }
 }

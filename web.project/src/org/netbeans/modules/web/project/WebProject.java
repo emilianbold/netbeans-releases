@@ -1579,8 +1579,7 @@ public final class WebProject implements Project, AntProjectListener {
                         // create a folder
                         newCurrent = FileUtil.createFolder(current, pathItem);
                         assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
-                    }
-                    else {
+                    } else {
                         newCurrent = FileUtil.createData(current, pathItem);
                         assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                     }

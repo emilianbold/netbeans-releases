@@ -41,13 +41,15 @@
 
 package org.openide.loaders;
 
-import org.openide.filesystems.*;
-import org.openide.util.Lookup;
 import java.io.IOException;
-import java.util.*;
-import org.netbeans.junit.*;
+import java.util.Enumeration;
+import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditCookie;
-import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.util.test.MockLookup;
 
 /** 
  * Ensure that SaveAs functionality works as expected for DataObjects
@@ -70,12 +72,14 @@ public class DataObjectSaveAsTest extends NbTestCase {
      * Sets up the testing environment by creating testing folders
      * on the system file system.
      */
-    protected void setUp () throws Exception {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.loaders.DataObjectSaveAsTest$Lkp");
-        assertEquals ("Our lookup is installed", Lookup.getDefault ().getClass (), Lkp.class);
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        MockLookup.setInstances(new Repository(TestUtilHid.createLocalFileSystem(getWorkDir(), new String[0])),
+                new Pool());
         
-        MyDL1 loader1 = (MyDL1)MyDL1.getLoader (MyDL1.class);
-        MyDL2 loader2 = (MyDL2)MyDL2.getLoader (MyDL2.class);
+        MyDL1 loader1 = MyDL1.getLoader(MyDL1.class);
+        MyDL2 loader2 = MyDL2.getLoader(MyDL2.class);
 
         FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
         dfs.refresh (true);        
@@ -97,6 +101,7 @@ public class DataObjectSaveAsTest extends NbTestCase {
     /**
      * Deletes the folders created in method setUp().
      */
+    @Override
     protected void tearDown() throws Exception {
         Repository.getDefault ().getDefaultFileSystem ().removeFileChangeListener (sfs);
     }
@@ -154,7 +159,7 @@ public class DataObjectSaveAsTest extends NbTestCase {
         DataFolder folder = DataFolder.findFolder( fo.getParent() );
         
         try {
-            DataObject newDob = obj1.copyRename( folder, newName, newExt );
+            obj1.copyRename( folder, newName, newExt );
             fail( "default implementation of copyRename cannot overwrite existing files" );
         } catch( IOException e ) {
             //this is what we want
@@ -235,7 +240,7 @@ public class DataObjectSaveAsTest extends NbTestCase {
     
     private static class MyMultiFileLoader extends MultiFileLoader {
         public MyMultiFileLoader () {
-            super(MyMultiFileDataObject.class);
+            super(MyMultiFileDataObject.class.getName());
         }
         
         protected MultiDataObject createMultiObject (FileObject primaryFile) throws DataObjectExistsException, IOException {
@@ -266,43 +271,26 @@ public class DataObjectSaveAsTest extends NbTestCase {
     } // end of MyDL3
     
     private static class MyMultiDataObject1 extends MultiDataObject {
-        public MyMultiDataObject1( FileObject primaryFile, DataLoader loader ) throws DataObjectExistsException {
+        public MyMultiDataObject1( FileObject primaryFile, MultiFileLoader loader ) throws DataObjectExistsException {
             super( primaryFile, loader );
         }
     }
     
     private static class MyMultiDataObject2 extends MultiDataObject {
-        public MyMultiDataObject2( FileObject primaryFile, DataLoader loader ) throws DataObjectExistsException {
+        public MyMultiDataObject2( FileObject primaryFile, MultiFileLoader loader ) throws DataObjectExistsException {
             super( primaryFile, loader );
         }
     }
     
     private static class MyMultiFileDataObject extends MultiDataObject {
-        public MyMultiFileDataObject( FileObject primaryFile, DataLoader loader ) throws DataObjectExistsException {
+        public MyMultiFileDataObject( FileObject primaryFile, MultiFileLoader loader ) throws DataObjectExistsException {
             super( primaryFile, loader );
         }
     }
     
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp () throws Exception {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) throws Exception {
-            super (ic);
-            
-            ic.add (new Repository (TestUtilHid.createLocalFileSystem (Lkp.class.getName()+System.currentTimeMillis(), new String[0])));
-            ic.add (new Pool ());
-        }
-    }
-    
-    
     private static final class Pool extends DataLoaderPool {
         
-        protected Enumeration loaders () {
+        protected Enumeration<? extends DataLoader> loaders() {
             return org.openide.util.Enumerations.array(
                 DataLoader.getLoader(MyDL1.class), 
                 DataLoader.getLoader(MyDL2.class),

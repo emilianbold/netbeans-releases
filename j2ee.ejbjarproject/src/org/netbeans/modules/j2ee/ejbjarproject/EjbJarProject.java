@@ -1111,18 +1111,29 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             };
         }
     }
-    
-    // TODO cleanup and move to j2ee.common if possible
+
+    /**
+     * This class handle copying of meta-inf resources to appropriate place in build
+     * dir. This class is used in true Deploy On Save.
+     *
+     * Class should not request project lock from FS listener methods
+     * (deadlock prone).
+     */
     public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener, DeployOnSaveSupport {
 
         private static final String META_INF_FOLDER = "META-INF";
 
         private FileObject metaBase = null;
 
+        private String metaBaseValue = null;
+
+        private String buildClasses = null;
+
         private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<ArtifactListener>();
-        
+
         /** Creates a new instance of CopyOnSaveSupport */
         public CopyOnSaveSupport() {
+            super();
         }
 
         public void addArtifactListener(ArtifactListener listener) {
@@ -1132,113 +1143,121 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         public void removeArtifactListener(ArtifactListener listener) {
             listeners.remove(listener);
         }
-        
+
         public void initialize() throws FileStateInvalidException {
             metaBase = getEjbModule().getMetaInf();
+            metaBaseValue = evaluator().getProperty(EjbJarProjectProperties.META_INF);
+            buildClasses = evaluator().getProperty(ProjectProperties.BUILD_CLASSES_DIR);
+
             if (metaBase != null) {
                 metaBase.getFileSystem().addFileChangeListener(this);
             }
-            ProjectInformation info = (ProjectInformation) getLookup().lookup(ProjectInformation.class);
-            info.addPropertyChangeListener (this);
+
+            LOGGER.log(Level.FINE, "Meta directory is {0}", metaBaseValue);
+
+            EjbJarProject.this.evaluator().addPropertyChangeListener(this);
         }
 
         public void cleanup() throws FileStateInvalidException {
             if (metaBase != null) {
                 metaBase.getFileSystem().removeFileChangeListener(this);
             }
+            EjbJarProject.this.evaluator().removePropertyChangeListener(this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(EjbJarProjectProperties.META_INF)) {
+            if (EjbJarProjectProperties.META_INF.equals(evt.getPropertyName())) {
                 try {
                     cleanup();
                     initialize();
                 } catch (org.openide.filesystems.FileStateInvalidException e) {
                     LOGGER.log(Level.INFO, null, e);
                 }
+            } else if (ProjectProperties.BUILD_CLASSES_DIR.equals(evt.getPropertyName())) {
+                // TODO copy all files ?
+                Object value = evt.getNewValue();
+                buildClasses = value == null ? null : value.toString();
             }
         }
-    
-        /** Fired when a file is changed.
-        * @param fe the event describing context where action has taken place
-        */
-        public void fileChanged (FileEvent fe) {
+
+        @Override
+        public void fileChanged(FileEvent fe) {
             try {
                 handleCopyFileToDestDir(fe.getFile());
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
 
-        public void fileDataCreated (FileEvent fe) {
+        @Override
+        public void fileDataCreated(FileEvent fe) {
             try {
                 handleCopyFileToDestDir(fe.getFile());
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
-        
+
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             try {
                 FileObject fo = fe.getFile();
-                FileObject docBase = getEjbModule().getMetaInf();
-                if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
+                FileObject metaBase = getEjbModule().resolveMetaInf(metaBaseValue);
+                if (metaBase != null && FileUtil.isParentOf(metaBase, fo)) {
                     // inside docbase
                     handleCopyFileToDestDir(fo);
                     FileObject parent = fo.getParent();
                     String path;
-                    if (FileUtil.isParentOf(docBase, parent)) {
-                        path = META_INF_FOLDER + "/" + FileUtil.getRelativePath(docBase, fo.getParent()) +
+                    if (FileUtil.isParentOf(metaBase, parent)) {
+                        path = META_INF_FOLDER + "/" + FileUtil.getRelativePath(metaBase, fo.getParent()) +
                             "/" + fe.getName() + "." + fe.getExt();
-                    }
-                    else {
+                    } else {
                         path = META_INF_FOLDER + "/" + fe.getName() + "." + fe.getExt();
                     }
-                    if (!isSynchronizationAppropriate(path)) 
+                    if (!isSynchronizationAppropriate(path)) {
                         return;
+                    }
                     handleDeleteFileInDestDir(path);
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
-        
+
+        @Override
         public void fileDeleted(FileEvent fe) {
             try {
                 FileObject fo = fe.getFile();
-                FileObject docBase = getEjbModule().getMetaInf();
-                if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
+                FileObject metaBase = getEjbModule().resolveMetaInf(metaBaseValue);
+                if (metaBase != null && FileUtil.isParentOf(metaBase, fo)) {
                     // inside docbase
-                    String path = META_INF_FOLDER + "/" + FileUtil.getRelativePath(docBase, fo); // NOI18N
-                    if (!isSynchronizationAppropriate(path)) 
+                    String path = META_INF_FOLDER + "/" + FileUtil.getRelativePath(metaBase, fo); // NOI18N
+                    if (!isSynchronizationAppropriate(path)) {
                         return;
+                    }
                     handleDeleteFileInDestDir(path);
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 LOGGER.log(Level.INFO, null, e);
             }
         }
-        
+
         private boolean isSynchronizationAppropriate(String filePath) {
             return true;
         }
-        
+
         private void fireArtifactChange(Iterable<File> files) {
             for (ArtifactListener listener : listeners) {
                 listener.artifactsUpdated(files);
             }
         }
-        
+
         private void handleDeleteFileInDestDir(String resourcePath) throws IOException {
             File deleted = null;
-            FileObject webBuildBase = getEjbModule().getContentDirectory();
-            if (webBuildBase != null) {
+            FileObject ejbBuildBase = buildClasses == null ? null : helper.resolveFileObject(buildClasses);
+            if (ejbBuildBase != null) {
                 // project was built
-                FileObject toDelete = webBuildBase.getFileObject(resourcePath);
+                FileObject toDelete = ejbBuildBase.getFileObject(resourcePath);
                 if (toDelete != null) {
                     deleted = FileUtil.toFile(toDelete);
                     toDelete.delete();
@@ -1246,61 +1265,61 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             }
             fireArtifactChange(Collections.singleton(deleted));
         }
-        
-        /** Copies a content file to an appropriate  destination directory, 
-         * if applicable and relevant.
-         */
+
         private void handleCopyFileToDestDir(FileObject fo) throws IOException {
-            if (!fo.isVirtual()) {
-                FileObject docBase = getEjbModule().getMetaInf();
-                if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
-                    // inside docbase
-                    String path = META_INF_FOLDER + "/" + FileUtil.getRelativePath(docBase, fo); // NOI18N
-                    if (!isSynchronizationAppropriate(path)) 
+            if (fo.isVirtual()) {
+                return;
+            }
+
+            FileObject metaBase = getEjbModule().resolveMetaInf(metaBaseValue);
+            if (metaBase != null && FileUtil.isParentOf(metaBase, fo)) {
+                // inside docbase
+                String path = META_INF_FOLDER + "/" + FileUtil.getRelativePath(metaBase, fo); // NOI18N
+                if (!isSynchronizationAppropriate(path)) {
+                    return;
+                }
+                FileObject ejbBuildBase = buildClasses == null ? null : helper.resolveFileObject(buildClasses);
+                if (ejbBuildBase != null) {
+                    // project was built
+                    if (FileUtil.isParentOf(metaBase, ejbBuildBase) || FileUtil.isParentOf(ejbBuildBase, metaBase)) {
+                        //cannot copy into self
                         return;
-                    FileObject ejbBuildBase = getEjbModule().getContentDirectory();
-                    if (ejbBuildBase != null) {
-                        // project was built
-                        if (FileUtil.isParentOf(docBase, ejbBuildBase) || FileUtil.isParentOf(ejbBuildBase, docBase)) {
-                            //cannot copy into self
-                            return;
-                        }
-                        FileObject destFile = ensureDestinationFileExists(ejbBuildBase, path, fo.isFolder());
-                        assert destFile != null : "webBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + fo.isFolder();
-                        if (!fo.isFolder()) {
-                            InputStream is = null;
-                            OutputStream os = null;
-                            FileLock fl = null;
-                            try {
-                                is = fo.getInputStream();
-                                fl = destFile.lock();
-                                os = destFile.getOutputStream(fl);
-                                FileUtil.copy(is, os);
+                    }
+                    FileObject destFile = ensureDestinationFileExists(ejbBuildBase, path, fo.isFolder());
+                    assert destFile != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + fo.isFolder();
+                    if (!fo.isFolder()) {
+                        InputStream is = null;
+                        OutputStream os = null;
+                        FileLock fl = null;
+                        try {
+                            is = fo.getInputStream();
+                            fl = destFile.lock();
+                            os = destFile.getOutputStream(fl);
+                            FileUtil.copy(is, os);
+                        } finally {
+                            if (is != null) {
+                                is.close();
                             }
-                            finally {
-                                if (is != null) {
-                                    is.close();
-                                }
-                                if (os != null) {
-                                    os.close();
-                                }
-                                if (fl != null) {
-                                    fl.releaseLock();
-                                }
-                                File file = FileUtil.toFile(destFile);
-                                fireArtifactChange(Collections.singleton(file));
+                            if (os != null) {
+                                os.close();
                             }
-                            //System.out.println("copied + " + FileUtil.copy(fo.getInputStream(), destDir, fo.getName(), fo.getExt()));
+                            if (fl != null) {
+                                fl.releaseLock();
+                            }
+                            File file = FileUtil.toFile(destFile);
+                            fireArtifactChange(Collections.singleton(file));
                         }
                     }
                 }
             }
         }
 
-        /** Returns the destination (parent) directory needed to create file with relative path path under webBuilBase
+        /**
+         * Returns the destination (parent) directory needed to create file
+         * with relative path path under ejbBuilBase.
          */
-        private FileObject ensureDestinationFileExists(FileObject webBuildBase, String path, boolean isFolder) throws IOException {
-            FileObject current = webBuildBase;
+        private FileObject ensureDestinationFileExists(FileObject ejbBuildBase, String path, boolean isFolder) throws IOException {
+            FileObject current = ejbBuildBase;
             StringTokenizer st = new StringTokenizer(path, "/");
             while (st.hasMoreTokens()) {
                 String pathItem = st.nextToken();
@@ -1310,17 +1329,16 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     if (isFolder || st.hasMoreTokens()) {
                         // create a folder
                         newCurrent = FileUtil.createFolder(current, pathItem);
-                        assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
-                    }
-                    else {
+                        assert newCurrent != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + isFolder;
+                    } else {
                         newCurrent = FileUtil.createData(current, pathItem);
-                        assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
+                        assert newCurrent != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                     }
                 }
-                assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
+                assert newCurrent != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                 current = newCurrent;
             }
-            assert current != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
+            assert current != null : "ejbBuildBase: " + ejbBuildBase + ", path: " + path + ", isFolder: " + isFolder;
             return current;
         }
     }

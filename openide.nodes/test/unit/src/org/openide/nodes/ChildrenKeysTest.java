@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Utilities;
 
 public class ChildrenKeysTest extends NbTestCase {
@@ -93,6 +94,7 @@ public class ChildrenKeysTest extends NbTestCase {
         LOG = Logger.getLogger("test." + getName());
     }
 
+    @RandomlyFails // NB-Core-Build #1186
     public void testGetNodesFromTwoThreads57769() throws Exception {
         final Ticker tick1 = new Ticker();
         final List who = new java.util.Vector();
@@ -1098,11 +1100,11 @@ public class ChildrenKeysTest extends NbTestCase {
         Keys k = new Keys (lazy(), new String[] { "Ahoj" });
         Node[] arr = new Node[] { Node.EMPTY.cloneNode () };
         boolean res = k.add (arr);
-        if (lazy()) {
+        /*if (lazy()) {
             assertFalse("Not supported in lazy mode", res);
             assertFalse("Removal is also unsupported", k.remove(arr));
             return;
-        }
+        }*/
         
         Node node = createNode (k);
         
@@ -1496,6 +1498,7 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("2nd is b", "b", nodes[1].getName());
     }    
     
+    @RandomlyFails // assumed to suffer from same random problem as testGetNodesFromTwoThreads57769; see Thread.sleep
     public void testGetNodesFromTwoThreads57769WhenBlockingAtRightPlaces() throws Exception {
         final Ticker tick = new Ticker();
         final List who = new java.util.Vector();

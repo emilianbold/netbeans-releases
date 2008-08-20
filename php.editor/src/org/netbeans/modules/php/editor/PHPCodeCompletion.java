@@ -110,7 +110,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
     private static final List<String> INVALID_PROPOSALS_FOR_CLS_MEMBERS =
             Arrays.asList(new String[] {"__construct","__destruct"});//NOI18N
-    
+
     private static final List<String> CLASS_CONTEXT_KEYWORD_PROPOSAL =
             Arrays.asList(new String[] {"abstract","const","function", "private",
             "protected", "public", "static", "var"});//NOI18N
@@ -217,9 +217,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             );
 
 
+       private static final List<PHPTokenId[]> SERVER_ARRAY_TOKENCHAINS = Collections.singletonList(
+            new PHPTokenId[]{PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_TOKEN});
+
+       private static final List<String> SERVER_ARRAY_TOKENTEXTS =
+               Arrays.asList(new String[] {"$_SERVER","["});//NOI18N
+
+ 
     static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, METHOD_NAME,
-        CLASS_CONTEXT_KEYWORDS, NONE};
+        CLASS_CONTEXT_KEYWORDS, SEVER_ENTRY_CONSTANTS, NONE};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
         "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
@@ -239,7 +246,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
             Arrays.asList(' ', '=', ';', '+', '-', '*', '/',
-                '%', '(', ')', '[', ']', '{', '}')); 
+                '%', '(', ')', '[', ']', '{', '}', '?'));
 
     private boolean caseSensitive;
     private NameKind nameKind;
@@ -262,8 +269,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             case T_INLINE_HTML:
                 return CompletionContext.HTML;
             case PHP_CONSTANT_ENCAPSED_STRING:
-                if (tokenSequence.token().text().charAt(0) == '"') {
+                char encChar = tokenSequence.token().text().charAt(0);
+                if (encChar == '"') {
                     return CompletionContext.STRING;
+                } else if (encChar == '\'' && acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS)) {//NOI18N
+                    if (acceptTokenChainTexts(tokenSequence, SERVER_ARRAY_TOKENTEXTS)) {
+                        return CompletionContext.SEVER_ENTRY_CONSTANTS;
+                    }
+                    return CompletionContext.NONE;
                 } else {
                     return CompletionContext.NONE;
                 }
@@ -308,7 +321,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
         return CompletionContext.EXPRESSION;
     }
-    
+
     private static boolean isOneOfTokens(TokenSequence tokenSequence, PHPTokenId[] tokenIds){
         TokenId searchedId = tokenSequence.token().id();
 
@@ -321,7 +334,21 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return false;
     }
 
-    private static boolean acceptTokenChains(TokenSequence tokenSequence, List<PHPTokenId[]> tokenIdChains){
+    private static boolean acceptTokenChainTexts(TokenSequence tokenSequence, List<String> tokenTexts) {
+        Token[] preceedingTokens = getPreceedingTokens(tokenSequence, tokenTexts.size());        
+        if (preceedingTokens.length != tokenTexts.size()) {
+            return false;
+        }
+        for (int idx = 0; idx < preceedingTokens.length; idx++) {
+            String expectedText = tokenTexts.get(idx);
+            if (!expectedText.contentEquals(preceedingTokens[idx].text())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean acceptTokenChains(TokenSequence tokenSequence, List<PHPTokenId[]> tokenIdChains) {
         int maxLen = 0;
 
         for (PHPTokenId tokenIds[] : tokenIdChains){
@@ -391,7 +418,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 } else if (id.equals(PHPTokenId.PHP_CURLY_CLOSE)) {
                     curly_close++;
                 } else if ((id.equals(PHPTokenId.PHP_FUNCTION) ||
-                        id.equals(PHPTokenId.PHP_WHILE) || id.equals(PHPTokenId.PHP_IF)) 
+                        id.equals(PHPTokenId.PHP_WHILE) || id.equals(PHPTokenId.PHP_IF))
                         && (curly_open > curly_close)) {
                     return false;
                 } else if (id.equals(PHPTokenId.PHP_CLASS)) {
@@ -492,6 +519,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             case INHERITANCE:
                 autoCompleteKeywords(proposals, request, INHERITANCE_KEYWORDS);
                 break;
+            case SEVER_ENTRY_CONSTANTS:
+                //TODO: probably better PHPCompletionItem instance should be used
+                autoCompleteMagicItems(proposals, request, PredefinedSymbols.SERVER_ENTRY_CONSTANTS);
+                break;
         }
 
         if (LOGGER.isLoggable(Level.FINE)){
@@ -516,7 +547,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteMethodName(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
-        for (String keyword : PredefinedSymbols.MAGIC_METHODS) {
+        autoCompleteMagicItems(proposals, request, PredefinedSymbols.MAGIC_METHODS);
+    }
+    
+    private void autoCompleteMagicItems(List<CompletionProposal> proposals,
+            PHPCompletionItem.CompletionRequest request,final Collection<String> proposedTexts) {
+        for (String keyword : proposedTexts) {
             if (keyword.startsWith(request.prefix)) {
                 proposals.add(new PHPCompletionItem.MagicMethodItem(keyword, request));
             }
@@ -665,7 +701,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 proposals.add(new PHPCompletionItem.KeywordItem(keyword, request));
             }
         }
-        
+
         for (String keyword : PHP_KEYWORD_FUNCTIONS) {
             if (startsWith(keyword, request.prefix)) {
                 proposals.add(new PHPCompletionItem.SpecialFunctionItem(keyword, request));
@@ -680,11 +716,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         if (request.prefix.length() == 0) {
             Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram().getStatements(), request.prefix, request.anchor, request.currentlyEditedFileURL);
             Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
-            
+
             for (IndexedConstant var : localVars){
                 allVars.put(var.getName(), var);
             }
-            
+
             for (IndexedElement element : index.getAll(request.result, request.prefix, nameKind)) {
                 if (element instanceof IndexedFunction) {
                     IndexedFunction function = (IndexedFunction) element;
@@ -711,7 +747,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
             }
-            
+
             for (IndexedConstant var : allVars.values()){
                 CodeUtils.resolveFunctionType(request.result, index, allVars, var);
                 proposals.add(new PHPCompletionItem.VariableItem(var, request));
@@ -729,11 +765,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             for (IndexedConstant constant : index.getConstants(request.result, request.prefix, nameKind)) {
                 proposals.add(new PHPCompletionItem.ConstantItem(constant, request));
             }
-            
+
             // CLASS NAMES
             // TODO only show classes with static elements
             autoCompleteClassNames(proposals, request);
-            
+
             // LOCAL VARIABLES
             proposals.addAll(getVariableProposals(request.result.getProgram().getStatements(), request));
         }
