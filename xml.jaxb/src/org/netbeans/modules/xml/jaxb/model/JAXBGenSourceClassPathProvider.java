@@ -27,7 +27,6 @@
  */
 package org.netbeans.modules.xml.jaxb.model;
 
-import java.io.File;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -44,6 +43,13 @@ import org.openide.filesystems.FileUtil;
  */
 public class JAXBGenSourceClassPathProvider implements ClassPathProvider {
     private static final String JAXB_GEN_SRC_ROOT = "/generated/addons/jaxb"; //NOI18N
+    private static ThreadLocal inAPICall = new ThreadLocal() {
+        @Override
+         protected synchronized Object initialValue() {
+             return Boolean.FALSE;
+         }
+     };
+
     private Project project;
     private ClassPath sourceCP, compileCP, bootCP;
     private String buildDir = "build" ; //NOI18N
@@ -84,12 +90,19 @@ public class JAXBGenSourceClassPathProvider implements ClassPathProvider {
     }
     
     private ClassPath getClassPath(String classPathType) {
-        Sources sources = project.getLookup().lookup(Sources.class);
-        SourceGroup[] groups = ProjectUtils.getSources(project).
-                getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (groups.length > 0) {
-            return ClassPath.getClassPath(groups[0].getRootFolder(), 
-                    classPathType);
+        try {
+            if (!((Boolean)inAPICall.get())){
+                inAPICall.set(Boolean.TRUE);
+                Sources sources = project.getLookup().lookup(Sources.class);
+                SourceGroup[] groups = ProjectUtils.getSources(project).
+                        getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                if (groups.length > 0) {
+                    return ClassPath.getClassPath(groups[0].getRootFolder(),
+                            classPathType);
+                }
+            }
+        } finally{
+            inAPICall.remove();
         }
         return null;
     }

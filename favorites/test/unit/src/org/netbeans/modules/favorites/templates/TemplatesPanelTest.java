@@ -70,7 +70,8 @@ public class TemplatesPanelTest extends NbTestCase {
         super(s);
     }
     
-    protected void setUp () {
+    @Override
+    protected void setUp() throws Exception {
         MockLookup.setInstances(new Repository(FileUtil.createMemoryFileSystem()));
         try {
             templateFolder = Repository.getDefault ().getDefaultFileSystem ().getRoot ().createFolder ("TestTemplates");
@@ -78,8 +79,9 @@ public class TemplatesPanelTest extends NbTestCase {
             fail (ioe.getMessage ());
         }
         assertNotNull ("TestTemplates folder exists on SFS", templateFolder);
+        clearWorkDir();
         try {
-            popural = getWorkDir ().createTempFile ("popural", "java");
+            popural = File.createTempFile("popural", "java", getWorkDir());
         } catch (IOException ioe) {
             fail (ioe.getMessage ());
         }
@@ -91,6 +93,7 @@ public class TemplatesPanelTest extends NbTestCase {
         
     }
     
+    @Override
     protected void tearDown() {
         try {
             FileLock l = templateFolder.lock ();
