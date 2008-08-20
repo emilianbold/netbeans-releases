@@ -61,7 +61,6 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static final String PREFERRED_ID = "HttpMonitorTopComponent";
     private final static HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
     private final ActivitiesPropertyChange activityPropertyChangeListener = new ActivitiesPropertyChange();
-    private static final Map<String, String> EMPTY_MAP = Collections.emptyMap();
 
     private final Logger LOG = Logger.getLogger(HttpMonitorTopComponent.class.getName());
 
@@ -69,23 +68,37 @@ final class HttpMonitorTopComponent extends TopComponent {
     private JComponent tableView;
 
     private HttpMonitorTopComponent() {
-        if (HttpMonitorUtility.getCurrentHttpMonitorModel() != null) {
-            HttpMonitorUtility.setEnabled(true);
-        }
+        LOG.entering(HttpMonitorTopComponent.class.getName(), "constructor");
+        
+        
         initComponents();
+        
         setName(NbBundle.getMessage(HttpMonitorTopComponent.class, "CTL_HttpMonitorTopComponent"));
         setToolTipText(NbBundle.getMessage(HttpMonitorTopComponent.class, "HINT_HttpMonitorTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
+        LOG.exiting(HttpMonitorTopComponent.class.getName(), "constructor");
+        
+        DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
+
+//        if (HttpMonitorUtility.getCurrentHttpMonitorModel() != null) {
+            HttpMonitorUtility.setEnabled(true);
+//        }
     }
     private Icon StartIcon;
     private Icon StopIcon;
 
     private final Icon getStartStopIcon() {
+
+        Icon retIcon;
         if (HttpMonitorUtility.isEnabled()) {
-            return (StopIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(STOP_ICON_PATH)));
+            retIcon = (StopIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(STOP_ICON_PATH)));
+        } else {
+            retIcon =  (StartIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(START_ICON_PATH)));
         }
-        return (StartIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(START_ICON_PATH)));
+        return retIcon;
+        
     }
+    
     
     public ExplorerManager getActivityExplorerManager() {
         assert tableView instanceof ExplorerManager.Provider;
@@ -100,8 +113,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         getActivityExplorerManager().addPropertyChangeListener(activityPropertyChangeListener);
 
-        DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
-
+       
         return tableView;
     }
 
@@ -185,10 +197,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                     assert evt.getNewValue() instanceof Node[];
                     Node[] nodes = (Node[]) evt.getNewValue();
                     if (nodes == null || nodes.length < 1) {
-//                        reqHeaderTableModel.setMap(EMPTY_MAP);
                         reqParamTextArea.setText("");
-//                        resHeaderTableModel.setMap(EMPTY_MAP);
-//                        resBodyTextArea.setText("");
                         resBodyEditorPane.setText("");
                         resBodyEditorPane.setContentType("text/html");
                         return;
@@ -200,7 +209,6 @@ final class HttpMonitorTopComponent extends TopComponent {
                     if (activity != null) {
                         JSHttpRequest request = activity.getRequest();
                         assert request != null;
-//                        reqHeaderTableModel.setMap(activity.getRequestHeader());
                         if (request.getMethod().equals(JSHttpRequest.MethodType.POST)) {
                             reqParamTextArea.setText("POST: " + request.getPostText());
                         } else {
@@ -209,7 +217,6 @@ final class HttpMonitorTopComponent extends TopComponent {
                         
                         Map<String, String> header = activity.getResponseHeader();
                         if (header != null) {
-//                            resHeaderTableModel.setMap(header);
                             String mime = activity.getMimeType();
                             String contentType = "text/html";
                             if( mime != null ) {
@@ -225,13 +232,9 @@ final class HttpMonitorTopComponent extends TopComponent {
                             }
                             resBodyEditorPane.setContentType(contentType);
                             resBodyEditorPane.setText(activity.getResponseText());
-
-//                            resBodyTextArea.setText(activity.getResponseText());
                         } else {
-//                            resHeaderTableModel.setMap(EMPTY_MAP);
                             resBodyEditorPane.setText("");
                             resBodyEditorPane.setContentType("text/html");
-//                            resBodyTextArea.setText("");
                         }
                     }
             }
@@ -249,6 +252,7 @@ final class HttpMonitorTopComponent extends TopComponent {
             public void run() {
                 detailsSplitPane.setDividerLocation(getDetailsDividerLoc());
                 httpMonitorSplitPane.setDividerLocation(getHttpMonitorDividerLoc());
+
                 
             }
         });
@@ -264,8 +268,10 @@ final class HttpMonitorTopComponent extends TopComponent {
 
     @Override
     protected void componentClosed() {
+        LOG.entering(HttpMonitorTopComponent.class.getName(), "componentClosed");
         super.componentClosed();
         HttpMonitorUtility.setHttpMonitorOpened(false);
+        LOG.exiting(HttpMonitorTopComponent.class.getName(), "componentClosed");
     }
 
 
@@ -291,8 +297,10 @@ final class HttpMonitorTopComponent extends TopComponent {
 
     @Override
     protected void componentOpened() {
+        LOG.entering(HttpMonitorTopComponent.class.getName(), "componentOpened");
         super.componentOpened();
         HttpMonitorUtility.setHttpMonitorOpened(true);
+        LOG.exiting(HttpMonitorTopComponent.class.getName(), "componentOpened");
     }
 
     private double getHttpMonitorDividerLoc() {
@@ -606,23 +614,32 @@ final class HttpMonitorTopComponent extends TopComponent {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cleanButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cleanButtonMouseClicked
+        LOG.entering(HttpMonitorTopComponent.class.getName(), "cleanButtonMouseClicked");
         HttpActivitiesModel model = HttpMonitorUtility.getCurrentHttpMonitorModel();
         if (model != null) {
             model.clearActivities();
         }
+        LOG.exiting(HttpMonitorTopComponent.class.getName(), "cleanButtonMouseClicked");
     }//GEN-LAST:event_cleanButtonMouseClicked
 
     private void StartStopButtonHandler(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_StartStopButtonHandler
+        LOG.entering(HttpMonitorTopComponent.class.getName(), "StartStopButtonHandler", !HttpMonitorUtility.isEnabled());
         HttpMonitorUtility.setEnabled(!HttpMonitorUtility.isEnabled());
         start_stopMonitoring.setIcon(getStartStopIcon());
+        LOG.exiting(HttpMonitorTopComponent.class.getName(), "StartStopButtonHandler");
     }//GEN-LAST:event_StartStopButtonHandler
 
     private void all_filterMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_all_filterMouseClicked
-        setOtherFilterButtonsSelected(true);
-        all_filterButton.setSelected(true);
+        if( !all_filterButton.isSelected() ){
+            setOtherFilterButtonsSelected(false);
+        } else {
+            setOtherFilterButtonsSelected(true);
+            all_filterButton.setSelected(true);
+        }
     }//GEN-LAST:event_all_filterMouseClicked
 
     private void filterButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_filterButtonItemStateChanged
+        LOG.entering(HttpMonitorTopComponent.class.getName(), "filterButtonItemStateChanged", evt);
         Object source = evt.getItem();
         int state = evt.getStateChange();
         if (source.equals(html_filterButton)) {
@@ -637,12 +654,13 @@ final class HttpMonitorTopComponent extends TopComponent {
             httpMonitorPreferences.setShowImages(state == ItemEvent.SELECTED);
         } else if (source.equals(flash_filterButton)) {
             httpMonitorPreferences.setShowFlash(state == ItemEvent.SELECTED);
-        }
+        } 
         if (httpMonitorPreferences.isShowAll()) {
             all_filterButton.setSelected(true);
         } else {
             all_filterButton.setSelected(false);
         }
+        LOG.exiting(HttpMonitorTopComponent.class.getName(), "filterButtonItemStateChanged");
 }//GEN-LAST:event_filterButtonItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
