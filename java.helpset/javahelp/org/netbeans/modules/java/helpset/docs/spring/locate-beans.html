@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2008 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Locating Spring Beans</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Locating Spring Beans</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>When working in a Spring-enabled project, you may often need to quickly reference bean declarations
+            that you or other developers created elsewhere within a project. The Go to Spring Bean dialog
+            allows you to quickly find Spring beans that you have declared in your configuration files.</p>
+        
+        <p><strong>To locate a Spring bean:</strong></p>
+
+        <ol>
+            <li>From the IDE's main menu, choose Navigate &gt; Go to Spring Bean. The Go to Spring Bean
+                dialog opens.</li>
+            <li>In the Type Name text field, enter the first few characters of the bean you are searching
+                for. The IDE filters the beans whose names begin with the entered characters and displays
+                the results in the Types Found pane.</li>
+            <li>Click on one of the results, and the configuration file containing the bean declaration
+                opens in the Source Editor with the cursor on the first line of the declaration.</li>
+        </ol>
+
+        <ul class="note">
+            <li>To return results that are case sensitive to your input, select the Case Sensitive option.</li>
+            <li>The Location text field displays the fully-qualified path to the source file containing
+                the bean.</li>
+            <li>In order for the Go to Spring Bean dialog to be able to locate bean references, you must
+                ensure that the Spring configuration files that contain bean declarations you are searching
+                for are registered with the IDE. To do so, right-click on the project node and choose
+                Project Properties. Then, in the Spring Framework category, check that configuration
+                files are listed in the Configuration File panel. See <a href="organize-files.html">Organizing
+                Spring Configuration Files</a> for more details.</li>
+            <li>The Go to Spring Bean dialog retrieves matches by comparing the entered data with a bean <tt>name</tt>,
+                <tt>id</tt>, or <tt>alias</tt>.</li>
+            <li>You can also press Alt-Shift-B (Ctrl-Shift-B on Mac) to open the Go to Spring Bean dialog.</li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="about.html">About Spring Framework Support</a></dd>
+            <dd><a href="create-config-file.html">Creating a Spring Configuration File</a></dd>            
+        </dl>        
+        
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <table cellpadding="20" border="0"><tr><td>&nbsp;</td></tr></table> 
+    </body>
+</html>
+

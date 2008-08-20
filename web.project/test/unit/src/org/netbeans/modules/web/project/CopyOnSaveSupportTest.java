@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.web.project.test.ProjectUtil;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -67,7 +68,7 @@ public class CopyOnSaveSupportTest extends NbTestCase {
     }
 
     public void testSingleDir() throws Exception {
-        File projectFile = UtilsTest.getProjectAsFile(this, "CopyOnSaveTest");
+        File projectFile = ProjectUtil.getProjectAsFile(this, "CopyOnSaveTest");
         FileObject projectFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(projectFile));
         Project project = ProjectManager.getDefault().findProject(projectFileObject);
 
@@ -82,7 +83,7 @@ public class CopyOnSaveSupportTest extends NbTestCase {
     }
 
     public void testSeparateWebInf() throws Exception {
-        File projectFile = UtilsTest.getProjectAsFile(this, "CopyOnSaveTest");
+        File projectFile = ProjectUtil.getProjectAsFile(this, "CopyOnSaveTest");
         FileObject projectFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(projectFile));
         final Project project = ProjectManager.getDefault().findProject(projectFileObject);
 
@@ -111,7 +112,7 @@ public class CopyOnSaveSupportTest extends NbTestCase {
     }
 
     public void testChangedWeb() throws Exception {
-        File projectFile = UtilsTest.getProjectAsFile(this, "CopyOnSaveTest");
+        File projectFile = ProjectUtil.getProjectAsFile(this, "CopyOnSaveTest");
         FileObject projectFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(projectFile));
         final Project project = ProjectManager.getDefault().findProject(projectFileObject);
 
