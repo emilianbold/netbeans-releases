@@ -425,7 +425,20 @@ public final class CreateElement implements ErrorRule<Void> {
         
         for (ExpressionTree arg : realArguments) {
             TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(invocation, arg));
-            
+
+            //anonymous class?
+            Set<ElementKind> fm = EnumSet.of(ElementKind.METHOD, ElementKind.FIELD);
+            if (tm instanceof DeclaredType) {
+                Element el = ((DeclaredType) tm).asElement();
+                if (el.getSimpleName().length() == 0 || fm.contains(el.getEnclosingElement().getKind())) {
+                    List<? extends TypeMirror> interfaces = ((TypeElement) el).getInterfaces();
+                    if (interfaces.isEmpty())
+                        tm = ((TypeElement) el).getSuperclass();
+                    else
+                        tm = interfaces.get(0);
+                }
+            }
+
             if (tm == null || containsErrorsOrTypevarsRecursively(tm)) {
                 return null;
             }
