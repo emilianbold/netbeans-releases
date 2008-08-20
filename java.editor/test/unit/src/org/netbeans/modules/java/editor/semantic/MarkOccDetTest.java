@@ -310,6 +310,10 @@ public class MarkOccDetTest extends TestBase {
         performTest("InsideConstructorInvocation", 9, 18);
     }
     
+    public void testException144264() throws Exception {
+        performTest("Exception144264", 7, 19);
+    }
+    
     private void performTest(String name, final int line, final int column) throws Exception {
         performTest(name, line, column, false);
     }

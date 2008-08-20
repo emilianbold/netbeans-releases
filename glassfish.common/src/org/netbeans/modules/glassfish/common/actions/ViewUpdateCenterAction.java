@@ -136,12 +136,18 @@ public class ViewUpdateCenterAction extends NodeAction {
         if(installRoot != null && installRoot.exists()) {
             File updateCenterBin = new File(installRoot, "bin"); // NOI18N
             if(updateCenterBin.exists()) {
-                String launcher = "updatetool"; // NOI18N
                 if(Utilities.isWindows()) {
-                    launcher += ".bat"; // NOI18N
+                    File launcherPath = new File(updateCenterBin, "updatetool.exe"); // NOI18N
+                    if(launcherPath.exists()) {
+                        result = launcherPath;
+                    } else {
+                        launcherPath = new File(updateCenterBin, "updatetool.bat"); // NOI18N
+                        result = (launcherPath.exists()) ? launcherPath : null;
+                    }
+                } else {
+                    File launcherPath = new File(updateCenterBin, "updatetool"); // NOI18N
+                    result = (launcherPath.exists()) ? launcherPath : null;
                 }
-                File launcherPath = new File(updateCenterBin, launcher);
-                result = (launcherPath.exists()) ? launcherPath : null;
             }
         }
         return result;

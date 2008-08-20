@@ -40,7 +40,7 @@ STRUCT A (A ) [17:1/267-19:3/293] lcurly=276 SCOPE: $Global$
             MEMBERS:
 STRUCT B (B ) [21:1/295-23:3/318] lcurly=308 SCOPE: $Global$ 
     BASE CLASSES:
-        CLASS=A VISIBILITY==PRIVATE virtual==false text='A'
+        CLASS=A VISIBILITY==PUBLIC virtual==false text='A'
     MEMBERS:
         FIELD PUBLIC i [22:9/311-22:13/315]  TYPE: A::I TEXT=I  [22:9/311-22:10/312]  INIT: null  SCOPE: B 
 
@@ -74,7 +74,7 @@ STRUCT A (A ) [17:1/267-19:3/293] lcurly=276 SCOPE: $Global$
             MEMBERS:
 STRUCT B (B ) [21:1/295-23:3/318] lcurly=308 SCOPE: $Global$ 
     BASE CLASSES:
-        CLASS=A VISIBILITY==PRIVATE virtual==false text='A'
+        CLASS=A VISIBILITY==PUBLIC virtual==false text='A'
     MEMBERS:
         FIELD PUBLIC i [22:9/311-22:13/315]  TYPE: A::I TEXT=I  [22:9/311-22:10/312]  INIT: null  SCOPE: B 
 
