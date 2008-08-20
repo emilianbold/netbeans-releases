@@ -612,7 +612,6 @@ public final class NbJSDebugger {
         try {
             return getURLFileObject(srcURI.toURL());
         } catch (MalformedURLException ex) {
-            Log.getLogger().warning("Could not convert URI to URL: " + srcURI.toString());
             return null;
         }
     }
