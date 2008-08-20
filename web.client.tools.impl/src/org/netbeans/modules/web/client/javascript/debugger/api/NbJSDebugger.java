@@ -129,7 +129,6 @@ public final class NbJSDebugger {
     public static final String PROPERTY_WINDOWS = JSDebugger.PROPERTY_WINDOWS;
     private URLContentProvider contentProvider;
     private JSDebugger debugger;
-
     private HashMap<Breakpoint, JSBreakpointImpl> breakpointsMap = new HashMap<Breakpoint, JSBreakpointImpl>();
 
     private class JSDebuggerEventListenerImpl implements JSDebuggerEventListener {
@@ -224,18 +223,16 @@ public final class NbJSDebugger {
         }
     }
 
-    private class PreferenceChangeListenerImpl implements PreferenceChangeListener{
+    private class PreferenceChangeListenerImpl implements PreferenceChangeListener {
 
         public void preferenceChange(PreferenceChangeEvent evt) {
             String pref = evt.getKey();
-            if( NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_ENABLED.equals(pref) ||
-                    NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_OPENED.equals(pref)){
+            if (NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_ENABLED.equals(pref) ||
+                    NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_OPENED.equals(pref)) {
                 setBooleanFeatures(Feature.Name.HTTP_MONITOR, Boolean.parseBoolean(evt.getNewValue()));
             }
         }
-
     }
-
     private JSDebuggerEventListener debuggerListener;
     private JSDebuggerConsoleEventListener debuggerConsoleEventListener;
     private JSHttpMessageEventListener httpMessageEventListener;
@@ -280,16 +277,11 @@ public final class NbJSDebugger {
         debuggerManagerListener = new DebuggerManagerListenerImpl();
         DebuggerManager.getDebuggerManager().addDebuggerListener(debuggerManagerListener);
 
-        preferenceChangeListener = new PreferenceChangeListenerImpl();
-        NbJSPreferences nbJSPreferences = NbJSPreferences.getInstance();
-        nbJSPreferences.addPreferenceChangeListener(WeakListeners.create(
-                PreferenceChangeListener.class,
-                preferenceChangeListener,
-                nbJSPreferences));
+
 
         propertyChangeListener = new PropertyChangeListenerImpl();
         this.debugger.addPropertyChangeListener(WeakListeners.propertyChange(propertyChangeListener, this.debugger));
-        
+
 
         breakpointPropertyChangeListener = new BreakpointPropertyChangeListener();
 
@@ -403,17 +395,16 @@ public final class NbJSDebugger {
         return state;
     }
 
-    public void setBooleanFeatures( Feature.Name feature, boolean value ){
+    public void setBooleanFeatures(Feature.Name feature, boolean value) {
         NbJSPreferences preferences = NbJSPreferences.getInstance();
-        if ( debugger != null){
-            if ( Feature.Name.HTTP_MONITOR.equals(feature)){
+        if (debugger != null) {
+            if (Feature.Name.HTTP_MONITOR.equals(feature)) {
                 debugger.setBooleanFeature(feature, preferences.getHttpMonitorEnabled());
             } else {
                 throw new UnsupportedOperationException("Setting features for Feature: " + feature + " has yet to be implmented");
             }
         }
     }
-
 
     synchronized void setState(JSDebuggerState state) {
         this.state = state;
@@ -437,6 +428,13 @@ public final class NbJSDebugger {
             if (console != null) {
                 console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_JSDEBUGGER_STARTED") + getURI()); // NOI18N
             }
+
+            preferenceChangeListener = new PreferenceChangeListenerImpl();
+            NbJSPreferences nbJSPreferences = NbJSPreferences.getInstance();
+            nbJSPreferences.addPreferenceChangeListener(WeakListeners.create(
+                    PreferenceChangeListener.class,
+                    preferenceChangeListener,
+                    nbJSPreferences));
         }
         if (state.getState() == JSDebuggerState.State.SUSPENDED) {
             JSCallStackFrame[] callStackFrames = getCallStackFrames();
@@ -456,7 +454,7 @@ public final class NbJSDebugger {
                 DebuggerManager.getDebuggerManager().removeDebuggerListener(debuggerManagerListener);
                 debuggerManagerListener = null;
             }
-            
+
             if (console != null) {
                 console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_CLOSE_JAVASCRIPT_DEBUGGER"));
                 console.closeInputOutput();
@@ -505,7 +503,8 @@ public final class NbJSDebugger {
             }
             bpImpl.setCondition(condition);
             final JSBreakpointImpl tmpBreakpointImp = bpImpl;
-            RequestProcessor.getDefault().post(new Runnable () {
+            RequestProcessor.getDefault().post(new Runnable() {
+
                 public void run() {
                     String bpId = debugger.setBreakpoint(tmpBreakpointImp);
                     if (bpId != null) {
@@ -715,7 +714,7 @@ public final class NbJSDebugger {
                 JSAbstractLocation abstractLocation = new NbJSFileObjectLocation(fileObject, line);
                 location = (JSURILocation) getJSLocation(abstractLocation);
             }
-            if(location != null) {
+            if (location != null) {
                 debugger.runToCursor(location);
             }
         }
@@ -756,14 +755,14 @@ public final class NbJSDebugger {
     public URI getURI() {
         return uri;
     }
-    
+
     private void openEditorsForWindows() {
         JSWindow[] windows = getWindows();
         // Now open the editor for top level windows
         for (JSWindow window : windows) {
             String strURI = window.getURI();
             JSSource source = JSFactory.createJSSource(strURI);
-            NbJSEditorUtil.openFileObject(getFileObjectForSource(source)); 
+            NbJSEditorUtil.openFileObject(getFileObjectForSource(source));
         }
     }
 }

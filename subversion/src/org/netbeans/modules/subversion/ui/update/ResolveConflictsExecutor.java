@@ -101,13 +101,17 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             assert fo != null : "no fileobject for file " + file;
             handleMergeFor(file, fo, fo.lock(), merge);
         } catch (FileAlreadyLockedException e) {
-            Set components = TopComponent.getRegistry().getOpened();
-            for (Iterator i = components.iterator(); i.hasNext();) {
-                TopComponent tc = (TopComponent) i.next();
-                if (tc.getClientProperty(ResolveConflictsExecutor.class.getName()) != null) {
-                    tc.requestActive();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    Set components = TopComponent.getRegistry().getOpened();
+                    for (Iterator i = components.iterator(); i.hasNext();) {
+                        TopComponent tc = (TopComponent) i.next();
+                        if (tc.getClientProperty(ResolveConflictsExecutor.class.getName()) != null) {
+                            tc.requestActive();
+                        }
+                    }
                 }
-            }
+            });
         } catch (IOException ioex) {
             Subversion.LOG.log(Level.SEVERE, null, ioex);;
         }

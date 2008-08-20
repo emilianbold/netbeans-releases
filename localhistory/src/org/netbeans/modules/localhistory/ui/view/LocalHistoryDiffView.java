@@ -80,6 +80,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
     private Component diffComponent;
     private DiffController diffView;                
     private DiffPrepareTask prepareTask = null;
+    private boolean selected;
         
     /** Creates a new instance of LocalHistoryView */
     public LocalHistoryDiffView(LocalHistoryTopComponent master) {
@@ -105,7 +106,9 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
             return;
         }
         File file = (File) event.getParams()[0];
-        if(file == null || prepareTask == null || !file.equals(prepareTask.entry.getFile())) {
+        if( file == null || prepareTask == null || !selected ||
+            !file.equals(prepareTask.entry.getFile()))
+        {
             return;
         }        
         scheduleTask(prepareTask);
@@ -117,14 +120,16 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
     
     private void selectionChanged(PropertyChangeEvent evt) {
         Node[] newSelection = ((Node[]) evt.getNewValue());
-        if(newSelection == null || newSelection.length == 0) {                
+        selected = true;
+        if(newSelection == null || newSelection.length == 0) {
+            selected = false;
             showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, "MSG_DiffPanel_NoVersion"));
             return;
         }
 
         StoreEntry se = newSelection[0].getLookup().lookup(StoreEntry.class);
-        
         if( se == null ) {
+            selected = false;
             showNoContent(NbBundle.getMessage(LocalHistoryDiffView.class, "MSG_DiffPanel_IllegalSelection"));
             return;
         }

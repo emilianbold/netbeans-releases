@@ -165,6 +165,11 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     getDepth()
                 );
                 stepRequest.addCountFilter(1);
+                String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
+                for (int i = 0; i < exclusionPatterns.length; i++) {
+                    stepRequest.addClassExclusionFilter(exclusionPatterns [i]);
+                    logger.finer("   add pattern: "+exclusionPatterns[i]);
+                }
                 debuggerImpl.getOperator().register(stepRequest, this);
                 stepRequest.setSuspendPolicy(debugger.getSuspend());
 
@@ -523,6 +528,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         getDepth()
                     );
                     stepRequest.addCountFilter(1);
+                    String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
+                    for (int i = 0; i < exclusionPatterns.length; i++) {
+                        stepRequest.addClassExclusionFilter(exclusionPatterns [i]);
+                    }
                     debuggerImpl.getOperator ().register (stepRequest, this);
                     stepRequest.setSuspendPolicy (debugger.getSuspend ());
                     try {
