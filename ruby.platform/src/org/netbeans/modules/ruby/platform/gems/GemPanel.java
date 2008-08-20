@@ -62,7 +62,6 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
@@ -70,7 +69,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.plaf.UIResource;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -79,6 +77,7 @@ import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.platform.Util;
+import org.netbeans.modules.ruby.platform.gems.GemUISupport.GemListRenderer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -287,52 +286,7 @@ public final class GemPanel extends JPanel {
 
         String htmlMimeType = "text/html"; // NOI18N
         pane.setContentType(htmlMimeType);
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<html>"); // NOI18N
-        sb.append("<h2>"); // NOI18N
-        sb.append(gem.getName());
-        sb.append("</h2>\n"); // NOI18N
-
-        String installedAsString = gem.getInstalledVersionsAsString();
-        String availableAsString = gem.getAvailableVersionsAsString();
-        if (installedAsString != null && availableAsString != null) {
-            // It's an update gem
-            sb.append("<h3>"); // NOI18N
-            sb.append(getMessage("InstalledVersion"));
-            sb.append("</h3>"); // NOI18N
-            sb.append(installedAsString);
-
-            sb.append("<h3>"); // NOI18N
-            sb.append(getMessage("AvailableVersion"));
-            sb.append("</h3>"); // NOI18N
-            sb.append(availableAsString);
-            sb.append("<br>"); // NOI18N
-        } else {
-            sb.append("<h3>"); // NOI18N
-            String version = installedAsString;
-            if (version == null) {
-                version = availableAsString;
-            }
-            if (version.indexOf(',') == -1) {
-                sb.append(getMessage("Version"));
-            } else {
-                sb.append(getMessage("Versions"));
-            }
-            sb.append("</h3>"); // NOI18N
-            sb.append(version);
-        }
-
-        if (gem.getDescription() != null) {
-            sb.append("<h3>"); // NOI18N
-            sb.append(getMessage("Description"));
-            sb.append("</h3>"); // NOI18N
-            sb.append(gem.getHTMLDescription());
-        }
-
-        sb.append("</html>"); // NOI18N
-
-        pane.setText(sb.toString());
+        pane.setText(GemUISupport.getGemHTMLDescriptionForTextPane(gem));
         pane.setCaretPosition(0);
     }
 
@@ -1357,7 +1311,6 @@ public final class GemPanel extends JPanel {
     private javax.swing.JScrollPane updatedSP;
     // End of variables declaration//GEN-END:variables
     
-
     private final class FilterFieldListener implements DocumentListener {
 
         public void insertUpdate(DocumentEvent e) { changedUpdate(e); }
@@ -1374,58 +1327,6 @@ public final class GemPanel extends JPanel {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
     }
 
-    /** Renders {@link Gem}. */
-    private static class GemListRenderer extends JLabel implements ListCellRenderer, UIResource {
-
-        public GemListRenderer() {
-            setOpaque(true);
-        }
-
-        public Component getListCellRendererComponent(JList list, Object value,
-                int index, boolean isSelected, boolean cellHasFocus) {
-            // #93658: GTK needs name to render cell renderer "natively"
-            setName("ComboBox.listRenderer"); // NOI18N
-            
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-
-            StringBuilder label = new StringBuilder(100);
-            Gem gem = ((Gem) value);
-            label.append("<html><b>"); // NOI18N
-            label.append(gem.getName());
-            label.append("</b>"); // NOI18N
-
-            if (gem.getInstalledVersionsAsString() != null) {
-                label.append(" ("); // NOI18N
-                label.append(gem.getInstalledVersionsAsString());
-                if (gem.getAvailableVersionsAsString() != null) {
-                    label.append(" => ").append(gem.getAvailableVersionsAsString()); // NOI18N
-                }
-                label.append(") "); // NOI18N
-            }
-
-            if (gem.getDescription() != null) {
-                label.append(": "); // NOI18N
-                label.append(gem.getDescription());
-            }
-
-            label.append("</html>"); // NOI18N
-            setText(label.toString());
-            return this;
-        }
-
-        // #93658: GTK needs name to render cell renderer "natively"
-        public @Override String getName() {
-            String name = super.getName();
-            return name == null ? "ComboBox.renderer" : name;  // NOI18N
-        }
-    }
 }
