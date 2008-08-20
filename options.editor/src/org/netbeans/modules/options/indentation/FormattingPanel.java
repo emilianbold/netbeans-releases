@@ -42,72 +42,48 @@ package org.netbeans.modules.options.indentation;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Comparator;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.text.EditorKit;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Lookup;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.netbeans.modules.options.editor.spi.PreviewProvider;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Dusan Balek
  */
-public class FormattingPanel extends JPanel implements ActionListener, PropertyChangeListener {
-    
-    private static final String ALL_LANGUAGES_PREVIEW_MIME_TYPE = "text/xml"; //NOI18N
-    
-    private FormattingPanelController fopControler;
-    private OptionsPanelController simplePanelController = new IndentationPanelController();
-    private Map<String, JComponent> categoryName2Components;
-    private Iterable<? extends OptionsPanelController> controllers;
+public final class FormattingPanel extends JPanel implements PropertyChangeListener {
     
     /** Creates new form FormattingPanel */
-    FormattingPanel(FormattingPanelController fopControler) {
-        this.fopControler = fopControler;
-
+    public FormattingPanel() {
         initComponents();
         
-        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
-            setOpaque( false );
-
-        // Don't highlight caret row 
-        previewPane.putClientProperty(
-            "HighlightsLayerExcludes", // NOI18N
-            "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" // NOI18N
-        );
-        previewPane.setDoubleBuffered(true);        
-
-        // initialize mime types and all the controllers and their components;
-        // it's important to do this here to satisfy the logic of OptionsPanelController,
-        // which says that getComponent is called before anything else (specifically update)
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        model.addElement(""); //NOI18N
-        simplePanelController.getComponent(fopControler.getLookup(ALL_LANGUAGES_PREVIEW_MIME_TYPE, previewPane));
-        for (String mimeType : fopControler.getMimeTypes()) {
-            model.addElement(mimeType);
-            Lookup l = fopControler.getLookup(mimeType, previewPane);
-            for(OptionsPanelController opc : fopControler.getControllers(mimeType)) {
-                JComponent c = opc.getComponent(l);
-            }
+        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+            setOpaque(false);
         }
-        languageCombo.setModel(model);        
-        ListCellRenderer renderer = new DefaultListCellRenderer() {
+
+        // Languages combobox renderer
+        languageCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 if (value instanceof String) {
@@ -117,34 +93,113 @@ public class FormattingPanel extends JPanel implements ActionListener, PropertyC
                 }
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }            
-        };
-        languageCombo.setRenderer(renderer);
-        languageCombo.addActionListener(this);
-        categoryCombo.addActionListener(this);
+        });
+        
+        // Category combobox renderer
+        categoryCombo.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value instanceof PreferencesCustomizer) {
+                    value = ((PreferencesCustomizer) value).getDisplayName();
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }            
+        });
 
-        // Pre-select a language
-        JTextComponent pane = EditorRegistry.lastFocusedComponent();
-        String preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
-        languageCombo.setSelectedItem(preSelectMimeType);
-        if (preSelectMimeType != languageCombo.getSelectedItem()) {
-            languageCombo.setSelectedIndex(0);
-        }
     }
-    
-    void load() {
-        simplePanelController.update();
-        for (String mimeType : fopControler.getMimeTypes()) {
-            for (OptionsPanelController controller : fopControler.getControllers(mimeType)) {
-                controller.update();
+
+    public void setSelector(CustomizerSelector selector) {
+        if (this.selector != null) {
+            this.selector.removePropertyChangeListener(weakListener);
+        }
+
+        this.selector = selector;
+
+        if (this.selector != null) {
+            this.weakListener = WeakListeners.propertyChange(this, this.selector);
+            this.selector.addPropertyChangeListener(weakListener);
+        
+            // Languages combobox model
+            DefaultComboBoxModel model = new DefaultComboBoxModel();
+            ArrayList<String> mimeTypes = new ArrayList<String>();
+            mimeTypes.addAll(selector.getMimeTypes());
+            Collections.sort(mimeTypes, new LanguagesComparator());
+
+            for (String mimeType : mimeTypes) {
+                model.addElement(mimeType);
             }
+            languageCombo.setModel(model);
+
+            // Pre-select a language
+            JTextComponent pane = EditorRegistry.lastFocusedComponent();
+            String preSelectMimeType = pane != null ? (String)pane.getDocument().getProperty("mimeType") : ""; // NOI18N
+            languageCombo.setSelectedItem(preSelectMimeType);
+            if (preSelectMimeType != languageCombo.getSelectedItem()) {
+                languageCombo.setSelectedIndex(0);
+            }
+        } else {
+            languageCombo.setModel(new DefaultComboBoxModel());
         }
     }
-    
-    void store() {
-        simplePanelController.applyChanges();
-        for (String mimeType : fopControler.getMimeTypes()) {
-            for (OptionsPanelController controller : fopControler.getControllers(mimeType)) {
-                controller.applyChanges();
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName() == null || CustomizerSelector.PROP_MIMETYPE.equals(evt.getPropertyName())) {
+            DefaultComboBoxModel model = new DefaultComboBoxModel();
+            List<? extends PreferencesCustomizer> nue = selector.getCustomizers(selector.getSelectedMimeType());
+            for(PreferencesCustomizer c : nue) {
+                model.addElement(c);
+            }
+            categoryCombo.setModel(model);
+            categoryCombo.setSelectedIndex(0);
+        }
+
+        if (evt.getPropertyName() == null || CustomizerSelector.PROP_CUSTOMIZER.equals(evt.getPropertyName())) {
+            // remove the category customizer and its preview
+            categoryPanel.setVisible(false);
+            categoryPanel.removeAll();
+            previewScrollPane.setVisible(false);
+
+            // get the new category customizer
+            PreferencesCustomizer c = selector.getSelectedCustomizer();
+            if (c != null) {
+                // there can be no category selected
+                categoryPanel.add(c.getComponent(), BorderLayout.CENTER);
+            }
+            categoryPanel.setVisible(true);  
+
+            // get the category customizer's preview component
+            JComponent previewComponent;
+            if (c instanceof PreviewProvider) {
+                previewComponent = ((PreviewProvider) c).getPreviewComponent();
+                previewComponent.setDoubleBuffered(true);
+                if (previewComponent instanceof JTextComponent) {
+                    Document doc = ((JTextComponent) previewComponent).getDocument();
+                    // This is here solely for the purpose of previewing changes in formatting settings
+                    // in Tools-Options. This is NOT, repeat NOT, to be used by anybody else!
+                    // The name of this property is also hardcoded in editor.indent/.../CodeStylePreferences.java
+                    doc.putProperty("Tools-Options->Editor->Formatting->Preview - Preferences", selector.getCustomizerPreferences(c)); //NOI18N
+                }
+            } else {
+                JLabel noPreviewLabel = new JLabel(NbBundle.getMessage(FormattingPanel.class, "MSG_no_preview_available")); //NOI18N
+                noPreviewLabel.setOpaque(true);
+                noPreviewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                noPreviewLabel.setBorder(new EmptyBorder(new Insets(11, 11, 11, 11)));
+                noPreviewLabel.setVisible(true);
+                previewComponent = new JPanel(new BorderLayout());
+                previewComponent.add(noPreviewLabel, BorderLayout.CENTER);
+            }
+
+            // add the preview component to the preview area
+            previewScrollPane.setViewportView(previewComponent);
+            previewScrollPane.setVisible(true);
+
+            if (c instanceof PreviewProvider) {
+                final PreviewProvider pp = (PreviewProvider) c;
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        pp.refreshPreview();
+                    }
+                });
             }
         }
     }
@@ -166,8 +221,7 @@ public class FormattingPanel extends JPanel implements ActionListener, PropertyC
         categoryPanel = new javax.swing.JPanel();
         previewPanel = new javax.swing.JPanel();
         previewLabel = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        previewPane = new javax.swing.JEditorPane();
+        previewScrollPane = new javax.swing.JScrollPane();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -178,11 +232,21 @@ public class FormattingPanel extends JPanel implements ActionListener, PropertyC
         org.openide.awt.Mnemonics.setLocalizedText(languageLabel, org.openide.util.NbBundle.getMessage(FormattingPanel.class, "LBL_Language")); // NOI18N
 
         languageCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        languageCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                languageChanged(evt);
+            }
+        });
 
         categoryLabel.setLabelFor(categoryCombo);
         org.openide.awt.Mnemonics.setLocalizedText(categoryLabel, org.openide.util.NbBundle.getMessage(FormattingPanel.class, "LBL_Category")); // NOI18N
 
         categoryCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        categoryCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                categoryChanged(evt);
+            }
+        });
 
         categoryPanel.setOpaque(false);
         categoryPanel.setLayout(new java.awt.BorderLayout());
@@ -192,8 +256,8 @@ public class FormattingPanel extends JPanel implements ActionListener, PropertyC
         optionsPanelLayout.setHorizontalGroup(
             optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(optionsPanelLayout.createSequentialGroup()
-                .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, optionsPanelLayout.createSequentialGroup()
                         .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(categoryLabel)
@@ -217,8 +281,8 @@ public class FormattingPanel extends JPanel implements ActionListener, PropertyC
                 .add(optionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(categoryLabel)
                     .add(categoryCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(categoryPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -237,16 +301,12 @@ public class FormattingPanel extends JPanel implements ActionListener, PropertyC
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         previewPanel.add(previewLabel, gridBagConstraints);
 
-        jScrollPane1.setDoubleBuffered(true);
-
-        previewPane.setEditable(false);
-        jScrollPane1.setViewportView(previewPane);
-
+        previewScrollPane.setDoubleBuffered(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        previewPanel.add(jScrollPane1, gridBagConstraints);
+        previewPanel.add(previewScrollPane, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -255,77 +315,42 @@ public class FormattingPanel extends JPanel implements ActionListener, PropertyC
         gridBagConstraints.weightx = 1.0;
         add(previewPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void languageChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_languageChanged
+        selector.setSelectedMimeType((String)languageCombo.getSelectedItem());
+    }//GEN-LAST:event_languageChanged
+
+    private void categoryChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_categoryChanged
+        selector.setSelectedCustomizer(((PreferencesCustomizer)categoryCombo.getSelectedItem()).getId());
+    }//GEN-LAST:event_categoryChanged
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox categoryCombo;
     private javax.swing.JLabel categoryLabel;
     private javax.swing.JPanel categoryPanel;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JComboBox languageCombo;
     private javax.swing.JLabel languageLabel;
     private javax.swing.JPanel optionsPanel;
     private javax.swing.JLabel previewLabel;
-    private javax.swing.JEditorPane previewPane;
     private javax.swing.JPanel previewPanel;
+    private javax.swing.JScrollPane previewScrollPane;
     // End of variables declaration//GEN-END:variables
  
-    // Change in the combos
-    public void actionPerformed(ActionEvent e) {
-        if (languageCombo == e.getSource()) {
-            if (controllers != null) {
-                for (OptionsPanelController controller : controllers) {
-                    controller.removePropertyChangeListener(this);
-                }
-            }
+    private CustomizerSelector selector;
+    private PropertyChangeListener weakListener;
+
+    private static final class LanguagesComparator implements Comparator<String> {
+        public int compare(String mimeType1, String mimeType2) {
+            if (mimeType1.length() == 0)
+                return mimeType2.length() == 0 ? 0 : -1;
+            if (mimeType2.length() == 0)
+                return 1;
             
-            String mimeType = (String)languageCombo.getSelectedItem();
-            DefaultComboBoxModel model;
-
-            if (mimeType.length() == 0) {
-                EditorKit kit = CloneableEditorSupport.getEditorKit(ALL_LANGUAGES_PREVIEW_MIME_TYPE);
-                previewPane.setEditorKit(kit);
-
-                controllers = Collections.singletonList(simplePanelController);
-                simplePanelController.addPropertyChangeListener(this);
-
-                categoryName2Components = new LinkedHashMap<String, JComponent>();
-                JComponent component = simplePanelController.getComponent(fopControler.getLookup(ALL_LANGUAGES_PREVIEW_MIME_TYPE, previewPane));
-                String categoryName = component.getName();
-                categoryName2Components.put(categoryName, component);
-
-                model = new DefaultComboBoxModel();
-                model.addElement(categoryName);
-            } else {
-                EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
-                previewPane.setEditorKit(kit);
+            String langName1 = EditorSettings.getDefault().getLanguageName(mimeType1);
+            String langName2 = EditorSettings.getDefault().getLanguageName(mimeType2);
             
-                controllers = fopControler.getControllers(mimeType);
-                categoryName2Components = new LinkedHashMap<String, JComponent>();
-                model = new DefaultComboBoxModel();
-                for (OptionsPanelController controller : controllers) {
-                    controller.addPropertyChangeListener(this);
-                    JComponent component = controller.getComponent(fopControler.getLookup(mimeType, previewPane));
-                    String categoryName = component.getName();
-                    categoryName2Components.put(categoryName, component);
-                    model.addElement(categoryName);
-                }
-            }
-            
-            categoryCombo.setModel(model);
-            categoryCombo.setSelectedIndex(0);
-        } else if (categoryCombo == e.getSource()) {
-            categoryPanel.setVisible(false);
-            categoryPanel.removeAll();
-            JComponent component = categoryName2Components.get(categoryCombo.getSelectedItem());
-            categoryPanel.add(component, BorderLayout.CENTER);
-            categoryPanel.setVisible(true);  
+            return langName1.compareTo(langName2);
         }
-    }
-        
-    // Change in some of the subpanels
-    public void propertyChange(PropertyChangeEvent evt) {
-        // Notify the main controler that the page has changed
-        fopControler.changed();
     }
 }

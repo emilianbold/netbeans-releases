@@ -45,7 +45,7 @@ import org.netbeans.api.java.source.CodeStyle.WrapStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
-import org.netbeans.spi.options.OptionsPanelController;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 
 
 /**
@@ -67,8 +67,8 @@ public class FmtAlignment extends javax.swing.JPanel {
         amAnnotationArgsCheckBox.putClientProperty(OPTION_ID, alignMultilineAnnotationArgs);
     }
     
-    public static OptionsPanelController getController() {
-        return new CategorySupport(new FmtAlignment(),
+    public static PreferencesCustomizer.Factory getController() {
+        return new CategorySupport.Factory("alignment", FmtAlignment.class, //NOI18N
                 org.openide.util.NbBundle.getMessage(FmtAlignment.class, "SAMPLE_AlignBraces"), // NOI18N
                 new String[] { FmtOptions.wrapAnnotations, WrapStyle.WRAP_ALWAYS.name() },
                 new String[] { FmtOptions.wrapArrayInit, WrapStyle.WRAP_ALWAYS.name() },

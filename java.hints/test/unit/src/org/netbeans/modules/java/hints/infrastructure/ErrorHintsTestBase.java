@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -56,7 +57,7 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
@@ -114,7 +115,12 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         
         doc = ec.openDocument();
         doc.putProperty(Language.class, JavaTokenId.language());
-        
+
+        //XXX: takes a long time
+        //re-index, in order to find classes-living-elsewhere
+        CountDownLatch latch = RepositoryUpdater.getDefault().scheduleCompilationAndWait(sourceRoot, sourceRoot);
+        latch.await();
+
         JavaSource js = JavaSource.forFileObject(data);
         
         assertNotNull(js);
@@ -183,7 +189,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         prepareTest(fileName, code);
         
         TreePath path = info.getTreeUtilities().pathFor(pos);
-        
+
         List<Fix> fixes = computeFixes(info, pos, path);
         List<String> fixesNames = new LinkedList<String>();
         
