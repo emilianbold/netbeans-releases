@@ -141,7 +141,16 @@ public class UnixNativeUtils extends NativeUtils {
     }
     @Override
     protected Platform getPlatform() {
-        return Platform.UNIX;
+        final String osName = System.getProperty("os.name");
+        if (osName.endsWith("BSD")) {
+            if (osName.equals("FreeBSD")) {
+                return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_X64 : Platform.FREEBSD_X86;
+            } else {
+                return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_X64 : Platform.BSD_X86;
+            }
+        } else {
+            return Platform.UNIX;
+        }
     }
     
     public boolean isCurrentUserAdmin() throws NativeException{
