@@ -101,6 +101,9 @@ public class CheckDeadlocksAction extends AbstractAction
     }
 
     public static void checkForDeadlock(JPDADebuggerImpl debugger) {
+        if (debugger.getState() == JPDADebuggerImpl.STATE_DISCONNECTED) {
+            return;
+        }
         VirtualMachine vm = debugger.getVirtualMachine();
         vm.suspend();
         List<JPDAThreadImpl> threadsToNotify = new ArrayList<JPDAThreadImpl>();

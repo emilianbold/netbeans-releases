@@ -105,15 +105,18 @@ public final class MethodCustomizerPanel extends javax.swing.JPanel {
             ejbqlTextArea.setText(ejbql);
         }
         cardinalityPanel.setVisible(hasFinderCardinality);
-        exceptionsContainerPanel.setVisible(hasExceptions);
         interfacesPanel.setVisible(hasInterfaces);
 
         parametersPanel = new ParametersPanel(cpInfo, methodModel.getParameters());
         parametersContainerPanel.add(parametersPanel);
 
-        exceptionsPanel = hasExceptions ? new ExceptionsPanel(methodModel.getExceptions(), cpInfo) : null;
         if (hasExceptions) {
+            exceptionsPanel = new ExceptionsPanel(methodModel.getExceptions(), cpInfo);
             exceptionsContainerPanel.add(exceptionsPanel);
+        }
+        else {
+            exceptionsPanel = null;
+            exceptionsContainerPanel.setVisible(false);
         }
 
         // listeners

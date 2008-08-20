@@ -73,6 +73,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.TaskListener;
 
 /**
  * Manage a set of CompilerSets. The CompilerSets are dynamically created based on which compilers
@@ -301,7 +302,7 @@ public class CompilerSetManager {
         }
     }
     
-    public CompilerSetManager deepCopy() {
+   public CompilerSetManager deepCopy() {
         waitForCompletion(); // in case its a remote connection...
         List<CompilerSet> setsCopy =  new ArrayList<CompilerSet>();
         for (CompilerSet set : getCompilerSets()) {
@@ -464,7 +465,14 @@ public class CompilerSetManager {
                     }
                     log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
                     state = STATE_COMPLETE;
-                    provider.loadCompilerSetData(setsCopy);
+
+                    provider.loadCompilerSetData(setsCopy).addTaskListener(new TaskListener() {
+
+                        public void taskFinished(org.openide.util.Task task) {
+                            log.fine("Code Model Ready for " + CompilerSetManager.this.toString());
+                            CompilerSetManagerEvents.get(hkey).runTasks();
+                        }
+                    });
                 }
             });
         } else {

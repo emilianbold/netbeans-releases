@@ -204,7 +204,8 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                 Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(getPropertyChangeListeners) "+e.getLocalizedMessage());
                 return original.getChildren (variable, from, to);
             } catch (NoSuchMethodException e) {
-                ErrorManager.getDefault().notify(e);
+                Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(getPropertyChangeListeners) "+e.getLocalizedMessage());
+                return original.getChildren (variable, from, to);
             }
 //        if ( type.equals ("java.lang.ref.WeakReference")
 //        ) 
