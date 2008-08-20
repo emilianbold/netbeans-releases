@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -70,7 +71,6 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
@@ -105,7 +105,9 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private final AtomicBoolean requiresModelUpdate = new AtomicBoolean(false);
     private DesignComponentWrapper wrapper;
     private PropertyEditorMessageAwareness messageAwareness;
-
+    private WeakReference<DesignDocument> documentReferences;
+    private Map<String,String> pathMap;
+    
     public SVGFormEditorElement() {
         paths = new HashMap<String, FileObject>();
         comboBoxModel = new DefaultComboBoxModel();
@@ -114,6 +116,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         imageView = new SVGImageComponent();
         previewPanel.add(imageView, BorderLayout.CENTER);
         jTable1.setModel(new Model());
+        pathMap = new HashMap<String, String>();
     }
 
     @Override
@@ -135,10 +138,13 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
 
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         this.wrapper = wrapper;
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            project = ProjectUtils.getProject(document);
+        
+        if (documentReferences == null || documentReferences.get() == null) {
+            return;
         }
+        final DesignDocument document = documentReferences.get();
+        project = ProjectUtils.getProject(document);
+        
 
         if (wrapper == null) {
             // UI stuff
@@ -214,18 +220,19 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     @Override
-    public void postSaveValue(final DesignComponent parentComponent) {
+    public void postSetValue(final DesignComponent parentComponent, final DesignComponent childComponent) {
          
         final FileObject[] svgImageFileObject = new FileObject[1];
         parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
-                DesignComponent childComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
-                if (childComponent == null) {
-                    return;
-                }
+//                DesignComponent childComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
+//                if (childComponent == null) {
+//                    return;
+//                }
                 PropertyValue propertyValue = childComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
                 if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
+                    //String svgImagePath = MidpTypes.getString(propertyValue);
                     Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(parentComponent.getDocument(), MidpTypes.getString(propertyValue));
                     Iterator<FileObject> iterator = images.keySet().iterator();
                     svgImageFileObject[0] = iterator.hasNext() ? iterator.next() : null;
@@ -439,11 +446,17 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     public void run() {
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            updateModel(document);
+        
+        if (documentReferences == null || documentReferences.get() == null) {
+            return;
         }
-
+        
+        final DesignDocument document = documentReferences.get();
+        
+        project = ProjectUtils.getProject(document);
+        
+        updateModel(document);
+        
         showProgressBar(false);
         setDesignComponentWrapper(wrapper);
         requiresModelUpdate.set(false);
@@ -510,6 +523,12 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         }
     }
 
+    @Override
+    public void setDesignDocument(DesignDocument document) {
+        documentReferences = new WeakReference<DesignDocument>(document);
+        super.setDesignDocument(document);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -702,6 +721,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
             String relativePath = convertFile(fo, null, true);
             if (relativePath != null) {
                 setText(relativePath);
+                pathMap.put(relativePath, fo.getPath());
                 pathTextComboBoxActionPerformed(null);
             } else {
                 String message = NbBundle.getMessage(SVGFormEditorElement.class, "MSG_FILE_EXIST"); // NOI18N

@@ -40,16 +40,12 @@
 package org.netbeans.modules.cnd.remote.ui;
 
 import java.awt.Dialog;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -91,12 +87,12 @@ public class AddServerDialog extends JPanel implements DocumentListener {
         return String.valueOf(tfPassword.getPassword());
     }
     
-    public boolean isDefault() {
-        return cbxSetAsDefault.isSelected();
-    }
-    
     public boolean isOkValid() {
         return valid;
+    }
+
+    public boolean isRememberPassword() {
+        return cbRememberPwd.isSelected();
     }
     
     public void insertUpdate(DocumentEvent e) {
@@ -116,21 +112,6 @@ public class AddServerDialog extends JPanel implements DocumentListener {
 
     public void changedUpdate(DocumentEvent e) {
     }
-    
-    public class PasswordSourceModel extends DefaultComboBoxModel {
-        
-        public PasswordSourceModel() {
-            addElement(NbBundle.getMessage(AddServerDialog.class, "LBL_PSM_TypeitOnce"));
-            addElement(NbBundle.getMessage(AddServerDialog.class, "LBL_PSM_TypeitAlways"));
-            ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-            for (ServerRecord record : serverList.getRecords()) {
-                String user = record.getUserName();
-                if (user != null) {
-                    addElement(NbBundle.getMessage(AddServerDialog.class, "FMT_SharedPasswordSource", record.getServerName(), user));
-                }
-            }
-        }
-    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -147,11 +128,9 @@ public class AddServerDialog extends JPanel implements DocumentListener {
         lbLogin = new javax.swing.JLabel();
         tfLogin = new javax.swing.JTextField();
         tfLogin.getDocument().addDocumentListener(this);
-        lbPasswordSource = new javax.swing.JLabel();
-        cbPasswordSource = new javax.swing.JComboBox();
-        cbxSetAsDefault = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         tfPassword = new javax.swing.JPasswordField();
+        cbRememberPwd = new javax.swing.JCheckBox();
 
         lbServer.setLabelFor(tfServer);
         org.openide.awt.Mnemonics.setLocalizedText(lbServer, org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_ServerTF")); // NOI18N
@@ -168,19 +147,6 @@ public class AddServerDialog extends JPanel implements DocumentListener {
             }
         });
 
-        lbPasswordSource.setLabelFor(cbPasswordSource);
-        org.openide.awt.Mnemonics.setLocalizedText(lbPasswordSource, org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_PasswordSource")); // NOI18N
-
-        cbPasswordSource.setModel(new PasswordSourceModel());
-
-        org.openide.awt.Mnemonics.setLocalizedText(cbxSetAsDefault, org.openide.util.NbBundle.getMessage(AddServerDialog.class, "LBL_SetAsDefault")); // NOI18N
-        cbxSetAsDefault.setMargin(new java.awt.Insets(2, 0, 2, 2));
-        cbxSetAsDefault.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbxSetAsDefaultActionPerformed(evt);
-            }
-        });
-
         jLabel1.setLabelFor(tfPassword);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AddServerDialog.class, "AddServerDialog.jLabel1.text")); // NOI18N
 
@@ -191,6 +157,8 @@ public class AddServerDialog extends JPanel implements DocumentListener {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbRememberPwd, org.openide.util.NbBundle.getMessage(AddServerDialog.class, "AddServerDialog.cbRememberPwd.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -198,17 +166,15 @@ public class AddServerDialog extends JPanel implements DocumentListener {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cbxSetAsDefault)
+                    .add(cbRememberPwd)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lbServer)
-                            .add(lbPasswordSource)
                             .add(jLabel1)
                             .add(lbLogin))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.CENTER, tfPassword, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.CENTER, cbPasswordSource, 0, 246, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.CENTER, tfServer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
                             .add(tfLogin, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE))))
                 .addContainerGap())
@@ -229,22 +195,15 @@ public class AddServerDialog extends JPanel implements DocumentListener {
                     .add(jLabel1)
                     .add(tfPassword, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(lbPasswordSource)
-                    .add(cbPasswordSource, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(cbxSetAsDefault)
+                .add(cbRememberPwd)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {cbPasswordSource, tfLogin, tfPassword, tfServer}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {tfLogin, tfPassword, tfServer}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-        lbPasswordSource.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "DESC_PasswordSource")); // NOI18N
+        cbRememberPwd.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "AN_RememberPassword")); // NOI18N
+        cbRememberPwd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "DESC_RememberPassword")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-private void cbxSetAsDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbxSetAsDefaultActionPerformed
-// TODO addServer your handling code here:
-}//GEN-LAST:event_cbxSetAsDefaultActionPerformed
 
 private void onLoginFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_onLoginFocus
     tfLogin.selectAll();
@@ -256,11 +215,9 @@ private void onPwdFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_onPwdF
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox cbPasswordSource;
-    private javax.swing.JCheckBox cbxSetAsDefault;
+    private javax.swing.JCheckBox cbRememberPwd;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel lbLogin;
-    private javax.swing.JLabel lbPasswordSource;
     private javax.swing.JLabel lbServer;
     private javax.swing.JTextField tfLogin;
     private javax.swing.JPasswordField tfPassword;

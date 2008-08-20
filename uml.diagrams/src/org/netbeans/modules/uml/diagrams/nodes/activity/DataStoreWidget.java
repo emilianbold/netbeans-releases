@@ -73,9 +73,11 @@ public class DataStoreWidget extends ActivityNodeWidget
         if (presentation != null)
         {
             IDataStoreNode element = (IDataStoreNode) presentation.getFirstSubject();
-            setCurrentView(createDataStoreView(element));
+            if (!isInitialized())
+                setCurrentView(createDataStoreView(element));
             setFont(getCurrentView().getFont());
         }
+        super.initializeNode(presentation);
     }
 
     private Widget createDataStoreView(IDataStoreNode element)
@@ -104,6 +106,7 @@ public class DataStoreWidget extends ActivityNodeWidget
         dataStoreLabel.setAlignment(UMLLabelWidget.Alignment.CENTER);
         dataStoreLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
         dataStoreLabel.setLabel("<<datastore>>");   //NOI18N
+        dataStoreLabel.setForeground(null);
         mainView.addChild(dataStoreLabel);
         
         // stereotyep widget

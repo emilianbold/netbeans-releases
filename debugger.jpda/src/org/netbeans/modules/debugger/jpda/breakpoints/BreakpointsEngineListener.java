@@ -226,7 +226,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
             removeBreakpointImpl (bs [i]);
     }
     
-    public void fixBreakpointImpls () {
+    public synchronized void fixBreakpointImpls () {
         Iterator<BreakpointImpl> i = breakpointToImpl.values ().iterator ();
         while (i.hasNext ())
             i.next ().fixed ();

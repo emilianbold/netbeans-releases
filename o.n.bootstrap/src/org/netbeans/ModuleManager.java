@@ -478,24 +478,24 @@ public final class ModuleManager {
                         history, reloadable, autoload, eager, this, ev);
         ev.log(Events.FINISH_CREATE_REGULAR_MODULE, jar);
         subCreate(m);
-        if (m.isEager()) {
-            List<Module> immediate = simulateEnable(Collections.<Module>emptySet());
-            if (!immediate.isEmpty()) {
-                if (!immediate.contains(m)) {
-                    throw new IllegalStateException("Can immediately enable modules " + immediate + ", but not including " + m + "; its problems: " + m.getProblems()); // NOI18N
+        // Must run eager enablement check for *every* module that is created,
+        // even if it itself is not eager. Otherwise it is possible that an eager
+        // module gets created, followed immediately by one of its dependencies,
+        // and does not get turned on.
+        List<Module> immediate = simulateEnable(Collections.<Module>emptySet());
+        if (!immediate.isEmpty()) {
+            assert immediate.contains(m) : "Can immediately enable modules " + immediate + ", but not including " + m + "; its problems: " + m.getProblems();
+            boolean ok = true;
+            for (Module other: immediate) {
+                if (!other.isAutoload() && !other.isEager()) {
+                    // Nope, would require a real module to be turned on first.
+                    ok = false;
+                    break;
                 }
-                boolean ok = true;
-		for (Module other: immediate) {
-                    if (!other.isAutoload() && !other.isEager()) {
-                        // Nope, would require a real module to be turned on first.
-                        ok = false;
-                        break;
-                    }
-                }
-                if (ok) {
-                    Util.err.fine("Enabling " + m + " immediately");
-                    enable(Collections.<Module>emptySet());
-                }
+            }
+            if (ok) {
+                Util.err.fine("Enabling " + m + " immediately");
+                enable(Collections.<Module>emptySet());
             }
         }
         return m;

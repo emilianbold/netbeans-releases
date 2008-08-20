@@ -186,6 +186,8 @@ public class FileEntry {
     private String escapeXmlTags(final String str) {        
         return (str == null) ? null : str.
                 replace("&", "&amp;").//NOI18N
+                replace("\'","&apos;").//NOI18N
+                replace("\"","&quot;").//NOI18N
                 replace("<", "&lt;").//NOI18N
                 replace(">", "&gt;");//NOI18N        
     }

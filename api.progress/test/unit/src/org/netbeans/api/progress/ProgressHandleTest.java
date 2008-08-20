@@ -41,7 +41,6 @@
 
 package org.netbeans.api.progress;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -49,6 +48,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.spi.InternalHandle;
 import org.netbeans.progress.spi.ProgressUIWorker;
@@ -70,6 +70,7 @@ public class ProgressHandleTest extends NbTestCase {
     // TODO add test methods here. The name must begin with 'test'. For example:
     // public void testHello() {}
 
+    @Override
     protected void setUp() throws Exception {
         Controller.defaultInstance = new TestController();
         proghandle = ProgressHandleFactory.createHandle("displayName",new Cancellable() {
@@ -92,23 +93,6 @@ public class ProgressHandleTest extends NbTestCase {
         public Timer getTestTimer() {
             return timer;
         }
-    }
-    
-    private void waitForTimerFinish() {
-        TestController tc = (TestController)Controller.defaultInstance;
-        int count = 0;
-        do {
-            if (count > 10) {
-                fail("Takes too much time");
-            }
-            try {
-                count = count + 1;
-                Thread.sleep(300);
-            } catch (InterruptedException exc) {
-                System.out.println("interrupted");
-            }        
-        } while (tc.getTestTimer().isRunning());
-
     }
 
     /**
@@ -188,9 +172,10 @@ public class ProgressHandleTest extends NbTestCase {
     /**
      * Test of custom placed labels of class org.netbeans.progress.api.ProgressHandle.
      */
+    @RandomlyFails // NB-Core-Build #1175
     public void testCustomPlacedLabels() throws Exception {
         assertFalse(handle.isCustomPlaced());
-        JComponent comp = ProgressHandleFactory.createProgressComponent(proghandle);
+        ProgressHandleFactory.createProgressComponent(proghandle);
         JLabel main = ProgressHandleFactory.createMainLabelComponent(proghandle);
         JLabel detail = ProgressHandleFactory.createDetailLabelComponent(proghandle);
         proghandle.start();
@@ -342,6 +327,7 @@ public class ProgressHandleTest extends NbTestCase {
             super(comp);
         }
         
+        @Override
         protected void resetTimer(int initialDelay, boolean restart) {
             timer.setInitialDelay(initialDelay);
             if (restart) {
@@ -417,12 +403,12 @@ class MyFrame extends JFrame implements Runnable {
 }
         
         assertFalse(SwingUtilities.isEventDispatchThread());
-        ProgressHandle handle = ProgressHandleFactory.createHandle("foo");
-        JComponent component = ProgressHandleFactory.createProgressComponent(handle);
+        ProgressHandle h = ProgressHandleFactory.createHandle("foo");
+        JComponent component = ProgressHandleFactory.createProgressComponent(h);
         
 
         
-        handle.start();
+        h.start();
         
         final MyFrame frm = new MyFrame(component);
         SwingUtilities.invokeLater(frm);
@@ -434,8 +420,8 @@ class MyFrame extends JFrame implements Runnable {
         } 
         
         
-        handle.switchToDeterminate(100);
-        handle.progress(50);
+        h.switchToDeterminate(100);
+        h.progress(50);
         
         try {
             Thread.sleep(WAIT);
@@ -443,14 +429,14 @@ class MyFrame extends JFrame implements Runnable {
             e.printStackTrace();
         }
         try {
-            Method meth = component.getClass().getMethod("isIndeterminate", new Class[0]);
-            Boolean bool = (Boolean)meth.invoke(component, new Object[0]);
-            assertFalse("The progress bar is still indeterminate!", bool.booleanValue());
+            Method meth = component.getClass().getMethod("isIndeterminate");
+            Boolean bool = (Boolean) meth.invoke(component);
+            assertFalse("The progress bar is still indeterminate!", bool);
         } catch (Exception ex) {
             ex.printStackTrace();
             fail();
         }
-        handle.finish();
+        h.finish();
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
                 frm.setVisible(false);
@@ -459,6 +445,7 @@ class MyFrame extends JFrame implements Runnable {
         });
     }    
 
+    @Override
     protected boolean runInEQ() {
         return false;
     }

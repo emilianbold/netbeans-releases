@@ -444,6 +444,31 @@ public class ModuleManagerTest extends SetupHid {
         }
     }
 
+    public void testEagerEnablementRobust() throws Exception { // #144005
+        FileObject dir = FileUtil.toFileObject(getWorkDir());
+        assertNotNull(dir);
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        try {
+            Module eager1 = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "eager1.jar",
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: eager1\nOpenIDE-Module-Module-Dependencies: autoload\n\n")), null, false, false, true);
+            assertEquals(Collections.emptySet(), mgr.getEnabledModules());
+            Module autoload = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "autoload.jar",
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: autoload\n\n")), null, false, true, false);
+            assertEquals(new HashSet<Module>(Arrays.asList(autoload, eager1)), mgr.getEnabledModules());
+            Module eager2 = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "eager2.jar",
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: eager2\nOpenIDE-Module-Module-Dependencies: missing\n\n")), null, false, false, true);
+            assertEquals(new HashSet<Module>(Arrays.asList(autoload, eager1)), mgr.getEnabledModules());
+            Module eager3 = mgr.create(FileUtil.toFile(TestFileUtils.writeZipFile(dir, "eager3.jar",
+                    "META-INF/MANIFEST.MF:OpenIDE-Module: eager3\nOpenIDE-Module-Module-Dependencies: autoload\n\n")), null, false, false, true);
+            assertEquals(new HashSet<Module>(Arrays.asList(autoload, eager1, eager3)), mgr.getEnabledModules());
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+    }
+
     public void testCyclic() throws Exception {
         // Cf. #12014.
         FakeModuleInstaller installer = new FakeModuleInstaller();

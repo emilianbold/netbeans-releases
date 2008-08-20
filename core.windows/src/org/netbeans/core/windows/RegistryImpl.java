@@ -323,7 +323,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     }
     
     void clear() {
-        activatedTopComponent = null;
+        activatedTopComponent.clear();
         openSet.clear();
         currentNodes = null;
         activatedNodes = null;

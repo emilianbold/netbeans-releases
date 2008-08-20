@@ -435,7 +435,11 @@ public class FilterNode extends Node {
                 } else if (!original.isLeaf() && (getChildren() == Children.LEAF)) {
                     setChildren(new Children(original));
                 } else if (!original.isLeaf() && (getChildren() != Children.LEAF)) {
-                    ((FilterNode.Children) getChildren()).changeOriginal(original);
+                    if (original.getChildren().isLazy() != getChildren().isLazy()) {
+                        setChildren(new Children(original));
+                    } else {
+                        ((FilterNode.Children) getChildren()).changeOriginal(original);
+                    }
                 }
             }
         } finally {
@@ -1293,7 +1297,7 @@ public class FilterNode extends Node {
         /** Create children.
          * @param or original node to take children from */
         public Children(Node or) {
-            this(or, or.getChildren().entrySupport() instanceof EntrySupport.Lazy);
+            this(or, or.getChildren().isLazy());
         }
         
         private Children(Node or, boolean lazy) {
@@ -1419,7 +1423,17 @@ public class FilterNode extends Node {
         @Override
         @Deprecated
         public boolean add(Node[] arr) {
+            if (isLazy()) {
+                changeSupportToDefault();
+            }
             return original.getChildren().add(arr);
+        }
+
+        @Override
+        void changeSupportToDefault() {
+            ((Children.Keys) original.getChildren()).changeSupportToDefault();
+            support = new DefaultSupport();
+            super.changeSupportToDefault();
         }
 
         /* Delegates to filter node.

@@ -296,16 +296,20 @@ public class MarkOccDetTest extends TestBase {
     public void testCaretPosition136665() throws Exception {
         performTest("CaretPosition136665", 7, 8);
     }
-    
+
     public void testMarkConstructorOccurrence() throws Exception {
         performTest("MarkConstructorOccurrence", 8, 25);
         performTest("MarkConstructorOccurrence", 4, 25);
     }
-    
+
     public void testConstructorIsNotAClass() throws Exception {
         performTest("MarkConstructorOccurrence", 2, 25);
     }
 
+    public void testInsideConstructorInvocation() throws Exception {
+        performTest("InsideConstructorInvocation", 9, 18);
+    }
+    
     private void performTest(String name, final int line, final int column) throws Exception {
         performTest(name, line, column, false);
     }

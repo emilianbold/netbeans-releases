@@ -134,8 +134,9 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
     private boolean java15;
     private int nrQuestions = 0;
 
-    CsmCompletionTokenProcessor(int endScanOffset) {
+    CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset) {
         this.endScanOffset = endScanOffset;
+        this.lastSeparatorOffset = lastSeparatorOffset;
     }
 
     /**
@@ -1844,7 +1845,9 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                         break;
 
                     case LONG_LITERAL:
+                    case LONG_LONG_LITERAL:
                     case UNSIGNED_LONG_LITERAL:
+                    case UNSIGNED_LONG_LONG_LITERAL:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("long"); // NOI18N
                         break;
@@ -1966,6 +1969,8 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
             if (tokenID == CppTokenId.IDENTIFIER) {
                 pushExp(createTokenExp(VARIABLE));
                 errorState = false;
+            } else {
+                lastSeparatorOffset = tokenOffset;
             }
         }
 
@@ -1973,6 +1978,12 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
         return false;
     }
 
+    private int lastSeparatorOffset = -1;
+    
+    public int getLastSeparatorOffset() {
+        return lastSeparatorOffset;
+    }
+    
     public void start(int startOffset, int firstTokenOffset) {
     }
 

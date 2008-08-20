@@ -62,7 +62,8 @@ made subject to such option by the copyright holder.
 
         <p>When you create a database connection, you supply the details needed to connect to a specific database.
         Depending on the database driver you are using, you need to supply some or all of the following database connection details. </p>
-            <ul>
+<p><b>Basic setting tab</b></p>
+<ul>
                 <li><b>Name.</b> Choose the registered JDBC driver from the drop-down list.
                 The drop-down list only contains drivers registered with the IDE. 
                 If your driver is not listed, you need to <a href="adddriver.html">add the JDBC driver</a> before
@@ -95,12 +96,23 @@ made subject to such option by the copyright holder.
               <p><pre>jdbc:mysql://localhost:3306/mydatabase</pre></p>
               </li>
             </ul>
-            
-                 
-                </li>
+            </li>
+<p><b>Advanced tab</b></p>                 
+<p>In the Advanced tab of the New Database Connection dialog box, you select the database schema                 
                 
 
 
+
+
+you want to use for your connection. The Database Explorer displays only tables that use the selected schema. 
+<ul class="note">
+  <li><b>Note: </b>A schema does not appear in the Select Schema drop down list until you first create an object in the schema.</li>
+</ul> 
+<p>
+<ul>
+<li>
+<b>Get Schemas.</b> When you click Get Schemas, all schemas associated with the database are displayed in the drop down list. If no schemas are found, the drop down list remains grayed out.</li>
+</ul>
 
 
 <dl>

@@ -46,6 +46,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 
 /**
@@ -108,23 +109,22 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             dircmd = "";
         }
 
-        StringBuilder command = new StringBuilder(exe + " " + args + " 2>&1"); // NOI18N
+        StringBuilder command = new StringBuilder(); // NOI18N
 
-        for (String ev : envp) {
-            int pos = ev.indexOf('=');
-            String var = ev.substring(0, pos);
-            String val = ev.substring(pos + 1);
-            // The following code is important! But ChannelExec.setEnv(...) was added after JSch 0.1.24,
-            // so it can't be used until we get an updated version of JSch.
-            //echannel.setEnv(var, val); // not in 0.1.24
-
-            //as a workaround
-            command.insert(0, var + "=\"" + val + "\" "); // NOI18N
+        if (envp != null) {
+            command.append(ShellUtils.prepareExportString(false, envp));
         }
 
+        command.append(exe).append(" ").append(args).append(" 2>&1");
         command.insert(0, dircmd);
 
+        if (RemoteHostInfoProvider.getHostInfo(key).isCshShell()) {
+            // cshell doesn't support redirection error stream to output
+            command.insert(0, "bash -c '");
+            command.append("'");
+        }
         channel = createChannel();
+        log.finest("RNES: running command: " + command);
         ((ChannelExec) channel).setCommand(command.toString().replace('\\', '/'));
     }
 

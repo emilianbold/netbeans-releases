@@ -105,6 +105,11 @@ implements CloneableEditorSupport.Env {
     protected boolean runInEQ() {
         return true;
     }
+
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
     
     private Object writeReplace () {
         return new Replace ();

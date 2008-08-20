@@ -49,7 +49,9 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences.Visitor;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
@@ -62,10 +64,11 @@ import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
  *
  * @author Sergey Grinev
  */
-public class SemanticHighlighter extends HighlighterBase {
+public final class SemanticHighlighter extends HighlighterBase {
 
     public SemanticHighlighter(Document doc) {
-        super(doc);
+        super(doc); 
+        init(doc);
     }
 
     protected void updateFontColors(FontColorProvider provider) {
@@ -90,7 +93,7 @@ public class SemanticHighlighter extends HighlighterBase {
 
     private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.highlighting.times");
 
-    private void update() {
+    private void update(final Interrupter interruptor) {
         BaseDocument doc = getDocument();
         if (doc != null) {
             OffsetsBag newBag = new OffsetsBag(doc);
@@ -121,11 +124,17 @@ public class SemanticHighlighter extends HighlighterBase {
                         i.remove();
                     }
                 }
+                // to show inactive code and macros first
+                getHighlightsBag(doc).setHighlights(newBag);
                 // here we invoke the collectors
                 if (!entities.isEmpty()) {
                     CsmFileReferences.getDefault().accept(csmFile, new Visitor() {
-                        public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
+                        public void visit(CsmReferenceContext context) {
+                            CsmReference ref = context.getReference();
                             for (ReferenceCollector c : collectors) {
+                                if (interruptor.cancelled()) {
+                                    break;
+                                }
                                 c.visit(ref, csmFile);
                             }
                         }
@@ -150,12 +159,16 @@ public class SemanticHighlighter extends HighlighterBase {
     // PhaseRunner
     public void run(Phase phase) {
         if (phase == Phase.PARSED || phase == Phase.INIT) {
+            MyInterruptor interruptor = new MyInterruptor();
             try {
-                update();
+                addCancelListener(interruptor);
+                update(interruptor);
             } catch (AssertionError ex) {
                 ex.printStackTrace();
             } catch (Exception ex) {
                 ex.printStackTrace();
+            } finally {
+                removeCancelListener(interruptor);
             }
         } else if (phase == Phase.CLEANUP) {
             BaseDocument doc = getDocument();
@@ -165,7 +178,7 @@ public class SemanticHighlighter extends HighlighterBase {
             }
         }
     }
-
+    
     public boolean isValid() {
         return true;
     }

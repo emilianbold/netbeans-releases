@@ -1252,7 +1252,8 @@ abstract class EntrySupport {
 
         @Override
         void setEntries(Collection<? extends Entry> newEntries) {
-            assert entries.size() == entryToInfo.size();
+            assert entries.size() == entryToInfo.size() : "Entries: " + entries.size() 
+                    + "; vis. entries: " + visibleEntries.size() + "; Infos: " + entryToInfo.size();
 
             if (!mustNotifySetEnties && !inited) {
                 entries = new ArrayList<Entry>(newEntries);
@@ -1538,7 +1539,7 @@ abstract class EntrySupport {
             });
         }
 
-        private void removeEntries(Set<Entry> entriesToRemove, Entry entryToRemove, Node oldNode, boolean justHide, boolean delayed) {
+       private void removeEntries(Set<Entry> entriesToRemove, Entry entryToRemove, Node oldNode, boolean justHide, boolean delayed) {
             int index = 0;
             int removedIdx = 0;
             int removedNodesIdx = 0;
@@ -1596,11 +1597,11 @@ abstract class EntrySupport {
                     }
                 }
             }
-            if (removedIdx == 0) {
-                return;
-            }
             if (!justHide) {
                 entries = newEntries;
+            }
+            if (removedIdx == 0) {
+                return;
             }
             if (removedIdx < idxs.length) {
                 idxs = (int[]) resizeArray(idxs, removedIdx);

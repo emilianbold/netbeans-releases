@@ -200,14 +200,21 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         try {
             // find last separator position
-            final int lastSepOffset = sup.getLastCommandSeparator(offset);
-            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset);
+            int lastSepatorOffset = sup.getLastSeparatorOffset();
+            final int lastSepOffset;
+            if (lastSepatorOffset >=0 && lastSepatorOffset < offset){
+                lastSepOffset = lastSepatorOffset;
+            } else {
+                lastSepOffset = sup.getLastCommandSeparator(offset);
+            }
+            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, sup.getLastSeparatorOffset());
             tp.setJava15(true);
             doc.runAtomic(new Runnable() {
                 public void run() {
                     CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
                 }
             });
+            sup.setLastSeparatorOffset(tp.getLastSeparatorOffset());
 //            boolean cont = true;
 //            while (cont) {
 //                sup.tokenizeText(tp, ((lastSepOffset < offset) ? lastSepOffset + 1 : offset), offset, true);
@@ -1037,7 +1044,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                                             CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS |
                                                             CompletionResolver.RESOLVE_GLOB_NAMESPACES |
                                                             CompletionResolver.RESOLVE_LIB_CLASSES |
-                                                            CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS);
+                                                            CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS |
+                                                            CompletionResolver.RESOLVE_LOCAL_CLASSES);
                                 } else {
                                     compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
                                 }
@@ -1085,13 +1093,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES);
                                         if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
                                             res = compResolver.getResult();
-                                        }
-                                        List vars = new ArrayList();
-                                        res.addResulItemsToCol(vars);
-                                        if (vars.size() > 0) {
-                                            // get the first
-                                            CsmVariable varElem = (CsmVariable) vars.get(0);
-                                            lastType = varElem.getType();
+                                            List vars = new ArrayList();
+                                            res.addResulItemsToCol(vars);
+                                            if (vars.size() > 0) {
+                                                // get the first
+                                                CsmVariable varElem = (CsmVariable) vars.get(0);
+                                                lastType = varElem.getType();
+                                            }
                                         }
                                     }
                                 }

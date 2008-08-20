@@ -189,13 +189,8 @@ public class CVSRoot {
             // We already have hostname
             try {
                 int p = Integer.parseInt(props.getProperty("port"));
-                if (p > 0) {
-                    if (method.equals(METHOD_PSERVER)) {
-                        this.port = p;
-                    } else {
-                        throw new IllegalArgumentException("CVSROOT port specification is only valid for gserver, kserver, and pserver connection methods.");
-                    }
-                }
+                if (p > 0)
+                    this.port = p;
                 else
                     throw new IllegalArgumentException("The port is not a positive number.");
             }
@@ -413,9 +408,6 @@ public class CVSRoot {
             }
         }
         normalize();
-        if (port != 0 && !method.equals(METHOD_PSERVER)) {
-            throw new IllegalArgumentException("CVSROOT port specification is only valid for gserver, kserver, and pserver connection methods.");
-        }
     }
     
     /**
