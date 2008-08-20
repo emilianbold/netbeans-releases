@@ -75,6 +75,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public final class ToolchainManager {
     private static final boolean TRACE = Boolean.getBoolean("cnd.toolchain.personality.trace"); // NOI18N
+    private static final boolean CREATE_SHADOW = Boolean.getBoolean("cnd.toolchain.personality.create_shadow"); // NOI18N
     private static final ToolchainManager instance = new ToolchainManager();
     private List<ToolchainDescriptor> descriptors = new ArrayList<ToolchainDescriptor>();
     
@@ -109,7 +110,9 @@ public final class ToolchainManager {
         } catch (Throwable e){
             e.printStackTrace();
         }
-        //writeToolchains();
+        if (CREATE_SHADOW){
+            writeToolchains();
+        }
     }
 
     ToolchainDescriptor getToolchain(String name, int platform){
