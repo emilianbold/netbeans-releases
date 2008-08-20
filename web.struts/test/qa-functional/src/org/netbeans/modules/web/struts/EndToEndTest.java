@@ -213,7 +213,7 @@ public class EndToEndTest extends J2eeTestCase {
         EditorOperator loginEditorOper = new EditorOperator("login.jsp");
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("Bundle.properties"));
-        String sourceCode = properties.getProperty("login");
+        String sourceCode = properties.getProperty("LBL_STRUTS_WELCOME_PAGE");
         // wait for text to be displayed
         loginEditorOper.txtEditorPane().waitText("JSP Page", -1);
         loginEditorOper.replace(loginEditorOper.getText(), sourceCode);
@@ -391,23 +391,16 @@ public class EndToEndTest extends J2eeTestCase {
         new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
         // confirm properties dialog
         propertiesDialogOper.ok();
-
+        
         try {
             // "Run Project"
             String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
             new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
-            waitText(PROJECT_NAME, 240000, "Login page");
+            waitText(PROJECT_NAME, 240000, "Struts Welcome Page");
         } finally {
             // log messages from output
             getLog("RunOutput").print(new OutputTabOperator(PROJECT_NAME).getText());
             getLog("ServerLog").print(new OutputTabOperator("GlassFish").getText());
-            // stop server
-            try {
-                J2eeServerNode serverNode = new J2eeServerNode("GlassFish");
-                serverNode.stop();
-            } catch (JemmyException e) {
-                // ignore it
-            }
         }
     }
     
