@@ -78,7 +78,7 @@ import org.openide.util.Lookup;
 
 /**
  */
-public class DataEditorSupportTest extends NbTestCase {
+public class FileEncodingQueryDataEditorSupportTest extends NbTestCase {
     // for file object support
     String content = "";
     long expectedSize = -1;
@@ -86,13 +86,13 @@ public class DataEditorSupportTest extends NbTestCase {
     
     MyFileObject fileObject;
     org.openide.filesystems.FileSystem fs;
-    static DataEditorSupportTest RUNNING;
+    static FileEncodingQueryDataEditorSupportTest RUNNING;
     static {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.text.DataEditorSupportTest$Lkp");
+        System.setProperty ("org.openide.util.Lookup", "org.openide.text.FileEncodingQueryDataEditorSupportTest$Lkp");
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
     
-    public DataEditorSupportTest(String s) {
+    public FileEncodingQueryDataEditorSupportTest(String s) {
         super(s);
     }
 
@@ -139,104 +139,20 @@ public class DataEditorSupportTest extends NbTestCase {
         return (DES)cookie;
     }
     
-    /** holds the instance of the object so insane is able to find the reference */
-    private DataObject obj;
-    public void testItCanBeGCedIssue57565 () throws Exception {
-        DES sup = support ();
-        assertFalse ("It is closed now", support ().isDocumentLoaded ());
-        
-        Lookup lkp = sup.getLookup ();
-        obj = (DataObject)lkp.lookup (DataObject.class);
-        assertNotNull ("DataObject found", obj);
-        
-        sup.openDocument ();
-        assertTrue ("It is open now", support ().isDocumentLoaded ());
-        
-        assertTrue ("Closed ok", sup.close ());
-        
-        java.lang.ref.WeakReference refLkp = new java.lang.ref.WeakReference (lkp);
-        lkp = null;
-    
-        java.lang.ref.WeakReference ref = new java.lang.ref.WeakReference (sup);
-        sup = null;
-        
-        assertGC ("Can disappear", ref);
-        assertGC ("And its lookup as well", refLkp);
-        
-        
-        
-    }
-    
-    public void testGetOpenedPanesWorksAfterDeserialization () throws Exception {
-        doGetOpenedPanesWorksAfterDeserialization (-1);
-    }
-    public void testGetOpenedPanesWorksAfterDeserializationIfTheFileGetsBig () throws Exception {
-        doGetOpenedPanesWorksAfterDeserialization (1024 * 1024 * 10);
-    }
-    
-    public void test68015 () throws Exception {
-        DES edSupport = support();
-        edSupport.open();
-        
-        waitEQ();
-        
-        edSupport.desEnv().markModified();
-        
-        assertTrue(edSupport.messageName().indexOf('*') != -1);
-        assertTrue(edSupport.messageHtmlName().indexOf('*') != -1);
-    }
-    
-    private void doGetOpenedPanesWorksAfterDeserialization (int size) throws Exception {
-        support().open ();
-        
-        waitEQ ();
-
-        CloneableEditor ed = (CloneableEditor)support().getRef ().getAnyComponent ();
-        
-        JEditorPane[] panes = getPanes();
-        assertNotNull (panes);
-        assertEquals ("One is there", 1, panes.length);
-        
-        NbMarshalledObject marshall = new NbMarshalledObject (ed);
-        ed.close ();
-        
-        panes = getPanes();
-        assertNull ("No panes anymore", panes);
-
-        DataObject oldObj = DataObject.find (fileObject);
-        oldObj.setValid (false);
-        
-        expectedSize = size;
-        
-        ed = (CloneableEditor)marshall.get ();
-        
-        DataObject newObj = DataObject.find (fileObject);
-        
-        if (oldObj == newObj) {
-            fail ("Object should not be the same, new one shall be created after marking the old invalid");
-        }
-        
-        panes = getPanes ();
-        assertNotNull ("One again", panes);
-        assertEquals ("One is there again", 1, panes.length);
-    }
-
-    private JEditorPane[] getPanes() throws Exception {
-        return Mutex.EVENT.readAccess(new Mutex.ExceptionAction<JEditorPane[]>() {
-            public JEditorPane[] run() throws Exception {
-                return support().getOpenedPanes ();
-            }
-        });
-    }
-    
-    public void testEnvOutputStreamTakesLock() throws Exception {
-        DataEditorSupport.Env env = (DataEditorSupport.Env)support().desEnv();
-        assertNull(env.fileLock);
-        OutputStream stream = env.outputStream();
-        assertNotNull(stream);
-        stream.close();
-        assertNotNull(env.fileLock);
-        env.fileLock.releaseLock();
+    public void testFileEncodingQuery () throws Exception {
+        DES des = support();
+        FileEncodingQueryImpl.getDefault().reset();
+        StyledDocument doc = des.openDocument();
+        FileEncodingQueryImpl.getDefault().assertFile(
+            des.getDataObject().getPrimaryFile()
+        );
+        FileEncodingQueryImpl.getDefault().reset();
+        doc.insertString(doc.getLength(), " Added text.", null);
+        des.saveDocument();        
+        FileEncodingQueryImpl.getDefault().assertFile(
+            des.getDataObject().getPrimaryFile()
+        );
+        assertEquals(" Added text.", content);
     }
     
     /** File object that let us know what is happening and delegates to certain
