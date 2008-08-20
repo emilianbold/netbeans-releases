@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo.Severity;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,6 +63,12 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
     @Override
     public void getErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         if (!request.isCancelled() && ENABLED && request.getFile().isParsed()) {
+            // in release mode we skip library files, because it's vary irritating
+            // for user to see errors in system libraries
+            if (SemanticHighlightingOptions.RELEASE_MODE && isLibraryHeaderFile(request.getFile())) {
+                response.done();
+                return;
+            }
             long start = System.currentTimeMillis();
             if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() have started for file " + request.getFile().getAbsolutePath());
             CsmFileReferences.getDefault().accept(
