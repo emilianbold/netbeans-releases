@@ -1671,6 +1671,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </subant>
     <pathconvert property="failed.tests" pathsep="${line.separator}">
         <fileset dir="${build.test.results.dir}">
+            <include name="TEST-*.xml"/>
             <not>
                 <and>
                     <contains text='errors="0"'/>
