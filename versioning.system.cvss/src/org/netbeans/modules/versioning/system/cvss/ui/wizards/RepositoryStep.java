@@ -555,12 +555,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             } else {
                 SwingUtilities.invokeAndWait(awt);
             }
-            String root = cvsRoot[0].trim();
-            try {
-                return CVSRoot.parse(root).toString();
-            } catch (Exception e) {
-                return root;                
-            }
+            return cvsRoot[0].trim();
         } catch (InterruptedException e) {
             ErrorManager err = ErrorManager.getDefault();
             err.notify(e);
