@@ -128,10 +128,12 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     public boolean canRun() {
         if (NbTestSuite.ignoreRandomFailures()) {
             if (getClass().isAnnotationPresent(RandomlyFails.class)) {
+                System.err.println("Skipping " + getClass().getName());
                 return false;
             }
             try {
                 if (getClass().getMethod(getName()).isAnnotationPresent(RandomlyFails.class)) {
+                    System.err.println("Skipping " + getClass().getName() + "." + getName());
                     return false;
                 }
             } catch (NoSuchMethodException x) {

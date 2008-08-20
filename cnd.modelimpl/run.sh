@@ -60,6 +60,11 @@ done
 while [ -n "$1" ]
 do
     case "$1" in
+	--cache)
+		shift
+                echo "Redirecting cache to $1"
+                PARAMS="${PARAMS} -J-Dcnd.repository.cache.path="$1""
+                ;;
         --nb)
 		shift
                 echo "Using NB from $1"

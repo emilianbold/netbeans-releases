@@ -207,9 +207,7 @@ public final class ProgressHandle {
 
     /**
      * for unit testing only..
-     * @deprecated for unit testing only.
      */
-    @Deprecated
     InternalHandle getInternalHandle() {
         return internal;
     }

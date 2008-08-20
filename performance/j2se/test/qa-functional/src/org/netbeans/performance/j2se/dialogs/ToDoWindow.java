@@ -81,7 +81,7 @@ public class ToDoWindow extends PerformanceTestCase {
     
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle","CTL_TaskListAction");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle","Menu/Window") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle","CTL_TaskListAction");
         TITLE = Bundle.getStringTrimmed("org.netbeans.modules.tasklist.ui.Bundle","CTL_TaskListTopComponent");
     }    
     

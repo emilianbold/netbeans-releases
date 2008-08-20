@@ -70,7 +70,7 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
     private static volatile Lookup temporary;
     /** Temporarily provides different action map in the lookup.
      */
-    public static void blickActionMap (javax.swing.ActionMap map) {
+    public static void blinkActionMap(javax.swing.ActionMap map) {
         Object obj = Lookup.getDefault ().lookup (ContextGlobalProvider.class);
         if (obj instanceof GlobalActionContextImpl) {
             GlobalActionContextImpl g = (GlobalActionContextImpl)obj;

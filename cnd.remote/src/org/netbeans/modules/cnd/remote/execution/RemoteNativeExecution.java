@@ -44,11 +44,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
 import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
 import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
-import org.openide.util.Lookup;
 
 /**
  * This implementation of NativeExecution provides execution on a remote server.
@@ -88,16 +87,9 @@ public class RemoteNativeExecution extends NativeExecution {
 
     @Override
     protected String getUnbufferPath(int platformType) {
-        String path = null;
-        CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-        if (provider != null) {
-            int rc = provider.run(host, "echo $HOME", null); // NOI18N
-            if (rc == 0) {
-                path = provider.toString().trim(); // remote the newline
-            }
-        }
+        String path = RemoteHostInfoProvider.getHostInfo(host).getHome();
         if (path == null) {
-            path = "/home/" + System.getProperty("user.name"); // NOI18N
+            return null;
         }
         path += "/" + RemoteServerSetup.REMOTE_LIB_DIR;
         String unbufferName = getUnbufferName(platformType);

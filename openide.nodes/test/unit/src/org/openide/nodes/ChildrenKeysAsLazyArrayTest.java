@@ -38,44 +38,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.ruby.railsprojects;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.event.ChangeListener;
-import org.openide.filesystems.FileObject;
-import org.netbeans.api.queries.FileBuiltQuery;
-import org.netbeans.spi.queries.FileBuiltQueryImplementation;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
+package org.openide.nodes;
 
-
-
-
-
-public class RailsFileBuiltQuery implements FileBuiltQueryImplementation {
-
-    public RailsFileBuiltQuery (RakeProjectHelper helper, PropertyEvaluator evaluator,
-                        SourceRoots sourceRoots, SourceRoots testRoots) {
+/** Test whether Children.Keys inherited all functionality from Children.Array.
+ * @author Jesse Glick
+ */
+public class ChildrenKeysAsLazyArrayTest extends ChildrenArrayTest {
+    public ChildrenKeysAsLazyArrayTest (String s) {
+        super (s);
     }
 
-    public synchronized FileBuiltQuery.Status getStatus(FileObject file) {
-        return BUILT;
+    @Override
+    protected Children.Array createChildren () {
+        return new Children.Keys (true) {
+            protected Node[] createNodes (Object obj) {
+                fail ("This should not get called as we are using just Children.Array functions of the keys");
+                return null;
+            }
+        };
     }
     
-    private static final FileBuiltQuery.Status BUILT = new FileBuiltQuery.Status() {
-
-        public boolean isBuilt() {
-            return true;
-        }
-
-        public void addChangeListener(ChangeListener l) {
-            // No changes will ever be fired so don't bother with it
-        }
-
-        public void removeChangeListener(ChangeListener l) {
-            // No changes will ever be fired so don't bother with it
-        }
-    };
 }

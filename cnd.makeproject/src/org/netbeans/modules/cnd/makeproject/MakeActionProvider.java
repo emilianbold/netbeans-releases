@@ -659,13 +659,13 @@ public class MakeActionProvider implements ActionProvider {
                             String outputFile = null;
                             if (itemConfiguration.getTool() == Tool.CCompiler) {
                                 CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
-                                outputFile = cCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
+                                outputFile = cCompilerConfiguration.getOutputFile(item, conf, true);
                             } else if (itemConfiguration.getTool() == Tool.CCCompiler) {
                                 CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
-                                outputFile = ccCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
+                                outputFile = ccCompilerConfiguration.getOutputFile(item, conf, true);
                             } else if (itemConfiguration.getTool() == Tool.FortranCompiler) {
                                 FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
-                                outputFile = fortranCompilerConfiguration.getOutputFile(item.getPath(true), conf, true);
+                                outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, true);
                             } else if (itemConfiguration.getTool() == Tool.CustomTool) {
                                 CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                                 outputFile = customToolConfiguration.getOutputs().getValue();
@@ -862,8 +862,11 @@ public class MakeActionProvider implements ActionProvider {
         if (item == null) {
             // try to find Item in associated data object if any
             try {
-                File file = FileUtil.toFile((node.getCookie(DataObject.class)).getPrimaryFile());
-                item = getProjectDescriptor().findItemByFile(file);
+                DataObject dao = node.getCookie(DataObject.class);
+                if (dao != null) {
+                    File file = FileUtil.toFile(dao.getPrimaryFile());
+                    item = getProjectDescriptor().findItemByFile(file);
+                }
             } catch (NullPointerException ex) {
                 // not found item
             }

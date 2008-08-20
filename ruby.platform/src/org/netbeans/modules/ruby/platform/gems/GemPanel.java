@@ -64,9 +64,13 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
@@ -82,11 +86,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-/**
- * @todo Use a table instead of a list for the gem lists, use checkboxes to
- *   choose items to be uninstalled, and show the installation date (based on
- *   file timestamps)
- */
+import static org.netbeans.modules.ruby.platform.gems.GemPanel.TabIndex.*;
+
 public final class GemPanel extends JPanel {
     
     private static final Logger LOGGER = Logger.getLogger(GemPanel.class.getName());
@@ -96,8 +97,14 @@ public final class GemPanel extends JPanel {
 
     /** Preference key for storing lastly selected platform. */
     private static final String LAST_PLATFORM_ID = "gemPanelLastPlatformID"; // NOI18N
-
-    static enum TabIndex { UPDATED, INSTALLED, NEW; }
+    
+    static enum TabIndex { 
+        UPDATED(0), INSTALLED(1), NEW(2);
+        
+        private final int position;
+        TabIndex(final int position) { this.position = position; }
+        private int getPosition() { return position; }
+    }
     
     private RequestProcessor updateTasksQueue;
 
@@ -106,6 +113,19 @@ public final class GemPanel extends JPanel {
 
     /** see {@link #isModified} */
     private boolean gemsModified;
+
+    /** Current gems filter. */
+    private String filter;
+
+    /** Listens on filter fields. */
+    private FilterFieldListener sfl;
+
+    /** For {@link #filterTask}. */
+    private static final RequestProcessor FILTER_PROCESSOR =
+            new RequestProcessor("rubygems-filter-processor"); // NOI18N
+
+    /** Used to schedule application of filter. */
+    private final RequestProcessor.Task filterTask;
 
     public GemPanel(String availableFilter) {
         this(availableFilter, null);
@@ -121,6 +141,15 @@ public final class GemPanel extends JPanel {
      */
     public GemPanel(String availableFilter, RubyPlatform preselected) {
         updateTasksQueue = new RequestProcessor("Gem Updater", 5); // NOI18N
+        filterTask = FILTER_PROCESSOR.create(new Runnable() {
+            public void run() {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        applyFilter();
+                    }
+                });
+            }
+        });
         initComponents();
         if (preselected == null) {
             Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
@@ -146,7 +175,7 @@ public final class GemPanel extends JPanel {
 
         if (availableFilter != null) {
             searchNewText.setText(availableFilter);
-            gemsTab.setSelectedIndex(TabIndex.NEW.ordinal());
+            gemsTab.setSelectedIndex(NEW.getPosition());
         }
 
         PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
@@ -155,6 +184,7 @@ public final class GemPanel extends JPanel {
             }
         });
         platformChanged();
+        gemsTab.setSelectedIndex(INSTALLED.getPosition());
     }
 
     private void platformChanged() {
@@ -168,9 +198,9 @@ public final class GemPanel extends JPanel {
                 gemHomeValue.setForeground(PlatformComponentFactory.INVALID_PLAF_COLOR);
                 gemHomeValue.setText(GemManager.getNotInstalledMessage());
             }
-            updateList(TabIndex.INSTALLED, Collections.<Gem>emptyList());
-            updateList(TabIndex.NEW, Collections.<Gem>emptyList());
-            updateList(TabIndex.UPDATED, Collections.<Gem>emptyList());
+            updateList(INSTALLED, Collections.<Gem>emptyList());
+            updateList(NEW, Collections.<Gem>emptyList());
+            updateList(UPDATED, Collections.<Gem>emptyList());
             setEnabledGUI(false);
             hideProgressBars();
         } else {
@@ -184,8 +214,37 @@ public final class GemPanel extends JPanel {
         }
     }
 
+    public void setFilter(String filter) {
+        assert EventQueue.isDispatchThread();
+        this.filter = filter;
+    }
+
+    public String getFilter() {
+        assert EventQueue.isDispatchThread();
+        return filter;
+    }
+
+    public @Override void addNotify() {
+        super.addNotify();
+        this.sfl = new FilterFieldListener();
+        addFilterDocumentListeners();
+    }
+    
+    private void addFilterDocumentListeners() {
+        searchInstText.getDocument().addDocumentListener(sfl);
+        searchNewText.getDocument().addDocumentListener(sfl);
+        searchUpdatedText.getDocument().addDocumentListener(sfl);
+    }
+
+    private void removeFilterDocumentListeners() {
+        searchInstText.getDocument().removeDocumentListener(sfl);
+        searchNewText.getDocument().removeDocumentListener(sfl);
+        searchUpdatedText.getDocument().removeDocumentListener(sfl);
+    }
+    
     public @Override void removeNotify() {
         closed = true;
+        removeFilterDocumentListeners();
         cancelRunningTasks();
         RubyPreferences.getPreferences().put(LAST_PLATFORM_ID, getSelectedPlatform().getID());
         super.removeNotify();
@@ -272,9 +331,9 @@ public final class GemPanel extends JPanel {
     }
 
     private void setEnabledGUI(boolean enabled) {
-        setEnabled(TabIndex.INSTALLED, enabled);
-        setEnabled(TabIndex.NEW, enabled);
-        setEnabled(TabIndex.UPDATED, enabled);
+        setEnabled(INSTALLED, enabled);
+        setEnabled(NEW, enabled);
+        setEnabled(UPDATED, enabled);
     }
 
     private void enableReloadGUI() {
@@ -371,9 +430,9 @@ public final class GemPanel extends JPanel {
                 newGems.add(gem);
             }
         }
-        updateList(TabIndex.INSTALLED, installedGems);
-        updateList(TabIndex.NEW, newGems);
-        updateList(TabIndex.UPDATED, updatedGems);
+        updateList(INSTALLED, installedGems);
+        updateList(NEW, newGems);
+        updateList(UPDATED, updatedGems);
     }
     
     private void hideProgressBars() {
@@ -409,7 +468,7 @@ public final class GemPanel extends JPanel {
             return;
         }
 
-        GemListModel model = new GemListModel(gems, getGemFilter());
+        GemListModel model = new GemListModel(gems, getFilter());
         list.clearSelection();
         list.setModel(model);
         list.invalidate();
@@ -420,7 +479,7 @@ public final class GemPanel extends JPanel {
     }
     
     private void setTabTitle(TabIndex tab, GemListModel model) {
-        String tabTitle = gemsTab.getTitleAt(tab.ordinal());
+        String tabTitle = gemsTab.getTitleAt(tab.getPosition());
         String originalTabTitle = tabTitle;
         int index = tabTitle.lastIndexOf('(');
         if (index != -1) {
@@ -436,7 +495,7 @@ public final class GemPanel extends JPanel {
         }
         tabTitle = tabTitle + "(" + count + ")"; // NOI18N
         if (!tabTitle.equals(originalTabTitle)) {
-            gemsTab.setTitleAt(tab.ordinal(), tabTitle);
+            gemsTab.setTitleAt(tab.getPosition(), tabTitle);
         }
     }
 
@@ -508,7 +567,6 @@ public final class GemPanel extends JPanel {
         FormListener formListener = new FormListener();
 
         searchUpdatedText.setColumns(14);
-        searchUpdatedText.addActionListener(formListener);
 
         searchUpdatedLbl.setLabelFor(searchUpdatedText);
         org.openide.awt.Mnemonics.setLocalizedText(searchUpdatedLbl, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.searchUpdatedLbl.text")); // NOI18N
@@ -598,7 +656,6 @@ public final class GemPanel extends JPanel {
         gemsTab.addTab(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.updatedPanel.TabConstraints.tabTitle"), updatedPanel); // NOI18N
 
         searchInstText.setColumns(14);
-        searchInstText.addActionListener(formListener);
 
         searchInstLbl.setLabelFor(searchInstText);
         org.openide.awt.Mnemonics.setLocalizedText(searchInstLbl, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.searchInstLbl.text")); // NOI18N
@@ -680,7 +737,6 @@ public final class GemPanel extends JPanel {
         gemsTab.addTab(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installedPanel.TabConstraints.tabTitle"), installedPanel); // NOI18N
 
         searchNewText.setColumns(14);
-        searchNewText.addActionListener(formListener);
 
         searchNewLbl.setLabelFor(searchNewText);
         org.openide.awt.Mnemonics.setLocalizedText(searchNewLbl, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.searchNewLbl.text")); // NOI18N
@@ -882,10 +938,7 @@ public final class GemPanel extends JPanel {
     private class FormListener implements java.awt.event.ActionListener {
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == searchUpdatedText) {
-                GemPanel.this.searchUpdatedTextActionPerformed(evt);
-            }
-            else if (evt.getSource() == reloadReposButton) {
+            if (evt.getSource() == reloadReposButton) {
                 GemPanel.this.reloadReposButtonActionPerformed(evt);
             }
             else if (evt.getSource() == updateButton) {
@@ -894,17 +947,11 @@ public final class GemPanel extends JPanel {
             else if (evt.getSource() == updateAllButton) {
                 GemPanel.this.updateAllButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == searchInstText) {
-                GemPanel.this.searchInstTextActionPerformed(evt);
-            }
             else if (evt.getSource() == reloadInstalledButton) {
                 GemPanel.this.reloadInstalledButtonActionPerformed(evt);
             }
             else if (evt.getSource() == uninstallButton) {
                 GemPanel.this.uninstallButtonActionPerformed(evt);
-            }
-            else if (evt.getSource() == searchNewText) {
-                GemPanel.this.searchNewTextActionPerformed(evt);
             }
             else if (evt.getSource() == reloadNewButton) {
                 GemPanel.this.reloadNewButtonActionPerformed(evt);
@@ -942,32 +989,23 @@ public final class GemPanel extends JPanel {
         OptionsDisplayer.getDefault().open("General"); // NOI18N
     }//GEN-LAST:event_proxyButtonActionPerformed
 
-    private void searchNewTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNewTextActionPerformed
-        applyFilter(searchNewText.getText());
-    }//GEN-LAST:event_searchNewTextActionPerformed
-
-    private void searchUpdatedTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchUpdatedTextActionPerformed
-        applyFilter(searchUpdatedText.getText());
-    }//GEN-LAST:event_searchUpdatedTextActionPerformed
-
-    private void searchInstTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchInstTextActionPerformed
-        applyFilter(searchInstText.getText());
-    }//GEN-LAST:event_searchInstTextActionPerformed
-
-    private void applyFilter(final String filter) {
-        applyFilter(TabIndex.NEW, filter, searchNewText, newList, newDesc, installButton);
-        applyFilter(TabIndex.UPDATED, filter, searchUpdatedText, updatedList, updatedDesc, updateButton);
-        applyFilter(TabIndex.INSTALLED, filter, searchInstText, installedList, installedDesc, uninstallButton);
+    private void applyFilter() {
+        assert EventQueue.isDispatchThread();
+        removeFilterDocumentListeners();
+        applyFilter(NEW, searchNewText, newList, newDesc, installButton);
+        applyFilter(UPDATED, searchUpdatedText, updatedList, updatedDesc, updateButton);
+        applyFilter(INSTALLED, searchInstText, installedList, installedDesc, uninstallButton);
+        addFilterDocumentListeners();
     }
 
-    private void applyFilter(final TabIndex tab, final String filter,
+    private void applyFilter(final TabIndex tab,
             final JTextField searchField, final JList list,
             final JTextPane desc, final JButton button) {
         // keep search filter fields in sync
-        searchField.setText(filter);
+        searchField.setText(getFilter());
 
         GemListModel gemModel = (GemListModel) list.getModel();
-        gemModel.applyFilter(filter);
+        gemModel.applyFilter(getFilter());
         setTabTitle(tab, gemModel);
 
         if (list.getSelectedValue() == null) {
@@ -1169,9 +1207,9 @@ public final class GemPanel extends JPanel {
         newList.setModel(emptyModel);
         updatedList.setModel(emptyModel);
         installedList.setModel(emptyModel);
-        setTabTitle(TabIndex.INSTALLED, emptyModel);
-        setTabTitle(TabIndex.NEW, emptyModel);
-        setTabTitle(TabIndex.UPDATED, emptyModel);
+        setTabTitle(INSTALLED, emptyModel);
+        setTabTitle(NEW, emptyModel);
+        setTabTitle(UPDATED, emptyModel);
         final GemManager gemManager = getGemManager();
         Runnable updateTask = new Runnable() {
             public void run() {
@@ -1212,13 +1250,6 @@ public final class GemPanel extends JPanel {
         };
         LOGGER.finer("Submitting refreshing of gems for: " + gemManager);
         updateTasksQueue.post(updateTask);
-    }
-
-    private String getGemFilter() {
-        assert EventQueue.isDispatchThread();
-        // filter field are kept in sync, does not matter which one is used
-        String filter = searchInstText.getText().trim();
-        return filter.length() == 0 ? null : filter;
     }
 
     private RubyPlatform getSelectedPlatform() {
@@ -1319,5 +1350,25 @@ public final class GemPanel extends JPanel {
     private javax.swing.JLabel updatedProgressLabel;
     private javax.swing.JScrollPane updatedSP;
     // End of variables declaration//GEN-END:variables
+    
+
+    private final class FilterFieldListener implements DocumentListener {
+
+        public void insertUpdate(DocumentEvent e) { changedUpdate(e); }
+        public void removeUpdate(DocumentEvent e) { changedUpdate(e); }
+
+        public void changedUpdate(DocumentEvent e) {
+            Document doc = e.getDocument();
+            String filter;
+            try {
+                filter = e.getDocument().getText(0, doc.getLength());
+                setFilter(filter);
+                filterTask.schedule(350);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+    }
     
 }

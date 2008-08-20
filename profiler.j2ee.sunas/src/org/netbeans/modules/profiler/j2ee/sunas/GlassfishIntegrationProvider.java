@@ -61,10 +61,6 @@ public class GlassfishIntegrationProvider extends SunASAutoIntegrationProvider {
         return APP_SERVER_TITLE; // NOI18N
     }
 
-    public boolean supportsJVM(TargetPlatformEnum jvm) {
-        return true;
-    }
-
     protected int getAttachWizardPriority() {
         return 20;
     }

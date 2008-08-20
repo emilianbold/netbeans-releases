@@ -76,6 +76,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
     }
     private static Class<? extends TestCase> testCaseClassOrDummy(Class<? extends TestCase> testClass) {
         if (ignoreRandomFailures() && testClass.isAnnotationPresent(RandomlyFails.class)) {
+            System.err.println("Skipping " + testClass.getName());
             return APIJail.Dummy.class;
         } else {
             return testClass;
@@ -127,6 +128,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
     @Override
     public void addTestSuite(Class<? extends TestCase> testClass) {
         if (ignoreRandomFailures() && testClass.isAnnotationPresent(RandomlyFails.class)) {
+            System.err.println("Skipping " + testClass.getName());
             return;
         }
         NbTest t = new NbTestSuite(testClass);
@@ -176,6 +178,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
      */
     public static NbTestSuite speedSuite (Class<? extends TestCase> clazz, int slowness, int repeat) {
         if (ignoreRandomFailures()) {
+            System.err.println("Skipping " + clazz.getName());
             return new NbTestSuite("skipping");
         }
         return new SpeedSuite (clazz, repeat, slowness, SpeedSuite.CONSTANT);
@@ -194,6 +197,7 @@ public class NbTestSuite extends TestSuite implements NbTest {
      */
     public static NbTestSuite linearSpeedSuite (Class<? extends TestCase> clazz, int slowness, int repeat) {
         if (ignoreRandomFailures()) {
+            System.err.println("Skipping " + clazz.getName());
             return new NbTestSuite("skipping");
         }
         return new SpeedSuite (clazz, repeat, slowness, SpeedSuite.LINEAR);
