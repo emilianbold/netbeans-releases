@@ -304,6 +304,15 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                         }
                         return;
                     }
+                    else if (event.getSource() == DialogDescriptor.CANCEL_OPTION) {
+                        if (dlg != null)
+                        {
+                            // in case a connection is underway...
+                            basePanel.terminateProgress();
+                        }
+                        
+                        
+                    }
                 }
             };
 
