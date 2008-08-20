@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.openide.windows;
 
+import java.awt.EventQueue;
+import javax.swing.ActionMap;
+import javax.swing.SwingUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.ContextGlobalProvider;
@@ -70,7 +73,20 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
     private static volatile Lookup temporary;
     /** Temporarily provides different action map in the lookup.
      */
-    public static void blinkActionMap(javax.swing.ActionMap map) {
+    public static void blickActionMap(final ActionMap map) {
+        if (EventQueue.isDispatchThread()) {
+            blickActionMapImpl(map);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    blickActionMapImpl(map);
+                }
+            });
+        }
+    }
+
+    static void blickActionMapImpl(ActionMap map) {
+        assert EventQueue.isDispatchThread();
         Object obj = Lookup.getDefault ().lookup (ContextGlobalProvider.class);
         if (obj instanceof GlobalActionContextImpl) {
             GlobalActionContextImpl g = (GlobalActionContextImpl)obj;
