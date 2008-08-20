@@ -236,7 +236,7 @@ public final class CodeStylePreferences {
             }
         });
 
-        LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences; doc=" + s2s(refDoc.get())); //NOI18N
+        LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences; doc=" + s2s(refDoc == null ? null : refDoc.get())); //NOI18N
     }
     
     private static final Preferences findProjectPreferences(FileObject file) {
