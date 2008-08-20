@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -55,9 +56,14 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.cnd.api.utils.Path;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -85,7 +91,7 @@ public final class ToolchainManager {
             if (folder != null && folder.isFolder()) {
                 FileObject[] files = folder.getChildren();
                 for(FileObject file : files){
-                    CompilerVendor v = new CompilerVendor();
+                    CompilerVendor v = new CompilerVendor(file.getNameExt());
                     Integer position = (Integer) file.getAttribute("position"); // NOI18N
                     if (position == null || vendors.containsKey(position)) {
                         position = new Integer(indefinedID++);
@@ -103,6 +109,7 @@ public final class ToolchainManager {
         } catch (Throwable e){
             e.printStackTrace();
         }
+        //writeToolchains();
     }
 
     ToolchainDescriptor getToolchain(String name, int platform){
@@ -191,7 +198,7 @@ public final class ToolchainManager {
     
     boolean isMyFolder(String path, ToolchainDescriptor d, int platform){
         boolean res = isMyFolderImpl(path, d, platform);
-        if (TRACE && res) System.out.println("Path ["+path+"] belongs to tool chain "+d.getName());
+        if (TRACE && res) System.out.println("Path ["+path+"] belongs to tool chain "+d.getName()); // NOI18N
         return res;
     }
     
@@ -237,8 +244,8 @@ public final class ToolchainManager {
         pattern = Pattern.compile(c.getVersionPattern());
         String s = getCommandOutput(path, path+"/"+c.getNames()[0]+" "+flag, true); // NOI18N
         boolean res = pattern.matcher(s).find();
-        if (TRACE && !res) System.out.println("No match for pattern ["+c.getVersionPattern()+"]:" );
-        if (TRACE && !res) System.out.println("Run "+path+"/"+c.getNames()[0]+" "+flag+"\n"+s);
+        if (TRACE && !res) System.out.println("No match for pattern ["+c.getVersionPattern()+"]:" ); // NOI18N
+        if (TRACE && !res) System.out.println("Run "+path+"/"+c.getNames()[0]+" "+flag+"\n"+s); // NOI18N
         return res;
     }
 
@@ -269,7 +276,7 @@ public final class ToolchainManager {
         }
         String base = readRegestry(key, pattern);
         if (base != null && d.getCommandFolderSuffix() != null){
-            base += "\\"+d.getCommandFolderSuffix();
+            base += "\\"+d.getCommandFolderSuffix(); // NOI18N
         }
         // search for unregistered msys
         if (base == null) {
@@ -292,23 +299,23 @@ public final class ToolchainManager {
         list.add("C:/Windows/System32/reg.exe"); // NOI18N
         list.add("query"); // NOI18N
         list.add(key);
-        list.add("/s");
+        list.add("/s"); // NOI18N
         ProcessBuilder pb = new ProcessBuilder(list);
         pb.redirectErrorStream(true);
         String base = null;
         try {
-            if (TRACE) System.out.println("Read registry "+key);
+            if (TRACE) System.out.println("Read registry "+key); // NOI18N
             Process process = pb.start();
             BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
             Pattern p = Pattern.compile(pattern);
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim();
-                if (TRACE) System.out.println("\t"+line);
+                if (TRACE) System.out.println("\t"+line); // NOI18N
                 Matcher m = p.matcher(line);
                 if (m.find() && m.groupCount() == 1) {
                     base = m.group(1).trim();
-                    if (TRACE) System.out.println("\tFound "+base);
+                    if (TRACE) System.out.println("\tFound "+base); // NOI18N
                 }
             }
         } catch (Exception ex) {
@@ -340,7 +347,7 @@ public final class ToolchainManager {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     buf.append(line);
-                    buf.append('\n');
+                    buf.append('\n'); // NOI18N
                 }
             } catch (IOException ex) {
                 if (TRACE) ex.printStackTrace();
@@ -358,7 +365,7 @@ public final class ToolchainManager {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     buf.append(line);
-                    buf.append('\n');
+                    buf.append('\n'); // NOI18N
                 }
             } catch (IOException ex) {
                 if (TRACE) ex.printStackTrace();
@@ -382,7 +389,7 @@ public final class ToolchainManager {
         }
         antiloop.add(file);
         String baseName = (String) file.getAttribute("extends"); // NOI18N
-        if (baseName != null) {
+        if (baseName != null && baseName.length() > 0) {
             for(FileObject base : files){
                 if (baseName.equals(base.getName())){
                     if (!read(base, files, v, antiloop)) {
@@ -424,7 +431,551 @@ public final class ToolchainManager {
 	return true;
     }
 
+    private String unsplit(String [] array){
+        if (array == null) {
+            return ""; // NOI18N
+        }
+        StringBuilder buf = new StringBuilder();
+        for(String s:array){
+            if (buf.length()>0){
+                buf.append(',');
+            }
+            buf.append(s);
+        }
+        return buf.toString();
+    }
+
+    private void writeToolchains(){
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+        FileObject folder = fs.findResource("Services/CndToolChain"); //NOI18N
+        if (folder != null && folder.isFolder()) {
+            FileObject[] files = folder.getChildren();
+            for(FileObject file : files){
+                String name = file.getNameExt();
+                for(ToolchainDescriptor descriptor : descriptors){
+                    if (name.equals(descriptor.getFileName())){
+                        System.out.println("Found file " + file.getNameExt()); // NOI18N
+                        Document doc = XMLUtil.createDocument("toolchaindefinition", "http://www.netbeans.org/ns/cnd-toolchain-definition/1", null, null); // NOI18N
+                        Element root = doc.getDocumentElement();
+                        Element element;
+                        element = doc.createElement("toolchain"); // NOI18N
+                        element.setAttribute("name", descriptor.getName()); // NOI18N
+                        element.setAttribute("display", descriptor.getDisplayName()); // NOI18N
+                        element.setAttribute("family", unsplit(descriptor.getFamily())); // NOI18N
+                        root.appendChild(element);
+
+                        element = doc.createElement("platforms"); // NOI18N
+                        element.setAttribute("stringvalue", unsplit(descriptor.getPlatforms())); // NOI18N
+                        root.appendChild(element);
+
+                        if (descriptor.getDriveLetterPrefix() != null) {
+                            element = doc.createElement("drive_letter_prefix"); // NOI18N
+                            element.setAttribute("stringvalue", descriptor.getDriveLetterPrefix()); // NOI18N
+                            root.appendChild(element);
+                        }
+
+                        if (descriptor.getBaseFolderKey() != null ||
+                            descriptor.getBaseFolderPattern() != null ||
+                            descriptor.getBaseFolderPathPattern() != null ||
+                            descriptor.getBaseFolderSuffix() != null) {
+                            element = doc.createElement("base_folder"); // NOI18N
+                            if (descriptor.getBaseFolderKey() != null) {
+                                element.setAttribute("regestry", descriptor.getBaseFolderKey()); // NOI18N
+                            }
+                            if (descriptor.getBaseFolderPattern() != null) {
+                                element.setAttribute("pattern", descriptor.getBaseFolderPattern()); // NOI18N
+                            }
+                            if (descriptor.getBaseFolderPathPattern() != null) {
+                                element.setAttribute("path_patern", descriptor.getBaseFolderPathPattern()); // NOI18N
+                            }
+                            if (descriptor.getBaseFolderSuffix() != null) {
+                                element.setAttribute("suffix", descriptor.getBaseFolderSuffix()); // NOI18N
+                            }
+                            root.appendChild(element);
+                        }
+
+                        if (descriptor.getCommandFolderKey() != null ||
+                            descriptor.getCommandFolderPattern() != null ||
+                            descriptor.getCommandFolderPathPattern() != null ||
+                            descriptor.getCommandFolderSuffix() != null) {
+                            element = doc.createElement("command_folder"); // NOI18N
+                            if (descriptor.getCommandFolderKey() != null) {
+                                element.setAttribute("regestry", descriptor.getCommandFolderKey()); // NOI18N
+                            }
+                            if (descriptor.getCommandFolderPattern() != null) {
+                                element.setAttribute("pattern", descriptor.getCommandFolderPattern()); // NOI18N
+                            }
+                            if (descriptor.getCommandFolderPathPattern() != null) {
+                                element.setAttribute("path_patern", descriptor.getCommandFolderPathPattern()); // NOI18N
+                            }
+                            if (descriptor.getCommandFolderSuffix() != null) {
+                                element.setAttribute("suffix", descriptor.getCommandFolderSuffix()); // NOI18N
+                            }
+                            root.appendChild(element);
+                        }
+
+                        CompilerDescriptor compiler;
+                        compiler = descriptor.getC();
+                        if (compiler != null) {
+                            element = doc.createElement("c"); // NOI18N
+                            writeCompiler(doc, element, compiler);
+                            root.appendChild(element);
+                        }
+
+                        compiler = descriptor.getCpp();
+                        if (compiler != null) {
+                            element = doc.createElement("cpp"); // NOI18N
+                            writeCompiler(doc, element, compiler);
+                            root.appendChild(element);
+                        }
+
+                        compiler = descriptor.getFortran();
+                        if (compiler != null) {
+                            element = doc.createElement("fortran"); // NOI18N
+                            writeCompiler(doc, element, compiler);
+                            root.appendChild(element);
+                        }
+                        
+                        ScannerDescriptor scanner = descriptor.getScanner();
+                        if (scanner != null){
+                            element = doc.createElement("scanner"); // NOI18N
+                            writeScanner(doc, element, scanner);
+                            root.appendChild(element);
+                        }
+                        
+                        LinkerDescriptor linker = descriptor.getLinker();
+                        if (linker != null){
+                            element = doc.createElement("linker"); // NOI18N
+                            writeLinker(doc, element, linker);
+                            root.appendChild(element);
+                        }
+                        
+                        MakeDescriptor make = descriptor.getMake();
+                        if (make != null){
+                            element = doc.createElement("make"); // NOI18N
+                            writeMake(doc, element, make);
+                            root.appendChild(element);
+                        }
+
+                        DebuggerDescriptor debugger = descriptor.getDebugger();
+                        if (debugger != null){
+                            element = doc.createElement("debugger"); // NOI18N
+                            writeDebugger(doc, element, debugger);
+                            root.appendChild(element);
+                        }
+                        try {
+                            FileLock lock = file.lock();
+                            try {
+                                OutputStream os = file.getOutputStream(lock);
+                                try {
+                                    XMLUtil.write(doc, os, "UTF-8"); // NOI18N
+                                    file.setAttribute("extends", ""); // NOI18N
+                                } finally {
+                                    os.close();
+                                }
+                            } finally {
+                                lock.releaseLock();
+                            }
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void writeCompiler(Document doc, Element element, CompilerDescriptor compiler){
+        Element e;
+        e = doc.createElement("compiler"); // NOI18N
+        e.setAttribute("name", unsplit(compiler.getNames())); // NOI18N
+        element.appendChild(e);
+        if (compiler.getPathPattern() != null ||
+            compiler.getExistFolder() != null) {
+            e = doc.createElement("recognizer"); // NOI18N
+            if (compiler.getPathPattern() != null) {
+                e.setAttribute("pattern", compiler.getPathPattern()); // NOI18N
+            }
+            if (compiler.getExistFolder() != null) {
+                e.setAttribute("or_exist_folder", compiler.getExistFolder()); // NOI18N
+            }
+            element.appendChild(e);
+        }
+        if (compiler.getVersionFlags() != null ||
+            compiler.getVersionPattern() != null) {
+            e = doc.createElement("version"); // NOI18N
+            if (compiler.getVersionFlags() != null) {
+                e.setAttribute("flags", compiler.getVersionFlags()); // NOI18N
+            }
+            if (compiler.getVersionPattern() != null) {
+                e.setAttribute("pattern", compiler.getVersionPattern()); // NOI18N
+            }
+            element.appendChild(e);
+        }
+        if (compiler.getIncludeFlags() != null ||
+            compiler.getIncludeParser() != null ||
+            compiler.getRemoveIncludePathPrefix() != null ||
+            compiler.getRemoveIncludeOutputPrefix() != null) {
+            e = doc.createElement("system_include_paths"); // NOI18N
+            if (compiler.getIncludeFlags() != null) {
+                e.setAttribute("flags", compiler.getIncludeFlags()); // NOI18N
+            }
+            if (compiler.getIncludeParser() != null) {
+                e.setAttribute("parser", compiler.getIncludeParser()); // NOI18N
+            }
+            if (compiler.getRemoveIncludePathPrefix() != null) {
+                e.setAttribute("remove_in_path", compiler.getRemoveIncludePathPrefix()); // NOI18N
+            }
+            if (compiler.getRemoveIncludeOutputPrefix() != null) {
+                e.setAttribute("remove_in_output", compiler.getRemoveIncludeOutputPrefix()); // NOI18N
+            }
+            element.appendChild(e);
+        }
+        if (compiler.getUserIncludeFlag() != null) {
+            e = doc.createElement("user_include"); // NOI18N
+            e.setAttribute("flags", compiler.getUserIncludeFlag()); // NOI18N
+            element.appendChild(e);
+        }
+        if (compiler.getMacroFlags() != null ||
+            compiler.getMacroParser() != null) {
+            e = doc.createElement("system_macros"); // NOI18N
+            if (compiler.getMacroFlags() != null) {
+                e.setAttribute("flags", compiler.getMacroFlags()); // NOI18N
+            }
+            if (compiler.getMacroParser() != null) {
+                e.setAttribute("parser", compiler.getMacroParser()); // NOI18N
+            }
+            element.appendChild(e);
+        }
+        if (compiler.getUserMacroFlag() != null) {
+            e = doc.createElement("user_macro"); // NOI18N
+            e.setAttribute("flags", compiler.getUserMacroFlag()); // NOI18N
+            element.appendChild(e);
+        }
+        writeDevelopmentMode(doc, element, compiler);
+        writeWarningLevel(doc, element, compiler);
+        writeArchitecture(doc, element, compiler);
+        if (compiler.getStripFlag() != null) {
+            e = doc.createElement("strip"); // NOI18N
+            e.setAttribute("flags", compiler.getStripFlag()); // NOI18N
+            element.appendChild(e);
+        }
+        writeMultithreading(doc, element, compiler);
+        writeStandard(doc, element, compiler);
+        writeLanguageExtension(doc, element, compiler);
+        writeLibrary(doc, element, compiler);
+        if (compiler.getDependencyGenerationFlags() != null) {
+            e = doc.createElement("dependency_generation"); // NOI18N
+            e.setAttribute("flags", compiler.getDependencyGenerationFlags()); // NOI18N
+            element.appendChild(e);
+        }
+        if (compiler.getPrecompiledHeaderFlags() != null ||
+            compiler.getPrecompiledHeaderSuffix() != null) {
+            e = doc.createElement("precompiled_header"); // NOI18N
+            if (compiler.getPrecompiledHeaderFlags() != null) {
+                e.setAttribute("flags", compiler.getPrecompiledHeaderFlags()); // NOI18N
+            }
+            if (compiler.getPrecompiledHeaderSuffix() != null) {
+                e.setAttribute("suffix", compiler.getPrecompiledHeaderSuffix()); // NOI18N
+            }
+            if (compiler.getPrecompiledHeaderSuffixAppend()) {
+                e.setAttribute("append", "true"); // NOI18N
+            }
+            element.appendChild(e);
+        }
+    }
+    
+    private void writeDevelopmentMode(Document doc, Element element, CompilerDescriptor compiler){
+        String[] flags = compiler.getDevelopmentModeFlags();
+        if (flags == null){
+            return;
+        }
+        int def = 0;
+        if (compiler instanceof CompilerDescriptorImpl) {
+            def = ((CompilerDescriptorImpl)compiler).tool.developmentMode.default_selection;
+        }
+        Element e = doc.createElement("development_mode"); // NOI18N
+        element.appendChild(e);
+        Element c;
+        String[] names = new String[]{"fast_build", "debug", "performance_debug", // NOI18N
+                                      "test_coverage", "diagnosable_release", "release", // NOI18N
+                                      "performance_release"}; // NOI18N
+        for(int i = 0; i < flags.length; i++) {
+            c = doc.createElement(names[i]);
+            c.setAttribute("flags", flags[i]); // NOI18N
+            if (def == i){
+                c.setAttribute("default", "true"); // NOI18N
+            }
+            e.appendChild(c);
+        }
+    }
+
+    private void writeWarningLevel(Document doc, Element element, CompilerDescriptor compiler){
+        String[] flags = compiler.getWarningLevelFlags();
+        if (flags == null){
+            return;
+        }
+        int def = 0;
+        if (compiler instanceof CompilerDescriptorImpl) {
+            def = ((CompilerDescriptorImpl)compiler).tool.warningLevel.default_selection;
+        }
+        Element e = doc.createElement("warning_level"); // NOI18N
+        element.appendChild(e);
+        Element c;
+        String[] names = new String[]{"no_warnings", "default", "more_warnings", // NOI18N
+                                      "warning2error"}; // NOI18N
+        for(int i = 0; i < flags.length; i++) {
+            c = doc.createElement(names[i]);
+            c.setAttribute("flags", flags[i]); // NOI18N
+            if (def == i){
+                c.setAttribute("default", "true"); // NOI18N
+            }
+            e.appendChild(c);
+        }
+    }
+
+    private void writeArchitecture(Document doc, Element element, CompilerDescriptor compiler){
+        String[] flags = compiler.getArchitectureFlags();
+        if (flags == null){
+            return;
+        }
+        int def = 0;
+        if (compiler instanceof CompilerDescriptorImpl) {
+            def = ((CompilerDescriptorImpl)compiler).tool.architecture.default_selection;
+        }
+        Element e = doc.createElement("architecture"); // NOI18N
+        element.appendChild(e);
+        Element c;
+        String[] names = new String[]{"default", "bits_32", "bits_64"}; // NOI18N
+        for(int i = 0; i < flags.length; i++) {
+            c = doc.createElement(names[i]);
+            c.setAttribute("flags", flags[i]); // NOI18N
+            if (def == i){
+                c.setAttribute("default", "true"); // NOI18N
+            }
+            e.appendChild(c);
+        }
+    }
+
+    private void writeMultithreading(Document doc, Element element, CompilerDescriptor compiler){
+        String[] flags = compiler.getMultithreadingFlags();
+        if (flags == null){
+            return;
+        }
+        int def = 0;
+        if (compiler instanceof CompilerDescriptorImpl) {
+            def = ((CompilerDescriptorImpl)compiler).tool.multithreading.default_selection;
+        }
+        Element e = doc.createElement("multithreading"); // NOI18N
+        element.appendChild(e);
+        Element c;
+        String[] names = new String[]{"none", "safe", "automatic", "open_mp"}; // NOI18N
+        for(int i = 0; i < flags.length; i++) {
+            c = doc.createElement(names[i]);
+            c.setAttribute("flags", flags[i]); // NOI18N
+            if (def == i){
+                c.setAttribute("default", "true"); // NOI18N
+            }
+            e.appendChild(c);
+        }
+    }
+
+    private void writeStandard(Document doc, Element element, CompilerDescriptor compiler){
+        String[] flags = compiler.getStandardFlags();
+        if (flags == null){
+            return;
+        }
+        int def = 0;
+        if (compiler instanceof CompilerDescriptorImpl) {
+            def = ((CompilerDescriptorImpl)compiler).tool.standard.default_selection;
+        }
+        Element e = doc.createElement("standard"); // NOI18N
+        element.appendChild(e);
+        Element c;
+        String[] names = new String[]{"old", "legacy", "default", "modern"}; // NOI18N
+        for(int i = 0; i < flags.length; i++) {
+            c = doc.createElement(names[i]);
+            c.setAttribute("flags", flags[i]); // NOI18N
+            if (def == i){
+                c.setAttribute("default", "true"); // NOI18N
+            }
+            e.appendChild(c);
+        }
+    }
+
+    private void writeLanguageExtension(Document doc, Element element, CompilerDescriptor compiler){
+        String[] flags = compiler.getLanguageExtensionFlags();
+        if (flags == null){
+            return;
+        }
+        int def = 0;
+        if (compiler instanceof CompilerDescriptorImpl) {
+            def = ((CompilerDescriptorImpl)compiler).tool.languageExtension.default_selection;
+        }
+        Element e = doc.createElement("language_extension"); // NOI18N
+        element.appendChild(e);
+        Element c;
+        String[] names = new String[]{"none", "default", "all"}; // NOI18N
+        for(int i = 0; i < flags.length; i++) {
+            c = doc.createElement(names[i]);
+            c.setAttribute("flags", flags[i]); // NOI18N
+            if (def == i){
+                c.setAttribute("default", "true"); // NOI18N
+            }
+            e.appendChild(c);
+        }
+    }
+
+    private void writeLibrary(Document doc, Element element, CompilerDescriptor compiler){
+        String[] flags = compiler.getLibraryFlags();
+        if (flags == null){
+            return;
+        }
+        int def = 0;
+        if (compiler instanceof CompilerDescriptorImpl) {
+            def = ((CompilerDescriptorImpl)compiler).tool.library.default_selection;
+        }
+        Element e = doc.createElement("library"); // NOI18N
+        element.appendChild(e);
+        Element c;
+        String[] names = new String[]{"none", "runtime", "classic", // NOI18N
+                                      "binary_standard","conforming_standard"}; // NOI18N
+        for(int i = 0; i < flags.length; i++) {
+            c = doc.createElement(names[i]);
+            c.setAttribute("flags", flags[i]); // NOI18N
+            if (def == i){
+                c.setAttribute("default", "true"); // NOI18N
+            }
+            e.appendChild(c);
+        }
+    }
+
+    private void writeScanner(Document doc, Element element, ScannerDescriptor scanner) {
+        Element c;
+        for(ScannerPattern pattern : scanner.getPatterns()){
+            c = doc.createElement(pattern.getSeverity());
+            c.setAttribute("pattern", pattern.getPattern()); // NOI18N
+            if (pattern.getLanguage() != null) {
+                c.setAttribute("language", pattern.getLanguage()); // NOI18N
+            }
+            element.appendChild(c);
+        }
+        if (scanner.getStackHeaderPattern() != null){
+            c = doc.createElement("stack_header"); // NOI18N
+            c.setAttribute("pattern", scanner.getStackHeaderPattern()); // NOI18N
+            element.appendChild(c);
+        }
+        if (scanner.getStackNextPattern() != null){
+            c = doc.createElement("stack_next"); // NOI18N
+            c.setAttribute("pattern", scanner.getStackNextPattern()); // NOI18N
+            element.appendChild(c);
+        }
+        if (scanner.getEnterDirectoryPattern() != null){
+            c = doc.createElement("enter_directory"); // NOI18N
+            c.setAttribute("pattern", scanner.getEnterDirectoryPattern()); // NOI18N
+            element.appendChild(c);
+        }
+        if (scanner.getChangeDirectoryPattern() != null){
+            c = doc.createElement("change_directory"); // NOI18N
+            c.setAttribute("pattern", scanner.getChangeDirectoryPattern()); // NOI18N
+            element.appendChild(c);
+        }
+        if (scanner.getLeaveDirectoryPattern() != null){
+            c = doc.createElement("leave_directory"); // NOI18N
+            c.setAttribute("pattern", scanner.getLeaveDirectoryPattern()); // NOI18N
+            element.appendChild(c);
+        }
+    }
+
+    private void writeLinker(Document doc, Element element, LinkerDescriptor linker) {
+        Element c;
+        if (linker.getLibraryPrefix() != null){
+            c = doc.createElement("library_prefix"); // NOI18N
+            c.setAttribute("stringvalue", linker.getLibraryPrefix()); // NOI18N
+            element.appendChild(c);
+        }
+        if (linker.getLibrarySearchFlag() != null){
+            c = doc.createElement("library_search"); // NOI18N
+            c.setAttribute("flags", linker.getLibrarySearchFlag()); // NOI18N
+            element.appendChild(c);
+        }
+        if (linker.getDynamicLibrarySearchFlag() != null){
+            c = doc.createElement("dynamic_library_search"); // NOI18N
+            c.setAttribute("flags", linker.getDynamicLibrarySearchFlag()); // NOI18N
+            element.appendChild(c);
+        }
+        if (linker.getLibraryFlag() != null){
+            c = doc.createElement("library"); // NOI18N
+            c.setAttribute("flags", linker.getLibraryFlag()); // NOI18N
+            element.appendChild(c);
+        }
+        if (linker.getPICFlag() != null){
+            c = doc.createElement("PIC"); // NOI18N
+            c.setAttribute("flags", linker.getPICFlag()); // NOI18N
+            element.appendChild(c);
+        }
+        if (linker.getStaticLibraryFlag() != null){
+            c = doc.createElement("static_library"); // NOI18N
+            c.setAttribute("flags", linker.getStaticLibraryFlag()); // NOI18N
+            element.appendChild(c);
+        }
+        if (linker.getDynamicLibraryFlag() != null){
+            c = doc.createElement("dynamic_library"); // NOI18N
+            c.setAttribute("flags", linker.getDynamicLibraryFlag()); // NOI18N
+            element.appendChild(c);
+        }
+        if (linker.getDynamicLibraryBasicFlag() != null){
+            c = doc.createElement("dynamic_library_basic"); // NOI18N
+            c.setAttribute("flags", linker.getDynamicLibraryBasicFlag()); // NOI18N
+            element.appendChild(c);
+        }
+    }
+
+    private void writeMake(Document doc, Element element, MakeDescriptor make) {
+        Element c;
+        c = doc.createElement("tool"); // NOI18N
+        c.setAttribute("name", unsplit(make.getNames())); // NOI18N
+        element.appendChild(c);
+
+        if (make.getVersionFlags() != null ||
+            make.getVersionPattern() != null){
+            c = doc.createElement("version"); // NOI18N
+            if (make.getVersionFlags() != null) {
+                c.setAttribute("flags", make.getVersionFlags()); // NOI18N
+            }
+            if (make.getVersionPattern() != null) {
+                c.setAttribute("pattern", make.getVersionPattern()); // NOI18N
+            }
+            element.appendChild(c);
+        }
+
+        if (make.getDependencySupportCode() != null){
+            c = doc.createElement("dependency_support"); // NOI18N
+            c.setAttribute("code", make.getDependencySupportCode()); // NOI18N
+            element.appendChild(c);
+        }
+    }
+
+    private void writeDebugger(Document doc, Element element, DebuggerDescriptor debugger) {
+        Element c;
+        c = doc.createElement("tool"); // NOI18N
+        c.setAttribute("name", unsplit(debugger.getNames())); // NOI18N
+        element.appendChild(c);
+        if (debugger.getVersionFlags() != null ||
+            debugger.getVersionPattern() != null){
+            c = doc.createElement("version"); // NOI18N
+            if (debugger.getVersionFlags() != null) {
+                c.setAttribute("flags", debugger.getVersionFlags()); // NOI18N
+            }
+            if (debugger.getVersionPattern() != null) {
+                c.setAttribute("pattern", debugger.getVersionPattern()); // NOI18N
+            }
+            element.appendChild(c);
+        }
+    }
+
     public interface ToolchainDescriptor {
+        String getFileName();
         String getName();
         String getDisplayName();
         String[] getFamily();
@@ -512,6 +1063,7 @@ public final class ToolchainManager {
     }
    
     private static final class CompilerVendor {
+        private final String toolChainFileName;
         private String toolChainName;
         private String toolChainDisplay;
         private String family;
@@ -533,6 +1085,10 @@ public final class ToolchainManager {
         private Make make = new Make();
         private Debugger debugger = new Debugger();
 
+        private CompilerVendor(String fileName){
+            toolChainFileName = fileName;
+        }
+        
         public boolean isValid(){
             return toolChainName != null && toolChainName.length() > 0 &&
                    (c.isValid() || cpp.isValid() || fortran.isValid()); 
@@ -980,13 +1536,13 @@ public final class ToolchainManager {
                 if (path.endsWith(".error")) { // NOI18N
                     ErrorPattern e = new ErrorPattern();
                     s.patterns.add(e);
-                    e.severity = attributes.getValue("error"); // NOI18N
+                    e.severity = "error"; // NOI18N
                     e.pattern = attributes.getValue("pattern"); // NOI18N
                     e.language = attributes.getValue("language"); // NOI18N
                 } else if (path.endsWith(".warning")) { // NOI18N
                     ErrorPattern e = new ErrorPattern();
                     s.patterns.add(e);
-                    e.severity = attributes.getValue("warning"); // NOI18N
+                    e.severity = "warning"; // NOI18N
                     e.pattern = attributes.getValue("pattern"); // NOI18N
                     e.language = attributes.getValue("language"); // NOI18N
                 } else if (path.endsWith(".change_directory")) { // NOI18N
@@ -1175,6 +1731,7 @@ public final class ToolchainManager {
         private ToolchainDescriptorImpl(CompilerVendor v){
             this.v = v;
         }
+        public String getFileName() { return v.toolChainFileName; }
         public String getName() { return v.toolChainName; }
         public String getDisplayName() { return v.toolChainDisplay; }
         public String[] getFamily() {
@@ -1276,7 +1833,7 @@ public final class ToolchainManager {
         public String getRemoveIncludeOutputPrefix() { return tool.removeIncludeOutputPrefix; }
         public String getUserIncludeFlag() { return tool.userIncludeFlag; }
         public String getMacroFlags() { return tool.macrosFlags; }
-        public String getMacroParser() { return tool.macrosFlags; }
+        public String getMacroParser() { return tool.macrosOutputParser; }
         public String getUserMacroFlag() { return tool.userMacroFlag; }
         public String[] getDevelopmentModeFlags() { return tool.developmentMode.values(); }
         public String[] getWarningLevelFlags() { return tool.warningLevel.values(); }
