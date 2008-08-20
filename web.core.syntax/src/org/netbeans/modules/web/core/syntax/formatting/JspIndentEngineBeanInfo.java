@@ -71,16 +71,16 @@ public class JspIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
         return JspIndentEngine.class;
     }
 
-    protected String[] createPropertyNames() {
-        return NbEditorUtilities.mergeStringArrays(super.createPropertyNames(),
-            new String[] {
-                JspIndentEngine.JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP,
-                JspIndentEngine.JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
-                JspIndentEngine.JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP,
-                JspIndentEngine.JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP
-            }
-        );
-    }
+//    protected String[] createPropertyNames() {
+//        return NbEditorUtilities.mergeStringArrays(super.createPropertyNames(),
+//            new String[] {
+//                JspIndentEngine.JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP,
+//                JspIndentEngine.JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
+//                JspIndentEngine.JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP,
+//                JspIndentEngine.JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP
+//            }
+//        );
+//    }
 
     protected String getString(String key) {
         try {
