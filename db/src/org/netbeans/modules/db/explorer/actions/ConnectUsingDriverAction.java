@@ -85,6 +85,7 @@ import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor.Task;
 
 public class ConnectUsingDriverAction extends DatabaseAction {
     static final long serialVersionUID =8245005834483564671L;
@@ -274,13 +275,16 @@ public class ConnectUsingDriverAction extends DatabaseAction {
             cinfo.addExceptionListener(excListener);
 
             ActionListener actionListener = new ActionListener() {
+                
+                Task activeTask = null;
+                
                 public void actionPerformed(ActionEvent event) {
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         okPressed = true;
                         basePanel.setConnectionInfo();
                         try {
                             if (cinfo.getConnection() == null || cinfo.getConnection().isClosed())
-                                cinfo.connectAsync();
+                                activeTask = cinfo.connectAsync();
                             else {
                                 cinfo.setSchema(schemaPanel.getSchema());
                                 ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(cinfo);
@@ -289,7 +293,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                             }
                         } catch (SQLException exc) {
                             //isClosed() method failed, try to connect
-                            cinfo.connectAsync();
+                            activeTask = cinfo.connectAsync();
                         } catch (DatabaseException exc) {
                             Logger.getLogger("global").log(Level.INFO, null, exc);
                             DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N
@@ -307,11 +311,15 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                     else if (event.getSource() == DialogDescriptor.CANCEL_OPTION) {
                         if (dlg != null)
                         {
+                            if (activeTask != null)
+                            {
+                                activeTask.cancel();
+                                activeTask = null;
+                            }
+                            
                             // in case a connection is underway...
                             basePanel.terminateProgress();
                         }
-                        
-                        
                     }
                 }
             };
