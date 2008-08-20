@@ -44,7 +44,6 @@ package org.netbeans.modules.gsf;
 import org.netbeans.modules.gsf.api.GsfLanguage;
 import org.netbeans.editor.DrawLayer;
 import org.netbeans.editor.DrawLayerFactory;
-import org.netbeans.editor.Formatter;
 import org.netbeans.modules.editor.NbEditorDocument;
 
 /**
@@ -54,7 +53,7 @@ import org.netbeans.modules.editor.NbEditorDocument;
  */
 public class GsfDocument extends NbEditorDocument {
     private Language language;
-    private Formatter formatter;
+//    private Formatter formatter;
     
     public GsfDocument(Language language) {
         super(language.getMimeType());
@@ -98,15 +97,15 @@ public class GsfDocument extends NbEditorDocument {
 //        return formatter;
 //    }
     
-    @Override
-    public int getShiftWidth() {
-        org.netbeans.modules.gsf.api.Formatter f = language.getFormatter();
-        if (f != null) {
-            int shiftWidth = f.indentSize();
-            if (shiftWidth > 0) {
-                return shiftWidth;
-            }
-        }
-        return super.getShiftWidth();
-    }
+//    @Override
+//    public int getShiftWidth() {
+//        org.netbeans.modules.gsf.api.Formatter f = language.getFormatter();
+//        if (f != null) {
+//            int shiftWidth = f.indentSize();
+//            if (shiftWidth > 0) {
+//                return shiftWidth;
+//            }
+//        }
+//        return super.getShiftWidth();
+//    }
 }
