@@ -222,6 +222,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             }
         });
 
+        installLabel.setLabelFor(derbyInstall);
         org.openide.awt.Mnemonics.setLocalizedText(installLabel, org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "LBL_Install")); // NOI18N
 
         derbyInstall.addActionListener(new java.awt.event.ActionListener() {
