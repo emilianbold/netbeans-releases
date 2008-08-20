@@ -111,7 +111,7 @@ public final class NativeProjectProvider {
 	private boolean pathsRelCurFile;
 	
 	private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
-	private Object listenersLock = new Object();
+	private final Object listenersLock = new Object();
 
 	public NativeProjectImpl(String projectRoot,
 		List<String> sysIncludes, List<String> usrIncludes, 
@@ -272,6 +272,10 @@ public final class NativeProjectProvider {
 
         public List<NativeProject> getDependences() {
             return Collections.<NativeProject>emptyList();
+        }
+
+        public void runOnCodeModelReadiness(Runnable task) {
+            task.run();
         }
     }    
 
