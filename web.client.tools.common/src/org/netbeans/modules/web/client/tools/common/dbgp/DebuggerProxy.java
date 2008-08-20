@@ -276,7 +276,12 @@ public class DebuggerProxy {
 
     public synchronized ResponseMessage sendCommand(Command command) {
         if(sessionSocket == null) {
-            Log.getLogger().log(Level.INFO, "\nCannot send command after session is closed\n");  //NOI18N
+            try {
+                throw new IllegalStateException();
+            } catch (Exception ex) {
+                Log.getLogger().log(Level.INFO, "Cannot send command after session is closed", ex);  //NOI18N
+            }
+            
             return null;
         }
         try {
