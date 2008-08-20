@@ -245,7 +245,7 @@ public class ProfilerValidation extends JellyTestCase {
         new NbDialogOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.j2se.Bundle",
                         "J2SEProjectTypeProfiler_ModifyBuildScriptCaption") ).ok(); //"Enable Profiling of {0}"
         //wait
-        new EventTool().waitNoEvent(1000);
+        new EventTool().waitNoEvent(10000);
         // click Run in Profile AnagramGame dialog
         NbDialogOperator profileOper = new NbDialogOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.ui.stp.Bundle", 
                                         "SelectProfilingTask_ProfileDialogCaption") ); // "Profile "+anagramGamePrName
