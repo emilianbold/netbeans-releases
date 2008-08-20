@@ -335,16 +335,26 @@ public class DebuggerProxy {
         }
     }
     
-    private static final String statusText = "<response command=\"status\" status=\"stopped\" reason=\"exception\"/>";
+    private static final String statusTextException = "<response command=\"status\" status=\"stopped\" reason=\"exception\"/>";
+    private static final String statusTextUser = "<response command=\"status\" status=\"stopped\" reason=\"ok\"/>";
     
     private void fireStoppedEvent() {
         if(messageSentThread != null) {
             messageSentThread.interrupt();
         }
-        Message message = Message.createMessage(statusText);
-        handleMessage(message);
-        httpQueue.add(message);
+        
+        if (stop.get()) {
+            sendStopMessage(statusTextUser);
+        }else {
+            sendStopMessage(statusTextException);
+        }
     } 
+    
+    private void sendStopMessage(String msg) {
+        Message message = Message.createMessage(msg);
+        suspensionPointQueue.add(message);
+        httpQueue.add(message);        
+    }
 
     private class MessageHandler extends Thread {
         private final InputStream is;
@@ -373,9 +383,8 @@ public class DebuggerProxy {
             }
             
             DebuggerProxy.this.cleanup();
-            if(!stop.get()){
-                fireStoppedEvent();
-            }
+            fireStoppedEvent();
+            
             Log.getLogger().log(Level.FINEST, "Ending " + getName());  //NOI18N
         }
     }
