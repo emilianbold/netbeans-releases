@@ -429,12 +429,11 @@ public final class NbJSDebugger {
                 console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_JSDEBUGGER_STARTED") + getURI()); // NOI18N
             }
 
-            preferenceChangeListener = new PreferenceChangeListenerImpl();
-            NbJSPreferences nbJSPreferences = NbJSPreferences.getInstance();
-            nbJSPreferences.addPreferenceChangeListener(WeakListeners.create(
-                    PreferenceChangeListener.class,
-                    preferenceChangeListener,
-                    nbJSPreferences));
+            if (preferenceChangeListener == null) {
+                preferenceChangeListener = new PreferenceChangeListenerImpl();
+                NbJSPreferences nbJSPreferences = NbJSPreferences.getInstance();
+                nbJSPreferences.addPreferenceChangeListener(preferenceChangeListener);
+            }
         }
         if (state.getState() == JSDebuggerState.State.SUSPENDED) {
             JSCallStackFrame[] callStackFrames = getCallStackFrames();
@@ -453,6 +452,12 @@ public final class NbJSDebugger {
             if (debuggerManagerListener != null) {
                 DebuggerManager.getDebuggerManager().removeDebuggerListener(debuggerManagerListener);
                 debuggerManagerListener = null;
+            }
+            
+            if (preferenceChangeListener != null) {
+                NbJSPreferences nbJSPreferences = NbJSPreferences.getInstance();
+                nbJSPreferences.removePreferenceChangeListener(preferenceChangeListener);
+                preferenceChangeListener = null;
             }
 
             if (console != null) {
