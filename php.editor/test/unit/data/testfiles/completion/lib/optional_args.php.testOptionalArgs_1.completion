@@ -1,0 +1,6 @@
+Code completion result for source line:
+TestOptionalArgsClass::test|($b, $d);
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     test($a, $b, $c, $d)            [STATIC]   TestOptionalArgsClass
+METHOD     test($a, $b, $d)                [STATIC]   TestOptionalArgsClass
+METHOD     test($b, $d)                    [STATIC]   TestOptionalArgsClass
