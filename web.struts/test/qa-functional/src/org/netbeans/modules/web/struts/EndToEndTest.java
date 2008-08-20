@@ -56,7 +56,6 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.EditAction;
-import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
@@ -81,6 +80,7 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.openide.util.Exceptions;
 
 /** End-to-end scenario test based on
  * http://qa.netbeans.org/modules/webapps/promo-f/frameworks/struts-user-scenario.html.
@@ -99,7 +99,7 @@ public class EndToEndTest extends J2eeTestCase {
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EndToEndTest.class);
-        conf = addServerTests(conf,"testSetupStrutsProject","testCreateLoginPage","testCreateLoginBean",
+        conf = addServerTests(Server.GLASSFISH,conf,"testSetupStrutsProject","testCreateLoginPage","testCreateLoginBean",
                 "testCreateLoginAction","testCreateSecurityManager","testCreateForward","testCreateShopPage",
                 "testCreateLogoutPage","testCreateForwardInclude","testRunApplication");
         conf = conf.enableModules(".*").clusters(".*");
@@ -300,6 +300,11 @@ public class EndToEndTest extends J2eeTestCase {
         ActionNoBlock addForwardAction = new ActionNoBlock(null, "Struts|Add Forward");
         addForwardAction.setComparator(new DefaultStringComparator(true, true));
         addForwardAction.perform(strutsConfigEditor);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         NbDialogOperator addForwardOper = new NbDialogOperator("Add Forward");
         JTextFieldOperator txtForwardName = new JTextFieldOperator(
                 (JTextField)new JLabelOperator(addForwardOper, "Forward Name:").getLabelFor());
@@ -364,6 +369,11 @@ public class EndToEndTest extends J2eeTestCase {
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         ActionNoBlock addForwardAction = new ActionNoBlock(null, "Struts|Add Forward/Include");
         addForwardAction.perform(strutsConfigEditor);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         NbDialogOperator addForwardOper = new NbDialogOperator("Add Forward/Include Action");
         // set Action Path
         new JTextFieldOperator(addForwardOper, "/").setText("/Logout");
@@ -401,7 +411,7 @@ public class EndToEndTest extends J2eeTestCase {
             // log messages from output
             getLog("RunOutput").print(new OutputTabOperator(PROJECT_NAME).getText());
             getLog("ServerLog").print(new OutputTabOperator("GlassFish").getText());
-        }
+          }
     }
     
     /** Opens URL connection and waits for given text. It thows TimeoutExpiredException
