@@ -55,6 +55,18 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/tst.php", "^GL", false);
     }
     
+    public void testClassMemberVisibility1() throws Exception {
+        checkCompletion("testfiles/completion/lib/class_member_visibility.php", "self::^", false);
+    }
+    
+    public void testClassMemberVisibility2() throws Exception {
+        checkCompletion("testfiles/completion/lib/class_member_visibility.php", "parent::^", false);
+    }
+    
+    public void testClassMemberVisibility3() throws Exception {
+        checkCompletion("testfiles/completion/lib/class_member_visibility.php", "$tst->^", false);
+    }
+    
     public void testComments1() throws Exception {
         checkCompletion("testfiles/completion/lib/comments.php", "one line ^", false);
     }
