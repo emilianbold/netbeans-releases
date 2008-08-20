@@ -41,12 +41,12 @@
 
 package org.openide.windows;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import junit.framework.Test;
@@ -156,6 +156,7 @@ implements org.openide.util.LookupListener {
             ArrayList<ActionMap> maps = new ArrayList<ActionMap> ();
             
             public void resultChanged (org.openide.util.LookupEvent ev) {
+                assertTrue("Changes are comming from AWT thread only", EventQueue.isDispatchThread());
                 assertEquals ("Still only one", 1, res.allItems ().size ());
                 Lookup.Item<ActionMap> i = res.allItems ().iterator ().next ();
                 assertNotNull (i);
@@ -181,7 +182,7 @@ implements org.openide.util.LookupListener {
             } else {
                 my.getActionMap().setParent(new ActionMap());
             }
-
+            waitEQ();
             if (myListener.maps.size () != 2) {
                 fail ("Expected two changes in the ActionMaps: " + myListener.maps);
             }
@@ -274,6 +275,13 @@ implements org.openide.util.LookupListener {
     
     public void resultChanged(org.openide.util.LookupEvent ev) {
         cnt++;
+    }
+
+    private void waitEQ() throws Exception {
+        EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+            }
+        });
     }
 
     private static class AbstractActionImpl extends AbstractAction {
