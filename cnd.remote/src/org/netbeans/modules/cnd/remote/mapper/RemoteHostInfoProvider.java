@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 
 /**
@@ -129,6 +130,15 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
     @Override
     public  Map<String, String> getEnv(String hkey) {
         return getHostInfo(hkey).getEnv();
+    }
+    
+    @Override
+    public String getLibDir(String key) {
+        String home = getHostInfo(key).getHome();
+        if (home == null) {
+            return null;
+        }
+        return home + "/" + RemoteServerSetup.REMOTE_LIB_DIR;
     }
 
     @Override
