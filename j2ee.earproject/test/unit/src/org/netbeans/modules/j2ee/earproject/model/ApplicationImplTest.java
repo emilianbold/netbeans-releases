@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.DefaultListModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -93,7 +92,7 @@ public class ApplicationImplTest extends NbTestCase {
         super.setUp();
         
         clearWorkDir();
-        TestUtil.initLookup(this, "org/netbeans/modules/web/core/resources/layer.xml");
+        TestUtil.initLookup(this);
         serverID = TestUtil.registerSunAppServer(this);
         
         // create project
