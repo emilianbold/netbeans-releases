@@ -92,7 +92,6 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         actionsToolbar.add(Box.createHorizontalGlue(), 0);
         actionsToolbar.add(Box.createHorizontalGlue());
         
-        refreshController();
         nextAction = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 onNext();
@@ -111,6 +110,8 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         
         getActionMap().put("jumpNext", nextAction);  // NOI18N
         getActionMap().put("jumpPrev", prevAction); // NOI18N
+
+        refreshController();
     }
 
     private void refreshController() throws IOException {

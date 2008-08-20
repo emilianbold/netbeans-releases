@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.highlight.semantic.options;
 
 import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.openide.util.NbPreferences;
 
 /**
@@ -66,7 +67,9 @@ public class SemanticHighlightingOptions {
     private static final String KEEP_MARKS = "KeepMarks"; // NOI18N
 
     public static final boolean SEMANTIC_ADVANCED = Boolean.getBoolean("cnd.semantic.advanced"); // NOI18N
-    
+
+    public static final boolean RELEASE_MODE = DebugUtils.isReleaseMode();
+
     private boolean getOption(String key, boolean defaultValue) {
         return preferences.getBoolean(key, defaultValue);
     }

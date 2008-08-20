@@ -386,6 +386,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ144154.cc", 57, 52, "IZ144154.cc", 31, 5);
     }
 
+    public void testIZ144360() throws Exception {
+        // IZ#144360 : unable to resolve typedef-ed class member in loki
+        performTest("IZ144360.cc", 12, 22, "IZ144360.cc", 12, 9);
+        performTest("IZ144360.cc", 13, 9, "IZ144360.cc", 12, 9);
+        performTest("IZ144360.cc", 13, 15, "IZ144360.cc", 7, 9);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

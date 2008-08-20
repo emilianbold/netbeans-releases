@@ -42,86 +42,159 @@ package org.netbeans.modules.options.indentation;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Collection;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.NodeChangeEvent;
+import java.util.prefs.NodeChangeListener;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
+import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.WeakListeners;
 
 /**
- *
+ * This is used in Tools-Options, but not in project properties customizer.
+ * 
  * @author Dusan Balek
  */
-public final class FormattingPanelController extends OptionsPanelController {
+public final class FormattingPanelController extends OptionsPanelController implements CustomizerSelector.PreferencesFactory, PreferenceChangeListener, NodeChangeListener {
 
-    static final String CODE_STYLE_PROFILE = "CodeStyle"; // NOI18N
-    static final String DEFAULT_PROFILE = "default"; // NOI18N
-    static final String PROJECT_PROFILE = "project"; // NOI18N
-    static final String USED_PROFILE = "usedProfile"; // NOI18N
-    private static final String FOLDER = "OptionsDialog/Editor/Formatting/"; //NOI18N
+    public static final String OVERRIDE_GLOBAL_FORMATTING_OPTIONS = "FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS"; //NOI18N
 
-    private FormattingPanel panel;
-    private Map<String, Collection<? extends OptionsPanelController>> mimeType2Controllers;
-    private Preferences projectPreferences;
-    private Map<String, Preferences> mimeTypePreferences;
-    
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private boolean changed;
-    
+    // ------------------------------------------------------------------------
+    // OptionsPanelController implementation
+    // ------------------------------------------------------------------------
+
+    public FormattingPanelController() {
+    }
+
     public void update() {
-        changed = false;
-	panel.load();
+        boolean fire;
+        
+        synchronized (this) {
+            LOG.fine("update"); //NOI18N
+            destroyPreferences();
+            selector = new CustomizerSelector(this, true);
+            panel.setSelector(selector);
+            fire = changed;
+            changed = false;
+        }
+        
+        if (fire) {
+            pcs.firePropertyChange(PROP_CHANGED, true, false);
+        }
     }
     
     public void applyChanges() {
-	panel.store();
-        try {
-            if (projectPreferences != null) {
-                projectPreferences.flush();
-            } else {
-                for (Preferences preferences : mimeTypePreferences.values())
-                    preferences.flush();
+        boolean fire;
+        
+        synchronized (this) {
+            LOG.fine("applyChanges"); //NOI18N
+            for(String mimeType : mimeTypePreferences.keySet()) {
+                ProxyPreferences pp = mimeTypePreferences.get(mimeType);
+
+                pp.silence();
+
+                if (mimeType.length() > 0) {
+                    // there can be no tabs-and-indents customizer
+                    //assert pp.get(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) != null;
+
+                    if (!pp.getBoolean(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false)) {
+                        // remove the basic settings if a language is not overriding the 'all languages' values
+                        pp.remove(SimpleValueNames.EXPAND_TABS);
+                        pp.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
+                        pp.remove(SimpleValueNames.SPACES_PER_TAB);
+                        pp.remove(SimpleValueNames.TAB_SIZE);
+                        pp.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
+                    }
+                    pp.remove(OVERRIDE_GLOBAL_FORMATTING_OPTIONS);
+                } else {
+                    assert pp.get(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) == null;
+                }
+                
+                try {
+                    LOG.fine("    flushing pp for '" + mimeType + "'"); //NOI18N
+                    pp.flush();
+                } catch (BackingStoreException ex) {
+                    LOG.log(Level.WARNING, "Can't flush preferences for '" + mimeType + "'", ex); //NOI18N
+                }
+                
+                for(PreferencesCustomizer c : selector.getCustomizers(mimeType)) {
+                    if (c instanceof CustomizerSelector.WrapperCustomizer) {
+                        ((CustomizerSelector.WrapperCustomizer) c).applyChanges();
+                    }
+                }
             }
-        } catch (BackingStoreException bse) {
+            
+            destroyPreferences();
+            panel.setSelector(null);
+            
+            fire = changed;
+            changed = false;
+        }
+        
+        if (fire) {
+            pcs.firePropertyChange(PROP_CHANGED, true, false);
         }
     }
     
     public void cancel() {
+        boolean fire;
+        
+        synchronized (this) {
+            LOG.fine("cancel"); //NOI18N
+
+            for(String mimeType : mimeTypePreferences.keySet()) {
+                for(PreferencesCustomizer c : selector.getCustomizers(mimeType)) {
+                    if (c instanceof CustomizerSelector.WrapperCustomizer) {
+                        ((CustomizerSelector.WrapperCustomizer) c).cancel();
+                    }
+                }
+            }
+                
+            destroyPreferences();
+            panel.setSelector(null);
+            fire = changed;
+            changed = false;
+        }
+        
+        if (fire) {
+            pcs.firePropertyChange(PROP_CHANGED, true, false);
+        }
     }
     
     public boolean isValid() {
-        return true; // XXXX
-	// return getPanel().valid(); 
+        return true;
     }
     
     public boolean isChanged() {
-	return changed;
+        synchronized (this) {
+            return changed;
+        }
     }
     
     public HelpCtx getHelpCtx() {
-	return new HelpCtx("netbeans.optionsDialog.editor.formatting");
+        PreferencesCustomizer c = selector == null ? null : selector.getSelectedCustomizer();
+        HelpCtx ctx = c == null ? null : c.getHelpCtx();
+	return ctx != null ? ctx : new HelpCtx("netbeans.optionsDialog.editor.formatting"); //NOI18N
     }
     
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if (panel == null) {
-            mimeType2Controllers = getControllers();
-            projectPreferences = getProjectPreferences(masterLookup.lookup(Project.class));
-            if (projectPreferences == null)
-                mimeTypePreferences = new HashMap<String, Preferences>();
-            panel = new FormattingPanel(this);
+            panel = new FormattingPanel();
         }
         return panel;
     }
@@ -133,56 +206,98 @@ public final class FormattingPanelController extends OptionsPanelController {
     public void removePropertyChangeListener(PropertyChangeListener l) {
 	pcs.removePropertyChangeListener(l);
     }
-        
-    void changed() {
-	if (!changed) {
-	    changed = true;
-	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-	}
-	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
-    }
-    
-    Iterable<String> getMimeTypes() {
-        return mimeType2Controllers.keySet();
-    }
-    
-    Iterable<? extends OptionsPanelController> getControllers(String mimeType) {
-        Iterable<? extends OptionsPanelController> ret = mimeType2Controllers.get(mimeType);
-        return ret != null ? ret : Collections.<OptionsPanelController>emptySet();
-    }
-    
-    Lookup getLookup(String mimeType, JEditorPane previewPane) {
-        Preferences p = null;
-        if (projectPreferences != null) {
-            p = mimeType.length() > 0 ? projectPreferences.node(mimeType) : projectPreferences;
-        } else {
-            p = mimeTypePreferences.get(mimeType);
-            if (p == null) {
-                p = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
-                mimeTypePreferences.put(mimeType, p);
-            }
+
+    // ------------------------------------------------------------------------
+    // CustomizerSelector.PreferencesFactory implementation
+    // ------------------------------------------------------------------------
+
+    public synchronized Preferences getPreferences(String mimeType) {
+        ProxyPreferences pp = mimeTypePreferences.get(mimeType);
+        if (pp == null) {
+            Preferences p = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+            pp = ProxyPreferences.get(p);
+            pp.addPreferenceChangeListener(weakPrefL);
+            pp.addNodeChangeListener(weakNodeL);
+            mimeTypePreferences.put(mimeType, pp);
+            LOG.fine("getPreferences(" + mimeType + ")"); //NOI18N
         }
-        return p != null ? Lookups.fixed(p, previewPane) : Lookups.fixed(previewPane);
+        return pp;
     }
 
-    private Map<String, Collection<? extends OptionsPanelController>> getControllers() {
-        Map<String, Collection<? extends OptionsPanelController>> ret = new LinkedHashMap<String, Collection<? extends OptionsPanelController>>();
-        for (String mimeType : EditorSettings.getDefault().getAllMimeTypes()) {
-            Lookup l = Lookups.forPath(FOLDER + mimeType);
-            Collection<? extends OptionsPanelController> controllers = l.lookupAll(OptionsPanelController.class);
-            if (!controllers.isEmpty())
-                ret.put(mimeType, controllers);
+    public boolean isKeyOverridenForMimeType(String key, String mimeType) {
+        EditorSettingsStorage<String, TypedValue> storage = EditorSettingsStorage.<String, TypedValue>get("Preferences"); //NOI18N
+        try {
+            Map<String, TypedValue> mimePathLocalPrefs = storage.load(MimePath.parse(mimeType), null, false);
+            return mimePathLocalPrefs.containsKey(key);
+        } catch (IOException ioe) {
+            LOG.log(Level.WARNING, null, ioe);
+            return false;
         }
-        return ret;
     }
+
+    // ------------------------------------------------------------------------
+    // PreferenceChangeListener implementation
+    // ------------------------------------------------------------------------
+
+    public void preferenceChange(PreferenceChangeEvent evt) {
+        notifyChanged(true);
+    }
+
+    // ------------------------------------------------------------------------
+    // NodeChangeListener implementation
+    // ------------------------------------------------------------------------
+
+    public void childAdded(NodeChangeEvent evt) {
+        notifyChanged(true);
+    }
+
+    public void childRemoved(NodeChangeEvent evt) {
+        notifyChanged(true);
+    }
+
+    // ------------------------------------------------------------------------
+    // private implementation
+    // ------------------------------------------------------------------------
+
+    private static final Logger LOG = Logger.getLogger(FormattingPanelController.class.getName());
     
-    private Preferences getProjectPreferences(Project project) {
-        if (project != null) {
-            Preferences root = ProjectUtils.getPreferences(project, IndentUtils.class, true).node(CODE_STYLE_PROFILE);
-            String profile = root.get(USED_PROFILE, DEFAULT_PROFILE);
-            if (PROJECT_PROFILE.equals(profile))
-                return root.node(PROJECT_PROFILE);
+    private final Map<String, ProxyPreferences> mimeTypePreferences = new HashMap<String, ProxyPreferences>();
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PreferenceChangeListener weakPrefL = WeakListeners.create(PreferenceChangeListener.class, this, null);
+    private final NodeChangeListener weakNodeL = WeakListeners.create(NodeChangeListener.class, this, null);
+
+    private CustomizerSelector selector;
+    private FormattingPanel panel;
+    private boolean changed = false;
+
+    private void notifyChanged(boolean changed) {
+        boolean fire;
+        
+        synchronized (this) {
+            if (this.changed != changed) {
+                this.changed = changed;
+                fire = true;
+            } else {
+                fire = false;
+            }
         }
-        return null;
+        
+        if (fire) {
+            pcs.firePropertyChange(PROP_CHANGED, !changed, changed);
+        }
+    }
+
+    private void destroyPreferences() {
+        // destroy all proxy preferences
+        for(String mimeType : mimeTypePreferences.keySet()) {
+            ProxyPreferences pp = mimeTypePreferences.get(mimeType);
+            pp.removeNodeChangeListener(weakNodeL);
+            pp.removePreferenceChangeListener(weakPrefL);
+            pp.destroy();
+            LOG.fine("destroying pp for '" + mimeType + "'"); //NOI18N
+        }
+
+        // reset the cache
+        mimeTypePreferences.clear();
     }
 }

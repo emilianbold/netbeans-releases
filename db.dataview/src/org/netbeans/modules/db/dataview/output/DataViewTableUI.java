@@ -103,6 +103,7 @@ class DataViewTableUI extends JTable {
         getTableHeader().setReorderingAllowed(false);
 
         setDefaultRenderer(Object.class, new ResultSetCellRenderer());
+        setDefaultRenderer(String.class, new ResultSetCellRenderer());
         setDefaultRenderer(Number.class, new ResultSetCellRenderer());
         setDefaultRenderer(java.util.Date.class, new ResultSetCellRenderer());
 
@@ -485,6 +486,14 @@ class DataViewTableUI extends JTable {
             return c;
         }
     }
+    
+    private static final class StringRenderer extends DefaultTableCellRenderer.UIResource {
+
+        public StringRenderer() {
+            super();
+            super.putClientProperty("html.disable", Boolean.TRUE);
+        }
+    }
 
     private static class DateTimeRenderer extends DefaultTableCellRenderer.UIResource {
 
@@ -563,11 +572,14 @@ class DataViewTableUI extends JTable {
         final TableCellRenderer TIME_RENDERER = new TimeRenderer();
         final TableCellRenderer DATE_RENDERER = new DateRenderer();
         final TableCellRenderer DATETIME_RENDERER = new DateTimeRenderer();
+        final TableCellRenderer STRING_RENDERER = new StringRenderer();
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (null == value) {
                 return NULL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            } else if (value instanceof Number) {
+                return STRING_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else if (value instanceof Number) {
                 return NUMNBER_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else if (value instanceof Timestamp) {
