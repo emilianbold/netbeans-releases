@@ -1106,31 +1106,31 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 if (lastType != null) { // variable found
                                     staticOnly = false;
                                 } else if ((kind == ExprKind.SCOPE) || (kind == ExprKind.NONE)){ // no variable found
-                                    if (kind == ExprKind.SCOPE) {
-                                        scopeAccessedClassifier = true;
+                                    scopeAccessedClassifier = (kind == ExprKind.SCOPE);
+                                    if (scopeAccessedClassifier && var.length() == 0) {
+                                        lastNamespace = finder.getCsmFile().getProject().getGlobalNamespace();
                                     } else {
-                                        scopeAccessedClassifier = false;
-                                    }
-                                    lastNamespace = kind != ExprKind.SCOPE ? null : finder.getExactNamespace(var); // try package
-                                    if (lastNamespace == null) { // not package, let's try class name
-                                        CsmClassifier cls = sup.getClassFromName(var, true);
-                                        if (cls == null) { // class not found
-                                            // try now resolver
-                                            if (kind == ExprKind.SCOPE) {
-                                                lastNamespace = findExactNamespace(var, varPos);
-                                            }
-                                            if (lastNamespace == null) {
-                                                // try class name
-                                                cls = findExactClass(var, varPos);
-                                                if (cls == null) {
-                                                    cont = false;
+                                        compResolver.setResolveTypes(
+                                                CompletionResolver.RESOLVE_CLASSES |
+                                                CompletionResolver.RESOLVE_TEMPLATE_PARAMETERS |
+                                                CompletionResolver.RESOLVE_GLOB_NAMESPACES |
+                                                CompletionResolver.RESOLVE_LIB_CLASSES |
+                                                CompletionResolver.RESOLVE_CLASS_NESTED_CLASSIFIERS |
+                                                CompletionResolver.RESOLVE_LOCAL_CLASSES |
+                                                CompletionResolver.RESOLVE_LIB_NAMESPACES);
+                                        if (compResolver.refresh() && compResolver.resolve(varPos, var, openingSource)) {
+                                            Collection<? extends CsmObject> res = compResolver.getResult().addResulItemsToCol(new ArrayList<CsmObject>());
+                                            if (!res.isEmpty()) {
+                                                CsmObject obj = res.iterator().next();
+                                                if (scopeAccessedClassifier && CsmKindUtilities.isNamespace(obj)) {
+                                                    lastNamespace = (CsmNamespace)obj;
+                                                } else if (scopeAccessedClassifier && CsmKindUtilities.isNamespaceAlias(obj)) {
+                                                    lastNamespace = ((CsmNamespaceAlias)obj).getReferencedNamespace();
+                                                } else if (CsmKindUtilities.isClassifier(obj)) {
+                                                    obj = CsmBaseUtilities.getOriginalClassifier((CsmClassifier)obj);
+                                                    lastType = CsmCompletion.getType((CsmClassifier)obj, 0);
                                                 }
-                                            } else if (cls == null) {
-                                                cls = finder.getExactClassifier(lastNamespace.getQualifiedName() + CsmCompletion.SCOPE + var);
                                             }
-                                        }
-                                        if (cls != null) {
-                                            lastType = CsmCompletion.getType(cls, 0);
                                         }
                                     }
                                 }
