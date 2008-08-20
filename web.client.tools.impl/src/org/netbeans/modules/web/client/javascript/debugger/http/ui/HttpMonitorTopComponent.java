@@ -69,14 +69,20 @@ final class HttpMonitorTopComponent extends TopComponent {
 
     private HttpMonitorTopComponent() {
         LOG.entering(HttpMonitorTopComponent.class.getName(), "constructor");
-        if (HttpMonitorUtility.getCurrentHttpMonitorModel() != null) {
-            HttpMonitorUtility.setEnabled(true);
-        }
+        
+        
         initComponents();
+        
         setName(NbBundle.getMessage(HttpMonitorTopComponent.class, "CTL_HttpMonitorTopComponent"));
         setToolTipText(NbBundle.getMessage(HttpMonitorTopComponent.class, "HINT_HttpMonitorTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
         LOG.exiting(HttpMonitorTopComponent.class.getName(), "constructor");
+        
+        DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
+
+//        if (HttpMonitorUtility.getCurrentHttpMonitorModel() != null) {
+            HttpMonitorUtility.setEnabled(true);
+//        }
     }
     private Icon StartIcon;
     private Icon StopIcon;
@@ -107,8 +113,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         getActivityExplorerManager().addPropertyChangeListener(activityPropertyChangeListener);
 
-        DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_SESSION, new DebuggerManagerListenerImpl());
-
+       
         return tableView;
     }
 
