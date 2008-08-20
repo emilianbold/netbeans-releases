@@ -317,25 +317,33 @@ public class ModelSupport implements PropertyChangeListener {
         return sb.toString();
     }
     
-    private void addProject(Project project) {
-        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.addProject: " + toString(project)); // NOI18N
-        NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
+    private void addProject(final Project project) {
+        if (TraceFlags.DEBUG) {
+            Diagnostic.trace("### ModelSupport.addProject: " + toString(project)); // NOI18N
+        }
+
+        final NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
         if (nativeProject != null) {
-	    
-	    CsmModelAccessor.getModel(); // just to ensure it's created
-	    ModelImpl model = theModel;
-	    if( model == null ) {
-		return;
-	    }
-	    
+
+            CsmModelAccessor.getModel(); // just to ensure it's created
+            final ModelImpl model = theModel;
+            if (model == null) {
+                return;
+            }
+
             openedProjects.add(project);
-            if( TraceFlags.DEBUG ) {
+            if (TraceFlags.DEBUG) {
                 dumpProjectFiles(nativeProject);
             }
-            
-            boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled().booleanValue();
-            
-            model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
+
+            nativeProject.runOnCodeModelReadiness(new Runnable() {
+
+                public void run() {
+                    boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled().booleanValue();
+
+                    model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
+                }
+            });
         }
     }
     

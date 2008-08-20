@@ -118,19 +118,25 @@ public class ThreadsCache implements Executor {
         List<ThreadReference> mainThreads = new ArrayList();
         threadMap.put(null, mainThreads);
         for (ThreadReference thread : allThreads) {
-            if (thread.threadGroup() == null) {
-                mainThreads.add(thread);
+            try {
+                if (thread.threadGroup() == null) {
+                    mainThreads.add(thread);
+                }
+            } catch (ObjectCollectedException e) {
             }
         }
     }
     
     private void initGroups(ThreadGroupReference group) {
-        List<ThreadGroupReference> groups = new ArrayList(group.threadGroups());
-        List<ThreadReference> threads = new ArrayList(group.threads());
-        groupMap.put(group, groups);
-        threadMap.put(group, threads);
-        for (ThreadGroupReference g : groups) {
-            initGroups(g);
+        try {
+            List<ThreadGroupReference> groups = new ArrayList(group.threadGroups());
+            List<ThreadReference> threads = new ArrayList(group.threads());
+            groupMap.put(group, groups);
+            threadMap.put(group, threads);
+            for (ThreadGroupReference g : groups) {
+                initGroups(g);
+            }
+        } catch (ObjectCollectedException e) {
         }
     }
 

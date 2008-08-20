@@ -369,9 +369,13 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.cnd.editor</friend>
                 <friend>org.netbeans.modules.diff</friend>
+                <friend>org.netbeans.modules.java.source</friend>
+                <friend>org.netbeans.modules.ruby</friend>
                 <package>org.netbeans.modules.options.colors</package>
                 <package>org.netbeans.modules.options.colors.spi</package>
+                <package>org.netbeans.modules.options.editor.spi</package>
             </friend-packages>
         </data>
     </configuration>
