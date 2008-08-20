@@ -119,7 +119,10 @@ public class LocalHistory {
     }    
 
     void init() {
-        getLocalHistoryStore().cleanUp(LocalHistorySettings.getInstance().getTTLMillis());
+        LocalHistoryStore s = getLocalHistoryStore(false);
+        if(s != null) {
+            getLocalHistoryStore().cleanUp(LocalHistorySettings.getInstance().getTTLMillis());
+        }
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {                       
                 setRoots(OpenProjects.getDefault().getOpenProjects());                                
@@ -184,13 +187,26 @@ public class LocalHistory {
         } 
         return vcsAnnotator;
     }    
-    
+
+    /**
+     * Creates the LocalHistoryStore
+     * @return
+     */
     public LocalHistoryStore getLocalHistoryStore() {
+        return getLocalHistoryStore(true);
+    }
+
+    /**
+     * Creates LocalHistoryStore if the storage already exists, otherwise return null
+     * @param force - force creation
+     * @return
+     */
+    public LocalHistoryStore getLocalHistoryStore(boolean force) {
         if(store == null) {
-            store = LocalHistoryStoreFactory.getInstance().createLocalHistoryStorage();
+            store = LocalHistoryStoreFactory.getInstance().createLocalHistoryStorage(force);
         }
         return store;
-    }   
+    }
     
     File isManagedByParent(File file) {
         if(roots == null) {
