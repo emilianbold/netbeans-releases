@@ -11,12 +11,12 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS FunctionPointerAsTemplateParameter<void(*fun)()> (FunctionPointerAsTemplateParameter ) [1:1/0-3:3/70] lcurly=66 SCOPE: $Global$ 
+CLASS FunctionPointerAsTemplateParameter<void(*fun)()> (FunctionPointerAsTemplateParameter ) [1:1/0-3:2/69] lcurly=66 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
 
 ========== Dumping model of PROJECT DummyProject
-CLASS FunctionPointerAsTemplateParameter<void(*fun)()> (FunctionPointerAsTemplateParameter ) [1:1/0-3:3/70] lcurly=66 SCOPE: $Global$ 
+CLASS FunctionPointerAsTemplateParameter<void(*fun)()> (FunctionPointerAsTemplateParameter ) [1:1/0-3:2/69] lcurly=66 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
 

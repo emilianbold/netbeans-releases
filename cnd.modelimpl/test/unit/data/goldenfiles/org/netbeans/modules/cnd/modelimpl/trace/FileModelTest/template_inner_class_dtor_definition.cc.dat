@@ -11,10 +11,10 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS Outer2<class T> (Outer2 ) [1:1/0-7:3/82] lcurly=31 SCOPE: $Global$ 
+CLASS Outer2<class T> (Outer2 ) [1:1/0-7:2/81] lcurly=31 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        STRUCT Inner (Outer2::Inner ) [2:9/34-5:11/78] lcurly=47 SCOPE: Outer2 
+        STRUCT Inner (Outer2::Inner ) [2:9/34-5:10/77] lcurly=47 SCOPE: Outer2 
             BASE CLASSES:
             MEMBERS:
                 FUNCTION ~Inner [3:17/51-3:26/60] DestructorImpl SCOPE: Inner 
@@ -45,10 +45,10 @@ FUNCTION DEFINITION foo  [12:1/134-13:2/184] FunctionDefinitionImpl SCOPE: templ
     STATEMENT COMPOUND  [12:48/181-13:2/184] SCOPE: foo 
 
 ========== Dumping model of PROJECT DummyProject
-CLASS Outer2<class T> (Outer2 ) [1:1/0-7:3/82] lcurly=31 SCOPE: $Global$ 
+CLASS Outer2<class T> (Outer2 ) [1:1/0-7:2/81] lcurly=31 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        STRUCT Inner (Outer2::Inner ) [2:9/34-5:11/78] lcurly=47 SCOPE: Outer2 
+        STRUCT Inner (Outer2::Inner ) [2:9/34-5:10/77] lcurly=47 SCOPE: Outer2 
             BASE CLASSES:
             MEMBERS:
                 FUNCTION ~Inner [3:17/51-3:26/60] DestructorImpl SCOPE: Inner 

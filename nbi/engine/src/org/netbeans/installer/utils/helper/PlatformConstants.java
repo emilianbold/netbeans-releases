@@ -65,12 +65,21 @@ public final class PlatformConstants {
     
     public static final String OS_FAMILY_BSD = 
             "bsd";
+
+    public static final String OS_FAMILY_AIX =
+            "aix";
+
+    public static final String OS_FAMILY_HPUX =
+            "hpux";
     
     public static final String HARDWARE_X86 = 
             "x86";
     
     public static final String HARDWARE_X64 = 
             "x64";
+
+    public static final String HARDWARE_IA64 = 
+            "ia64";
     
     public static final String HARDWARE_SPARC = 
             "sparc";

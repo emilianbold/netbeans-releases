@@ -42,7 +42,6 @@
 package org.netbeans.lib.lexer.inc;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.EmbeddedJoinInfo;
@@ -102,6 +101,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         int relexOffset = joinLexerInputOperation.lastTokenEndOffset();
         lastRelexChange.setOffset(relexOffset);
         lastRelexChange.setMatchOffset(relexOffset); // Due to removeLastAddedToken() and etc.
+        lastRelexChange.setParentChangeIsBoundsChange(this.parentChangeIsBoundsChange);
         relexChanges.add(lastRelexChange);
     }
 
@@ -149,6 +149,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         lastRelexChange = new RelexTokenListChange<T>(etl);
         int startOffset = etl.startOffset();
         lastRelexChange.setOffset(startOffset);
+        lastRelexChange.setParentChangeIsBoundsChange(this.parentChangeIsBoundsChange);
         relexChanges.add(lastRelexChange);
     }
 
@@ -245,7 +246,10 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         }
         int relexChangesEndIndex = relexTokenListIndex + relexChanges.size();
         while (relexChangesEndIndex < afterUpdateMatchEndIndex) {
-            relexChanges.add(new RelexTokenListChange<T>(tokenListListUpdate.afterUpdateTokenList(jtl, relexChangesEndIndex++)));
+            RelexTokenListChange<T> change = new RelexTokenListChange<T>(
+                    tokenListListUpdate.afterUpdateTokenList(jtl, relexChangesEndIndex++));
+            change.setParentChangeIsBoundsChange(this.parentChangeIsBoundsChange);
+            relexChanges.add(change);
         }
         // Now if localMatchIndex != 0 then ETL at (relexChangesEndIndex-1) must match at localMatchIndex
         // and rest at their ETL.tokenCount().

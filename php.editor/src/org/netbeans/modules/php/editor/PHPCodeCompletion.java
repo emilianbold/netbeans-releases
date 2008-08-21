@@ -223,10 +223,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
        private static final List<String> SERVER_ARRAY_TOKENTEXTS =
                Arrays.asList(new String[] {"$_SERVER","["});//NOI18N
 
- 
+
     static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, METHOD_NAME,
-        CLASS_CONTEXT_KEYWORDS, SEVER_ENTRY_CONSTANTS, NONE};
+        CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
         "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
@@ -236,7 +236,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         "interface", "implements", "extends", "public", "private",
         "protected", "abstract", "clone", "try", "catch", "throw"
     };
-    
+
     private final static String[] PHP_KEYWORD_FUNCTIONS = {
         "echo", "include", "include_once", "require", "require_once"}; //NOI18N
 
@@ -270,16 +270,19 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 return CompletionContext.HTML;
             case PHP_CONSTANT_ENCAPSED_STRING:
                 char encChar = tokenSequence.token().text().charAt(0);
-                if (encChar == '"') {
-                    return CompletionContext.STRING;
-                } else if (encChar == '\'' && acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS)) {//NOI18N
-                    if (acceptTokenChainTexts(tokenSequence, SERVER_ARRAY_TOKENTEXTS)) {
-                        return CompletionContext.SEVER_ENTRY_CONSTANTS;
+                if (encChar == '"') {//NOI18N
+                    if (acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS)
+                            && acceptTokenChainTexts(tokenSequence, SERVER_ARRAY_TOKENTEXTS)) {
+                        return CompletionContext.SERVER_ENTRY_CONSTANTS;
                     }
-                    return CompletionContext.NONE;
-                } else {
-                    return CompletionContext.NONE;
+                    return CompletionContext.STRING;
+                } else if (encChar == '\'') {//NOI18N
+                    if (acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS)
+                            && acceptTokenChainTexts(tokenSequence, SERVER_ARRAY_TOKENTEXTS)) {
+                        return CompletionContext.SERVER_ENTRY_CONSTANTS;
+                    }
                 }
+                return CompletionContext.NONE;
             default:
         }
 
@@ -335,7 +338,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     private static boolean acceptTokenChainTexts(TokenSequence tokenSequence, List<String> tokenTexts) {
-        Token[] preceedingTokens = getPreceedingTokens(tokenSequence, tokenTexts.size());        
+        Token[] preceedingTokens = getPreceedingTokens(tokenSequence, tokenTexts.size());
         if (preceedingTokens.length != tokenTexts.size()) {
             return false;
         }
@@ -519,7 +522,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             case INHERITANCE:
                 autoCompleteKeywords(proposals, request, INHERITANCE_KEYWORDS);
                 break;
-            case SEVER_ENTRY_CONSTANTS:
+            case SERVER_ENTRY_CONSTANTS:
                 //TODO: probably better PHPCompletionItem instance should be used
                 autoCompleteMagicItems(proposals, request, PredefinedSymbols.SERVER_ENTRY_CONSTANTS);
                 break;
@@ -549,7 +552,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPCompletionItem.CompletionRequest request) {
         autoCompleteMagicItems(proposals, request, PredefinedSymbols.MAGIC_METHODS);
     }
-    
+
     private void autoCompleteMagicItems(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request,final Collection<String> proposedTexts) {
         for (String keyword : proposedTexts) {

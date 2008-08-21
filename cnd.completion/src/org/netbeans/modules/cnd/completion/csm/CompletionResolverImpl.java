@@ -201,7 +201,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             return;
         }
         CacheEntry key = null;
-        CsmFunction fun = CsmContextUtilities.getFunction(context);
+        CsmFunction fun = CsmContextUtilities.getFunction(context, offset);
         ResultImpl resImpl = new ResultImpl();
         boolean isLocalVariable = resolveLocalContext(prj, resImpl, fun, context, offset, strPrefix, match);
         if (USE_CACHE && isEnough(strPrefix, match)) {
@@ -243,7 +243,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
         }
         //long timeStart = System.nanoTime();
-        resolveContext(prj, resImpl, fun, context, offset, strPrefix, match);
+        resolveContext(prj, resImpl, context, offset, strPrefix, match);
         result = buildResult(context, resImpl);
         if (key != null){
             getCache().put(key, result);
@@ -298,7 +298,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         return false;
     }
 
-    private boolean resolveContext(CsmProject prj, ResultImpl resImpl, CsmFunction fun, CsmContext context, int offset, String strPrefix, boolean match) {
+    private boolean resolveContext(CsmProject prj, ResultImpl resImpl, CsmContext context, int offset, String strPrefix, boolean match) {
+        CsmFunction fun = CsmContextUtilities.getFunction(context, offset);
         if (needLocalVars(context, offset)) {
             resImpl.fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);
             if (isEnough(strPrefix, match, resImpl.fileLocalEnumerators)) return true;
@@ -307,7 +308,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (needClassElements(context, offset)) {
                 //if (fun == null) System.err.printf("\nFunction is null. Offset: %d Context:\n%s \n", offset, context.toString());
                 CsmClass clazz = (fun == null) ? null : CsmBaseUtilities.getFunctionClass(fun);
-                clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
+                clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, offset);
                 if (clazz != null) {
                     // get class variables visible in this method
                     resImpl.classFields = contResolver.getFields(clazz, fun, strPrefix, staticContext, match, true,false);
