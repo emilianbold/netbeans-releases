@@ -126,14 +126,8 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         return null;
     }
     
-    /**
-     * Initialization method. 
-     * Should be called immediately after object creation. 
-     *
-     * Descendants may override it; in this case it's a descendant's responsibility
-     * to call super.init()
-     */
-    protected void init(CsmScope scope, AST ast) {
+    /** Initializes scope */
+    protected final void initScope(CsmScope scope, AST ast) {
 	if (scope instanceof CsmIdentifiable) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (this.scopeUID != null || scope == null) : "null UID for class scope " + scope;
@@ -142,7 +136,10 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 	    // in the case of classes/enums inside bodies
 	    this.scopeRef = scope;
 	}
-	
+    }
+
+    /** Initializes qualified name */
+    protected final void initQualifiedName(CsmScope scope, AST ast) {
 	CharSequence qualifiedNamePostfix = getQualifiedNamePostfix();
         if(  CsmKindUtilities.isNamespace(scope) ) {
             qualifiedName = Utils.getQualifiedName(qualifiedNamePostfix.toString(), (CsmNamespace) scope);

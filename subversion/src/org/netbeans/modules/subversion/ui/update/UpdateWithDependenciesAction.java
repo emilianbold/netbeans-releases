@@ -108,10 +108,12 @@ public class UpdateWithDependenciesAction extends ContextAction {
             Project project =  (Project) node.getLookup().lookup(Project.class);
             projectsToUpdate.add(project);
             SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
-            Set<? extends Project> children = deps.getSubprojects();
-            for (Project child : children) {
-                if (SvnUtils.isVersionedProject(child)) {
-                    projectsToUpdate.add(child);
+            if(deps != null) {
+                Set<? extends Project> children = deps.getSubprojects();
+                for (Project child : children) {
+                    if (SvnUtils.isVersionedProject(child)) {
+                        projectsToUpdate.add(child);
+                    }
                 }
             }
         }

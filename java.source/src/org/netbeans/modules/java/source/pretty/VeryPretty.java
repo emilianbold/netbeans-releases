@@ -64,15 +64,18 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Map;
+import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 
+import org.openide.filesystems.FileObject;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 /** Prints out a tree as an indented Java source program.
@@ -110,8 +113,28 @@ public final class VeryPretty extends JCTree.Visitor {
     private final Map<Object, int[]> tag2Span;
     private int initialOffset = 0;
 
+    public static CodeStyle getCodeStyle(CompilationInfo info) {
+        if (info != null) {
+            try {
+                Document doc = info.getDocument();
+                if (doc != null) {
+                    return CodeStyle.getDefault(doc);
+                }
+            } catch (IOException ioe) {
+                // ignore
+            }
+
+            FileObject file = info.getFileObject();
+            if (file != null) {
+                return CodeStyle.getDefault(file);
+            }
+        }
+        
+        return CodeStyle.getDefault((Document)null);
+    }
+    
     public VeryPretty(CompilationInfo cInfo) {
-        this(cInfo, CodeStyle.getDefault(null), null, null);
+        this(cInfo, getCodeStyle(cInfo), null, null);
     }
 
     public VeryPretty(CompilationInfo cInfo, CodeStyle cs) {
@@ -134,7 +157,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     public VeryPretty(Context context) {
-        this(context, CodeStyle.getDefault(null), null, null);
+        this(context, getCodeStyle(null), null, null);
     }
 
     public VeryPretty(Context context, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span) {

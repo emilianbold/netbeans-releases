@@ -49,4 +49,15 @@ public class CndUtils {
         return !CndUtils.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
     }
     
+    public static boolean isReleaseMode() {
+        boolean releaseMode;
+        String text = System.getProperty("cnd.release.mode");
+        if (text == null) {
+            releaseMode = true;
+            assert ((releaseMode = false) == false);
+        } else {
+            releaseMode = Boolean.parseBoolean(text);
+        }
+        return releaseMode;
+    }
 }

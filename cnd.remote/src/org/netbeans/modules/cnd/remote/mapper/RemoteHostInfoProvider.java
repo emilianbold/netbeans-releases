@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 
 /**
@@ -53,14 +54,26 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
     public static class RemoteHostInfo {
 
         private final String hkey;
+        private String home = null;
+        
+        private PathMap mapper;
+        private Map<String, String> envCache = null;
+
+        private Boolean isCshShell;
 
         private RemoteHostInfo(String hkey) {
             this.hkey = hkey;
         }
-        private PathMap mapper;
-        private Map<String, String> envCache = new HashMap<String, String>();
 
-        private Boolean isCshShell;
+        public String getHome() {
+            if (home == null) {
+                RemoteCommandSupport support = new RemoteCommandSupport(hkey, "pwd"); // NOI18N
+                if (support.run() == 0) {
+                    home = support.toString().trim();
+                }
+            }
+            return home;
+        }
 
         public synchronized PathMap getMapper() {
             if (mapper == null) {
@@ -117,6 +130,15 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
     @Override
     public  Map<String, String> getEnv(String hkey) {
         return getHostInfo(hkey).getEnv();
+    }
+    
+    @Override
+    public String getLibDir(String key) {
+        String home = getHostInfo(key).getHome();
+        if (home == null) {
+            return null;
+        }
+        return home + "/" + RemoteServerSetup.REMOTE_LIB_DIR;
     }
 
     @Override

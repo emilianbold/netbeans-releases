@@ -74,7 +74,6 @@ import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.actions.ConnectAction;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
@@ -86,6 +85,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.TopComponent;
 
 
@@ -581,12 +581,12 @@ public class DatabaseConnection implements DBConnection {
         }
     }
 
-    public void connectAsync() {
+    public Task connectAsync() {
         if (LOG) {
             LOGGER.log(Level.FINE, "connect()");
         }
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        Runnable runnable = new Runnable() {
             public void run() {
                 try {
                     doConnect();
@@ -594,7 +594,10 @@ public class DatabaseConnection implements DBConnection {
                     sendException(e);
                 }
             }
-        }, 0);
+        };
+
+        Task task = RequestProcessor.getDefault().post(runnable, 0);
+        return task;
     }
 
     /** Calls the initCause() for SQLException with the value

@@ -46,6 +46,8 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -110,15 +112,32 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                     CharSequence lastName = rawName[rawName.length - 1];
                     CsmDeclaration bestChoice = null;
                     CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter(lastName.toString(), true, true, false);
-                    Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(namespace, filter);
-                    while (it.hasNext()) {
-                        CsmDeclaration elem = it.next();
-                        if (CharSequenceKey.Comparator.compare(lastName,elem.getName())==0) {
-                            if (!CsmKindUtilities.isExternVariable(elem)) {
-                                referencedDeclaration = elem;
-                                break;
-                            } else {
-                                bestChoice = elem;
+
+                    // we should try searching not only in namespace resolved found,
+                    // but in numspaces with the same name in required projects
+                    // iz #140787 cout, endl unresolved in some Loki files
+                    Collection<CsmNamespace> namespacesToSearch = new ArrayList<CsmNamespace>();
+                    namespacesToSearch.add(namespace);
+                    CharSequence nspQName = namespace.getQualifiedName();
+                    for (CsmProject lib : getProject().getLibraries()) {
+                        CsmNamespace libNs = lib.findNamespace(nspQName);
+                        if (libNs != null) {
+                            namespacesToSearch.add(libNs);
+                        }
+                    }
+
+                    outer:
+                    for (CsmNamespace curr : namespacesToSearch) {
+                        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(curr, filter);
+                        while (it.hasNext()) {
+                            CsmDeclaration elem = it.next();
+                            if (CharSequenceKey.Comparator.compare(lastName,elem.getName())==0) {
+                                if (!CsmKindUtilities.isExternVariable(elem)) {
+                                    referencedDeclaration = elem;
+                                    break outer;
+                                } else {
+                                    bestChoice = elem;
+                                }
                             }
                         }
                     }
