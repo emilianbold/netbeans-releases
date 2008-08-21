@@ -50,7 +50,9 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.TreeTableOperator;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.AttachDialogOperator;
@@ -433,19 +435,20 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         }).waitAction(eoBean);
         // when issue 52506 fixed use proper name
         so.makeCurrent("name");
-        // wait pointer in editor (two annotations there)
+        // wait pointer in editor (three annotations there)
         new Waiter(new Waitable() {
             public Object actionProduced(Object editorOper) {
-                return ((EditorOperator)editorOper).getAnnotations(lineJSP).length == 2 ? Boolean.TRUE : null;
+                return ((EditorOperator)editorOper).getAnnotations(lineJSP).length == 3 ? Boolean.TRUE : null;
             }
             public String getDescription() {
-                return("Wait 2 annotations in editor."); // NOI18N
+                return("Wait 3 annotations in editor."); // NOI18N
             }
         }).waitAction(eoPage);
-        ContainerOperator debugToolbarOper = Utils.getDebugToolbar();
-        so.finishAll();
+        //ContainerOperator debugToolbarOper = Utils.getDebugToolbar();
+        //so.finishAll();
         // wait until Debug toolbar dismiss
-        debugToolbarOper.waitComponentVisible(false);
+        //debugToolbarOper.waitComponentVisible(false);
+        new ContinueAction().perform();
         so.close();
     }
     

@@ -95,14 +95,13 @@ public abstract class Index extends org.netbeans.modules.gsf.api.Index {
     };
     
     private static final int VERSION = 1;
-    private static final int SUBVERSION = 118;
+    private static final int SUBVERSION = 119;
     private static final String NB_USER_DIR = "netbeans.user";   //NOI18N
     private static final String SEGMENTS_FILE = "segments";      //NOI18N
-    private static final String CLASSES = "classes";             //NOI18N
     private static final String SLICE_PREFIX = "s";              //NOI18N    
     private static final String INDEX_DIR = "var"+File.separatorChar+"cache"+File.separatorChar+"gsf-index"+File.separatorChar+VERSION+'.'+SUBVERSION;    //NOI18N
     // BEGIN TOR MODIFICATIONS
-    protected static final String PREINDEXED = "netbeans-index-"; // NOI18N
+    protected static final String PREINDEXED = "netbeans-index-" + VERSION + "." + SUBVERSION + "-"; // NOI18N
     private static final String PREINDEXED_MARKER = "static";
     private static final boolean COMPUTE_INDEX = Boolean.getBoolean("ruby.computeindex");
     public abstract Map<String,String> getTimeStamps() throws IOException;

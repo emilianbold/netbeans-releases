@@ -42,7 +42,7 @@ $NB $VMFLAGS -J-Dgsf.preindexing=true -J-Druby.computeindex -J-Dgsf.preindexing.
 # Pack preindexed.zip
 cd $PHP
 rm -f preindexed-php.zip
-zip -r preindexed-php.zip `find . -name "netbeans-index-php*"`
+zip -r preindexed-php.zip `find . -name "netbeans-index-*php*"`
 find . -name "netbeans-index-*.zip" -exec rm {} \;
 mv preindexed-php.zip $NBHGHOME/php.project/external/preindexed-php.zip
 rm -f preindexed-php.zip

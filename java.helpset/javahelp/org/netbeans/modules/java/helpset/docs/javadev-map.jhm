@@ -175,6 +175,7 @@
 <mapID target="spring.framework.add" url="spring/add-support.html" />
 <mapID target="spring.framework.create" url="spring/create-config-file.html" />
 <mapID target="spring.framework.organize" url="spring/organize-files.html" />
+<mapID target="spring.framework.locate.beans" url="spring/locate-beans.html" />
 
 <!--Spring CSH IDs:-->
 <mapID target="org.netbeans.modules.spring.beans.ui.customizer.SpringCustomizerPanel" url="spring/organize-files.html" />

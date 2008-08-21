@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,36 +31,78 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.form;
-
-import org.netbeans.spi.options.AdvancedOption;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.highlight.error;
 
 /**
- * Contains information about Abbreviations Panel, and creates a new
- * instance of it.
+ * Test for IdentifierErrorProvider.
  *
- * @author Jan Jancura
+ * @author Alexey Vladykin
  */
-public final class FormEditorOptions extends AdvancedOption {
+public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
 
-    private static String loc (String key) {
-        return NbBundle.getMessage (FormEditorOptions.class, key);
+    static {
+        System.setProperty("cnd.identifier.error.provider", "true");
     }
 
-
-    public String getDisplayName () {
-        return loc ("Form_Editor"); // NOI18N
+    public UnresolvedIdentifierTest(String testName) {
+        super(testName);
     }
 
-    public String getTooltip () {
-        return loc ("Form_Editor_Tooltip"); // NOI18N
+    public void testSimple() throws Exception {
+        performStaticTest("simple.cpp");
     }
 
-    public OptionsPanelController create () {
-        return new FormEditorPanelController ();
+    public void testTemplateParameterTypes() throws Exception {
+        performStaticTest("templates.cpp");
+    }
+
+    public void testMacros() throws Exception {
+        performStaticTest("macros.cpp");
+    }
+
+    public void testAttributes() throws Exception {
+        performStaticTest("attributes.cpp");
+    }
+
+    public void testTepedefTemplate() throws Exception {
+        performStaticTest("typedef_templ.cpp");
+    }
+
+    public void testSkipSomeInstructionsBlock() throws Exception {
+        performStaticTest("skipBlocks.cpp");
+    }
+
+    public void testIZ144537() throws Exception {
+        performStaticTest("iz144537.cpp");
+    }
+
+    public void testForwardClassDecl() throws Exception {
+        performStaticTest("forward_class_decl.cpp");
+    }
+    
+    /////////////////////////////////////////////////////////////////////
+    // FAILS
+
+    public static class Failed extends ErrorHighlightingBaseTestCase {
+
+        public Failed(String testName) {
+            super(testName);
+        }
+
+        @Override
+	protected Class getTestCaseDataClass() {
+	    return UnresolvedIdentifierTest.class;
+	}
+
+        public void testTemplateClassEnum() throws Exception {
+            performStaticTest("template_class_enums.cpp");
+        }
+
     }
 }

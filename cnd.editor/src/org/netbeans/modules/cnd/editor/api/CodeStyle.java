@@ -70,15 +70,21 @@ public final class CodeStyle {
             case C:
                 if (INSTANCE_C == null) {
                     INSTANCE_C = create(language);
+                    setSimplePreferences(language, INSTANCE_C);
                 }
                 return INSTANCE_C;
             case CPP:
             default:
                 if (INSTANCE_CPP == null) {
                     INSTANCE_CPP = create(language);
+                    setSimplePreferences(language, INSTANCE_CPP);
                 }
                 return INSTANCE_CPP;
         }
+    }
+    
+    private static void setSimplePreferences(Language language, CodeStyle codeStyle){
+        EditorOptions.updateSimplePreferences(language, codeStyle);
     }
 
     public synchronized static CodeStyle getDefault(Document doc) {
