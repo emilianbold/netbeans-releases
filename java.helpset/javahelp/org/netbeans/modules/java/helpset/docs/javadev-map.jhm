@@ -496,6 +496,11 @@
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="gui/gui_addingtopalette.html" />
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="gui/gui_addingtopalette.html" />
 
+    <!-- Hibernate topics CSH -->
+    
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
+
 
 
 
