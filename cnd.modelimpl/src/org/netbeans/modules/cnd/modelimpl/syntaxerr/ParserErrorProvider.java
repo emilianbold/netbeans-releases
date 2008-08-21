@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 
 /**
@@ -58,25 +57,21 @@ public class ParserErrorProvider extends CsmErrorProvider {
     private static final boolean ENABLE = getBoolean("cnd.parser.error.provider", true);
 
     @Override
-    public void getErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        if (ENABLE) {
-            // in release mode we skip library files, because it's vary irritating
-            // for user to see errors in system libraries
-            if (TraceFlags.RELEASE_MODE && isLibraryHeaderFile(request.getFile())) {
-                response.done();
-                return;
-            }
-            Collection<CsmErrorInfo> errorInfos = new ArrayList<CsmErrorInfo>();
-            Collection<RecognitionException> recognitionExceptions = new ArrayList<RecognitionException>();
-            ReadOnlyTokenBuffer buffer = ((FileImpl) request.getFile()).getErrors(recognitionExceptions);
-            if (buffer != null) {
-                ParserErrorFilter.getDefault().filter(recognitionExceptions, errorInfos, buffer, request.getFile());
-                for (Iterator<CsmErrorInfo> iter = errorInfos.iterator(); iter.hasNext() && ! request.isCancelled(); ) {
-                    response.addError(iter.next());
-                }
+    protected boolean validate(Request request) {
+        return ENABLE && super.validate(request) && !disableAsLibraryHeaderFile(request.getFile());
+    }
+
+    @Override
+    protected  void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        Collection<CsmErrorInfo> errorInfos = new ArrayList<CsmErrorInfo>();
+        Collection<RecognitionException> recognitionExceptions = new ArrayList<RecognitionException>();
+        ReadOnlyTokenBuffer buffer = ((FileImpl) request.getFile()).getErrors(recognitionExceptions);
+        if (buffer != null) {
+            ParserErrorFilter.getDefault().filter(recognitionExceptions, errorInfos, buffer, request.getFile());
+            for (Iterator<CsmErrorInfo> iter = errorInfos.iterator(); iter.hasNext() && ! request.isCancelled(); ) {
+                response.addError(iter.next());
             }
         }
-        response.done();
     }
 
     private static boolean getBoolean(String name, boolean result) {
@@ -85,6 +80,10 @@ public class ParserErrorProvider extends CsmErrorProvider {
             result = Boolean.parseBoolean(text);
         }
         return result;
+    }
+
+    public String getName() {
+        return "syntax-error"; //NOI18N
     }
 
 

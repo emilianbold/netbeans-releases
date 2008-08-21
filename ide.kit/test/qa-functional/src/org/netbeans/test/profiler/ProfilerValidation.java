@@ -268,7 +268,7 @@ public class ProfilerValidation extends JellyTestCase {
                 return("Wait menu item is enabled."); // NOI18N
             }
         }).waitAction(takeSnapshotAction);
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(5000);
         takeSnapshotAction.perform();
         TopComponentOperator collectedResults = new TopComponentOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", 
                                                         "CPUSnapshotPanel_PanelTitle") ); //"CPU"

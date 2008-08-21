@@ -450,7 +450,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
             }
 
             // Is there a connection pool we can reuse, or do we need to create one?
-            String defaultPoolName = vendorName + "Pool";
+            String defaultPoolName = computePoolName(url, vendorName, username);
             Map<String, CPool> pools = cpFinder.getPoolData();
             CPool defaultPool = pools.get(defaultPoolName);
             
@@ -618,6 +618,29 @@ public class Hk2DatasourceManager implements DatasourceManager {
         }
         
         return dsClassName;
+    }
+    
+    private static String computePoolName(String url, String vendorName, String username){
+        UrlData urlData = new UrlData(url);
+        StringBuffer poolName = new StringBuffer(vendorName);
+        String dbName = getDatabaseName(urlData);
+        if (dbName != null) {
+            poolName.append("_" + dbName); //NOI18N
+        }
+        if (username != null) {
+            poolName.append("_" + username); //NOI18N
+        }
+        poolName.append("Pool"); //NOI18N
+        return poolName.toString(); 
+    }
+
+    private static String getDatabaseName(UrlData urlData) {
+        String databaseName = urlData.getDatabaseName();
+        if (databaseName == null) {
+            databaseName = urlData.getAlternateDBName();
+        }
+
+        return databaseName;
     }
     
     private static final String JDBC_TAG_1 = 

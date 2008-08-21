@@ -708,7 +708,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         }
 
-        proposals.add(new PHPCompletionItem.ReturnItem(request));
+        if (startsWith("return", request.prefix)){ //NOI18N
+            proposals.add(new PHPCompletionItem.ReturnItem(request));
+        }
 
         // end: KEYWORDS
 

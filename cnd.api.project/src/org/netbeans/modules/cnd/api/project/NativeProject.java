@@ -144,4 +144,9 @@ public interface NativeProject {
      * @return a list <NativeProject> of libriries.
      */
     public List<NativeProject> getDependences();
+    
+    /**
+     * Add task which will be run then <NativeProject> is ready to provide Code Model data
+     */
+    public void runOnCodeModelReadiness(Runnable task);
 }

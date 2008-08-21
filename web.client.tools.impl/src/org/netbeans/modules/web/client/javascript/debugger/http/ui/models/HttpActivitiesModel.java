@@ -89,15 +89,15 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     private final JSHttpMessageEventListener httpMessageEventListener = new JSHttpMesageEventListenerImpl();
     private final PreferenceChangeListenerImpl preferenceChangeListener = new PreferenceChangeListenerImpl();
 
-    private final static Logger LOG = Logger.getLogger(HttpActivitiesModel.class.getName());
+    private  final static Logger LOG = Logger.getLogger(HttpActivitiesModel.class.getName());
     
     public HttpActivitiesModel(NbJSDebugger debugger) {
         this.listeners = new CopyOnWriteArrayList<ModelListener>();
         this.debugger = debugger;
         debugger.addJSHttpMessageEventListener(
-                WeakListeners.create( JSHttpMessageEventListener.class, httpMessageEventListener, this));
+                WeakListeners.create( JSHttpMessageEventListener.class, httpMessageEventListener, debugger));
         httpMonitorPreferences.addPreferenceChangeListener(
-                WeakListeners.create( PreferenceChangeListener.class,   preferenceChangeListener, this));
+                WeakListeners.create( PreferenceChangeListener.class,   preferenceChangeListener, httpMonitorPreferences));
     }
 
     private final Map<String, HttpActivity> id2ActivityMap = new HashMap<String, HttpActivity>();
@@ -342,6 +342,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     public Action[] getActions(Object node) throws UnknownTypeException {
         return new Action[]{};
     }
+    
     private static final MethodColumn methodColumn = new MethodColumn();
     private static final SentColumn sentColumn = new SentColumn();
     private static final ResponseColumn resColumn = new ResponseColumn();
@@ -371,21 +372,15 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
 
         @Override
         public Class getType() {
-            return String.class;
+            return String.class; 
         }
 
-//
-//        private static final HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
-//        @Override
-//        public int getColumnWidth() {
-//            return httpMonitorPreferences.getMethodColumnWidth();
-//        }
-//
-//        @Override
-//        public void setColumnWidth(int newColumnWidth) {
-//            httpMonitorPreferences.setMethodColumnWidth(newColumnWidth);
-//        }
+        private static final HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
+        @Override
 
+        public int getColumnWidth () {
+            return properties.getInt (getID () + ".columnWidth", HttpMonitorPreferences.DEFAULT_METHOD_COLUMN_WIDTH);
+        }
 
     }
 
