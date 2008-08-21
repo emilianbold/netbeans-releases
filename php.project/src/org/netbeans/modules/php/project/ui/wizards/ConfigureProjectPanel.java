@@ -256,7 +256,19 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         String projectName = (String) descriptor.getProperty(PROJECT_NAME);
         if (projectName == null) {
             // this can happen only for the first time
-            projectName = getDefaultFreeName(ProjectChooser.getProjectsFolder());
+            File startingLocation = null;
+            switch (wizardType) {
+                case NEW:
+                    startingLocation = new File(configureProjectPanelVisual.getSourcesLocation().getSrcRoot());
+                    break;
+                case EXISTING:
+                    startingLocation = ProjectChooser.getProjectsFolder();
+                    break;
+                default:
+                    assert false : "Unknown wizard type: " + wizardType;
+                    break;
+            }
+            projectName = getDefaultFreeName(startingLocation);
             descriptor.putProperty(PROJECT_NAME, projectName);
             originalProjectName = projectName;
         }
