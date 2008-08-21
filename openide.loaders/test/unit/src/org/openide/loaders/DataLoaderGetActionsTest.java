@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import javax.swing.Action;
 import javax.swing.JSeparator;
@@ -59,13 +60,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.util.Enumerations;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.NbMarshalledObject;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.test.MockLookup;
 
 /** Tests the proposed behaviour of DataLoader.getActions that is going 
  * to read its values from layer.
@@ -88,11 +87,14 @@ public class DataLoaderGetActionsTest extends NbTestCase {
      * Sets up the testing environment by creating testing folders
      * on the system file system.
      */
-    protected void setUp () throws Exception {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.loaders.DataLoaderGetActionsTest$Lkp");
-        assertEquals ("Our lookup is installed", Lookup.getDefault ().getClass (), Lkp.class);
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        MockLookup.setInstances(
+                new Repository(TestUtilHid.createLocalFileSystem(getWorkDir(), new String[0])),
+                new Pool());
         
-        MyDL loader = (MyDL)MyDL.getLoader (MyDL.class);
+        MyDL loader = MyDL.getLoader(MyDL.class);
 
         FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
         dfs.refresh (true);        
@@ -110,6 +112,7 @@ public class DataLoaderGetActionsTest extends NbTestCase {
     /**
      * Deletes the folders created in method setUp().
      */
+    @Override
     protected void tearDown() throws Exception {
         FileObject[] arr = root.getChildren ();
         for (int i = 0; i < arr.length; i++) {
@@ -212,7 +215,7 @@ public class DataLoaderGetActionsTest extends NbTestCase {
      * there.
      */
     public void testCompatibilityIsPropagatedToDisk () throws Exception {
-        assertEquals("No actions at the start", 0, node.getActions(false).length);
+        assertEquals("No actions at the start", Collections.emptyList(), Arrays.asList(node.getActions(false)));
         FileObject test = root;
         
         PCL pcl = new PCL ();
@@ -272,7 +275,7 @@ public class DataLoaderGetActionsTest extends NbTestCase {
     }
     
     public void testDefaultActionsUsedWhenCreatedForTheFirstTime () throws Exception {
-        SndDL loader = (SndDL)SndDL.getLoader (SndDL.class);
+        SndDL loader = SndDL.getLoader(SndDL.class);
         
         SystemAction[] arr = loader.getActions();
         
@@ -291,6 +294,7 @@ public class DataLoaderGetActionsTest extends NbTestCase {
         
         /** Returns the name of the folder to read the actions from
          */
+        @Override
         protected String actionsContext () {
             return "test";
         }
@@ -299,39 +303,16 @@ public class DataLoaderGetActionsTest extends NbTestCase {
             return new MultiDataObject (primaryFile, this);
         }
         
+        @Override
         protected SystemAction[] defaultActions() {
             return new SystemAction[0];
         }
         
     } // end of MyDL
     
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends AbstractLookup {
-        public Lkp () throws Exception {
-            this(new InstanceContent());
-        }
-        
-        private Lkp(InstanceContent ic) throws Exception {
-            super (ic);
-
-            FileSystem fs = TestUtilHid.createLocalFileSystem (Lkp.class.getName (), new String[0]);
-            for (FileObject fo : fs.getRoot().getChildren()) {
-                fo.delete();
-            }
-            assertEquals("No children", 0, fs.getRoot().getChildren().length);
-            
-            ic.add (new Repository (fs));
-            ic.add (new Pool ());
-//            ic.add (new EM ());
-        }
-    }
-    
-    
     private static final class Pool extends DataLoaderPool {
         
-        protected Enumeration loaders() {
+        protected Enumeration<? extends DataLoader> loaders() {
             return Enumerations.singleton(DataLoader.getLoader(MyDL.class));
         }
         
@@ -361,6 +342,7 @@ public class DataLoaderGetActionsTest extends NbTestCase {
             getExtensions ().addExtension ("bla");
         }
         
+        @Override
         protected SystemAction[] defaultActions() {
             return new SystemAction[] {
                 SystemAction.get(CutAction.class),
@@ -371,7 +353,8 @@ public class DataLoaderGetActionsTest extends NbTestCase {
             };
         }
         
-        protected String actionsContext () {
+        @Override
+        protected String actionsContext() {
             return "2ndtestdir";
         }
         
