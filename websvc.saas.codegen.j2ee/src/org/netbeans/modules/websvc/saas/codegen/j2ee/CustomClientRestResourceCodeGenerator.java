@@ -44,8 +44,8 @@ import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import javax.swing.text.Document;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
+import org.netbeans.modules.websvc.saas.codegen.j2ee.support.J2eeUtil;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 
 /**
@@ -60,9 +60,10 @@ public class CustomClientRestResourceCodeGenerator extends CustomClientServletCo
         setPrecedence(1);
     }
     
+    @Override
     public boolean canAccept(SaasMethod method, Document doc) {
         if (SaasBean.canAccept(method, CustomSaasMethod.class, getDropFileType()) &&
-                Util.isRestJavaFile(NbEditorUtilities.getDataObject(doc))) {
+                J2eeUtil.isRestJavaFile(NbEditorUtilities.getDataObject(doc))) {
             return true;
         }
         return false;

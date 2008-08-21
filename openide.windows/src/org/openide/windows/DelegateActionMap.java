@@ -171,7 +171,7 @@ final class DelegateActionMap extends ActionMap {
     public void setParent(ActionMap map) {
         if (delegate != null) {
             delegate.setParent(map);
-            org.netbeans.modules.openide.windows.GlobalActionContextImpl.blinkActionMap(new ActionMap());
+            org.netbeans.modules.openide.windows.GlobalActionContextImpl.blickActionMap(new ActionMap());
         }
     }
 
