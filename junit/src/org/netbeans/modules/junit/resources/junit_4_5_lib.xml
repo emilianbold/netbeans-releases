@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.libs.junit4/docs/junit-4.5-api.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.junit/docs/junit-4.5-api.zip!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
