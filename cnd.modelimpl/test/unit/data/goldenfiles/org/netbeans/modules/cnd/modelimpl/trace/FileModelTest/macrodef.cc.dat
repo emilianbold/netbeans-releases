@@ -38,7 +38,7 @@ FUNCTION DEFINITION hello  [6:1/63-9:2/102] FunctionDDImpl SCOPE: $Global$
         STATEMENT EXPRESSION  [7:5/79-7:14/88] SCOPE: Stmt  [6:11/73-9:2/102] text: 'MAX(7, 9)'
         STATEMENT DECLARATION  [8:5/94-8:10/99] SCOPE: Stmt  [6:11/73-9:2/102]
             VARIABLE a [8:5/94-8:10/99]  TYPE: int TEXT=int  [8:5/94-8:10/99]  INIT: null  SCOPE: Stmt  [6:11/73-9:2/102]
-CLASS MyClassWithM1 (MyClassWithM1 ) [10:1/192-11:3/216] lcurly=212 SCOPE: $Global$ 
+CLASS MyClassWithM1 (MyClassWithM1 ) [10:1/192-11:2/215] lcurly=212 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
 
