@@ -289,8 +289,26 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 + " Name:" + CloneableEditor.this.getName());
             }
             Task prepareTask = support.prepareDocument();
-
             // load the doc synchronously
+            if (prepareTask == null) {
+                Throwable exc = support.getPrepareDocumentRuntimeException();
+                if (exc instanceof CloneableEditorSupport.DelegateIOExc) {
+                    if ("org.openide.text.DataEditorSupport$Env$ME".equals(exc.getCause().getClass().getName())) {
+                        if (exc.getCause() instanceof UserQuestionException) {
+                            UserQuestionException e = (UserQuestionException) exc.getCause();
+                            try {
+                                e.confirmed();
+                            } catch (IOException ioe) {
+                            }
+                            prepareTask = support.prepareDocument();
+                        }
+                    }
+                }
+            }
+            if (prepareTask == null) {
+                LOG.log(Level.WARNING,"Failed to get prepareTask");
+                return;
+            }
             prepareTask.waitFinished();
 
             // Init action map: cut,copy,delete,paste actions.
