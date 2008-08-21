@@ -119,7 +119,7 @@ public final class GemManager {
     public static String TEST_GEM_HOME;
 
     /** Share over invocations of the dialog since these are slow to compute */
-    private List<Gem> installed;
+    private List<Gem> local;
 
     /** Share over invocations of the dialog since these are ESPECIALLY slow to compute */
     private List<Gem> remote;
@@ -131,12 +131,14 @@ public final class GemManager {
 
     private final RubyPlatform platform;
 
-    private final Lock runnerLock;
+    private final Lock runnerLocalLock;
+    private final Lock runnerRemoteLock;
 
     public GemManager(final RubyPlatform platform) {
         assert platform.hasRubyGemsInstalled() : "called when RubyGems installed";
         this.platform = platform;
-        this.runnerLock = new ReentrantLock(true);
+        this.runnerLocalLock = new ReentrantLock(true);
+        this.runnerRemoteLock = new ReentrantLock(true);
     }
 
     private String getGemMissingMessage() {
@@ -474,11 +476,11 @@ public final class GemManager {
      * update is just in progress.
      */
     public void resetRemote() {
-        if (runnerLock.tryLock()) {
+        if (runnerRemoteLock.tryLock()) {
             try {
                 remote = null;
             } finally {
-                runnerLock.unlock();
+                runnerRemoteLock.unlock();
             }
         } else {
             LOGGER.finer("resetRemote() ignored");
@@ -490,13 +492,13 @@ public final class GemManager {
      * be ignored if the update is just in progress.
      */
     public void resetLocal() {
-        if (runnerLock.tryLock()) {
+        if (runnerLocalLock.tryLock()) {
             try {
-                installed = null;
+                local = null;
                 localGems = null;
                 platform.fireGemsChanged();
             } finally {
-                runnerLock.unlock();
+                runnerLocalLock.unlock();
             }
         } else {
             LOGGER.finer("resetLocal() ignored");
@@ -509,11 +511,11 @@ public final class GemManager {
      * @param errors list to which the errors, which happen during gems
      *        reload, will be accumulated
      * @return list of the installed gems. Returns an empty list if they could
-     *         not be read, never null.
+     *         not be read, never <tt>null</tt>.
      */
-    public List<Gem> getInstalledGems(List<String> errors) {
-        reloadIfNeeded(errors);
-        return getInstalledGems();
+    public List<Gem> getInstalledGems(List<? super String> errors) {
+        errors.addAll(reloadLocalIfNeeded());
+        return getLocalGems();
     }
 
     /**
@@ -522,10 +524,10 @@ public final class GemManager {
      * @param errors list to which the errors, which happen during gems
      *        reload, will be accumulated
      * @return list of the available remote gems. Returns an empty list if they could not
-     *         be read, never null.
+     *         be read, never <tt>null</tt>.
      */
-    public List<Gem> getRemoteGems(List<String> errors) {
-        reloadIfNeeded(errors);
+    public List<Gem> getRemoteGems(List<? super String> errors) {
+        errors.addAll(reloadRemoteIfNeeded());
         return getRemoteGems();
     }
 
@@ -534,10 +536,10 @@ public final class GemManager {
      * reload was triggered.
      *
      * @return list of the available installed gems. Returns an empty list if
-     *         they could not be read, never null.
+     *         they could not be read, never <tt>null</tt>.
      */
-    public List<Gem> getInstalledGems() {
-        return installed != null ? installed : Collections.<Gem>emptyList();
+    public List<Gem> getLocalGems() {
+        return local != null ? local : Collections.<Gem>emptyList();
     }
 
     /**
@@ -545,7 +547,7 @@ public final class GemManager {
      * was triggered.
      *
      * @return list of the available remote gems. Returns an empty list if they
-     *         could not be read, never null.
+     *         could not be read, never <tt>null</tt>.
      */
     public List<Gem> getRemoteGems() {
         return remote != null ? remote : Collections.<Gem>emptyList();
@@ -567,8 +569,16 @@ public final class GemManager {
         return true;
     }
 
+    boolean needsLocalReload() {
+        return local == null;
+    }
+
+    boolean needsRemoteReload() {
+        return remote == null;
+    }
+
     boolean needsReload() {
-        return installed == null || remote == null;
+        return needsLocalReload() || needsRemoteReload();
     }
 
     /**
@@ -580,24 +590,46 @@ public final class GemManager {
      * @param errors list into which the errors, which happen during gems
      *        reload, will be accumulated
      */
-    public void reloadIfNeeded(final List<String> errors) {
+    public void reloadIfNeeded(final List<? super String> errors) {
         assert !EventQueue.isDispatchThread() : "do not call from EDT!";
         if (!checkGemProblem()) {
             return;
         }
+        errors.addAll(reloadLocalIfNeeded());
+        if (errors.isEmpty()) { // fail quickly, do not try remote update
+            errors.addAll(reloadRemoteIfNeeded());
+        }
+    }
 
-        runnerLock.lock();
+    List<String> reloadLocalIfNeeded() {
+        if (!checkGemProblem()) {
+            return Collections.emptyList();
+        }
+        List<String> errors = new ArrayList<String>();
+        runnerLocalLock.lock();
         try {
-            if (installed == null) {
+            if (local == null) {
                 GemRunner gemRunner = new GemRunner(platform);
                 if (gemRunner.fetchLocal()) {
-                    installed = GemListParser.parseLocal(gemRunner.getOutput());
-                    Collections.sort(installed);
+                    local = GemListParser.parseLocal(gemRunner.getOutput());
+                    Collections.sort(local);
                 } else {
                     errors.addAll(gemRunner.getOutput());
-                    return; // fail quickly, do not try remote update
                 }
             }
+        } finally {
+            runnerLocalLock.unlock();
+        }
+        return errors;
+    }
+
+    List<String> reloadRemoteIfNeeded() {
+        if (!checkGemProblem()) {
+            return Collections.emptyList();
+        }
+        List<String> errors = new ArrayList<String>();
+        runnerRemoteLock.lock();
+        try {
             if (remote == null) {
                 GemRunner gemRunner = new GemRunner(platform);
                 if (gemRunner.fetchRemote()) {
@@ -608,8 +640,9 @@ public final class GemManager {
                 }
             }
         } finally {
-            runnerLock.unlock();
+            runnerRemoteLock.unlock();
         }
+        return errors;
     }
 
     /**

@@ -102,7 +102,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="reloadReposButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="reloadUpdatedButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace pref="436" max="32767" attributes="0"/>
                               <Component id="searchUpdatedLbl" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -134,7 +134,7 @@
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="searchUpdatedLbl" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="searchUpdatedText" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="reloadReposButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="reloadUpdatedButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -181,10 +181,10 @@
                 </Property>
               </AccessibilityProperties>
             </Component>
-            <Component class="javax.swing.JButton" name="reloadReposButton">
+            <Component class="javax.swing.JButton" name="reloadUpdatedButton">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/ruby/platform/gems/Bundle.properties" key="GemPanel.reloadReposButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/ruby/platform/gems/Bundle.properties" key="GemPanel.reloadUpdatedButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AccessibilityProperties>
@@ -193,7 +193,7 @@
                 </Property>
               </AccessibilityProperties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reloadReposButtonActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reloadUpdatedButtonActionPerformed"/>
               </Events>
             </Component>
             <Container class="javax.swing.JScrollPane" name="updatedSP">
