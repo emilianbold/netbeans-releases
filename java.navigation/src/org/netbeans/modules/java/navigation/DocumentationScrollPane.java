@@ -419,19 +419,7 @@ public class DocumentationScrollPane extends JScrollPane {
         public @Override void mouseExited(MouseEvent ev) {
             button.setContentAreaFilled(false);
             button.setBorderPainted(false);
-        }
-        
-        public @Override void mouseClicked(MouseEvent evt) {
-            if (button.equals(bBack)){
-                backHistory();
-            }else if(button.equals(bForward)){
-                forwardHistory();
-            }else if(button.equals(bGoToSource)){
-                goToSource();
-            }else if (button.equals(bShowWeb)){
-                openInExternalBrowser();
-            }
-        }
+        }          
     }
 
     private class HyperlinkAction implements HyperlinkListener {
