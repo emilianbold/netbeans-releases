@@ -93,7 +93,7 @@ public final class MacroDialogSupport {
         // no-op
     }
     
-    public static MacroDescription findMacro(MimePath mimeType, KeyStroke shortcut) {
+    public static MacroDescription findMacro(MimePath mimeType, KeyStroke... shortcut) {
         EditorSettingsStorage<String, MacroDescription> ess = EditorSettingsStorage.<String, MacroDescription>get(MacrosStorage.ID);
         
         MacroDescription macro = null;
@@ -119,10 +119,15 @@ public final class MacroDialogSupport {
         return macro;
     }
     
-    private static final MacroDescription findByShortcut(Map<String, MacroDescription> macros, KeyStroke shortcut) {
+    private static final MacroDescription findByShortcut(Map<String, MacroDescription> macros, KeyStroke... shortcut) {
         for(MacroDescription m : macros.values()) {
-            for(MultiKeyBinding mkb : m.getShortcuts()) {
-                if (mkb.getKeyStrokeCount() > 0 && mkb.getKeyStroke(0).equals(shortcut)) {
+outer:      for(MultiKeyBinding mkb : m.getShortcuts()) {
+                if (mkb.getKeyStrokeCount() == shortcut.length) {
+                    for(int i = 0; i < shortcut.length; i++) {
+                        if (!mkb.getKeyStroke(i).equals(shortcut[i])) {
+                            continue outer;
+                        }
+                    }
                     return m;
                 }
             }
@@ -293,9 +298,16 @@ public final class MacroDialogSupport {
                 return;
             }
 
+            // try simple keystorkes first
             KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent((KeyEvent) maybeKeyEvent);
             MimePath mimeType = MimePath.parse(NbEditorUtilities.getMimeType(target));
             MacroDescription macro = findMacro(mimeType, keyStroke);
+            if (macro == null) {
+                // if not found, try action command, which should contain complete multi keystroke
+                KeyStroke[] shortcut = StorageSupport.stringToKeyStrokes(evt.getActionCommand(), false);
+                macro = findMacro(mimeType, shortcut);
+            }
+
             if (macro == null) {
                 error(target, "macro-not-found", StorageSupport.keyStrokesToString(Collections.singleton(keyStroke), false)); // NOI18N
                 return;

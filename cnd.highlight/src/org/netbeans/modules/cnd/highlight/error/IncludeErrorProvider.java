@@ -55,6 +55,10 @@ import org.openide.util.NbBundle;
  */
 public class IncludeErrorProvider extends CsmErrorProvider {
 
+    public String getName() {
+        return "include-errors"; //NOI18N
+    }
+
     private static abstract class OffsetableErrorInfo implements CsmErrorInfo {
 
         private int start;
@@ -103,7 +107,7 @@ public class IncludeErrorProvider extends CsmErrorProvider {
     }
 
     @Override
-    public void getErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+    protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         for( CsmInclude incl : request.getFile().getIncludes() ) {
             if (request.isCancelled()) {
                 break;
@@ -112,6 +116,5 @@ public class IncludeErrorProvider extends CsmErrorProvider {
                 response.addError(new IncludeErrorInfo(incl));
             }
         }
-        response.done();
     }
 }

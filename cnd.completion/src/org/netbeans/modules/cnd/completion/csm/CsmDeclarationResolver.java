@@ -127,15 +127,6 @@ public class CsmDeclarationResolver {
                 CsmDeclaration decl = (CsmDeclaration) it.next();
                 assert (decl != null) : "can't be null declaration";
                 if (CsmOffsetUtilities.isInObject(decl, offset)) {
-                    if (CsmKindUtilities.isClass(decl)) {
-                        // Fix for IZ 138905: IDE highlights 'a1' as invalid identifier (struct {...} a1;)
-                        // Actually we might be in variable declarator immediately
-                        // following the class declaration. Let's check that.
-                        CsmDeclaration follow = findInnerDeclaration(it, context, offset);
-                        if (follow != null) {
-                            decl = follow;
-                        }
-                    }
                     if (!CsmKindUtilities.isFunction(decl) || CsmOffsetUtilities.isInFunctionScope((CsmFunction)decl, offset)) {
                         // add declaration scope to context
                         CsmContextUtilities.updateContext(decl, offset, context);

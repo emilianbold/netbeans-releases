@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInitializerListContainer;
@@ -171,5 +172,10 @@ public class CsmOffsetUtilities {
             }
         }
         return inScope;
-    }    
+    }
+
+    public static boolean isInClassScope(final CsmClass clazz, final int offset) {
+        return isInObject(clazz, offset) && clazz.getLeftBracketOffset() < offset;
+    }
+
 }

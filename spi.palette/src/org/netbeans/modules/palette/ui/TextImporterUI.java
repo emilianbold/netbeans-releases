@@ -41,7 +41,6 @@ package org.netbeans.modules.palette.ui;
 
 import java.awt.Image;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
@@ -339,7 +338,9 @@ private void btnSelectSmallIconActionPerformed(java.awt.event.ActionEvent evt) {
                 }
                 return res;
             }
-        } catch( IOException ioE ) {
+        } catch( ThreadDeath td ) {
+            throw td;
+        } catch( Throwable ioE ) {
             //ignore
         }
         JOptionPane.showMessageDialog(this, 

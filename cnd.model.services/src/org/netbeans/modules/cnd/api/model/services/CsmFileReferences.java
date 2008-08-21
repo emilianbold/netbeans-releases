@@ -130,8 +130,7 @@ public abstract class CsmFileReferences {
         if (2 <= context.size() && isDereference(context.getToken())) {
             CsmReference ref = context.getReference(context.size() - 2);
             if (ref != null) {
-                CsmObject obj = ref.getReferencedObject();
-                if (obj == null || isTemplateParameterInvolved(obj)) {
+                if (isTemplateParameterInvolved(ref.getReferencedObject())) {
                     return true;
                 }
             }
@@ -140,14 +139,14 @@ public abstract class CsmFileReferences {
     }
 
     /**
-     * Determines whether reference is dereferenced macro
+     * Determines whether reference is dereferenced macro or
+     * if it's in macro arguments
      */
     public static boolean isMacroBased(CsmReferenceContext context) {
         if (2 <= context.size() && isDereference(context.getToken())) {
             CsmReference ref = context.getReference(context.size() - 2);
             if (ref != null) {
-                CsmObject obj = ref.getReferencedObject();
-                if (obj == null || CsmKindUtilities.isMacro(obj)) {
+                if (CsmKindUtilities.isMacro(ref.getReferencedObject())) {
                     return true;
                 }
             }
@@ -156,6 +155,18 @@ public abstract class CsmFileReferences {
             if (context.getToken(i) == CppTokenId.LPAREN) {
                 CsmReference ref = context.getReference(i - 1);
                 if (ref != null && CsmKindUtilities.isMacro(ref.getReferencedObject())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isAfterUnresolved(CsmReferenceContext context) {
+        if (2 <= context.size() && isDereference(context.getToken())) {
+            CsmReference ref = context.getReference(context.size() - 2);
+            if (ref != null) {
+                if (ref.getReferencedObject() == null) {
                     return true;
                 }
             }

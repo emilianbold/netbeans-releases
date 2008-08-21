@@ -43,6 +43,7 @@ package org.netbeans.lib.lexer;
 
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.InputAttributes;
@@ -60,9 +61,6 @@ import org.netbeans.lib.lexer.token.TextToken;
 
 public final class BatchTokenList<T extends TokenId>
 extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
-    
-    /** Flag for additional correctness checks (may degrade performance). */
-    private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
     
     private static boolean maintainLAState;
     
@@ -102,7 +100,7 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
         this.languagePath = LanguagePath.get(language);
         this.skipTokenIds = skipTokenIds;
         this.inputAttributes = inputAttributes;
-        if (testing) { // Maintain lookaheads and states when in test environment
+        if (TokenList.LOG.isLoggable(Level.FINE)) { // Maintain lookaheads and states when in test environment
             laState = LAState.empty();
         }
         this.lexerInputOperation = createLexerInputOperation();

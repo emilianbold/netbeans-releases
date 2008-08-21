@@ -757,7 +757,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * unless it is in active mode already. */
     public void requestVisible() {
         WindowManager.getDefault().topComponentRequestVisible(this);
-        org.netbeans.modules.openide.windows.GlobalActionContextImpl.blinkActionMap(getActionMap());
+        org.netbeans.modules.openide.windows.GlobalActionContextImpl.blickActionMap(getActionMap());
     }
 
     /**

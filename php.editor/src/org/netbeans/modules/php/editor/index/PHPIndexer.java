@@ -212,7 +212,7 @@ public class PHPIndexer implements Indexer {
         // php runtime files. Go to the php.project/tools, modify and run
         // preindex.sh script. Also change the number of license in
         // php.project/external/preindexed-php-license.txt
-        return "0.4.9"; // NOI18N
+        return "0.5.0"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -562,7 +562,7 @@ public class PHPIndexer implements Indexer {
                         String parts[] = tag.getValue().split("\\s+", 2); //NOI18N
 
                         if (parts.length > 0) {
-                            String type = parts[0];
+                            String type = parts[0].split("\\;", 2)[0];
                             return type;
                         }
 

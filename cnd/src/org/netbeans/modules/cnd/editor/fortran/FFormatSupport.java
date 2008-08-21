@@ -701,7 +701,11 @@ public class FFormatSupport extends ExtFormatSupport {
                     token = getLastToken();
                 }
             }
-            indent = findIndent(pos.getToken());
+            if (token != null) {
+                indent = findIndent(token);
+            } else {
+                indent = findIndent(pos.getToken());
+            }
         }
         
         // For indent-only always indent

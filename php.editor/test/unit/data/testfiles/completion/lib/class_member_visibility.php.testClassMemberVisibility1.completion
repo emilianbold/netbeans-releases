@@ -1,0 +1,6 @@
+Code completion result for source line:
+self::|privateParentMethod();
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     privateParentMethod()                      ParentClass
+METHOD     protectedParentMethod()                    ParentClass
+METHOD     publicParentMethod()                       ParentClass
