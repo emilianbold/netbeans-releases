@@ -44,7 +44,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.codegen.j2ee.support.J2eeUtil;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 
@@ -63,7 +63,7 @@ public class RestClientRestResourceCodeGenerator extends RestClientServletCodeGe
     @Override
     public boolean canAccept(SaasMethod method, Document doc) {
         if (SaasBean.canAccept(method, WadlSaasMethod.class, getDropFileType()) &&
-                Util.isRestJavaFile(NbEditorUtilities.getDataObject(doc))) {
+                J2eeUtil.isRestJavaFile(NbEditorUtilities.getDataObject(doc))) {
             return true;
         }
         return false;

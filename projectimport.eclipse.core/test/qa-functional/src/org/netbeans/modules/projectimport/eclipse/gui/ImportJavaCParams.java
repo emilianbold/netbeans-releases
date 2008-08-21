@@ -65,7 +65,7 @@ public class ImportJavaCParams extends ProjectImporterTestCase {
         ExtractToWorkDir(getDataDir().getAbsolutePath(),"testdata.jar");
     }
 
-    public void testImportjavaCParams() {
+    public void testImportJavaCParams() {
         importProject("JavaCParams");
         validateJavaCParams("JavaCParams");
     }
@@ -121,6 +121,6 @@ public class ImportJavaCParams extends ProjectImporterTestCase {
         if(!params.contains("-Xlint:unchecked")) {
             fail("-Xlint:unchecked parameter missed");
         }        
-        
+        propsDialog.close();        
     }
 }

@@ -298,7 +298,11 @@ public class RegisterDerby implements DatabaseRuntime {
             ee.displayProcessOutputs(process,NbBundle.getMessage(StartAction.class, "LBL_outputtab"));
             if (waitTime > 0) {
                 // to make sure the server is up and running
-                return waitStart(ee, waitTime);
+                boolean canStart = waitStart(ee, waitTime);
+                if (!canStart) {
+                    stop();
+                }
+                return canStart;
             } else {
                 return false;
             }

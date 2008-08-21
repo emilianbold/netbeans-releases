@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -352,7 +353,11 @@ public final class AntBuildExtender {
                 assert id.length() > 0 : "Illegal project.xml";
                 String value = root.getAttribute(AntBuildExtenderAccessor.ATTR_FILE);
                 FileObject script = nbproj.getFileObject(value);
-                assert script != null : "Missing file " + value + " for extension " + id;
+                if (script == null) {
+                    //#144658 avoid assert here, for sake of manually edited project files..
+                    Logger.getLogger(AntBuildExtender.class.getName()).severe("Missing file " + value + " for build script extension " + id + ". The extension is skipped.");
+                    continue;
+                }
                 Extension ext = new Extension(id, script, value);
                 extensions.put(id, ext);
                 NodeList deps = root.getElementsByTagNameNS(namespace, AntBuildExtenderAccessor.ELEMENT_DEPENDENCY);
