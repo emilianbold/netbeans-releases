@@ -46,6 +46,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
@@ -53,10 +54,10 @@ import org.netbeans.jemmy.operators.JTreeOperator;
  *
  * @author mkhramov@netbeans.org
  */
-public class ImportJavaCParams extends ProjectImporterTestCase {
-    WizardOperator importWizard;
-    
-    public ImportJavaCParams(String testName) {
+public class ImportSourceFilters extends ProjectImporterTestCase {
+    WizardOperator importWizard; 
+    static final String projectName = "ExcludesIncludesProject"; 
+    public ImportSourceFilters(String testName) {
         super(testName);
     }
     @Override
@@ -65,11 +66,11 @@ public class ImportJavaCParams extends ProjectImporterTestCase {
         ExtractToWorkDir(getDataDir().getAbsolutePath(),"testdata.jar");
     }
 
-    public void testImportJavaCParams() {
-        importProject("JavaCParams");
-        validateJavaCParams("JavaCParams");
+    public void testImportSourceFilters() {
+        importProject(projectName);
+        validate();
     }
-    
+
     private void importProject(String projectName) {
         importWizard = invokeImporterWizard();
         selectProjectFromWS(importWizard,"testdata", projectName);
@@ -85,7 +86,7 @@ public class ImportJavaCParams extends ProjectImporterTestCase {
         }        
     }
 
-    private void validateJavaCParams(String projectName) {
+    private void validate() {
         pto = new ProjectsTabOperator();
         ProjectRootNode projectRoot = null;
         try {
@@ -102,25 +103,37 @@ public class ImportJavaCParams extends ProjectImporterTestCase {
             fail("Unable to open project [ "+projectName+" ] properties dialog");
         }
         JTreeOperator tree = new JTreeOperator(propsDialog);
-        TreePath path = tree.findPath("Build|Compiling");
-        tree.selectPath(path);        
+        TreePath path = tree.findPath("Sources");
+        tree.selectPath(path);
         
-        JTextFieldOperator javaCParamsBox = new JTextFieldOperator(propsDialog, 0);
-        String params = javaCParamsBox.getText();
-        //
-        //"-Xlint:fallthrough -Xlint:finally -Xlint:serial -Xlint:unchecked"
-        if(!params.contains("-Xlint:fallthrough")) {
-            fail("-Xlint:fallthrough parameter missed");
+        String btnCaption = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "CustomizerSources.includeExcludeButton");
+        JButtonOperator btn = new JButtonOperator(propsDialog,btnCaption);
+        btn.pushNoBlock();
+        String customizerCaption = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "CustomizerSources.title.includeExclude");
+
+        NbDialogOperator customizer = new NbDialogOperator(customizerCaption);
+        
+        JTextFieldOperator includesBox = new JTextFieldOperator(customizer,1);
+        JTextFieldOperator excludesBox = new JTextFieldOperator(customizer,0);
+
+        if(!includesBox.getText().contains(menuPath)) {
+            fail("Includes doesn't contain expected "+"IncludeOne*.java"+" mask");
         }
-        if(!params.contains("-Xlint:finally")) {
-            fail("-Xlint:finally parameter missed");
+        if(!includesBox.getText().contains(menuPath)) {
+            fail("Includes doesn't contain expected "+"IncludeTwo*.java"+" mask");
         }
-        if(!params.contains("-Xlint:serial")) {
-            fail("-Xlint:serial parameter missed");
+        if(!includesBox.getText().contains(menuPath)) {
+            fail("Includes doesn't contain expected "+"IncludeThree*.java"+" mask");
+        } 
+        if(!excludesBox.getText().contains(menuPath)) {
+            fail("Excludes doesn't contain expected "+"ExcludeThree*.java"+" mask");
         }
-        if(!params.contains("-Xlint:unchecked")) {
-            fail("-Xlint:unchecked parameter missed");
-        }        
-        propsDialog.close();        
+        if(!excludesBox.getText().contains(menuPath)) {
+            fail("Excludes doesn't contain expected "+"ExcludeTwo*.java"+" mask");
+        }   
+        if(!excludesBox.getText().contains(menuPath)) {
+            fail("Excludes doesn't contain expected "+"ExcludeOne*.java"+" mask");
+        }           
+        customizer.close();
     }
 }
