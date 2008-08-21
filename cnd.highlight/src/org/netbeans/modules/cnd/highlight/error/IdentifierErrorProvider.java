@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo.Severity;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -92,6 +91,9 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         public void visit(CsmReferenceContext context) {
             CsmReference ref = context.getReference();
             if (!request.isCancelled() && ref.getReferencedObject() == null) {
+                if (CsmFileReferences.isAfterUnresolved(context)) {
+                    return;
+                }
                 if (CsmFileReferences.isMacroBased(context)) {
                     return;
                 }

@@ -58,6 +58,7 @@
 	<mapID target="filter_addtodd" url="web/create/filter/filter_addtodd.html"/>
 	<mapID target="filter_create" url="web/create/filter/filter_create.html"/>
 	<mapID target="filter_run" url="web/create/filter/filter_run.html"/>
+	<mapID target="framework_jsf_about" url="web/create/tag/framework/jsf/about_jsf_support.html"/>
 	<mapID target="framework_jsf_add" url="web/create/tag/framework/framework_jsf_add.html"/>
 	<mapID target="framework_jsf_create" url="web/create/tag/framework/framework_jsf_create.html"/>
 	<mapID target="framework_jsf_datatable" url="web/create/tag/framework/framework_jsf_datatable.html"/>

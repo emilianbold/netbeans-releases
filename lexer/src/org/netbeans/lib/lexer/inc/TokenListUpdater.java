@@ -247,11 +247,13 @@ public final class TokenListUpdater {
 
         if (loggable) {
             StringBuilder sb = new StringBuilder(200);
-            sb.append("REGULAR-UPDATE-BEFORE-RELEX:\n  relex=").append(relex);
+            sb.append("  BEFORE-RELEX:\n");
+            sb.append("  relex=").append(relex);
             sb.append(", reInd=").append(relexIndex).append(", reOff=").append(relexOffset);
-            sb.append(", maInd=").append(matchIndex).append(", maOff=").append(matchOffset).append('\n');
-            sb.append(", reSta=").append(relexState).append(", tokenList-part:\n");
-            LexerUtilsConstants.appendTokenList(sb, tokenList, matchIndex, matchIndex - 3, matchIndex + 3, false, 4, false);
+            sb.append(", reSta=").append(relexState).append('\n');
+            sb.append("  maInd=").append(matchIndex).append(", maOff=").append(matchOffset);
+//            sb.append(", tokenList-part:\n");
+//            LexerUtilsConstants.appendTokenList(sb, tokenList, matchIndex, matchIndex - 3, matchIndex + 3, false, 4, false);
             sb.append('\n');
             LOG.log(Level.FINE, sb.toString());
         }
@@ -266,7 +268,8 @@ public final class TokenListUpdater {
 
         tokenList.replaceTokens(change, eventInfo, true);
         if (loggable) {
-            LOG.log(Level.FINE, "UPDATE-REGULAR FINISHED: change:" + change + "\nMods:" + change.toStringMods(4));
+            LOG.log(Level.FINE, "\nchange:" + change + "\nMods:" + change.toStringMods(4) + // NOI18N
+                    "UPDATE-REGULAR FINISHED\n"); // NOI18N
         }
     }
 
@@ -545,6 +548,18 @@ public final class TokenListUpdater {
         // and JLIO needs to scan tokens backwards for fly sequence length.
         Object relexState = (relexIndex > 0) ? jtl.state(relexIndex - 1) : null;
         JoinLexerInputOperation<T> lexerInputOperation = null;
+        if (loggable) {
+            StringBuilder sb = new StringBuilder(200);
+            sb.append("  BEFORE-RELEX:\n");
+            sb.append("  relex=").append(relex);
+            sb.append(", reInd=").append(relexIndex).append(", reOff=").append(relexOffset);
+            sb.append(", reSta=").append(relexState).append('\n');
+            sb.append(", maInd=").append(matchIndex).append(", maOff=").append(matchOffset);
+//            sb.append(", tokenList-part:\n");
+//            LexerUtilsConstants.appendTokenList(sb, tokenList, matchIndex, matchIndex - 3, matchIndex + 3, false, 4, false);
+            sb.append('\n');
+            LOG.log(Level.FINE, sb.toString());
+        }
         if (relex) {
             lexerInputOperation = new MutableJoinLexerInputOperation<T>(
                     jtl, relexIndex, relexState, relexTokenListIndex, relexOffset, tokenListListUpdate);
@@ -553,16 +568,6 @@ public final class TokenListUpdater {
             change.setOffset(relexOffset);
             change.setStartInfo(lexerInputOperation, relexLocalIndex);
             // setMatchIndex() and setMatchOffset() called later below
-            if (loggable) {
-                StringBuilder sb = new StringBuilder(200);
-                sb.append("JOINED-UPDATE-BEFORE-RELEX:");
-                sb.append(", reInd=").append(relexIndex).append(", reOff=").append(relexOffset);
-                sb.append(", maInd=").append(matchIndex).append(", maOff=").append(matchOffset).append('\n');
-                sb.append(", reSta=").append(relexState).append(", tokenList-part:\n");
-//            LexerUtilsConstants.appendTokenList(sb, tokenList, matchIndex, matchIndex - 3, matchIndex + 3, false, 4, false);
-                sb.append('\n');
-                LOG.log(Level.FINE, sb.toString());
-            }
             relex(change, lexerInputOperation, tokenCount);
 
         } else { // No relexing
@@ -572,8 +577,8 @@ public final class TokenListUpdater {
         
         jtl.replaceTokens(change, eventInfo, true);
         if (loggable) {
-            LOG.log(Level.FINE, "JOINED-UPDATE-FINISHED: change:" + change + // NOI18N
-                    "\nMods:" + change.toStringMods(4)); // NOI18N
+            LOG.log(Level.FINE, "\nchange:" + change + "\nMods:" + change.toStringMods(4) + // NOI18N
+                    "UPDATE-JOINED FINISHED\n"); // NOI18N
         }
     }
 
@@ -607,7 +612,7 @@ public final class TokenListUpdater {
             Object state = lexerInputOperation.lexerState();
             if (loggable) {
                 StringBuilder sb = new StringBuilder(100);
-                sb.append("LEXED-TOKEN: ");
+                sb.append("    LEXED-TOKEN: ");
                 int tokenEndOffset = lexerInputOperation.lastTokenEndOffset();
                 CharSequence inputSourceText = tokenList.inputSourceText();
                 if (tokenEndOffset > inputSourceText.length()) {
@@ -774,8 +779,8 @@ public final class TokenListUpdater {
                 Math.min(afterInsertOffset + 5, inputSourceText.length()));
         StringBuilder sb = new StringBuilder(200);
         sb.append(updateJoined ? "JOINED" : "REGULAR");
-        sb.append("-UPDATE:");
-        sb.append(tokenList.languagePath().mimePath()).append('\n');
+        sb.append("-UPDATE: \"");
+        sb.append(tokenList.languagePath().mimePath()).append("\"\n");
         sb.append("  modOff=").append(modOffset);
         sb.append(", text-around:\"").append(beforeText).append('|');
         sb.append(afterText).append("\", insLen=");

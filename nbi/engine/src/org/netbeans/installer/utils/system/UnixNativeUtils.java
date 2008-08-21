@@ -156,6 +156,12 @@ public class UnixNativeUtils extends NativeUtils {
                     return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_X64 : Platform.BSD_X86;
                 }
             }
+        } else if(osName.equals("AIX")) {
+            if(System.getProperty("os.arch").contains("ppc")) {
+                return SystemUtils.isCurrentJava64Bit() ? Platform.AIX_PPC64 : Platform.AIX_PPC;
+            } else { 
+                return Platform.AIX;
+            }
         } else {
             return Platform.UNIX;
         }
@@ -271,6 +277,9 @@ public class UnixNativeUtils extends NativeUtils {
     }
     
     private File getDesktopFolder() {
+        // TODO
+        // If using XDG, desktop folder can be obtained simpler using '/usr/bin/xdg-user-dir DESKTOP' command
+        // See also http://www.netbeans.org/issues/show_bug.cgi?id=144646
         final String desktopDir = System.getenv(XDG_DESKTOP_DIR_ENV_VARIABLE);
         final File globalConfigFile = new File(XDG_USERDIRS_GLOBAL_CONF);
         final File userHome       = SystemUtils.getUserHomeDirectory();
