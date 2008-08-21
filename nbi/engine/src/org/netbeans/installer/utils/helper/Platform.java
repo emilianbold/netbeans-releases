@@ -48,7 +48,8 @@ public enum Platform {
     WINDOWS(OS_FAMILY_WINDOWS, null, null, null, "Windows"),
     WINDOWS_X86(OS_FAMILY_WINDOWS, HARDWARE_X86, null, null, "Windows X86"),
     WINDOWS_X64(OS_FAMILY_WINDOWS, HARDWARE_X64, null, null, "Windows X64"),
-    
+    WINDOWS_IA64(OS_FAMILY_WINDOWS, HARDWARE_IA64, null, null, "Windows Itanium"),    
+
     LINUX(OS_FAMILY_LINUX, null, null, null, "Linux"),
     LINUX_X86(OS_FAMILY_LINUX, HARDWARE_X86, null, null, "Linux X86"),
     LINUX_X64(OS_FAMILY_LINUX, HARDWARE_X64, null, null, "Linux X64"),
