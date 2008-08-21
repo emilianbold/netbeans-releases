@@ -54,6 +54,10 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.junit/docs/junit-4.5-api.zip!/</resource>
     </volume>
     <volume>
+        <type>src</type>
+        <resource>jar:nbinst://org.netbeans.modules.junit/docs/junit-4.5-src.jar!/</resource>
+    </volume>
+    <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <type>maven-pom</type>
         <resource>http://repo1.maven.org/maven2/junit/junit/4.4/junit-4.4.pom</resource>
