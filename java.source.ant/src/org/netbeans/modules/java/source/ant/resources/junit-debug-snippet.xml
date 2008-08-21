@@ -78,7 +78,6 @@ made subject to such option by the copyright holder.
                 </nbjpdastart>
                 <property name="run.jvmargs" value="" />
                 <property name="work.dir" value="${basedir}"/>
-                <echo message="methods: ${methodname}"/>
                 <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true" dir="${work.dir}" jvm="${platform.java}">
                     <classpath>
                         <fileset dir="${ant.home}" includes="patches/*.jar"/>
