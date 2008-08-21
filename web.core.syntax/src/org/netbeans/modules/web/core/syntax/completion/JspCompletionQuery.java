@@ -220,7 +220,7 @@ public class JspCompletionQuery {
                 AttributeValueSupport attSup =
                         AttributeValueSupport.getSupport(true, elem.getName(), attrName);
                 if (attSup != null) {
-                    attSup.result(result, component, offset - valuePart.length(), sup, elem, valuePart);
+                    attSup.result(result, component, offset, sup, elem, valuePart);
                 }
             }
             
@@ -234,13 +234,9 @@ public class JspCompletionQuery {
         if (item == null) {
             return;
         }
-        
-        TokenID id = item.getTokenID();
         String tokenPart = item.getImage().substring(0, offset - item.getOffset());
-        
         int anchor = offset - tokenPart.length();
-        result.setAnchorOffset(anchor);
-        
+        result.setAnchorOffset(anchor);   
         result.addAllItems(sup.getPossibleEndTags(offset, anchor, tokenPart));
     }
     
@@ -351,7 +347,7 @@ public class JspCompletionQuery {
         if (id.getNumericID() == JspTagTokenContext.SYMBOL_ID) {
             if (tokenPart.startsWith("<")) { // NOI18N
                 //calculate a position of the potential replacement
-                int removeLength = tokenPart.length() - 1;
+                int removeLength = tokenPart.length(); 
                 addDirectiveItems(result, offset - removeLength, sup.getDirectives("")); // NOI18N
             }
             if (tokenPart.endsWith("\"")) { // NOI18N
@@ -408,7 +404,7 @@ public class JspCompletionQuery {
                     }
                 }
                 if (add){
-                    int removeLength = whitespaceLength + tokenPart.length() + 2;
+                    int removeLength = whitespaceLength + tokenPart.length() + "<%@".length(); 
                     addDirectiveItems(result, offset - removeLength, list);
                 }
             }
@@ -489,7 +485,7 @@ public class JspCompletionQuery {
         int removeLength = tokenPart.length();
         if (tokenPart.startsWith("/")) { // NOI18N
             tokenPart = tokenPart.substring(1);
-            result.addAllItems(sup.getPossibleEndTags(offset, offset - removeLength, tokenPart, true)); //get only first end tag
+            result.addAllItems(sup.getPossibleEndTags(offset, offset - removeLength + 1, tokenPart, true)); //get only first end tag
         } else {
             addTagPrefixItems(result, offset - removeLength, sup, sup.getTagPrefixes(tokenPart));
         }
@@ -512,9 +508,7 @@ public class JspCompletionQuery {
             return ;
         }
         
-        int removeLength = "<%".equals(tokenPart) ? 1 : 0; // NOI18N
-        
-        addDirectiveItems(result, offset - removeLength, sup.getDirectives("")); // NOI18N
+        addDirectiveItems(result, offset - tokenPart.length(), sup.getDirectives("")); // NOI18N
         
     }
     

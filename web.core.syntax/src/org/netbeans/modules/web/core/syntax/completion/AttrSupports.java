@@ -386,10 +386,6 @@ public class AttrSupports {
         @Override
         public void result(CompletionResultSet result, JTextComponent component, int offset,
                 JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
-//              return new JspCompletionQuery.JspCompletionResult(component,
-//                    completionTitle(), res,
-//                    itemOffset, itemLength, -1);
-            List<JspCompletionItem> res = new ArrayList<JspCompletionItem>();
             String path = "";   // NOI18N
             String fileNamePart = valuePart;
             int lastSlash = valuePart.lastIndexOf('/');
@@ -417,10 +413,13 @@ public class AttrSupports {
                 
                 FileObject folder = fs.findResource(ctxPath);
                 if (folder != null) {
-                    res = files(offset, folder, fileNamePart, sup);
+                    //add all accessible files from current context
+                    result.addAllItems(files(offset, folder, fileNamePart, sup));
+                    
+                    //add go up in the directories structure item
                     if (!folder.equals(documentBase) && !path.startsWith("/") // NOI18N
                             && (path.length() == 0 || (path.lastIndexOf("../")+3 == path.length()))){ // NOI18N
-                        res.add(0, JspCompletionItem.createFileCompletionItem("../", offset, java.awt.Color.BLUE, PACKAGE_ICON)); // NOI18N
+                        result.addItem(JspCompletionItem.createGoUpFileCompletionItem(offset, java.awt.Color.BLUE, PACKAGE_ICON)); // NOI18N
                     }
                 }
             } catch (FileStateInvalidException ex) {

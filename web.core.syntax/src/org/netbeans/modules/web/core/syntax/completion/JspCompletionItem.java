@@ -81,7 +81,6 @@ import org.openide.xml.XMLUtil;
 public class JspCompletionItem implements CompletionItem {
 
     private static final int DEFAULT_SORT_PRIORITY = 10;
-    public static final String COMPLETION_SUBSTITUTE_TEXT = "completion-substitute-text"; //NOI18N
 
     //----------- Factory methods --------------
     public static JspCompletionItem createJspAttributeValueCompletionItem(String value, int substitutionOffset) {
@@ -90,6 +89,10 @@ public class JspCompletionItem implements CompletionItem {
 
     public static JspCompletionItem createFileCompletionItem(String value, int substitutionOffset, Color color, ImageIcon icon) {
         return new FileAttributeValue(value, substitutionOffset, color, icon);
+    }
+    
+    public static JspCompletionItem createGoUpFileCompletionItem(int substitutionOffset, Color color, ImageIcon icon) {
+        return new GoUpFileAttributeValue(substitutionOffset, color, icon);
     }
 
     public static JspCompletionItem createPrefixTag(String prefix, int substitutionOffset) {
@@ -146,7 +149,10 @@ public class JspCompletionItem implements CompletionItem {
 
     public static JspCompletionItem createELFunction(String name, int substitutionOffset, String type, String prefix, String parameters) {
         return new ELFunction(name, substitutionOffset, type, prefix, parameters);
-    }    //------------------------------------------
+    }    
+    
+    //------------------------------------------
+    
     protected int substitutionOffset;
     protected String text,  help;
     protected boolean shift;
@@ -743,6 +749,19 @@ public class JspCompletionItem implements CompletionItem {
             return "<font color='" + hexColorCode(color) + "'>" + getItemText() + "</font>"; //NOI18N
         }
     }
+    
+    public static class GoUpFileAttributeValue extends FileAttributeValue {
+        
+        GoUpFileAttributeValue(int substitutionOffset, Color color, javax.swing.ImageIcon icon) {
+            super("../", substitutionOffset, color, icon); //NOI18N
+        }
+
+        @Override
+        public int getSortPriority() {
+            return super.getSortPriority() + 1; //be first of the file compl. items
+        }
+        
+    }
 
     private static String constructHelp(URL url) {
         if (url == null) {
@@ -878,11 +897,8 @@ public class JspCompletionItem implements CompletionItem {
         return NbBundle.getMessage(JspCompletionItem.class, key);
     }
     // ------------------------ EL Items ------------------------------------------
-    public interface ELItem {
-        //why we need this????
-        };
 
-    public static class ELImplicitObject extends JspCompletionItem implements ELItem {
+    public static class ELImplicitObject extends JspCompletionItem  {
 
         private static final String OBJECT_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/class_16.png"; //NOI18N
         private static final String MAP_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/map_16.png";      //NOI18N
@@ -932,7 +948,7 @@ public class JspCompletionItem implements CompletionItem {
         }
     }
 
-    public static class ELBean extends JspCompletionItem implements ELItem {
+    public static class ELBean extends JspCompletionItem {
 
         private static final String BEAN_NAME_COLOR = hexColorCode(Color.blue.darker().darker());
         private static final String BEAN_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/bean_16.png";    //NOI18N
@@ -1028,7 +1044,7 @@ public class JspCompletionItem implements CompletionItem {
         }
 
         @Override
-        public String getItemText() {
+        protected String getSubstituteText() {
             return prefix + ":" + super.getItemText() + "()";    //NOI18N
         }
 
