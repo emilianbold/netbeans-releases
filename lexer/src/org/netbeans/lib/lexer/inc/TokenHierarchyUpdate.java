@@ -69,6 +69,12 @@ import org.netbeans.lib.lexer.TokenListList;
  */
 
 public final class TokenHierarchyUpdate {
+
+    public static <T extends TokenId> UpdateItem<T> createUpdateItem(TokenListChange<T> change) {
+        UpdateItem<T> updateItem = new UpdateItem<T>(null, null, null);
+        updateItem.tokenListChange = change;
+        return updateItem;
+    }
     
     // -J-Dorg.netbeans.lib.lexer.TokenHierarchyUpdate.level=FINE
     static final Logger LOG = Logger.getLogger(TokenHierarchyUpdate.class.getName());
@@ -262,7 +268,7 @@ public final class TokenHierarchyUpdate {
     /**
      * Information about update in a particular token list or a particular token list list.
      */
-    static final class UpdateItem<T extends TokenId> {
+    public static final class UpdateItem<T extends TokenId> {
 
         final TokenHierarchyUpdate update;
 
@@ -289,7 +295,7 @@ public final class TokenHierarchyUpdate {
             assert (this.parentItem == null);
             this.parentItem = parentItem;
         }
-        
+
         void initTokenListChange(EmbeddedTokenList<T> etl) {
             assert (tokenListChange == null);
             if (tokenListListUpdate != null) {
@@ -325,6 +331,10 @@ public final class TokenHierarchyUpdate {
             
             // Process the token list change by calling token list updater
             if (tokenListChange != null) { // Updating a concrete token list as a bounds change or joined change
+                // Possibly mark that the parent change was bounds change which may affect
+                // restoration of removed tokens in child ETLs
+                tokenListChange.setParentChangeIsBoundsChange(parentItem != null &&
+                        parentItem.tokenListChange != null && parentItem.tokenListChange.isBoundsChange());
                 if (tokenListChange.getClass() == JoinTokenListChange.class) {
                     JoinTokenListChange<T> jChange = (JoinTokenListChange<T>) tokenListChange;
                     assert (tokenListListUpdate != null);

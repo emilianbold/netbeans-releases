@@ -98,6 +98,19 @@ public class JoinRandomTest extends NbTestCase {
 
         //             0000000000111111111122222222223333333333
         //             0123456789012345678901234567890123456789
+        //     text = 
+        randomModify.insertText(0, "{g}WvWq)T}df(W(d>}H}[Q<[>O[]{CR[WB'>t}H[}rOx](da[]U)(>`{F[{}R[c]<]>[]j<({<>" +
+                "[`wl<uDD['']C'[bN'{`>)}ZMxx}[<[y]`[r]x}[y]Bi<`<>vs<[>r[)<F>}}`(y>['DC`{x}{Dz[zJjLx{mY]<w>m'[si()" +
+                "[]<>z}}RAaLWkg>(`<[]`Hb[)([K<>((bBBn([>P<>m`<>]u'o[>](()><>[X`o(>Yk]d]>'n<D(>}UbI<k>[nX[`S'L]{>" +
+                "ME{(d{)GC[}y{]s{x}M[R}w{cvhR`)(r");
+        //                                                                       |
+//        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.FINE); // Extra logging
+        randomModify.insertText(216, "[]");
+        randomModify.clearDocument();
+
+
+        //             0000000000111111111122222222223333333333
+        //             0123456789012345678901234567890123456789
         //     text = "tt<g[h>ab<i]jk>[y]<{>x}[]o[<[x]<[><]>"
         randomModify.insertText(0, "tt<g[h>ab<i]jk>[y]<{>x}[]o[<[x]<[><]>");
         randomModify.removeText(14, 5); // removed-text: ">[y]<"
@@ -182,19 +195,6 @@ public class JoinRandomTest extends NbTestCase {
         //     text = 
         randomModify.insertText(0, "a<x>b<>c<>d<y>");
         randomModify.insertText(9, "[]");
-        randomModify.clearDocument();
-
-
-        //             0000000000111111111122222222223333333333
-        //             0123456789012345678901234567890123456789
-        //     text = 
-        randomModify.insertText(0, "{g}WvWq)T}df(W(d>}H}[Q<[>O[]{CR[WB'>t}H[}rOx](da[]U)(>`{F[{}R[c]<]>[]j<({<>" +
-                "[`wl<uDD['']C'[bN'{`>)}ZMxx}[<[y]`[r]x}[y]Bi<`<>vs<[>r[)<F>}}`(y>['DC`{x}{Dz[zJjLx{mY]<w>m'[si()" +
-                "[]<>z}}RAaLWkg>(`<[]`Hb[)([K<>((bBBn([>P<>m`<>]u'o[>](()><>[X`o(>Yk]d]>'n<D(>}UbI<k>[nX[`S'L]{>" +
-                "ME{(d{)GC[}y{]s{x}M[R}w{cvhR`)(r");
-        //                                                                       |
-//        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.FINE); // Extra logging
-        randomModify.insertText(216, "[]");
         randomModify.clearDocument();
 
 
