@@ -89,20 +89,22 @@ final class OutputForwarder implements Runnable {
     private FileLocator fileLocator;
     private List<OutputRecognizer> recognizers;
     private String encoding;
+    private final int readMaxWaitTime;
 
     OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
         List<OutputRecognizer> recognizers, StopAction stopAction) {
-        this(instream, out, fileLocator, recognizers, stopAction, null);
+        this(instream, out, fileLocator, recognizers, stopAction, null, 50);
     }
 
     OutputForwarder(InputStream instream, OutputWriter out, FileLocator fileLocator,
-        List<OutputRecognizer> recognizers, StopAction stopAction, String encoding) {
+        List<OutputRecognizer> recognizers, StopAction stopAction, String encoding, int readWaitTime) {
         str = instream;
         writer = out;
         this.fileLocator = fileLocator;
         this.recognizers = recognizers;
         this.stopAction = stopAction;
         this.encoding = encoding;
+        this.readMaxWaitTime = readWaitTime;
     }
 
     /** Package private for unit test. */
@@ -218,11 +220,12 @@ final class OutputForwarder implements Runnable {
                         return;
                     }
 
-                    final int millisToWait = 5000;
-                    final int waitMillis = 50;
+                    // the interval for polling the readiness of the stream
+                    // the default max wait time is 50 (specified in ExecutionDescriptor)
+                    final int waitMillis = 25;
                     int millisWaited = 0;
-                    // wait upto millisToWait for the stream to be ready
-                    while (!read.ready() && millisWaited < millisToWait) {
+                    // wait upto readDelay for the stream to be ready
+                    while (!read.ready() && millisWaited < readMaxWaitTime) {
                         try {
                             Thread.sleep(waitMillis);
                             millisWaited += waitMillis;

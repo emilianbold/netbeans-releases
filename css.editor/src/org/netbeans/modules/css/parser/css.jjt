@@ -178,7 +178,16 @@ void styleSheetRuleList() :{} {
   ( charsetRule() )?
   ( <S> | <CDO> | <CDC> )*
   ( importRule() ( <S> | <CDO> | <CDC> )* )*
-  ( ( styleRule() | mediaRule() | pageRule() | fontFaceRule() | unknownRule() ) ( <S> | <CDO> | <CDC> )* )*
+  ( rulesTail )
+}
+
+void rulesTail() :{} {
+try {
+     ( ( styleRule() | mediaRule() | pageRule() | fontFaceRule() | unknownRule() ) ( <S> | <CDO> | <CDC> )* )*
+    } catch(ParseException e) {
+        reportError(e);
+        error_skipblock();
+    }
 }
 
 //

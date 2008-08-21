@@ -48,7 +48,6 @@ import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.php.util.PhpUtil;
-import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.openide.filesystems.FileObject;
@@ -61,7 +60,7 @@ public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
 
     @Override
     public boolean canAccept(SaasMethod method, Document doc) {
-        if (method instanceof WsdlSaasMethod && Util.isPhp(doc)) {
+        if (method instanceof WsdlSaasMethod && PhpUtil.isPhp(doc)) {
             return true;
         }
         return false;
@@ -134,7 +133,7 @@ public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
         }
         String paramDecl = "$params = array( " + "\n" + genPhpParms(bean) + ");";
 
-        String methodBody = "";
+        String methodBody = "\n";
         methodBody += indent2 + "try {\n";
         methodBody += indent2 + "$wsdl_url = '" + wsdlUrl + "';\n";
         methodBody += indent2 + "$client     = new SOAPClient($wsdl_url);\n";

@@ -18,9 +18,9 @@
 ==============================================================
 'Customer', tokenID=identifier, offset=2197 [49:7/2197-49:15/2205]
 --OWNER:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'Customer', tokenID=identifier, offset=2228 [51:9/2228-51:17/2236]
 --OWNER:
@@ -98,5 +98,5 @@
 --OWNER:
     VARIABLE  [59:47/2456-59:62/2471] ReferencesTestCase/customer.h  TYPE: const &Customer TEXT=const Customer&  [59:47/2456-59:52/2461]  INIT: null  SCOPE: operator << 
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================

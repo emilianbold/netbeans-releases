@@ -90,37 +90,6 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
             ((SVGTextArea)focusedComponent).setCaretVisible(isVisible);
         }
     }
-     
-    /*private final Hashtable groups = new Hashtable(10);
-    
-    private SVGButtonGroup getGroup(String id) {
-        synchronized(groups) {
-            SVGButtonGroup group = (SVGButtonGroup) groups.get(id);
-            if (group == null) {
-                group = new SVGButtonGroup(id);
-                groups.put(id, group);
-            }
-            return group;
-        }
-    }
-    
-    public boolean registerRadioButton(SVGRadioButton button) {
-        Node node = button.getElement();
-        while (node != null) {
-            if ( node instanceof SVGElement) {
-                SVGElement svgElem = (SVGElement) node;
-                String id = svgElem.getId();
-                if ( id != null && id.startsWith( SVGButtonGroup.BUTTON_GROUP_PREFIX)) {
-                    SVGButtonGroup group = getGroup(id);
-                    group.add(button);
-                    return group.size() == 1;
-                }
-            }
-            node = node.getParentNode();
-        }
-        
-        return true;
-    }*/
     
     public synchronized NumPadInputHandler getNumPadInputHandler() {
         if ( inputHandler == null) {
@@ -148,7 +117,6 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
     private class SvgFormEventListener implements SVGEventListener {
         public void keyPressed(int keyCode) {
             if ( focusedComponent != null) {
-                System.out.println("Pressed: " + keyCode + " [" + (char)keyCode + "]");
                 int index;
                 switch( keyCode) {
                     case InputHandler.UP:

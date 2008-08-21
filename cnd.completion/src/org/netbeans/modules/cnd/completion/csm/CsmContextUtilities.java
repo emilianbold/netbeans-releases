@@ -517,7 +517,7 @@ public class CsmContextUtilities {
         for (Iterator it = context.iterator(); it.hasNext();) {
             CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
             CsmScope scope = elem.getScope();
-            if (CsmKindUtilities.isClass(scope) && ((CsmClass)scope).getLeftBracketOffset() < offset) {
+            if (CsmKindUtilities.isClass(scope) && CsmOffsetUtilities.isInClassScope((CsmClass)scope, offset)) {
                 result = (CsmClass)scope;
             }
         }
@@ -525,15 +525,27 @@ public class CsmContextUtilities {
     }
 
     public static CsmFunction getFunction(CsmContext context) {
-        CsmFunction fun = null;
-        for (Iterator it = context.iterator(); it.hasNext();) {
-            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
-            if (CsmKindUtilities.isFunction(elem.getScope())) {
-                fun = (CsmFunction)elem.getScope();
+        for (int i = context.size() - 1; 0 <= i; --i) {
+            CsmScope scope = context.get(i).getScope();
+            if (CsmKindUtilities.isClass(scope)) {
                 break;
+            } else if (CsmKindUtilities.isFunction(scope)) {
+                return (CsmFunction)scope;
             }
         }
-        return fun;
+        return null;
+    }    
+    
+    public static CsmFunction getFunction(CsmContext context, int offset) {
+        for (int i = context.size() - 1; 0 <= i; --i) {
+            CsmScope scope = context.get(i).getScope();
+            if (CsmKindUtilities.isClass(scope) && CsmOffsetUtilities.isInClassScope((CsmClass)scope, offset)) {
+                break;
+            } else if (CsmKindUtilities.isFunction(scope)) {
+                return (CsmFunction)scope;
+            }
+        }
+        return null;
     }    
     
     public static CsmFunctionDefinition getFunctionDefinition(CsmContext context) {
@@ -590,7 +602,7 @@ public class CsmContextUtilities {
     }
     
     public static boolean isInFunction(CsmContext context, int offset) {
-        CsmFunction fun = getFunction(context);
+        CsmFunction fun = getFunction(context, offset);
         return fun != null;
     }     
     
@@ -598,5 +610,5 @@ public class CsmContextUtilities {
         CsmObject last = context.getLastObject();
         return (CsmKindUtilities.isType(last) || CsmKindUtilities.isTypedef(last))
                 && CsmOffsetUtilities.isInObject(last, offset);
-    }    
+    }
 }
