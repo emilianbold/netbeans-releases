@@ -39,11 +39,15 @@
 
 package org.netbeans.modules.web.client.tools.javascript.debugger.api;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import org.netbeans.modules.web.client.tools.api.JSLocation;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -70,7 +74,16 @@ public class JSURILocation implements JSLocation {
 
     public JSURILocation(String uri, int lineNumber, int columnNumber) {
         try {
-            this.uri = new URI(uri);
+            String fileScheme = "file://";
+            //In case of URI returned by IE, spaces are not encoded
+            if( uri.indexOf(fileScheme) != -1 && uri.indexOf("\\") != -1) {
+                uri = uri.substring(fileScheme.length());
+                uri = uri.replace("\\", "/");
+                this.uri = new File(uri).toURI();
+            }
+            if(this.uri == null) {
+                this.uri = new URI(uri);
+            }
             assert this.uri.isAbsolute();
             
             this.lineNumber = lineNumber;

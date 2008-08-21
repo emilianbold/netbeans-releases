@@ -205,6 +205,7 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
 
     //@Override
        public void computeTypeNames(Context context, Result res) {
+            isCancelled = false;
             String text = context.getText();
             SearchType nameKind = context.getSearchType();
         

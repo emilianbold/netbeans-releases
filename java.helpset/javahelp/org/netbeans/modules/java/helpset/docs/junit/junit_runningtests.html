@@ -13,9 +13,10 @@
 <h2>Running a JUnit Test</h2>
 <p><small><a href="#seealso">See Also</a>&nbsp;</small></p>
 <p>Once you have created a test or test suite, you can use the Run Test command
-  to initiate execution of the test. Run Test commands are available on source
-  nodes only.</p>
-<p><b>To run  tests for an entire project:</b></p>
+  to initiate execution of the test. Run Test commands are available on source nodes only. 
+  After you run a test, you can choose to rerun individual test methods 
+  executed during the test and displayed in the JUnit Test Results window.</p>
+<p><b>To run tests for an entire project:</b></p>
 <ol>
   <li>Select any node or file in the project you want to test in the Projects 
     or Files window.</li>
@@ -38,6 +39,16 @@
 <ul class="note">
   <li>You can also run a class's test by selecting the test class node itself 
     and choosing Run &gt; Run File &gt; Run <tt><i>testclassname</i></tt> (Shift-F6). 
+</ul>
+
+<p><b>To run a single test method:</b></p>
+<ol>
+  <li>Run the test class or suite containing the test method.</li>
+  <li>In the JUnit Test Results window, right-click the test method and choose Run Again. </li>
+</ol>
+
+<ul class="note">
+    <li>To run a single test method the method must be listed in the JUnit Test Results window.</li>
 </ul>
 
 <h3>Working with JUnit Test Output</h3>
