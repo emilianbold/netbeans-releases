@@ -45,12 +45,14 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebugger;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerConsoleEvent;
@@ -175,13 +177,17 @@ public abstract class JSAbstractDebugger implements JSDebugger {
     }
 
     public InputStream getInputStreamForURL(URL url) {
-        if (url == null) {
-            return null;
+        if (url != null) {
+            try {
+                return getInputStreamForURLImpl(url.toURI().toString());
+            } catch (URISyntaxException use) {
+                    Log.getLogger().log(Level.INFO, use.getMessage(), use);
+            }
         }
-        return getInputStreamForURLImpl(url);
+        return null;
     }
 
-    protected abstract InputStream getInputStreamForURLImpl(URL url);
+    protected abstract InputStream getInputStreamForURLImpl(String uri);
 
     public JSCallStackFrame[] getCallStackFrames() {
         return callStackFrames;
