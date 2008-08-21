@@ -68,14 +68,10 @@ final class GemUISupport {
         String availableAsString = gem.getAvailableVersionsAsString();
         if (installedAsString != null && availableAsString != null) {
             // It's an update gem
-            sb.append("<h3>"); // NOI18N
-            sb.append(getMessage("GemUISupport.InstalledVersion"));
-            sb.append("</h3>"); // NOI18N
+            sb.append(h3(getMessage("GemUISupport.InstalledVersion")));
             sb.append(installedAsString);
 
-            sb.append("<h3>"); // NOI18N
-            sb.append(getMessage("GemUISupport.AvailableVersion"));
-            sb.append("</h3>"); // NOI18N
+            sb.append(h3(getMessage("GemUISupport.AvailableVersion")));
             sb.append(availableAsString);
             sb.append("<br>"); // NOI18N
         } else {
@@ -94,14 +90,16 @@ final class GemUISupport {
         }
 
         if (gem.getDescription() != null) {
-            sb.append("<h3>"); // NOI18N
-            sb.append(getMessage("GemUISupport.Description"));
-            sb.append("</h3>"); // NOI18N
+            sb.append(h3(getMessage("GemUISupport.Description")));
             sb.append(gem.getHTMLDescription());
         }
 
         sb.append("</html>"); // NOI18N
         return sb.toString();
+    }
+    
+    private static String h3(final String text) {
+        return "<h3>" + text + "</h3>"; // NOI18N
     }
 
     /** {@link ListCellRenderer} for {@link Gem} instances. */
