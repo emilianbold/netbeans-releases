@@ -271,6 +271,9 @@ public class UnixNativeUtils extends NativeUtils {
     }
     
     private File getDesktopFolder() {
+        // TODO
+        // If using XDG, desktop folder can be obtained simpler using '/usr/bin/xdg-user-dir DESKTOP' command
+        // See also http://www.netbeans.org/issues/show_bug.cgi?id=144646
         final String desktopDir = System.getenv(XDG_DESKTOP_DIR_ENV_VARIABLE);
         final File globalConfigFile = new File(XDG_USERDIRS_GLOBAL_CONF);
         final File userHome       = SystemUtils.getUserHomeDirectory();
