@@ -61,7 +61,11 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     public OffsetableDeclarationBase(AST ast, CsmFile file) {
         super(ast, file);
     }
-    
+
+    public OffsetableDeclarationBase(CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+    }
+
     protected OffsetableDeclarationBase(CsmFile containingFile, CsmOffsetable pos) {
         super(containingFile, pos);
     }
