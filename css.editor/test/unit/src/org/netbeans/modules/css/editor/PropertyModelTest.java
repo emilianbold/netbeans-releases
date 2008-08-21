@@ -696,6 +696,18 @@ public class PropertyModelTest extends TestBase {
 
         CssPropertyValue csspv = new CssPropertyValue(p, text);
 
+//        dumpResult(csspv);
+
+        assertTrue(csspv.success());
+
+    }
+    
+    public void testBackroundPositionOrder() {
+        Property p = PropertyModel.instance().getProperty("background-position");
+        String text = "center top";
+
+        CssPropertyValue csspv = new CssPropertyValue(p, text);
+
         dumpResult(csspv);
 
         assertTrue(csspv.success());
