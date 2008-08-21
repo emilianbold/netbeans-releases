@@ -61,22 +61,22 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
     private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.identifier.error.provider.times");
 
     @Override
-    public void getErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        if (!request.isCancelled() && ENABLED && request.getFile().isParsed()) {
-            // in release mode we skip library files, because it's vary irritating
-            // for user to see errors in system libraries
-            if (SemanticHighlightingOptions.RELEASE_MODE && isLibraryHeaderFile(request.getFile())) {
-                response.done();
-                return;
-            }
-            long start = System.currentTimeMillis();
-            if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() have started for file " + request.getFile().getAbsolutePath());
-            CsmFileReferences.getDefault().accept(
-                    request.getFile(), new ReferenceVisitor(request, response),
-                    CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
-            if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + request.getFile().getAbsolutePath());
-        }
-        response.done();
+    protected boolean validate(CsmErrorProvider.Request request) {
+        return super.validate(request) && ENABLED && !disableAsLibraryHeaderFile(request.getFile()) && request.getFile().isParsed();
+    }
+
+    @Override
+    protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        long start = System.currentTimeMillis();
+        if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() have started for file " + request.getFile().getAbsolutePath());
+        CsmFileReferences.getDefault().accept(
+                request.getFile(), new ReferenceVisitor(request, response),
+                CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
+        if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + request.getFile().getAbsolutePath());
+    }
+    
+    public String getName() {
+        return "unresolved-identifier"; //NOI18N
     }
 
     private static class ReferenceVisitor implements CsmFileReferences.Visitor {

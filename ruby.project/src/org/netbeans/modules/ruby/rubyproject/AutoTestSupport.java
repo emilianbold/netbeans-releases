@@ -41,11 +41,13 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
+import java.util.Collection;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -79,6 +81,14 @@ public class AutoTestSupport {
     }
 
     public void start() {
+
+        // use the ui test runner if available
+        TestRunner autotestRunner = getTestRunner(TestRunner.TestType.AUTOTEST);
+        if (autotestRunner != null) {
+            autotestRunner.runAllTests(project, false);
+            return;
+        }
+
         RubyPlatform platform = RubyPlatform.platformFor(project);
         GemManager gemManager = platform.getGemManager();
         if (!gemManager.isValidAutoTest(true)) {
@@ -105,4 +115,15 @@ public class AutoTestSupport {
         desc.addStandardRecognizers();
         new RubyExecution(desc, charsetName).run();
     }
+    
+    private TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
+        }
+        return null;
+    }
+
 }

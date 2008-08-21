@@ -84,9 +84,6 @@ public class ViewUpdateCenterAction extends NodeAction {
             Map<String, String> ip = commonSupport.getInstanceProperties();
             final String serverUrl = ip.get(GlassfishModule.URL_ATTR);
             final String serverName = ip.get(GlassfishModule.DISPLAY_NAME_ATTR);
-            final String installRoot = ip.get(GlassfishModule.INSTALL_FOLDER_ATTR);
-            final File installDir = new File(installRoot);
-            final File launcher = getUpdateCenterLauncher(installDir);
 
             Process p = null;
             synchronized (taskMap) {
@@ -102,6 +99,10 @@ public class ViewUpdateCenterAction extends NodeAction {
                 return;
             } 
 
+            final String installRoot = ip.get(GlassfishModule.INSTALL_FOLDER_ATTR);
+            final File installDir = new File(installRoot);
+            final File launcher = getUpdateCenterLauncher(installDir);
+            
             if(launcher != null) {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
@@ -156,6 +157,15 @@ public class ViewUpdateCenterAction extends NodeAction {
     private boolean isUCInstalled(String serverName, String serverUrl, File installRoot, File launcher) {
         if(new File(installRoot, "updatetool/bin").exists()) {
             return true;
+        }
+        
+        if(!installRoot.canWrite()) {
+            String message = NbBundle.getMessage(ViewUpdateCenterAction.class, 
+                    "MSG_UpdateCenterNoPermission", serverName, installRoot);
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,
+                    NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            return false;
         }
         
         String message = NbBundle.getMessage(ViewUpdateCenterAction.class, 

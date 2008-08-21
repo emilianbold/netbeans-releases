@@ -356,6 +356,9 @@ public class GsfFoldManager implements FoldManager {
         private boolean checkInitialFold(GsfFoldManager manager, CompilationInfo info, List<FoldInfo> folds) {
             try {
                 TokenHierarchy<?> th = info.getTokenHierarchy();
+                if (th == null) {
+                    return false;
+                }
                 TokenSequence<?> ts = th.tokenSequence();
                 
                 while (ts.moveNext()) {
