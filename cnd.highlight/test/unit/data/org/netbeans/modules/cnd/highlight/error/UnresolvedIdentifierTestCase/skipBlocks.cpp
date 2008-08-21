@@ -21,7 +21,7 @@ __declspec(naked) int test() {
 
     __asm(".long 0x47e00c20" : "=r"(_v0) : "0"(_v0));
 
-//    long _v0 __asm("$0") = -1;
-//    unsigned long id __asm__("$0");
+    long _v0 __asm("$0") = -1;
+    unsigned long id __asm__("$0");
 
 }
