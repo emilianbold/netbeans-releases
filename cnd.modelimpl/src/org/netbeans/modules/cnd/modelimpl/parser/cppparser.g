@@ -1917,6 +1917,8 @@ direct_declarator
                     }
                 )
                 (options {greedy=true;} :variable_attribute_specification)?
+                (asm_block!)?
+                (options {greedy=true;} :variable_attribute_specification)?
 	|	
 		// DW 24/05/04 This block probably never entered as dtor selected out earlier
 		//	Note 1: In fact no dictionary entries for ctor or dtor	
