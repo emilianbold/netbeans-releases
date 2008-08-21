@@ -88,8 +88,10 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.HttpBasicAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates.Template;
+import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
 import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -502,5 +504,13 @@ public class J2eeUtil {
             returnParams.add(p);
         }
         return returnParams;
+    }
+
+    public static SoapClientJ2eeOperationInfo[] toJaxwsOperationInfos(WsdlSaasMethod m, 
+            Project project) {
+        List<SoapClientJ2eeOperationInfo> infos = new ArrayList<SoapClientJ2eeOperationInfo>();
+        infos.add(new SoapClientJ2eeOperationInfo(m, project));
+        
+        return infos.toArray(new SoapClientJ2eeOperationInfo[infos.size()]);
     }
 }

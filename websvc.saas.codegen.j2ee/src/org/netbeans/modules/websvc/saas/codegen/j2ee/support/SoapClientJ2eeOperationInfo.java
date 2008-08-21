@@ -38,48 +38,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.saas.codegen.j2ee;
 
-import java.io.IOException;
-import javax.swing.text.Document;
-import org.netbeans.api.project.FileOwnerQuery;
+package org.netbeans.modules.websvc.saas.codegen.j2ee.support;
+
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.websvc.saas.codegen.Constants;
-import org.netbeans.modules.websvc.saas.codegen.java.SoapClientPojoCodeGenerator;
-import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.j2ee.support.J2eeUtil;
-import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
-import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.netbeans.modules.websvc.saas.codegen.java.support.LibrariesHelper;
+import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
+import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import java.util.List;
+import java.util.Map;
+import javax.xml.namespace.QName;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.saas.codegen.java.support.JavaUtil;
+import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
+import org.netbeans.modules.websvc.saas.codegen.util.Util;
+
 
 /**
- * Code generator for REST services wrapping WSDL-based web service.
  *
- * @author nam
+ * @author ayubskhan
  */
-public class SoapClientServletCodeGenerator extends SoapClientPojoCodeGenerator {
+public class SoapClientJ2eeOperationInfo extends SoapClientOperationInfo {
+    
+    private List<ParameterInfo> headerParams;
 
-    public SoapClientServletCodeGenerator() {
-        setDropFileType(Constants.DropFileType.SERVLET);
-        setPrecedence(1);
+    public SoapClientJ2eeOperationInfo(WsdlSaasMethod m, Project project) {
+        super(m, project);
     }
-    
+
     @Override
-    public boolean canAccept(SaasMethod method, Document doc) {
-        if (SaasBean.canAccept(method, WsdlSaasMethod.class, getDropFileType()) &&
-                J2eeUtil.isServlet(NbEditorUtilities.getDataObject(doc))) {
-            return true;
+    public void initWsdlModelInfo() {
+        LibrariesHelper.addDefaultJaxWsClientJars(getProject(), null, getMethod().getSaas());
+    }
+
+    @Override
+    public List<ParameterInfo> getSoapHeaderParameters() {
+        if (headerParams == null) {
+            headerParams = new java.util.ArrayList<ParameterInfo>();
+            Map<QName,String> params = SoapClientUtils.getSoapHandlerParameters(
+                    getXamWsdlModel(), (WsdlPort)getPort(), 
+                    (WsdlOperation)getOperation());
+            for (Map.Entry<QName,String> entry : params.entrySet()) {
+                Class type = getType(getProject(), entry.getValue());
+                ParameterInfo info = new ParameterInfo(entry.getKey(), type, entry.getValue());
+                info.setStyle(ParamStyle.UNKNOWN);
+                headerParams.add(info);
+            }
         }
-        return false;
+        return headerParams;
     }
-    
+
     @Override
-    public void init(SaasMethod m, Document doc) throws IOException {
-        super.init(m, doc);
-        WsdlSaasMethod wsm = (WsdlSaasMethod) m;
-        Project p = FileOwnerQuery.getOwner(NbEditorUtilities.getFileObject(doc));
-        SaasBean bean = new SoapClientSaasBean(wsm, p, J2eeUtil.toJaxwsOperationInfos(wsm, p));
-        setBean(bean);
+    public Class getType(Project project, String typeName) {
+        return JavaUtil.getType(project, typeName);
     }
 }
