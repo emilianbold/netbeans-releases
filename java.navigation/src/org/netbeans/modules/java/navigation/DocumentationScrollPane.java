@@ -254,7 +254,7 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private synchronized void backHistory() {
-        if (currentHistoryIndex > 0) {
+        if (currentHistoryIndex > 0 && currentHistoryIndex <= history.size()) {
             currentHistoryIndex--;
             setDocumentation(history.get(currentHistoryIndex));            
             if (currentHistoryIndex == 0)
