@@ -206,36 +206,34 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
             preferences.put(BROWSER, WebClientToolsProjectUtils.Browser.FIREFOX.name());            
         }
         if (WebClientToolsSessionStarterService.isAvailable()) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        URI uri = new URI(debugURLTextField.getText().trim());
-                        try {
-                            Factory htmlBrowserFactory = null;
-                            if (internetExplorerRadioButton.isSelected()) {
-                                htmlBrowserFactory = WebClientToolsProjectUtils.getInternetExplorerBrowser();
-                            } else {
-                                htmlBrowserFactory = WebClientToolsProjectUtils.getFirefoxBrowser();
-                            }
-                            if (htmlBrowserFactory == null) {
-                                // TODO Display message
-                                try {
-                                    // Simply launch the URL in the browser
-                                    HtmlBrowser.URLDisplayer.getDefault().showURL(uri.toURL());
-                                } catch (MalformedURLException ex) {
-                                    messageTextField.setText(ex.getMessage());
-                                }
-                            } else {
-                                WebClientToolsSessionStarterService.startSession(uri, htmlBrowserFactory, Lookup.EMPTY);
-                            }
-                        } catch (WebClientToolsSessionException ex) {
-                            StatusDisplayer.getDefault().setStatusText(ex.getMessage());
-                        }
-                    } catch (URISyntaxException ex) {
-                        messageTextField.setText(ex.getMessage());
+            try {
+                URI uri = new URI(debugURLTextField.getText().trim());
+                try {
+                    Factory htmlBrowserFactory = null;
+                    if (internetExplorerRadioButton.isSelected()) {
+                        htmlBrowserFactory = WebClientToolsProjectUtils.getInternetExplorerBrowser();
+                    } else {
+                        htmlBrowserFactory = WebClientToolsProjectUtils.getFirefoxBrowser();
                     }
+                    if (htmlBrowserFactory == null) {
+                        // TODO Display message
+                        try {
+                            // Simply launch the URL in the browser
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(uri.toURL());
+                        } catch (MalformedURLException ex) {
+                            messageTextField.setText(ex.getMessage());
+                            return false;
+                        }
+                    } else {
+                        WebClientToolsSessionStarterService.startSession(uri, htmlBrowserFactory, Lookup.EMPTY);
+                    }
+                } catch (WebClientToolsSessionException ex) {
+                    StatusDisplayer.getDefault().setStatusText(ex.getMessage());
                 }
-            });
+            } catch (URISyntaxException ex) {
+                messageTextField.setText(ex.getMessage());
+                return false;
+            }
         }
         return true;
     }
