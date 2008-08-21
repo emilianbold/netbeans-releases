@@ -135,8 +135,8 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
     private Router selfLinkRouter;
     public static String SceneDefaultWidgetID = "default";
     
-    private ArrayList < IPresentationElement > lockedSelected = 
-            new ArrayList < IPresentationElement >();
+    private HashSet < IPresentationElement > lockedSelected = 
+            new HashSet < IPresentationElement >();
             
 
     public DesignerScene(IDiagram diagram,UMLDiagramTopComponent topcomponent)
@@ -688,8 +688,33 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         lockedSelected.remove(element);
     }
     
-    public List < IPresentationElement > getLockedSelected()
+    public Set < IPresentationElement > getLockedSelected()
     {
-        return Collections.unmodifiableList(lockedSelected);
+        return Collections.unmodifiableSet(lockedSelected);
+    }
+    
+    public void clearLockedSelected()
+    {
+        lockedSelected.clear();
+    }
+    
+    public void userSelectionSuggested (Set<?> suggestedSelectedObjects, boolean invertSelection)
+    {
+        Set < IPresentationElement > lockedSet = getLockedSelected();
+
+        HashSet < Object > selection = new HashSet < Object >();
+        if(lockedSet.size() > 0)
+        {
+            selection.addAll(lockedSet);
+        }
+        selection.addAll(suggestedSelectedObjects);
+        
+        // If the selection is inverted then the locked set needs to be cleared.
+        if(invertSelection == true)
+        {
+            clearLockedSelected();
+        }
+        
+        super.userSelectionSuggested(selection, invertSelection);
     }
 }

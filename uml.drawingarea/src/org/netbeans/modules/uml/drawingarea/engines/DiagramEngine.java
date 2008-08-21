@@ -43,7 +43,6 @@ import java.awt.BasicStroke;
 import java.awt.Cursor;
 import java.awt.Point;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,13 +60,13 @@ import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.animator.AnimatorEvent;
 import org.netbeans.api.visual.animator.AnimatorListener;
-import org.netbeans.api.visual.animator.AnimatorListener;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.drawingarea.actions.CycleObjectSceneSelectProvider;
+import org.netbeans.modules.uml.drawingarea.actions.LockSelectionAction;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.api.visual.layout.Layout;
@@ -83,7 +82,6 @@ import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.ZoomManager;
-import org.netbeans.modules.uml.drawingarea.actions.BirdToggleViewAction;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramSceneAcceptAction;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramSelectToolAction;
@@ -110,7 +108,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -123,6 +120,9 @@ abstract public class DiagramEngine {
                                                                BasicStroke.CAP_BUTT, 
                                                                5.0f, 
                                                                new float[] { 6.0f, 3.0f }, 0.0f);
+    
+    public final static LockSelectionAction lockSelectionAction = new LockSelectionAction();
+    
     // Actions
     protected WidgetAction mouseHoverAction;
     //
