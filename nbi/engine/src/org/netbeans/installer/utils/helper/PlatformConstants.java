@@ -68,6 +68,9 @@ public final class PlatformConstants {
 
     public static final String OS_FAMILY_AIX =
             "aix";
+
+    public static final String OS_FAMILY_HPUX =
+            "hpux";
     
     public static final String HARDWARE_X86 = 
             "x86";

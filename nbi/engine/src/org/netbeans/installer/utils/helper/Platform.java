@@ -81,6 +81,8 @@ public enum Platform {
     AIX(OS_FAMILY_AIX, null, null, null, "AIX"),
     AIX_PPC(OS_FAMILY_AIX, HARDWARE_PPC, null, null, "AIX PowerPC"),
     AIX_PPC64(OS_FAMILY_AIX, HARDWARE_PPC64, null, null, "AIX PowerPC X64"),
+
+    HPUX(OS_FAMILY_HPUX, null, null, null, "HP-UX"),
     ;
     
     /////////////////////////////////////////////////////////////////////////////////
