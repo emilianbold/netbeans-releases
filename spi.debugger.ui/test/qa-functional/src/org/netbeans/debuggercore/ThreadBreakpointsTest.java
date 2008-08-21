@@ -177,7 +177,7 @@ public class ThreadBreakpointsTest extends JellyTestCase {
             new ContinueAction().perform();
             int backline = lines;
             lines = Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines + 1);
-            assertEquals("There were more than one hit of the breakpoint", backline, lines - 3);
+            assertEquals("There were more than one hit of the breakpoint", backline, lines - 2);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
