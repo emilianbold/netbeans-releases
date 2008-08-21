@@ -141,6 +141,7 @@ public final class SystemUtils {
     public static boolean isCurrentJava64Bit() {
         final String osArch = System.getProperty("os.arch");
         return "64".equals(System.getProperty("sun.arch.data.model")) ||
+                "64".equals(System.getProperty("com.ibm.vm.bitmode")) || //IBM`s JDK
                 osArch.equals("amd64") ||
                 osArch.equals("sparcv9") ||
                 osArch.equals("x86_64") ||

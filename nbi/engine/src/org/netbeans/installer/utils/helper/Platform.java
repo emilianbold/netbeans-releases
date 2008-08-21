@@ -77,6 +77,9 @@ public enum Platform {
     FREEBSD_X64(OS_FAMILY_FREEBSD, HARDWARE_X64, null, null, "FreeBSD X64"),
     FREEBSD_PPC(OS_FAMILY_BSD, HARDWARE_PPC, null, null, "FreeBSD PowerPC"),
     FREEBSD_PPC64(OS_FAMILY_BSD, HARDWARE_PPC64, null, null, "FreeBSD PowerPC X64"),
+
+    AIX(OS_FAMILY_AIX, null, null, null, "AIX"),
+    AIX_PPC(OS_FAMILY_AIX, HARDWARE_PPC, null, null, "AIX PowerPC"),
     ;
     
     /////////////////////////////////////////////////////////////////////////////////

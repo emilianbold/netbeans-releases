@@ -156,6 +156,8 @@ public class UnixNativeUtils extends NativeUtils {
                     return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_X64 : Platform.BSD_X86;
                 }
             }
+        } else if(osName.equals("AIX")) {
+            return System.getProperty("os.arch").equals("ppc") ? Platform.AIX_PPC : Platform.AIX;
         } else {
             return Platform.UNIX;
         }
