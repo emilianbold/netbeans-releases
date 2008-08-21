@@ -111,6 +111,9 @@ public class RubyElementCtx {
         path = new AstPath(root, astOffset);
 
         Node leaf = path.leaf();
+        if (leaf == null) {
+            return;
+        }
 
         Iterator<Node> it = path.leafToRoot();
     FindNode:
