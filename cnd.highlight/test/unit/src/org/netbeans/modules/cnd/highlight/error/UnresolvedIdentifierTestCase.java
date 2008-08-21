@@ -76,7 +76,12 @@ public class UnresolvedIdentifierTestCase extends ErrorHighlightingBaseTestCase 
 
     public void testSkipSomeInstructionsBlock() throws Exception {
         performStaticTest("skipBlocks.cpp");
-    }    
+    }
+
+    public void testIZ144537() throws Exception {
+        performStaticTest("iz144537.cpp");
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

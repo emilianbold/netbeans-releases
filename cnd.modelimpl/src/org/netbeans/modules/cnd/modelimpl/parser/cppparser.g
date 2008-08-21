@@ -888,7 +888,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
                 // we need "static" here for the case "static struct XX {...} myVar; - see issue #106652
 
 //		((LITERAL_typedef | LITERAL_static)? class_head)=>
-                ((  storage_class_specifier
+                ((LITERAL___extension__!)? (  storage_class_specifier
 		|   cv_qualifier 
 		|   LITERAL_typedef
 		)* class_head) =>
@@ -897,7 +897,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 			printf("external_declaration_1a[%d]: Class definition\n",
 				LT(1).getLine());
 		}
-		declaration
+		(LITERAL___extension__!)? declaration
 		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
 
 	|	
@@ -1870,6 +1870,7 @@ direct_declarator
 		(exception_specification)?
 		(options {greedy=true;} :function_attribute_specification)?
 		(asm_block!)?
+                (options {greedy=true;} :function_attribute_specification)?
 	|	(qualified_id LPAREN qualified_id)=>	// Must be class instantiation
 		id = qualified_id
 		{
@@ -1915,6 +1916,8 @@ direct_declarator
                          is_address = false; is_pointer = false;
                     }
                 )
+                (options {greedy=true;} :variable_attribute_specification)?
+                (asm_block!)?
                 (options {greedy=true;} :variable_attribute_specification)?
 	|	
 		// DW 24/05/04 This block probably never entered as dtor selected out earlier
@@ -1984,6 +1987,7 @@ function_direct_declarator [boolean definition]
 		(exception_specification)?
                 (options {greedy=true;} :function_attribute_specification)?
                 (asm_block!)?
+                (options {greedy=true;} :function_attribute_specification)?
 	;
         
 protected
