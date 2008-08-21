@@ -44,13 +44,13 @@ package org.netbeans.modules.cnd.highlight.error;
  *
  * @author Alexey Vladykin
  */
-public class UnresolvedIdentifierTestCase extends ErrorHighlightingBaseTestCase {
+public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
 
     static {
         System.setProperty("cnd.identifier.error.provider", "true");
     }
 
-    public UnresolvedIdentifierTestCase(String testName) {
+    public UnresolvedIdentifierTest(String testName) {
         super(testName);
     }
 
@@ -81,6 +81,10 @@ public class UnresolvedIdentifierTestCase extends ErrorHighlightingBaseTestCase 
     public void testIZ144537() throws Exception {
         performStaticTest("iz144537.cpp");
     }
+
+    public void testForwardClassDecl() throws Exception {
+        performStaticTest("forward_class_decl.cpp");
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS
@@ -93,7 +97,7 @@ public class UnresolvedIdentifierTestCase extends ErrorHighlightingBaseTestCase 
 
         @Override
 	protected Class getTestCaseDataClass() {
-	    return UnresolvedIdentifierTestCase.class;
+	    return UnresolvedIdentifierTest.class;
 	}
 
         public void testTemplateClassEnum() throws Exception {
