@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -40,26 +40,10 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
-    <name>junit_4</name>
-    <type>j2se</type>
-    <localizing-bundle>org.netbeans.modules.junit.Bundle</localizing-bundle>
-    <volume>
-        <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.libs.junit4/modules/ext/junit-4.5.jar!/</resource>
-    </volume>
-    <volume>
-        <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.modules.junit/docs/junit-4.5-api.zip!/</resource>
-    </volume>
-    <volume>
-        <type>src</type>
-        <resource>jar:nbinst://org.netbeans.modules.junit/docs/junit-4.5-src.jar!/</resource>
-    </volume>
-    <volume>
-        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/junit/junit/4.4/junit-4.4.pom</resource>
-    </volume>
-</library>
+<!DOCTYPE editor-preferences PUBLIC "-//NetBeans//DTD Editor Preferences 1.0//EN" "http://www.netbeans.org/dtds/EditorPreferences-1_0.dtd">
+
+<editor-preferences>
+
+    <entry name="identifier-acceptor" value="org.netbeans.modules.html.editor.HTMLSettingsFactory.getIdentifierAcceptor" javaType="methodvalue" />
+
+</editor-preferences>

@@ -180,10 +180,17 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
                 }
 
                 if (initTokensInNew) {
+                    TokenHierarchyOperation operation = rootTokenList.tokenHierarchyOperation();
                     if (embedding.joinSections()) {
                         // Init corresponding TokenListList
-                        rootTokenList.tokenHierarchyOperation().tokenListList(embeddedLanguagePath);
+                        operation.tokenListList(embeddedLanguagePath);
                     } else { // sections not joined
+                        // Check that there is no TLL in this case.
+                        // If there would be one it would already have to run through its constructor
+                        // which should have collected all the ETLs already (with initTokensInNew==false)
+                        // and init tokens explicitly.
+                        // Thus the following assert should always pass.
+                        assert (operation.existingTokenListList(embeddedLanguagePath) == null);
                         etl.initAllTokens();
                     }
                 }
@@ -660,8 +667,9 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
     /**
      * Check if this embedding container is up-to-date (updateStatusImpl() was called on it)
      * which is useful for missing-update-status checks.
+     * Method declared to return true so it can be used in assert stmts.
      */
-    public void checkStatusUpdated() {
+    public boolean checkStatusUpdated() {
         if (cachedModCount != LexerUtilsConstants.MOD_COUNT_REMOVED
                 && cachedModCount != rootTokenList.modCount()
                 && !checkStatusUpdatedThrowingException
@@ -673,6 +681,7 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
             checkStatusUpdatedThrowingException = false;
             throw new IllegalStateException(excMsg);
         }
+        return true;
     }
     private static boolean checkStatusUpdatedThrowingException;
 

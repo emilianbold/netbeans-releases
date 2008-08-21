@@ -43,7 +43,8 @@ package org.netbeans.test.xml.schema.general.codecompletion;
 
 import junit.framework.TestSuite;
 
-
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.junit.NbTestCase;
 import java.util.Properties;
 import org.netbeans.junit.RandomlyFails;
@@ -59,6 +60,9 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
     
     static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0006";
 
+    static final String SCHEMA_SHORT_NAME_1 = "newXmlSchema";
+    static final String SCHEMA_SHORT_NAME_2 = "newXmlSchema1";
+
     public XMLCodeCompletion_0006(String arg0) {
         super(arg0);
     }
@@ -68,9 +72,9 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
       return NbModuleSuite.create(
           NbModuleSuite.createConfiguration( XMLCodeCompletion_0006.class ).addTest(
             "CreateJavaApplication",
-            "CreateSchema",
+            "CreateSchema1",
             "AddElements1",
-            "CreateSchema",
+            "CreateSchema2",
             "AddElements2",
             "CreateConstrained",
             "StartAndContinueTag"
@@ -83,18 +87,21 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
     
     public void CreateJavaApplication( )
     {
-        startTest( );
+      startTest( );
 
-        CreateJavaApplicationInternal( TEST_JAVA_APP_NAME );
+      CreateJavaApplicationInternal( TEST_JAVA_APP_NAME );
 
-        endTest( );
+      endTest( );
     }
 
-    public void CreateSchema( )
+    public void CreateSchema1( )
     {
       startTest( );
 
-      CreateSchemaInternal( TEST_JAVA_APP_NAME );
+      CreateSchemaInternal(
+          TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME,
+          SCHEMA_SHORT_NAME_1
+        );
 
       endTest( );
     }
@@ -103,7 +110,19 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
     {
       startTest( );
 
-      AddElementInternal( "newXmlSchema.xsd" );
+      AddElementInternal( SCHEMA_SHORT_NAME_1 + SCHEMA_EXTENSION, "newElement" );
+
+      endTest( );
+    }
+
+    public void CreateSchema2( )
+    {
+      startTest( );
+
+      CreateSchemaInternal(
+          TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME,
+          SCHEMA_SHORT_NAME_2
+        );
 
       endTest( );
     }
@@ -112,7 +131,7 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
     {
       startTest( );
 
-      AddElementInternal( "newXmlSchema1.xsd" );
+      AddElementInternal( SCHEMA_SHORT_NAME_2 + SCHEMA_EXTENSION, "newElement" );
 
       endTest( );
     }
@@ -125,18 +144,19 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
       {
         new CImportClickData( true, 0, 0, 2, 3, "Unknown import table state after first click, number of rows: ", null ),
         new CImportClickData( true, 1, 0, 2, 5, "Unknown import table state after second click, number of rows: ", null ),
-        new CImportClickData( true, 2, 0, 2, 7, "Unknown import table state after third click, number of rows: ", null ),
-        new CImportClickData( true, 3, 0, 2, 9, "Unknown import table state after forth click, number of rows: ", null ),
-        new CImportClickData( true, 4, 1, 1, 9, "Unknown to click on checkbox. #", null ),
-        new CImportClickData( true, 5, 1, 1, 9, "Unknown to click on checkbox. #", null )
+        new CImportClickData( true, 2, 0, 2, 6, "Unknown import table state after third click, number of rows: ", null ),
+        new CImportClickData( true, 3, 0, 2, 8, "Unknown import table state after forth click, number of rows: ", null ),
+        new CImportClickData( true, 4, 1, 1, 8, "Unknown to click on checkbox. #", null ),
+        new CImportClickData( true, 5, 1, 1, 8, "Unknown to click on checkbox. #", null )
       };
 
+      CallUnchangedSubmenu( "File", "Save All" );
       CreateConstrainedInternal(
           TEST_JAVA_APP_NAME,
           aimpData,
+          TEST_JAVA_APP_NAME,
           null,
-          null,
-          1
+          0
         );
 
       endTest( );
@@ -157,16 +177,15 @@ public class XMLCodeCompletion_0006 extends XMLCodeCompletion {
         "</ns1:newElement>"
       };
 
+      // Continue tag and finish
       StartAndContinueTagInternal(
           "newXMLDocument.xml",
-          "</ns1:newElement>",
+          "</ns2:newElement>",
           true,
           asCases,
-          "ns1:newElement",
+          "ns2:newElement",
           asCasesClose
         );
-
-      // Continue tag and finish
 
       endTest( );
     }

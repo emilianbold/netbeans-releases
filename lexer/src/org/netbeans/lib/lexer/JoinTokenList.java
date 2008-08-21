@@ -611,6 +611,8 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
                 
         if (tokenList.tokenCountCurrent() > 0) {
             // Clear all tokens so that it can be initialized by joined lexing.
+            // This situation may arise when there would be mixed joining and non-joining ETLs
+            // (see also TokenListList's constructor and scanTokenList()).
             tokenList.clear();
 //                throw new IllegalStateException(
 //                        "Non-empty embedded token list in JoinTokenList initialization. " +

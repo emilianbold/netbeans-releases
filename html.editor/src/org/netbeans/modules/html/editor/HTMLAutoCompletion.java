@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.editor.html;
+package org.netbeans.modules.html.editor;
 
 
 import javax.swing.text.BadLocationException;
