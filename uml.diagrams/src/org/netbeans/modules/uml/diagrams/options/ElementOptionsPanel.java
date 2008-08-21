@@ -49,6 +49,7 @@ import javax.swing.JComponent;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.view.Customizable;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.project.UMLProjectModule;
 import org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -62,6 +63,11 @@ public class ElementOptionsPanel implements UMLOptionsPanel
 {
 
     private ElementCustomizationPanel panel;
+
+    static
+    {
+        UMLProjectModule.checkInit();
+    }
 
     public void applyChanges()
     {
