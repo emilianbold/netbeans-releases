@@ -303,6 +303,12 @@ public class GemManagerTest extends RubyTestBase {
         assertNotSame("hashCode", jGemManager.hashCode(), cGemManager.hashCode());
     }
 
+    public void testHasOldAndHasAncientRubyGemsVersion() {
+        GemManager gm = RubyPlatformManager.getDefaultPlatform().getGemManager();
+        assertFalse("does not have ancient RubyGems version", gm.hasAncientRubyGemsVersion());
+        assertFalse("does not have old RubyGems version", gm.hasOldRubyGemsVersion());
+    }
+    
     private File getRakeGem() throws IOException {
         File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.8.1.gem");
         assertNotNull("rake gem found", rakeGem);

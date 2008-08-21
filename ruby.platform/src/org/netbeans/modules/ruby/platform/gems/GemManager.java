@@ -178,9 +178,16 @@ public final class GemManager {
         return null;
     }
 
-    boolean hasObsoleteRubyGemsVersion() {
-        String gemVersion = platform.getInfo().getGemVersion();
-        return Util.compareVersions("1.0", gemVersion) > 0; // NOI18N
+    String getRubyGemsVersion() {
+        return platform.getInfo().getGemVersion();
+    }
+
+    boolean hasAncientRubyGemsVersion() {
+        return Util.compareVersions("1.0", getRubyGemsVersion()) > 0; // NOI18N
+    }
+
+    boolean hasOldRubyGemsVersion() {
+        return Util.compareVersions("1.2", getRubyGemsVersion()) > 0; // NOI18N
     }
 
     boolean isGemHomeWritable() {

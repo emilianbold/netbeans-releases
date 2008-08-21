@@ -161,6 +161,7 @@ public final class GemPanel extends JPanel {
             }
         });
         initComponents();
+        oldRubyGemsText.setForeground(UIManager.getColor("nb.errorForeground"));
         if (preselected == null) {
             Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
         } else {
@@ -169,10 +170,10 @@ public final class GemPanel extends JPanel {
 
         GemManager gemManager = getGemManager();
         if (gemManager != null) {
-            allVersionsCheckbox.setSelected(!gemManager.hasObsoleteRubyGemsVersion() &&
+            allVersionsCheckbox.setSelected(!gemManager.hasAncientRubyGemsVersion() &&
                     RubyPreferences.shallFetchAllVersions());
         }
-        
+
         descriptionCheckbox.setSelected(RubyPreferences.shallFetchGemDescriptions());
         
         installedList.setCellRenderer(new GemListRenderer());
@@ -205,10 +206,10 @@ public final class GemPanel extends JPanel {
         assert EventQueue.isDispatchThread();
         // cancel current update, the platform was changed
         cancelRunningTasks();
-
-        boolean loading = PlatformComponentFactory.isLoadingPlatforms(platforms);
-        if (loading || !getSelectedPlatform().hasRubyGemsInstalled()) {
-            if (!loading) {
+        
+        boolean paltformsAreBeingLoaded = PlatformComponentFactory.isLoadingPlatforms(platforms);
+        if (paltformsAreBeingLoaded || !getSelectedPlatform().hasRubyGemsInstalled()) {
+            if (!paltformsAreBeingLoaded) {
                 gemHomeValue.setForeground(PlatformComponentFactory.INVALID_PLAF_COLOR);
                 gemHomeValue.setText(GemManager.getNotInstalledMessage());
             }
@@ -217,10 +218,16 @@ public final class GemPanel extends JPanel {
             updateList(UPDATED, Collections.<Gem>emptyList());
             setEnabledGUI(false);
             hideProgressBars();
+            oldRubyGemsText.setVisible(false);
         } else {
             GemManager gemManager = getGemManager();
+            oldRubyGemsText.setVisible(gemManager.hasOldRubyGemsVersion());
+            if (gemManager.hasOldRubyGemsVersion()) {
+                oldRubyGemsText.setText(getMessage("GemPanel.oldRubyGems.warning", gemManager.getRubyGemsVersion()));
+            }
+
             assert gemManager != null : "gemManager must not be null";
-            allVersionsCheckbox.setEnabled(!gemManager.hasObsoleteRubyGemsVersion());
+            allVersionsCheckbox.setEnabled(!gemManager.hasAncientRubyGemsVersion());
 
             gemHomeValue.setText(getGemManager().getGemHome());
             gemHomeValue.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
@@ -573,6 +580,7 @@ public final class GemPanel extends JPanel {
         gemHome = new javax.swing.JLabel();
         gemHomeValue = new javax.swing.JTextField();
         browseGemHome = new javax.swing.JButton();
+        oldRubyGemsText = new javax.swing.JLabel();
 
         FormListener formListener = new FormListener();
 
@@ -641,8 +649,8 @@ public final class GemPanel extends JPanel {
                     .add(reloadUpdatedButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(updatedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
-                    .add(updatedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE))
+                    .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                    .add(updatedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(updatedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(updatedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -725,8 +733,8 @@ public final class GemPanel extends JPanel {
                     .add(searchInstText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(installedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
-                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE))
+                    .add(installedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                    .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(uninstallButton)
@@ -811,8 +819,8 @@ public final class GemPanel extends JPanel {
                     .add(searchNewText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(newSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
-                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE))
+                    .add(newSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE)
+                    .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -864,7 +872,7 @@ public final class GemPanel extends JPanel {
                 .add(allVersionsCheckbox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(descriptionCheckbox)
-                .addContainerGap(237, Short.MAX_VALUE))
+                .addContainerGap(243, Short.MAX_VALUE))
         );
 
         proxyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.proxyButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -889,10 +897,10 @@ public final class GemPanel extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(gemsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 791, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, gemsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 791, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(gemHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -904,7 +912,8 @@ public final class GemPanel extends JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, manageButton)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, browseGemHome, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, browseGemHome, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, oldRubyGemsText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 791, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -926,7 +935,9 @@ public final class GemPanel extends JPanel {
                     .add(browseGemHome)
                     .add(gemHomeValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(gemsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)
+                .add(gemsTab, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(oldRubyGemsText)
                 .addContainerGap())
         );
 
@@ -1356,8 +1367,8 @@ public final class GemPanel extends JPanel {
         }
     }
 
-    private static String getMessage(String key) {
-        return NbBundle.getMessage(GemPanel.class, key);
+    private static String getMessage(final String key, final Object... params) {
+        return NbBundle.getMessage(GemPanel.class, key, params);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1385,6 +1396,7 @@ public final class GemPanel extends JPanel {
     private javax.swing.JProgressBar newProgress;
     private javax.swing.JLabel newProgressLabel;
     private javax.swing.JScrollPane newSP;
+    private javax.swing.JLabel oldRubyGemsText;
     private javax.swing.JComboBox platforms;
     private javax.swing.JButton proxyButton;
     private javax.swing.JButton reloadInstalledButton;
