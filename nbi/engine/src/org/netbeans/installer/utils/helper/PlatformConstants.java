@@ -77,6 +77,9 @@ public final class PlatformConstants {
     
     public static final String HARDWARE_X64 = 
             "x64";
+
+    public static final String HARDWARE_IA64 = 
+            "ia64";
     
     public static final String HARDWARE_SPARC = 
             "sparc";
