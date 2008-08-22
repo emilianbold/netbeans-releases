@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmSyntaxSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
 /**
@@ -67,7 +68,7 @@ import org.openide.util.NbBundle;
 public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider {
 
     private Token<CppTokenId> jumpToken = null;
-
+    private Cancellable hyperLinkTask;
     protected CsmAbstractHyperlinkProvider() {
         DefaultCaret caret = new DefaultCaret();
         caret.setMagicCaretPosition(null);        
@@ -90,7 +91,10 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProvider 
                 performAction(doc, target, offset);
             }
         };
-        CsmModelAccessor.getModel().enqueue(run, "Following hyperlink"); //NOI18N
+        if (hyperLinkTask != null) {
+            hyperLinkTask.cancel();
+        }
+        hyperLinkTask = CsmModelAccessor.getModel().enqueue(run, "Following hyperlink");
     }
     
     public boolean isHyperlinkPoint(Document doc, int offset) {
