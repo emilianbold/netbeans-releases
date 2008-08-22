@@ -48,7 +48,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -59,6 +58,8 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -68,20 +69,12 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.loaders.CoreElfObject;
-import org.netbeans.modules.cnd.loaders.ExeObject;
-import org.netbeans.modules.cnd.loaders.OrphanedElfObject;
-import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 public class PackagingFilesPanel extends ListEditorPanel {
@@ -128,16 +121,33 @@ public class PackagingFilesPanel extends ListEditorPanel {
         getDefaultButton().setVisible(false);
     }
     
+    private void refresh() {
+        packagingFilesOuterPanel.getPackagingConfiguration().getTopDir().setValue(packagingFilesOuterPanel.getTopDirectoryTextField().getText());
+        getTargetList().validate();
+        getTargetList().repaint();
+    }
+    
     public void setOuterPanel(PackagingFilesOuterPanel packagingFilesOuterPanel) {
         this.packagingFilesOuterPanel = packagingFilesOuterPanel;
+        DocumentListener documentListener = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                refresh();
+            }
+            
+            public void removeUpdate(DocumentEvent e) {
+                refresh();
+            }
+            
+            public void changedUpdate(DocumentEvent e) {
+                refresh();
+            }
+        };
+        packagingFilesOuterPanel.getTopDirectoryTextField().getDocument().addDocumentListener(documentListener);
     }
 
     class AddButtonAction implements java.awt.event.ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            String topFolder = packagingFilesOuterPanel.getTopDirectoryTextField().getText();
-            if (topFolder.length() > 0 && !topFolder.endsWith("/")) { // NOI18N
-                topFolder += "/"; // NOI18N
-            }
+            String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
             addObjectAction(new FileElement(FileType.UNKNOWN, "", topFolder)); // NOI18N
         }
     }
@@ -191,10 +201,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 }
                 itemPath = FilePathAdaptor.mapToRemote(itemPath);
                 itemPath = FilePathAdaptor.normalize(itemPath);
-                String topFolder = packagingFilesOuterPanel.getTopDirectoryTextField().getText();
-                if (topFolder.length() > 0 && !topFolder.endsWith("/")) { // NOI18N
-                    topFolder += "/"; // NOI18N
-                }
+                String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                 if (files[i].isDirectory()) {
                     addObjectAction(new FileElement(
                             FileType.DIRECTORY,
@@ -313,10 +320,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     String toFile = IpeUtils.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
                     toFile = FilePathAdaptor.mapToRemote(toFile);
                     toFile = FilePathAdaptor.normalize(toFile);
-                    String topFolder = packagingFilesOuterPanel.getTopDirectoryTextField().getText();
-                    if (topFolder.length() > 0 && !topFolder.endsWith("/")) { // NOI18N
-                        topFolder += "/"; // NOI18N
-                    }
+                    String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                     String perm;
                     if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || IpeUtils.isExecutable(files[i])) { //NOI18N
                         perm = packagingFilesOuterPanel.getDirPermTextField().getText();
@@ -506,7 +510,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
             JLabel label = (JLabel) super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
             FileElement elem = (FileElement) listData.elementAt(row);
             if (col == 0) {
-                    label.setText(elem.getType().toString());
+                label.setText(elem.getType().toString());
             } else if (col == 1) {
                 if (elem.getType() == FileElement.FileType.SOFTLINK) {
                     String msg = getString("Softlink_tt", elem.getTo() + "->" + elem.getFrom()); // NOI18N
@@ -520,27 +524,18 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     String msg = getString("File_tt", (new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom())).getAbsolutePath())); // NOI18N
                     label.setToolTipText(msg);
                 }
-                return label;
-                
+                String val = elem.getTo();
+                if (val.indexOf("${") >= 0) { // NOI18N
+                    String expandedVal = packagingFilesOuterPanel.getPackagingConfiguration().expandMacros(val);
+                    label.setText(expandedVal);
+                }
             } else if (col == 2) {
-//                if (elem.getType() == FileElement.FileType.DIRECTORY) {
-//                    return label; // Already set to blank
-//                }
-//                if (elem.getType() == FileElement.FileType.SOFTLINK) {
-//                    return label; // OK
-//                }
-//                if (!isSelected) {
-//                    label = new JLabel();
-//                }
-//                File file = new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom()));
-//                if (!isSelected && !file.exists()) {
-//                    label.setForeground(Color.RED);
-//                }
-//                label.setText(elem.getFrom());
+                String val = elem.getFrom();
+                if (val.indexOf("${") >= 0) { // NOI18N
+                    String expandedVal = packagingFilesOuterPanel.getPackagingConfiguration().expandMacros(val);
+                    label.setText(expandedVal);
+                }
             }
-//            else {
-//                label.setText(elem.getTo());
-//            }
             return label;
         }
     }

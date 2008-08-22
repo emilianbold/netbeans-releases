@@ -661,6 +661,8 @@ public class ConfigurationMakefileWriter {
         }
         bw.write("OUTPUT_PATH=" + projectOutput + "\n"); // NOI18N
         bw.write("OUTPUT_BASENAME=" + IpeUtils.getBaseName(projectOutput) + "\n"); // NOI18N
+        bw.write("PACKAGE_OUTPUT_BASENAME=" + IpeUtils.getBaseName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
+        bw.write("PACKAGE_TOP_DIR=" + (packagingConfiguration.getTopDir().getValue().length() > 0 ? packagingConfiguration.getTopDir().getValue() + "/" : "") + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Functions\n"); // NOI18N
@@ -696,7 +698,7 @@ public class ConfigurationMakefileWriter {
         bw.write("}\n"); // NOI18N
         
         bw.write("# Setup\n"); // NOI18N
-        bw.write("rm -f " + output + "\n"); // NOI18N
+        bw.write("rm -rf " + output + "\n"); // NOI18N
         if (outputDir != null && outputDir.length() > 0) {
             bw.write("mkdir -p " + outputDir + "\n"); // NOI18N
         }
@@ -798,7 +800,7 @@ public class ConfigurationMakefileWriter {
         // Already Defined
         for (FileElement elem : fileList) {
             if (elem.getType() == FileElement.FileType.DIRECTORY) {
-                String path = elem.getTo();
+                String path = packagingConfiguration.expandMacros(elem.getTo());
                 if (path.endsWith("/")) { // NOI18N
                     path = path.substring(0, path.length()-1);
                 }
@@ -808,7 +810,7 @@ public class ConfigurationMakefileWriter {
         // Do all sub dirrectories
         for (FileElement elem : fileList) {
             if (elem.getType() == FileElement.FileType.FILE || elem.getType() == FileElement.FileType.SOFTLINK) {
-                String path = IpeUtils.getDirName(elem.getTo());
+                String path = IpeUtils.getDirName(packagingConfiguration.expandMacros(elem.getTo()));
                 String base = ""; // NOI18N
                 if (path != null && path.length() > 0) {
                     StringTokenizer tokenizer = new StringTokenizer(path, "/"); // NOI18N
@@ -840,7 +842,7 @@ public class ConfigurationMakefileWriter {
         bw.write("cd \"$TOP\"\n"); // NOI18N
         List<InfoElement> infoList = packagingConfiguration.getHeader().getValue();
         for (InfoElement elem : infoList) {
-            bw.write("echo \'" + elem.getName() + "=\"" + elem.getValue() + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
+            bw.write("echo \'" + elem.getName() + "=\"" + packagingConfiguration.expandMacros(elem.getValue()) + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
         }
         bw.write("\n"); // NOI18N       
         bw.write("cd \"$TOP\"\n"); // NOI18N
@@ -898,9 +900,9 @@ public class ConfigurationMakefileWriter {
         bw.write("cd \"$TOP\"\n"); // NOI18N
         bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
-        bw.write("pkgtrans -s $TMPDIR tmp.pkg " + packageName + "\n"); // NOI18N
-        bw.write("checkReturnCode\n"); // NOI18N
-        bw.write("mv $TMPDIR/tmp.pkg"  + " " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+//        bw.write("pkgtrans -s $TMPDIR tmp.pkg " + packageName + "\n"); // NOI18N
+//        bw.write("checkReturnCode\n"); // NOI18N
+        bw.write("mv $TMPDIR/" + packageName  + " " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
         bw.write("\n"); // NOI18N
         

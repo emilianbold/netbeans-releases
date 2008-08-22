@@ -80,6 +80,7 @@ public class PackagingConfiguration {
     private StringConfiguration output;
     private StringConfiguration tool;
     private StringConfiguration options;
+    private StringConfiguration topDir;
     // Constructors
     public PackagingConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
@@ -90,6 +91,7 @@ public class PackagingConfiguration {
         output = new StringConfiguration(null, ""); // NOI18N
         tool = new StringConfiguration(null, ""); // NOI18N
         options = new StringConfiguration(null, ""); // NOI18N
+        topDir = new StringConfiguration(null, getOutputName()); // NOI18N
         
         setDefaultValues();
     }
@@ -97,17 +99,17 @@ public class PackagingConfiguration {
     public void setDefaultValues() {
         // Init default values
         String perm = MakeOptions.getInstance().getDefExePerm();
-        String packageDir = "MyPackage/bin"; // NOI18N
+        String packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
 
         if (makeConfiguration.isMakefileConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
-            packageDir = "MyPackage/bin"; // NOI18N
+            packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
         } else if (makeConfiguration.isApplicationConfiguration()) {
             perm = MakeOptions.getInstance().getDefExePerm();
-            packageDir = "MyPackage/bin"; // NOI18N
+            packageDir = "${PACKAGE_TOP_DIR}bin"; // NOI18N
         } else if (makeConfiguration.isLibraryConfiguration()) {
             perm = MakeOptions.getInstance().getDefFilePerm();
-            packageDir = "MyPackage/lib"; // NOI18N
+            packageDir = "${PACKAGE_TOP_DIR}lib"; // NOI18N
         }
         else {
             assert false;
@@ -130,7 +132,7 @@ public class PackagingConfiguration {
             defArch = "sparc"; // NOI18N
         }
         List<InfoElement> headerList = getHeader().getValue();
-        headerList.add(new InfoElement("PKG", "MyPackage", true, true)); // NOI18N
+        headerList.add(new InfoElement("PKG", "${PACKAGE_OUTPUT_BASENAME}", true, true)); // NOI18N
         headerList.add(new InfoElement("NAME", "Package description ...", true, true)); // NOI18N
         headerList.add(new InfoElement("ARCH", defArch, true, true)); // NOI18N
         headerList.add(new InfoElement("CATEGORY", "application", true, true)); // NOI18N
@@ -229,6 +231,15 @@ public class PackagingConfiguration {
     public StringConfiguration getOptions() {
         return options;
     }
+    
+    public void setTopDir(StringConfiguration topDir) {
+        this.topDir = topDir;
+    }
+
+    public StringConfiguration getTopDir() {
+        return topDir;
+    }
+    
     // Clone and assign
     public void assign(PackagingConfiguration conf) {
         setMakeConfiguration(conf.getMakeConfiguration());
@@ -239,6 +250,7 @@ public class PackagingConfiguration {
         getOutput().assign(conf.getOutput());
         getTool().assign(conf.getTool());
         getOptions().assign(conf.getOptions());
+        getTopDir().assign(conf.getTopDir());
     }
 
     @Override
@@ -251,6 +263,7 @@ public class PackagingConfiguration {
         clone.setOutput((StringConfiguration) getOutput().clone());
         clone.setTool((StringConfiguration) getTool().clone());
         clone.setOptions((StringConfiguration) getOptions().clone());
+        clone.setTopDir((StringConfiguration) getTopDir().clone());
         return clone;
     }
     TypePropertyChangeListener typePropertyChangeListener;
@@ -320,8 +333,8 @@ public class PackagingConfiguration {
             return getOutputDefault();
         }
     }
-
-    private String getOutputDefault() {
+    
+    private String getOutputName() {
         String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION) {
             outputName = outputName.toLowerCase();
@@ -329,11 +342,16 @@ public class PackagingConfiguration {
             Platform platform = Platforms.getPlatform(getMakeConfiguration().getPlatform().getValue());
             outputName = platform.getLibraryName(outputName);
         }
-        outputName = ConfigurationSupport.makeNameLegal(outputName);
-        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/"; // NOI18N 
-
+        outputName = createValidPackageName(outputName);
+        return outputName;
+    }
+    
+    private String getOutputDefault() {
+        String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + "${PLATFORM}" + "/package/"; // NOI18N 
+        String outputName = getOutputName();
+        
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            outputPath += outputName + ".pkg"; // NOI18N // FIXUP 
+            outputPath += outputName;
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             outputPath += outputName + ".tar"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
@@ -413,6 +431,24 @@ public class PackagingConfiguration {
 
     public String getDisplayName() {
         return TYPE_NAMES[getType().getValue()];
+    }
+    
+    public String expandMacros(String s) {
+        s = makeConfiguration.expandMacros(s);
+        s = IpeUtils.expandMacro(s, "${PACKAGE_OUTPUT_BASENAME}", IpeUtils.getBaseName(getOutputValue())); // NOI18N
+        s = IpeUtils.expandMacro(s, "${PACKAGE_TOP_DIR}", getTopDir().getValue().length() > 0 ? getTopDir().getValue() + "/" : ""); // NOI18N
+        return s;
+    }
+    
+    private String createValidPackageName(String name) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (c == '_') 
+                continue;
+            stringBuilder.append(c);
+        }
+        return stringBuilder.toString();
     }
 
     /** Look up i18n strings here */

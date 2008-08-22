@@ -51,12 +51,16 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfigur
  * @author  thp
  */
 public class PackagingFilesOuterPanel extends javax.swing.JPanel {
+    private PackagingConfiguration packagingConfiguration;
 
     /** Creates new form PackagingInfo2Panel */
-    public PackagingFilesOuterPanel(PackagingFilesPanel innerPanel, PackagingConfiguration conf) {
+    public PackagingFilesOuterPanel(PackagingFilesPanel innerPanel, PackagingConfiguration packagingConfiguration) {
+        this.packagingConfiguration = packagingConfiguration;
         java.awt.GridBagConstraints gridBagConstraints;
         
         initComponents();
+        
+        topDirectoryTextField.setText(packagingConfiguration.getTopDir().getValue());
         
         remove(tmpPanel);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -82,7 +86,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         ownerTextField.setText(MakeOptions.getInstance().getDefOwner()); // NOI18N
         
         // Hide some fields:
-        if (conf.getType().getValue() == PackagingConfiguration.TYPE_TAR || conf.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
             groupLabel.setEnabled(false);
             groupTextField.setEnabled(false);
             ownerLabel.setEnabled(false);
@@ -117,6 +121,10 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         rWECheckBoxExeR3.addActionListener(exeFilePermissionActionListener);
         rWECheckBoxExeW3.addActionListener(exeFilePermissionActionListener);
         rWECheckBoxExeE3.addActionListener(exeFilePermissionActionListener);
+    }
+    
+    public PackagingConfiguration getPackagingConfiguration() {
+        return packagingConfiguration;
     }
     
     private class RegFilePermissionActionListener implements ActionListener {
@@ -245,7 +253,6 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         defaultsPanel.add(topDirectoryLabel, gridBagConstraints);
 
         topDirectoryTextField.setColumns(12);
-        topDirectoryTextField.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.topDirectoryTextField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
