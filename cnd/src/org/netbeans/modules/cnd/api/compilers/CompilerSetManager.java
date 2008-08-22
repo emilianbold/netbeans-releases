@@ -936,4 +936,17 @@ public class CompilerSetManager {
         return NbBundle.getMessage(CompilerSetManager.class, s);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder out = new StringBuilder();
+        out.append("CSM for ").append(hkey);
+        out.append(" with toolchains:[");
+        for (CompilerSet compilerSet : sets) {
+            out.append(compilerSet.getName()).append(" ");
+        }
+        out.append("]");
+        out.append(" platform:").append(PlatformTypes.toString(platform));
+        out.append(" in state ").append(state.toString());
+        return out.toString();
+    }
 }
