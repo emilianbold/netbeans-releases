@@ -82,6 +82,18 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
             "web-app" // NOI18N
             );
 
+    //  those are dirs in grails-app root we already know and create specific source groups
+    private static final List KNOWN_FOLDERS_IN_GRAILS_APP = Arrays.asList(
+            "conf", // NOI18N
+            "controllers", // NOI18N
+            "domain", // NOI18N
+            "i18n", // NOI18N
+            "services", // NOI18N
+            "taglib", // NOI18N
+            "utils", // NOI18N
+            "views" // NOI18N
+            );
+
     private final FileObject projectDir;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
@@ -139,6 +151,15 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
                 if (child.isFolder() && !child.getName().startsWith(".") && !KNOWN_FOLDERS.contains(child.getName())) {
                     String name = child.getName();
                     result.add(new Group(child, Character.toUpperCase(name.charAt(0)) + name.substring(1)));
+                }
+            }
+            FileObject grailsAppFo = projectDir.getFileObject("grails-app");
+            if (grailsAppFo != null) {
+                for (FileObject child : grailsAppFo.getChildren()) {
+                    if (child.isFolder() && !child.getName().startsWith(".") && !KNOWN_FOLDERS_IN_GRAILS_APP.contains(child.getName())) {
+                        String name = child.getName();
+                        result.add(new Group(child, Character.toUpperCase(name.charAt(0)) + name.substring(1)));
+                    }
                 }
             }
             return result.toArray(new SourceGroup[result.size()]);
