@@ -40,22 +40,22 @@
  */
 package org.netbeans.modules.ruby;
 
-import org.jruby.common.IRubyWarnings.ID;
+import org.jruby.nb.common.IRubyWarnings.ID;
 import org.netbeans.modules.gsf.api.ParserResult.AstTreeNode;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
-import org.jruby.ast.Node;
-import org.jruby.ast.RootNode;
-import org.jruby.common.IRubyWarnings;
-import org.jruby.lexer.yacc.ISourcePosition;
-import org.jruby.lexer.yacc.LexerSource;
-import org.jruby.lexer.yacc.SyntaxException;
-import org.jruby.parser.DefaultRubyParser;
-import org.jruby.parser.ParserConfiguration;
-import org.jruby.parser.RubyParserResult;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.RootNode;
+import org.jruby.nb.common.IRubyWarnings;
+import org.jruby.nb.lexer.yacc.ISourcePosition;
+import org.jruby.nb.lexer.yacc.LexerSource;
+import org.jruby.nb.lexer.yacc.SyntaxException;
+import org.jruby.nb.parser.DefaultRubyParser;
+import org.jruby.nb.parser.ParserConfiguration;
+import org.jruby.nb.parser.RubyParserResult;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Error;
