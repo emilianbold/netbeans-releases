@@ -571,17 +571,20 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
     }
+    
+    private static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
+            PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
+            PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
+            PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT,
+            PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT
+            );
    
     private String findLHSExpressionType(TokenSequence<PHPTokenId> tokenSequence,
             PHPCompletionItem.CompletionRequest request){
         int startPos = tokenSequence.offset();
         // find the beginning of the left hand side expression
         
-        while (tokenSequence.token().id() != PHPTokenId.PHP_SEMICOLON 
-                && tokenSequence.token().id() != PHPTokenId.PHP_CURLY_OPEN
-                && tokenSequence.token().id() != PHPTokenId.PHP_CURLY_CLOSE
-                && tokenSequence.token().id() != PHPTokenId.PHP_RETURN
-                && tokenSequence.token().id() != PHPTokenId.PHP_OPERATOR
+        while (!CTX_DELIMITERS.contains(tokenSequence.token().id())
                 && findLHSExpressionType_skipArgs(tokenSequence)
                 && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN){
             if (!tokenSequence.movePrevious()){
