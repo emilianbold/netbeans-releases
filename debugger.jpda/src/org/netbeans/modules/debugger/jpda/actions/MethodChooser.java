@@ -76,7 +76,6 @@ public class MethodChooser implements KeyListener, MouseListener,
     
     private JPDADebuggerImpl debugger;
     private JPDAThread currentThread;
-    private Session session;
     private String url;
     private ReferenceType clazzRef;
     private int methodLine;
@@ -107,8 +106,7 @@ public class MethodChooser implements KeyListener, MouseListener,
     private int selectedIndex = -1;
     private int mousedIndex = -1;
 
-    MethodChooser(JPDADebuggerImpl debugger, Session session, String url, ReferenceType clazz, int methodLine, int methodOffset) {
-        this.session = session;
+    MethodChooser(JPDADebuggerImpl debugger, String url, ReferenceType clazz, int methodLine, int methodOffset) {
         this.debugger = debugger;
         this.currentThread = debugger.getCurrentThread();
         this.url = url;
@@ -157,7 +155,7 @@ public class MethodChooser implements KeyListener, MouseListener,
         if (selectionIsFinal || operations.length == 1) {
             // perform action directly
             String name = operations[selectedIndex].getMethodName();
-            doAction(locations[selectedIndex], name);
+            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex]);
             return true;
         }
         // continue by showing method selection ui
@@ -209,7 +207,7 @@ public class MethodChooser implements KeyListener, MouseListener,
         if (performAction) {
             performAction = false;
             String name = operations[selectedIndex].getMethodName();
-            doAction(locations[selectedIndex], name);
+            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex]);
         }
     }
     
@@ -440,101 +438,6 @@ public class MethodChooser implements KeyListener, MouseListener,
             }
         }
         return defaultHyperlinkHighlight;
-    }
-    
-    private void doAction(Location bpLocation, final String methodName) {
-        final VirtualMachine vm = debugger.getVirtualMachine();
-        if (vm == null) return ;
-        final int line = bpLocation.lineNumber("Java");
-        CallStackFrameImpl csf = (CallStackFrameImpl) debugger.getCurrentCallStackFrame();
-        boolean condition = false;
-        try {
-            condition = csf != null && csf.getStackFrame().location().equals(bpLocation);
-        } catch (InvalidStackFrameException e) {
-        }
-        if (condition) {
-            // We're on the line from which the method is called
-            traceLineForMethod(methodName, line);
-        } else {
-            // Submit the breakpoint to get to the point from which the method is called
-            final BreakpointRequest brReq = vm.eventRequestManager().createBreakpointRequest(bpLocation);
-            debugger.getOperator().register(brReq, new Executor() {
-
-                public boolean exec(Event event) {
-                    Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                        fine("Calling location reached, tracing for "+methodName+"()");
-                    vm.eventRequestManager().deleteEventRequest(brReq);
-                    debugger.getOperator().unregister(brReq);
-                    traceLineForMethod(methodName, line);
-                    return true;
-                }
-                
-                public void removed(EventRequest eventRequest) {}
-                
-            });
-            brReq.setSuspendPolicy(debugger.getSuspend());
-            brReq.enable();
-        }
-        resume();
-    }
-    
-    private void resume() {
-        if (debugger.getSuspend() == JPDADebugger.SUSPEND_EVENT_THREAD) {
-            debugger.getCurrentThread().resume();
-            //((JPDADebuggerImpl) debugger).resumeCurrentThread();
-        } else {
-            //((JPDADebuggerImpl) debugger).resume();
-            session.getEngineForLanguage ("Java").getActionsManager ().doAction (
-                ActionsManager.ACTION_CONTINUE
-            );
-        }
-    }
-    
-    private void traceLineForMethod(final String method, final int methodLine) {
-        final int depth = debugger.getCurrentThread().getStackDepth();
-        final JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_INTO);
-        step.setHidden(true);
-        step.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (Logger.getLogger(RunIntoMethodActionProvider.class.getName()).isLoggable(Level.FINE)) {
-                    Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                        fine("traceLineForMethod("+method+") step is at "+debugger.getCurrentThread().getClassName()+":"+debugger.getCurrentThread().getMethodName());
-                }
-                //System.err.println("RunIntoMethodActionProvider: Step fired, at "+
-                //                   debugger.getCurrentThread().getMethodName()+"()");
-                JPDAThread t = debugger.getCurrentThread();
-                int currentDepth = t.getStackDepth();
-                Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                        fine("  depth = "+currentDepth+", target = "+depth);
-                if (currentDepth == depth) { // We're in the outer expression
-                    try {
-                        if (t.getCallStack()[0].getLineNumber("Java") != methodLine) {
-                            // We've missed the method :-(
-                            step.setHidden(false);
-                        } else {
-                            step.setDepth(JPDAStep.STEP_INTO);
-                            step.addStep(debugger.getCurrentThread());
-                        }
-                    } catch (AbsentInformationException aiex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
-                        // We're somewhere strange...
-                        step.setHidden(false);
-                    }
-                } else {
-                    if (t.getMethodName().equals(method)) {
-                        // We've found it :-)
-                        step.setHidden(false);
-                    } else if (t.getMethodName().equals("<init>") && (t.getClassName().endsWith("."+method) || t.getClassName().equals(method))) {
-                        // The method can be a constructor
-                        step.setHidden(false);
-                    } else {
-                        step.setDepth(JPDAStep.STEP_OUT);
-                        step.addStep(debugger.getCurrentThread());
-                    }
-                }
-            }
-        });
-        step.addStep(debugger.getCurrentThread());
     }
     
     // **************************************************************************
