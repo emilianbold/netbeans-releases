@@ -45,6 +45,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import javax.swing.table.TableModel;
+import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -55,6 +56,7 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -165,6 +167,28 @@ public abstract class ProjectImporterTestCase  extends NbTestCase {
         JTableOperator projectsTable = new JTableOperator(wizz);
         TableModel model = projectsTable.getModel();
         selectProjectByName(model, projectToImport);
+    }
+
+    protected NbDialogOperator invokeProjectPropertiesDialog(String projectName, String nodePath) {
+        pto = new ProjectsTabOperator();
+        ProjectRootNode projectRoot = null;
+        try {
+            projectRoot = pto.getProjectRootNode(projectName);
+        } catch (TimeoutExpiredException tex) {
+            fail("No project [ " + projectName + " ] loaded");
+        }
+        projectRoot.properties();
+        String propsDialogCaption = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Customizer_Title", new Object[]{projectName});
+        NbDialogOperator propsDialog = null;
+        try {
+            propsDialog = new NbDialogOperator(propsDialogCaption);
+        } catch (TimeoutExpiredException tex) {
+            fail("Unable to open project [ " + projectName + " ] properties dialog");
+        }
+        JTreeOperator tree = new JTreeOperator(propsDialog);
+        TreePath path = tree.findPath(nodePath);
+        tree.selectPath(path);
+        return propsDialog;
     }
 
 }
