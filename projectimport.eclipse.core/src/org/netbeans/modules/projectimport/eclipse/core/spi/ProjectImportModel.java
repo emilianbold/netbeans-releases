@@ -365,8 +365,11 @@ public final class ProjectImportModel {
      * @return a possibly empty collection of launch configurations
      */
     public Collection<LaunchConfiguration> getLaunchConfigurations() {
-        List<LaunchConfiguration> configs = new ArrayList<LaunchConfiguration>();
         Workspace workspace = project.getWorkspace();
+        if (workspace == null) {
+            return Collections.emptySet();
+        }
+        List<LaunchConfiguration> configs = new ArrayList<LaunchConfiguration>();
         for (LaunchConfiguration config : workspace.getLaunchConfigurations()) {
             if (getProjectName().equals(config.getProjectName())) {
                 configs.add(config);

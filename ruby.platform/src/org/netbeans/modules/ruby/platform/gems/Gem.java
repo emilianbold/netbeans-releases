@@ -106,32 +106,6 @@ public final class Gem implements Comparable<Gem> {
         return desc.replace("\n", "<br>\n"); // NOI18N
     }
 
-    public @Override String toString() {
-        // TODO: Shown in ListCellRenderer => provide appropriate ListCellRenderer for the lists in GemPanel
-        StringBuilder sb = new StringBuilder(100);
-        sb.append("<html><b>"); // NOI18N
-        sb.append(name);
-        sb.append("</b>"); // NOI18N
-
-        if (installedVersions != null) {
-            sb.append(" ("); // NOI18N
-            sb.append(installedVersions);
-            if (availableVersions != null) {
-                sb.append(" => ").append(availableVersions); // NOI18N
-            }
-            sb.append(") "); // NOI18N
-        }
-
-        if (desc != null) {
-            sb.append(": "); // NOI18N
-            sb.append(desc);
-        }
-
-        sb.append("</html>"); // NOI18N
-
-        return sb.toString();
-    }
-
     public int compareTo(Gem other) {
         return name.compareTo(other.name);
     }

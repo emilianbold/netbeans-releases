@@ -458,6 +458,14 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         }
     }
 
+    @Override
+    public void customEditorResetToDefaultButtonPressed() {
+        if (component != null && component.get() != null) {
+            perElement.preResetToDefaultValue(component.get());
+        }
+        super.customEditorResetToDefaultButtonPressed();
+    }
+    
     public void setTextForPropertyValue(String text) {
         saveValue(text);
     }

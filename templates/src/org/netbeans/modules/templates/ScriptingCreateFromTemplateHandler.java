@@ -46,6 +46,8 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateHandler;
@@ -119,13 +121,20 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
         if (obj instanceof ScriptEngine) {
             return (ScriptEngine)obj;
         }
-        if (obj instanceof String) {
-            synchronized (ScriptingCreateFromTemplateHandler.class) {
-                if (manager == null) {
-                    manager = new ScriptEngineManager();
+        try {
+            if (obj instanceof String) {
+                synchronized (ScriptingCreateFromTemplateHandler.class) {
+                    if (manager == null) {
+                        manager = new ScriptEngineManager();
+                    }
                 }
+                return manager.getEngineByName((String) obj);
             }
-            return manager.getEngineByName((String)obj);
+        } catch (UnsupportedClassVersionError e) {
+            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                    org.openide.util.NbBundle.getBundle(ScriptingCreateFromTemplateHandler.class)
+                    .getString("ERR_Switch_To_Java_6"), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(msg);
         }
         return null;
     }

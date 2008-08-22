@@ -223,16 +223,21 @@ public class PhpOptionsPanelController extends OptionsPanelController implements
     }
 
     private boolean validateComponent() {
-        String err = Utils.validatePhpInterpreter(phpOptionsPanel.getPhpInterpreter());
-        if (err != null) {
-            phpOptionsPanel.setError(err);
-            return false;
-        }
+        // errors
         Integer debuggerPort = phpOptionsPanel.getDebuggerPort();
         if (debuggerPort == null || debuggerPort < 1) {
             phpOptionsPanel.setError(NbBundle.getMessage(PhpOptionsPanelController.class, "MSG_DebuggerInvalidPort"));
             return false;
         }
+
+        // warnings
+        String warning = Utils.validatePhpInterpreter(phpOptionsPanel.getPhpInterpreter());
+        if (warning != null) {
+            // #144680
+            phpOptionsPanel.setWarning(warning);
+            return true;
+        }
+
         // everything ok
         phpOptionsPanel.setError(" "); // NOI18N
         return true;

@@ -39,29 +39,24 @@
 package org.netbeans.modules.websvc.design.multiview;
 
 import java.awt.BorderLayout;
-import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.text.Document;
-import org.netbeans.modules.websvc.design.javamodel.MethodModel;
 import org.openide.awt.UndoRedo;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.modules.websvc.design.javamodel.ServiceChangeListener;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -219,16 +214,16 @@ public class PreviewMultiViewElement extends CloneableEditor
     }
     private Lookup lookup;
 
-    @Override
-    public Lookup getLookup() {
-
-        if (lookup == null) {
-            lookup = new ProxyLookup(super.getLookup(), myLookup);
-        }
-        return lookup;
-
-    }
-
+//    @Override
+//    public Lookup getLookup() {
+//
+//
+//        if (lookup == null) {
+//            lookup = new ProxyLookup(super.getLookup(), myLookup);
+//        }
+//        return lookup;
+//
+//    }
     /**
      *  Sets CloneableEditor instance not editable, according to component specification.
      *  CloneableEditor isn't working properly with MultiViewComponent and part of editor 

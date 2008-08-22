@@ -150,7 +150,15 @@ public class TestRandomModify {
             for (int op = 0; op < descriptor.opCount(); op++) {
                 opId++;
                 double r = random().nextDouble() * descriptor.ratioSum();
-                action(r, descriptor);
+                boolean success = false;
+                try {
+                    action(r, descriptor);
+                    success = true;
+                } finally {
+                    if (!success) {
+                        System.err.println("ACTION FAILED opId=" + opId);
+                    }
+                }
                 if (op == nextDebugOp) {
                     nextDebugOp = Math.min(nextDebugOp + debugOpFragment, descriptor.opCount() - 1);
                     System.err.println(String.valueOf(op+1) + " of " + descriptor.opCount() + " operations finished.");

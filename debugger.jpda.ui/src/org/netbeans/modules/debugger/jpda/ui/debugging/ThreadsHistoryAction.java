@@ -49,20 +49,22 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -139,7 +141,17 @@ public final class ThreadsHistoryAction extends AbstractAction {
             String name;
             try {
                 name = DebuggingNodeModel.getDisplayName(thread, false);
-            } catch (UnknownTypeException e) {
+                Method method = thread.getClass().getMethod("getDebugger"); // [TODO]
+                JPDADebugger deb = (JPDADebugger)method.invoke(thread);
+                method = deb.getClass().getMethod("getSession");
+                Session session = (Session) method.invoke(deb);
+                Session currSession = DebuggerManager.getDebuggerManager().getCurrentSession();
+                if (session != currSession) {
+                    String str = NbBundle.getMessage(ThreadsHistoryAction.class, "CTL_Session",
+                            session.getName());
+                    name = name.charAt(0) + str + ", " + name.substring(1);
+                }
+            } catch (Exception e) { // [TODO]
                 name = thread.getName();
             }
             String htmlName = name;
@@ -178,15 +190,34 @@ public final class ThreadsHistoryAction extends AbstractAction {
     }
     
     private List<JPDAThread> getThreads() {
-        List<JPDAThread> history = ThreadsListener.getDefault().getCurrentThreadsHistory();
-        List<JPDAThread> allThreads = ThreadsListener.getDefault().getThreads();
+        ThreadsListener threadsListener = ThreadsListener.getDefault();
+        List<JPDAThread> history = threadsListener.getCurrentThreadsHistory();
+        List<JPDAThread> allThreads = threadsListener.getThreads();
+        Set<JPDAThread> hitsSet = new HashSet<JPDAThread>();
+        for (JPDAThread hit : threadsListener.getHits()) {
+            hitsSet.add(hit);
+        }
         Set set = new HashSet(history);
-        List<JPDAThread> result = new ArrayList<JPDAThread>(allThreads.size());
+        List<JPDAThread> result = new LinkedList<JPDAThread>();
         result.addAll(history);
         for (JPDAThread thread : allThreads) {
             if (!set.contains(thread) && thread.isSuspended()) {
                 result.add(thread);
             }
+        }
+        if (result.size() > 1 && hitsSet.size() > 0) {
+            int index = 1;
+            int size = result.size();
+            for (int x = 1; x < size; x++) {
+                JPDAThread t = result.get(x);
+                if (hitsSet.contains(t)) {
+                    if (x > index) {
+                        result.remove(x);
+                        result.add(index, t);
+                    }
+                    index++;
+                }
+            } // for
         }
         return result;
     }

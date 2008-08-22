@@ -459,17 +459,18 @@ public final class ModuleManager {
     }
 
     /** Create a module from a JAR and add it to the managed set.
-     * Will initially be disabled, unless it is eager and can
-     * be enabled immediately.
-     * May throw an IOException if the JAR file cannot be opened
+     * <p>Will initially be disabled.
+     * To make sure all available eager modules get enabled, just call:
+     * {@link #enable}({@link Collections#emptySet})
+     * <p>May throw an IOException if the JAR file cannot be opened
      * for some reason, or is malformed.
-     * If there is already a module of the same name managed,
+     * <p>If there is already a module of the same name managed,
      * throws a duplicate exception. In this case you may wish
      * to delete the original and try again.
-     * You must give it some history object which can be used
+     * <p>You must give it some history object which can be used
      * to provide context for where the module came from and
      * whether it has been here before.
-     * You cannot request that a module be both autoload and eager.
+     * <p>You cannot request that a module be both autoload and eager.
      */
     public Module create(File jar, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException, DuplicateException {
         assertWritable();
@@ -478,26 +479,6 @@ public final class ModuleManager {
                         history, reloadable, autoload, eager, this, ev);
         ev.log(Events.FINISH_CREATE_REGULAR_MODULE, jar);
         subCreate(m);
-        // Must run eager enablement check for *every* module that is created,
-        // even if it itself is not eager. Otherwise it is possible that an eager
-        // module gets created, followed immediately by one of its dependencies,
-        // and does not get turned on.
-        List<Module> immediate = simulateEnable(Collections.<Module>emptySet());
-        if (!immediate.isEmpty()) {
-            assert immediate.contains(m) : "Can immediately enable modules " + immediate + ", but not including " + m + "; its problems: " + m.getProblems();
-            boolean ok = true;
-            for (Module other: immediate) {
-                if (!other.isAutoload() && !other.isEager()) {
-                    // Nope, would require a real module to be turned on first.
-                    ok = false;
-                    break;
-                }
-            }
-            if (ok) {
-                Util.err.fine("Enabling " + m + " immediately");
-                enable(Collections.<Module>emptySet());
-            }
-        }
         return m;
     }
 
@@ -708,6 +689,7 @@ public final class ModuleManager {
     /** Enable a single module.
      * Must have satisfied its dependencies.
      * Must not be an autoload module, when supported.
+     * @see #enable(Set)
      */
     public final void enable(Module m) throws IllegalArgumentException, InvalidException {
         enable(Collections.singleton(m));
@@ -716,20 +698,22 @@ public final class ModuleManager {
     /** Disable a single module.
      * Must not be required by any enabled modules.
      * Must not be an autoload module, when supported.
+     * @see #disable(Set)
      */
     public final void disable(Module m) throws IllegalArgumentException {
         disable(Collections.singleton(m));
     }
 
     /** Enable a set of modules together.
-     * Must have satisfied their dependencies
+     * <p>Must have satisfied their dependencies
      * (possibly with one another).
-     * Must not contain autoload nor eager modules.
+     * <p>Must not contain autoload nor eager modules.
      * Might contain fixed modules (they can only be installed once of course).
-     * It is permissible to pass in modules which in fact at runtime cannot
+     * Other modules may become enabled automatically according to {@link #simulateEnable}.
+     * <p>It is permissible to pass in modules which in fact at runtime cannot
      * satisfy their package dependencies, or which {@link ModuleInstaller#prepare}
-     * rejects on the basis of missing contents. In such a case InvalidException
-     * will be thrown and nothing will be installed. The InvalidException in such
+     * rejects on the basis of missing contents. In such a case {@link InvalidException}
+     * will be thrown and nothing will be installed. The {@link InvalidException} in such
      * a case should contain a reference to the offending module.
      */
     public void enable(Set<Module> modules) throws IllegalArgumentException, InvalidException {
@@ -920,10 +904,11 @@ public final class ModuleManager {
     }
 
     /** Disable a set of modules together.
-     * Must not be required by any enabled
+     * <p>Must not be required by any enabled
      * modules (except one another).
-     * Must not contain autoload nor eager modules.
+     * <p>Must not contain autoload nor eager modules.
      * Must not contain fixed modules.
+     * Other modules may become disabled automatically according to {@link #simulateDisable}.
      */
     public void disable(Set<Module> modules) throws IllegalArgumentException {
         assertWritable();

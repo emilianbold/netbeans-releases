@@ -45,7 +45,7 @@ import org.netbeans.api.java.source.CodeStyle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
-import org.netbeans.spi.options.OptionsPanelController;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 
 
 /**
@@ -83,8 +83,8 @@ public class FmtWrapping extends javax.swing.JPanel {
         assignOpsCombo.putClientProperty(OPTION_ID, wrapAssignOps);
     }
     
-    public static OptionsPanelController getController() {
-        return new CategorySupport(new FmtWrapping(),
+    public static PreferencesCustomizer.Factory getController() {
+        return new CategorySupport.Factory("wrapping", FmtWrapping.class, //NOI18N
                 org.openide.util.NbBundle.getMessage(FmtWrapping.class, "SAMPLE_Wrapping"), //NOI18N
                 new String[] { FmtOptions.rightMargin, "30" }, //NOI18N
                 new String[] { FmtOptions.redundantDoWhileBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
