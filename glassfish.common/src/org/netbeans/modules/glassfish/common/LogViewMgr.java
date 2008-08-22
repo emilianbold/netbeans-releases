@@ -47,17 +47,20 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.Action;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.actions.DebugAction;
@@ -72,6 +75,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 
 
 /**
@@ -254,9 +258,10 @@ public class LogViewMgr {
      * 
      * @param s message to write
      */
-    public synchronized void write(String s) {
+    public synchronized void write(String s, boolean error) {
         Logger.getLogger("glassfish").log(Level.FINE, "write: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError());
-        io.getOut().print(s);
+        OutputWriter writer = error ? io.getErr() : io.getOut();
+        writer.print(s);
     }
     
     /**
@@ -264,14 +269,56 @@ public class LogViewMgr {
      * 
      * @param s message to write
      */
-    public synchronized void write(String s, OutputListener link, boolean important) {
+    public synchronized void write(String s, OutputListener link, boolean important, boolean error) {
         Logger.getLogger("glassfish").log(Level.FINE, "writeOL: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError());
         try {
-            io.getOut().println(s, link, important);
+            OutputWriter writer = error ? io.getErr() : io.getOut();
+            writer.println(s, link, important);
         } catch(IOException ex) {
             Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
         }
     }
+
+    private final Locale logLocale = getLogLocale();
+    private final String logBundleName = getLogBundle();
+    private final String localizedWarning = getLocalized(Level.WARNING.getName());
+    private final String localizedSevere = getLocalized(Level.SEVERE.getName());
+    private final Map<String, String> localizedLevels = getLevelMap();
+    
+    private Locale getLogLocale() {
+        // XXX detect and use server language/country/variant instead of IDE's.
+        String language = System.getProperty("user.language");
+        if(language != null) {
+            return new Locale(language, System.getProperty("user.country", ""), System.getProperty("user.variant", ""));
+        }
+        return Locale.getDefault();
+    }
+    
+    private String getLogBundle() {
+        return Level.INFO.getResourceBundleName();
+    }
+    
+    private String getLocalized(String text) {
+        ResourceBundle bundle = ResourceBundle.getBundle(logBundleName, logLocale);
+        String localized = bundle.getString(text);
+        return localized != null ? localized : text;
+    }
+
+    private Map<String, String> getLevelMap() {
+        Map<String, String> levelMap = new HashMap<String, String>();
+        for(Level l: new Level [] { Level.ALL, Level.CONFIG, Level.FINE,
+                Level.FINER, Level.FINEST, Level.INFO, Level.SEVERE, Level.WARNING } ) {
+            String name = l.getName();
+            levelMap.put(name, getLocalized(name));
+        }
+        return levelMap;
+    }
+    
+    private String getLocalizedLevel(String level) {
+        String localizedLevel = localizedLevels.get(level);
+        return localizedLevel != null ? localizedLevel : level;
+    }
+    
 
     /**
      * Selects output panel
@@ -314,7 +361,7 @@ public class LogViewMgr {
 
                 // ignoreEof is true for log files and false for process streams.
                 // FIXME Should differentiate filter types more cleanly.
-                Filter filter = ignoreEof ? new LogFileFilter() : new StreamFilter();
+                Filter filter = ignoreEof ? new LogFileFilter(localizedLevels) : new StreamFilter();
                 
                 // read from the input stream and put all the changes to the I/O window
                 char [] chars = new char[1024];
@@ -381,16 +428,30 @@ public class LogViewMgr {
             }
             OutputListener listener = null;
             Iterator<Recognizer> iterator = recognizers.iterator();
-            while(iterator.hasNext() && listener != null) {
+            while(iterator.hasNext() && listener == null) {
                 listener = iterator.next().processLine(line);
             }
+            boolean showAsError = isWarning(line);
             if(listener != null) {
-                write(line, listener, false);
+                line = stripNewline(line);
+                write(line, listener, false, showAsError);
             } else {
-                write(line);
+                write(line, showAsError);
             }
             selectIO();
         }
+    }
+
+    private static final String stripNewline(String s) {
+        int len = s.length();
+        if(len > 0 && '\n' == s.charAt(len-1)) {
+            s = s.substring(0, len-1);
+        }
+        return s;
+    }
+    
+    private boolean isWarning(String line) {
+        return line.startsWith(localizedWarning) || line.startsWith(localizedSevere);
     }
 
     private static interface Filter {
@@ -409,7 +470,6 @@ public class LogViewMgr {
         StateFilter() {
             state = 0;
             msg = new StringBuilder(128);
-            reset();
         }
         
         protected void reset() {
@@ -420,8 +480,22 @@ public class LogViewMgr {
         
     }
     
-    private static class StreamFilter extends StateFilter {
+    private static final class StreamFilter extends StateFilter {
+
+        private static final Pattern messagePattern = Pattern.compile("([\\p{Lu}]{0,16}?):|([^\\r\\n]{0,24}?\\d\\d?:\\d\\d?:\\d\\d?)");
         
+        private String line;
+        
+        public StreamFilter() {
+            reset();
+        }
+
+        @Override
+        protected void reset() {
+            super.reset();
+            line = "";
+        }
+
         /**
          * GlassFish server log format, when read from process stream:
          *
@@ -451,8 +525,15 @@ public class LogViewMgr {
             if(c == '\n') {
                 if(msg.length() > 0) {
                     msg.append(c);
-                    result = msg.toString();
+                    line = msg.toString();
                     msg.setLength(0);
+
+                    Matcher matcher = messagePattern.matcher(line);
+                    if(matcher.find() && matcher.start() == 0 && matcher.groupCount() > 1 && matcher.group(2) != null) {
+                        result = null;
+                    } else {
+                        result = line;
+                    }
                 }
             } else if(c != '\r') {
                 msg.append(c);
@@ -460,23 +541,36 @@ public class LogViewMgr {
 
             return result;
         }
-        
+
     }
 
-    private static class LogFileFilter extends StateFilter {
+    private static final class LogFileFilter extends StateFilter {
         
         private String time;
         private String type;
         private String version;
         private String classinfo;
         private String threadinfo;
+        private boolean multiline;
+        private final Map<String, String> typeMap;
+
+        public LogFileFilter(Map<String, String> typeMap) {
+            this.typeMap = typeMap;
+            reset();
+        }
 
         @Override
         protected void reset() {
             super.reset();
             time = type = version = classinfo = threadinfo = "";
+            multiline = false;
         }
         
+        private String getLocalizedType(String type) {
+            String localizedType = typeMap.get(type);
+            return localizedType != null ? localizedType : type;
+        }
+
         /**
          * GlassFish server log entry format (unformatted), when read from file:
          *
@@ -558,7 +652,7 @@ public class LogViewMgr {
                 case 4:
                     if(c == '|') {
                         state = 5;
-                        type = msg.toString();
+                        type = getLocalizedType(msg.toString());
                         msg.setLength(0);
                     } else {
                         msg.append(c);
@@ -595,7 +689,14 @@ public class LogViewMgr {
                     if(c == '|') {
                         state = 9;
                         message = msg.toString();
-                    } else {
+                    } else if(c == '\n') {
+                        if(msg.length() > 0) { // suppress blank lines in multiline messages
+                            msg.append('\n');
+                            result = !multiline ? type + ": " + msg.toString() : msg.toString();
+                            multiline = true;
+                            msg.setLength(0);
+                        }
+                    } else if(c != '\r') {
                         msg.append(c);
                     }
                     break;
@@ -612,7 +713,7 @@ public class LogViewMgr {
                     if(c == ']') {
                         state = 0;
                         msg.setLength(0);
-                        result = time + ' ' + type + ": " + message + '\n';
+                        result = (multiline ? message : type + ": " + message) + '\n';
                         reset();
                     } else {
                         state = 8;

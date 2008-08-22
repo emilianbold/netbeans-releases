@@ -55,6 +55,6 @@ public interface RecognizerCookie {
      * @return Collection of recognizer objects or empty collection if none
      *   available.
      */
-    public Collection<Recognizer> getRecognizers();
+    public Collection<? extends Recognizer> getRecognizers();
     
 }
