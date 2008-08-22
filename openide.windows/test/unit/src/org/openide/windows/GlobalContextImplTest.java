@@ -52,6 +52,7 @@ import javax.swing.ActionMap;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.openide.windows.GlobalActionContextImpl;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -80,6 +81,11 @@ implements org.openide.util.LookupListener {
     public static Test suite() {
         return new NbTestSuite(GlobalContextImplTest.class);
         //return new GlobalContextImplTest("testRequestVisibleBlinksTheActionMapForAWhileWithOwnComponentAndAction");
+    }
+
+    @Override
+    protected int timeOut() {
+        return 15000;
     }
     
     @Override
@@ -138,14 +144,18 @@ implements org.openide.util.LookupListener {
     }
     
     public void testRequestVisibleBlinksTheActionMapForAWhile () throws Exception {
-        doRequestVisibleBlinksTheActionMapForAWhile(new TopComponent(), true);
+        doRequestVisibleBlinksTheActionMapForAWhile(new TopComponent(), true,false);
     }
 
     public void testSetParentMapBlinks () throws Exception {
-        doRequestVisibleBlinksTheActionMapForAWhile(new TopComponent(), false);
+        doRequestVisibleBlinksTheActionMapForAWhile(new TopComponent(), false,false);
     }
 
-    private void doRequestVisibleBlinksTheActionMapForAWhile(TopComponent my, boolean requestVisible) throws Exception {
+    public void testSetParentMapBlinksRecursive () throws Exception {
+        doRequestVisibleBlinksTheActionMapForAWhile(new TopComponent(), false, true);
+    }
+
+    private void doRequestVisibleBlinksTheActionMapForAWhile(TopComponent my, boolean requestVisible, final boolean recursive) throws Exception {
         final org.openide.nodes.Node n = new org.openide.nodes.AbstractNode (org.openide.nodes.Children.LEAF);
         tc.setActivatedNodes(new Node[] { n });
         
@@ -154,6 +164,7 @@ implements org.openide.util.LookupListener {
         class L implements org.openide.util.LookupListener {
             Lookup.Result<ActionMap> res = lookup.lookup (new Lookup.Template<ActionMap> (ActionMap.class));
             ArrayList<ActionMap> maps = new ArrayList<ActionMap> ();
+            int cnt;
             
             public void resultChanged (org.openide.util.LookupEvent ev) {
                 assertTrue("Changes are comming from AWT thread only", EventQueue.isDispatchThread());
@@ -164,6 +175,10 @@ implements org.openide.util.LookupListener {
                 maps.add (i.getInstance ());
                 
                 assertNode ();
+
+                if (recursive && cnt++ == 0) {
+                    GlobalActionContextImpl.blickActionMap(new ActionMap());
+                }
             }
             
             public void assertNode () {
@@ -183,6 +198,10 @@ implements org.openide.util.LookupListener {
                 my.getActionMap().setParent(new ActionMap());
             }
             waitEQ();
+            if (recursive) {
+                return;
+            }
+
             if (myListener.maps.size () != 2) {
                 fail ("Expected two changes in the ActionMaps: " + myListener.maps);
             }
@@ -235,11 +254,11 @@ implements org.openide.util.LookupListener {
     }
     
     public void testRequestVisibleBlinksTheActionMapForAWhileWithOwnComponentAndAction() throws Exception {
-        doRequestVisibleBlinksTheActionMapForAWhile(new OwnTopComponent(), true);
+        doRequestVisibleBlinksTheActionMapForAWhile(new OwnTopComponent(), true,false);
     }
 
     public void testActionMapSetParentWithOwnComponentAndAction() throws Exception {
-        doRequestVisibleBlinksTheActionMapForAWhile(new OwnTopComponent(), false);
+        doRequestVisibleBlinksTheActionMapForAWhile(new OwnTopComponent(), false,false);
     }
     
     public void testComponentChangeActionMapIsPropagatedToGlobalLookup() throws Exception {

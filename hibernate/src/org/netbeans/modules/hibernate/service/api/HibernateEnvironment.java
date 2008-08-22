@@ -71,6 +71,14 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
      * @return List of classnames (FQN) (String) of all annotated POJO classes found in this configuration or an empty list.
      */
     public List<String> getAnnotatedPOJOClassNames(FileObject configurationFO);
+
+    /**
+     * Registers the selected DB Driver with the project.
+     * @param driver the driver classname.
+     * @param primaryFile a file in the project. Used to extend the classpath.
+     * @return true if sucessfully registered the given driver or false, if there's problem with registering.
+     */
+    public boolean registerDBDriver(String driver, FileObject primaryFile);
     
     /**
      * Registers Hibernate Library in this project.

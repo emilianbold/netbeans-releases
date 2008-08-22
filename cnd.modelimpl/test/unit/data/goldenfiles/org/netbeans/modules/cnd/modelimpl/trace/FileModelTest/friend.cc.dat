@@ -27,7 +27,7 @@ FUNCTION DEFINITION moo  [2:1/15-2:24/38] FunctionDDImpl SCOPE: $Global$
     RETURNS int TEXT=int  [2:1/15-2:4/18]
     STATEMENT COMPOUND  [2:13/27-2:24/38] SCOPE: moo 
         STATEMENT RETURN  [2:14/28-2:23/37] SCOPE: Stmt  [2:13/27-2:24/38] text: 'return 0;'
-STRUCT S2 (S2 ) [3:1/39-5:29/95] lcurly=49 SCOPE: $Global$ 
+STRUCT S2 (S2 ) [3:1/39-5:28/94] lcurly=49 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION soo [4:5/56-4:15/66] MethodImpl SCOPE: S2 
@@ -44,7 +44,7 @@ STRUCT S2 (S2 ) [3:1/39-5:29/95] lcurly=49 SCOPE: $Global$
             RETURNS int TEXT=int  [5:5/71-5:8/74]
             STATEMENT COMPOUND  [5:15/81-5:26/92] SCOPE: soo2 
                 STATEMENT RETURN  [5:16/82-5:25/91] SCOPE: Stmt  [5:15/81-5:26/92] text: 'return 0;'
-CLASS A2 (A2 ) [6:1/96-7:18/123] lcurly=104 SCOPE: $Global$ 
+CLASS A2 (A2 ) [6:1/96-7:17/122] lcurly=104 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION foo [7:5/110-7:15/120] MethodImpl SCOPE: A2 
@@ -61,7 +61,7 @@ FUNCTION DEFINITION foo  [8:1/124-8:27/150] FunctionDefinitionImpl SCOPE: friend
     RETURNS int TEXT=int  [8:1/124-8:4/127]
     STATEMENT COMPOUND  [8:14/137-8:27/150] SCOPE: foo 
         STATEMENT RETURN  [8:16/139-8:25/148] SCOPE: Stmt  [8:14/137-8:27/150] text: 'return 0;'
-CLASS B (B ) [9:1/151-16:29/348] lcurly=158 SCOPE: $Global$ 
+CLASS B (B ) [9:1/151-16:28/347] lcurly=158 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         TYPEDEF xxx  [10:5/164-10:21/180] TYPE: int TEXT=int  [10:13/172-10:16/175] SCOPE: B 
@@ -124,7 +124,7 @@ FUNCTION DEFINITION moo  [2:1/15-2:24/38] FunctionDDImpl SCOPE: $Global$
     RETURNS int TEXT=int  [2:1/15-2:4/18]
     STATEMENT COMPOUND  [2:13/27-2:24/38] SCOPE: moo 
         STATEMENT RETURN  [2:14/28-2:23/37] SCOPE: Stmt  [2:13/27-2:24/38] text: 'return 0;'
-STRUCT S2 (S2 ) [3:1/39-5:29/95] lcurly=49 SCOPE: $Global$ 
+STRUCT S2 (S2 ) [3:1/39-5:28/94] lcurly=49 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION soo [4:5/56-4:15/66] MethodImpl SCOPE: S2 
@@ -141,7 +141,7 @@ STRUCT S2 (S2 ) [3:1/39-5:29/95] lcurly=49 SCOPE: $Global$
             RETURNS int TEXT=int  [5:5/71-5:8/74]
             STATEMENT COMPOUND  [5:15/81-5:26/92] SCOPE: soo2 
                 STATEMENT RETURN  [5:16/82-5:25/91] SCOPE: Stmt  [5:15/81-5:26/92] text: 'return 0;'
-CLASS A2 (A2 ) [6:1/96-7:18/123] lcurly=104 SCOPE: $Global$ 
+CLASS A2 (A2 ) [6:1/96-7:17/122] lcurly=104 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION foo [7:5/110-7:15/120] MethodImpl SCOPE: A2 
@@ -150,7 +150,7 @@ CLASS A2 (A2 ) [6:1/96-7:18/123] lcurly=104 SCOPE: $Global$
             UNIQUE NAME F:A2::foo()
             PARAMETERS:
             RETURNS int TEXT=int  [7:5/110-7:8/113]
-CLASS B (B ) [9:1/151-16:29/348] lcurly=158 SCOPE: $Global$ 
+CLASS B (B ) [9:1/151-16:28/347] lcurly=158 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         TYPEDEF xxx  [10:5/164-10:21/180] TYPE: int TEXT=int  [10:13/172-10:16/175] SCOPE: B 

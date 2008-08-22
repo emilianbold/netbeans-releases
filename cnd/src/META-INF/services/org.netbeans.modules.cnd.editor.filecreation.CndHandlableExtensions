@@ -1,3 +1,4 @@
 org.netbeans.modules.cnd.loaders.CDataLoader
 org.netbeans.modules.cnd.loaders.CCDataLoader
 org.netbeans.modules.cnd.loaders.HDataLoader
+org.netbeans.modules.cnd.loaders.FortranDataLoader

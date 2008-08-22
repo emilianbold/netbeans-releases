@@ -51,7 +51,17 @@ import org.netbeans.modules.websvc.saas.codegen.util.Util;
  * @author ayubkhan
  */
 public class PhpUtil {
-
+    
+    public static boolean isPhp(Document doc) {
+        if(doc == null)
+            return false;
+        Object mimeType = doc.getProperty("mimeType"); //NOI18N
+        if (mimeType != null && ("text/x-php5".equals(mimeType))) { //NOI18N
+            return true;
+        }
+        return false;
+    }
+    
     public static String wrapWithTag(String content, Document doc, int insertStart) {
         String str = "";
         boolean addTag = !isWithinTag(doc, 0, insertStart);

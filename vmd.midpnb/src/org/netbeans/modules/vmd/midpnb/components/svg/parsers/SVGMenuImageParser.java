@@ -69,6 +69,7 @@ public final class SVGMenuImageParser extends SVGComponentImageParser {
     }
 
     public static void parseSVGMenu(final InputStream svgInputStream, final DesignComponent svgComponent) {
+        
         final String[] menuItems = getMenuItems(svgInputStream);
         if (menuItems != null) {
             svgComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {

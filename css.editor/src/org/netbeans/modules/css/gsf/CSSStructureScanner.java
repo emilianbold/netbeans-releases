@@ -98,25 +98,50 @@ public class CSSStructureScanner implements StructureScanner {
             public void visit(SimpleNode node) {
                 if (node.kind() == CSSParserTreeConstants.JJTSELECTORLIST) {
                     //get parent - style rule
-                    SimpleNode ruleNode = (SimpleNode)node.jjtGetParent();
-                    
+                    SimpleNode ruleNode = (SimpleNode) node.jjtGetParent();
                     assert ruleNode.kind() == CSSParserTreeConstants.JJTSTYLERULE;
-                    
-                    
                     int so = AstUtils.documentPosition(ruleNode.startOffset(), source);
                     int eo = AstUtils.documentPosition(ruleNode.endOffset(), source);
                     if (eo != so) {
-                        //we need to get the text directly from the document otherwise
-                        //the GENERATED_xxx items may appear in the navigator
-                        int documentSO = AstUtils.documentPosition(node.startOffset(), source);
-                        int documentEO = AstUtils.documentPosition(node.endOffset(), source);
-                        String nodeName = info.getText().substring(documentSO, documentEO);
 
-                        //filter out inlined style definitions - they have just virtual selector which
-                        //is mapped to empty string
-                        if(nodeName.length() > 0) {
-                            items.add(new CssRuleStructureItem(nodeName, CssAstElement.getElement(info, ruleNode)));
+                        StringBuffer selectorsListText = new StringBuffer();
+                        for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+                            SimpleNode n = (SimpleNode) node.jjtGetChild(i);
+                            if (n.kind() == CSSParserTreeConstants.JJTSELECTOR) {
+                                StringBuffer content = new StringBuffer();
+                                //found selector
+                                for (int j = 0; j < n.jjtGetNumChildren(); j++) {
+                                    SimpleNode n2 = (SimpleNode) n.jjtGetChild(j);
+                                    //append simpleselectors and combinators
+                                    if (n2.kind() == CSSParserTreeConstants.JJTSIMPLESELECTOR ||
+                                            n2.kind() == CSSParserTreeConstants.JJTCOMBINATOR) {
+                                        if(n2.image().trim().length() > 0) {
+                                            String nodeText = extractDocumentText(n2, info, source).trim();
+                                            content.append(nodeText);
+                                            content.append(' ');
+                                        }
+                                    }
+                                }
+                                //filter out inlined style definitions - they have just virtual selector which
+                                //is mapped to empty string
+
+                                if (content.length() > 0) {
+                                    selectorsListText.append(content.substring(0, content.length() - 1)); //cut last space
+                                    selectorsListText.append(", "); //append selectos separator //NOI18N
+                                }
+                            }
                         }
+                        //filter empty(virtual) selector lists
+                        if (selectorsListText.length() > 2 /* ", ".length() */) {
+                            
+                            //possibly remove last space and comma
+                            if (selectorsListText.charAt(selectorsListText.length() - 2) == ',') {
+                                selectorsListText.deleteCharAt(selectorsListText.length() - 2);
+                            }
+
+                            items.add(new CssRuleStructureItem(selectorsListText.toString(), CssAstElement.getElement(info, ruleNode)));
+                        }
+
                     }
                 }
             }
@@ -125,6 +150,12 @@ public class CSSStructureScanner implements StructureScanner {
         return items;
     }
 
+    private String extractDocumentText(SimpleNode node, CompilationInfo ci, TranslatedSource source) {
+        int documentSO = AstUtils.documentPosition(node.startOffset(), source);
+        int documentEO = AstUtils.documentPosition(node.endOffset(), source);
+        return ci.getText().substring(documentSO, documentEO);
+    }
+    
     public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
         final BaseDocument doc = (BaseDocument) info.getDocument();
         if (doc == null) {
@@ -168,7 +199,7 @@ public class CSSStructureScanner implements StructureScanner {
             }
         };
         root.visitChildren(foldsSearch);
-        folds.put("codeblocks", foldRange);
+        folds.put("codeblocks", foldRange); //NOI18N
 
         return folds;
         
@@ -177,7 +208,7 @@ public class CSSStructureScanner implements StructureScanner {
     public Configuration getConfiguration() {
         return new Configuration(true, false);
     }
-
+    
     private static class CssRuleStructureItem implements StructureItem {
 
         private String name;

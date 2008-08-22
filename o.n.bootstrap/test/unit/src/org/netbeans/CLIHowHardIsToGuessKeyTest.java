@@ -51,12 +51,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.fakepkg.FakeHandler;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.RequestProcessor;
 
 /** Tests that handler can set netbeans.mainclass property in its constructor.
  *
  * @author Jaroslav Tulach
  */
+@RandomlyFails // NB-Core-Build #1211
 public class CLIHowHardIsToGuessKeyTest extends NbTestCase {
     private static Object LOCK = new Object();
     private Logger LOG;

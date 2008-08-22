@@ -161,7 +161,7 @@ public class DbgpUtils {
             } else if(response.getState() == Status.State.DEBUGGER) {
                 return JSDebuggerState.SUSPENDED_DEBUGGER;
             } else if(response.getState() == Status.State.STOPPED) {
-                return JSDebuggerState.DISCONNECTED;
+                return response.getReason() == Status.Reason.EXCEPTION ? JSDebuggerState.DISCONNECTED : JSDebuggerState.DISCONNECTED_USER;
             }
         }
         return null;

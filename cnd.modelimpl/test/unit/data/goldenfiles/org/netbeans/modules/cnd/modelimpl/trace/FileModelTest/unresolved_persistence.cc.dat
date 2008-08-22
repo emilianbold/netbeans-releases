@@ -24,7 +24,7 @@ FUNCTION DEFINITION foo  [3:1/16-5:2/34] FunctionDefinitionImpl SCOPE: unresolve
     PARAMETERS:
     RETURNS void TEXT=void  [3:1/16-3:5/20]
     STATEMENT COMPOUND  [3:15/30-5:2/34] SCOPE: foo 
-CLASS D (D ) [7:1/36-11:3/78] lcurly=48 SCOPE: $Global$ 
+CLASS D (D ) [7:1/36-11:2/77] lcurly=48 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=$unresolved$::C VISIBILITY==PRIVATE virtual==false text='C'
     MEMBERS:
@@ -43,7 +43,7 @@ FUNCTION foo [1:1/0-1:15/14] FunctionImpl SCOPE: $Global$
     UNIQUE NAME F:foo()
     PARAMETERS:
     RETURNS void TEXT=void  [1:1/0-1:5/4]
-CLASS D (D ) [7:1/36-11:3/78] lcurly=48 SCOPE: $Global$ 
+CLASS D (D ) [7:1/36-11:2/77] lcurly=48 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=$unresolved$::C VISIBILITY==PRIVATE virtual==false text='C'
     MEMBERS:

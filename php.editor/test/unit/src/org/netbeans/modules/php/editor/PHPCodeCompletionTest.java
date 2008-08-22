@@ -71,6 +71,30 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/interfaces.php", "$arg->^", false);
     }
     
+    public void testCCOnMethods1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "$tst1->newInstance()->^", false);
+    }
+    
+    public void testCCOnMethods2() throws Exception {
+        checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "TestCCOnMethods::create()->^", false);
+    }
+    
+    public void testCCOnMethods3() throws Exception {
+        checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "self::create()->^", false);
+    }
+    
+    public void testCCOnMethods4() throws Exception {
+        checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "parent::parentInstance()->pa^", false);
+    }
+    
+    public void testCCOnMethods5() throws Exception {
+        checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "foo_TestCCOnMethods()->^", false);
+    }
+    
+    public void testCCOnMethods6() throws Exception {
+        checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "foo_TestCCOnMethods()->newInstance()->n^", false);
+    }
+    
     public void testComments1() throws Exception {
         checkCompletion("testfiles/completion/lib/comments.php", "one line ^", false);
     }
@@ -113,6 +137,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
 
     public void test136744_3() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test3^", false);
+    }
+    
+    public void test144830() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue144830.php", "$this->^", false);
     }
 
     public void test136744_4() throws Exception {

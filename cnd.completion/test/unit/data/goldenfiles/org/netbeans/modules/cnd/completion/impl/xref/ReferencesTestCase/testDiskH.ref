@@ -18,15 +18,15 @@
 ==============================================================
 'Disk', tokenID=identifier, offset=2162 [46:7/2162-46:11/2166]
 --OWNER:
-    CLASS Disk [46:1/2156-57:3/2535] ReferencesTestCase/disk.h
+    CLASS Disk [46:1/2156-57:2/2534] ReferencesTestCase/disk.h
 --RESOLVED TO:
-    CLASS Disk [46:1/2156-57:3/2535] ReferencesTestCase/disk.h
+    CLASS Disk [46:1/2156-57:2/2534] ReferencesTestCase/disk.h
 ==============================================================
 'Module', tokenID=identifier, offset=2176 [46:21/2176-46:27/2182]
 --OWNER:
      [46:14/2169-46:27/2182] ReferencesTestCase/disk.h
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'DiskType', tokenID=identifier, offset=2202 [48:10/2202-48:18/2210]
 --OWNER:

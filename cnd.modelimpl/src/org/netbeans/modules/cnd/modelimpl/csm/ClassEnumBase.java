@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -84,14 +86,26 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     private final List<CsmUID<CsmTypedef>> enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>());
     
     protected ClassEnumBase(String name, CsmFile file, AST ast) {
-        super(ast, file);
+        super(file, getStartOffset(ast), getEndOffset(ast));
         this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getManager().getString(name);
     }
-    
+
+    protected static int getEndOffset(AST node) {
+        if (node != null) {
+            AST rcurly = AstUtil.findChildOfType(node, CPPTokenTypes.RCURLY);
+            if (rcurly instanceof CsmAST) {
+                return ((CsmAST)rcurly).getEndOffset();
+            } else {
+                return OffsetableBase.getEndOffset(node);
+            }
+        }
+        return 0;
+    }
+
     public CharSequence getName() {
         return name;
     }
-    
+
     protected ClassImpl.ClassMemberForwardDeclaration isClassDefinition(){
         CsmScope scope = getScope();
         if (name != null && name.toString().indexOf("::") > 0) { // NOI18N
@@ -128,7 +142,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     
     /** Initializes scope */
     protected final void initScope(CsmScope scope, AST ast) {
-	if (scope instanceof CsmIdentifiable) {
+	if (CsmKindUtilities.isIdentifiable(scope)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (this.scopeUID != null || scope == null) : "null UID for class scope " + scope;
             this.scopeRef = null;
@@ -220,8 +234,8 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         
     private void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
-            // restore container from it's UID
-            this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
+            // restore container from it's UID if not directly initialized
+            this.scopeRef = this.scopeRef != null ? this.scopeRef : UIDCsmConverter.UIDtoScope(this.scopeUID);
             assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
         }
     }

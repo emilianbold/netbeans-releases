@@ -66,16 +66,18 @@ $NB $VMFLAGS -J-Dgsf.preindexing=true -J-Druby.computeindex -J-Dgsf.preindexing.
 #cd $CLUSTERS
 cd $RUBY
 rm -f preindexed-jruby.zip
-find . -name "netbeans-index-php*.zip" -exec rm {} \;
-#zip -r preindexed-jruby.zip `find . -name "netbeans-index-ruby*" | egrep -v "action|active|rails"`
+find . -name "netbeans-index-*php*.zip" -exec rm {} \;
+find . -name "netbeans-index-*groovy*.zip" -exec rm {} \;
+#zip -r preindexed-jruby.zip `find . -name "netbeans-index-*ruby*" | egrep -v "action|active|rails"`
 zip -r preindexed-jruby.zip `find . -name "netbeans-index-*" | egrep -v "action|active|rails"`
 mv preindexed-jruby.zip $NBHGHOME/ruby.platform/external/preindexed.zip
 rm -f preindexed-jruby.zip
 
 cd $GSF
 rm -f preindexed-javascript.zip
-find . -name "netbeans-index-php*.zip" -exec rm {} \;
-#zip -r preindexed-javascript.zip `find . -name "netbeans-index-javascript*" | egrep -v "action|active|rails"`
+find . -name "netbeans-index-*php*.zip" -exec rm {} \;
+find . -name "netbeans-index-*groovy*.zip" -exec rm {} \;
+#zip -r preindexed-javascript.zip `find . -name "netbeans-index-*javascript*" | egrep -v "action|active|rails"`
 zip -r preindexed-javascript.zip `find . -name "netbeans-index-*" | egrep -v "action|active|rails"`
 mv preindexed-javascript.zip $NBHGHOME/javascript.editing/external/preindexed.zip
 rm -f preindexed-javascript.zip
@@ -93,7 +95,7 @@ $NB $VMFLAGS -J-Dgsf.preindexing=true -J-Druby.computeindex -J-Dgsf.preindexing.
 # Ruby
 cd $NATIVERUBYHOME
 rm -f $SCRATCHFILE
-zip -r $SCRATCHFILE `find . -name "netbeans-index-ruby*.zip"` 
+zip -r $SCRATCHFILE `find . -name "netbeans-index-*ruby*.zip"` 
 cd $RUBY
 rm -rf preindexed
 mkdir preindexed
@@ -101,7 +103,8 @@ cd preindexed
 unzip $SCRATCHFILE
 cd ..
 rm -f $NBHGHOME/ruby.platform/external/preindexed-native.zip
-find . -name "netbeans-index-php*.zip" -exec rm {} \;
+find . -name "netbeans-index-*php*.zip" -exec rm {} \;
+find . -name "netbeans-index-*groovy*.zip" -exec rm {} \;
 zip -r $NBHGHOME/ruby.platform/external/preindexed-native.zip preindexed/
 
 # JavaScript
@@ -109,8 +112,8 @@ cd $NATIVERUBYHOME
 rm -f $SCRATCHFILE
 echo "**************"
 echo "Indexing complete. There should be no output after this:"
-find . -name "netbeans-index-javascript*.zip"
-#zip -r $SCRATCHFILE `find . -name "netbeans-index-javascript*.zip"` 
+find . -name "netbeans-index-*javascript*.zip"
+#zip -r $SCRATCHFILE `find . -name "netbeans-index-*javascript*.zip"` 
 #cd $GSF
 #rm -rf preindexed-javascript
 #mkdir preindexed-javascript
@@ -118,6 +121,7 @@ find . -name "netbeans-index-javascript*.zip"
 #unzip $SCRATCHFILE
 #cd ..
 #rm -f $NBHGHOME/javascript.editing/external/preindexed-native.zip
-#find . -name "netbeans-index-php*.zip" -exec rm {} \;
+#find . -name "netbeans-index-*php*.zip" -exec rm {} \;
+#find . -name "netbeans-index-*groovy*.zip" -exec rm {} \;
 #zip -r $NBHGHOME/javascript.editing/external/preindexed-native.zip preindexed-javascript/
 fi

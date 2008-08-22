@@ -41,7 +41,6 @@
 
 package org.netbeans.editor.ext.html;
 
-import org.netbeans.editor.ext.html.SyntaxElement;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -55,9 +54,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import org.netbeans.editor.*;
-import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.*;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.editor.ext.html.javadoc.HelpManager;
 import org.netbeans.api.editor.completion.Completion;
@@ -67,7 +64,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -109,11 +105,13 @@ public class HTMLCompletionQuery  {
         Class kitClass = Utilities.getKitClass(component);
         BaseDocument doc = (BaseDocument)component.getDocument();
     
-        if (kitClass != null) {
-            lowerCase = SettingsUtil.getBoolean(kitClass,
-                    HTMLSettingsNames.COMPLETION_LOWER_CASE,
-                    HTMLSettingsDefaults.defaultCompletionLowerCase);
-        }
+        //temporarily disabled functionality since we do not have any UI in preferences to change it.
+//        if (kitClass != null) {
+//            lowerCase = SettingsUtil.getBoolean(kitClass,
+//                    HTMLSettingsNames.COMPLETION_LOWER_CASE,
+//                    HTMLSettingsDefaults.defaultCompletionLowerCase);
+//        }
+        lowerCase = true;
         
         if( doc.getLength() == 0 ) return null; // nothing to examine
         HTMLSyntaxSupport sup = HTMLSyntaxSupport.get(doc);
@@ -510,7 +508,7 @@ public class HTMLCompletionQuery  {
         
         boolean shift = false;
         
-        private HTMLCompletionResultItemPaintComponent component;
+        private HTMLCompletionItemPC component;
         
         private static final int HTML_ITEMS_SORT_PRIORITY = 20;
         
@@ -543,14 +541,14 @@ public class HTMLCompletionQuery  {
         
         public Component getPaintComponent(boolean isSelected) {
             //TODO: the paint component should be caches somehow
-            HTMLCompletionResultItemPaintComponent component = new HTMLCompletionResultItemPaintComponent.StringPaintComponent(getPaintColor());
+            HTMLCompletionItemPC component = new HTMLCompletionItemPC.StringPaintComponent(getPaintColor());
             component.setSelected(isSelected);
             component.setString(getItemText());
             return component;
         }
         
         public int getPreferredWidth(Graphics g, Font defaultFont) {
-            HTMLCompletionResultItemPaintComponent renderComponent = (HTMLCompletionResultItemPaintComponent)getPaintComponent(false);
+            HTMLCompletionItemPC renderComponent = (HTMLCompletionItemPC)getPaintComponent(false);
             return renderComponent.getPreferredWidth(g, defaultFont);
         }
         
@@ -561,7 +559,7 @@ public class HTMLCompletionQuery  {
             renderComponent.setForeground(defaultColor);
             renderComponent.setBackground(backgroundColor);
             renderComponent.setBounds(0, 0, width, height);
-            ((HTMLCompletionResultItemPaintComponent)renderComponent).paintComponent(g);
+            ((HTMLCompletionItemPC)renderComponent).paintComponent(g);
         }
         
         protected Object getAssociatedObject() {
@@ -1041,18 +1039,6 @@ public class HTMLCompletionQuery  {
         
         public Action getGotoSourceAction() {
             return null;
-        }
-    }
-    
-    public static class HTMLCompletionResult extends CompletionQuery.DefaultResult {
-        private int substituteOffset;
-        public HTMLCompletionResult(JTextComponent component, String title, List data, int offset, int len ) {
-            super(component, title, data, offset, len);
-            substituteOffset = offset - len;
-        }
-        
-        public int getSubstituteOffset() {
-            return substituteOffset;
         }
     }
     

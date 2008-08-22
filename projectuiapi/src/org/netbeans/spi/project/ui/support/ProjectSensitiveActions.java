@@ -56,7 +56,7 @@ public class ProjectSensitiveActions {
     /**
      * Creates an action sensitive to the set of currently selected projects.
      * When performed the action will call the given command on the {@link org.netbeans.spi.project.ActionProvider} of
-     * the selected project(s). The action will only be enabled when the exactly one
+     * the selected project(s). The action will only be enabled when exactly one
      * project is selected and the command is enabled in the project's action provider.<BR>
      * Shortcuts for actions are shared according to command, i.e. actions based on the same command
      * will have the same shortcut.
@@ -76,7 +76,7 @@ public class ProjectSensitiveActions {
      * Creates an action sensitive to the set of currently selected projects.
      * When performed the action will call {@link ProjectActionPerformer#perform}
      * on the action performer supplied
-     * as a parameter. The action will only be enabled when the exactly one 
+     * as a parameter. The action will only be enabled when exactly one 
      * project is selected and {@link ProjectActionPerformer#enable}
      * returns true.<BR>
      * Notice that it is not guaranteed that the {@link ProjectActionPerformer#enable}

@@ -147,6 +147,9 @@ import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -326,7 +329,7 @@ public final class JavaSource {
     private DocListener listener;
     private DataObjectListener dataObjectListener;
     
-    private final ClasspathInfo classpathInfo;    
+    private ClasspathInfo classpathInfo;    
     private CompilationInfoImpl currentInfo;
     private java.util.Stack<CompilationInfoImpl> infoStack = new java.util.Stack<CompilationInfoImpl> ();
     
@@ -2029,7 +2032,21 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
     }
         
-    private static CompilationInfoImpl createCurrentInfo (final JavaSource js, final PositionConverter binding, final JavacTaskImpl javac) throws IOException {                
+    private static CompilationInfoImpl createCurrentInfo (final JavaSource js, final PositionConverter binding, final JavacTaskImpl javac) throws IOException {
+        FileObject fo = null;
+        if (js.files.size() == 1) {
+            fo = js.files.iterator().next();
+        }
+        if (fo != null) {
+            final ClassPath scp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+            if (scp != js.classpathInfo.getClassPath(PathKind.SOURCE)) {
+                //Revalidate
+                final Project owner = FileOwnerQuery.getOwner(fo);
+                LOGGER.warning("ClassPath identity changed, class path owner: " +       //NOI18N
+                        (owner == null ? "null" : (FileUtil.getFileDisplayName(owner.getProjectDirectory())+" ("+owner.getClass()+")")));       //NOI18N
+                js.classpathInfo = ClasspathInfo.create(fo);
+            }
+        }
         CompilationInfoImpl info = new CompilationInfoImpl(js, binding, javac);
         if (binding != null) {
             Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",
@@ -2125,7 +2142,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             return currentPhase.compareTo(phase)<0 ? null : new CompilationInfo(info);
         }
 
-        public CompilationController createCompilationController (final JavaSource js) throws IOException {
+        public CompilationController createCompilationController (final JavaSource js) throws IOException {            
             CompilationInfoImpl info = createCurrentInfo(js, js.binding, js.createJavacTask(null, null));
             return new CompilationController(info);
         }

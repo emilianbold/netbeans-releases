@@ -1424,8 +1424,12 @@ public final class VeryPretty extends JCTree.Visitor {
         switch (tree.getKind()) {
             case CLASS:
                 n = before ? cs.getBlankLinesBeforeClass() : cs.getBlankLinesAfterClass();
-        	if (((JCClassDecl) tree).defs.nonEmpty() && !before) n = 0;
-                else out.blanklines(n);
+        	if (((JCClassDecl) tree).defs.nonEmpty() && !before) {
+                    n = 0;
+                } else {
+                    out.blanklines(n);
+                    toLeftMargin();
+                }
                 return;
             case METHOD: // do not handle for sythetic things
         	if ((((JCMethodDecl) tree).mods.flags & Flags.SYNTHETIC) == 0 &&
