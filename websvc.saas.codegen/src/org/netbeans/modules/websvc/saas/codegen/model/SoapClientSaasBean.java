@@ -63,8 +63,11 @@ public class SoapClientSaasBean extends SaasBean {
     private WsdlSaasMethod m;
     
     public SoapClientSaasBean(WsdlSaasMethod m, Project project) {
-        this(m.getSaas(), Util.deriveResourceName(m.getName()), 
-                toJaxwsOperationInfos(m, project));
+        this(m, project, toJaxwsOperationInfos(m, project));
+    }
+    
+    public SoapClientSaasBean(WsdlSaasMethod m, Project project, SoapClientOperationInfo[] jaxwsInfos) {
+        this(m.getSaas(), Util.deriveResourceName(m.getName()), jaxwsInfos);
     }
   
     /**

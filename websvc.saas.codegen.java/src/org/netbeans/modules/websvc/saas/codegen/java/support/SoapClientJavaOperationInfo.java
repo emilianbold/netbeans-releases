@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,13 +39,29 @@
  * made subject to such option by the copyright holder.
  */
 
-package  org.netbeans.modules.cnd.editor.parser;
+package org.netbeans.modules.websvc.saas.codegen.java.support;
 
-import org.openide.loaders.DataObject;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 
-public class NamespaceNode extends ViewNode {
-    public NamespaceNode(DataObject dao, String name, int lineno, char kind, String scope, int scopeCluster, int cluster) {
-        super(name, dao, lineno, kind, scope, scopeCluster, cluster);
-        setIconBaseWithExtension("org/netbeans/modules/cnd/editor/parser/namespace.gif"); // NOI18N
+/**
+ *
+ * @author ayubskhan
+ */
+public class SoapClientJavaOperationInfo extends SoapClientOperationInfo {
+
+    public SoapClientJavaOperationInfo(WsdlSaasMethod m, Project project) {
+        super(m, project);
+    }
+
+    @Override
+    public void initWsdlModelInfo() {
+        LibrariesHelper.addDefaultJaxWsClientJars(getProject(), null, getMethod().getSaas());
+    }
+
+    @Override
+    public Class getType(Project project, String typeName) {
+        return JavaUtil.getType(project, typeName);
     }
 }

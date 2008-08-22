@@ -158,7 +158,7 @@ public enum CSSTokenId implements TokenId {
     UNICODE("default"),
     HNUM("default"),
     H("default"),
-    UNKNOWN("unknown");
+    UNKNOWN("unknown"); //NOI18N 
     
     
     private final String primaryCategory;

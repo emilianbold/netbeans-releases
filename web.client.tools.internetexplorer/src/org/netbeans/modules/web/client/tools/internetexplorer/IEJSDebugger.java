@@ -42,9 +42,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
+import org.netbeans.modules.web.client.tools.api.JSLocation;
+import org.netbeans.modules.web.client.tools.common.dbgp.Breakpoint;
+import org.netbeans.modules.web.client.tools.common.dbgp.DbgpUtils;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
 import org.netbeans.modules.web.client.tools.common.launcher.Utils;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSBreakpoint;
 import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSAbstractExternalDebugger;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
@@ -77,10 +81,31 @@ public class IEJSDebugger extends JSAbstractExternalDebugger {
         return ID;
     }
     
+    @Override
     protected InputStream getInputStreamForURLImpl(String uri) {
-        if(uri.indexOf("file:") != -1) {
-            uri = uri.replace("/", "\\");
-        }
-        return super.getInputStreamForURLImpl(uri);
+        return super.getInputStreamForURLImpl(translateURI(uri));
     }
+    
+    /*
+     * Translates file URI into IE extension recognizable URI
+     */
+    private String translateURI(String uri) {
+        String fileScheme = "file:/";                               // NOI18N
+        if(uri.indexOf(fileScheme) != -1) {
+            StringBuilder ieURI = new StringBuilder();
+            ieURI.append("file:///");                               // NOI18N
+            ieURI.append(uri.substring(fileScheme.length()));
+            uri = ieURI.toString();
+        }
+        return uri;
+    }
+    
+    @Override
+    public String setBreakpoint(JSBreakpoint breakpoint) {
+        Breakpoint.BreakpointSetCommand setCommand = DbgpUtils.getDbgpBreakpointCommand(proxy, breakpoint);
+        JSLocation location = breakpoint.getLocation();
+        String uri = location.getURI().toASCIIString();
+        setCommand.setFileURI(translateURI(uri));
+        return proxy.setBreakpoint(setCommand);
+    }    
 }
