@@ -92,8 +92,7 @@ public class FFExtensionManager {
     private static final String PROFILE_LOCK_WINDOWS = "parent.lock";
     private static final String PROFILE_LOCK = "lock";
     
-    private static final String FIREBUG_MIN_VERSION = "1.1.0b12";
-    private static final String FIREBUG_1_2_MIN_VERSION = "1.2.0b12";
+    private static final String FIREBUG_1_2_MIN_VERSION = "1.2.0b13";
     
     private static final String EXTENSION_CACHE = "extensions.cache";
     private static final String UNINSTALL_KEYWORD = "needs-uninstall";
@@ -101,9 +100,7 @@ public class FFExtensionManager {
     
     private static final String FIREBUG_EXTENSION_ID = "firebug@software.joehewitt.com"; // NOI18N
     
-    private static final String FIREBUG_EXTENSION_PATH = "modules/ext/firebug-1.1.0b12.xpi"; // NOI18N
-    
-    private static final String FIREBUG_1_2_URL = "http://getfirebug.com/releases/firebug/1.2/firebug-1.2.0b12.xpi"; // NOI18N
+    private static final String FIREBUG_EXTENSION_PATH = "modules/ext/firebug-1.2.0b13.xpi"; // NOI18N
                
     private static final String FIREFOX_EXTENSION_ID = "netbeans-firefox-extension@netbeans.org"; // NOI18N
 
@@ -131,43 +128,16 @@ public class FFExtensionManager {
         File firebugExtensionFile = InstalledFileLocator.getDefault().locate(FIREBUG_EXTENSION_PATH,
                 "org.netbeans.modules.web.client.tools.firefox.extension", // NOI18N 
                 false);
-        if (nbExtensionFile == null) {
+        if (firebugExtensionFile == null) {
             Log.getLogger().severe("Could not find firebug extension in installation directory");
             return false;
         }
-        
-        boolean isFF2 = FirefoxBrowserUtils.isFirefox2(browser, defaultProfile, null);
         
         boolean nbExtInstall = extensionRequiresInstall(browser, FIREFOX_EXTENSION_ID, 
                 null, nbExtensionFile, defaultProfile, true);
         
         boolean firebugInstall = extensionRequiresInstall(browser, FIREBUG_EXTENSION_ID,
-                    (isFF2 ? FIREBUG_MIN_VERSION : FIREBUG_1_2_MIN_VERSION), null, defaultProfile, false);
-        
-        if (!isFF2 && firebugInstall) {
-            if (!isHttpURLValid(FIREBUG_1_2_URL)) {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(FFExtensionManager.class, "FIREBUG_NOT_DOWNLOADED_ERROR"),
-                        NotifyDescriptor.ERROR_MESSAGE);
-                
-                nd.setTitle(NbBundle.getMessage(FFExtensionManager.class, "FIREBUG_NOT_DOWNLOADED_TITLE"));
-                DialogDisplayer.getDefault().notify(nd);
-                
-                return false;
-            }
-            
-            firebugExtensionFile = getURLResource(FIREBUG_1_2_URL);
-            if (firebugExtensionFile == null) {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(FFExtensionManager.class, "FIREBUG_NOT_DOWNLOADED_ERROR"),
-                        NotifyDescriptor.ERROR_MESSAGE);
-                
-                nd.setTitle(NbBundle.getMessage(FFExtensionManager.class, "FIREBUG_NOT_DOWNLOADED_TITLE"));
-                DialogDisplayer.getDefault().notify(nd);
-                
-                return false;
-            }
-        }
+                    FIREBUG_1_2_MIN_VERSION, firebugExtensionFile, defaultProfile, false);
         
         if (!nbExtInstall || !firebugInstall) {
             List<String> extensionIds = new LinkedList<String>();
