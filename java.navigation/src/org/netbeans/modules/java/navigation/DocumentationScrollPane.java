@@ -110,7 +110,8 @@ public class DocumentationScrollPane extends JScrollPane {
         setViewportView(view);
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(DocumentationScrollPane.class, "ACSN_DocScrollPane"));
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentationScrollPane.class, "ACSD_DocScrollPane"));
-        
+        view.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DocumentationScrollPane.class, "ACSN_DocScrollPane"));
+        view.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentationScrollPane.class, "ACSD_DocScrollPane"));
         installTitleComponent();
 //        installKeybindings(view);
         setFocusable(true);
