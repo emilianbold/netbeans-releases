@@ -100,9 +100,5 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
 	    return UnresolvedIdentifierTest.class;
 	}
 
-        public void testTemplateClassEnum() throws Exception {
-            performStaticTest("template_class_enums.cpp");
-        }
-
     }
 }

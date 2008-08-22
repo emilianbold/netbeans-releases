@@ -189,9 +189,7 @@
             <tocitem text="Inserting an Internationalized String Into Source Code" target="internation.maninsert" />
             <tocitem text="Internationalizing a String With the GUI Builder" target="internation.formed" />
             <tocitem text="Testing a  Bundle for Internationalized Strings" target="internation.testing" />
-            <tocitem text="Code Formats for Internationalized Strings" target="internation.replformat" />
             <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
-            <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
         </tocitem>  
         <tocitem text="Working with the Spring Framework">
             <tocitem text="About Spring Framework Support" target="spring.framework.about"/>

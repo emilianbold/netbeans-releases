@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
@@ -111,10 +112,10 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
         super.init(m, doc);
-        setBean(new SoapClientSaasBean((WsdlSaasMethod) m, 
-                FileOwnerQuery.getOwner(NbEditorUtilities.getFileObject(doc))));
-        super.init(m, doc);
-        
+        WsdlSaasMethod wsm = (WsdlSaasMethod) m;
+        Project p = FileOwnerQuery.getOwner(NbEditorUtilities.getFileObject(doc));
+        SaasBean bean = new SoapClientSaasBean(wsm, p, JavaUtil.toJaxwsOperationInfos(wsm, p));
+        setBean(bean);
         clearVariablePatterns();
     }
 
@@ -244,7 +245,6 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
         final String[] serviceFName = {serviceFieldName};
         final boolean[] generateWsRefInjection = {false};
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-            //FIXME - Refactor
             private Kind VARIABLE;
 
             public void run(CompilationController controller) throws IOException {

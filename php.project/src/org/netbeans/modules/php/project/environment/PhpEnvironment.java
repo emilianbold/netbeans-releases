@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -58,6 +60,7 @@ import org.openide.util.Utilities;
  * @author Tomas Mysik
  */
 public abstract class PhpEnvironment {
+    protected static final Logger LOGGER = Logger.getLogger(PhpEnvironment.class.getName());
 
     static final String HTDOCS = "htdocs"; //NOI18N
     static final FilenameFilter APACHE_FILENAME_FILTER = new FilenameFilter() {
@@ -208,6 +211,7 @@ public abstract class PhpEnvironment {
      * Return "htdocs" directory or null.
      */
     static File findHtDocsDirectory(File startDir, FilenameFilter filenameFilter) {
+        LOGGER.fine("Searching for htdocs in " + startDir);
         String[] subDirNames = startDir.list(filenameFilter);
         if (subDirNames == null || subDirNames.length == 0) {
             return null;
@@ -215,6 +219,9 @@ public abstract class PhpEnvironment {
         for (String subDirName : subDirNames) {
             File subDir = new File(startDir, subDirName);
             File htDocs = new File(subDir, HTDOCS);
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.fine(String.format("\t%s - exists: %s, directory: %s, file: %s", htDocs, htDocs.exists(), htDocs.isDirectory(), htDocs.isFile()));
+            }
             if (htDocs.isDirectory()) {
                 return htDocs;
             }

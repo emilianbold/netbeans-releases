@@ -47,7 +47,7 @@ package org.netbeans.modules.css.editor.properties;
 public class Number implements CssPropertyValueAcceptor {
 
     public String id() {
-        return "number";
+        return "number"; //NOI18N
     }
 
     public boolean accepts(String token) {

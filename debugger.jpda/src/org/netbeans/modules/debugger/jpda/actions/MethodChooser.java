@@ -116,9 +116,9 @@ public class MethodChooser implements KeyListener, MouseListener,
         //this.methodLine = methodLine; [TODO]
         this.methodOffset = methodOffset;
         
-        Operation currOp = currentThread.getCurrentOperation();
-        List<Operation> lastOps = currentThread.getLastOperations();
-        Operation lastOp = lastOps != null && lastOps.size() > 0 ? lastOps.get(lastOps.size() -1) : null;
+        //Operation currOp = currentThread.getCurrentOperation();
+        //List<Operation> lastOps = currentThread.getLastOperations();
+        //Operation lastOp = lastOps != null && lastOps.size() > 0 ? lastOps.get(lastOps.size() -1) : null;
     }
 
     public static OffsetsBag getHighlightsBag(Document doc) {
@@ -253,6 +253,9 @@ public class MethodChooser implements KeyListener, MouseListener,
         Operation lastOp = lastOpsList != null && lastOpsList.size() > 0 ? lastOpsList.get(lastOpsList.size() - 1) : null;
         Operation selectedOp = null;
         Operation[] tempOps = expr.getOperations();
+        if (tempOps.length == 0) {
+            return false;
+        }
         Location[] tempLocs = expr.getLocations();
         operations = new Operation[tempOps.length];
         locations = new Location[tempOps.length];
@@ -260,11 +263,17 @@ public class MethodChooser implements KeyListener, MouseListener,
             operations[x] = tempOps[x];
             locations[x] = tempLocs[x];
         }
-        if (operations.length == 0) {
-            return false;
-        }
         startLine = operations[0].getMethodStartPosition().getLine();
         endLine = operations[operations.length - 1].getMethodEndPosition().getLine();
+        for (int i = 1; i < (operations.length - 1); i++) {
+            int line = operations[i].getMethodStartPosition().getLine();
+            if (line < startLine) {
+                startLine = line;
+            }
+            if (line > endLine) {
+                endLine = line;
+            }
+        }
 
         int currOpIndex = -1;
         int lastOpIndex = -1;

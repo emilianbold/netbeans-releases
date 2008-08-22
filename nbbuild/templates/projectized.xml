@@ -294,7 +294,10 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <jhindexer basedir="${build.javahelp.dir}/${javahelp.base}"
                    db="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}">
             <classpath>
-                <fileset dir="${nb_all}/apisupport.harness/external">
+                <fileset dir="${nb_all}">
+                    <include name="apisupport.harness/external/jsearch*.jar"/>
+                </fileset>
+                <fileset dir="${netbeans.dest.dir}/harness">
                     <include name="jsearch*.jar"/>
                 </fileset>
             </classpath>

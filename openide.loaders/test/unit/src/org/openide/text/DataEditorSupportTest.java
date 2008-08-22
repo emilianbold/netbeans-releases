@@ -56,6 +56,7 @@ import javax.swing.text.StyledDocument;
 
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.cookies.EditCookie;
 
@@ -166,7 +167,8 @@ public class DataEditorSupportTest extends NbTestCase {
         
         
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1208
     public void testGetOpenedPanesWorksAfterDeserialization () throws Exception {
         doGetOpenedPanesWorksAfterDeserialization (-1);
     }
