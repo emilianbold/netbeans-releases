@@ -119,6 +119,7 @@ public class AutotestRunner implements TestRunner {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
+        desc.setReadMaxWaitTime(TestUnitRunner.DEFAULT_WAIT_TIME);
 
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 locator,

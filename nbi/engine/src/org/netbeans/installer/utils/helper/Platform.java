@@ -48,13 +48,15 @@ public enum Platform {
     WINDOWS(OS_FAMILY_WINDOWS, null, null, null, "Windows"),
     WINDOWS_X86(OS_FAMILY_WINDOWS, HARDWARE_X86, null, null, "Windows X86"),
     WINDOWS_X64(OS_FAMILY_WINDOWS, HARDWARE_X64, null, null, "Windows X64"),
-    
+    WINDOWS_IA64(OS_FAMILY_WINDOWS, HARDWARE_IA64, null, null, "Windows Itanium"),    
+
     LINUX(OS_FAMILY_LINUX, null, null, null, "Linux"),
     LINUX_X86(OS_FAMILY_LINUX, HARDWARE_X86, null, null, "Linux X86"),
     LINUX_X64(OS_FAMILY_LINUX, HARDWARE_X64, null, null, "Linux X64"),
     LINUX_PPC(OS_FAMILY_LINUX, HARDWARE_PPC, null, null, "Linux PowerPC"),
     LINUX_PPC64(OS_FAMILY_LINUX, HARDWARE_PPC64, null, null, "Linux PowerPC X64"),
     LINUX_SPARC(OS_FAMILY_LINUX, HARDWARE_SPARC, null, null, "Linux SPARC"),
+    LINUX_IA64(OS_FAMILY_LINUX, HARDWARE_IA64, null, null, "Linux Itanium"),
     
     SOLARIS(OS_FAMILY_SOLARIS, null, null, null, "Solaris"),
     SOLARIS_X86(OS_FAMILY_SOLARIS, HARDWARE_X86, null, null, "Solaris X86"),
@@ -77,6 +79,12 @@ public enum Platform {
     FREEBSD_X64(OS_FAMILY_FREEBSD, HARDWARE_X64, null, null, "FreeBSD X64"),
     FREEBSD_PPC(OS_FAMILY_BSD, HARDWARE_PPC, null, null, "FreeBSD PowerPC"),
     FREEBSD_PPC64(OS_FAMILY_BSD, HARDWARE_PPC64, null, null, "FreeBSD PowerPC X64"),
+
+    AIX(OS_FAMILY_AIX, null, null, null, "AIX"),
+    AIX_PPC(OS_FAMILY_AIX, HARDWARE_PPC, null, null, "AIX PowerPC"),
+    AIX_PPC64(OS_FAMILY_AIX, HARDWARE_PPC64, null, null, "AIX PowerPC X64"),
+
+    HPUX(OS_FAMILY_HPUX, null, null, null, "HP-UX"),
     ;
     
     /////////////////////////////////////////////////////////////////////////////////

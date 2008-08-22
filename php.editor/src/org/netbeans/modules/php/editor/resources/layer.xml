@@ -71,7 +71,7 @@
                     </folder>
                 </folder>
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
+                    <file name="org-netbeans-modules-html-editor-HTMLCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-php-editor-FSCompletion.instance"/>
                 </folder>
                 <folder name="FoldManager">

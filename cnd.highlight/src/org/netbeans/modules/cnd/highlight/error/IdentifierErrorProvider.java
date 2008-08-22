@@ -44,9 +44,9 @@ import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo.Severity;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -92,11 +92,20 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         public void visit(CsmReferenceContext context) {
             CsmReference ref = context.getReference();
             if (!request.isCancelled() && ref.getReferencedObject() == null) {
+                if (CsmFileReferences.isAfterUnresolved(context)) {
+                    return;
+                }
                 if (CsmFileReferences.isMacroBased(context)) {
                     return;
                 }
-                Severity severity = CsmFileReferences.isTemplateBased(context)?
-                    Severity.WARNING : Severity.ERROR;
+                Severity severity = Severity.ERROR;
+
+                if (CsmFileReferences.isTemplateBased(context)) {
+                    severity = Severity.WARNING;
+                } else if (CsmKindUtilities.isClassForwardDeclaration(ref.getOwner())) {
+                    severity = Severity.WARNING;
+                }
+
                 response.addError(new IdentifierErrorInfo(
                         ref.getStartOffset(), ref.getEndOffset(),
                         ref.getText().toString(), severity));

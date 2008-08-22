@@ -89,7 +89,7 @@ public class CustomClientPhpCodeGenerator extends SaasClientCodeGenerator {
     
     public boolean canAccept(SaasMethod method, Document doc) {
         if (SaasBean.canAccept(method, CustomSaasMethod.class, getDropFileType()) &&
-                Util.isPhp(doc)) {
+                PhpUtil.isPhp(doc)) {
             return true;
         }
         return false;

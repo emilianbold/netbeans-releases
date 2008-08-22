@@ -130,10 +130,9 @@ public class CommonPropertyVisualPanel extends javax.swing.JPanel implements Wiz
         descriptionTextArea.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommonPropertyVisualPanel.class, "CommonPropertyPanel_Description", this.helper.getData().getString(__JndiName)));
         descriptionTextArea.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommonPropertyVisualPanel.class, "CommonPropertyPanel_Description", this.helper.getData().getString(__JndiName)));
 
-        propertyInfo.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_properties_Mnemonic").charAt(0));
         propertyInfo.setLabelFor(propertyTable);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle"); // NOI18N
-        propertyInfo.setText(bundle.getString("LBL_properties")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(propertyInfo, bundle.getString("LBL_properties")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -160,8 +159,7 @@ public class CommonPropertyVisualPanel extends javax.swing.JPanel implements Wiz
 
         buttonsPane.setLayout(new java.awt.GridBagLayout());
 
-        addButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_Add_Mnemonic").charAt(0));
-        addButton.setText(bundle.getString("LBL_Add")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, bundle.getString("LBL_Add")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -175,8 +173,7 @@ public class CommonPropertyVisualPanel extends javax.swing.JPanel implements Wiz
         buttonsPane.add(addButton, gridBagConstraints);
         addButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddButtonA11yDesc")); // NOI18N
 
-        removeButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/sun/ide/sunresources/wizards/Bundle").getString("LBL_Remove_Mnemonic").charAt(0));
-        removeButton.setText(bundle.getString("LBL_Remove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, bundle.getString("LBL_Remove")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
