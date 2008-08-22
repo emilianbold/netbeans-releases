@@ -729,6 +729,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 type = func.getReturnType();
             }
         }
+
+        tokenSequence.moveNext();
         
         if (type == null || tokenSequence.offset() == startPos)
         {
@@ -759,8 +761,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     tokenSequence.moveNext();
                 } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
                         && ")".equals(tokenSequence.token().text().toString()))); //NOI18N
-                
-                tokenSequence.moveNext();
             } else {
                 functionName = null;
             }
