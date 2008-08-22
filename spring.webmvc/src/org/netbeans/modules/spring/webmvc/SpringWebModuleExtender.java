@@ -97,7 +97,7 @@ import org.openide.util.NbBundle;
 /**
  * The WebModuleExtender implementation for Spring Web MVC.
  *
- * @author Craig MacKay
+ * @author Craig MacKay et al.
  */
 public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {
     private static final Logger LOGGER = Logger.getLogger(SpringWebModuleExtender.class.getName());
@@ -282,16 +282,15 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             FileObject jsp = FileUtil.createFolder(webInf, "jsp");
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
             DataFolder webInfDO = DataFolder.findFolder(webInf);
-            final List<File> newFiles = new ArrayList<File>(2);
-            FileObject configFile;
-            configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext"); // NOI18N
+            final List<File> newConfigFiles = new ArrayList<File>(2);
+            FileObject configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext"); // NOI18N
             addFileToOpen(configFile);
-            newFiles.add(FileUtil.toFile(configFile));
+            newConfigFiles.add(FileUtil.toFile(configFile));
             String indexUrlMapping = SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", dispatcherMapping); // NOI18N
             Map<String, ?> indexUrlParams = Collections.singletonMap("index", Collections.singletonMap("url", indexUrlMapping)); // NOI18N
             configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet", indexUrlParams); // NOI18N
             addFileToOpen(configFile);
-            newFiles.add(FileUtil.toFile(configFile));
+            newConfigFiles.add(FileUtil.toFile(configFile));
             addFileToOpen(createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index")); // NOI18N
 
             // MODIFY EXISTING REDIRECT.JSP
@@ -312,10 +311,10 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                     manager.mutex().writeAccess(new ExceptionAction<Void>() {
                         public Void run() throws IOException {
                             List<File> files = manager.getConfigFiles();
-                            files.addAll(newFiles);
+                            files.addAll(newConfigFiles);
                             List<ConfigFileGroup> groups = manager.getConfigFileGroups();
                             String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup");
-                            ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, newFiles);
+                            ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, newConfigFiles);
                             groups.add(newGroup);
                             manager.putConfigFilesAndGroups(files, groups);
                             manager.save();
