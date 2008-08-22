@@ -411,7 +411,7 @@ public class NavigationView extends ChoiceView {
             return;
         }
         
-        DataObject dataObject = (DataObject)activeNode.getCookie(DataObject.class);
+        DataObject dataObject = activeNode.getCookie(DataObject.class);
         if (dataObject == null)
             return; // Should not happen...
         if (!(dataObject instanceof CndDataObject) && !(dataObject instanceof HDataObject))
@@ -420,7 +420,12 @@ public class NavigationView extends ChoiceView {
         if (sourceObject == null || sourceObject != dataObject) {
             sourceObject = dataObject;
 	    cppEditorSupport = null;
-	    updateChildren(FileUtil.toFile(sourceObject.getPrimaryFile()).getPath());
+            File file = FileUtil.toFile(sourceObject.getPrimaryFile());
+            if (file != null) {
+                updateChildren(file.getPath());
+            } else {
+                sourceObject = null;
+            }
         }
     }
     
