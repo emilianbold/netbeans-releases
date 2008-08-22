@@ -143,6 +143,7 @@ public class DebugConfigPanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(debugCheckBox, org.openide.util.NbBundle.getMessage(DebugConfigPanel.class, "DebugConfigPanel.debugCheckBox.text")); // NOI18N
 
         browserButtonGroup.add(firefoxRadioButton);
+        firefoxRadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(firefoxRadioButton, org.openide.util.NbBundle.getMessage(DebugConfigPanel.class, "DebugConfigPanel.firefoxRadioButton.text")); // NOI18N
 
         browserButtonGroup.add(internetExplorerRadioButton);
