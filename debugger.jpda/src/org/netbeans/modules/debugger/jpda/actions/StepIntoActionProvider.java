@@ -107,9 +107,10 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     }
     
     public void runAction(Object action) {
+        /* Disabling the special functionality of Step Into until it works correctly
         if (ActionsManager.ACTION_STEP_INTO.equals(action) && doMethodSelection()) {
             return; // action performed
-        }
+        } */
         stepInto.runAction();
     }
     
