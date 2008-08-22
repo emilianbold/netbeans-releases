@@ -84,8 +84,10 @@ public class CompilerSetManagerEvents {
 
     /* package */ void runTasks() {
         isCodeModelInfoReady = true;
-        for (Runnable task : tasks) {
-            task.run();
+        if (tasks != null) {
+            for (Runnable task : tasks) {
+                task.run();
+            }
         }
         tasks = null;
     }
