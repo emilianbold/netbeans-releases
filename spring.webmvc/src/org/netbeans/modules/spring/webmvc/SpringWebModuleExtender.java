@@ -102,14 +102,15 @@ import org.openide.util.NbBundle;
 public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {
     private static final Logger LOGGER = Logger.getLogger(SpringWebModuleExtender.class.getName());
 
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
     private final boolean customizer;
+
     private SpringConfigPanelVisual component;
     private String dispatcherName = "dispatcher"; // NOI18N
     private String dispatcherMapping = "*.htm"; // NOI18N
     private boolean includeJstl = true;
-    private ChangeSupport changeSupport = new ChangeSupport(this);
 
     /**
      * Creates a new instance of SpringWebModuleExtender
@@ -215,8 +216,9 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener"; // NOI18N
         public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
         public static final String ENCODING = "UTF-8"; // NOI18N
-        private Set<FileObject> filesToOpen = new LinkedHashSet<FileObject>();
-        private WebModule webModule;
+
+        private final Set<FileObject> filesToOpen = new LinkedHashSet<FileObject>();
+        private final WebModule webModule;
 
         public CreateSpringConfig(WebModule webModule) {
             this.webModule = webModule;
