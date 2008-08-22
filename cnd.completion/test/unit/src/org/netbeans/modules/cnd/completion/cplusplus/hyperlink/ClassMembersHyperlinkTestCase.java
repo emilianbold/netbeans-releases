@@ -484,6 +484,14 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ144062.cc", 12, 17, "IZ144062.cc", 12, 13);
         performTest("IZ144062.cc", 12, 21, "IZ144062.cc", 11, 18);
         performTest("IZ144062.cc", 14, 8, "IZ144062.cc", 14, 7);
+        performTest("IZ144062.cc", 15, 16, "IZ144062.cc", 15, 5);
+        performTest("IZ144062.cc", 15, 18, "IZ144062.cc", 15, 18);
+    }
+
+    public void testIZ144679() throws Exception {
+        // IZ#144679 : IDE highlights static constants in class as wrong code
+        performTest("IZ144679.cc", 11, 21, "IZ144679.cc", 10, 1);
+        performTest("IZ144679.cc", 12, 22, "IZ144679.cc", 11, 1);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

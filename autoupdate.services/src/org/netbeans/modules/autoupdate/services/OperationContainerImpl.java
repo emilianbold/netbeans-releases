@@ -195,7 +195,14 @@ public final class OperationContainerImpl<Support> {
             for (OperationInfo<?> i : operations) {
                 all.add (i.getUpdateElement ());
             }
-            for (UpdateElement eagerEl : UpdateManagerImpl.getInstance ().getAvailableEagers ()) {
+            Collection<UpdateElement> availableEagers = new HashSet<UpdateElement> (UpdateManagerImpl.getInstance ().getAvailableEagers ());
+            // add updateable eagers as well
+            for (UpdateElement installedEager : UpdateManagerImpl.getInstance ().getInstalledEagers ()) {
+                if (! installedEager.getUpdateUnit ().getAvailableUpdates ().isEmpty ()) {
+                    availableEagers.add (installedEager.getUpdateUnit ().getAvailableUpdates ().get (0));
+                }
+            }
+            for (UpdateElement eagerEl : availableEagers) {
                 UpdateElementImpl impl = Trampoline.API.impl (eagerEl);
                 assert impl instanceof ModuleUpdateElementImpl : eagerEl + " must instanceof ModuleUpdateElementImpl";
                 ModuleUpdateElementImpl eagerImpl = (ModuleUpdateElementImpl) impl;

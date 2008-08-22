@@ -154,8 +154,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
         new ActionNoBlock(null, debugFileItem).perform(servletNode);
         String setURITitle = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "TTL_setServletExecutionUri");
         new NbDialogOperator(setURITitle).ok();
-        String infTitle = org.netbeans.jellytools.Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");
-        new NbDialogOperator(infTitle).ok(); 
+        Utils.confirmInformationMessage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N
@@ -182,8 +181,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testStepOut() {
         new DebugAction().perform(servletNode);
-        String infTitle = org.netbeans.jellytools.Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");
-        new NbDialogOperator(infTitle).ok(); 
+        Utils.confirmInformationMessage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N
@@ -205,8 +203,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testStepOver() {
         new DebugAction().perform(servletNode);
-        String infTitle = org.netbeans.jellytools.Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");
-        new NbDialogOperator(infTitle).ok(); 
+        Utils.confirmInformationMessage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N
@@ -228,8 +225,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testApplyCodeChanges() {
         new DebugAction().perform(servletNode);
-        String infTitle = org.netbeans.jellytools.Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");
-        new NbDialogOperator(infTitle).ok(); 
+        Utils.confirmInformationMessage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N

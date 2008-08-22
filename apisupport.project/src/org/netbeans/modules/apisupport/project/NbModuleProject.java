@@ -158,7 +158,7 @@ public final class NbModuleProject implements Project {
         typeProvider = new NbModuleProviderImpl();
         if (typeProvider.getModuleType() == NbModuleProvider.NETBEANS_ORG && ModuleList.findNetBeansOrg(getProjectDirectoryFile()) == null) {
             // #69097: preferable to throwing an assertion error later...
-            throw new IOException("netbeans.org-type module not in a complete netbeans.org source root: " + this); // NOI18N
+            throw new IOException("netbeans.org-type module requires at least nbbuild: " + FileUtil.getFileDisplayName(helper.getProjectDirectory())); // NOI18N
         }
         eval = new Evaluator(this, typeProvider);
         // XXX could add globs for other package roots too

@@ -477,18 +477,19 @@ public class CsmContextUtilities {
         return list;
     }
 
-    public static CsmClass getClass(CsmContext context, boolean checkFunDefition) {
+    public static CsmClass getClass(CsmContext context, boolean checkFunDefition, boolean inScope) {
         CsmClass clazz = null;
-        for (Iterator it = context.iterator(); it.hasNext();) {
-            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
-            if (CsmKindUtilities.isClass(elem.getScope())) {
-                clazz = (CsmClass)elem.getScope();
-                // remember found class, but continue to possibly nested class
+        for (int i = context.size() - 1; 0 <= i; --i) {
+            CsmScope scope = context.get(i).getScope();
+            if (CsmKindUtilities.isClass(scope)
+                    && (!inScope || CsmOffsetUtilities.isInClassScope((CsmClass)scope, context.getOffset()))) {
+                clazz = (CsmClass)scope;
+                break;
             }
         }        
         if (clazz == null && checkFunDefition) {
             // check if we in one of class's method
-            CsmFunction fun = getFunction(context);
+            CsmFunction fun = getFunction(context, false);
             clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
         }
         if (clazz == null) {
@@ -505,49 +506,20 @@ public class CsmContextUtilities {
         return clazz;
     }
 
-    /**
-     * Finds class containing offset in its body.
-     *
-     * @param context
-     * @param offset
-     * @return
-     */
-    public static CsmClass getClass(CsmContext context, int offset) {
-        CsmClass result = null;
-        for (Iterator it = context.iterator(); it.hasNext();) {
-            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
-            CsmScope scope = elem.getScope();
+    public static CsmFunction getFunction(CsmContext context, boolean inScope) {
+        for (int i = context.size() - 1; 0 <= i; --i) {
+            CsmScope scope = context.get(i).getScope();
+            int offset = context.getOffset();
             if (CsmKindUtilities.isClass(scope) && CsmOffsetUtilities.isInClassScope((CsmClass)scope, offset)) {
-                result = (CsmClass)scope;
+                break;
+            } else if (CsmKindUtilities.isFunction(scope)
+                    && (!inScope || CsmOffsetUtilities.isInFunctionScope((CsmFunction)scope, offset))) {
+                return (CsmFunction)scope;
             }
         }
-        return result;
-    }
+        return null;
+    }    
 
-    public static CsmFunction getFunction(CsmContext context) {
-        for (int i = context.size() - 1; 0 <= i; --i) {
-            CsmScope scope = context.get(i).getScope();
-            if (CsmKindUtilities.isClass(scope)) {
-                break;
-            } else if (CsmKindUtilities.isFunction(scope)) {
-                return (CsmFunction)scope;
-            }
-        }
-        return null;
-    }    
-    
-    public static CsmFunction getFunction(CsmContext context, int offset) {
-        for (int i = context.size() - 1; 0 <= i; --i) {
-            CsmScope scope = context.get(i).getScope();
-            if (CsmKindUtilities.isClass(scope) && CsmOffsetUtilities.isInClassScope((CsmClass)scope, offset)) {
-                break;
-            } else if (CsmKindUtilities.isFunction(scope)) {
-                return (CsmFunction)scope;
-            }
-        }
-        return null;
-    }    
-    
     public static CsmFunctionDefinition getFunctionDefinition(CsmContext context) {
         CsmFunctionDefinition fun = null;
         for (Iterator it = context.iterator(); it.hasNext();) {
@@ -561,12 +533,12 @@ public class CsmContextUtilities {
     }   
     
     public static CsmNamespace getNamespace(CsmContext context) {
-        CsmFunction fun = getFunction(context);
+        CsmFunction fun = getFunction(context, false);
         CsmNamespace ns = null;
         if (fun != null) {
             ns = getFunctionNamespace(fun);
         } else {
-            CsmClass cls = CsmContextUtilities.getClass(context, false);
+            CsmClass cls = CsmContextUtilities.getClass(context, false, false);
             ns = cls == null ? null : getClassNamespace(cls);
         }
         return ns;
@@ -590,7 +562,7 @@ public class CsmContextUtilities {
     }   
 
     public static boolean isInInitializerList(CsmContext context, int offset) {
-        CsmFunction f = getFunction(context);
+        CsmFunction f = getFunction(context, false);
         if (CsmKindUtilities.isConstructor(f)) {
             for (CsmExpression izer : ((CsmInitializerListContainer) f).getInitializerList()) {
                 if (CsmOffsetUtilities.isInObject(izer, offset)) {
@@ -600,12 +572,12 @@ public class CsmContextUtilities {
         }
         return false;
     }
-    
+
     public static boolean isInFunction(CsmContext context, int offset) {
-        CsmFunction fun = getFunction(context, offset);
+        CsmFunction fun = getFunction(context, true);
         return fun != null;
     }     
-    
+
     public static boolean isInType(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
         return (CsmKindUtilities.isType(last) || CsmKindUtilities.isTypedef(last))

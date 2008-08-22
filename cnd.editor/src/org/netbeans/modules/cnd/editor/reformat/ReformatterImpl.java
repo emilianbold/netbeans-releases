@@ -69,7 +69,11 @@ public class ReformatterImpl {
     
     ReformatterImpl(TokenSequence<CppTokenId> ts, int startOffset, int endOffset, CodeStyle codeStyle){
         braces = new BracesStack(codeStyle);
-        this.ts = new ContextDetector(ts, diffs, braces);
+        tabSize = codeStyle.getTabSize();
+        if (tabSize <= 1) {
+            tabSize = 8;
+        }
+        this.ts = new ContextDetector(ts, diffs, braces, tabSize);
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         this.codeStyle = codeStyle;
@@ -77,17 +81,14 @@ public class ReformatterImpl {
     }
     
     LinkedList<Diff> reformat(){
-        // cache tab size. it is expensive operation
-        tabSize = codeStyle.getTabSize();
-        if (tabSize <= 1) {
-            tabSize = 8;
-        }
         ts.moveStart();
         Token<CppTokenId> previous = ts.lookPrevious();
         while(ts.moveNext()){
             if (ts.offset() > endOffset) {
                 break;
             }
+            //System.out.println("========"+previous+"==========");
+            //System.out.println(ts);
             Token<CppTokenId> current = ts.token();
             CppTokenId id = current.id();
             if (previous != null && previous.id() == PREPROCESSOR_DIRECTIVE && id != PREPROCESSOR_DIRECTIVE){
@@ -951,6 +952,8 @@ public class ReformatterImpl {
             while (ts.moveNext() && ts.index() <= lastNL) {
                 ts.replaceCurrent(ts.token(), 0, 0, false);
             }
+            ts.movePrevious();
+            ts.movePrevious();
         }
     }
 
@@ -1230,12 +1233,10 @@ public class ReformatterImpl {
                     } else if (ts.isFirstLineToken()) {
                         ts.replacePrevious(previous, 0, indent, true);
                     } else {
-                        if (braces.parenDepth <= 0) {
+                        if (entry != null && entry.isLikeToArrayInitialization()) {
+                            spaceBefore(previous, codeStyle.spaceWithinBraces());
+                        } else if (braces.parenDepth <= 0) {
                             ts.replacePrevious(previous, 1, indent, true);
-                        } else {
-                            if (entry != null && entry.isLikeToArrayInitialization()) {
-                                spaceBefore(previous, codeStyle.spaceWithinBraces());
-                            }
                         }
                     }
                 } else if (previous.id() == NEW_LINE ||

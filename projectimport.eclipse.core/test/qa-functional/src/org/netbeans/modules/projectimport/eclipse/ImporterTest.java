@@ -50,6 +50,7 @@ import org.netbeans.modules.projectimport.eclipse.gui.ImporterMenu;
 import org.netbeans.modules.projectimport.eclipse.gui.ImporterWizard;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleJavaProjectFromWS;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleWebProjectFromWS;
+import org.netbeans.modules.projectimport.eclipse.gui.ImportSourceFilters;
 
 /**
  *
@@ -67,6 +68,7 @@ public class ImporterTest {
                 addTest(ImportProjectWithTransitiveDeps.class).
                 addTest(ImportAppRunParams.class).
                 addTest(ImportJavaCParams.class).
+                addTest(ImportSourceFilters.class).
                 enableModules(".*").clusters(".*").
                 gui(true).reuseUserDir(true));
     }

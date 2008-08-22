@@ -162,6 +162,8 @@ public class UnixNativeUtils extends NativeUtils {
             } else { 
                 return Platform.AIX;
             }
+        } else if(osName.equals("HP-UX")) {
+            return Platform.HPUX;
         } else {
             return Platform.UNIX;
         }

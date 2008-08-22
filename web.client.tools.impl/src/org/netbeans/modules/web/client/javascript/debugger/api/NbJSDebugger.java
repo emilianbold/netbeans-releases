@@ -476,7 +476,12 @@ public final class NbJSDebugger {
         }
     }
 
-    private void setBreakpoint(final NbJSBreakpoint bp) {
+    private synchronized void setBreakpoint(final NbJSBreakpoint bp) {
+        if (state.getState() == JSDebuggerState.State.DISCONNECTED ||
+                state.getState() == JSDebuggerState.State.NOT_CONNECTED) {
+            return;
+        }
+        
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
         if (bpImpl != null) {
             return;

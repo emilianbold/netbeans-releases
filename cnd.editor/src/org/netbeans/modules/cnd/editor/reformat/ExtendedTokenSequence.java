@@ -56,9 +56,11 @@ import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 public class ExtendedTokenSequence {
     private final TokenSequence<CppTokenId> ts;
     private final DiffLinkedList diffs;
-    /*package local*/ ExtendedTokenSequence(TokenSequence<CppTokenId> ts, DiffLinkedList diffs){
+    private int tabSize;
+    /*package local*/ ExtendedTokenSequence(TokenSequence<CppTokenId> ts, DiffLinkedList diffs, int tabSize){
         this.ts = ts;
         this.diffs = diffs;
+        this.tabSize = tabSize;
     }
 
     /*package local*/ Diff replacePrevious(Token<CppTokenId> previous, int newLines, int spaces, boolean isIndent){
@@ -131,14 +133,29 @@ public class ExtendedTokenSequence {
                          return column;
                     case DOXYGEN_COMMENT:
                     case BLOCK_COMMENT:
+                    {
                         String text = ts.token().text().toString();
                         int i = text.lastIndexOf('\n');
                         if (i < 0){
                             column+=text.length();
                             break;
                         } 
-                        column+=text.length()-i+1;
+                        column += text.length()-i+1;
                         return column;
+                    }
+                    case WHITESPACE:
+                    {
+                        String text = ts.token().text().toString();
+                        for(int i = 0; i < text.length(); i++){
+                            char c = text.charAt(i);
+                            if (c == '\t'){
+                                column = (column/tabSize+1)* tabSize;
+                            } else {
+                                column+=1;
+                            }
+                        }
+                        break;
+                    }
                     default:
                         column+=ts.token().length();
                         break;
@@ -536,6 +553,7 @@ public class ExtendedTokenSequence {
             ts.moveIndex(start);
             while(true) {
                 if (!ts.movePrevious()){
+                    res[0] = 0;
                     return res;
                 }
                 if (ts.token().id() == NEW_LINE || ts.token().id() == WHITESPACE){
@@ -659,6 +677,7 @@ public class ExtendedTokenSequence {
                 int end = diff.getEndOffset();
                 String text = diff.getText();
                 if (startOffset > end || endOffset < start) {
+                    System.out.println("What?");
                     continue;
                 }
                 if (endOffset < end) {

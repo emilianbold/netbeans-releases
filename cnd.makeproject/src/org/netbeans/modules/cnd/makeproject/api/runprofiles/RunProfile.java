@@ -657,6 +657,10 @@ public class RunProfile implements ConfigurationAuxObject {
         return createSheet(isRemote);
     }
     
+    public Sheet getSheet() {
+        return createSheet(false);
+    }
+    
     private Sheet createSheet(boolean isRemote) {
         Sheet sheet = new Sheet();
 
