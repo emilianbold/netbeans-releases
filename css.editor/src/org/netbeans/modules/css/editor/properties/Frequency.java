@@ -46,7 +46,7 @@ package org.netbeans.modules.css.editor.properties;
 public class Frequency implements CssPropertyValueAcceptor {
 
     public String id() {
-        return "frequency";
+        return "frequency"; //NOI18N
     }
 
     public boolean accepts(String token) {
