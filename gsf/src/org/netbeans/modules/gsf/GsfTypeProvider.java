@@ -410,7 +410,9 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
 
     public void open(FileObject fileObject, ElementHandle element) {
         Source js = Source.forFileObject(fileObject);
-        UiUtils.open(js, element);
+        if (js != null) {
+            UiUtils.open(js, element);
+        }
     }
 
     public String name() {

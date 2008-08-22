@@ -42,8 +42,8 @@ package org.netbeans.modules.ruby;
 
 import java.util.List;
 
-import org.jruby.ast.Node;
-import org.jruby.lexer.yacc.ISourcePosition;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.lexer.yacc.ISourcePosition;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.OffsetRange;

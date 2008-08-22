@@ -48,7 +48,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
