@@ -138,6 +138,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136744_3() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test3^", false);
     }
+    
+    public void test144830() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue144830.php", "$this->^", false);
+    }
 
     public void test136744_4() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test4^", false);

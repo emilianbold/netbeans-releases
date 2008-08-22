@@ -581,6 +581,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 && tokenSequence.token().id() != PHPTokenId.PHP_CURLY_OPEN
                 && tokenSequence.token().id() != PHPTokenId.PHP_CURLY_CLOSE
                 && tokenSequence.token().id() != PHPTokenId.PHP_RETURN
+                && tokenSequence.token().id() != PHPTokenId.PHP_OPERATOR
                 && findLHSExpressionType_skipArgs(tokenSequence)
                 && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN){
             if (!tokenSequence.movePrevious()){
