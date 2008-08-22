@@ -178,11 +178,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     public String[] getImports(){
         JspParserAPI.ParseResult pre = getParseResult();
-        if (pre != null){
+        if (pre != null && pre.isParsingSuccess()){
             PageInfo pi = pre.getPageInfo();
             if(pi == null) {
                 //report error but do not break the entire CC
-                err.log(Level.WARNING, null, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null!"));
+                err.log(Level.WARNING, null, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null but result.isParsingSuccess() == true!"));
                 return null;
             }
             List<String> imports = pi.getImports();
@@ -242,7 +242,16 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         getTagLibraryMappings();
         //force the parser to update the parse information for the file
         JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, false, true, true);
-        if (result != null && result.isParsingSuccess()) return result.getPageInfo().getTagLibraries();
+        if (result != null && result.isParsingSuccess()) {
+            PageInfo pi = result.getPageInfo();
+            if(pi == null) {
+                //report error but do not break the entire CC
+                err.log(Level.WARNING, null, new NullPointerException("PageInfo obtained from JspParserAPI.ParseResult is null but result.isParsingSuccess() == true!"));
+                return null;
+            } else {
+                return pi.getTagLibraries();
+            }
+        }
         
         return null; //an error
     }
