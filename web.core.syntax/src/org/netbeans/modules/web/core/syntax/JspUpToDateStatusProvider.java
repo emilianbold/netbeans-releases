@@ -81,7 +81,12 @@ final class JspUpToDateStatusProvider extends UpToDateStatusProvider implements 
         if(documentDO != null && documentDO.isValid()) {
             JSPColoringData jspcd = JspUtils.getJSPColoringData(document, documentDO.getPrimaryFile());
             //jspcd.addPropertyChangeListener(this);
-            jspcd.addPropertyChangeListener(WeakListeners.propertyChange(this, jspcd));
+            if(jspcd != null) {
+                jspcd.addPropertyChangeListener(WeakListeners.propertyChange(this, jspcd));
+            } else {
+                //coloring data is null - weird, likely some parser problem or something in the file or project is broken
+                //we will ignore the state, but the up-to-date status provider won't work for this file!
+            }
         }
     }
     
