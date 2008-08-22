@@ -278,7 +278,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run(CompilationController cc) throws Exception {
             cc.toPhase(Phase.RESOLVED);
-            org.jruby.ast.Node root = AstUtilities.getRoot(cc);
+            org.jruby.nb.ast.Node root = AstUtilities.getRoot(cc);
             if (root == null) {
                 // TODO How do I add some kind of error message?
                 System.out.println("FAILURE - can't refactor uncompileable sources");
@@ -344,7 +344,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run(CompilationController info) throws Exception {
             info.toPhase(Phase.ELEMENTS_RESOLVED);
-            org.jruby.ast.Node root = AstUtilities.getRoot(info);
+            org.jruby.nb.ast.Node root = AstUtilities.getRoot(info);
             if (root != null) {
                 Element element = AstElement.create(info, root);
                 RubyElementCtx fileCtx = new RubyElementCtx(root, root, element, info.getFileObject(), info);
@@ -384,7 +384,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run(CompilationController info) throws Exception {
             info.toPhase(Phase.ELEMENTS_RESOLVED);
-            org.jruby.ast.Node root = AstUtilities.getRoot(info);
+            org.jruby.nb.ast.Node root = AstUtilities.getRoot(info);
             if (root != null) {
                 RubyParseResult rpr = AstUtilities.getParseResult(info);
                 if (rpr != null) {
@@ -395,7 +395,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         // In Java, we look for a class with the name corresponding to the file.
                         // It's not as simple in Ruby.
                         AstElement element = els.get(0);
-                        org.jruby.ast.Node node = element.getNode();
+                        org.jruby.nb.ast.Node node = element.getNode();
                         RubyElementCtx representedObject = new RubyElementCtx(root, node, element, info.getFileObject(), info);
                         representedObject.setNames(element.getFqn(), element.getName());
                         handles.add(representedObject);
