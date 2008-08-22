@@ -35,7 +35,7 @@
  * your version of this file under either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 licens<DRAGGEDITEMS><MODELELEMENT TOPLEVELID="DCE.18CC44A7-3B18-9E24-B866-FCEF94A91442" XMIID="DCE.50CB1AE2-17B6-4DC6-DFA9-7F288366AC1C"/></DRAGGEDITEMS>e, then the option applies only if the new code is
+ * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.uml.drawingarea.actions;
