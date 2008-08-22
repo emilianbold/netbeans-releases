@@ -57,17 +57,21 @@ public class ParserErrorProvider extends CsmErrorProvider {
     private static final boolean ENABLE = getBoolean("cnd.parser.error.provider", true);
 
     @Override
-    public void getErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        if (ENABLE) {
-            Collection<CsmErrorInfo> errorInfos = new ArrayList<CsmErrorInfo>();
-            Collection<RecognitionException> recognitionExceptions = new ArrayList<RecognitionException>();
-            ReadOnlyTokenBuffer buffer = ((FileImpl) request.getFile()).getErrors(recognitionExceptions);
+    protected boolean validate(Request request) {
+        return ENABLE && super.validate(request) && !disableAsLibraryHeaderFile(request.getFile());
+    }
+
+    @Override
+    protected  void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        Collection<CsmErrorInfo> errorInfos = new ArrayList<CsmErrorInfo>();
+        Collection<RecognitionException> recognitionExceptions = new ArrayList<RecognitionException>();
+        ReadOnlyTokenBuffer buffer = ((FileImpl) request.getFile()).getErrors(recognitionExceptions);
+        if (buffer != null) {
             ParserErrorFilter.getDefault().filter(recognitionExceptions, errorInfos, buffer, request.getFile());
             for (Iterator<CsmErrorInfo> iter = errorInfos.iterator(); iter.hasNext() && ! request.isCancelled(); ) {
                 response.addError(iter.next());
             }
         }
-        response.done();
     }
 
     private static boolean getBoolean(String name, boolean result) {
@@ -76,6 +80,10 @@ public class ParserErrorProvider extends CsmErrorProvider {
             result = Boolean.parseBoolean(text);
         }
         return result;
+    }
+
+    public String getName() {
+        return "syntax-error"; //NOI18N
     }
 
 

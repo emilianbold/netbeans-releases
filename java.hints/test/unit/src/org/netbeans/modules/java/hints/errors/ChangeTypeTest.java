@@ -145,6 +145,13 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                 "Change type of o to CharSequence",
                 "package test; import java.util.List; public class Test {private void test() {List<? extends CharSequence> l = null; CharSequence o = l.get(0);}}");
     }
+
+    public void testToAnonymousType120619() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void foo() {Strin|g d = new Runnable() {public void run() {}};}}",
+                       "Change type of d to Runnable",
+                       "package test; public class Test {public void foo() {Runnable d = new Runnable() {public void run() {}};}}");
+    }
     
     /**
      * change to &lt;nulltype&gt; should not be offered

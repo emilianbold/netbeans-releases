@@ -245,6 +245,7 @@ public class ProfilerValidation extends JellyTestCase {
         new NbDialogOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.j2se.Bundle",
                         "J2SEProjectTypeProfiler_ModifyBuildScriptCaption") ).ok(); //"Enable Profiling of {0}"
         //wait
+        new EventTool().waitNoEvent(10000);
         // click Run in Profile AnagramGame dialog
         NbDialogOperator profileOper = new NbDialogOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.ui.stp.Bundle", 
                                         "SelectProfilingTask_ProfileDialogCaption") ); // "Profile "+anagramGamePrName
@@ -267,7 +268,7 @@ public class ProfilerValidation extends JellyTestCase {
                 return("Wait menu item is enabled."); // NOI18N
             }
         }).waitAction(takeSnapshotAction);
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(30000);
         takeSnapshotAction.perform();
         TopComponentOperator collectedResults = new TopComponentOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", 
                                                         "CPUSnapshotPanel_PanelTitle") ); //"CPU"

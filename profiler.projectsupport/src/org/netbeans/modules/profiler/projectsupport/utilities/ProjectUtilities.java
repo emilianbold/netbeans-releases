@@ -39,6 +39,7 @@
  */
 package org.netbeans.modules.profiler.projectsupport.utilities;
 
+import java.io.InputStream;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -237,10 +238,20 @@ public class ProjectUtilities {
             ProjectManager.mutex().readAccess(new Runnable() {
 
                 public void run() {
+                    InputStream in = null;
                     try {
-                        props.load(propFile.getInputStream());
+                        in = propFile.getInputStream();
+                        props.load(in);
                     } catch (IOException ex) {
                         LOGGER.finest("Could not load properties file: " + propFile.getPath()); // NOI18N
+                    } finally {
+                        if (in != null) {
+                            try {
+                                 in.close();
+                            } catch (IOException ex) {
+                                // ignore
+                            }
+                        }
                     }
                 }
             });

@@ -38,42 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.core.syntax.completion;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import javax.swing.text.JTextComponent;
-
-import org.netbeans.editor.ext.CompletionQuery;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.core.syntax.*;
+import org.netbeans.spi.editor.completion.CompletionResultSet;
 
 /** Support for attribute value completion for JSP tags and directives.
  *
- * @author  Petr Jiricka
- * @version
+ * @author Petr Jiricka
+ * @author Marek Fukala
  */
-public abstract class AttributeValueSupport extends Object {
+public abstract class AttributeValueSupport {
 
     private static Map supports;
 
     public static void putSupport(AttributeValueSupport support) {
-        if (supports == null)
+        if (supports == null) {
             initialize();
+        }
         // trick so we can construct a 'dummy' key element and get the 'real' element
         supports.put(support, support);
     }
-    
+
     public static AttributeValueSupport getSupport(boolean tag, String longName, String attrName) {
-        if (supports == null)
+        if (supports == null) {
             initialize();
-        AttributeValueSupport support = new AttributeValueSupport.Default (tag, longName, attrName);
-        return (AttributeValueSupport)supports.get(support);
+        }
+        AttributeValueSupport support = new AttributeValueSupport.Default(tag, longName, attrName);
+        return (AttributeValueSupport) supports.get(support);
     }
-    
+
     private static void initialize() {
         supports = new HashMap();
         // jsp:useBean
@@ -95,7 +96,7 @@ public abstract class AttributeValueSupport extends Object {
         putSupport(new AttrSupports.TrueFalseSupport(false, "page", "autoFlush")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "page", "isThreadSafe")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "page", "isErrorPage")); // NOI18N
-        putSupport(new AttrSupports.FilenameSupport (false, "page", "errorPage")); //NOI18N
+        putSupport(new AttrSupports.FilenameSupport(false, "page", "errorPage")); //NOI18N
         putSupport(new AttrSupports.EncodingSupport(false, "page", "pageEncoding")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "page", "isELIgnored")); // NOI18N
         // @tag 
@@ -113,19 +114,19 @@ public abstract class AttributeValueSupport extends Object {
         putSupport(new AttrSupports.VariableScopeSupport(false, "variable", "scope")); // NOI18N
         putSupport(new AttrSupports.ClassNameSupport(false, "variable", "variable-class")); // NOI18N
         // @include
-        putSupport(new AttrSupports.FilenameSupport (false, "include", "file")); //NOI18N
-        putSupport(new AttrSupports.FilenameSupport (true, "jsp:directive.include", "file")); //NOI18N
-        
+        putSupport(new AttrSupports.FilenameSupport(false, "include", "file")); //NOI18N
+        putSupport(new AttrSupports.FilenameSupport(true, "jsp:directive.include", "file")); //NOI18N
+
         // jsp:include, jsp:forward
-        putSupport(new AttrSupports.FilenameSupport (true, "jsp:include", "page")); // NOI18N
-        putSupport(new AttrSupports.FilenameSupport (true, "jsp:forward", "page")); // NOI18N
+        putSupport(new AttrSupports.FilenameSupport(true, "jsp:include", "page")); // NOI18N
+        putSupport(new AttrSupports.FilenameSupport(true, "jsp:forward", "page")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:include", "flush")); // NOI18N
-        
+
         putSupport(new AttrSupports.ScopeSupport(true, "jsp:doBody", "scope")); // NOI18N
-        
+
         putSupport(new AttrSupports.ScopeSupport(true, "jsp:invoke", "scope")); // NOI18N
         // PENDING - add supports for known attributes
-        
+
         // jsp:directive.page
         putSupport(new AttrSupports.PackageListSupport(true, "jsp:directive.page", "import")); // NOI18N
         putSupport(new AttrSupports.ClassNameSupport(true, "jsp:directive.page", "extends")); // NOI18N
@@ -133,17 +134,16 @@ public abstract class AttributeValueSupport extends Object {
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "autoFlush")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "isThreadSafe")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "isErrorPage")); // NOI18N
-        putSupport(new AttrSupports.FilenameSupport (true, "jsp:directive.page", "errorPage")); //NOI18N
+        putSupport(new AttrSupports.FilenameSupport(true, "jsp:directive.page", "errorPage")); //NOI18N
         putSupport(new AttrSupports.EncodingSupport(true, "jsp:directive.page", "pageEncoding")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:directive.page", "isELIgnored")); // NOI18N
-        
+
         putSupport(new AttrSupports.YesNoTrueFalseSupport(true, "jsp:output", "omit-xml-declaration")); // NOI18N
         putSupport(new AttrSupports.RootVersionSupport(true, "jsp:root", "version")); // NOI18N
         putSupport(new AttrSupports.PluginTypeSupport(true, "jsp:plugin", "type")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(true, "jsp:attribute", "trim")); // NOI18N
-        
+
     }
-    
     protected boolean tag;
     protected String longName;
     protected String attrName;
@@ -158,29 +158,34 @@ public abstract class AttributeValueSupport extends Object {
         this.longName = longName;
         this.attrName = attrName;
     }
-    
+
+    @Override
     public boolean equals(Object obj) {
-        AttributeValueSupport sup2 = (AttributeValueSupport)obj;
-        return (tag == sup2.tag) &&
-               (longName.equals(sup2.longName)) &&
-               (attrName.equals(sup2.attrName));
+        if (obj instanceof AttributeValueSupport) {
+            AttributeValueSupport sup2 = (AttributeValueSupport) obj;
+            return (tag == sup2.tag) &&
+                    (longName.equals(sup2.longName)) &&
+                    (attrName.equals(sup2.attrName));
+        } else {
+            return false;
+        }
     }
-    
+
+    @Override
     public int hashCode() {
         return longName.hashCode() + attrName.hashCode();
     }
 
-    /** Returns the complete result. */
-    public abstract CompletionQuery.Result getResult(JTextComponent component, 
-        int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, 
-        String valuePart);
-    
+    public abstract void result(CompletionResultSet result, JTextComponent component,
+            int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item,
+            String valuePart);
+
     /** Default implementation of AttributeValueSupport. 
      *  Only getPossibleValues method needs to be overriden for simple
      *  attribute support.
      */
     public static class Default extends AttributeValueSupport {
-        
+
         /** Creates new DefaultAttributeValueSupport 
          * @param isTag whether this support is for tag or directive
          * @param longName either directive name or tag name including prefix
@@ -189,45 +194,46 @@ public abstract class AttributeValueSupport extends Object {
         public Default(boolean tag, String longName, String attrName) {
             super(tag, longName, attrName);
         }
-        
+
         /** Allows subclasses to override the default title. */
         protected String completionTitle() {
-            return NbBundle.getMessage (JSPKit.class, "CTL_JSP_Completion_Title");
+            return NbBundle.getMessage(JSPKit.class, "CTL_JSP_Completion_Title");
         }
-    
+
         /** Builds List of completion items.
          *  It uses results from <CODE>possibleValues</CODE> to build the list.
          */
-        protected List createCompletionItems(int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
+        protected List<JspCompletionItem> createCompletionItems(int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
             //int valuePartLength = valuePart.length();
-            List values = sup.filterList(possibleValues(sup, item), valuePart);
+            List values = JspSyntaxSupport.filterStrings(possibleValues(sup, item), valuePart);
             List items = new ArrayList();
             for (int i = 0; i < values.size(); i++) {
-                items.add(new JspCompletionItem.AttributeValue((String)values.get(i)));
+                String value = (String) values.get(i);
+                items.add(JspCompletionItem.createJspAttributeValueCompletionItem(value, offset - valuePart.length()));
             }
             return items;
         }
-    
+
         /** Should return a list of Strings containing all possible values 
          * for this attribute. May return null if no options are available.
          */
-        protected List possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
-            return new ArrayList ();
+        protected List<String> possibleValues(JspSyntaxSupport sup, SyntaxElement.TagDirective item) {
+            return Collections.emptyList();
         }
-        
+
         /** Returns the complete result that contains elements from getCompletionItems.  
          *  This implemantation uses createCompletionItems for obtaing of results but may be 
          *  overriden.
          */
-        public CompletionQuery.Result getResult (JTextComponent component, int offset, 
-            JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
-            List items = createCompletionItems (offset, sup, item, valuePart);
-            int valuePartLength = valuePart.length ();
-            
-            return new JspCompletionQuery.JspCompletionResult(component, completionTitle(), 
-                items, offset - valuePartLength, valuePartLength, -1);
+        public void result(CompletionResultSet result, JTextComponent component, int offset,
+                JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
+            List items = createCompletionItems(offset, sup, item, valuePart);
+            result.addAllItems(items);
+            result.setAnchorOffset(offset - valuePart.length());
+//            int valuePartLength = valuePart.length ();
+//            
+//            return new JspCompletionQuery.JspCompletionResult(component, completionTitle(), 
+//                items, offset - valuePartLength, valuePartLength, -1);
         }
-        
     }
-    
 }

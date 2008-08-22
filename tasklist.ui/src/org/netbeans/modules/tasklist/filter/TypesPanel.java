@@ -77,14 +77,7 @@ final class TypesPanel extends JPanel {
     }
     
     public boolean isValueValid() {
-        boolean atLeastOneTypeSelected = false;
-        for( int i=0; i<providerState.length; i++ ) {
-            if( providerState[i] ) {
-                atLeastOneTypeSelected = true;
-                break;
-            }
-        }
-        return atLeastOneTypeSelected && checkVisibleLimit();
+        return checkVisibleLimit();
     }
 
     private void init() {

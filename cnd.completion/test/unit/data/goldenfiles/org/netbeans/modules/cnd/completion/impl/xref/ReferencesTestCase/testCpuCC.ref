@@ -8,7 +8,7 @@
 --OWNER:
     FUNCTION_DEFINITION Cpu(int,int,int)  [46:1/2162-49:2/2340] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:2/2556] ReferencesTestCase/cpu.h
 ==============================================================
 'Cpu', tokenID=identifier, offset=2167 [46:6/2167-46:9/2170]
 --OWNER:
@@ -68,7 +68,7 @@
 --OWNER:
     FUNCTION_DEFINITION ComputeSupportMetric()  [57:1/2512-71:2/2781] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:2/2556] ReferencesTestCase/cpu.h
 ==============================================================
 'ComputeSupportMetric', tokenID=identifier, offset=2522 [57:11/2522-57:31/2542]
 --OWNER:
@@ -134,7 +134,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetType() const  [73:1/2783-84:2/3019] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:2/2556] ReferencesTestCase/cpu.h
 ==============================================================
 'GetType', tokenID=identifier, offset=2800 [73:18/2800-73:25/2807]
 --OWNER:
@@ -164,7 +164,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetCategory() const  [86:1/3021-99:2/3324] ReferencesTestCase/cpu.cc
 --RESOLVED TO:
-    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:2/2556] ReferencesTestCase/cpu.h
 ==============================================================
 'GetCategory', tokenID=identifier, offset=3038 [86:18/3038-86:29/3049]
 --OWNER:

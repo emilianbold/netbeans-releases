@@ -40,6 +40,7 @@
  */
 package org.netbeans.lib.lexer.test.join;
 
+import java.io.PrintStream;
 import java.util.ConcurrentModificationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,6 +72,11 @@ public class JoinSectionsMod2Test extends NbTestCase {
     @Override
     protected Level logLevel() {
         return Level.INFO;
+    }
+
+    @Override
+    public PrintStream getLog(String logName) {
+        return System.out;
     }
 
     /**
@@ -125,5 +131,22 @@ public class JoinSectionsMod2Test extends NbTestCase {
                 // Expected
             }
     }
+
+    public void testNestedEmbeddingOffsetsRetaining() throws Exception {
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        String text = "ab<[x]j>c<k[ y ]>d<[z]>";
+        ModificationTextDocument doc = new ModificationTextDocument();
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class, TestJoinTopTokenId.language());
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        
+        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenHierarchyUpdate").setLevel(Level.FINEST); // Extra logging
+        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenListUpdater").setLevel(Level.FINE); // Extra logging
+        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenListListUpdate").setLevel(Level.FINE); // Extra logging
+        
+        doc.remove(8, 10);
+    }
+
 
 }

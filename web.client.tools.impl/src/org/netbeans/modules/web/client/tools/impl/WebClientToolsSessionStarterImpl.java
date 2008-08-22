@@ -61,6 +61,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  * This is the implementation of web client tools service.
@@ -69,7 +70,21 @@ import org.openide.util.NbPreferences;
  */
 public class WebClientToolsSessionStarterImpl implements WebClientToolsSessionStarter {
     
-    public void startSession(URI uri, Factory browser, Lookup lookup) throws WebClientToolsSessionException {
+    public void startSession(final URI uri, final Factory browser, final Lookup lookup) throws WebClientToolsSessionException {
+        Runnable startSession = new Runnable() {
+            public void run() {
+                try {
+                    startSessionImpl(uri, browser, lookup);
+                } catch (WebClientToolsSessionException ex) {
+                    Log.getLogger().log(Level.INFO, "Unexpected exception while starting debugger", ex);
+                }
+            }
+        };
+        
+        RequestProcessor.getDefault().post(startSession);
+    }
+
+    private void startSessionImpl(URI uri, Factory browser, Lookup lookup) throws WebClientToolsSessionException {
         Project project = lookup.lookup(Project.class);
         
         if (project != null) {
@@ -139,9 +154,9 @@ public class WebClientToolsSessionStarterImpl implements WebClientToolsSessionSt
             }
         }
         
-        NbJSDebugger.startDebugging(uri, browser, lookup);
+        NbJSDebugger.startDebugging(uri, browser, lookup);        
     }
-
+    
     private void displayNoBrowserDialog(final Preferences globalPrefs) {
         if (globalPrefs.getBoolean(DebugConstants.DISPLAY_NOBROWSER, true)) {
             JCheckBox doNotShowAgain = new JCheckBox();

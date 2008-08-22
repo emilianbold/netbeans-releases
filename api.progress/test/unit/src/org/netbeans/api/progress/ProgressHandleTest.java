@@ -207,6 +207,7 @@ public class ProgressHandleTest extends NbTestCase {
     
     
     // tasks shorter than the InternalHandle.INITIAL_DELAY should be discarded.
+    @RandomlyFails // NB-Core-Build #1210
     public void testIfShortOnesGetDiscarded() throws Exception {
         OneThreadController control = new OneThreadController(new FailingUI());
         Controller.defaultInstance = control;
@@ -259,6 +260,7 @@ public class ProgressHandleTest extends NbTestCase {
     }
     
     // tasks shorter than the custom init delay should be discarded.
+    @RandomlyFails // NB-Core-Build #1204
     public void testIfCustomShortOnesGetDiscarded() throws Exception {
         System.out.println("testIfCustomShortOnesGetDiscarded");
         OneThreadController control = new OneThreadController(new FailingUI());

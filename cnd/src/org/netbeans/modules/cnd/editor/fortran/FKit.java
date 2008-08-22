@@ -103,7 +103,7 @@ public class FKit extends NbEditorKit {
 
     @Override
     protected Action[] createActions() {
-	int arraySize = 1;
+	int arraySize = 2;
 	int numAddClasses = 0;
 	if (actionClasses != null) {
 	    numAddClasses = actionClasses.size();
@@ -125,6 +125,7 @@ public class FKit extends NbEditorKit {
 	    }
 	}
 	fortranActions[index++] = new FFormatAction();
+	fortranActions[index++] = new CCDefaultKeyTypedAction();
         return TextAction.augmentList(super.createActions(), fortranActions);
     }
 
@@ -214,4 +215,14 @@ public class FKit extends NbEditorKit {
 	    }
 	}
     }    
+
+    public static class CCDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
+        @Override
+        protected void checkIndentHotChars(JTextComponent target, String typedText) {
+            BaseDocument doc = Utilities.getDocument(target);
+            if (doc != null) {
+                super.checkIndentHotChars(target, typedText);
+            }
+       	}
+    }
 }

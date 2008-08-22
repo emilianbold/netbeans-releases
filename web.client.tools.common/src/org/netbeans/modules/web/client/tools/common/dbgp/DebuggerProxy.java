@@ -223,7 +223,7 @@ public class DebuggerProxy {
         return response != null ? response.getBreakpoints() : null;
     }
 
-    public byte[] getSource(URI uri) {
+    public byte[] getSource(String uri) {
         SourceResponse response = (SourceResponse) sendCommand(getCommandFactory().sourceCommand(uri));
         return (response != null && response.isSusccess()) ? response.getSourceCode() : null;
     }
@@ -276,7 +276,12 @@ public class DebuggerProxy {
 
     public synchronized ResponseMessage sendCommand(Command command) {
         if(sessionSocket == null) {
-            Log.getLogger().log(Level.INFO, "\nCannot send command after session is closed\n");  //NOI18N
+            try {
+                throw new IllegalStateException();
+            } catch (Exception ex) {
+                Log.getLogger().log(Level.INFO, "Cannot send command after session is closed", ex);  //NOI18N
+            }
+            
             return null;
         }
         try {
@@ -335,16 +340,26 @@ public class DebuggerProxy {
         }
     }
     
-    private static final String statusText = "<response command=\"status\" status=\"stopped\" reason=\"exception\"/>";
+    private static final String statusTextException = "<response command=\"status\" status=\"stopped\" reason=\"exception\"/>";
+    private static final String statusTextUser = "<response command=\"status\" status=\"stopped\" reason=\"ok\"/>";
     
     private void fireStoppedEvent() {
         if(messageSentThread != null) {
             messageSentThread.interrupt();
         }
-        Message message = Message.createMessage(statusText);
-        handleMessage(message);
-        httpQueue.add(message);
+        
+        if (stop.get()) {
+            sendStopMessage(statusTextUser);
+        }else {
+            sendStopMessage(statusTextException);
+        }
     } 
+    
+    private void sendStopMessage(String msg) {
+        Message message = Message.createMessage(msg);
+        suspensionPointQueue.add(message);
+        httpQueue.add(message);        
+    }
 
     private class MessageHandler extends Thread {
         private final InputStream is;
@@ -373,9 +388,8 @@ public class DebuggerProxy {
             }
             
             DebuggerProxy.this.cleanup();
-            if(!stop.get()){
-                fireStoppedEvent();
-            }
+            fireStoppedEvent();
+            
             Log.getLogger().log(Level.FINEST, "Ending " + getName());  //NOI18N
         }
     }
