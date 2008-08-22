@@ -43,6 +43,7 @@ package org.netbeans.modules.web.core.syntax;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -86,6 +87,8 @@ final class JspUpToDateStatusProvider extends UpToDateStatusProvider implements 
             } else {
                 //coloring data is null - weird, likely some parser problem or something in the file or project is broken
                 //we will ignore the state, but the up-to-date status provider won't work for this file!
+                upToDate = UpToDateStatus.UP_TO_DATE_DIRTY;
+                Logger.getAnonymousLogger().fine("JspUtils.getJSPColoringData(document, " + documentDO.getPrimaryFile() + ") returned null!");
             }
         }
     }
