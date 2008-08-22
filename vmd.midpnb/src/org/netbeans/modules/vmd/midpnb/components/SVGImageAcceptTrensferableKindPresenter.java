@@ -62,7 +62,9 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormSupport;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGMenuImageParser;
 import org.openide.filesystems.FileObject;
 
@@ -85,6 +87,9 @@ public class SVGImageAcceptTrensferableKindPresenter extends MidpAcceptTrensfera
 
         if (isAcceptableForComponent(svgPlayer)) {
             Set<FileObject> images = getImagesFO(svgPlayer, component);
+            if (images.size() == 0 && getComponent().getDocument().getDescriptorRegistry().isInHierarchy(SVGFormCD.TYPEID, getComponent().getType())) {
+                SVGFormSupport.removeAllSVGFormComponents(getComponent());
+            }
             for (FileObject img : images) {
                 parseSVGImageItems(img, svgPlayer);
             }
@@ -139,7 +144,12 @@ public class SVGImageAcceptTrensferableKindPresenter extends MidpAcceptTrensfera
         try {
             inputStream = imageFO.getInputStream();
             if (inputStream != null) {
-                SVGMenuImageParser.parseSVGMenu(inputStream, parentComponent);
+                DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
+                if (registry.isInHierarchy(SVGFormCD.TYPEID, getComponent().getType())) {
+                    SVGFormImageParser.parseSVGForm(inputStream, parentComponent);
+                } else {
+                    SVGMenuImageParser.parseSVGMenu(inputStream, parentComponent);
+                }
             }
         } catch (FileNotFoundException ex) {
             Debug.warning(ex);

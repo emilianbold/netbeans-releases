@@ -56,10 +56,13 @@ import org.openide.filesystems.FileObject;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.HashSet;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormSupport;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
 
@@ -77,7 +80,7 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
     public Result accept(Transferable transferable, AcceptSuggestion suggestion) {
         Result result = super.accept(transferable, suggestion);
         DesignComponent svgImage = result.getComponents().iterator().next();
-        DesignComponent svgComponent = getComponent();
+        DesignComponent svgForm = getComponent();
         FileObject fileObject = getNodeFileObject(transferable);
         if (fileObject == null) {
             return result;
@@ -85,12 +88,13 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
 
         String path = getFileClasspath(fileObject);
         svgImage.writeProperty(SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(path));
-        MidpDocumentSupport.getCategoryComponent(svgComponent.getDocument(), ResourcesCategoryCD.TYPEID).addComponent(svgImage);
+        MidpDocumentSupport.getCategoryComponent(svgForm.getDocument(), ResourcesCategoryCD.TYPEID).addComponent(svgImage);
 
         // TODO use SVGComponentImageParser.getParserByComponent. 
         // problem is that here we check for svg menu items count
-        SVGComponentImageParser parser = getParserByComponent(svgComponent);
-        parseSVGImageItems(transferable, svgComponent, parser);
+        
+        SVGComponentImageParser parser = getParserByComponent(svgForm);
+        parseSVGImageItems(transferable, svgForm, parser);
 
         return result;
     }
@@ -101,7 +105,7 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
      * @param svgComponent
      * @return
      */
-    private SVGComponentImageParser getParserByComponent(DesignComponent svgComponent){
+    protected SVGComponentImageParser getParserByComponent(DesignComponent svgComponent){
         DescriptorRegistry descrRegistry = svgComponent.getDocument().getDescriptorRegistry();
         TypeID typeID = svgComponent.getType();
         if (descrRegistry.isInHierarchy(SVGMenuCD.TYPEID, typeID)) {
@@ -114,7 +118,7 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
         return null;
     }
 
-    private void parseSVGImageItems(Transferable transferable, 
+    protected void parseSVGImageItems(Transferable transferable, 
             final DesignComponent svgMenuComponent,
             SVGComponentImageParser parser) 
     {
