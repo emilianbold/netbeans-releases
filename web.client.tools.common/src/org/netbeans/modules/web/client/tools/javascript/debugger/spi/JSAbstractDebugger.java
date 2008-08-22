@@ -338,17 +338,18 @@ public abstract class JSAbstractDebugger implements JSDebugger {
         if (args.length > 1) {
             StringBuffer newArgs = new StringBuffer ();
             boolean found = false;
-            for (int i=0; i<args.length-1; i++) {
+            for (int i=0; i<args.length; i++) {
                 if (newArgs.length() > 0) {
                     newArgs.append(" ");  // NOI18N
                 }
                 if (args[i].indexOf("-remote") >= 0  // NOI18N
                 &&  args[i+1].indexOf("openURL(") >=0) {  // NOI18N
                     found = true;
-                    newArgs.append("\"{URL}\"");  // NOI18N
+                    newArgs.append("{URL}");  // NOI18N
+                    i += 1;
                 }
                 else {
-                    newArgs.append("\""+args[i]+"\"");  // NOI18N
+                    newArgs.append(args[i]);  // NOI18N
                 }
             }
             if (found) {
