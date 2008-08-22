@@ -43,14 +43,8 @@
 
 package org.netbeans.modules.spring.webmvc;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -87,7 +81,6 @@ import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -282,9 +275,10 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             if (!libraries.isEmpty()) {
                 addLibrariesToWebModule(libraries, webModule);
             }
-            
+
             // CREATE WEB-INF/JSP FOLDER
             FileObject webInf = webModule.getWebInf();
+
             FileObject jsp = FileUtil.createFolder(webInf, "jsp");
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
             DataFolder webInfDO = DataFolder.findFolder(webInf);
@@ -294,12 +288,23 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
             String indexUrlMappingKey = SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", dispatcherMapping); // NOI18N
-            Map<String, String> params = new HashMap<String, String>(1);
-            params.put("indexUrlKey", indexUrlMappingKey); // NOI18N
-            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet", params); // NOI18N
+            Map<String, String> indexUrlParams = new HashMap<String, String>(1);
+            indexUrlParams.put("indexUrlKey", indexUrlMappingKey); // NOI18N
+            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet", indexUrlParams); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
             addFileToOpen(createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index")); // NOI18N
+
+            // MODIFY EXISTING REDIRECT.JSP
+            indexUrlMappingKey = SpringWebFrameworkUtils.reviseRedirectJsp(indexUrlMappingKey, dispatcherMapping);
+            indexUrlParams.put("indexUrlKey", indexUrlMappingKey); // NOI18N
+            FileObject documentBase = webModule.getDocumentBase();
+            FileObject redirectJsp = documentBase.getFileObject("redirect.jsp"); // NOI18N
+            if (redirectJsp != null) {
+                redirectJsp.delete();
+            }
+            DataFolder documentBaseDO = DataFolder.findFolder(documentBase);
+            addFileToOpen(createFromTemplate("redirect.jsp", documentBaseDO, "redirect", indexUrlParams));
 
             SpringScope scope = SpringScope.getSpringScope(configFile);
             if (scope != null) {
@@ -324,16 +329,8 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             } else {
                 LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile);
             }
-
-            // MODIFY EXISTING REDIRECT.JSP
-            FileObject documentBase = webModule.getDocumentBase();
-            FileObject redirectJsp = documentBase.getFileObject("redirect.jsp"); // NOI18N
-            if (redirectJsp == null) {
-                redirectJsp = FileUtil.createData(documentBase, "redirect.jsp"); // NOI18N
-            }
-            addFileToOpen(copyResource("redirect.jsp", redirectJsp)); // NOI18N
         }
-               
+
         public void addFileToOpen(FileObject file) {
             filesToOpen.add(file);
         }
@@ -347,47 +344,11 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             DataObject templateDO = DataObject.find(templateFO);
             return templateDO.createFromTemplate(targetDO, fileName, params).getPrimaryFile();
         }
-        
+
         private FileObject createFromTemplate(String templateName, DataFolder targetDO, String fileName) throws IOException {
             FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
             DataObject templateDO = DataObject.find(templateFO);
             return templateDO.createFromTemplate(targetDO, fileName).getPrimaryFile();
-        }                
-
-        protected FileObject copyResource(String resourceName, FileObject target) throws UnsupportedEncodingException, IOException {
-            InputStream in = getClass().getResourceAsStream("resources/templates/" + resourceName); // NOI18N
-            String lineSeparator = System.getProperty("line.separator"); // NOI18N
-            StringBuffer buffer = new StringBuffer();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, ENCODING));
-            try {
-                String line = reader.readLine();               
-                while (line != null) {
-                    // If an extension mapping is entered by the user, then update filename extensions in the Spring bean config file and index.jsp
-                    if ((resourceName.contains("-servlet.xml") || ((resourceName.equals("redirect.jsp"))))) { // NOI18N
-                        line = SpringWebFrameworkUtils.replaceExtensionInTemplates(line, dispatcherMapping);
-                    }
-                    if (resourceName.equals("redirect.jsp")) { // NOI18N
-                        line = SpringWebFrameworkUtils.reviseRedirectJsp(line, dispatcherMapping);
-                    }                 
-                    buffer.append(line);
-                    buffer.append(lineSeparator);
-                    line = reader.readLine();
-                }
-            } finally {
-                reader.close();
-            }
-            FileLock lock = target.lock();
-            try {
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(target.getOutputStream(lock), ENCODING));
-                try {
-                    writer.write(buffer.toString());
-                } finally {
-                    writer.close();
-                }
-            } finally {
-                lock.releaseLock();
-            }
-            return target;
         }
 
         protected boolean addLibrariesToWebModule(List<Library> libraries, WebModule webModule) throws IOException, UnsupportedOperationException {
