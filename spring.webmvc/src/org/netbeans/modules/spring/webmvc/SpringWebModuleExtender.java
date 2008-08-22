@@ -288,16 +288,16 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             FileObject configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext"); // NOI18N
             addFileToOpen(configFile);
             newConfigFiles.add(FileUtil.toFile(configFile));
-            String indexUrlMapping = SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", dispatcherMapping); // NOI18N
-            Map<String, ?> indexUrlParams = Collections.singletonMap("index", Collections.singletonMap("url", indexUrlMapping)); // NOI18N
+            String fullIndexUrl = SpringWebFrameworkUtils.instantiateDispatcherMapping(dispatcherMapping, "index"); // NOI18N
+            String simpleIndexUrl = SpringWebFrameworkUtils.getSimpleDispatcherURL(fullIndexUrl);
+            Map<String, ?> indexUrlParams = Collections.singletonMap("index", Collections.singletonMap("url", simpleIndexUrl)); // NOI18N
             configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet", indexUrlParams); // NOI18N
             addFileToOpen(configFile);
             newConfigFiles.add(FileUtil.toFile(configFile));
             addFileToOpen(createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index")); // NOI18N
 
             // MODIFY EXISTING REDIRECT.JSP
-            indexUrlMapping = SpringWebFrameworkUtils.reviseRedirectJsp(indexUrlMapping, dispatcherMapping);
-            indexUrlParams = Collections.singletonMap("index", Collections.singletonMap("url", indexUrlMapping)); // NOI18N
+            indexUrlParams = Collections.singletonMap("index", Collections.singletonMap("url", fullIndexUrl)); // NOI18N
             FileObject documentBase = webModule.getDocumentBase();
             FileObject redirectJsp = documentBase.getFileObject("redirect.jsp"); // NOI18N
             if (redirectJsp != null) {
