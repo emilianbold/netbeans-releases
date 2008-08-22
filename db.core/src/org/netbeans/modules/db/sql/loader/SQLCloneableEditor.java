@@ -273,9 +273,17 @@ public class SQLCloneableEditor extends CloneableEditor {
         resultComponent.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
-                    resultComponent.remove(resultComponent.getSelectedComponent());
+                    int selected = resultComponent.getSelectedIndex();
+                    resultComponent.remove((Component) evt.getNewValue());
                     enableTabActions();
-                    if (resultComponent.getTabCount() == 0) {
+                    int tabCount = resultComponent.getTabCount();
+                    if (selected > 0) {
+                        selected--;
+                    }
+                    if (selected >= 0 && selected < tabCount) {
+                        resultComponent.setSelectedIndex(selected);
+                    }
+                    if (tabCount == 0) {
                         hideResultComponent();
                     }
                     revalidate();
