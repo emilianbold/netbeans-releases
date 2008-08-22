@@ -46,9 +46,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.cnd.MIMENames;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -84,7 +88,7 @@ public class EditorOptions {
     public static final boolean expandTabToSpacesDefault = true;
 
     public static final String tabSize = "tabSize"; // NOI18N 
-    public static final int tabSizeDefault = 8;
+    public static final int tabSizeDefault = 4;
 
     /**
      * Whether to indent preprocessors positioned at start of line.
@@ -427,6 +431,7 @@ public class EditorOptions {
 //          the * character (e.g., "(char *)i" instead of "(char*)i")
         Map<String,Object> apache = new HashMap<String,Object>();
         namedDefaults.put(APACHE_PROFILE, apache);
+        apache.put(tabSize, 8);
         apache.put(indentCasesFromSwitch, false);
         apache.put(alignMultilineCallArgs, true);
         apache.put(alignMultilineMethodParams, true);
@@ -442,6 +447,7 @@ public class EditorOptions {
 // Is it true?
         Map<String,Object> gnu = new HashMap<String,Object>();
         namedDefaults.put(GNU_PROFILE, gnu);
+        gnu.put(tabSize, 8);
         gnu.put(indentCasesFromSwitch, false);
         gnu.put(alignMultilineCallArgs, true);
         gnu.put(alignMultilineMethodParams, true);
@@ -464,6 +470,7 @@ public class EditorOptions {
         //LUNIX_PROFILE
         Map<String,Object> lunix = new HashMap<String,Object>();
         namedDefaults.put(LUNIX_PROFILE, lunix);
+        lunix.put(tabSize, 8);
         lunix.put(indentCasesFromSwitch, false);
         lunix.put(indentSize, 8);
         lunix.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
@@ -472,6 +479,7 @@ public class EditorOptions {
         //ANSI_PROFILE
         Map<String,Object> ansi = new HashMap<String,Object>();
         namedDefaults.put(ANSI_PROFILE, ansi);
+        ansi.put(tabSize, 8);
         ansi.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
         ansi.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
         ansi.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
@@ -488,6 +496,7 @@ public class EditorOptions {
         //OPEN_SOLARIS_PROFILE
         Map<String,Object> solaris = new HashMap<String,Object>();
         namedDefaults.put(OPEN_SOLARIS_PROFILE, solaris);
+        solaris.put(tabSize, 8);
         solaris.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
         solaris.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE.name());
         solaris.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE.name());
@@ -503,6 +512,7 @@ public class EditorOptions {
         //K_AND_R_PROFILE
         Map<String,Object> KandR = new HashMap<String,Object>();
         namedDefaults.put(K_AND_R_PROFILE, KandR);
+        KandR.put(tabSize, 8);
         KandR.put(absoluteLabelIndent, false);
         KandR.put(indentCasesFromSwitch, false);
         KandR.put(indentNamespace, false);
@@ -511,6 +521,7 @@ public class EditorOptions {
         //MYSQL_PROFILE
         Map<String,Object> mysql = new HashMap<String,Object>();
         namedDefaults.put(MYSQL_PROFILE, mysql);
+        mysql.put(tabSize, 8);
         mysql.put(indentCasesFromSwitch, false);
         mysql.put(indentSize, 2);
         mysql.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE.name());
@@ -668,7 +679,20 @@ public class EditorOptions {
     public static void setPreferences(CodeStyle codeStyle, Preferences preferences){
         codeStyleFactory.setPreferences(codeStyle, preferences);
     }
-    
+
+    public static void updateSimplePreferences(CodeStyle.Language language, CodeStyle codeStyle) {
+        Preferences p;
+        if (CodeStyle.Language.C == language) {
+            p = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
+        } else {
+            p = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
+        }
+        if (p != null) {
+            p.putInt(SimpleValueNames.TAB_SIZE, codeStyle.getTabSize());
+            p.putBoolean(SimpleValueNames.EXPAND_TABS, codeStyle.expandTabToSpaces());
+        }
+    }
+
     public static interface CodeStyleFactory {
         CodeStyle create(CodeStyle.Language language, Preferences preferences);
         Preferences getPreferences(CodeStyle codeStyle);

@@ -471,7 +471,7 @@ public final class LexerUtilsConstants {
             sb.append(state);
         }
     }
-static int cnt;
+
     public static String checkConsistencyTokenList(TokenList<?> tokenList, boolean checkEmbedded) {
         int tokenCountCurrent = tokenList.tokenCountCurrent();
         boolean continuous = tokenList.isContinuous();
@@ -484,9 +484,6 @@ static int cnt;
         int startOffset = tokenList.startOffset();
         int lastOffset = startOffset;
         for (int i = 0; i < tokenCountCurrent; i++) {
-            if (tokenList.getClass() == JoinTokenList.class && i == 5) {
-                cnt++;
-            }
             TokenOrEmbedding<?> tokenOrEmbedding = tokenList.tokenOrEmbedding(i);
             if (tokenOrEmbedding == null) {
                 tokenOrEmbedding = tokenList.tokenOrEmbedding(i); // Repeat operation (place bkpt here for debugging)

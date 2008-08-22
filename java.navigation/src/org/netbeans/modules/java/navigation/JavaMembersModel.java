@@ -74,6 +74,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.ui.ElementJavadoc;
 
 /**
@@ -178,25 +179,25 @@ public final class JavaMembersModel extends DefaultTreeModel {
         for (Element element : elements) {
             if (element.getKind() == ElementKind.PACKAGE) {
                 root.add(new PackageTreeNode(fileObject,
-                        ((PackageElement) element), compilationInfo));
+                        ((PackageElement) element), compilationInfo, null));
             } else if ((element.getKind() == ElementKind.CLASS) ||
                     (element.getKind() == ElementKind.INTERFACE) ||
                     (element.getKind() == ElementKind.ENUM) ||
                     (element.getKind() == ElementKind.ANNOTATION_TYPE)) {
                 root.add(new TypeTreeNode(fileObject, ((TypeElement) element),
-                        compilationInfo));
+                        compilationInfo, null));
             } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
                 root.add(new ConstructorTreeNode(fileObject,
-                        ((ExecutableElement) element), compilationInfo));
+                        ((ExecutableElement) element), compilationInfo, null));
             } else if (element.getKind() == ElementKind.METHOD) {
                 root.add(new MethodTreeNode(fileObject,
-                        ((ExecutableElement) element), compilationInfo));
+                        ((ExecutableElement) element), compilationInfo, null));
             } else if (element.getKind() == ElementKind.FIELD) {
                 root.add(new FieldTreeNode(fileObject,
-                        ((VariableElement) element), compilationInfo));
+                        ((VariableElement) element), compilationInfo, null));
             } else if (element.getKind() == ElementKind.ENUM_CONSTANT) {
                 root.add(new EnumConstantTreeNode(fileObject,
-                        ((VariableElement) element), compilationInfo));
+                        ((VariableElement) element), compilationInfo, null));
             }
         }
 
@@ -215,13 +216,15 @@ public final class JavaMembersModel extends DefaultTreeModel {
         private String tooltip = null;
         private Icon icon = null;
         private ElementJavadoc javaDoc;
+        private final AbstractMembersTreeNode owner;
 
         AbstractMembersTreeNode(FileObject fileObject,
-            Element element, CompilationInfo compilationInfo) {
+            Element element, CompilationInfo compilationInfo, final AbstractMembersTreeNode owner) {
             this.fileObject = fileObject;
             this.elementHandle = ElementHandle.create(element);
             this.elementKind = element.getKind();
             this.modifiers = element.getModifiers();
+            this.owner = owner;
 
             if (element.getKind() == ElementKind.CONSTRUCTOR) {                
                 setName(element.getEnclosingElement().getSimpleName().toString());
@@ -234,6 +237,10 @@ public final class JavaMembersModel extends DefaultTreeModel {
             setFQNLabel(Utils.format(element, false, true));
             setToolTip(Utils.format(element, true, JavaMembersAndHierarchyOptions.isShowFQN()));
             loadChildren(element, compilationInfo);
+        }
+        
+        public AbstractMembersTreeNode getOwningTreeNode () {
+            return this.owner;
         }
 
         public FileObject getFileObject() {
@@ -359,8 +366,8 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
     class PackageTreeNode extends AbstractMembersTreeNode {
         PackageTreeNode(FileObject fileObject, PackageElement packageElement,
-            CompilationInfo compilationInfo) {
-            super(fileObject, packageElement, compilationInfo);
+            CompilationInfo compilationInfo, AbstractMembersTreeNode root) {
+            super(fileObject, packageElement, compilationInfo, root);
         }
 
         public boolean isLeaf() {
@@ -376,13 +383,13 @@ public final class JavaMembersModel extends DefaultTreeModel {
         private boolean inSuperClassRole;
 
         TypeTreeNode(FileObject fileObject, TypeElement typeElement,
-            CompilationInfo compilationInfo) {
-            this(fileObject, typeElement, compilationInfo, false);
+            CompilationInfo compilationInfo, AbstractMembersTreeNode owner) {
+            this(fileObject, typeElement, compilationInfo, false, owner);
         }
 
         TypeTreeNode(FileObject fileObject, TypeElement typeElement,
-            CompilationInfo compilationInfo, boolean inSuperClassRole) {
-            super(fileObject, typeElement, compilationInfo);
+            CompilationInfo compilationInfo, boolean inSuperClassRole, AbstractMembersTreeNode owner) {
+            super(fileObject, typeElement, compilationInfo, owner);
             this.inSuperClassRole = inSuperClassRole;
         }
 
@@ -416,7 +423,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
                     }
 
                     node = new TypeTreeNode(getFileObject(),
-                            (TypeElement) enclosedElement, compilationInfo);
+                            (TypeElement) enclosedElement, compilationInfo, this);
                 } else {
                     Set<Modifier> modifiers = enclosedElement.getModifiers();
 
@@ -428,7 +435,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
                         ExecutableElement constructor = (ExecutableElement) enclosedElement;
 
                         node = new ConstructorTreeNode(getFileObject(),
-                                constructor, compilationInfo);
+                                constructor, compilationInfo, this);
                     } else if (enclosedElement.getKind() == ElementKind.METHOD) {
                         if (!JavaMembersAndHierarchyOptions.isShowMethods()) {
                             continue;
@@ -437,7 +444,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
                         ExecutableElement method = (ExecutableElement) enclosedElement;
 
                         node = new MethodTreeNode(getFileObject(), method,
-                                compilationInfo);
+                                compilationInfo, this);
                     } else if (enclosedElement.getKind() == ElementKind.FIELD) {
                         if (!JavaMembersAndHierarchyOptions.isShowFields()) {
                             continue;
@@ -446,7 +453,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
                         VariableElement field = (VariableElement) enclosedElement;
 
                         node = new FieldTreeNode(getFileObject(), field,
-                                compilationInfo);
+                                compilationInfo, this);
                     } else if (enclosedElement.getKind() == ElementKind.ENUM_CONSTANT) {
                         if (!JavaMembersAndHierarchyOptions.isShowEnumConstants()) {
                             continue;
@@ -455,7 +462,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
                         VariableElement enumConstant = (VariableElement) enclosedElement;
 
                         node = new EnumConstantTreeNode(getFileObject(),
-                                enumConstant, compilationInfo);
+                                enumConstant, compilationInfo, this);
                     }
                 }
 
@@ -477,8 +484,10 @@ public final class JavaMembersModel extends DefaultTreeModel {
                     if ((superClass != null) &&
                             !superClass.getQualifiedName().toString()
                                            .equals(Object.class.getName())) {
-                        insert(new TypeTreeNode(getFileObject(), superClass,
-                                compilationInfo, true), index++);
+                        if (!hasCycle(superClass)) {
+                            insert(new TypeTreeNode(getFileObject(), superClass,
+                                    compilationInfo, true, this), index++);
+                        }
                     }
                 }
 
@@ -486,8 +495,9 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
                 for (TypeMirror interfaceTypeMirror : interfaces) {
                     TypeElement anInterface = (TypeElement) ((DeclaredType) interfaceTypeMirror).asElement();
+                    if (!hasCycle(anInterface))
                     insert(new TypeTreeNode(getFileObject(), anInterface,
-                            compilationInfo, true), index++);
+                            compilationInfo, true, this), index++);
                 }
             }
 
@@ -501,7 +511,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
                                 ) {
                             AbstractMembersTreeNode node = new TypeTreeNode(getFileObject(),
                                     (TypeElement) enclosedElement,
-                                    compilationInfo);
+                                    compilationInfo, this);
                             insert(node, index++);
                         }
                     }
@@ -510,12 +520,27 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
             return index;
         }
+        
+        private boolean hasCycle (final TypeElement type) {
+            final String binName = ElementUtilities.getBinaryName(type);
+            AbstractMembersTreeNode node = this;
+            while (node != null) {
+                if (node instanceof TypeTreeNode) {
+                    if (binName.equals(((TypeTreeNode)node).getElementHandle().getBinaryName())) {
+                        return true;
+                    }                    
+                }
+                //getParent cannot be used, ut's not yet filled.
+                node = node.getOwningTreeNode();
+            }
+            return false;
+        }
     }
-
+        
     class ConstructorTreeNode extends AbstractMembersTreeNode {
         ConstructorTreeNode(FileObject fileObject,
-            ExecutableElement contructorElement, CompilationInfo compilationInfo) {
-            super(fileObject, contructorElement, compilationInfo);
+            ExecutableElement contructorElement, CompilationInfo compilationInfo, AbstractMembersTreeNode owner) {
+            super(fileObject, contructorElement, compilationInfo, owner);
         }
 
         public boolean isLeaf() {
@@ -529,8 +554,8 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
     class MethodTreeNode extends AbstractMembersTreeNode {
         MethodTreeNode(FileObject fileObject, ExecutableElement methodElement,
-            CompilationInfo compilationInfo) {
-            super(fileObject, methodElement, compilationInfo);
+            CompilationInfo compilationInfo, AbstractMembersTreeNode owner) {
+            super(fileObject, methodElement, compilationInfo, owner);
         }
 
         public boolean isLeaf() {
@@ -543,8 +568,8 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
     class FieldTreeNode extends AbstractMembersTreeNode {
         FieldTreeNode(FileObject fileObject, VariableElement variableElement,
-            CompilationInfo compilationInfo) {
-            super(fileObject, variableElement, compilationInfo);
+            CompilationInfo compilationInfo, AbstractMembersTreeNode owner) {
+            super(fileObject, variableElement, compilationInfo, owner);
         }
 
         public boolean isLeaf() {
@@ -557,8 +582,8 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
     class EnumConstantTreeNode extends AbstractMembersTreeNode {
         EnumConstantTreeNode(FileObject fileObject,
-            VariableElement variableElement, CompilationInfo compilationInfo) {
-            super(fileObject, variableElement, compilationInfo);
+            VariableElement variableElement, CompilationInfo compilationInfo, AbstractMembersTreeNode owner) {            
+            super(fileObject, variableElement, compilationInfo, owner);
         }
 
         public boolean isLeaf() {

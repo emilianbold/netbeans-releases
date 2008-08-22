@@ -38,13 +38,9 @@
  */
 package org.netbeans.modules.web.client.tools.internetexplorer;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.logging.Level;
 
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
@@ -79,5 +75,12 @@ public class IEJSDebugger extends JSAbstractExternalDebugger {
             ID = IEJSDebuggerConstants.NETBEANS_IE_DEBUGGER + "-" + getSequenceId(); // NOI18N
         }
         return ID;
+    }
+    
+    protected InputStream getInputStreamForURLImpl(String uri) {
+        if(uri.indexOf("file:") != -1) {
+            uri = uri.replace("/", "\\");
+        }
+        return super.getInputStreamForURLImpl(uri);
     }
 }

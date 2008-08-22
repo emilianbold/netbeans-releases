@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.jsf.dialogs;
 
 import java.awt.Color;
-import java.awt.event.ItemListener;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JPanel;
