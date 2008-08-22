@@ -86,6 +86,10 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("forward_class_decl.cpp");
     }
     
+    public void testTemplateParameterAncestor() throws Exception {
+        performStaticTest("template_parameter_ancestor.cpp");
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
@@ -99,10 +103,6 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
 	protected Class getTestCaseDataClass() {
 	    return UnresolvedIdentifierTest.class;
 	}
-
-        public void testTemplateClassEnum() throws Exception {
-            performStaticTest("template_class_enums.cpp");
-        }
 
     }
 }

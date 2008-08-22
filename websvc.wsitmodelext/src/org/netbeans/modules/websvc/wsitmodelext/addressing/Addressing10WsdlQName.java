@@ -54,7 +54,7 @@ public enum Addressing10WsdlQName {
     USINGADDRESSING(createAddressingWsdlQName("UsingAddressing"));                  //NOI18N
 
     public static final String ADDRESSING10_WSDL_NS_URI = "http://www.w3.org/2006/05/addressing/wsdl";  //NOI18N
-    public static final String ADDRESSING10_WSDL_NS_PREFIX = "wsaws";                 //NOI18N
+    public static final String ADDRESSING10_WSDL_NS_PREFIX = "wsaw";                 //NOI18N
     
     public static QName createAddressingWsdlQName(String localName){
         return new QName(ADDRESSING10_WSDL_NS_URI, localName, ADDRESSING10_WSDL_NS_PREFIX);

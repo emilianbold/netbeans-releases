@@ -65,7 +65,7 @@ public interface ServerList {
     
     public void clear();
     
-    public void addServer(String key, boolean asDefault, boolean connect);
+    public ServerRecord addServer(String key, boolean asDefault, boolean connect);
 
     public void removeServer(int idx);
     

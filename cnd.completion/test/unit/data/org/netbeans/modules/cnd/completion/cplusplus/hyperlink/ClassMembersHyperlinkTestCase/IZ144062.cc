@@ -12,4 +12,5 @@ static void type_test()
             int y = x + 1;
         }
     } uni;
+    struct Uni2{}uni2;
 }

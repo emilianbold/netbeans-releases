@@ -65,6 +65,7 @@ import org.openide.loaders.DataObject;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 
 /**
  * Copy of j2ee/utilities Util class
@@ -242,5 +243,36 @@ public class JavaUtil {
             }
         });
         result.commit();
+    }
+    
+    public static Class getType(Project project, String typeName) {
+        List<ClassPath> classPaths = SourceGroupSupport.gerClassPath(project);
+        for (ClassPath cp : classPaths) {
+            try {
+                Class ret = Util.getPrimitiveType(typeName);
+                if (ret != null) {
+                    return ret;
+                }
+                ClassLoader cl = cp.getClassLoader(true);
+                ret = Util.getGenericRawType(typeName, cl);
+                if (ret != null) {
+                    return ret;
+                }
+                if (cl != null) {
+                    return cl.loadClass(typeName);
+                }
+            } catch (ClassNotFoundException ex) {
+                //Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+        }
+        return null;
+    }
+    
+    public static SoapClientJavaOperationInfo[] toJaxwsOperationInfos(WsdlSaasMethod m, 
+            Project project) {
+        List<SoapClientJavaOperationInfo> infos = new ArrayList<SoapClientJavaOperationInfo>();
+        infos.add(new SoapClientJavaOperationInfo(m, project));
+        
+        return infos.toArray(new SoapClientJavaOperationInfo[infos.size()]);
     }
 }

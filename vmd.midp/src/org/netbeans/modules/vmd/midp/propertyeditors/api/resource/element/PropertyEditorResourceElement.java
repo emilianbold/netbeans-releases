@@ -111,7 +111,18 @@ public abstract class PropertyEditorResourceElement extends JPanel {
         }
     }
     
+    /**
+     * When property editor sets to null
+     * @param component Design component of the property Editor
+     */
     public void nullValueSet(DesignComponent component) {
+    }
+    
+    /**
+     *It is invokes at the end of the customEditorResetToDefaultValue of the DesignpropertyEditor
+     * @param component Design component of the property Editor
+     */
+    public void preResetToDefaultValue(DesignComponent component) {
     }
 
     public static boolean isPropertyValueAUserCodeType(PropertyValue propertyValue) {
