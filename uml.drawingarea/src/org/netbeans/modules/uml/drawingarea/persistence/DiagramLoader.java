@@ -448,6 +448,11 @@ class DiagramLoader
         if (diaType.length() > 0)
         {
             UIDiagram diagram = (UIDiagram) FactoryRetriever.instance().createType("Diagram", null);
+            String diagramXmiId = diagInfo.getDiagramXMIID();
+            if (diagramXmiId != null && diagramXmiId.trim().length() > 0)
+            {
+                diagram.setXMIID(diagramXmiId);
+            }
             diagram.setName(name);
             if (element instanceof INamespace)
             {
@@ -456,7 +461,7 @@ class DiagramLoader
             diagram.setDiagramKind(diagInfo.getDiagramType());
             scene = new DesignerScene(diagram, this.topComp);
             scene.setEdgesGrouped(groupEdges);
-            
+
             if (scene.getView() == null)
             {
                 scene.createView();
