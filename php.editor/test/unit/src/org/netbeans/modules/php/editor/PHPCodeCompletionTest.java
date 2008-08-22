@@ -87,6 +87,14 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "parent::parentInstance()->pa^", false);
     }
     
+    public void testCCOnMethods5() throws Exception {
+        checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "foo_TestCCOnMethods()->^", false);
+    }
+    
+    public void testCCOnMethods6() throws Exception {
+        checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "foo_TestCCOnMethods()->newInstance()->n^", false);
+    }
+    
     public void testComments1() throws Exception {
         checkCompletion("testfiles/completion/lib/comments.php", "one line ^", false);
     }
