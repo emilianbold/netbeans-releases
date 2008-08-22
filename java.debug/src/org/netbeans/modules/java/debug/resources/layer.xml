@@ -58,6 +58,10 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="400"/>
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.debug.HighlightsLayerFactoryImpl.createNavigatorPanel" />
                     </file>
+                    <file name="org-netbeans-modules-java-debug-ClasspathNavigatorProviderImpl.instance">
+                        <attr name="position" intvalue="450"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.debug.HighlightsLayerFactoryImpl.createNavigatorPanel" />
+                    </file>
                 </folder>
             </folder>
         </folder>
