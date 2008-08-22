@@ -89,8 +89,6 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#SVGButtonEventEventSource"); // NOI18
     public static final String PROP_SVGBUTTON = "svgButton"; //NOI18N
     
-   
-
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(EventSourceCD.TYPEID, TYPEID, true, false);
     }
@@ -101,7 +99,7 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-                new PropertyDescriptor(PROP_SVGBUTTON, SVGButtonCD.TYPEID, PropertyValue.createNull(), false, false, Versionable.FOREVER));
+            new PropertyDescriptor(PROP_SVGBUTTON, SVGButtonCD.TYPEID, PropertyValue.createNull(), false, false, Versionable.FOREVER));
     }
 
     @Override
@@ -188,13 +186,12 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
             return super.getEventFilter().addParentFilter(getComponent(), 1, false);
         }
         
-        
     };
 
     private static String getButtonName(DesignComponent component) {
         DesignComponent svgButton = component.readProperty(PROP_SVGBUTTON).getComponent();
         if (svgButton == null) {
-            return "ERROR"; //NOI18N
+            throw new IllegalStateException("Design Component svg button is null"); //NOI18N
         }
         return (String) svgButton.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
     }

@@ -373,19 +373,19 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             if (!seq.moveNext() && !seq.movePrevious()) {
                 return null;
             }
-            switch (seq.token().id()) {
-                case LINE_COMMENT:
-                case BLOCK_COMMENT:
-                case INT_LITERAL:
-                case DOUBLE_LITERAL:
-                case STRING:
-                case INCOMPLETE_STRING:
-                    return null;
-            }
         } else {
             if (!seq.movePrevious()) {
                 return null;
             }
+        }
+        switch (seq.token().id()) {
+            case LINE_COMMENT:
+            case BLOCK_COMMENT:
+            case INT_LITERAL:
+            case DOUBLE_LITERAL:
+            case STRING:
+            case INCOMPLETE_STRING:
+                return null;
         }
         boolean incomplete = false; // Whether incomplete, like '"foo.bar."|'.
         boolean wasDot = false; // Whether the previous token was a dot.

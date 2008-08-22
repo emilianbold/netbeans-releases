@@ -199,7 +199,7 @@ public class CSSStructureScanner implements StructureScanner {
             }
         };
         root.visitChildren(foldsSearch);
-        folds.put("codeblocks", foldRange);
+        folds.put("codeblocks", foldRange); //NOI18N
 
         return folds;
         

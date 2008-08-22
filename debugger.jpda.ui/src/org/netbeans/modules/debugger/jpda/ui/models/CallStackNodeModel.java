@@ -194,7 +194,7 @@ public class CallStackNodeModel implements NodeModel {
         This thisVariable = stackFrame.getThisVariable();
         if (thisVariable != null && thisVariable.getClassType() != null) {
             String thisName = thisVariable.getClassType().getName();
-            if (thisName != null) {
+            if (thisName != null && ! thisName.equals(stackFrame.getClassName())) {
                 buf.append("<br>"); // NOI18N
                 buf.append(NbBundle.getMessage(CallStackNodeModel.class, "CTL_RunType", thisName)); // NOI18N
             }

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import javax.lang.model.element.Element;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
@@ -291,8 +292,9 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     private boolean containsHandle(TreePathHandle handle, CompilationInfo info) {
+        Element wanted = handle.resolveElement(info);
         for (TreePathHandle current : refactoring.getRefactoringSource().lookupAll(TreePathHandle.class)) {
-            if (current.resolveElement(info).equals(handle.resolveElement(info))) {
+            if (wanted == current.resolveElement(info)) {
                 return true;
             }
         }
