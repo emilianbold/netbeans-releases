@@ -95,12 +95,10 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
 
     private JPDADebuggerImpl debugger;
     private ActionsManager lastActionsManager;
-    private SourcePath sourcePath;
     
     public RunIntoMethodActionProvider(ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
                 (null, JPDADebugger.class);
-        sourcePath = lookupProvider.lookupFirst(null, SourcePath.class);
         debugger.addPropertyChangeListener (JPDADebuggerImpl.PROP_STATE, this);
         EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
