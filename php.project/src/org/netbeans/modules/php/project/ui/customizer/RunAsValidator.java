@@ -80,13 +80,17 @@ public final class RunAsValidator {
     /**
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
      * @param phpInterpreter PHP interpreter path to validate.
+     * @param projectDirectory parent directory of the indexFile.
      * @param indexFile file name or even relative file path (probably to sources) to validate, can be <code>null</code>.
      * @param arguments arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
-    public static String validateScriptFields(String phpInterpreter, String indexFile, String arguments) {
-        //XXX validation for arguments?
-        return Utils.validatePhpInterpreter(phpInterpreter);
+    public static String validateScriptFields(String phpInterpreter, File projectDirectory, String indexFile, String arguments) {
+        String err = Utils.validatePhpInterpreter(phpInterpreter);
+        if (err != null) {
+            return err;
+        }
+        return validateIndexFile(projectDirectory, indexFile, arguments);
     }
 
     private static final String INVALID_SEPARATOR = "\\";
@@ -109,19 +113,19 @@ public final class RunAsValidator {
 
     /**
      * Validate given parameters and return an error message or <code>null</code> if everything is OK.
-     * @param webRoot parent directory of the indexFile.
+     * @param parentDirectory parent directory of the indexFile.
      * @param indexFile file name or even relative file path (to webRoot) to validate, can be <code>null</code>.
      *                  <b>If it is <code>null</code> then no error message is returned.</b>
      * @param arguments arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
-    private static String validateIndexFile(File webRoot, String indexFile, String arguments) {
-        assert webRoot != null;
+    private static String validateIndexFile(File parentDirectory, String indexFile, String arguments) {
+        assert parentDirectory != null;
         if (indexFile != null) {
             if (indexFile.trim().length() == 0) {
                 return NbBundle.getMessage(RunAsValidator.class, "MSG_NoIndexFile");
             }
-            File index = new File(webRoot, indexFile.replace('/', File.separatorChar)); // NOI18N
+            File index = new File(parentDirectory, indexFile.replace('/', File.separatorChar)); // NOI18N
             if (!index.isFile()) {
                 return NbBundle.getMessage(RunAsValidator.class, "MSG_IndexFileInvalid");
             }
