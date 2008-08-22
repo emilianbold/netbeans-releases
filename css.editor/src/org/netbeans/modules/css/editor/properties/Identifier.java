@@ -47,7 +47,7 @@ package org.netbeans.modules.css.editor.properties;
 public class Identifier implements CssPropertyValueAcceptor {
 
     public String id() {
-        return "identifier";
+        return "identifier"; //NOI18N
     }
 
     //FIXME - the ability to properly accepts only correct identifiers is higly limited
