@@ -71,7 +71,9 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
         }
         File htDocs = null;
         for (File root : fsRoots) {
+            LOGGER.fine("FS root: " + root);
             if (isFloppy(root)) {
+                LOGGER.fine("Skipping floppy: " + root);
                 continue;
             }
             // standard apache installation
@@ -109,8 +111,10 @@ final class WindowsPhpEnvironment extends PhpEnvironment {
     }
 
     private static boolean isFloppy(File root) {
-        return root.getName().toLowerCase().startsWith("a:") // NOI18N
-                || root.getName().toLowerCase().startsWith("b:"); // NOI18N
+        String absolutePath = root.getAbsolutePath();
+        LOGGER.fine("Testing floppy on " + absolutePath);
+        return absolutePath.toLowerCase().startsWith("a:") // NOI18N
+                || absolutePath.toLowerCase().startsWith("b:"); // NOI18N
     }
 
 }
