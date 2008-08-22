@@ -222,8 +222,14 @@ public class CompilerSetManager {
     private CompilerSetManager(String hkey, List<CompilerSet> sets, int platform) {
         this.hkey = hkey;
         this.sets = sets;
-        this.state = STATE_COMPLETE;
         this.platform = platform;
+        if (!LOCALHOST.equals(hkey) && isEmpty()) {
+            this.state = STATE_UNINITIALIZED;
+            log.fine("CSM restoring from pref: Adding empty CS to host " + hkey);
+            add(CompilerSet.createEmptyCompilerSet(platform));            
+        } else {
+            this.state = STATE_COMPLETE;
+        }
     }
 
     private void init() {
@@ -625,6 +631,13 @@ public class CompilerSetManager {
         }
     }
 
+    public final boolean isEmpty() {
+        if ((sets.size() == 0) ||
+            (sets.size() == 1 && sets.get(0).getName().equals(CompilerSet.None))) {
+            return true;
+        }
+        return false;
+    }
     /**
      * Remove a CompilerSet from this CompilerSetManager. Use caution with this method. Its primary
      * use is to remove temporary CompilerSets which were added to represent missing compiler sets. In
