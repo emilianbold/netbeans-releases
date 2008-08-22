@@ -47,7 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -99,9 +99,9 @@ import org.openide.util.NbBundle;
  *
  * @author Craig MacKay
  */
-public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {      
+public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {
     private static final Logger LOGGER = Logger.getLogger(SpringWebModuleExtender.class.getName());
-    
+
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
     private final boolean customizer;
@@ -109,20 +109,20 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     private String dispatcherName = "dispatcher"; // NOI18N
     private String dispatcherMapping = "*.htm"; // NOI18N
     private boolean includeJstl = true;
-    private ChangeSupport changeSupport = new ChangeSupport(this); 
-    
+    private ChangeSupport changeSupport = new ChangeSupport(this);
+
     /**
-     * Creates a new instance of SpringWebModuleExtender 
+     * Creates a new instance of SpringWebModuleExtender
      * @param framework
-     * @param controller an instance of org.netbeans.modules.web.api.webmodule.ExtenderController 
-     * @param customizer     
+     * @param controller an instance of org.netbeans.modules.web.api.webmodule.ExtenderController
+     * @param customizer
      */
     public SpringWebModuleExtender(SpringWebFrameworkProvider framework, ExtenderController controller, boolean customizer) {
         this.framework = framework;
         this.controller = controller;
-        this.customizer = customizer;       
+        this.customizer = customizer;
     }
-    
+
     public ExtenderController getController() {
         return controller;
     }
@@ -152,11 +152,11 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsEmpty")); // NOI18N
             return false;
         }
-               
+
         if (!SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(dispatcherName)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherServletConfigFilenameIsNotValid")); 
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherServletConfigFilenameIsNotValid"));
             return false;
-        }                
+        }
 
         if (dispatcherMapping == null || dispatcherMapping.trim().length() == 0) {
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsEmpty")); // NOI18N
@@ -165,11 +165,11 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         if (!SpringWebFrameworkUtils.isDispatcherMappingPatternValid(dispatcherMapping)){
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsNotValid")); // NOI18N
             return false;
-        }        
+        }
         controller.setErrorMessage(null);
-        return true;    
+        return true;
     }
-        
+
     public HelpCtx getHelp() {
         return new HelpCtx(SpringWebModuleExtender.class);
     }
@@ -178,10 +178,10 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         changeSupport.addChangeListener(l);
     }
 
-    public final void removeChangeListener(ChangeListener l) {       
+    public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
-        
+
     public void stateChanged(ChangeEvent e) {
         dispatcherName = getComponent().getDispatcherName();
         dispatcherMapping = getComponent().getDispatcherMapping();
@@ -213,7 +213,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     private class CreateSpringConfig implements FileSystem.AtomicAction {
 
         public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener"; // NOI18N
-        public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N        
+        public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
         public static final String ENCODING = "UTF-8"; // NOI18N
         private Set<FileObject> filesToOpen = new LinkedHashSet<FileObject>();
         private WebModule webModule;
@@ -287,17 +287,16 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext"); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
-            String indexUrlMappingKey = SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", dispatcherMapping); // NOI18N
-            Map<String, String> indexUrlParams = new HashMap<String, String>(1);
-            indexUrlParams.put("indexUrlKey", indexUrlMappingKey); // NOI18N
+            String indexUrlMapping = SpringWebFrameworkUtils.replaceExtensionInTemplates("index.htm", dispatcherMapping); // NOI18N
+            Map<String, ?> indexUrlParams = Collections.singletonMap("index", Collections.singletonMap("url", indexUrlMapping)); // NOI18N
             configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet", indexUrlParams); // NOI18N
             addFileToOpen(configFile);
             newFiles.add(FileUtil.toFile(configFile));
             addFileToOpen(createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index")); // NOI18N
 
             // MODIFY EXISTING REDIRECT.JSP
-            indexUrlMappingKey = SpringWebFrameworkUtils.reviseRedirectJsp(indexUrlMappingKey, dispatcherMapping);
-            indexUrlParams.put("indexUrlKey", indexUrlMappingKey); // NOI18N
+            indexUrlMapping = SpringWebFrameworkUtils.reviseRedirectJsp(indexUrlMapping, dispatcherMapping);
+            indexUrlParams = Collections.singletonMap("index", Collections.singletonMap("url", indexUrlMapping)); // NOI18N
             FileObject documentBase = webModule.getDocumentBase();
             FileObject redirectJsp = documentBase.getFileObject("redirect.jsp"); // NOI18N
             if (redirectJsp != null) {
@@ -339,7 +338,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             return filesToOpen;
         }
 
-        private FileObject createFromTemplate(String templateName, DataFolder targetDO, String fileName, Map<String, String> params) throws IOException {
+        private FileObject createFromTemplate(String templateName, DataFolder targetDO, String fileName, Map<String, ?> params) throws IOException {
             FileObject templateFO = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject("SpringFramework/Templates/" + templateName);
             DataObject templateDO = DataObject.find(templateFO);
             return templateDO.createFromTemplate(targetDO, fileName, params).getPrimaryFile();
