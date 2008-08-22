@@ -581,6 +581,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 && tokenSequence.token().id() != PHPTokenId.PHP_CURLY_OPEN
                 && tokenSequence.token().id() != PHPTokenId.PHP_CURLY_CLOSE
                 && tokenSequence.token().id() != PHPTokenId.PHP_RETURN
+                && tokenSequence.token().id() != PHPTokenId.PHP_OPERATOR
                 && findLHSExpressionType_skipArgs(tokenSequence)
                 && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN){
             if (!tokenSequence.movePrevious()){
@@ -729,6 +730,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 type = func.getReturnType();
             }
         }
+
+        tokenSequence.moveNext();
         
         if (type == null || tokenSequence.offset() == startPos)
         {
@@ -759,8 +762,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     tokenSequence.moveNext();
                 } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
                         && ")".equals(tokenSequence.token().text().toString()))); //NOI18N
-                
-                tokenSequence.moveNext();
             } else {
                 functionName = null;
             }

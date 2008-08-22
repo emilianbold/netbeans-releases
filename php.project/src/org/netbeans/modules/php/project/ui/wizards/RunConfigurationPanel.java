@@ -393,7 +393,11 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsScript() {
-        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), null, null);
+        String indexFile = null;
+        if (wizardType == wizardType.EXISTING) {
+            indexFile = runAsScript.getIndexFile();
+        }
+        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), sourcesFolderProvider.getSourcesFolder(), indexFile, null);
     }
 
     private String validateServerLocation() {

@@ -189,10 +189,14 @@
             <tocitem text="Inserting an Internationalized String Into Source Code" target="internation.maninsert" />
             <tocitem text="Internationalizing a String With the GUI Builder" target="internation.formed" />
             <tocitem text="Testing a  Bundle for Internationalized Strings" target="internation.testing" />
-            <tocitem text="Code Formats for Internationalized Strings" target="internation.replformat" />
             <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
-            <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
-        </tocitem>  
+        </tocitem>
+        <tocitem text="Working with Hibernate">
+            <tocitem text="About Hibernate Support" target="hibernate_about"/>
+            <tocitem text="Adding Hibernate Support to a Project" target="hibernate_add"/>
+            <tocitem text="Creating a Hibernate Configuration File" target="hibernate_cfg"/>
+            <tocitem text="Creating a Hibernate Utility Helper File" target="hibernate_util"/>
+        </tocitem>
         <tocitem text="Working with the Spring Framework">
             <tocitem text="About Spring Framework Support" target="spring.framework.about"/>
             <tocitem text="Adding Spring Support to a Project" target="spring.framework.add"/>

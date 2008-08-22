@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -58,12 +59,14 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
+import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.openide.DialogDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -128,6 +131,15 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         lstDevHosts.setCellRenderer(new MyCellRenderer());
     }
 
+    private boolean isEmptyToolchains(String key) {
+        if (CompilerSetManager.LOCALHOST.equals(key)) {
+            return false;
+        } else {
+            CompilerSetManager compilerSetManagerCopy = ToolsPanel.getToolsPanel().getCompilerSetManagerCopy(key);
+            return compilerSetManagerCopy.isEmpty();
+        }
+    }
+
     private void revalidateRecord(final String entry, String password, boolean rememberPassword) {
         final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(entry);
         if (!record.isOnline()) {
@@ -149,7 +161,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 public void run() {
                     record.init(pcs);
                     if (record.isOnline()) {
-                        CompilerSetManager csm = CompilerSetManager.getDefault(entry);
+                        CompilerSetManager csm = ToolsPanel.getToolsPanel().getCompilerSetManagerCopy(entry);
                         csm.initialize(false);
                     }
                     phandle.finish();
@@ -264,7 +276,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(key);
             tfStatus.setText(record.getStateAsText());
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
-            btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled);
+            btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(key));
             btPathMapper.setEnabled(!CompilerSetManager.LOCALHOST.equals(lstDevHosts.getSelectedValue()) && buttonsEnabled);
             if (!record.isOnline()) {
                 showReason(record.getReason());

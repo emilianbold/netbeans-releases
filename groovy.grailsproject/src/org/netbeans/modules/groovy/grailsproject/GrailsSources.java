@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
 public class GrailsSources extends FileChangeAdapter implements Sources {
 
     //  those are dirs in project root we already know and create specific source groups
-    private static final List KNOWN_FOLDERS = Arrays.asList(
+    public static final List KNOWN_FOLDERS = Arrays.asList(
             "grails-app", // NOI18N
             "lib", // NOI18N
             "scripts", // NOI18N
@@ -82,9 +82,21 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
             "web-app" // NOI18N
             );
 
+    //  those are dirs in grails-app root we already know and create specific source groups
+    public static final List KNOWN_FOLDERS_IN_GRAILS_APP = Arrays.asList(
+            "conf", // NOI18N
+            "controllers", // NOI18N
+            "domain", // NOI18N
+            "i18n", // NOI18N
+            "services", // NOI18N
+            "taglib", // NOI18N
+            "utils", // NOI18N
+            "views" // NOI18N
+            );
+
     private final FileObject projectDir;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    
+
     private GrailsSources(FileObject projectDir) {
         this.projectDir = projectDir;
     }
@@ -141,20 +153,29 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
                     result.add(new Group(child, Character.toUpperCase(name.charAt(0)) + name.substring(1)));
                 }
             }
+            FileObject grailsAppFo = projectDir.getFileObject("grails-app");
+            if (grailsAppFo != null) {
+                for (FileObject child : grailsAppFo.getChildren()) {
+                    if (child.isFolder() && !child.getName().startsWith(".") && !KNOWN_FOLDERS_IN_GRAILS_APP.contains(child.getName())) {
+                        String name = child.getName();
+                        result.add(new Group(child, Character.toUpperCase(name.charAt(0)) + name.substring(1)));
+                    }
+                }
+            }
             return result.toArray(new SourceGroup[result.size()]);
         }
         return new SourceGroup[] {};
 
     }
-    
+
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
-    
+
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
-    
+
     @Override
     public void fileDeleted(FileEvent fe) {
         changeSupport.fireChange();
@@ -175,33 +196,33 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
     }
 
     private final class Group implements SourceGroup {
-        
+
         private final FileObject loc;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         private final String displayName;
-        
+
         public Group(FileObject loc, String displayName) {
             this.loc = loc;
             this.displayName = displayName;
         }
-        
+
         public FileObject getRootFolder() {
             return loc;
         }
-        
+
         public String getName() {
             String location = loc.getPath();
             return location.length() > 0 ? location : "generic"; // NOI18N
         }
-        
+
         public String getDisplayName() {
             return displayName;
         }
-        
+
         public Icon getIcon(boolean opened) {
             return null;
         }
-        
+
         public boolean contains(FileObject file) throws IllegalArgumentException {
             if (file == loc) {
                 return true;
@@ -223,20 +244,20 @@ public class GrailsSources extends FileChangeAdapter implements Sources {
             } // else MIXED, UNKNOWN, or SHARABLE; or not a disk file
             return true;
         }
-        
+
         public void addPropertyChangeListener(PropertyChangeListener l) {
             pcs.addPropertyChangeListener(l);
         }
-        
+
         public void removePropertyChangeListener(PropertyChangeListener l) {
             pcs.removePropertyChangeListener(l);
         }
-        
+
         @Override
         public String toString() {
             return "GrailsSources.Group[name=" + getName() + ",rootFolder=" + getRootFolder() + "]"; // NOI18N
         }
-        
+
     }
-    
+
 }

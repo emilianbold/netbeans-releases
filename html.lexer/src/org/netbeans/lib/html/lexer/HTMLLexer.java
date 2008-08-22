@@ -997,6 +997,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                 
             case ISI_SGML_DECL:
             case ISA_SGML_DECL_DASH:
+            case ISI_SGML_DECL_WS:  
                 return token(HTMLTokenId.DECLARATION);
                 
             case ISI_SGML_COMMENT:
@@ -1020,6 +1021,12 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                 
         }
         
+        assert input.readLength() == 0 : "Returning null even if some chars still needs to be tokenized! " +
+            "lexer state=" + lexerState + "; " +
+            "lexer substate=" + lexerSubState + "; " + 
+            "lexer embedding state=" + lexerEmbeddingState + "; " +
+            "readtext='" + input.readText() + "'";
+   
         return null;
     }
     

@@ -1,3 +1,43 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
 package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.AbsentInformationException;
@@ -76,7 +116,6 @@ public class MethodChooser implements KeyListener, MouseListener,
     
     private JPDADebuggerImpl debugger;
     private JPDAThread currentThread;
-    private Session session;
     private String url;
     private ReferenceType clazzRef;
     private int methodLine;
@@ -107,8 +146,7 @@ public class MethodChooser implements KeyListener, MouseListener,
     private int selectedIndex = -1;
     private int mousedIndex = -1;
 
-    MethodChooser(JPDADebuggerImpl debugger, Session session, String url, ReferenceType clazz, int methodLine, int methodOffset) {
-        this.session = session;
+    MethodChooser(JPDADebuggerImpl debugger, String url, ReferenceType clazz, int methodLine, int methodOffset) {
         this.debugger = debugger;
         this.currentThread = debugger.getCurrentThread();
         this.url = url;
@@ -116,9 +154,9 @@ public class MethodChooser implements KeyListener, MouseListener,
         //this.methodLine = methodLine; [TODO]
         this.methodOffset = methodOffset;
         
-        Operation currOp = currentThread.getCurrentOperation();
-        List<Operation> lastOps = currentThread.getLastOperations();
-        Operation lastOp = lastOps != null && lastOps.size() > 0 ? lastOps.get(lastOps.size() -1) : null;
+        //Operation currOp = currentThread.getCurrentOperation();
+        //List<Operation> lastOps = currentThread.getLastOperations();
+        //Operation lastOp = lastOps != null && lastOps.size() > 0 ? lastOps.get(lastOps.size() -1) : null;
     }
 
     public static OffsetsBag getHighlightsBag(Document doc) {
@@ -157,7 +195,7 @@ public class MethodChooser implements KeyListener, MouseListener,
         if (selectionIsFinal || operations.length == 1) {
             // perform action directly
             String name = operations[selectedIndex].getMethodName();
-            doAction(locations[selectedIndex], name);
+            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex]);
             return true;
         }
         // continue by showing method selection ui
@@ -209,7 +247,7 @@ public class MethodChooser implements KeyListener, MouseListener,
         if (performAction) {
             performAction = false;
             String name = operations[selectedIndex].getMethodName();
-            doAction(locations[selectedIndex], name);
+            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex]);
         }
     }
     
@@ -253,6 +291,9 @@ public class MethodChooser implements KeyListener, MouseListener,
         Operation lastOp = lastOpsList != null && lastOpsList.size() > 0 ? lastOpsList.get(lastOpsList.size() - 1) : null;
         Operation selectedOp = null;
         Operation[] tempOps = expr.getOperations();
+        if (tempOps.length == 0) {
+            return false;
+        }
         Location[] tempLocs = expr.getLocations();
         operations = new Operation[tempOps.length];
         locations = new Location[tempOps.length];
@@ -260,11 +301,17 @@ public class MethodChooser implements KeyListener, MouseListener,
             operations[x] = tempOps[x];
             locations[x] = tempLocs[x];
         }
-        if (operations.length == 0) {
-            return false;
-        }
         startLine = operations[0].getMethodStartPosition().getLine();
         endLine = operations[operations.length - 1].getMethodEndPosition().getLine();
+        for (int i = 1; i < (operations.length - 1); i++) {
+            int line = operations[i].getMethodStartPosition().getLine();
+            if (line < startLine) {
+                startLine = line;
+            }
+            if (line > endLine) {
+                endLine = line;
+            }
+        }
 
         int currOpIndex = -1;
         int lastOpIndex = -1;
@@ -431,101 +478,6 @@ public class MethodChooser implements KeyListener, MouseListener,
             }
         }
         return defaultHyperlinkHighlight;
-    }
-    
-    private void doAction(Location bpLocation, final String methodName) {
-        final VirtualMachine vm = debugger.getVirtualMachine();
-        if (vm == null) return ;
-        final int line = bpLocation.lineNumber("Java");
-        CallStackFrameImpl csf = (CallStackFrameImpl) debugger.getCurrentCallStackFrame();
-        boolean condition = false;
-        try {
-            condition = csf != null && csf.getStackFrame().location().equals(bpLocation);
-        } catch (InvalidStackFrameException e) {
-        }
-        if (condition) {
-            // We're on the line from which the method is called
-            traceLineForMethod(methodName, line);
-        } else {
-            // Submit the breakpoint to get to the point from which the method is called
-            final BreakpointRequest brReq = vm.eventRequestManager().createBreakpointRequest(bpLocation);
-            debugger.getOperator().register(brReq, new Executor() {
-
-                public boolean exec(Event event) {
-                    Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                        fine("Calling location reached, tracing for "+methodName+"()");
-                    vm.eventRequestManager().deleteEventRequest(brReq);
-                    debugger.getOperator().unregister(brReq);
-                    traceLineForMethod(methodName, line);
-                    return true;
-                }
-                
-                public void removed(EventRequest eventRequest) {}
-                
-            });
-            brReq.setSuspendPolicy(debugger.getSuspend());
-            brReq.enable();
-        }
-        resume();
-    }
-    
-    private void resume() {
-        if (debugger.getSuspend() == JPDADebugger.SUSPEND_EVENT_THREAD) {
-            debugger.getCurrentThread().resume();
-            //((JPDADebuggerImpl) debugger).resumeCurrentThread();
-        } else {
-            //((JPDADebuggerImpl) debugger).resume();
-            session.getEngineForLanguage ("Java").getActionsManager ().doAction (
-                ActionsManager.ACTION_CONTINUE
-            );
-        }
-    }
-    
-    private void traceLineForMethod(final String method, final int methodLine) {
-        final int depth = debugger.getCurrentThread().getStackDepth();
-        final JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_INTO);
-        step.setHidden(true);
-        step.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (Logger.getLogger(RunIntoMethodActionProvider.class.getName()).isLoggable(Level.FINE)) {
-                    Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                        fine("traceLineForMethod("+method+") step is at "+debugger.getCurrentThread().getClassName()+":"+debugger.getCurrentThread().getMethodName());
-                }
-                //System.err.println("RunIntoMethodActionProvider: Step fired, at "+
-                //                   debugger.getCurrentThread().getMethodName()+"()");
-                JPDAThread t = debugger.getCurrentThread();
-                int currentDepth = t.getStackDepth();
-                Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                        fine("  depth = "+currentDepth+", target = "+depth);
-                if (currentDepth == depth) { // We're in the outer expression
-                    try {
-                        if (t.getCallStack()[0].getLineNumber("Java") != methodLine) {
-                            // We've missed the method :-(
-                            step.setHidden(false);
-                        } else {
-                            step.setDepth(JPDAStep.STEP_INTO);
-                            step.addStep(debugger.getCurrentThread());
-                        }
-                    } catch (AbsentInformationException aiex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
-                        // We're somewhere strange...
-                        step.setHidden(false);
-                    }
-                } else {
-                    if (t.getMethodName().equals(method)) {
-                        // We've found it :-)
-                        step.setHidden(false);
-                    } else if (t.getMethodName().equals("<init>") && (t.getClassName().endsWith("."+method) || t.getClassName().equals(method))) {
-                        // The method can be a constructor
-                        step.setHidden(false);
-                    } else {
-                        step.setDepth(JPDAStep.STEP_OUT);
-                        step.addStep(debugger.getCurrentThread());
-                    }
-                }
-            }
-        });
-        step.addStep(debugger.getCurrentThread());
     }
     
     // **************************************************************************
