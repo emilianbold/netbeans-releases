@@ -490,10 +490,17 @@
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="gui/gui_addingtopalette.html" />
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="gui/gui_addingtopalette.html" />
 
-    <!-- Hibernate topics CSH -->
+<!-- Begin Hibernate section -->
+    <mapID target="hibernate_about" url="hibernate/hibernate_about.html" />
+    <mapID target="hibernate_add" url="hibernate/hibernate_addsupport.html" />
+    <mapID target="hibernate_cfg" url="hibernate/hibernate_cfg.html" />
+    <mapID target="hibernate_fromdb" url="hibernate/hibernate_fromdb.html" />
+    <mapID target="hibernate_util" url="hibernate/hibernate_util.html" />
+
+<!-- Hibernate topics CSH -->
     
     <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
-    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" url="hibernate/csh/hibernate_fromdbwiz_codegen.html" />
 
 
 
