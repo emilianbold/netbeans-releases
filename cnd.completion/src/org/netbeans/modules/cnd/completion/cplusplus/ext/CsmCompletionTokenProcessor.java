@@ -832,8 +832,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
 
                             case TYPE:
                             case VARIABLE:
-                                if (getValidExpID(peekExp2()) == METHOD_OPEN
-                                        || getValidExpID(peekExp2()) == GENERIC_TYPE_OPEN) {
+                                if (getValidExpID(peekExp2()) == METHOD_OPEN) {
                                     //top.setExpID(VARIABLE);
                                     addTokenTo(top);
                                     //pushExp(createTokenExp(VARIABLE));
