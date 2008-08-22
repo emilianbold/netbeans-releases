@@ -259,6 +259,7 @@ public abstract class PositionEstimator {
                         int indexOf = token.text().toString().indexOf('\n');
                         if (indexOf > -1) {
                             wideEnd = seq.offset() + indexOf + 1;
+                            break;
                         } else {
                             wideEnd = seq.offset();
                         }
