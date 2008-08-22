@@ -288,7 +288,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.languages.ejs</friend>
-                <friend>org.netbeans.modules.languages.php</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
                 <friend>org.netbeans.modules.javascript.editing</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
