@@ -46,12 +46,11 @@ import java.util.HashMap;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10WsdlQName;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10WsdlUsingAddressing;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing13WsdlAddressing;
-import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing13WsdlAnonymousResponses;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing13WsdlQName;
-import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
-import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 /**
  *
@@ -61,7 +60,7 @@ public class AddressingModelHelper {
     
     private static HashMap<ConfigVersion, AddressingModelHelper> instances =
             new HashMap<ConfigVersion, AddressingModelHelper>();
-    private ConfigVersion configVersion = ConfigVersion.CONFIG_1_3;
+    private ConfigVersion configVersion = ConfigVersion.getDefault();
 
     /**
      * Creates a new instance of AddressingModelHelper
@@ -100,27 +99,32 @@ public class AddressingModelHelper {
     }
     
     // enables Addressing in the config wsdl on specified binding
-    public void enableAddressing(Binding b) {
-        if (configVersion == ConfigVersion.CONFIG_1_0) {
-            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
-            All a = pmh.createPolicy(b, false);
-            pmh.createElement(a, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
-        } else {
-            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
-            All a = pmh.createPolicy(b, false);
-            Addressing13WsdlAddressing addressing = pmh.createElement(a, Addressing13WsdlQName.ADDRESSING.getQName(configVersion), Addressing13WsdlAddressing.class, false);
-            pmh.createElement(addressing, Addressing13WsdlQName.ANONYMOUSRESPONSES.getQName(configVersion), Addressing13WsdlAnonymousResponses.class, true);
+    public void enableAddressing(WSDLComponent c, boolean optional) {
+        PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
+        if (c instanceof Binding) {
+            c = pmh.createPolicy(c, false);
         }
-    }
-
-    void enableAddressing(All a) {
-        if (configVersion == ConfigVersion.CONFIG_1_0) {
-            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
-            pmh.createElement(a, Addressing10WsdlQName.USINGADDRESSING.getQName(), Addressing10WsdlUsingAddressing.class, false);
-        } else {
-            PolicyModelHelper pmh = PolicyModelHelper.getInstance(configVersion);
-            Addressing13WsdlAddressing addressing = pmh.createElement(a, Addressing13WsdlQName.ADDRESSING.getQName(configVersion), Addressing13WsdlAddressing.class, false);
-            pmh.createElement(addressing, Addressing13WsdlQName.ANONYMOUSRESPONSES.getQName(configVersion), Addressing13WsdlAnonymousResponses.class, true);
+        WSDLModel model = c.getModel();
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {
+            if (configVersion == ConfigVersion.CONFIG_1_0) {
+                Addressing10WsdlUsingAddressing addrAssertion =
+                        pmh.createElement(c, Addressing10WsdlQName.USINGADDRESSING.getQName(),
+                        Addressing10WsdlUsingAddressing.class, false);
+                addrAssertion.setOptional(optional);
+            } else {
+                Addressing13WsdlAddressing addrAssertion =
+                        pmh.createElement(c, Addressing13WsdlQName.ADDRESSING.getQName(configVersion),
+                        Addressing13WsdlAddressing.class, false);
+                addrAssertion.setOptional(optional);
+            }
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
         }
     }
 

@@ -778,7 +778,7 @@ public class WSITModelSupport {
 
         // --------------------
         
-        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, true);
+        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, addr);
         
         // Then apply them with the new values
 
@@ -827,7 +827,7 @@ public class WSITModelSupport {
             }
         }
 
-        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, addr); // this is needed so that the values are not lost
+        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, false); // this is needed so that the values are not lost
         
     }
     
