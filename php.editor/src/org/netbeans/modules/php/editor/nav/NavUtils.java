@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -155,8 +156,20 @@ public class NavUtils {
                 return a.getElement(leaf);
             }
 
-            if (leaf instanceof ClassDeclaration && ((ClassDeclaration) leaf).getName() == previous) {
-                return a.getElement(leaf);
+            if (leaf instanceof ClassDeclaration) {
+                ClassDeclaration cDeclaration = (ClassDeclaration) leaf;
+                //class declaration
+                if (cDeclaration.getName() == previous) {
+                    return a.getElement(leaf);
+                }
+
+                if (cDeclaration.getSuperClass() != null && cDeclaration.getSuperClass() == previous) {
+                    // super class
+                    AttributedElement e = a.getElement(previous);
+                    return e;
+                    
+                }
+                
             }
             
             if (leaf instanceof FieldAccess) {

@@ -44,9 +44,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
-import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
+import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
 
 /**
@@ -86,22 +84,7 @@ public class RemoteNativeExecution extends NativeExecution {
     }
 
     @Override
-    protected String getUnbufferPath(int platformType) {
-        String path = RemoteHostInfoProvider.getHostInfo(host).getHome();
-        if (path == null) {
-            return null;
-        }
-        path += "/" + RemoteServerSetup.REMOTE_LIB_DIR;
-        String unbufferName = getUnbufferName(platformType);
-        if (unbufferName != null) {
-            path += unbufferName;
-            // check file existence
-            if (HostInfoProvider.getDefault().fileExists(host, path)) {
-                return path;
-            } else {
-                log.warning("unbuffer: " + path + " does not exist");
-            }
-        }
-        return null;
+    protected String getUnbufferPath(String host) {
+        return Unbuffer.getRemotePath(host);
     }
 }

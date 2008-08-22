@@ -175,6 +175,7 @@
 <mapID target="spring.framework.add" url="spring/add-support.html" />
 <mapID target="spring.framework.create" url="spring/create-config-file.html" />
 <mapID target="spring.framework.organize" url="spring/organize-files.html" />
+<mapID target="spring.framework.locate.beans" url="spring/locate-beans.html" />
 
 <!--Spring CSH IDs:-->
 <mapID target="org.netbeans.modules.spring.beans.ui.customizer.SpringCustomizerPanel" url="spring/organize-files.html" />
@@ -213,19 +214,12 @@
 <mapID target="internation.maninsert" url="internationalize/manualinsert.html" />
 <mapID target="internation.formed" url="internationalize/formedstrings.html" />
 <mapID target="internation.addparams" url="internationalize/addparams.html" />
-<mapID target="internation.settings" url="internationalize/custominter.html" />
 <mapID target="internation.wizard" url="internationalize/i18nwizard.html" />
-<mapID target="internation.replformat" url="internationalize/replacingformat.html" />
 <mapID target="internation.testing" url="internationalize/testingwizard.html" />
-<mapID target="internation.custom" url="internationalize/replacingformat.html" />
 <mapID target="internation.singlefile" url="internationalize/autoinsert.html" />
 <mapID target="internation.autoinsert" url="internationalize/autoinsert.html" />
 <mapID target="i18n.pe.bundlestring" url="internationalize/bundleformat.html" />
 <mapID target="i18n.pe.replacestring" url="internationalize/i18ncodeformat.html" />
-<mapID target="i18n.pe.testregexp" url="internationalize/i18nkeyformat.html" />
-<mapID target="i18n.pe.i18nregexp" url="internationalize/i18nstringformat.html" />
-<!-- CSH Help ID : Options : Advanced Options : Editing : Internationalization -->
-<mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/options_custominter.html" />
 <mapID target="netbeans.optionsDialog.java.formatting" url="configure/options_javacode.html" />
 <mapID target="netbeans.optionsDialog.java.hints" url="configure/options_javacode.html" />
 <mapID target="netbeans.optionsDialog.java.tasklist" url="configure/options_javacode.html" />
@@ -496,6 +490,11 @@
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="gui/gui_addingtopalette.html" />
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="gui/gui_addingtopalette.html" />
 
+    <!-- Hibernate topics CSH -->
+    
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
+
 
 
 
@@ -568,8 +567,7 @@ right now the IDs don't seem towork:-->
    <mapID target="javax.swing.JDesktopPane" url="pending.html" />
    <mapID target="javax.swing.JOptionPane" url="pending.html" />
 
-<!--CSH ID for Options (Advanced)| Editing | Form Editor Settings :-->
-    <mapID target="gui.configuring" url="configure/options_form_classic.html" />
+
 <!--ID for CSH in Options | Basic Options -  Miscellaneous GUI Builder Settings : --> 
     <mapID target="netbeans.optionsDialog.advanced.formEditor" url="configure/options_form.html" />
     

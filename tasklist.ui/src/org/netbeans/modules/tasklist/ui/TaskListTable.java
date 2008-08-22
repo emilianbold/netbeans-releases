@@ -207,7 +207,9 @@ class TaskListTable extends JTable {
     
     @Override
     protected JTableHeader createDefaultTableHeader() {
-        return new MyTableHeader( columnModel );
+        JTableHeader res = new MyTableHeader( columnModel );
+        res.setTable(this);
+        return res;
     }
     
     @Override

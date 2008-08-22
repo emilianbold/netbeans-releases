@@ -253,7 +253,9 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         });
 
         inputWarningLabel.setForeground(java.awt.Color.red);
-        inputWarningLabel.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.inputWarningLabel.text")); // NOI18N
+        inputWarningLabel.setFocusable(false);
+        inputWarningLabel.setRequestFocusEnabled(false);
+        inputWarningLabel.setVerifyInputWhenFocusTarget(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -263,26 +265,24 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(connectionUrlComboBox, 0, 208, Short.MAX_VALUE)
-                                .add(18, 18, 18)
-                                .add(jLabel2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(searchTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(insertSQLButton))
-                    .add(layout.createSequentialGroup()
                         .add(sqlLimitLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(sqlLimitTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 62, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(sqlLimitButton)
                         .add(18, 18, 18)
-                        .add(inputWarningLabel)))
+                        .add(inputWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(connectionUrlComboBox, 0, 208, Short.MAX_VALUE)
+                        .add(18, 18, 18)
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(searchTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(insertSQLButton)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -298,13 +298,13 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(insertSQLButton)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(sqlLimitLabel)
                             .add(sqlLimitTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(sqlLimitButton)
-                            .add(inputWarningLabel))))
+                            .add(inputWarningLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
 
@@ -346,14 +346,13 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 }//GEN-LAST:event_sqlLimitButtonActionPerformed
 
     private void verifySQLLimit() {
-        String limit = sqlLimitTextField.getText();
+        String enteredLimit = sqlLimitTextField.getText();
         int iLimit = 0;
-        if (limit.equals(SAVE_STATEMENTS_CLEARED)) {
+        if (enteredLimit.equals(SAVE_STATEMENTS_CLEARED)) {
             updateSaveLimitUponClear(iLimit);
+            inputWarningLabel.setText(""); // NOI18N
         } else { // user enters a value to limit the number of SQL statements to save
-            iLimit = Integer.parseInt(limit);
-            updateSaveLimitUponReset(iLimit);
-            inputWarningLabel.setVisible(false);
+            updateSaveLimitUponReset(enteredLimit);
         }
     }
 
@@ -369,12 +368,12 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED);
     }
     
-    private void updateSaveLimitUponReset(int iLimit) {
+    private void updateSaveLimitUponReset(String enteredLimit) {
         try {
+            int iLimit = Integer.parseInt(enteredLimit);
             String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", SAVE_STATEMENTS_CLEARED); // NOI18N
             if (iLimit < 0 || iLimit > SAVE_STATEMENTS_MAX_LIMIT) {
                 sqlLimitButton.setEnabled(true);
-                inputWarningLabel.setVisible(true);
                 inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_NumberInputWarningLabel"));
                 // reset user's input
                 if (savedLimit != null) {
@@ -384,6 +383,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                     sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); 
                 }
             } else {
+                inputWarningLabel.setText(""); // NOI18N
                 SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, historyRoot);
                 ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null);
                 view.updateConnectionUrl();
@@ -392,7 +392,6 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         } catch (SQLHistoryException ex) {
             handleSQLHistoryException();
         } catch (NumberFormatException ne) {
-            inputWarningLabel.setVisible(true);
             inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_TextInputWarningLabel"));
             // reset user's input
             String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""); // NOI18N
@@ -406,7 +405,6 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     
     private void handleSQLHistoryException() {
         inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ErrorParsingSQLHistory"));
-        inputWarningLabel.setEnabled(true);
         LOGGER.log(Level.WARNING, NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ErrorParsingSQLHistory"));
         SQLHistoryPersistenceManager.getInstance().removeHistoryFile(historyRoot);
     }

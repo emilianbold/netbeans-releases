@@ -379,9 +379,12 @@ public class GeneralXMLTest extends JellyTestCase {
 
       JTableOperator jtable = new JTableOperator( jnew, 0 );
 
-      jtable.clickOnCell( iRoot, 2, 1 );
-      JComboBoxOperator jcom = new JComboBoxOperator( jnew, 0 );
-      jcom.selectItem( sRoot );
+      if( null != sRoot )
+      {
+        jtable.clickOnCell( iRoot, 2, 1 );
+        JComboBoxOperator jcom = new JComboBoxOperator( jnew, 0 );
+        jcom.selectItem( sRoot );
+      }
 
       jnew = new JDialogOperator( "New File" );
       jtable.clickOnCell( iPrimary, 0, 1 );
@@ -774,4 +777,29 @@ public class GeneralXMLTest extends JellyTestCase {
         jm.pushMenuNoBlock( sSubmenu + "|" + sMenuItem );
       }
    }
+
+    protected void AddElementInternal(
+        String sSchemaName,
+        String sElementName
+      )
+    {
+      // Select file
+      SchemaMultiView xml = new SchemaMultiView( sSchemaName );
+      
+      // Add element
+      CallPopupOnListItemNoBlock(
+          xml,
+          0,
+          "Elements",
+          "Add Element"
+        );
+
+      JDialogOperator jdNew = new JDialogOperator( "Add Element" );
+      JTextComponentOperator text = new JTextComponentOperator( jdNew, 0 );
+      text.setText( sElementName );
+      JButtonOperator jbOk = new JButtonOperator( jdNew, "OK" );
+      jbOk.push( );
+      jdNew.waitClosed( );
+    }
+
 }

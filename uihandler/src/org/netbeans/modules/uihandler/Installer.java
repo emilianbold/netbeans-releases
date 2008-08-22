@@ -1023,6 +1023,7 @@ public class Installer extends ModuleInstall implements Runnable {
             return new URL(m.group(1));
         } else {
             File f = File.createTempFile("uipage", "html");
+            f.deleteOnExit();
             FileWriter w = new FileWriter(f);
             w.write(redir.toString());
             w.close();

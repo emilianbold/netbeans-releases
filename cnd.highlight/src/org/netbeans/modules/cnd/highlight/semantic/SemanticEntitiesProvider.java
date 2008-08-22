@@ -58,12 +58,12 @@ import org.openide.util.NbBundle;
  */
 public class SemanticEntitiesProvider {
 
-    List<SemanticEntity> list;
+    private List<SemanticEntity> list;
 
     public List<SemanticEntity> get() {
         return list;
     }
-
+    
     private SemanticEntity getInactiveCode(){
         return new AbstractSemanticEntity(FontColorProvider.Entity.INACTIVE_CODE) {
              public String getName() {
@@ -184,7 +184,7 @@ public class SemanticEntitiesProvider {
             list.add(getTypedefs());
             // unused variables
             list.add(getUnusedVariables());
-        } // if (!HighlighterBase.MINIMAL)
+        } 
     }
     
     private static abstract class AbstractSemanticEntity implements SemanticEntity {

@@ -44,12 +44,11 @@ import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
+import org.netbeans.modules.websvc.saas.codegen.j2ee.support.J2eeUtil;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.util.Inflector;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
@@ -62,11 +61,8 @@ import org.netbeans.modules.websvc.saas.codegen.util.Util;
  */
 public class RestClientJspCodeGenerator extends RestClientServletCodeGenerator {
 
-    private Map<String, String> jspSpecialNamesMap = new HashMap<String, String>();
-
     public RestClientJspCodeGenerator() {
         setDropFileType(Constants.DropFileType.JSP);
-        jspSpecialNamesMap.put("page", "page1");
     }
 
     @Override
@@ -83,15 +79,13 @@ public class RestClientJspCodeGenerator extends RestClientServletCodeGenerator {
      */
     @Override
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
+        clearVariablePatterns();
+        addVariablePattern(J2eeUtil.JSP_NAMES_PAGE, 1);
         try {
             String code = "";
-            code += "\n<%@ page import=\"" + REST_CONNECTION_PACKAGE +
-                    ".*, " + getBean().getSaasServicePackageName() + ".*\" %>";
-            code += "\n<%\n"; // NOI18n
-
-            code += getCustomMethodBody() + "\n";
-            code += "%>\n";// NOI18n
-
+            code += J2eeUtil.getJspImports(getTargetDocument(), getStartPosition(), 
+                    getBean().getSaasServicePackageName());
+            code += J2eeUtil.wrapWithTag(getCustomMethodBody(), getTargetDocument(), getStartPosition()) + "\n";
             insert(code, true);
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());
@@ -105,55 +99,14 @@ public class RestClientJspCodeGenerator extends RestClientServletCodeGenerator {
         String indent2 = "                 ";
 
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
-        List<ParameterInfo> filterParams = renameJspParameterNames(getServiceMethodParameters());//includes request, response also
-
-        paramUse += Util.getHeaderOrParameterUsage(filterParams);
-        filterParams = filterJspParameters(super.getServiceMethodParameters());
-        filterParams = renameJspParameterNames(filterParams);
+        List<ParameterInfo> params = getServiceMethodParameters();
+        updateVariableNames(params);
+        paramUse += Util.getHeaderOrParameterUsage(renameParameterNames(params));
+        
+        List<ParameterInfo> filterParams = J2eeUtil.filterJspParameters(super.getServiceMethodParameters());
+        filterParams = renameParameterNames(filterParams);
         paramDecl += getHeaderOrParameterDeclaration(filterParams);
-        return getCustomMethodBody(paramDecl, paramUse, indent2);
-    }
-
-    private List<ParameterInfo> filterJspParameters(List<ParameterInfo> params) {
-        List<ParameterInfo> returnParams = new ArrayList<ParameterInfo>();
-        for (ParameterInfo p : params) {
-            String name = getParameterName(p);
-            if (Constants.HTTP_SERVLET_REQUEST_VARIABLE.equals(name) ||
-                    Constants.HTTP_SERVLET_RESPONSE_VARIABLE.equals(name)) {
-                continue;
-            }
-            returnParams.add(p);
-        }
-        return returnParams;
-    }
-
-    private List<ParameterInfo> renameJspParameterNames(List<ParameterInfo> params) {
-        List<ParameterInfo> returnParams = new ArrayList<ParameterInfo>();
-        int count = 1;
-        for (ParameterInfo p : params) {
-            String newName = jspSpecialNamesMap.get(getParameterName(p));
-            if (newName != null) {
-                ParameterInfo clone = clone(p, newName, p.getType());
-                returnParams.add(clone);
-            } else {
-                returnParams.add(p);
-            }
-        }
-        return returnParams;
-    }
-
-    private ParameterInfo clone(ParameterInfo p, String name, Class type) {
-        ParameterInfo clone = new ParameterInfo(name, type);
-        clone.setFixed(p.getFixed());
-        clone.setStyle(p.getStyle());
-        clone.setDefaultValue(p.getDefaultValue());
-        clone.setIsApiKey(p.isApiKey());
-        clone.setId(p.getId());
-        clone.setIsRequired(p.isRequired());
-        clone.setIsRepeating(p.isRepeating());
-        clone.setIsSessionKey(p.isSessionKey());
-        clone.setOption(p.getOption());
-        return clone;
+        return getCustomMethodBody(paramDecl, paramUse, getResultPattern(), indent2);
     }
 
     public String findSubresourceLocatorUriTemplate() {

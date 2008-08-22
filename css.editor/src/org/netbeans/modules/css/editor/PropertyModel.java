@@ -93,26 +93,6 @@ public class PropertyModel {
             StringTokenizer st = new StringTokenizer(value, ";"); //NOI18N
             String values = st.nextToken();
 
-
-//            System.out.println("property name " + name);
-//            GroupElement elements = parse(values);
-
-//            //XXX workaround - just return simple set of possible values
-//            //structural info about the values is desired instead
-//            //do not loose time with that, Schlieman's cc doesn't even
-//            //have values CC
-//            values = values.replaceAll("[\\[\\]|\\+\\?,]", ""); //NOI18N
-//
-//            ArrayList<String> parsedValues = new ArrayList();
-//            StringTokenizer st2 = new StringTokenizer(values, " "); //NOI18N
-//            while (st2.hasMoreTokens()) {
-//                String val = st2.nextToken();
-//                //ignore the marked elements like !percentage, !length
-//                if(!val.startsWith("!")) {
-//                    parsedValues.add(val);
-//                }
-//            }
-
             String initialValue = st.nextToken().trim();
             String appliedTo = st.nextToken().trim();
             boolean inherited = Boolean.parseBoolean(st.nextToken());
@@ -127,11 +107,11 @@ public class PropertyModel {
             }
 
             if (st.hasMoreTokens()) {
-                Logger.global.warning("Error in source for css properties model for property: " + name);
+                Logger.global.warning("Error in source for css properties model for property: " + name); //NOI18N
             }
 
             //parse bundle key - there might be more properties separated by semicolons
-            StringTokenizer nameTokenizer = new StringTokenizer(name, ";");
+            StringTokenizer nameTokenizer = new StringTokenizer(name, ";"); //NOI18N
 
             while (nameTokenizer.hasMoreTokens()) {
                 String parsed_name = nameTokenizer.nextToken().trim();
@@ -144,44 +124,8 @@ public class PropertyModel {
 
         }
 
-
-//        //resolve references (defined by aposthrophes in the definition file)
-//        for (String propertyName : properties.keySet()) {
-//            Property property = properties.get(propertyName);
-//            Collection<String> values = property.values();
-//            HashSet<String> resolved = new HashSet<String>(6);
-//            for (String value : values) {
-//                resolvePropertyValue(value, resolved);
-//            }
-//            property.setValues(resolved);
-//        }
-
-
     }
 
-//    /** recursivelly resolves all property values */
-//    private void resolvePropertyValue(String propertyValue, Collection<String> resolved) {
-//        if (!(propertyValue.startsWith("'") && propertyValue.endsWith("'"))) {
-//            //not reference property, just return
-//            resolved.add(propertyValue);
-//            return;
-//        }
-//
-//        //reference - find appropriate property and resolve
-//        String cropped = propertyValue.substring(1, propertyValue.length() - 1);
-//        Property property = properties.get(cropped);
-//        if (property == null) {
-//            throw new IllegalStateException("Cannot resolve property " + propertyValue);
-//        }
-//
-//        Collection<String> values = property.values();
-//        for (String value : values) {
-//            resolvePropertyValue(value, resolved);
-//        }
-//
-//
-//    }
-    
     GroupElement parse(String expresssion) {
         return parse(expresssion, null);
     }
@@ -248,12 +192,12 @@ public class PropertyModel {
                     Property p = getProperty(referredElementName);
 
                     if (p == null) {
-                        throw new IllegalStateException("no referred element '" + referredElementName + "' found!");
+                        throw new IllegalStateException("no referred element '" + referredElementName + "' found!"); //NOI18N
                     }
 
                     last = new GroupElement(parent, ++group_index, referredElementName);
 
-//                    System.out.println("resolving element " + referredElementName + " (" + p.valuesText() + ") into group " + last.toString());
+//                    System.out.println("resolving element " + referredElementName + " (" + p.valuesText() + ") into group " + last.toString()); //NOI18N
                     ParserInput pinput = new ParserInput(p.valuesText());
 
                     //ignore inherit tokens in the subtree
@@ -297,7 +241,7 @@ public class PropertyModel {
                             text.append(c);
                         }
                     }
-                    StringTokenizer st = new StringTokenizer(text.toString(), ",");
+                    StringTokenizer st = new StringTokenizer(text.toString(), ","); //NOI18N
                     int min = Integer.parseInt(st.nextToken());
                     int max = Integer.parseInt(st.nextToken());
                     
@@ -343,7 +287,7 @@ public class PropertyModel {
                     }
                     String image = buf.toString();
 
-                    if (!(ignoreInherits && "inherit".equalsIgnoreCase(image))) {
+                    if (!(ignoreInherits && "inherit".equalsIgnoreCase(image))) { //NOI18N
                         last = new ValueElement(parent);
                         ((ValueElement) last).setValue(image);
                         ((ValueElement) last).setIsUnit(false);
@@ -447,9 +391,9 @@ public class PropertyModel {
         @Override
         public String toString() {
             if (getMinimumOccurances() != 1 || getMaximumOccurances() != 1) {
-                return "{" + getMinimumOccurances() + "," + (getMaximumOccurances() == Integer.MAX_VALUE ? "inf" : getMaximumOccurances()) + "}";
+                return "{" + getMinimumOccurances() + "," + (getMaximumOccurances() == Integer.MAX_VALUE ? "inf" : getMaximumOccurances()) + "}";  //NOI18N
             } else {
-                return "";
+                return ""; //NOI18N
             }
         }
 
@@ -494,7 +438,7 @@ public class PropertyModel {
 
         @Override
         public String toString() {
-            return (isUnit() ? "!" : "") + value() + super.toString();
+            return (isUnit() ? "!" : "") + value() + super.toString(); //NOI18N
         }
     }
 
@@ -568,17 +512,17 @@ public class PropertyModel {
 
         public String toString2(int level) {
             StringBuilder sb = new StringBuilder();
-            sb.append(indentString(level) + "[G" + index + " ");
+            sb.append(indentString(level) + "[G" + index + " "); //NOI18N
             if (referenceName != null) {
-                sb.append("(" + referenceName + ") ");
+                sb.append("(" + referenceName + ") "); //NOI18N
             }
             if (sequence) {
-                sb.append("SEQUENCE");
+                sb.append("SEQUENCE"); //NOI18N
             } else {
                 if (list) {
-                    sb.append("ANY: ");
+                    sb.append("ANY: "); //NOI18N
                 } else {
-                    sb.append("ONE: ");
+                    sb.append("ONE: "); //NOI18N
                 }
             }
             sb.append('\n');
@@ -594,7 +538,7 @@ public class PropertyModel {
 
         @Override
         public String toString() {
-            return "[G" + index + "]";
+            return "[G" + index + "]"; //NOI18N
         }
     }
 }

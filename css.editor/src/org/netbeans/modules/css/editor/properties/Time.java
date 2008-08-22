@@ -46,7 +46,7 @@ package org.netbeans.modules.css.editor.properties;
 public class Time implements CssPropertyValueAcceptor {
 
     public String id() {
-        return "time";
+        return "time"; //NOI18N
     }
 
     public boolean accepts(String token) {

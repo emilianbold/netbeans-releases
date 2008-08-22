@@ -42,6 +42,7 @@
 package org.netbeans.lib.lexer;
 
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.TokenId;
@@ -74,6 +75,16 @@ import org.netbeans.lib.lexer.token.AbstractToken;
  */
 
 public interface TokenList<T extends TokenId> {
+
+    /**
+     * This is a special logger that indicates (by logging a FINE level)
+     * whether the whole lexer framework runs in a "testing" mode
+     * where certain additional checks are performed (for example whether flyweight tokens' text
+     * matches the text consumed from lexer-input) and certain problematic situations
+     * are reported as errors (for example when an invalid index of ETL is found in TLL).
+     */
+    // -J-Dorg.netbeans.lib.lexer.TokenList.level=FINE
+    public static final Logger LOG = Logger.getLogger(TokenList.class.getName());
     
     /**
      * Language path of this token list.
