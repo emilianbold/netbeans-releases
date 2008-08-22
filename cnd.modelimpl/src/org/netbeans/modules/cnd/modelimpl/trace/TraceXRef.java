@@ -443,7 +443,11 @@ public class TraceXRef extends TraceModel {
             String kind = "UNRESOVED"; //NOI18N
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
             boolean important = true;
-            if (CsmFileReferences.isTemplateBased(context)) {
+            if (CsmFileReferences.isAfterUnresolved(context)) {
+                entry = XRefResultSet.ContextEntry.UNRESOLVED_AFTER_UNRESOLVED;
+                kind = "UNRESOLVED_AFTER_UNRESOLVED"; //NOI18N
+                important = false;
+            } else if (CsmFileReferences.isTemplateBased(context)) {
                 entry = XRefResultSet.ContextEntry.UNRESOLVED_TEMPLATE_BASED;
                 kind = "UNRESOLVED_TEMPLATE_BASED"; //NOI18N
                 important = false;

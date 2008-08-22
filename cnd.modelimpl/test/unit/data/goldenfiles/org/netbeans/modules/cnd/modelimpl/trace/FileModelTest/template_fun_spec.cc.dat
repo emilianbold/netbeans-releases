@@ -11,7 +11,7 @@ Includes:
 <stdio.h> <FAILED inclusion> [1:1/0-1:19/18]
 Macros:
     <no macros>
-CLASS pair<typename K,typename V=K> (pair ) [3:1/20-6:3/99] lcurly=68 SCOPE: $Global$ 
+CLASS pair<typename K,typename V=K> (pair ) [3:1/20-6:2/98] lcurly=68 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PRIVATE first [4:5/74-4:13/82]  TYPE: pair::K TEXT=K  [4:5/74-4:6/75]  INIT: null  SCOPE: pair 
@@ -117,7 +117,7 @@ FUNCTION DEFINITION func  [55:1/1319-57:2/1400] FunctionDDImpl SCOPE: $Global$
         STATEMENT RETURN  [56:5/1372-56:31/1398] SCOPE: Stmt  [55:48/1366-57:2/1400] text: 'return "pair<char, char>";'
 
 ========== Dumping model of PROJECT DummyProject
-CLASS pair<typename K,typename V=K> (pair ) [3:1/20-6:3/99] lcurly=68 SCOPE: $Global$ 
+CLASS pair<typename K,typename V=K> (pair ) [3:1/20-6:2/98] lcurly=68 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PRIVATE first [4:5/74-4:13/82]  TYPE: pair::K TEXT=K  [4:5/74-4:6/75]  INIT: null  SCOPE: pair 

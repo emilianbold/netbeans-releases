@@ -268,15 +268,11 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         return DbgpUtils.getJSProperties(callStackFrame, proxy.getProperty(fullName, callStackFrame.getDepth()));
     }
     
-    protected InputStream getInputStreamForURLImpl(URL url) {
-        if (proxy != null && url != null) {
-            try {
-                byte[] bytes = proxy.getSource(url.toURI());
-                if (bytes != null) {
-                    return new ByteArrayInputStream(bytes);
-                }
-            } catch (URISyntaxException use) {
-                Log.getLogger().log(Level.INFO, use.getMessage(), use);
+    protected InputStream getInputStreamForURLImpl(String uri) {
+        if (proxy != null && uri != null) {
+            byte[] bytes = proxy.getSource(uri);
+            if (bytes != null) {
+                return new ByteArrayInputStream(bytes);
             }
         }
         return null;

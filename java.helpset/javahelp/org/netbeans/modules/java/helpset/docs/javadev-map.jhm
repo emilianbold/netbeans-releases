@@ -175,6 +175,7 @@
 <mapID target="spring.framework.add" url="spring/add-support.html" />
 <mapID target="spring.framework.create" url="spring/create-config-file.html" />
 <mapID target="spring.framework.organize" url="spring/organize-files.html" />
+<mapID target="spring.framework.locate.beans" url="spring/locate-beans.html" />
 
 <!--Spring CSH IDs:-->
 <mapID target="org.netbeans.modules.spring.beans.ui.customizer.SpringCustomizerPanel" url="spring/organize-files.html" />
@@ -495,6 +496,11 @@
 
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="gui/gui_addingtopalette.html" />
    <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="gui/gui_addingtopalette.html" />
+
+    <!-- Hibernate topics CSH -->
+    
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
 
 
 

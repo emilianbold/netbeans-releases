@@ -874,7 +874,7 @@ public final class RubyPlatform {
             info.libDir = FileUtil.toFile(libDirFO.getFileObject("/1.8")).getAbsolutePath(); // NOI18N
             info.gemHome = FileUtil.toFile(libDirFO.getFileObject("/gems/1.8")).getAbsolutePath(); // NOI18N
             info.gemPath = info.gemHome;
-            info.gemVersion = "1.2.0 (1.2.0)"; // NOI18N
+            info.gemVersion = "1.2.0"; // NOI18N
             return info;
         }
 
