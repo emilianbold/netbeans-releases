@@ -51,11 +51,13 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -65,6 +67,8 @@ import org.openide.util.Utilities;
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
 public class FirefoxBrowserUtils {
+    
+    public static final String PROFILE_PREF = "firefox-defaultProfile"; // NOI18N
     
     private static final String APPDATA_CMD = "cmd /c echo %AppData%"; // NOI18N
 
@@ -80,6 +84,17 @@ public class FirefoxBrowserUtils {
         "/Library/Mozilla/Firefox/" // NOI18N
 
     };
+    
+    public static File getProfileFromPreferences() {
+        Preferences prefs = NbPreferences.forModule(FirefoxBrowserUtils.class);
+        String location = prefs.get(PROFILE_PREF, "");
+        if (location.length() > 0) {
+            File f = new File(location);
+            return f.isDirectory() ? f : null;
+        }
+        
+        return null;
+    }
     
     public static File getDefaultProfile() {
         String[] firefoxDirs = getLocationsForOS();
@@ -144,14 +159,6 @@ public class FirefoxBrowserUtils {
         return null;
     }
     
-    public static boolean isSupportedFirefox(HtmlBrowser.Factory browser) {
-        return isSupportedFirefox(browser, null, null);
-    }
-    
-    public static boolean isSupportedFirefox(HtmlBrowser.Factory browser, File defaultProfile) {
-        return isSupportedFirefox(browser, defaultProfile, null);
-    }
-    
     /**
      * Checks $firefox_install_dir/defaults/pref/firefox.js for version string from
      * <code>prefs("general.useragent.extra.firefox", "Firefox/*****");</code>, or 
@@ -161,9 +168,9 @@ public class FirefoxBrowserUtils {
      * @param browser
      * @param defaultProfile
      * @param actualVersion
-     * @return true if Firefox version is 2.*.*
+     * @return true if Firefox 2 is found
      */
-    public static boolean isSupportedFirefox(HtmlBrowser.Factory browser, File defaultProfile, StringBuffer actualVersion) {
+    public static boolean isFirefox2(HtmlBrowser.Factory browser, File defaultProfile, StringBuffer actualVersion) {
         String browserExecutable = getBrowserExecutable(browser);
         if (browserExecutable == null) {
             return isCompatibleFirefox(defaultProfile);
