@@ -698,7 +698,7 @@ public class ConfigurationMakefileWriter {
         bw.write("}\n"); // NOI18N
         
         bw.write("# Setup\n"); // NOI18N
-        bw.write("rm -rf " + outputDir + "\n"); // NOI18N
+        bw.write("rm -rf " + output + "\n"); // NOI18N
         if (outputDir != null && outputDir.length() > 0) {
             bw.write("mkdir -p " + outputDir + "\n"); // NOI18N
         }
@@ -892,6 +892,7 @@ public class ConfigurationMakefileWriter {
         bw.write("checkReturnCode\n"); // NOI18N
 //        bw.write("pkgtrans -s $TMPDIR tmp.pkg " + packageName + "\n"); // NOI18N
 //        bw.write("checkReturnCode\n"); // NOI18N
+        bw.write("rm -rf " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "/" + packageName + "\n"); // NOI18N
         bw.write("mv $TMPDIR/" + packageName  + " " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
         bw.write("\n"); // NOI18N
