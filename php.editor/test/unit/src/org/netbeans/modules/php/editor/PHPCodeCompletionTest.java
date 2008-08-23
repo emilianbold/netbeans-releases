@@ -296,7 +296,30 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testInsideClass_8() throws Exception {
         checkCompletion("testfiles/completion/lib/insideClass.php", "InsideClass::^", false);
     }
+    public void testInsideClassAdv() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass2.php", "$this->^", false);
+    }
+    public void testInsideClassAdv_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass2.php", "public f^", false);
+    }
+    public void testInsideClassAdv_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass2.php", "protected f^", false);
+    }
+    public void testInsideClassAdv_3() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass2.php", "$bVa^", false);
+    }
+    public void testInsideClassAdv_4() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass2.php", "$aVar->^", false);
+    }
+    /* doesn't work
+    public void testInsideClassAdv_5() throws Exception {
+        checkCompletion("testfiles/completion/lib/insideClass2.php", "$this->meth_b^", false);
+    }
+     */
     public void test140758() throws Exception {
         checkCompletion("testfiles/completion/lib/issue140758.php", "echo $_SERVER['^", false);
+    }
+    public void test140758_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue140758.php", "echo $_SERVER[\"^", false);
     }
 }
