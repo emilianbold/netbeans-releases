@@ -541,7 +541,7 @@ public class ConfigurationMakefileWriter {
         }
         
         if (conf.getPackagingConfiguration().getFiles().getValue().size() > 0) {
-            bw.write("\t${RM} " + conf.getPackagingConfiguration().getOutputValue() + "\n"); // NOI18N
+            bw.write("\t${RM} -r " + conf.getPackagingConfiguration().getOutputValue() + "\n"); // NOI18N
         }
         
         writeSubProjectCleanTargets(conf, bw);
@@ -662,7 +662,7 @@ public class ConfigurationMakefileWriter {
         bw.write("OUTPUT_PATH=" + projectOutput + "\n"); // NOI18N
         bw.write("OUTPUT_BASENAME=" + IpeUtils.getBaseName(projectOutput) + "\n"); // NOI18N
         bw.write("PACKAGE_OUTPUT_BASENAME=" + IpeUtils.getBaseName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
-        bw.write("PACKAGE_TOP_DIR=" + (packagingConfiguration.getTopDir().getValue().length() > 0 ? packagingConfiguration.getTopDir().getValue() + "/" : "") + "\n"); // NOI18N
+        bw.write("PACKAGE_TOP_DIR=" + (packagingConfiguration.getTopDirValue().length() > 0 ? packagingConfiguration.getTopDirValue() + "/" : "") + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Functions\n"); // NOI18N
@@ -698,7 +698,7 @@ public class ConfigurationMakefileWriter {
         bw.write("}\n"); // NOI18N
         
         bw.write("# Setup\n"); // NOI18N
-        bw.write("rm -rf " + output + "\n"); // NOI18N
+        bw.write("rm -rf " + outputDir + "\n"); // NOI18N
         if (outputDir != null && outputDir.length() > 0) {
             bw.write("mkdir -p " + outputDir + "\n"); // NOI18N
         }
@@ -782,16 +782,6 @@ public class ConfigurationMakefileWriter {
         bw.write("rm -rf $TMPDIR\n"); // NOI18N
     }
     
-    private String findInfoValueName(PackagingConfiguration packagingConfiguration, String name) {
-        List<InfoElement> infoList = packagingConfiguration.getHeader().getValue();
-        for (InfoElement elem : infoList) {
-            if (elem.getName().equals(name)) {
-                return elem.getValue();
-            }
-        }
-        return null;
-    }
-    
     private List<String> findUndefinedDirectories(PackagingConfiguration packagingConfiguration) {
         List<FileElement> fileList = packagingConfiguration.getFiles().getValue();
         HashSet set  = new HashSet();
@@ -832,7 +822,7 @@ public class ConfigurationMakefileWriter {
     
     private void writePackagingScriptBodySVR4(BufferedWriter bw, MakeConfiguration conf) throws IOException {
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
-        String packageName = findInfoValueName(packagingConfiguration, "PKG"); // NOI18N // FIXUP: what is null????
+        String packageName = packagingConfiguration.findInfoValueName("PKG"); // NOI18N // FIXUP: what is null????
         
         bw.write("# Create pkginfo and prototype files\n"); // NOI18N
         bw.write("PKGINFOFILE=$TMPDIR/pkginfo\n"); // NOI18N

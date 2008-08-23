@@ -60,14 +60,14 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         
         initComponents();
         
-        topDirectoryTextField.setText(packagingConfiguration.getTopDir().getValue());
+        topDirectoryTextField.setText(packagingConfiguration.getTopDirValue());
         
         remove(tmpPanel);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         
@@ -178,10 +178,11 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        tmpPanel = new javax.swing.JPanel();
-        defaultsPanel = new javax.swing.JPanel();
+        topFolderPanel = new javax.swing.JPanel();
         topDirectoryLabel = new javax.swing.JLabel();
         topDirectoryTextField = new javax.swing.JTextField();
+        tmpPanel = new javax.swing.JPanel();
+        defaultsPanel = new javax.swing.JPanel();
         ownerLabel = new javax.swing.JLabel();
         ownerTextField = new javax.swing.JTextField();
         groupLabel = new javax.swing.JLabel();
@@ -222,6 +223,33 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        topFolderPanel.setLayout(new java.awt.GridBagLayout());
+
+        topDirectoryLabel.setDisplayedMnemonic('o');
+        topDirectoryLabel.setLabelFor(topDirectoryTextField);
+        topDirectoryLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.topDirectoryLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        topFolderPanel.add(topDirectoryLabel, gridBagConstraints);
+
+        topDirectoryTextField.setColumns(12);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        topFolderPanel.add(topDirectoryTextField, gridBagConstraints);
+        topDirectoryTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.topDirectoryTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        add(topFolderPanel, gridBagConstraints);
+
         org.jdesktop.layout.GroupLayout tmpPanelLayout = new org.jdesktop.layout.GroupLayout(tmpPanel);
         tmpPanel.setLayout(tmpPanelLayout);
         tmpPanelLayout.setHorizontalGroup(
@@ -230,10 +258,12 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         );
         tmpPanelLayout.setVerticalGroup(
             tmpPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 184, Short.MAX_VALUE)
+            .add(0, 156, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -241,25 +271,6 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         add(tmpPanel, gridBagConstraints);
 
         defaultsPanel.setLayout(new java.awt.GridBagLayout());
-
-        topDirectoryLabel.setDisplayedMnemonic('o');
-        topDirectoryLabel.setLabelFor(topDirectoryTextField);
-        topDirectoryLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.topDirectoryLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 16, 0, 0);
-        defaultsPanel.add(topDirectoryLabel, gridBagConstraints);
-
-        topDirectoryTextField.setColumns(12);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 16, 0, 0);
-        defaultsPanel.add(topDirectoryTextField, gridBagConstraints);
-        topDirectoryTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.topDirectoryTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
         ownerLabel.setDisplayedMnemonic('w');
         ownerLabel.setLabelFor(ownerTextField);
@@ -556,7 +567,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -620,6 +631,7 @@ private void ownerTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JPanel tmpPanel;
     private javax.swing.JLabel topDirectoryLabel;
     private javax.swing.JTextField topDirectoryTextField;
+    private javax.swing.JPanel topFolderPanel;
     private javax.swing.JLabel wLabel1;
     private javax.swing.JLabel wLabel2;
     private javax.swing.JLabel wLabel3;

@@ -91,7 +91,7 @@ public class PackagingConfiguration {
         output = new StringConfiguration(null, ""); // NOI18N
         tool = new StringConfiguration(null, ""); // NOI18N
         options = new StringConfiguration(null, ""); // NOI18N
-        topDir = new StringConfiguration(null, getOutputName()); // NOI18N
+        topDir = new StringConfiguration(null, null); // NOI18N
         
         setDefaultValues();
     }
@@ -334,6 +334,19 @@ public class PackagingConfiguration {
         }
     }
     
+    public String getTopDirValue() {
+        if (getTopDir().getModified()) {
+            return getTopDir().getValue();
+        } else {
+            String val = getOutputValue();
+            int i = val.lastIndexOf("."); // NOI18N
+            if (i > 0) {
+                val = val.substring(0, i-1);
+            }
+            return IpeUtils.getBaseName(val);
+        }
+    }
+    
     private String getOutputName() {
         String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION) {
@@ -436,7 +449,7 @@ public class PackagingConfiguration {
     public String expandMacros(String s) {
         s = makeConfiguration.expandMacros(s);
         s = IpeUtils.expandMacro(s, "${PACKAGE_OUTPUT_BASENAME}", IpeUtils.getBaseName(getOutputValue())); // NOI18N
-        s = IpeUtils.expandMacro(s, "${PACKAGE_TOP_DIR}", getTopDir().getValue().length() > 0 ? getTopDir().getValue() + "/" : ""); // NOI18N
+        s = IpeUtils.expandMacro(s, "${PACKAGE_TOP_DIR}", getTopDirValue().length() > 0 ? getTopDirValue() + "/" : ""); // NOI18N
         return s;
     }
     
@@ -449,6 +462,16 @@ public class PackagingConfiguration {
             stringBuilder.append(c);
         }
         return stringBuilder.toString();
+    }
+    
+    public String findInfoValueName(String name) {
+        List<InfoElement> infoList = getHeader().getValue();
+        for (InfoElement elem : infoList) {
+            if (elem.getName().equals(name)) {
+                return elem.getValue();
+            }
+        }
+        return null;
     }
 
     /** Look up i18n strings here */
