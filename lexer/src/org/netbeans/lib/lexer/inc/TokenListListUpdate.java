@@ -154,8 +154,10 @@ final class TokenListListUpdate<T extends TokenId> {
             String msg = "\n\nLEXER-INTERNAL-ERROR: Removing at tokenListIndex=" + modTokenListIndex + // NOI18N
                     " but real tokenListIndex is " + realIndex + // NOI18N
                     " (indexWasMinusOne=" + indexWasMinusOne + ").\n" + // NOI18N
-                    "Wishing to remove tokenList\n" + removedTokenList.dumpInfo(null) + // NOI18N
-                    "\nbut marked-for-remove tokenList is \n" + markedForRemoveTokenList.dumpInfo(null) + // NOI18N
+                    "Wishing to remove tokenList\n" + // NOI18N
+                    ((removedTokenList != null) ? removedTokenList.dumpInfo(null) : "!!<NULL>!!") + // NOI18N
+                    "\nbut marked-for-remove tokenList is \n" + // NOI18N
+                    ((markedForRemoveTokenList != null) ? markedForRemoveTokenList.dumpInfo(null) : "!!<NULL>!!") + // NOI18N
                     "\nfrom tokenListList\n" + tokenListList + // NOI18N
                     "\nModification description:\n" + eventInfo.modificationDescription(true); // NOI18N
             if (LOG.isLoggable(Level.WARNING)) {
@@ -234,7 +236,7 @@ final class TokenListListUpdate<T extends TokenId> {
                 addedEtl.initAllTokens();
             }
             if (tokenListList.hasChildren()) {
-                updateItem.collectAddedEmbeddings(addedEtl, 0, addedEtl.tokenCountCurrent());
+                updateItem.collectAddedEmbeddings(addedEtl, 0, addedEtl.tokenCountCurrent(), updateItem.childrenLanguages);
             }
         }
     }
