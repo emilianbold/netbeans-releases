@@ -44,15 +44,12 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
@@ -131,6 +128,10 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         v = packagingFilesPanel.getListData();
         packagingConfiguration.getFiles().setValue(new ArrayList(v));
         
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            InfoElement pkgElem = packagingConfiguration.findInfoElement("PKG"); // NOI18N
+            packagingConfiguration.getOutput().setValue(IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "/" + pkgElem.getValue());
+        }
 	return packagingConfiguration;
         
     }

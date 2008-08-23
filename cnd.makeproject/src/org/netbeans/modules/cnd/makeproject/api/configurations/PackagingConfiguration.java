@@ -132,7 +132,7 @@ public class PackagingConfiguration {
             defArch = "sparc"; // NOI18N
         }
         List<InfoElement> headerList = getHeader().getValue();
-        headerList.add(new InfoElement("PKG", "${PACKAGE_OUTPUT_BASENAME}", true, true)); // NOI18N
+        headerList.add(new InfoElement("PKG", getOutputName(), true, true)); // NOI18N
         headerList.add(new InfoElement("NAME", "Package description ...", true, true)); // NOI18N
         headerList.add(new InfoElement("ARCH", defArch, true, true)); // NOI18N
         headerList.add(new InfoElement("CATEGORY", "application", true, true)); // NOI18N
@@ -338,12 +338,13 @@ public class PackagingConfiguration {
         if (getTopDir().getModified()) {
             return getTopDir().getValue();
         } else {
-            String val = getOutputValue();
+            String val = IpeUtils.getBaseName(getOutputValue());
+            
             int i = val.lastIndexOf("."); // NOI18N
             if (i > 0) {
-                val = val.substring(0, i-1);
+                val = val.substring(0, i);
             }
-            return IpeUtils.getBaseName(val);
+            return val;
         }
     }
     
@@ -435,6 +436,11 @@ public class PackagingConfiguration {
                 return;
             }
             super.setValue(v);
+            if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+                String pkgName = IpeUtils.getBaseName((String)v);
+                InfoElement pkgElem = findInfoElement("PKG"); // NOI18N
+                pkgElem.setValue(pkgName);
+            }
         }
     }
 
@@ -448,7 +454,6 @@ public class PackagingConfiguration {
     
     public String expandMacros(String s) {
         s = makeConfiguration.expandMacros(s);
-        s = IpeUtils.expandMacro(s, "${PACKAGE_OUTPUT_BASENAME}", IpeUtils.getBaseName(getOutputValue())); // NOI18N
         s = IpeUtils.expandMacro(s, "${PACKAGE_TOP_DIR}", getTopDirValue().length() > 0 ? getTopDirValue() + "/" : ""); // NOI18N
         return s;
     }
@@ -462,6 +467,17 @@ public class PackagingConfiguration {
             stringBuilder.append(c);
         }
         return stringBuilder.toString();
+    }
+    
+    
+    public InfoElement findInfoElement(String name) {
+        List<InfoElement> infoList = getHeader().getValue();
+        for (InfoElement elem : infoList) {
+            if (elem.getName().equals(name)) {
+                return elem;
+            }
+        }
+        return null;
     }
     
     public String findInfoValueName(String name) {

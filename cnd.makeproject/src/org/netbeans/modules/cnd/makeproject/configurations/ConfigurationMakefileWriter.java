@@ -661,7 +661,6 @@ public class ConfigurationMakefileWriter {
         }
         bw.write("OUTPUT_PATH=" + projectOutput + "\n"); // NOI18N
         bw.write("OUTPUT_BASENAME=" + IpeUtils.getBaseName(projectOutput) + "\n"); // NOI18N
-        bw.write("PACKAGE_OUTPUT_BASENAME=" + IpeUtils.getBaseName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
         bw.write("PACKAGE_TOP_DIR=" + (packagingConfiguration.getTopDirValue().length() > 0 ? packagingConfiguration.getTopDirValue() + "/" : "") + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
