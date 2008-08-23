@@ -104,6 +104,7 @@ import org.netbeans.modules.ruby.elements.ClassElement;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
+import org.netbeans.modules.ruby.elements.IndexedVariable;
 import org.netbeans.modules.ruby.elements.KeywordElement;
 import org.netbeans.modules.ruby.elements.RubyElement;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -943,10 +944,10 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             // I'm not doing any data flow analysis at this point, so
             // I can't do anything with a LHS like "foo.". Only actual types.
             if ((type != null) && (type.length() > 0)) {
-                if ("self".equals(lhs)) {
+                if ("self".equals(lhs)) { // NOI18N
                     type = fqn;
                     skipPrivate = true;
-                } else if ("super".equals(lhs)) {
+                } else if ("super".equals(lhs)) { // NOI18N
                     skipPrivate = true;
 
                     IndexedClass sc = index.getSuperclass(fqn);
@@ -1031,6 +1032,24 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         return false;
+    }
+    
+    private void completeGlobals(List<CompletionProposal> proposals, CompletionRequest request, boolean showSymbols) {
+        RubyIndex index = request.index;
+        String prefix = request.prefix;
+        NameKind kind = request.kind;
+        
+        Set<IndexedVariable> globals = index.getGlobals(prefix, kind);
+        for (IndexedVariable global : globals) {
+            PlainItem item = new PlainItem(global, anchor, request);
+            item.setSmart(true);
+
+            if (showSymbols) {
+                item.setSymbol(true);
+            }
+            
+            proposals.add(item);
+        }
     }
 
     /** Determine if we're trying to complete the name for a "def" (in which case
@@ -2081,7 +2100,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         final TokenHierarchy<Document> th = TokenHierarchy.get(document);
         final BaseDocument doc = (BaseDocument)document;
         final FileObject fileObject = info.getFileObject();
-
+        
         boolean showLower = true;
         boolean showUpper = true;
         boolean showSymbols = false;
@@ -2229,13 +2248,11 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
             // $ is neither upper nor lower 
             if ((prefix.length() == 0) || (first == '$') || showSymbols) {
-                List<Node> list = root.childNodes();
-
-                for (Node child : list) {
-                    if (child.isInvisible()) {
-                        continue;
+                if (prefix.startsWith("$") || showSymbols) {
+                    completeGlobals(proposals, request, showSymbols);
+                    if (!showSymbols) {
+                        return completionResult;
                     }
-                    addGlobals(child, globals);
                 }
             }
         }
@@ -2821,25 +2838,6 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             }
 
             addDynamic(child, variables);
-        }
-    }
-
-    private void addGlobals(Node node, Map<String, Node> globals) {
-        if (node.nodeId == NodeType.GLOBALASGNNODE) {
-            String name = ((INameNode)node).getName();
-
-            if (!globals.containsKey(name)) {
-                globals.put(name, node);
-            }
-        }
-
-        List<Node> list = node.childNodes();
-
-        for (Node child : list) {
-            if (child.isInvisible()) {
-                continue;
-            }
-            addGlobals(child, globals);
         }
     }
 
@@ -3551,6 +3549,16 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         }
 
         public String getRhsHtml(HtmlFormatter formatter) {
+            if (element.getKind() == ElementKind.GLOBAL && (element instanceof IndexedVariable)) {
+                IndexedVariable idx = (IndexedVariable)element;
+
+                String in = idx.getIn();
+                if (in != null) {
+                    formatter.appendText(in);
+                    return formatter.getText();
+                }
+            }
+            
             return null;
         }
 

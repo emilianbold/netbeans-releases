@@ -184,6 +184,7 @@ public class RubyIndexer implements Indexer {
 
     /** Attributes: "i" -> private, "o" -> protected, ", "s" - static/notinstance, "d" - documented */
     static final String FIELD_FIELD_NAME = "field"; //NOI18N
+    static final String FIELD_GLOBAL_NAME = "global"; //NOI18N
     static final String FIELD_ATTRIBUTE_NAME = "attribute"; //NOI18N
     static final String FIELD_CONSTANT_NAME = "constant"; //NOI18N
 
@@ -966,6 +967,7 @@ public class RubyIndexer implements Indexer {
 
         private void analyze(List<?extends AstElement> structure) {
             List<AstElement> topLevelMethods = null;
+            IndexDocument globalDoc = null;
 
             for (Element o : structure) {
                 // Todo: Iterate over the structure and index them
@@ -975,7 +977,10 @@ public class RubyIndexer implements Indexer {
                 switch (element.getKind()) {
                 case MODULE:
                 case CLASS:
-                    analyzeClassOrModule(element);
+                    IndexDocument doc = analyzeClassOrModule(element);
+                    if (globalDoc == null) {
+                        globalDoc = doc;
+                    }
 
                     break;
 
@@ -989,6 +994,17 @@ public class RubyIndexer implements Indexer {
                         topLevelMethods.add(element);
                     }
                     break;
+                    
+                case GLOBAL: {
+                    if (globalDoc == null) {
+                        globalDoc = factory.createDocument(40); // TODO Measure
+                        documents.add(globalDoc);
+                    }
+
+                    indexGlobal(element, globalDoc/*, nodoc*/);
+
+                    break;
+                }
 
                 case CONSTRUCTOR:
                 case FIELD:
@@ -1005,7 +1021,7 @@ public class RubyIndexer implements Indexer {
             
             if (topLevelMethods != null) {
                 analyzeTopLevelMethods(topLevelMethods);
-            }
+            } 
         }
         
         private boolean shouldIndexTopLevel() {
@@ -1024,8 +1040,9 @@ public class RubyIndexer implements Indexer {
             return false;
         }
 
-        private void analyzeClassOrModule(AstElement element) {
+        private IndexDocument analyzeClassOrModule(AstElement element) {
             int previousDocMode = docMode;
+            IndexDocument document = null;
             try {
                 int flags = 0;
 
@@ -1053,7 +1070,7 @@ public class RubyIndexer implements Indexer {
                 }
 
 
-                IndexDocument document = factory.createDocument(40); // TODO Measure
+                document = factory.createDocument(40); // TODO Measure
 
                 String fqn;
 
@@ -1074,7 +1091,7 @@ public class RubyIndexer implements Indexer {
                         } else {
                             // Some other weird class def, like  class << myvariable
                             // - I won't index those.
-                            return;
+                            return document;
                         }
                     } else {
                         ClassNode clz = (ClassNode)node;
@@ -1144,7 +1161,7 @@ public class RubyIndexer implements Indexer {
                     // XXX No, I might still want to recurse into the children -
                     // I may have classes with documentation in an undocumented
                     // module!!
-                    return;
+                    return document;
                 }
 
                 document.addPair(FIELD_FQN_NAME, fqn, true);
@@ -1194,6 +1211,12 @@ public class RubyIndexer implements Indexer {
                                     break;
                                 }
 
+                                case GLOBAL: {
+                                    indexGlobal(grandChild, document/*, nodoc*/);
+
+                                    break;
+                                }
+
                                 case ATTRIBUTE: {
                                     indexAttribute(grandChild, document, nodoc);
 
@@ -1227,6 +1250,12 @@ public class RubyIndexer implements Indexer {
                         break;
                     }
 
+                    case GLOBAL: {
+                        indexGlobal(child, document/*, nodoc*/);
+
+                        break;
+                    }
+                    
                     case ATTRIBUTE: {
                         indexAttribute(child, document, nodoc);
 
@@ -1245,6 +1274,8 @@ public class RubyIndexer implements Indexer {
             } finally {
                 docMode = previousDocMode;
             }
+            
+            return document;
         }
 
         private void analyzeTopLevelMethods(List<? extends AstElement> children) {
@@ -1390,6 +1421,30 @@ public class RubyIndexer implements Indexer {
 
             // TODO - gather documentation on fields? naeh
             document.addPair(FIELD_FIELD_NAME, signature, true);
+        }
+
+        private void indexGlobal(AstElement child, IndexDocument document/*, boolean nodoc*/) {
+            // Don't index globals in the libraries
+            if (!file.isPlatform() && !PREINDEXING) {
+
+                String signature = child.getName();
+//            int flags = getModifiersFlag(child.getModifiers());
+//            if (nodoc) {
+//                flags |= IndexedElement.NODOC;
+//            }
+//
+//            if (flags != 0) {
+//                StringBuilder sb = new StringBuilder(signature);
+//                sb.append(';');
+//                sb.append(IndexedElement.flagToFirstChar(flags));
+//                sb.append(IndexedElement.flagToSecondChar(flags));
+//                signature = sb.toString();
+//            }
+
+                // TODO - gather documentation on globals? naeh
+
+                document.addPair(FIELD_GLOBAL_NAME, signature, true);
+            }
         }
 
         private int getDocumentSize(Node node) {
