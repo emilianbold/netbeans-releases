@@ -223,7 +223,17 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     public ServerState getServerState() {
         return commonSupport.getServerState();
     }
-    
+
+    void stopIfStartedByIde() {
+        if(commonSupport.isStartedByIde()) {
+            ServerState state = commonSupport.getServerState();
+            if(state == ServerState.STARTING ||
+                    (state == ServerState.RUNNING && commonSupport.isReallyRunning())) {
+                commonSupport.stopServer(null);
+            }
+        }
+    }
+
     // ------------------------------------------------------------------------
     // ServerInstance interface implementation
     // ------------------------------------------------------------------------
