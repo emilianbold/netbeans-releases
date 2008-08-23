@@ -47,12 +47,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jruby.ast.ArgsNode;
-import org.jruby.ast.ListNode;
-import org.jruby.ast.MultipleAsgnNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.ArgsNode;
+import org.jruby.nb.ast.ListNode;
+import org.jruby.nb.ast.MultipleAsgnNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.types.INameNode;
 
 /** 
  * This visitor computes the set of input and output variables required by

@@ -61,7 +61,7 @@ public class LexerCharStream implements CharStream {
     public char readChar() throws IOException {
         int c = li.read();
         if(c == LexerInput.EOF) {
-            throw new IOException("end");
+            throw new IOException("end"); //NOI18N
         } else {
             return (char)c;
         }

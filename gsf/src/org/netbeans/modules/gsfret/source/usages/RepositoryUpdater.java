@@ -1734,7 +1734,10 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 //                } else {
                     // Normal path
                     
-                    this.toDo.addAll (java.util.Arrays.asList(root.listFiles()));
+                    File[] files = root.listFiles();
+                    if (files != null && files.length > 0) {
+                        this.toDo.addAll(java.util.Arrays.asList(files));
+                    }
 //                }
             }
 
@@ -1744,6 +1747,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                     final String name = f.getName();
                     if (f.isDirectory() && !ignoredDirectories.contains(name)/* && Utilities.isJavaIdentifier(name)*/) {
                         File[] content = f.listFiles();
+                        if (content != null) {
                             for (int i=0,j=0;i<content.length;i++) {
                                 f = content[i];
                                 if (f.isFile()) {
@@ -1753,6 +1757,7 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                     this.toDo.add(f);
                                 }
                             }
+                        }
                     }                    
                     else { // XXX How do I decide if it's a reasonable name?
 //                        System.out.println("Should we scan " + name + "?");

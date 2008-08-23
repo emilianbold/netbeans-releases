@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -58,21 +59,31 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.glassfish.jruby.ui.JRubyServerCustomizer;
+import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.glassfish.spi.CustomizerCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
+import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.OutputListener;
 
 
 /**
  *
  * @author Peter Williams
  */
-public class JRubyServerModule implements RubyInstance, CustomizerCookie {
+public class JRubyServerModule implements RubyInstance, CustomizerCookie, RecognizerCookie {
 
     public static final String USE_ROOT_CONTEXT_ATTR = "jruby.useRootContext"; // NOI18N
     
@@ -178,7 +189,7 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
             throw new IllegalStateException("No V3 Common Server support found for V3/Ruby server instance");
         }
     }
-    
+
     private static class RunAppTask implements 
             Callable<OperationState>,
             OperationStateListener 
@@ -614,4 +625,39 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
         return result;
     }
 
+    // ------------------------------------------------------------------------
+    // RecognizerCookie support
+    // ------------------------------------------------------------------------
+    
+//    private static final String WINDOWS_DRIVE = "(?:\\S{1}:[\\\\/])"; // NOI18N
+    private static final String FILE_CHAR = "[^\\s\\[\\]\\:\\\"]"; // NOI18N
+    private static final String FILE = "((?:" + FILE_CHAR + "*))"; // NOI18N
+//    private static final String FILE_WIN = "(" + WINDOWS_DRIVE + "(?:" + FILE_CHAR + ".*))"; // NOI18N
+    private static final String LINE = "([1-9][0-9]*)"; // NOI18N
+    private static final String ROL = ".*\\s?"; // NOI18N
+    private static final String SEP = "\\:"; // NOI18N
+    private static final String STD_SUFFIX = FILE + SEP + LINE + ROL;
+
+    private static final RegexpOutputRecognizer RAILS_RECOGNIZER =
+        new RegexpOutputRecognizer(".*#\\{RAILS_ROOT\\}/" + STD_SUFFIX); // NOI18N
+    
+    public Collection<? extends Recognizer> getRecognizers() {
+        return Collections.singleton(wrapRubyRecognizer(new DirectoryFileLocator(
+                FileUtil.toFileObject(FileUtil.normalizeFile(new File("/")))), RAILS_RECOGNIZER));
+    }
+
+    private Recognizer wrapRubyRecognizer(final FileLocator locator, final OutputRecognizer recognizer) {
+        return new Recognizer() {
+            public OutputListener processLine(String text) {
+                OutputListener result = null;
+                OutputRecognizer.RecognizedOutput match = recognizer.processLine(text);
+                if(match instanceof OutputRecognizer.FileLocation) {
+                    OutputRecognizer.FileLocation fileLocation = (OutputRecognizer.FileLocation) match;
+                    result = new OutputProcessor(fileLocation.file, fileLocation.line, locator);
+                }
+                return result;
+            }
+        };
+    }
+    
 }

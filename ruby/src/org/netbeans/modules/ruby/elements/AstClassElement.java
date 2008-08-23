@@ -2,11 +2,11 @@ package org.netbeans.modules.ruby.elements;
 
 import java.util.Set;
 
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.Colon3Node;
-import org.jruby.ast.Node;
-import org.jruby.ast.SClassNode;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.ClassNode;
+import org.jruby.nb.ast.Colon3Node;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.SClassNode;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 

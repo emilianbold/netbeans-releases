@@ -43,7 +43,7 @@ package org.netbeans.modules.ruby.hints.infrastructure;
 
 import java.util.List;
 import java.util.Set;
-import org.jruby.common.IRubyWarnings.ID;
+import org.jruby.nb.common.IRubyWarnings.ID;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.Rule.ErrorRule;
 import org.netbeans.modules.ruby.RubyParser.RubyError;

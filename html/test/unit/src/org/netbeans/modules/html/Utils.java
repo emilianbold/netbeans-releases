@@ -42,7 +42,6 @@
 package org.netbeans.modules.html;
 
 import org.netbeans.junit.MockServices;
-import org.netbeans.modules.editor.html.HTMLIndentEngine;
 
 /** Shared utils used in HTML tests.
  *
@@ -54,7 +53,7 @@ public class Utils {
     }
 
     /*package*/ static void setUp() throws Exception {
-        MockServices.setServices(new Class[] {HtmlLoader.class, HTMLIndentEngine.class});
+        MockServices.setServices(new Class[] {HtmlLoader.class});
     }
 
 }

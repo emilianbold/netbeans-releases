@@ -116,8 +116,6 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
     }
     
     List<ErrorDescription> computeErrors(CompilationInfo info, Document doc, ParserResult result, List<Error> errors, List<ErrorDescription> descs) {
-        Source js = Source.forFileObject(file);
-        
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
             ERR.log(ErrorManager.INFORMATIONAL, "errors = " + errors);
         }

@@ -56,6 +56,7 @@ import javax.swing.text.StyledDocument;
 
 import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.cookies.EditCookie;
 
@@ -166,7 +167,8 @@ public class DataEditorSupportTest extends NbTestCase {
         
         
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1208
     public void testGetOpenedPanesWorksAfterDeserialization () throws Exception {
         doGetOpenedPanesWorksAfterDeserialization (-1);
     }
@@ -237,22 +239,6 @@ public class DataEditorSupportTest extends NbTestCase {
         stream.close();
         assertNotNull(env.fileLock);
         env.fileLock.releaseLock();
-    }
-    
-    public void testFileEncodingQuery () throws Exception {
-        DES des = support();
-        FileEncodingQueryImpl.getDefault().reset();
-        StyledDocument doc = des.openDocument();
-        FileEncodingQueryImpl.getDefault().assertFile(
-            des.getDataObject().getPrimaryFile()
-        );
-        FileEncodingQueryImpl.getDefault().reset();
-        doc.insertString(doc.getLength(), " Added text.", null);
-        des.saveDocument();        
-        FileEncodingQueryImpl.getDefault().assertFile(
-            des.getDataObject().getPrimaryFile()
-        );
-        assertEquals(" Added text.", content);
     }
     
     /** File object that let us know what is happening and delegates to certain

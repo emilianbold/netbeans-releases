@@ -1099,8 +1099,14 @@ public class TreeModelNode extends AbstractNode {
         IllegalArgumentException, java.lang.reflect.InvocationTargetException {
             try {
                 model.setValueAt (object, id, v);
+                v = model.getValueAt(object, id); // Store the new value
                 synchronized (properties) {
-                    properties.put (id, v);
+                    if (v instanceof String) {
+                        properties.put (id, removeHTML ((String) v));
+                        properties.put (id + "#html", htmlValue ((String) v));
+                    } else {
+                        properties.put (id, v);
+                    }
                 }
                 firePropertyChange (id, null, null);
             } catch (UnknownTypeException e) {

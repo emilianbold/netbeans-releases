@@ -16,29 +16,48 @@
         <mkdir dir="${patched_source}"/>
         -->
         <unzip dest="${patched_source}">
-			<fileset dir="external/">
-				<include name="jruby-src-${jruby_src_version}.zip"/>
-			</fileset>
-	</unzip>
-        <!--
-         We need a more recent version of jvyamlb for use by the YAML module.
-         The JRuby IDE module itself doesn't really care.
-        -->
-        <unzip dest="${patched_source}/jruby-${jruby_src_version}/build_lib">
-			<fileset dir="external/">
-				<include name="jvyamlb-0.2.2.zip"/>
-			</fileset>
-	</unzip>
-        <delete file="${patched_source}/jruby-${jruby_src_version}/build_lib/jvyamlb-0.2.jar" />
+            <fileset dir="external/">
+                <include name="jruby-src-${jruby_src_version}.zip"/>
+            </fileset>
+        </unzip>
 
         <!-- I don't need the bsf stuff -->
         <delete dir="${src.dir}/org/jruby/javasupport/bsf"/>
+
+        <!-- Repackage the sources as org.jruby.nb such that we have no class name
+             conflicts if people try to have JRuby as a scripting engine -->
+        <move file="${src.dir}/org/jruby" tofile="${src.dir}/org/nb"/>
+        <mkdir dir="${src.dir}/org/jruby"/>
+        <move file="${src.dir}/org/nb" tofile="${src.dir}/org/jruby/nb"/>
+        <replace dir="${patched_source}">
+            <include name="**"/>
+            <exclude name="**/*.jar"/>
+            <replacefilter token="org.jruby" value="org.jruby.nb"/>
+            <replacefilter token="org-jruby" value="org-jruby-nb"/>
+            <replacefilter token="org/jruby" value="org/jruby/nb"/>
+
+            <replacefilter token="org.jruby.nb.util.ByteList" value="org.jruby.util.ByteList"/>
+            <replacefilter token="org.jruby.nb.ext.posix" value="org.jruby.ext.posix"/>
+        </replace>
+        <replace dir="${src.dir}/org/jruby/nb/util">
+            <include name="*.java"/>
+            <!-- No imports in the same package (no longer same package) -->
+            <replacefilter token=" ByteList" value=" org.jruby.util.ByteList"/>
+            <replacefilter token="(ByteList" value="(org.jruby.util.ByteList"/>
+            <!--<replacefilter token="<ByteList" value="<org.jruby.util.ByteList"/>-->
+        </replace>
+        <replace dir="${src.dir}/org/jruby/nb/util">
+            <include name="*.java"/>
+            <!-- No imports in the same package (no longer same package) -->
+            <replacetoken><![CDATA[<ByteList]]></replacetoken>
+            <replacevalue><![CDATA[<org.jruby.util.ByteList]]></replacevalue>
+        </replace>
 
         <!-- Insert module description bundle etc. -->
         <copy todir="${src.dir}" overwrite="true">
             <fileset dir="src" />
         </copy>
-
+        
         <echo>Patching ${src.dir}</echo>
         <!--
         <patch dir="${src.dir}" patchfile="jruby.diff" strip="2" ignorewhitespace="true" reverse="false"/>
@@ -63,7 +82,7 @@
         </copy>
         <delete file="${patched_source}/jruby-${jruby_src_version}/src/jruby.properties" />
 -->
-    </target>    
+    </target>
 
     <target name="release" depends="init">
         <mkdir dir="${cluster}/modules/ext"/>
@@ -74,8 +93,6 @@
                 <include name="jna-posix*.jar"/>
                 <include name="joda*.jar"/>
                 <include name="jline*.jar"/>
-                <include name="jvyamlb*.jar"/>
-                <include name="bytelist*.jar"/>
             </fileset>
         </copy>
     </target>
