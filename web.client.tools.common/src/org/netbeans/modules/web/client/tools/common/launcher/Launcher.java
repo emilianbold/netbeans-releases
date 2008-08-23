@@ -173,6 +173,10 @@ public class Launcher {
             this.uriList.add(uri);
         }
         
+        public void setURI(List<String> uriList) {
+            this.uriList = uriList;
+        } 
+ 
         public String getArguments() {
             return arguments;
         }
