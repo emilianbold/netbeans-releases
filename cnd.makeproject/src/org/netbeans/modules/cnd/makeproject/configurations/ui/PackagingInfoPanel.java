@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -56,6 +55,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 import org.openide.DialogDescriptor;
@@ -64,17 +65,17 @@ import org.openide.util.NbBundle;
 
 public class PackagingInfoPanel extends ListEditorPanel {
 
-    private String baseDir;
+    private PackagingConfiguration packagingConfiguration;
     private JTable targetList;
     private MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
     private JButton addButton;
     private JButton addEntryButton;
     private JTextArea docArea;
 
-    public PackagingInfoPanel(List<InfoElement> infoList, String baseDir) {
+    public PackagingInfoPanel(List<InfoElement> infoList, PackagingConfiguration packagingConfiguration) {
         super(infoList.toArray(), new JButton[]{new JButton(), new JButton()});
         getAddButton().setVisible(false);
-        this.baseDir = baseDir;
+        this.packagingConfiguration = packagingConfiguration;
         
         this.addButton = extraButtons[0];
         addButton.setText(getString("PackagingFilesPanel.addButton.text"));
@@ -408,14 +409,11 @@ public class PackagingInfoPanel extends ListEditorPanel {
             InfoElement elem = (InfoElement) listData.elementAt(row);
             if (col == 0) {
             } else if (col == 1) {
-                if (!isSelected) {
-                    label = new JLabel();
+                String val = elem.getValue();
+                if (val.indexOf("${") >= 0) { // NOI18N
+                    String expandedVal = packagingConfiguration.expandMacros(val);
+                    label.setText(expandedVal); // NOI18N
                 }
-//                label.setToolTipText(file.getAbsolutePath());
-                if (!isSelected && elem.getValue().indexOf('<') >= 0) {
-                    label.setForeground(Color.RED);
-                }
-                label.setText(elem.getValue());
             }
             return label;
         }
