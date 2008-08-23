@@ -248,12 +248,6 @@ public class DerbyOptions {
     }
 
     private static void stopDerbyServer() {
-        DatabaseConnection[] dbconn = ConnectionManager.getDefault().getConnections();
-        for (int i = 0; i < dbconn.length; i++) {
-            if (RegisterDerby.getDefault().acceptsDatabaseURL(dbconn[i].getDatabaseURL())) {
-                ConnectionManager.getDefault().disconnect(dbconn[i]);
-            }
-        }
         RegisterDerby.getDefault().stop();
     }
 
