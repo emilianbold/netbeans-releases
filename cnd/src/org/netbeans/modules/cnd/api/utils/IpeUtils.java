@@ -927,5 +927,17 @@ public class IpeUtils {
         }
         return false;
     }
+    
+    public static String expandMacro(String string, String macro, String value) {
+        // Substitute macro
+        int i = string.indexOf((macro));
+        if (i == 0) {
+            string = value + string.substring(macro.length());
+        }
+        else if (i > 0) {
+            string = string.substring(0, i) + value + string.substring(i + macro.length());
+        }
+        return string;
+    }
 }
 

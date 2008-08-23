@@ -78,6 +78,12 @@ public enum TestJoinTopTokenId implements TokenId {
      */
     BACKQUOTES(),
     /**
+     * Text enclosed in percents e.g. %a% - specific is that there does not need to be
+     * closing percent and the end of input and the token will still be percents.
+     * Implicit joining embedding of TestPlainTokenId.inPercentsLanguage
+     */
+    PERCENTS(),
+    /**
      * Everything else.
      * Implicit embedding of TestPlainTokenId.inQuotesLanguage
      */
@@ -121,6 +127,8 @@ public enum TestJoinTopTokenId implements TokenId {
                     return LanguageEmbedding.create(TestJoinTextTokenId.inBracesLanguage, 1, 1, false);
                 case BACKQUOTES:
                     return LanguageEmbedding.create(TestJoinTextTokenId.inBackquotesLanguage, 1, 1, false);
+                case PERCENTS:
+                    return LanguageEmbedding.create(TestJoinTextTokenId.inPercentsLanguage, 1, 1, true);
                 case TEXT:
                     // Create embedding that joins the sections - has 0-length start/end skip lengths
                     return LanguageEmbedding.create(TestJoinTextTokenId.language, 0, 0, true);

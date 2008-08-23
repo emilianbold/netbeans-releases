@@ -96,6 +96,8 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     private ChangeSupport changeSupport = new ChangeSupport(this);
     
     private FileObject instanceFO;
+
+    private volatile boolean startedByIde = false;
     
     CommonServerSupport(Lookup lookup, Map<String, String> ip) {
         this.lookup = lookup;
@@ -244,6 +246,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             changeSupport.fireChange();
         }
     }
+
+    boolean isStartedByIde() {
+        return startedByIde;
+    }
     
     // ------------------------------------------------------------------------
     // GlassfishModule interface implementation
@@ -260,6 +266,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                 if(newState == OperationState.RUNNING) {
                     setServerState(ServerState.STARTING);
                 } else if(newState == OperationState.COMPLETED) {
+                    startedByIde = true;
                     setServerState(ServerState.RUNNING);
                 } else if(newState == OperationState.FAILED) {
                     setServerState(ServerState.STOPPED);
@@ -280,6 +287,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                 if(newState == OperationState.RUNNING) {
                     setServerState(ServerState.STARTING);
                 } else if(newState == OperationState.COMPLETED) {
+                    startedByIde = true;
                     setServerState(ServerState.RUNNING);
                 } else if(newState == OperationState.FAILED) {
                     setServerState(ServerState.STOPPED);
