@@ -34,4 +34,13 @@
 
 TestCCOnMethods::create()->newInstance();
 
+/**
+* @return TestCCOnMethods
+*/
+function foo_TestCCOnMethods(){
+
+}
+
+foo_TestCCOnMethods()->newInstance()->newInstance();
+
 ?>

@@ -41,21 +41,20 @@ package org.netbeans.modules.vmd.midpnb.components.svg.parsers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.regex.Pattern;
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
-import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGCheckBoxCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComboBoxCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGLabelCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGRadioButtonCD;
@@ -93,17 +92,18 @@ public class SVGFormImageParser extends SVGComponentImageParser {
 
                 public void run() {
 
-                    Collection<DesignComponent> components = new HashSet(svgForm.getComponents());
-                    DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
-                    for (DesignComponent component : components) {
-                        if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
-                            removeSVGButtonEventSource(component, svgForm);
-                            svgForm.getDocument().deleteComponent(component);
-                        }
-                    }
+//                    Collection<DesignComponent> components = new HashSet(svgForm.getComponents());
+//                    DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
+//                    for (DesignComponent component : components) {
+//                        if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
+//                            removeSVGButtonEventSource(component, svgForm);
+//                            svgForm.getDocument().deleteComponent(component);
+//                        }
+//                    }
                     for (SVGFormComponent srcComponent : srcComponents) {
-                        DesignComponent es = srcComponent.createComponent(svgForm);
-                        svgForm.addComponent(es);
+                        DesignComponent svgComponent = srcComponent.createComponent(svgForm);
+                        svgForm.addComponent(svgComponent);
+                        MidpArraySupport.append(svgForm, SVGFormCD.PROP_COMPONENTS, svgComponent);
                     }
                 }
             });
@@ -244,20 +244,6 @@ public class SVGFormImageParser extends SVGComponentImageParser {
         return values;
     }
 
-    public static void removeSVGButtonEventSource(DesignComponent svgButton, DesignComponent svgForm) {
-        if (svgButton.getType() != SVGButtonCD.TYPEID) {
-            return;
-        }
-        Collection<DesignComponent> components = new HashSet(svgForm.getComponents());
-        for (DesignComponent potentialButtonEventSource : components) {
-            if (potentialButtonEventSource.getType() != SVGButtonEventSourceCD.TYPEID) {
-                continue;
-            }
-            PropertyValue value = potentialButtonEventSource.readProperty(SVGButtonEventSourceCD.PROP_SVGBUTTON);
-            if (value != null && value.getComponent() != null && value.getComponent() == svgButton) {
-                potentialButtonEventSource.getDocument().deleteComponent(potentialButtonEventSource);
-            }
-        }
-    }
+    
 }
 

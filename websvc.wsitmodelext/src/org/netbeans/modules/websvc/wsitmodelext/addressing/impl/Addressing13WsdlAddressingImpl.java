@@ -42,6 +42,8 @@
 package org.netbeans.modules.websvc.wsitmodelext.addressing.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing13WsdlAddressing;
+import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.w3c.dom.Element;
 
@@ -57,5 +59,12 @@ public class Addressing13WsdlAddressingImpl extends Addressing13ComponentImpl im
     public Addressing13WsdlAddressingImpl(WSDLModel model, Element e) {
         super(model, e);
     }
-    
+
+    public void setOptional(boolean optional) {
+        setAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_3), Boolean.toString(optional));
+    }
+
+    public boolean isOptional() {
+        return Boolean.parseBoolean(getAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_3)));
+    }
 }

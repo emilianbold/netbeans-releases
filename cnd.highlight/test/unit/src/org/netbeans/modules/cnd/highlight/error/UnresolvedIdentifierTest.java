@@ -70,7 +70,7 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("attributes.cpp");
     }
 
-    public void testTepedefTemplate() throws Exception {
+    public void testTypedefTemplate() throws Exception {
         performStaticTest("typedef_templ.cpp");
     }
 
@@ -84,6 +84,10 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
 
     public void testForwardClassDecl() throws Exception {
         performStaticTest("forward_class_decl.cpp");
+    }
+    
+    public void testTemplateParameterAncestor() throws Exception {
+        performStaticTest("template_parameter_ancestor.cpp");
     }
     
     /////////////////////////////////////////////////////////////////////

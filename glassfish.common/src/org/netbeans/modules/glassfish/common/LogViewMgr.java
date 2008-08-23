@@ -47,16 +47,20 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.Action;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.actions.DebugAction;
@@ -65,10 +69,13 @@ import org.netbeans.modules.glassfish.common.actions.RestartAction;
 import org.netbeans.modules.glassfish.common.actions.StartServerAction;
 import org.netbeans.modules.glassfish.common.actions.StopServerAction;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputListener;
+import org.openide.windows.OutputWriter;
 
 
 /**
@@ -97,7 +104,7 @@ public class LogViewMgr {
      */
     private static final Map<String, WeakReference<LogViewMgr>> instances =
             new HashMap<String, WeakReference<LogViewMgr>>();
-    
+
     /**
      * The I/O window where to output the changes
      */
@@ -153,11 +160,16 @@ public class LogViewMgr {
                 logViewMgr = new LogViewMgr(uri);
                 instances.put(uri, new WeakReference<LogViewMgr>(logViewMgr));
             }
+            if(logViewMgr.io != null) {
+                Logger.getLogger("glassfish").log(Level.FINE, "getLogViewMgrInstance: closed = " + logViewMgr.io.isClosed() + ", output error flag = " + logViewMgr.io.getOut().checkError());
+            } else {
+                Logger.getLogger("glassfish").log(Level.FINE, "getLogViewMgrInstance: io = " + logViewMgr.io);
+            }
         }
         return logViewMgr;
     }
     
-    public void ensureActiveReader(File serverLog) {
+    public void ensureActiveReader(List<Recognizer> recognizers, File serverLog) {
         synchronized (readers) {
             boolean activeReader = false;
             for(WeakReference<LoggerRunnable> ref: readers) {
@@ -169,7 +181,7 @@ public class LogViewMgr {
             }
 
             if(!activeReader && serverLog != null) {
-                readFiles(new File [] { serverLog });
+                readFiles(recognizers, serverLog);
             }
         }
     }
@@ -179,14 +191,14 @@ public class LogViewMgr {
      *
      * @param inputStreams InputStreams to read
      */
-    public void readInputStreams(InputStream... inputStreams) {
+    public void readInputStreams(List<Recognizer> recognizers, InputStream... inputStreams) {
         synchronized (readers) {
             stopReaders();
-            
+
             RequestProcessor rp = RequestProcessor.getDefault();
             for(InputStream inputStream : inputStreams){
                 // LoggerRunnable will close the stream if necessary.
-                LoggerRunnable logger = new LoggerRunnable(this, inputStream, false);
+                LoggerRunnable logger = new LoggerRunnable(recognizers, inputStream, false);
                 readers.add(new WeakReference<LoggerRunnable>(logger));
                 rp.post(logger);
             }
@@ -198,7 +210,7 @@ public class LogViewMgr {
      * 
      * @param files Files to read
      */
-    public void readFiles(File[] files) {
+    public void readFiles(List<Recognizer> recognizers, File... files) {
         synchronized (readers) {
             stopReaders();
             
@@ -206,7 +218,7 @@ public class LogViewMgr {
             for(File file : files) {
                 try {
                     // LoggerRunnable will close the stream.
-                    LoggerRunnable logger = new LoggerRunnable(this, new FileInputStream(file), true);
+                    LoggerRunnable logger = new LoggerRunnable(recognizers, new FileInputStream(file), true);
                     readers.add(new WeakReference<LoggerRunnable>(logger));
                     rp.post(logger);
                 } catch (FileNotFoundException ex) {
@@ -246,26 +258,85 @@ public class LogViewMgr {
      * 
      * @param s message to write
      */
-    public synchronized void write(String s) {
-        io.getOut().print(s);
+    public synchronized void write(String s, boolean error) {
+        Logger.getLogger("glassfish").log(Level.FINE, "write: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError());
+        OutputWriter writer = error ? io.getErr() : io.getOut();
+        writer.print(s);
     }
     
+    /**
+     * Writes a message into output
+     * 
+     * @param s message to write
+     */
+    public synchronized void write(String s, OutputListener link, boolean important, boolean error) {
+        Logger.getLogger("glassfish").log(Level.FINE, "writeOL: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError());
+        try {
+            OutputWriter writer = error ? io.getErr() : io.getOut();
+            writer.println(s, link, important);
+        } catch(IOException ex) {
+            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
+        }
+    }
+
+    private final Locale logLocale = getLogLocale();
+    private final String logBundleName = getLogBundle();
+    private final String localizedWarning = getLocalized(Level.WARNING.getName());
+    private final String localizedSevere = getLocalized(Level.SEVERE.getName());
+    private final Map<String, String> localizedLevels = getLevelMap();
+    
+    private Locale getLogLocale() {
+        // XXX detect and use server language/country/variant instead of IDE's.
+        String language = System.getProperty("user.language");
+        if(language != null) {
+            return new Locale(language, System.getProperty("user.country", ""), System.getProperty("user.variant", ""));
+        }
+        return Locale.getDefault();
+    }
+    
+    private String getLogBundle() {
+        return Level.INFO.getResourceBundleName();
+    }
+    
+    private String getLocalized(String text) {
+        ResourceBundle bundle = ResourceBundle.getBundle(logBundleName, logLocale);
+        String localized = bundle.getString(text);
+        return localized != null ? localized : text;
+    }
+
+    private Map<String, String> getLevelMap() {
+        Map<String, String> levelMap = new HashMap<String, String>();
+        for(Level l: new Level [] { Level.ALL, Level.CONFIG, Level.FINE,
+                Level.FINER, Level.FINEST, Level.INFO, Level.SEVERE, Level.WARNING } ) {
+            String name = l.getName();
+            levelMap.put(name, getLocalized(name));
+        }
+        return levelMap;
+    }
+    
+    private String getLocalizedLevel(String level) {
+        String localizedLevel = localizedLevels.get(level);
+        return localizedLevel != null ? localizedLevel : level;
+    }
+    
+
     /**
      * Selects output panel
      */
     public synchronized void selectIO() {
+        Logger.getLogger("glassfish").log(Level.FINE, "selectIO: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError());
         io.select();
     }
     
     private class LoggerRunnable implements Runnable {
 
-        private final LogViewMgr logView;
+        private final List<Recognizer> recognizers;
         private final InputStream inputStream;
         private final boolean ignoreEof;
         private volatile boolean shutdown;
         
-        public LoggerRunnable(LogViewMgr logView, InputStream inputStream, boolean ignoreEof) {
-            this.logView = logView;
+        public LoggerRunnable(List<Recognizer> recognizers, InputStream inputStream, boolean ignoreEof) {
+            this.recognizers = recognizers;
             this.inputStream = inputStream;
             this.ignoreEof = ignoreEof;
             this.shutdown = false;
@@ -281,16 +352,18 @@ public class LogViewMgr {
          */
         public void run() {
             final String originalName = Thread.currentThread().getName();
-            Reader reader = null;
+            BufferedReader reader = null;
             
             try {
                 Thread.currentThread().setName(this.getClass().getName() + " - " + inputStream);
-                
-                // create a reader from the input stream
+
                 reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                // ignoreEof is true for log files and false for process streams.
+                // FIXME Should differentiate filter types more cleanly.
+                Filter filter = ignoreEof ? new LogFileFilter(localizedLevels) : new StreamFilter();
                 
                 // read from the input stream and put all the changes to the I/O window
-                LogParser parser = new LogParser();
                 char [] chars = new char[1024];
                 int len = 0;
 
@@ -298,18 +371,21 @@ public class LogViewMgr {
                     if(ignoreEof) {
                         // For file streams, only read if there is something there.
                         while(!shutdown && reader.ready()) {
-                            String text = parser.parse((char) reader.read());
+                            String text = filter.process((char) reader.read());
                             if(text != null) {
-                                write(text);
-                                selectIO();
+                                processLine(text);
                             }
                         }
                     } else {
                         // For process streams, check for EOF every <DELAY> interval.
+                        // We don't use readLine() here because it blocks.
                         while(!shutdown && (len = reader.read(chars)) != -1) {
-                            write(new String(chars, 0, len));
-                            selectIO();
-
+                            for(int i = 0; i < len; i++) {
+                                String text = filter.process(chars[i]);
+                                if(text != null) {
+                                    processLine(text);
+                                }
+                            }
                             if(!reader.ready()) {
                                 break;
                             }
@@ -340,35 +416,161 @@ public class LogViewMgr {
                     }
                 }
                 
-                logView.removeReader(this);
+                removeReader(this);
                 
                 Thread.currentThread().setName(originalName);
             }
         }
+
+        private void processLine(String line) {
+            if(Logger.getLogger("glassfish").isLoggable(Level.FINE)) {
+                Logger.getLogger("glassfish").log(Level.FINE, "processing text: '" + line + "'");
+            }
+            OutputListener listener = null;
+            Iterator<Recognizer> iterator = recognizers.iterator();
+            while(iterator.hasNext() && listener == null) {
+                listener = iterator.next().processLine(line);
+            }
+            boolean showAsError = isWarning(line);
+            if(listener != null) {
+                line = stripNewline(line);
+                write(line, listener, false, showAsError);
+            } else {
+                write(line, showAsError);
+            }
+            selectIO();
+        }
+    }
+
+    private static final String stripNewline(String s) {
+        int len = s.length();
+        if(len > 0 && '\n' == s.charAt(len-1)) {
+            s = s.substring(0, len-1);
+        }
+        return s;
     }
     
-    private static class LogParser {
+    private boolean isWarning(String line) {
+        return line.startsWith(localizedWarning) || line.startsWith(localizedSevere);
+    }
+
+    private static interface Filter {
+        
+        public String process(char c);
+        
+    }
+    
+    private static abstract class StateFilter implements Filter {
+        
+        protected String message;
+        
+        protected int state;
+        protected StringBuilder msg;
+        
+        StateFilter() {
+            state = 0;
+            msg = new StringBuilder(128);
+        }
+        
+        protected void reset() {
+            message = "";
+        }
+        
+        public abstract String process(char c);
+        
+    }
+    
+    private static final class StreamFilter extends StateFilter {
+
+        private static final Pattern messagePattern = Pattern.compile("([\\p{Lu}]{0,16}?):|([^\\r\\n]{0,24}?\\d\\d?:\\d\\d?:\\d\\d?)");
+        
+        private String line;
+        
+        public StreamFilter() {
+            reset();
+        }
+
+        @Override
+        protected void reset() {
+            super.reset();
+            line = "";
+        }
+
+        /**
+         * GlassFish server log format, when read from process stream:
+         *
+         * Aug 13, 2008 3:01:49 PM com.sun.enterprise.glassfish.bootstrap.ASMain main
+         * INFO: Launching GlassFish on Apache Felix OSGi platform
+         * Aug 13, 2008 3:01:50 PM com.sun.enterprise.glassfish.bootstrap.ASMainHelper setUpOSGiCache
+         * INFO: Removing Felix cache profile dir /space/tools/v3Aug7/domains/domain1/.felix/gf left from a previous run
+         * 
+         * Welcome to Felix.
+         * =================
+         * 
+         * Aug 13, 2008 3:01:51 PM HK2Main start
+         * INFO: contextRootDir = /space/tools/v3Aug7/modules
+         * ...
+         * Aug 13, 2008 3:02:14 PM
+         * SEVERE: Exception in thread "pool-6-thread-1"
+         * Aug 13, 2008 3:02:14 PM org.glassfish.scripting.rails.RailsDeployer load
+         * INFO: Loading application RailsGFV3 at /RailsGFV3
+         * Aug 13, 2008 3:02:14 PM
+         * SEVERE: /...absolute.path.../connection_specification.rb:232:in `establish_connection':
+         *
+         * !PW FIXME This parser should be checked for I18N stability.
+         */
+        public String process(char c) {
+            String result = null;
+
+            if(c == '\n') {
+                if(msg.length() > 0) {
+                    msg.append(c);
+                    line = msg.toString();
+                    msg.setLength(0);
+
+                    Matcher matcher = messagePattern.matcher(line);
+                    if(matcher.find() && matcher.start() == 0 && matcher.groupCount() > 1 && matcher.group(2) != null) {
+                        result = null;
+                    } else {
+                        result = line;
+                    }
+                }
+            } else if(c != '\r') {
+                msg.append(c);
+            }
+
+            return result;
+        }
+
+    }
+
+    private static final class LogFileFilter extends StateFilter {
         
         private String time;
         private String type;
         private String version;
         private String classinfo;
         private String threadinfo;
-        private String message;
+        private boolean multiline;
+        private final Map<String, String> typeMap;
 
-        private int state;
-        private StringBuilder msg;
-
-        LogParser() {
-            state = 0;
-            msg = new StringBuilder(128);
+        public LogFileFilter(Map<String, String> typeMap) {
+            this.typeMap = typeMap;
             reset();
         }
 
-        private void reset() {
-            time = type = version = classinfo = threadinfo = message = "";
+        @Override
+        protected void reset() {
+            super.reset();
+            time = type = version = classinfo = threadinfo = "";
+            multiline = false;
         }
         
+        private String getLocalizedType(String type) {
+            String localizedType = typeMap.get(type);
+            return localizedType != null ? localizedType : type;
+        }
+
         /**
          * GlassFish server log entry format (unformatted), when read from file:
          *
@@ -383,7 +585,7 @@ public class LogViewMgr {
          *
          * !PW FIXME This parser should be checked for I18N stability.
          */
-        String parse(char c) {
+        public String process(char c) {
             String result = null;
 
             switch(state) {
@@ -393,7 +595,8 @@ public class LogViewMgr {
                     } else {
                         if(c == '\n') {
                             if(msg.length() > 0) {
-                                result = msg.toString() + '\n';
+                                msg.append(c);
+                                result = msg.toString();
                                 msg.setLength(0);
                             }
                         } else if(c != '\r') {
@@ -408,7 +611,8 @@ public class LogViewMgr {
                         state = 0;
                         if(c == '\n') {
                             if(msg.length() > 0) {
-                                result = msg.toString() + '\n';
+                                msg.append(c);
+                                result = msg.toString();
                                 msg.setLength(0);
                             }
                         } else if(c != '\r') {
@@ -424,7 +628,8 @@ public class LogViewMgr {
                     } else {
                         if(c == '\n') {
                             if(msg.length() > 0) {
-                                result = msg.toString() + '\n';
+                                msg.append(c);
+                                result = msg.toString();
                                 msg.setLength(0);
                             }
                         } else if(c != '\r') {
@@ -447,7 +652,7 @@ public class LogViewMgr {
                 case 4:
                     if(c == '|') {
                         state = 5;
-                        type = msg.toString();
+                        type = getLocalizedType(msg.toString());
                         msg.setLength(0);
                     } else {
                         msg.append(c);
@@ -484,7 +689,14 @@ public class LogViewMgr {
                     if(c == '|') {
                         state = 9;
                         message = msg.toString();
-                    } else {
+                    } else if(c == '\n') {
+                        if(msg.length() > 0) { // suppress blank lines in multiline messages
+                            msg.append('\n');
+                            result = !multiline ? type + ": " + msg.toString() : msg.toString();
+                            multiline = true;
+                            msg.setLength(0);
+                        }
+                    } else if(c != '\r') {
                         msg.append(c);
                     }
                     break;
@@ -501,7 +713,7 @@ public class LogViewMgr {
                     if(c == ']') {
                         state = 0;
                         msg.setLength(0);
-                        result = time + ' ' + type + ": " + message + '\n';
+                        result = (multiline ? message : type + ": " + message) + '\n';
                         reset();
                     } else {
                         state = 8;
@@ -529,8 +741,15 @@ public class LogViewMgr {
         synchronized (ioWeakMap) {
             // look in the cache
             InputOutput serverIO = ioWeakMap.get(si);
+//            if(serverIO != null && !serverIO.getOut().checkError()) {
             if(serverIO != null) {
-                return serverIO;
+                if(serverIO.isClosed()) {
+                    Logger.getLogger("glassfish").fine("Output for " + uri + " is closed.");
+                } else if(serverIO.getOut().checkError()) {
+                    Logger.getLogger("glassfish").fine("Output for " + uri + " is in error state.");
+                } else {
+                    return serverIO;
+                }
             }
 
             // look up the node that belongs to the given server instance

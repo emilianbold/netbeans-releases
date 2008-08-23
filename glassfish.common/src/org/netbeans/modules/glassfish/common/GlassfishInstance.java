@@ -112,11 +112,11 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     private ServerInstance commonInstance;
     
     GlassfishInstance(Map<String, String> ip) {
-        commonSupport = new CommonServerSupport(ip);
-
         ic = new InstanceContent();
         lookup = new AbstractLookup(ic);
         ic.add(this); // Server instance in lookup (to find instance from node lookup)
+
+        commonSupport = new CommonServerSupport(lookup, ip);
         ic.add(commonSupport); // Common action support, e.g start/stop, etc.
 
         updateModuleSupport();

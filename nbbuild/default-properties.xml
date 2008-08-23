@@ -73,5 +73,8 @@ made subject to such option by the copyright holder.
   <property file="${moduleCluster.file}"/>
 
   <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
+  
+  <property name="binaries.cache" location="${user.home}/.hgexternalcache"/>
+  <property name="binaries.server" value="http://hg.netbeans.org/binaries/"/>
 
 </project>

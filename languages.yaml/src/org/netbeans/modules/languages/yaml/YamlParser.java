@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.languages.yaml;
 
-import java.io.CharConversionException;
 import java.io.InputStream;
 import org.jruby.util.ByteList;
 import org.jvyamlb.Composer;
@@ -69,9 +68,6 @@ import org.netbeans.modules.gsf.api.PositionManager;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.spi.DefaultError;
-import org.netbeans.modules.ruby.lexer.RubyCommentTokenId;
-import org.openide.util.Exceptions;
-import org.openide.xml.XMLUtil;
 
 /**
  * Parser for YAML. Delegates to the YAML parser shipped with JRuby (jvyamlb)
