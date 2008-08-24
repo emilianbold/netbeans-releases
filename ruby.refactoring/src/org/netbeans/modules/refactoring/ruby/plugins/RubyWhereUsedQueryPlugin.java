@@ -646,6 +646,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                         RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                         elements.add(refactoring, WhereUsedElement.create(matchCtx));
                     }
+                    break;
                 }
                 case CONSTNODE:
                 case CONSTDECLNODE:
@@ -653,6 +654,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                         RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                         elements.add(refactoring, WhereUsedElement.create(matchCtx));
                     }
+                    break;
                 }
             }
 
