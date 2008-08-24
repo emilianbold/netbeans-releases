@@ -90,6 +90,7 @@ public class ShLauncher extends CommonLauncher {
      */
     public static final String MIN_JAVA_VERSION_UNIX = "1.5.0_03";
     
+    /* IBM does not report the update number so allow to work even on 1.5.0*/
     public static final String MIN_IBM_JAVA_VERSION = "1.5.0";
     
     private static final String [] JAVA_COMMON_LOCATIONS = {
