@@ -224,7 +224,7 @@ public class LicensesPanel extends WizardPanel {
                 }
             });
 
-            if (System.getProperty(OVERALL_LICENSE_SCROLLING_REQUIRED) != null) {
+            if (System.getProperty(WHOLE_LICENSE_SCROLLING_REQUIRED) != null) {
                 licenseScrollPane.getVerticalScrollBar().getModel().addChangeListener(new ChangeListener() {
 
                     public void stateChanged(ChangeEvent e) {
@@ -312,8 +312,8 @@ public class LicensesPanel extends WizardPanel {
             "overall.license.format";//NOI18N
     public static final String SINGLE_PRODUCT_LICENSE_FORMAT_PROPERTY =
             "single.product.license.format";//NOI18N
-    private static final String OVERALL_LICENSE_SCROLLING_REQUIRED =
-            "nbi.overall.license.scrolling.required";
+    private static final String WHOLE_LICENSE_SCROLLING_REQUIRED =
+            "nbi.whole.license.scrolling.required";
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(LicensesPanel.class,
             "LP.title"); // NOI18N
