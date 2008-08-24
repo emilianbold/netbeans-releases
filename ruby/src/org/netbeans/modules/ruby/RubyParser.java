@@ -293,7 +293,7 @@ public final class RubyParser implements Parser {
                             removeChars = 1;
                         } else if (line.endsWith("@@")) { // NOI18N
                             removeChars = 2;
-                        } else if (line.endsWith("@")) { // NOI18N
+                        } else if (line.endsWith("@") || line.endsWith("$")) { // NOI18N
                             removeChars = 1;
                         } else if (line.endsWith(",)")) { // NOI18N
                             // Handle lone comma in parameter list - e.g.

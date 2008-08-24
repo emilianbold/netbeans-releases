@@ -7,6 +7,7 @@ Searchable Keys:
   field : myfield
   field : verbose|STATIC
   fqn : Migration
+  global : $global
 
 Not Searchable Keys:
   attrs : |CLASS|

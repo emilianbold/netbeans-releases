@@ -273,6 +273,14 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkCompletion("testfiles/empty.rb", "^", false);
     }
 
+    public void testGlobals() throws Exception {
+        checkCompletion("testfiles/completion/lib/globals.rb", "$^m # input");
+    }
+
+    public void testAttributes() throws Exception {
+        checkCompletion("testfiles/completion/lib/song.rb", "ss.^");
+    }
+    
     // TODO - test more non-fc calls (e.g. x.foo)
     // TODO test with splat args (more args than are in def list)
     // TODO test with long arg lists
