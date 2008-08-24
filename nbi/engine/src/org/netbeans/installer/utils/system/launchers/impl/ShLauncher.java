@@ -94,7 +94,7 @@ public class ShLauncher extends CommonLauncher {
     public static final String MIN_IBM_JAVA_VERSION = "1.5.0";
     
     private static final String [] JAVA_COMMON_LOCATIONS = {
-        "/usr/java", "/usr/java/*",
+        "/usr/java*", "/usr/java/*",
         "/usr/jdk",  "/usr/jdk/*",
         "/usr/j2se",  "/usr/j2se/*",
         "/usr/j2sdk", "/usr/j2sdk/*",
