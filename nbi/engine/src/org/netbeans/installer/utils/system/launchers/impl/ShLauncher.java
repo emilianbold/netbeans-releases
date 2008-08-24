@@ -90,6 +90,8 @@ public class ShLauncher extends CommonLauncher {
      */
     public static final String MIN_JAVA_VERSION_UNIX = "1.5.0_03";
     
+    public static final String MIN_IBM_JAVA_VERSION = "1.5.0";
+    
     private static final String [] JAVA_COMMON_LOCATIONS = {
         "/usr/java", "/usr/java/*",
         "/usr/jdk",  "/usr/jdk/*",
@@ -241,6 +243,8 @@ public class ShLauncher extends CommonLauncher {
             List <JavaCompatibleProperties> list = new ArrayList <JavaCompatibleProperties>();
             list.add(new JavaCompatibleProperties(
                 MIN_JAVA_VERSION_UNIX, null, null, null, null));
+            list.add(new JavaCompatibleProperties(
+                MIN_IBM_JAVA_VERSION, null, "IBM Corporation", null, null));
             return list;
         } else {
             return super.getDefaultCompatibleJava(version);            
