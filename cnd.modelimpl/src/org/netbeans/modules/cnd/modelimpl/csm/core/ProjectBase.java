@@ -348,38 +348,18 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (TraceFlags.TRACE_REGISTRATION) {
                 System.err.println("not registered decl " + decl + " UID " + decl.getUID()); //NOI18N
             }
-
             return;
         }
-        if (TraceFlags.CHECK_DECLARATIONS) {
-            CsmDeclaration old = getDeclarationsSorage().getDeclaration(decl.getUniqueName());
-            if (old != null && old != decl) {
-                System.err.println("\n\nRegistering different declaration with the same name:" + decl.getUniqueName());
-                System.err.print("WAS:");
-                new CsmTracer().dumpModel(old);
-                System.err.print("\nNOW:");
-                new CsmTracer().dumpModel(decl);
-            }
-        }
-        getDeclarationsSorage().putDeclaration(decl);
 
+        getDeclarationsSorage().putDeclaration(decl);
         if( decl instanceof CsmClassifier ) {
             CharSequence qn = decl.getQualifiedName();
-            if (!classifierContainer.putClassifier((CsmClassifier)decl) && TraceFlags.CHECK_DECLARATIONS) {
-                CsmClassifier old = classifierContainer.getClassifier(qn);
-                if (old != null && old != decl) {
-                    System.err.println("\n\nRegistering different classifier with the same name:" + qn);
-                    System.err.print("ALREADY EXISTS:");
-                    new CsmTracer().dumpModel(old);
-                    System.err.print("\nFAILED TO ADD:");
-                    new CsmTracer().dumpModel(decl);
-                }
-            }
+            classifierContainer.putClassifier((CsmClassifier)decl);
         }
+
         if (TraceFlags.TRACE_REGISTRATION) {
             System.err.println("registered " + decl + " UID " + decl.getUID()); //NOI18N
         }
-
     }
 
     public void unregisterDeclaration(CsmDeclaration decl) {
