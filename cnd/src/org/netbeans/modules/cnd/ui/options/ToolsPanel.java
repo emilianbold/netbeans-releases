@@ -1667,7 +1667,7 @@ private boolean selectCompiler(JTextField tf, Tool tool) {
 }
 
 private boolean selectTool(JTextField tf) {
-    String seed = tfBaseDirectory.getText();
+    String seed = tf.getText();
     FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {
