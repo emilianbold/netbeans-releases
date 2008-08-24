@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
@@ -110,6 +112,11 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         else {
             assert false;
         }
+        
+        //  See IZ 142846
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        int width = ((int)dim.getWidth()/10)*6;
+        setPreferredSize(new Dimension(width, 500));
     }
 
         
@@ -150,13 +157,9 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        innerPanel = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
 
-        setPreferredSize(new java.awt.Dimension(1000, 500));
         setLayout(new java.awt.GridBagLayout());
-
-        innerPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -164,21 +167,13 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        innerPanel.add(tabbedPane, gridBagConstraints);
+        add(tabbedPane, gridBagConstraints);
         tabbedPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.tabbedPane.AccessibleContext.accessibleName")); // NOI18N
         tabbedPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.tabbedPane.AccessibleContext.accessibleDescription")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
-        add(innerPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel innerPanel;
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
 
