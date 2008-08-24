@@ -41,9 +41,7 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
-import java.lang.ref.WeakReference;
 import java.util.Map;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
@@ -59,7 +57,6 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
     private String[] tags;
 
     private TypeID enableTypeID;
-    private WeakReference<DesignComponent> componentReference;
 
     //private CustomEditor customEditor;
 
@@ -164,14 +161,6 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
         }
     }
 
-   
-
-    @Override
-    public void init(DesignComponent component) {
-        componentReference = new WeakReference<DesignComponent>(component);
-        super.init(component);
-    }
-    
     @Override
     public Boolean canEditAsText() {
         return null;

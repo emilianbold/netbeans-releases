@@ -61,18 +61,11 @@ public class HostMappingsAnalyzer {
     public HostMappingsAnalyzer(String secondHkey, String firstHkey) {
         secondPI = PlatformInfo.getDefault(secondHkey);
         firstPI = PlatformInfo.getDefault(firstHkey);
-
-        //providers
-        providers = new ArrayList<HostMappingProvider>();
-        // should it be Lookup?
-        providers.add(new HostMappingProviderWindows());
-        providers.add(new HostMappingProviderSamba());
-        providers.add(new HostMappingProviderUnix());
     }
 
     public Map<String, String> getMappings() {
         Map<String, String> mappingsFirst2Second = new HashMap<String, String>();
-            // all maps are host network name -> host local name
+        // all maps are host network name -> host local name
         Map<String, String> firstNetworkNames2Inner = populateMappingsList(firstPI, secondPI);
         Map<String, String> secondNetworkNames2Inner = populateMappingsList(secondPI, firstPI);
 
@@ -86,6 +79,14 @@ public class HostMappingsAnalyzer {
                 }
             }
         }
+
+        for (HostMappingProvider provider : singularProviders) {
+            if (provider.isApplicable(secondPI, firstPI)) {
+                Map<String, String> map = provider.findMappings(secondPI.getHkey(), firstPI.getHkey());
+                mappingsFirst2Second.putAll(map);
+            }
+        }
+
         return mappingsFirst2Second;
     }
 
@@ -93,7 +94,7 @@ public class HostMappingsAnalyzer {
     // other is host in which context we are interested in mappings
     private Map<String, String> populateMappingsList(PlatformInfo hostPlatformInfo, PlatformInfo otherPlatformInfo) {
         Map<String, String> map = new HashMap<String, String>();
-        for (HostMappingProvider prov : providers) {
+        for (HostMappingProvider prov : pairedProviders) {
             if (prov.isApplicable(hostPlatformInfo, otherPlatformInfo)) {
                 map.putAll( prov.findMappings(hostPlatformInfo.getHkey(), otherPlatformInfo.getHkey())  );
             }
@@ -101,5 +102,17 @@ public class HostMappingsAnalyzer {
         return map;
     }
 
-    private final List<HostMappingProvider> providers;
+    private static final List<HostMappingProvider> pairedProviders;
+    private static final List<HostMappingProvider> singularProviders;
+    
+    static {
+        //providers
+        pairedProviders = new ArrayList<HostMappingProvider>();
+        singularProviders = new ArrayList<HostMappingProvider>();
+        // should it be Lookup?
+        pairedProviders.add(new HostMappingProviderWindows());
+        pairedProviders.add(new HostMappingProviderSamba());
+
+        singularProviders.add(new HostMappingProviderSolaris());
+    }
 }

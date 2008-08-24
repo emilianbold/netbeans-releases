@@ -108,7 +108,9 @@ public final class ClasspathInfo {
     /** Creates a new instance of ClasspathInfo (private use the fatctory methods) */
     private ClasspathInfo(CachingArchiveProvider archiveProvider, ClassPath bootCp, ClassPath compileCp, ClassPath srcCp,
         JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes, boolean hasMemoryFileManager) {
-        assert archiveProvider != null && bootCp != null && compileCp != null;
+        assert archiveProvider != null;
+        assert bootCp != null;
+        assert compileCp != null;
         this.cpListener = new ClassPathListener ();
         this.archiveProvider = archiveProvider;        
         this.bootClassPath = bootCp;

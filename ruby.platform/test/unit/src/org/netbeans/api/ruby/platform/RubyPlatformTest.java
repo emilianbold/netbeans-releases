@@ -109,8 +109,6 @@ public class RubyPlatformTest extends RubyTestBase {
     }
 
     public void testLongDescription() throws Exception {
-        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-        assertEquals("right long description", "JRuby 1.8.6 (2008-07-19 patchlevel 114) [java]", jruby.getInfo().getLongDescription());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right long description without patchlevel", "Ruby 0.1 (2000-01-01) [abcd]", ruby.getInfo().getLongDescription());
     }
@@ -168,8 +166,17 @@ public class RubyPlatformTest extends RubyTestBase {
         RubyPlatform.Info info = platform.getInfo();
         RubyPlatform.Info computed = RubyPlatformManager.computeInfo(platform.getInterpreterFile());
         assertEquals("correct info for bundled JRuby", computed, info);
-        assertEquals("correct info for bundled JRuby", computed.getJVersion(), info.getJVersion());
-        assertEquals("correct info for bundled JRuby", computed.getLibDir(), info.getLibDir());
+        assertEquals("correct info for bundled JRuby (JRuby version)", computed.getJVersion(), info.getJVersion());
+        assertEquals("correct info for bundled JRuby (kind)", computed.getKind(), info.getKind());
+        assertEquals("correct info for bundled JRuby (label)", computed.getLabel(true), info.getLabel(true));
+        assertEquals("correct info for bundled JRuby (library directory)", computed.getLibDir(), info.getLibDir());
+        // XXX: see RubyPlatform$Info#forDefaultPlatform releaseDate comment
+        // assertEquals("correct info for bundled JRuby (long description)", computed.getLongDescription(), info.getLongDescription());
+        assertEquals("correct info for bundled JRuby (patchlevel)", computed.getPatchlevel(), info.getPatchlevel());
+        // XXX: see RubyPlatform$Info#forDefaultPlatform releaseDate comment
+        // assertEquals("correct info for bundled JRuby (release date)", computed.getReleaseDate(), info.getReleaseDate());
+        assertEquals("correct info for bundled JRuby (RubyGems version)", computed.getGemVersion(), info.getGemVersion());
+        assertEquals("correct info for bundled JRuby (version)", computed.getVersion(), info.getVersion());
     }
 
     public void testRubinius() throws IOException {

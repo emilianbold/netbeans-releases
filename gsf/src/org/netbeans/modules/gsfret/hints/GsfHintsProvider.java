@@ -116,8 +116,6 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
     }
     
     List<ErrorDescription> computeErrors(CompilationInfo info, Document doc, ParserResult result, List<Error> errors, List<ErrorDescription> descs) {
-        Source js = Source.forFileObject(file);
-        
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
             ERR.log(ErrorManager.INFORMATIONAL, "errors = " + errors);
         }
@@ -200,6 +198,9 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
         int lineNumber = NbDocument.findLineNumber(sdoc, startOffset);
         int lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);
         String text = DataLoadersBridge.getDefault().getLine(doc, lineNumber);
+        if (text == null) {
+            return new Position[2];
+        }
         
         boolean rangePrepared = false;
         

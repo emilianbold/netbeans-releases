@@ -52,6 +52,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractButton;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
@@ -84,7 +86,10 @@ abstract public class BasePanel extends JPanel {
                 } else {
                     c.setName(key); // for writing the field value back to the server
                 }
-                if (c instanceof JTextComponent) {
+                if (c instanceof JComboBox) {
+                    final JComboBox jcb = (JComboBox) c;
+                    SwingUtilities.invokeLater(new ComboBoxSetter(jcb, value, data));
+                } else if (c instanceof JTextComponent) {
                     final JTextComponent jtc = (JTextComponent) c;
                     SwingUtilities.invokeLater(new TextFieldSetter(jtc, value));
                 } else if (c instanceof AbstractButton) {
@@ -92,7 +97,7 @@ abstract public class BasePanel extends JPanel {
                     SwingUtilities.invokeLater(new ButtonSetter(ab, value));
                 } else if (c instanceof JTable) {
                     JTable table = (JTable) c;
-                    SwingUtilities.invokeLater(new TableSetter(table, data));
+                    SwingUtilities.invokeLater(new TableSetter(name,table, data));
                 }
             }
         }
@@ -106,7 +111,10 @@ abstract public class BasePanel extends JPanel {
             if (compName != null) {
                 // construct the key
                 String key = compName;
-                if (c instanceof JTextComponent) {
+                if (c instanceof JComboBox) {
+                    final JComboBox jcb = (JComboBox) c;
+                    retVal.put(key, (String) jcb.getSelectedItem());
+                } else if (c instanceof JTextComponent) {
                     final JTextComponent jtc = (JTextComponent) c;
                     retVal.put(key, jtc.getText());
                 } else if (c instanceof AbstractButton) {
@@ -126,6 +134,36 @@ abstract public class BasePanel extends JPanel {
         return retVal;
     }
 
+
+    static class ComboBoxSetter implements Runnable {
+        private JComboBox jcb;
+        private Map<String,String> data;
+        private String value;
+
+        private ComboBoxSetter(JComboBox jcb, String value, Map<String, String> data) {
+            this.jcb = jcb;
+            this.data = data;
+            this.value = value;
+        }
+
+        public void run() {
+            // build the allowed values
+            String allowedRegEx = jcb.getActionCommand();
+            DefaultComboBoxModel dcbm = new DefaultComboBoxModel();
+            Pattern p = Pattern.compile(allowedRegEx);
+            Set<String> keys = data.keySet();
+            //String pushPrefix = null;
+            for (String k : keys) {
+                Matcher test = p.matcher(k);
+                if (test.matches()) {
+                    dcbm.addElement(data.get(k));
+                }
+            }
+            jcb.setModel(dcbm);
+            jcb.setSelectedItem(value);
+        }
+        
+    }
 
     static class TextFieldSetter implements Runnable {
         private JTextComponent jtc;
@@ -156,9 +194,11 @@ abstract public class BasePanel extends JPanel {
     static class TableSetter implements Runnable {
         private JTable table;
         private Map<String, String> data;
-        TableSetter(JTable table, Map<String,String> data) {
+        private String name;
+        TableSetter(String name, JTable table, Map<String,String> data) {
             this.table = table;
             this.data = data;
+            this.name = name;
         }
 
         public void run() {
@@ -171,7 +211,7 @@ abstract public class BasePanel extends JPanel {
             }
             List<String[]> l = new ArrayList<String[]>();
             // old style
-            Pattern pattern = Pattern.compile(".*\\."+specComp[0]+"\\..*\\."+specComp[1]);
+            Pattern pattern = Pattern.compile(".*\\."+name+"\\."+specComp[0]+"\\..*\\."+specComp[1]);
             Set<String> keys = data.keySet();
             String pushPrefix = null;
             for (String k : keys) {
@@ -196,7 +236,7 @@ abstract public class BasePanel extends JPanel {
                 table.setModel(new AttributedPropertyTableModel(l.toArray(new String[l.size()][]), specComp, pushPrefix));
             } else {
                 // this data is from a post beta build...
-                pattern = Pattern.compile(".*\\." + specComp[0] + "\\..*");
+                pattern = Pattern.compile(".*\\." + name + "\\." + specComp[0] + "\\..*");
                 pushPrefix = null;
                 for (String k : keys) {
                 Matcher test = pattern.matcher(k);

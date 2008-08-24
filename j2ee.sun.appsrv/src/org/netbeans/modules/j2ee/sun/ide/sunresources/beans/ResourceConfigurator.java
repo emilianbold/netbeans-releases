@@ -92,6 +92,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.modules.glassfish.eecommon.api.UrlData;
+import org.netbeans.modules.glassfish.eecommon.api.Utils;
 
 /**
  *
@@ -472,7 +473,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             servName.setValue(hostName);
         }
         jdbcConnectionPool.addPropertyElement(servName);
-        if (! portNumber.equals("")) { //NOI18N
+        if (Utils.notEmpty(portNumber)) { 
             PropertyElement portno = jdbcConnectionPool.newPropertyElement();
             portno.setName(WizardConstants.__PortNumber);
             portno.setValue(portNumber);
@@ -586,8 +587,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                     dbPwd = pl[i].getValue();
                 }
             }
-            if(hostName.equals(hostProp) && portNumber.equals(portProp) &&
-                    databaseName.equals(dbProp)){
+            
+            if (Utils.strEquivalent(hostName, hostProp) &&
+                    Utils.strEquivalent(portNumber, portProp) &&
+                    Utils.strEquivalent(databaseName, dbProp)){
                 if(dbUser != null && dbPwd != null && dbUser.equals(username) && dbPwd.equals(password)){
                     poolJndiName = connPool.getName();
                 }
@@ -1144,18 +1147,27 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     private String createPoolName(String url, String vendorName, String username){
         UrlData urlData = new UrlData(url);
-        String poolName = vendorName + "_" + username + WizardConstants.__ConnPoolSuffix; //NOI18N
-        String dbName = urlData.getDatabaseName();
+        StringBuffer poolName = new StringBuffer(vendorName);
+        String dbName = getDatabaseName(urlData);
         if (dbName != null) {
-            poolName = vendorName + "_" + dbName + "_" + username + WizardConstants.__ConnPoolSuffix; //NOI18N
-        }else{
-            String altdbName = urlData.getAlternateDBName();
-            if (altdbName != null) {
-                poolName = vendorName + "_" + altdbName + "_" + username + WizardConstants.__ConnPoolSuffix; //NOI18N
-            }
+            poolName.append("_" + dbName); //NOI18N
         }
-        return poolName;
+        if (username != null) {
+            poolName.append("_" + username); //NOI18N
+        }
+        poolName.append(WizardConstants.__ConnPoolSuffix); 
+        return poolName.toString(); 
     }
+
+    private static String getDatabaseName(UrlData urlData) {
+        String databaseName = urlData.getDatabaseName();
+        if (databaseName == null) {
+            databaseName = urlData.getAlternateDBName();
+        }
+
+        return databaseName;
+    }
+    
     /**
      * Implementation of Message Destination API in ConfigurationSupport
      * @return returns Set of SunMessageDestination's(JMS Resources) present in this J2EE project
@@ -1209,6 +1221,6 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             }
         }
         return resourceExists;
-    }
+    }    
 }
 

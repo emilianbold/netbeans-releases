@@ -1,0 +1,4 @@
+FAILED INCLUDE: from template_fun_spec.cc for:
+	TOKEN{["#include ",<11>,line=1,col=1],offset=0,file=null} INCLUDE{<S> ["<stdio.h>",<206>,line=1,col=10],offset=9,file=null}
+FAILED INCLUDE: from template_fun_spec.cc for:
+	TOKEN{["#include ",<11>,line=1,col=1],offset=0,file=null} INCLUDE{<S> ["<stdio.h>",<206>,line=1,col=10],offset=9,file=null}

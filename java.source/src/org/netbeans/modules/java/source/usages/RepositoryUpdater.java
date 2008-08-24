@@ -187,7 +187,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static final RequestProcessor WORKER = new RequestProcessor(RepositoryUpdater.class.getName(),1);
     private Work currentWork;
     private boolean dirty;
-    private int noSubmited;
+    private volatile int noSubmited;
     private volatile boolean notInitialized;         //Transient state during IDE start
     private final AtomicBoolean closed;
     private Map<ClassPath, Set<URL>> classPath2Roots;
@@ -785,10 +785,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             compileScheduled--;
                         }
                         submit(Work.compileWithDeps(root, storedFilesFin));
+                        noSubmited--;
                     }
                 });
                 url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
                 compileScheduled++;
+                noSubmited++;
             } else {
                 url2CompileWithDepsTask.remove(root);
             }
@@ -902,8 +904,10 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     t = WORKER.create(new Runnable() {
                         public void run() {
                             submit(Work.compileWithDeps(root, storedFilesFin));
+                            noSubmited--;
                         }
                     });
+                    noSubmited++;
                     url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
                 }
 
@@ -986,6 +990,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         try {
             result.load(in);
+        } catch (IllegalArgumentException iae) {
+            //Issue #138704: Invalid unicode encoding in attribute file.
+            //Return newly constructed Properties, the result
+            //may already contain some pairs.
+            LOGGER.warning("Broken attribute file: " + f.getAbsolutePath());    //NOI18N
+            return new Properties();
         } finally {
             in.close();
         }

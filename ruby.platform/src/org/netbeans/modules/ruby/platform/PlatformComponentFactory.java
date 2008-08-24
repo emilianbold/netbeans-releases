@@ -288,9 +288,11 @@ public final class PlatformComponentFactory {
                 label = (String) value;
             } else {
                 RubyPlatform plaf = ((RubyPlatform) value);
-                label = plaf.getLabel();
-                if (plaf != null && !plaf.isValid()) {
+                if (plaf == null || !plaf.isValid()) {
+                    label = NbBundle.getMessage(PlatformComponentFactory.class, "PlatformComponentFactory.select.valid.platform");
                     setForeground(INVALID_PLAF_COLOR);
+                } else {
+                    label = plaf.getLabel();
                 }
             }
             setText(label);

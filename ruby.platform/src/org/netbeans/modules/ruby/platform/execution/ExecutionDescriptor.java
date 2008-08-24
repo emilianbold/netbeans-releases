@@ -86,6 +86,12 @@ public class ExecutionDescriptor {
     private String encoding;
     private boolean useInterpreter;
     List<OutputRecognizer> outputRecognizers;
+    /**
+     * The max time in ms for waiting a stream to become ready
+     * before considering the process to be stalling.
+     */
+    private int readMaxWaitTime = 50;
+
 
     public ExecutionDescriptor(final RubyPlatform platform) {
         this(platform, null, null);
@@ -328,6 +334,20 @@ public class ExecutionDescriptor {
 
     public void useInterpreter(final boolean useInterpreter) {
         this.useInterpreter = useInterpreter;
+    }
+
+    /**
+     * @see #readMaxWaitTime
+     */
+    public int getReadMaxWaitTime() {
+        return readMaxWaitTime;
+    }
+
+    /**
+     * @see #readMaxWaitTime
+     */
+    public void setReadMaxWaitTime(int readMaxWaitTime) {
+        this.readMaxWaitTime = readMaxWaitTime;
     }
 
 }

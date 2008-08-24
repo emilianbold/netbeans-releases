@@ -51,6 +51,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.8</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -75,6 +84,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.18</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.jaxwsmodelapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -185,15 +203,6 @@
                         <specification-version>6.19</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.jaxwsmodelapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-			<release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>
@@ -232,10 +241,11 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.websvc.saas.kit</friend>
-                <friend>org.netbeans.modules.websvc.saas.codegen.java</friend>
+                <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.j2ee</friend>
+                <friend>org.netbeans.modules.websvc.saas.codegen.java</friend>
                 <friend>org.netbeans.modules.websvc.saas.codegen.php</friend>
+                <friend>org.netbeans.modules.websvc.saas.kit</friend>
                 <package>org.netbeans.modules.websvc.saas.codegen</package>
                 <package>org.netbeans.modules.websvc.saas.codegen.model</package>
                 <package>org.netbeans.modules.websvc.saas.codegen.spi</package>

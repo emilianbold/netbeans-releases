@@ -99,7 +99,7 @@ public class CssRule {
     
     @Override
     public String toString() {
-        return "CssRule[" + name() + "\n" + ruleContent().toString() + "]";
+        return "CssRule[" + name() + "\n" + ruleContent().toString() + "]"; //NOI18N
     }
     
     static class SimplePosition implements Position {

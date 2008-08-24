@@ -96,7 +96,7 @@ final class GemRunner {
             options.add("--details"); // NOI18N
         }
         
-        if (!platform.getGemManager().hasObsoleteRubyGemsVersion() &&
+        if (!platform.getGemManager().hasAncientRubyGemsVersion() &&
                 RubyPreferences.shallFetchAllVersions()) {
             options.add("--all"); // NOI18N
         }

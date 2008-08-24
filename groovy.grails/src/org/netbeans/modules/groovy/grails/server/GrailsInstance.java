@@ -44,6 +44,7 @@ import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.groovy.grails.api.GrailsConstants;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.AbstractNode;
@@ -150,8 +151,7 @@ public final class GrailsInstance implements ServerInstanceImplementation {
         public GrailsNode(Children children, String displayName) {
             super(children);
             setDisplayName(displayName);
-            setIconBaseWithExtension(
-                    "org/netbeans/modules/groovy/grails/resources/GrailsIcon.png"); // NOI18N
+            setIconBaseWithExtension(GrailsConstants.GRAILS_ICON_16x16);
         }
 
         @Override

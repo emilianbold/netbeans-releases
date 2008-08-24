@@ -161,7 +161,7 @@ public class JSFELExpression extends ELExpression{
         return bundles;
     }
     
-    public  List<CompletionItem> getPropertyKeys(String propertyFile, String prefix) {
+    public  List<CompletionItem> getPropertyKeys(String propertyFile, int anchorOffset, String prefix) {
         ArrayList<CompletionItem> items = new ArrayList<CompletionItem>();
         java.util.ResourceBundle labels = null;
         ClassPath classPath;
@@ -191,7 +191,7 @@ public class JSFELExpression extends ELExpression{
                     StringBuffer helpText = new StringBuffer();
                     helpText.append(key).append("=<font color='#ce7b00'>"); //NOI18N
                     helpText.append(labels.getString(key)).append("</font>"); //NOI18N
-                    items.add(new JSFResultItem.JSFResourceItem(key, helpText.toString()));
+                    items.add(new JSFResultItem.JSFResourceItem(key, anchorOffset, helpText.toString()));
                 }
             }
         }
@@ -199,8 +199,8 @@ public class JSFELExpression extends ELExpression{
         return items;
     }
     
-    public List<CompletionItem> getListenerMethodCompletionItems(String beanType){
-        JSFCompletionItemsTask task = new JSFCompletionItemsTask(beanType);
+    public List<CompletionItem> getListenerMethodCompletionItems(String beanType, int anchor){
+        JSFCompletionItemsTask task = new JSFCompletionItemsTask(beanType, anchor);
         runTask(task);
         return task.getCompletionItems();
     }
@@ -208,12 +208,14 @@ public class JSFELExpression extends ELExpression{
     public class JSFCompletionItemsTask extends ELExpression.BaseELTaskClass implements CancellableTask<CompilationController> {
         
         private List<CompletionItem> completionItems = new ArrayList<CompletionItem>();
+        private int anchor;
         
-        
-        JSFCompletionItemsTask(String beanType){
+        JSFCompletionItemsTask(String beanType, int anchor){
             super(beanType);
+            this.anchor = anchor;
         }
         
+        @Override
         public void cancel() {}
         
         public void run(CompilationController parameter) throws Exception {
@@ -229,7 +231,7 @@ public class JSFELExpression extends ELExpression{
                         String methodName = method.getSimpleName().toString();
                             if (methodName != null && methodName.startsWith(prefix)){
                                 CompletionItem item = new JSFResultItem.JSFMethod(
-                                    methodName, "void");
+                                    methodName, anchor, "void");
 
                             completionItems.add(item);
                         }

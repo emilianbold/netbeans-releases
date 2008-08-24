@@ -38,13 +38,8 @@
  */
 package org.netbeans.modules.web.client.tools.firefox;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.logging.Level;
 
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
@@ -52,6 +47,7 @@ import org.netbeans.modules.web.client.tools.common.launcher.Utils;
 import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSAbstractExternalDebugger;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -67,12 +63,21 @@ public class FFJSDebugger extends JSAbstractExternalDebugger {
     protected void launchImpl(int port) {
         LaunchDescriptor launchDescriptor = new LaunchDescriptor(getBrowserExecutable());
         launchDescriptor.setURI(Utils.getDebuggerLauncherURI(port, getID()));
+        if (!Utilities.isMac()) {
+            launchDescriptor.setArguments(getBrowserArguments());
+        }
         try {
             Launcher.launch(launchDescriptor);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }        
     }
+    
+    @Override
+    protected void startDebuggingImpl() {
+        super.startDebuggingImpl();
+        startHttpMonitorThread();
+    }    
 
     public String getID() {
         if (ID == null) {

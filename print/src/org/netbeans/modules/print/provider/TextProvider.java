@@ -44,14 +44,15 @@ import java.awt.Color;
 import java.awt.Font;
 
 import java.text.AttributedCharacterIterator;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.text.AttributedCharacters;
@@ -73,13 +74,21 @@ public final class TextProvider extends ComponentProvider {
 
   @Override
   protected JComponent getComponent() {
-    if (Config.getDefault().isAsEditor()) {
-      JEditorPane[] panes = myEditor.getOpenedPanes();
+    JTextComponent component = getTextComponent();
 
-      if (panes != null && panes.length != 0) {
-        return panes[0];
+    if (Config.getDefault().isAsEditor()) {
+      return component;
+    }
+    if (Config.getDefault().isSelection()) {
+      if (component == null) {
+        return null;
       }
-      return null;
+      String text = component.getSelectedText();
+
+      if (text == null) {
+        return null;
+      }
+      return new ComponentDocument(text);
     }
     Document document = myEditor.getDocument();
       
@@ -94,7 +103,14 @@ public final class TextProvider extends ComponentProvider {
       ((BaseDocument) document).print(container, false, true, 0, document.getLength());
       return new ComponentDocument(container.getIterators());
     }
-    return new ComponentDocument(getText(document));
+    else {
+      String text = getText(document);
+
+      if (text == null) {
+        return null;
+      }
+      return new ComponentDocument(text);
+    }
   }
 
   private String getText(Document document) {
@@ -102,8 +118,17 @@ public final class TextProvider extends ComponentProvider {
       return document.getText(0, document.getLength());
     }
     catch (BadLocationException e) {
-      return ""; // NOI18N
+      return null;
     }
+  }
+
+  private JTextComponent getTextComponent() {
+    JEditorPane [] panes = myEditor.getOpenedPanes();
+
+    if (panes != null && panes.length != 0) {
+      return panes[0];
+    }
+    return null;
   }
 
   private static String getName(EditorCookie editor) {
@@ -119,7 +144,7 @@ public final class TextProvider extends ComponentProvider {
   private static final class PrintContainer implements org.netbeans.editor.PrintContainer {
     PrintContainer() {
       myCharacters = new AttributedCharacters();
-      myCharactersList = new LinkedList<AttributedCharacters>();
+      myCharactersList = new ArrayList<AttributedCharacters>();
     }
 
     public void add(char [] chars, Font font, Color foreColor, Color backColor) {

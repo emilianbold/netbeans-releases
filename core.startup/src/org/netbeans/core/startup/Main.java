@@ -214,7 +214,7 @@ public final class Main extends Object {
     if (jdkHome == null) {
         jdkHome = System.getProperty("java.home");  // NOI18N
 
-        if (Utilities.isMac()) {
+        if (!Utilities.isMac()) {
             jdkHome += File.separator + "..";  // NOI18N
         }
 

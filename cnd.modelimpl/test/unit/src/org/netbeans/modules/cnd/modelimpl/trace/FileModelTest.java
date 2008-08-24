@@ -336,6 +336,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("IZ138551.cc"); // NOI18N
     }
 
+    public void testIZ144276() throws Exception {
+        // IZ 144276 : StackOverflowError on typedef C::C C;
+        performTest("IZ144276.cc"); // NOI18N
+    }
+
     public void testArrayCast() throws Exception {
         // IZ 138899 : parser fails on conversion "(int(*)[4][4])"
         performTest("array_cast.cc");
@@ -420,6 +425,25 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("resolver_typedef_string.cc"); // NOI18N
     }
 
+    public void testTemplateInnerClassDtorDefinition() throws Exception {
+        performTest("template_inner_class_dtor_definition.cc"); // NOI18N
+    }
+
+    // #143611 If a class inherits some template *specialization*, unresolved IDs appear
+    public void testTemplateSpecializationInheritance_1() throws Exception {
+        performTest("template_spec_inherited_1.cc"); // NOI18N
+    }
+    
+    // #144156 Template specialization functions: incorrect navigation between definitions and declarations
+    public void testTemplateFunctionSpecialization() throws Exception {
+        performTest("template_fun_spec.cc"); // NOI18N
+    }
+
+    // #144968 A lot of parser errors in boost: instances.hpp
+    public void testIZ144968() throws Exception {
+        performTest("IZ144968.cc"); // NOI18N
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -440,10 +464,6 @@ public class FileModelTest extends TraceModelTestBase {
 	    return FileModelTest.class;
 	}
 	
-	public void testTemplateInnerClassDtorDefinition() throws Exception {
-	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
-	}
-
         @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests

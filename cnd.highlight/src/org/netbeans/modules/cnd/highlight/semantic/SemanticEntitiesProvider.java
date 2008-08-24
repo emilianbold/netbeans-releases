@@ -58,142 +58,133 @@ import org.openide.util.NbBundle;
  */
 public class SemanticEntitiesProvider {
 
-    List<SemanticEntity> list;
+    private List<SemanticEntity> list;
 
     public List<SemanticEntity> get() {
         return list;
     }
-
-    private SemanticEntitiesProvider() {
-        list = new ArrayList<SemanticEntity>();
-
-        // Inactive Code
-        list.add(new AbstractSemanticEntity(FontColorProvider.Entity.INACTIVE_CODE) {
-
-            public String getName() {
+    
+    private SemanticEntity getInactiveCode(){
+        return new AbstractSemanticEntity(FontColorProvider.Entity.INACTIVE_CODE) {
+             public String getName() {
                 return "inactive"; // NOI18N
-
             }
-
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
                 return ModelUtils.getInactiveCodeBlocks(csmFile);
             }
-        });
+        };
+    }
 
+    private SemanticEntity getFields(){
+        return new AbstractSemanticEntity(FontColorProvider.Entity.CLASS_FIELD) {
+            public String getName() {
+                return "class-fields"; // NOI18N
+            }
+            public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                return ModelUtils.collect(csmFile, getCollector());
+            }
+            @Override
+            public ReferenceCollector getCollector() {
+                return new ModelUtils.FieldReferenceCollector();
+            }
+        };
+    }
+
+    private SemanticEntity getFunctions(){
+        return new AbstractSemanticEntity() {
+            public String getName() {
+                return "functions-names"; // NOI18N
+            }
+            public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                return ModelUtils.collect(csmFile, getCollector());
+            }
+            @Override
+            public ReferenceCollector getCollector() {
+                return new ModelUtils.FunctionReferenceCollector();
+            }
+            @Override
+            public void updateFontColors(FontColorProvider provider) {
+                color = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
+            }
+        };
+    }
+
+    private SemanticEntity getMacros(){
+        return new AbstractSemanticEntity(FontColorProvider.Entity.USER_MACRO) {
+            public String getName() {
+                return "macros"; // NOI18N
+            }
+            public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                return ModelUtils.getMacroBlocks(csmFile);
+            }
+            @Override
+            public AttributeSet getAttributes(CsmOffsetable obj) {
+                CsmMacro macro = (CsmMacro) ((CsmReference) obj).getReferencedObject();
+                return macro == null || !macro.isSystem() ? color : sysMacroColors;
+            }
+            protected AttributeSet sysMacroColors;
+            @Override
+            public void updateFontColors(FontColorProvider provider) {
+                super.updateFontColors(provider);
+                sysMacroColors = getFontColor(provider, FontColorProvider.Entity.SYSTEM_MACRO); // NOI18N
+            }
+        };
+    }
+
+    private SemanticEntity getTypedefs(){
+        return new AbstractSemanticEntity(FontColorProvider.Entity.TYPEDEF) {
+            public String getName() {
+                return "typedefs"; // NOI18N
+            }
+            public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                return ModelUtils.collect(csmFile, getCollector());
+            }
+            @Override
+            public ReferenceCollector getCollector() {
+                return new ModelUtils.TypedefReferenceCollector();
+            }
+        };
+    }
+
+    private SemanticEntity getUnusedVariables(){
+        return new AbstractSemanticEntity(FontColorProvider.Entity.UNUSED_VARIABLES) {
+            private final AttributeSet UNUSED_TOOLTIP = AttributesUtilities.createImmutable(
+                        EditorStyleConstants.Tooltip,
+                        NbBundle.getMessage(SemanticEntitiesProvider.class, "UNUSED_VARIABLE_TOOLTIP")); // NOI18N
+            public String getName() {
+                return "unused-variables"; // NOI18N
+            }
+            public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
+                return ModelUtils.collect(csmFile, getCollector());
+            }
+            @Override
+            public ReferenceCollector getCollector() {
+                return new ModelUtils.UnusedVariableCollector();
+            }
+            @Override
+            public void updateFontColors(FontColorProvider provider) {
+                super.updateFontColors(provider);
+                color = AttributesUtilities.createComposite(UNUSED_TOOLTIP, color);
+            }
+        };
+    }
+    
+    private SemanticEntitiesProvider() {
+        list = new ArrayList<SemanticEntity>();
+        // Inactive Code
+        list.add(getInactiveCode());
         if (!HighlighterBase.MINIMAL) { // for QEs who want to save performance on UI tests
-
-            // Class Fields
-            list.add(new AbstractSemanticEntity(FontColorProvider.Entity.CLASS_FIELD) {
-
-                public String getName() {
-                    return "class-fields"; // NOI18N
-
-                }
-
-                public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                    return ModelUtils.collect(csmFile, getCollector());
-                }
-
-                @Override
-                public ReferenceCollector getCollector() {
-                    return new ModelUtils.FieldReferenceCollector();
-                }
-            });
-
-            // Function Names
-            list.add(new AbstractSemanticEntity() {
-
-                public String getName() {
-                    return "functions-names"; // NOI18N
-
-                }
-
-                public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                    return ModelUtils.collect(csmFile, getCollector());
-                }
-
-                @Override
-                public ReferenceCollector getCollector() {
-                    return new ModelUtils.FunctionReferenceCollector();
-                }
-
-                @Override
-                public void updateFontColors(FontColorProvider provider) {
-                    color = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
-                }
-            });
-
             // Macro
-            list.add(new AbstractSemanticEntity(FontColorProvider.Entity.USER_MACRO) {
-
-                public String getName() {
-                    return "macros"; // NOI18N
-
-                }
-
-                public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                    return ModelUtils.getMacroBlocks(csmFile);
-                }
-
-                @Override
-                public AttributeSet getAttributes(CsmOffsetable obj) {
-                    CsmMacro macro = (CsmMacro) ((CsmReference) obj).getReferencedObject();
-                    return macro == null || !macro.isSystem() ? color : sysMacroColors;
-                }
-                protected AttributeSet sysMacroColors;
-
-                @Override
-                public void updateFontColors(FontColorProvider provider) {
-                    super.updateFontColors(provider);
-                    sysMacroColors = getFontColor(provider, FontColorProvider.Entity.SYSTEM_MACRO); // NOI18N
-                }
-            });
-
+            list.add(getMacros());
+            // Class Fields
+            list.add(getFields());
+            // Function Names
+            list.add(getFunctions());
             // typedefs
-            list.add(new AbstractSemanticEntity(FontColorProvider.Entity.TYPEDEF) {
-
-                public String getName() {
-                    return "typedefs"; // NOI18N
-
-                }
-
-                public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                    return ModelUtils.collect(csmFile, getCollector());
-                }
-
-                @Override
-                public ReferenceCollector getCollector() {
-                    return new ModelUtils.TypedefReferenceCollector();
-                }
-            });
-
+            list.add(getTypedefs());
             // unused variables
-            list.add(new AbstractSemanticEntity(FontColorProvider.Entity.UNUSED_VARIABLES) {
-
-                private final AttributeSet UNUSED_TOOLTIP = AttributesUtilities.createImmutable(
-                            EditorStyleConstants.Tooltip,
-                            NbBundle.getMessage(SemanticEntitiesProvider.class, "UNUSED_VARIABLE_TOOLTIP")); // NOI18N
-
-                public String getName() {
-                    return "unused-variables"; // NOI18N
-                }
-
-                public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
-                    return ModelUtils.collect(csmFile, getCollector());
-                }
-
-                @Override
-                public ReferenceCollector getCollector() {
-                    return new ModelUtils.UnusedVariableCollector();
-                }
-
-                @Override
-                public void updateFontColors(FontColorProvider provider) {
-                    super.updateFontColors(provider);
-                    color = AttributesUtilities.createComposite(UNUSED_TOOLTIP, color);
-                }
-            });
-        } // if (!HighlighterBase.MINIMAL)
+            list.add(getUnusedVariables());
+        } 
     }
     
     private static abstract class AbstractSemanticEntity implements SemanticEntity {

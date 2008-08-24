@@ -49,6 +49,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.netbeans.api.progress.ProgressHandle;
@@ -65,11 +66,15 @@ import org.openide.util.RequestProcessor;
  * @author Sergey Grinev
  */
 public class SystemIncludesUtils {
+    private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
-    public static void load(final String hkey, final List<CompilerSet> csList) {
-        RequestProcessor.getDefault().post(new Runnable() {
+    public static RequestProcessor.Task load(final String hkey, final List<CompilerSet> csList) {
+        return RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
+                ProgressHandle handle = ProgressHandleFactory.createHandle(getMessage("SIU_ProgressTitle") + " " + RemoteUtils.getHostName(hkey)); //NOI18N
+                handle.start();
+                log.fine("SystemIncludesUtils.load for " + hkey); // NOI18N
                 String storagePrefix = null;
                 try {
                     Set<String> paths = new HashSet<String>();
@@ -81,7 +86,7 @@ public class SystemIncludesUtils {
                                 for (Object obj : bc.getSystemIncludeDirectories()) {
                                     String localPath = (String) obj;
                                     if (localPath.length() < storagePrefix.length()) {
-                                        System.err.println("CompilerSet " + bc.getDisplayName() + " has returned invalid include path: " + localPath);
+                                        log.warning("CompilerSet " + bc.getDisplayName() + " has returned invalid include path: " + localPath);
                                     } else {
                                         paths.add(localPath.substring(storagePrefix.length()));
                                     }
@@ -89,31 +94,17 @@ public class SystemIncludesUtils {
                             }
                         }
                     }
-                    synchronized (inProgress) {
-                        if (inProgress.contains(storagePrefix)) { //TODO: very weak validation
-                            return;
-                        }
-                        inProgress.add(storagePrefix);
-                    }
                     if (storagePrefix != null) {
-                        doLoad(hkey, storagePrefix, paths);
+                        doLoad(hkey, storagePrefix, paths, handle);
                     }
                 } finally {
-                    synchronized (inProgress) {
-                        inProgress.remove(storagePrefix);
-                    }
+                    handle.finish();
                 }
             }
         });
-    }    // TODO: to think about next way:
-    // just put links in the path mapped from server and set up
-    // toolchain accordingly. Although those files will confuse user...
-    // Hiding links in nbproject can help but would lead for different
-    // include set for each project and issues with connecting to new
-    // hosts with the same project...
-    private static final Set<String> inProgress = new HashSet<String>();
+    }
 
-    static boolean doLoad(final String hkey, String storagePrefix, Collection<String> paths) {
+    private static boolean doLoad(final String hkey, String storagePrefix, Collection<String> paths, ProgressHandle handle) {
         File includesStorageFolder = new File(storagePrefix);
         File tempIncludesStorageFolder = new File(includesStorageFolder.getParent(), includesStorageFolder.getName() + ".download"); //NOI18N
 
@@ -129,17 +120,17 @@ public class SystemIncludesUtils {
             return false;
         }
         boolean success = false;
-        ProgressHandle handle = ProgressHandleFactory.createHandle(getMessage("SIU_ProgressTitle") + " " + RemoteUtils.getHostName(hkey)); //NOI18N
-        handle.start();
         try {
             RemoteCopySupport rcs = new RemoteCopySupport(hkey);
             success = load(tempIncludesStorageFolder.getAbsolutePath(), rcs, paths, handle);
+            log.fine("SystemIncludesUtils.doLoad for " + tempIncludesStorageFolder + " finished " + success); // NOI18N
             if (success) {
+                log.fine("SystemIncludesUtils.doLoad renaming " + tempIncludesStorageFolder + " to " + includesStorageFolder); // NOI18N
                 tempIncludesStorageFolder.renameTo(includesStorageFolder);
             }
         } finally {
-            handle.finish();
             if (!success && includesStorageFolder.exists()) {
+                log.fine("SystemIncludesUtils.doLoad removing " + includesStorageFolder + " due to faile"); // NOI18N
                 includesStorageFolder.delete();
             }
         }
@@ -151,6 +142,7 @@ public class SystemIncludesUtils {
         handle.switchToDeterminate(3 * paths.size());
         int workunit = 0;
         for (String path : paths) {
+            log.fine("SystemIncludesUtils.load loading " + path); // NOI18N            
             //TODO: check file existence (or make shell script to rule them all ?)
             String zipRemote = "cnd" + path.replaceAll("(/|\\\\)", "-") + ".zip"; //NOI18N
             String zipRemotePath = "/tmp/" + zipRemote; // NOI18N
@@ -162,12 +154,13 @@ public class SystemIncludesUtils {
             copySupport.copyFrom(zipRemotePath, zipLocalPath);
             handle.progress(getMessage("SIU_Preparing") + " " + path, workunit++); // NOI18N
             unzip(storageFolder, zipLocalPath);
+            log.fine("SystemIncludesUtils.load loading done for " + path); // NOI18N            
         }
         copySupport.disconnect();
         return true;
     }
 
-    static void unzip(String path, String fileName) {
+    private static void unzip(String path, String fileName) {
         long start = System.currentTimeMillis();
         Enumeration entries;
         ZipFile zipFile;
@@ -198,9 +191,10 @@ public class SystemIncludesUtils {
             zipFile.close();
         } catch (IOException ioe) {
             ioe.printStackTrace();
+            log.fine("unzipping " + fileName + " to " + path + " failed");
             return;
         } finally {
-            System.err.println("unzipping " + fileName + " to " + path + " took " + (System.currentTimeMillis() - start) + " ms");
+            log.fine("unzipping " + fileName + " to " + path + " took " + (System.currentTimeMillis() - start) + " ms");
         }
     }
 

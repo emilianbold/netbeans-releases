@@ -522,9 +522,11 @@ public abstract class UMLNodeWidget extends Widget
     
     
     
-    protected IPresentationElement getObject()
+    public IPresentationElement getObject()
     {
-        return (IPresentationElement)scene.findObject(this);
+        if (pe == null)          
+            pe = (IPresentationElement)scene.findObject(this);
+        return pe;
     }
     
     public void load(NodeInfo nodeReader)
@@ -901,7 +903,6 @@ public abstract class UMLNodeWidget extends Widget
     
     public void refresh(boolean resizetocontent)
     {
-        IPresentationElement pe = getObject();
         if (pe != null && pe.getFirstSubject() != null && !pe.getFirstSubject().isDeleted())
         {
             //Rectangle bounds = getBounds();

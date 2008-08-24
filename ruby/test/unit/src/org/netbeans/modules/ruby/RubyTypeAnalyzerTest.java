@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.ruby;
 
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.Node;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.Node;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.openide.filesystems.FileObject;

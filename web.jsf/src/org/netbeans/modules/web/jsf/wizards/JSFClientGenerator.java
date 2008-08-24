@@ -92,7 +92,6 @@ import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
@@ -103,7 +102,6 @@ import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.EmbeddedPkSupport;
-import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
@@ -119,7 +117,6 @@ import org.netbeans.modules.web.jsf.palette.items.JsfTable;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.TypeInfo;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil.MethodInfo;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
-import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -253,22 +250,6 @@ public class JSFClientGenerator {
             
         final BaseDocument doc = new BaseDocument(false, "text/x-jsp");
         WebModule wm = WebModule.getWebModule(jsfRoot);
-        
-        //automatically add JSF framework if it is not added
-        JSFFrameworkProvider fp = new JSFFrameworkProvider();
-        if (!fp.isInWebModule(wm)) {
-            ExtenderController ec = ExtenderController.create();
-            String j2eeLevel = wm.getJ2eePlatformVersion();
-            ec.getProperties().setProperty("j2eeLevel", j2eeLevel);
-            J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
-            if (moduleProvider != null) {
-                String serverInstanceID = moduleProvider.getServerInstanceID();
-                ec.getProperties().setProperty("serverInstanceID", serverInstanceID);
-            }
-            WebModuleExtender wme = fp.createWebModuleExtender(wm, ec);
-            wme.update();
-            wme.extend(wm);
-        }
         
         FileObject dd = wm.getDeploymentDescriptor();
         WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);

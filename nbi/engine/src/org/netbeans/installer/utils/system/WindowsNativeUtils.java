@@ -82,6 +82,8 @@ public class WindowsNativeUtils extends NativeUtils {
             NATIVE_JNILIB_RESOURCE_SUFFIX + "windows/windows-x86.dll"; //NOI18N
     public static final String LIBRARY_PATH_X64 =
             NATIVE_JNILIB_RESOURCE_SUFFIX + "windows/windows-x64.dll"; //NOI18N
+    public static final String LIBRARY_PATH_IA64 =
+            NATIVE_JNILIB_RESOURCE_SUFFIX + "windows/windows-ia64.dll"; //NOI18N
     
     private static final String CLEANER_RESOURCE =
             NATIVE_CLEANER_RESOURCE_SUFFIX +
@@ -211,7 +213,11 @@ public class WindowsNativeUtils extends NativeUtils {
     // constructor //////////////////////////////////////////////////////////////////
     WindowsNativeUtils() {
         if (SystemUtils.isCurrentJava64Bit()) {
-            loadNativeLibrary(LIBRARY_PATH_X64);
+            if(System.getProperty("os.arch").equals("ia64)")) {
+                loadNativeLibrary(LIBRARY_PATH_IA64);
+            } else {
+                loadNativeLibrary(LIBRARY_PATH_X64);
+            }
         } else {
             loadNativeLibrary(LIBRARY_PATH_X86);
         }
@@ -222,7 +228,9 @@ public class WindowsNativeUtils extends NativeUtils {
     @Override
     protected Platform getPlatform() {
         return SystemUtils.isCurrentJava64Bit() ? 
-                            Platform.WINDOWS_X64 : 
+                            (System.getProperty("os.arch").equals("ia64)") ? 
+                               Platform.WINDOWS_IA64 : 
+                               Platform.WINDOWS_X64) : 
                             Platform.WINDOWS_X86;
     }
     

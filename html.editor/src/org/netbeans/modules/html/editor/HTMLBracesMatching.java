@@ -58,7 +58,7 @@ import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsfret.source.SourceAccessor;

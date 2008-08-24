@@ -72,6 +72,7 @@ import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JSpinnerOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.openide.util.Exceptions;
 
 /** Utility methods useful for testing of debugging.
  * @author Jiri..Skrivanek@sun.com
@@ -324,6 +325,31 @@ public class Utils {
             // log messages from output
             test.getLog("ServerMessages").print(new OutputTabOperator(Utils.DEFAULT_SERVER).getText()); // NOI18N
             test.getLog("RunOutput").print(new OutputTabOperator(projectName).getText()); // NOI18N
-        }
     }
+    }
+    
+    /** Set longer time for timeout and confirm Information dialog */
+    public static void confirmInformationMessage() {
+        long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
+        // increase time to wait to 240 second
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
+        String infTitle = org.netbeans.jellytools.Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");
+        // confirm dialog
+        new NbDialogOperator(infTitle).ok(); 
+        // restore default timeout
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout); 
+    }
+    
+    public static void cancelClientSideDebuggingMeassage() {
+        long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
+        // increase time to wait to 240 second
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
+        String title = "Client Side Debugging";
+        // confirm dialog
+        new NbDialogOperator(title).cancel();
+        // restore default timeout
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout); 
+    }
+    
+    
 }

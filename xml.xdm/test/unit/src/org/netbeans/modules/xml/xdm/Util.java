@@ -68,7 +68,7 @@ public class Util {
     }
     
     public static Document loadDocument(InputStream in) throws Exception {
-        Document sd = new BaseDocument(BaseKit.class, false);
+        Document sd = new BaseDocument(true, "text/xml"); //NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
         StringBuffer sbuf = new StringBuffer();
         try {

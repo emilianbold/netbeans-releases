@@ -46,7 +46,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender.Item;
-import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -75,6 +74,16 @@ public abstract class SharedRubyProjectProperties {
     public static final String JRUBY_PROPS = "jruby.props"; // NOI18N
     public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
+    /**
+     * The key for the names of the rake tasks that invoke RSpec tests and should be
+     * run using the UI test runner.
+     */
+    public static final String SPEC_TASKS = "spec.tasks"; //NOI18N
+    /**
+     * The key for the names of the rake tasks that invoke Test/Unit tests and should be 
+     * run using the UI test runner.
+     */
+    public static final String TEST_TASKS = "test.tasks"; //NOI18N
 
     // External Java integration
     public DefaultListModel JAVAC_CLASSPATH_MODEL;
@@ -207,7 +216,6 @@ public abstract class SharedRubyProjectProperties {
                 def.put(prop, v);
             }
         }
-        def.put(PLATFORM_ACTIVE, getPlatform().getID());
         m.put(null, def);
         FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
         if (configs != null) {
@@ -234,23 +242,23 @@ public abstract class SharedRubyProjectProperties {
         return m;
     }
 
-    protected void storeRunConfigs(Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs,
+    protected void storeRunConfigs(Map<String, Map<String, String>> configs,
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
-        Map<String, String> def = configs.get(null);
-        for (String prop : getConfigProperties()) {
-            String v = def.get(prop);
-            EditableProperties ep = isPrivateConfigProperty(prop) ? privateProperties : projectProperties;
-            if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
-                if (v != null && v.length() > 0) {
-                    ep.setProperty(prop, v);
+        Map<String, String> defaultConf = configs.get(null);
+        for (String confProp : getConfigProperties()) {
+            String defConfValue = defaultConf.get(confProp);
+            EditableProperties ep = isPrivateConfigProperty(confProp) ? privateProperties : projectProperties;
+            if (!Utilities.compareObjects(defConfValue, ep.getProperty(confProp))) {
+                if (defConfValue != null && defConfValue.length() > 0) {
+                    ep.setProperty(confProp, defConfValue);
                 } else {
-                    ep.remove(prop);
+                    ep.remove(confProp);
                 }
             }
         }
         for (Map.Entry<String, Map<String, String>> entry : configs.entrySet()) {
             String config = entry.getKey();
-            if (config == null) {
+            if (config == null) { // default one
                 continue;
             }
             String sharedPath = "nbproject/configs/" + config + ".properties"; // NOI18N
@@ -267,7 +275,7 @@ public abstract class SharedRubyProjectProperties {
                 String path = isPrivateConfigProperty(prop) ? privatePath : sharedPath;
                 EditableProperties ep = updateHelper.getProperties(path);
                 if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
-                    if (v != null && (v.length() > 0 || (def.get(prop) != null && def.get(prop).length() > 0))) {
+                    if (v != null && (v.length() > 0 || (defaultConf.get(prop) != null && defaultConf.get(prop).length() > 0))) {
                         ep.setProperty(prop, v);
                     } else {
                         ep.remove(prop);
@@ -286,9 +294,10 @@ public abstract class SharedRubyProjectProperties {
 
     protected static boolean showModifiedMessage(String title) {
         String message = NbBundle.getMessage(SharedRubyProjectProperties.class, "TXT_Regenerate");
-        JButton regenerateButton = new JButton(NbBundle.getMessage(RubyProjectProperties.class, "CTL_RegenerateButton"));
+        JButton regenerateButton = new JButton(NbBundle.getMessage(SharedRubyProjectProperties.class, "CTL_RegenerateButton"));
         regenerateButton.setDefaultCapable(true);
-        regenerateButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RubyProjectProperties.class, "AD_RegenerateButton"));
+        regenerateButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(SharedRubyProjectProperties.class, "AD_RegenerateButton"));
         NotifyDescriptor d = new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
         d.setTitle(title);
         d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);

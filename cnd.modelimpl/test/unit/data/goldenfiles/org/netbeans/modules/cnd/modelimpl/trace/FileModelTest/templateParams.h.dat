@@ -11,13 +11,13 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS OrderedStatic<L,T,Loki::NullType> (OrderedStatic<L,T,Loki::NullType> ) [1:1/0-19:7/626] lcurly=148 SCOPE: $Global$ 
+CLASS OrderedStatic<class,class,Loki::NullType> (OrderedStatic<class,class,Loki::NullType> ) [1:1/0-19:6/625] lcurly=148 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=$unresolved$::Private::OrderedStaticBase VISIBILITY==PUBLIC virtual==false text='public Private::OrderedStaticBase<T>'
     MEMBERS:
         FUNCTION DEFINITION OrderedStatic  [5:9/170-9:10/391] ConstructorDDImpl SCOPE: OrderedStatic 
             SIGNATURE OrderedStatic()
-            UNIQUE NAME f:OrderedStatic<L,T,Loki::NullType>::OrderedStatic()
+            UNIQUE NAME f:OrderedStatic<class,class,Loki::NullType>::OrderedStatic()
             DECLARATION: OrderedStatic  [5:9/170-9:10/391]
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
@@ -26,30 +26,30 @@ CLASS OrderedStatic<L,T,Loki::NullType> (OrderedStatic<L,T,Loki::NullType> ) [1:
                                 (L,this,&Private::OrderedStaticCreatorFunc::createObject)'
         FUNCTION DEFINITION createObject  [11:9/401-14:10/504] MethodDDImpl SCOPE: OrderedStatic 
             SIGNATURE createObject()
-            UNIQUE NAME f:OrderedStatic<L,T,Loki::NullType>::createObject()
+            UNIQUE NAME f:OrderedStatic<class,class,Loki::NullType>::createObject()
             DECLARATION: createObject  [11:9/401-14:10/504]
             PARAMETERS:
-            RETURNS OrderedStatic<L,T,Loki::NullType>::C TEXT=C  [11:9/401-11:10/402]
+            RETURNS OrderedStatic<class,class,Loki::NullType>::C TEXT=C  [11:9/401-11:10/402]
             STATEMENT COMPOUND  [12:9/426-14:10/504] SCOPE: createObject 
                 STATEMENT EXPRESSION  [13:13/440-13:66/493] SCOPE: Stmt  [12:9/426-14:10/504] text: 'Private::OrderedStaticBase<T>::SetLongevity(new C<T>)'
         FUNCTION OrderedStatic [17:9/527-17:45/563] ConstructorImpl SCOPE: OrderedStatic 
             DEFINITION: null
             SIGNATURE OrderedStatic(const OrderedStatic&)
-            UNIQUE NAME F:OrderedStatic<L,T,Loki::NullType>::OrderedStatic(const OrderedStatic&)
+            UNIQUE NAME F:OrderedStatic<class,class,Loki::NullType>::OrderedStatic(const OrderedStatic&)
             PARAMETERS:
                  [17:23/541-17:43/561]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [17:23/541-17:28/546]  INIT: null  SCOPE: OrderedStatic 
             RETURNS <*no_classifier*> TEXT=  [null-null]
         FUNCTION operator = [18:9/572-18:56/619] MethodImpl SCOPE: OrderedStatic 
             DEFINITION: null
             SIGNATURE operator =(const OrderedStatic&)
-            UNIQUE NAME F:OrderedStatic<L,T,Loki::NullType>::operator =(const OrderedStatic&)
+            UNIQUE NAME F:OrderedStatic<class,class,Loki::NullType>::operator =(const OrderedStatic&)
             PARAMETERS:
                  [18:34/597-18:54/617]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [18:34/597-18:39/602]  INIT: null  SCOPE: operator = 
             RETURNS &$unresolved$::OrderedStatic TEXT=OrderedStatic&  [18:9/572-18:23/586]
-STRUCT RefCountedMTAdj<template<class,class>,class MX=LOKI_DEFAULT_MUTEX> (RefCountedMTAdj ) [21:5/632-32:7/1097] lcurly=765 SCOPE: $Global$ 
+STRUCT RefCountedMTAdj<template<class,class>,class MX=LOKI_DEFAULT_MUTEX> (RefCountedMTAdj ) [21:5/632-32:6/1096] lcurly=765 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        CLASS RefCountedMT<class P> (RefCountedMTAdj::RefCountedMT ) [25:9/775-31:11/1090] lcurly=876 SCOPE: RefCountedMTAdj 
+        CLASS RefCountedMT<class P> (RefCountedMTAdj::RefCountedMT ) [25:9/775-31:10/1089] lcurly=876 SCOPE: RefCountedMTAdj 
             BASE CLASSES:
                 CLASS=RefCountedMTAdj::ThreadingModel VISIBILITY==PUBLIC virtual==false text='public ThreadingModel< RefCountedMT<P>, MX >'
             MEMBERS:
@@ -71,14 +71,14 @@ FUNCTION DEFINITION foo  [34:1/1099-38:2/1218] FunctionDDImpl SCOPE: $Global$
             VARIABLE c1 [36:5/1194-36:10/1199]  TYPE: foo::C TEXT=C  [36:5/1194-36:6/1195]  INIT: null  SCOPE: Stmt  [34:76/1174-38:2/1218]
         STATEMENT EXPRESSION  [37:5/1204-37:16/1215] SCOPE: Stmt  [34:76/1174-38:2/1218] text: 'boo(L,T,c1)'
 VARIABLE x [40:1/1221-40:16/1236]  TYPE: T TEXT=T<int>  [40:1/1221-40:13/1233]  INIT: null  SCOPE: $Global$ 
-CLASS A (A ) [42:1/1238-45:3/1281] lcurly=1245 SCOPE: $Global$ 
+CLASS A (A ) [42:1/1238-45:2/1280] lcurly=1245 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PUBLIC static b [44:5/1259-44:24/1278]  TYPE: const int TEXT=const int  [44:5/1259-44:21/1275]  INIT: null  SCOPE: A 
             DEFINITION: b [47:1/1283-47:20/1302]  TYPE: const int TEXT=const int  [47:1/1283-47:10/1292]  INIT: text='1'  SCOPE: templateParams.h
 VARIABLE DEFINITION b [47:1/1283-47:20/1302]  TYPE: const int TEXT=const int  [47:1/1283-47:10/1292]  INIT: text='1'  SCOPE: templateParams.h
     DECLARATION: b [44:5/1259-44:24/1278]  TYPE: const int TEXT=const int  [44:5/1259-44:21/1275]  INIT: null  SCOPE: A 
-CLASS T<bool b> (T ) [49:1/1304-50:3/1334] lcurly=1330 SCOPE: $Global$ 
+CLASS T<bool b> (T ) [49:1/1304-50:2/1333] lcurly=1330 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
 TYPEDEF Z  [52:1/1336-52:24/1359] TYPE: T TEXT=T  [52:9/1344-52:21/1356] SCOPE: $Global$ 
@@ -95,13 +95,13 @@ TYPEDEF null_tl  [60:1/1510-60:40/1549] TYPE: $unresolved$::MakeTypelist::Result
 TYPEDEF ClassList  [62:1/1551-66:19/1612] TYPE: $unresolved$::Loki::Seq::Type TEXT=Loki::Seq::Type  [62:9/1559-66:8/1601] SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
-CLASS OrderedStatic<L,T,Loki::NullType> (OrderedStatic<L,T,Loki::NullType> ) [1:1/0-19:7/626] lcurly=148 SCOPE: $Global$ 
+CLASS OrderedStatic<class,class,Loki::NullType> (OrderedStatic<class,class,Loki::NullType> ) [1:1/0-19:6/625] lcurly=148 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=$unresolved$::Private::OrderedStaticBase VISIBILITY==PUBLIC virtual==false text='public Private::OrderedStaticBase<T>'
     MEMBERS:
         FUNCTION DEFINITION OrderedStatic  [5:9/170-9:10/391] ConstructorDDImpl SCOPE: OrderedStatic 
             SIGNATURE OrderedStatic()
-            UNIQUE NAME f:OrderedStatic<L,T,Loki::NullType>::OrderedStatic()
+            UNIQUE NAME f:OrderedStatic<class,class,Loki::NullType>::OrderedStatic()
             DECLARATION: OrderedStatic  [5:9/170-9:10/391]
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
@@ -110,30 +110,30 @@ CLASS OrderedStatic<L,T,Loki::NullType> (OrderedStatic<L,T,Loki::NullType> ) [1:
                                 (L,this,&Private::OrderedStaticCreatorFunc::createObject)'
         FUNCTION DEFINITION createObject  [11:9/401-14:10/504] MethodDDImpl SCOPE: OrderedStatic 
             SIGNATURE createObject()
-            UNIQUE NAME f:OrderedStatic<L,T,Loki::NullType>::createObject()
+            UNIQUE NAME f:OrderedStatic<class,class,Loki::NullType>::createObject()
             DECLARATION: createObject  [11:9/401-14:10/504]
             PARAMETERS:
-            RETURNS OrderedStatic<L,T,Loki::NullType>::C TEXT=C  [11:9/401-11:10/402]
+            RETURNS OrderedStatic<class,class,Loki::NullType>::C TEXT=C  [11:9/401-11:10/402]
             STATEMENT COMPOUND  [12:9/426-14:10/504] SCOPE: createObject 
                 STATEMENT EXPRESSION  [13:13/440-13:66/493] SCOPE: Stmt  [12:9/426-14:10/504] text: 'Private::OrderedStaticBase<T>::SetLongevity(new C<T>)'
         FUNCTION OrderedStatic [17:9/527-17:45/563] ConstructorImpl SCOPE: OrderedStatic 
             DEFINITION: null
             SIGNATURE OrderedStatic(const OrderedStatic&)
-            UNIQUE NAME F:OrderedStatic<L,T,Loki::NullType>::OrderedStatic(const OrderedStatic&)
+            UNIQUE NAME F:OrderedStatic<class,class,Loki::NullType>::OrderedStatic(const OrderedStatic&)
             PARAMETERS:
                  [17:23/541-17:43/561]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [17:23/541-17:28/546]  INIT: null  SCOPE: OrderedStatic 
             RETURNS <*no_classifier*> TEXT=  [null-null]
         FUNCTION operator = [18:9/572-18:56/619] MethodImpl SCOPE: OrderedStatic 
             DEFINITION: null
             SIGNATURE operator =(const OrderedStatic&)
-            UNIQUE NAME F:OrderedStatic<L,T,Loki::NullType>::operator =(const OrderedStatic&)
+            UNIQUE NAME F:OrderedStatic<class,class,Loki::NullType>::operator =(const OrderedStatic&)
             PARAMETERS:
                  [18:34/597-18:54/617]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [18:34/597-18:39/602]  INIT: null  SCOPE: operator = 
             RETURNS &$unresolved$::OrderedStatic TEXT=OrderedStatic&  [18:9/572-18:23/586]
-STRUCT RefCountedMTAdj<template<class,class>,class MX=LOKI_DEFAULT_MUTEX> (RefCountedMTAdj ) [21:5/632-32:7/1097] lcurly=765 SCOPE: $Global$ 
+STRUCT RefCountedMTAdj<template<class,class>,class MX=LOKI_DEFAULT_MUTEX> (RefCountedMTAdj ) [21:5/632-32:6/1096] lcurly=765 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        CLASS RefCountedMT<class P> (RefCountedMTAdj::RefCountedMT ) [25:9/775-31:11/1090] lcurly=876 SCOPE: RefCountedMTAdj 
+        CLASS RefCountedMT<class P> (RefCountedMTAdj::RefCountedMT ) [25:9/775-31:10/1089] lcurly=876 SCOPE: RefCountedMTAdj 
             BASE CLASSES:
                 CLASS=RefCountedMTAdj::ThreadingModel VISIBILITY==PUBLIC virtual==false text='public ThreadingModel< RefCountedMT<P>, MX >'
             MEMBERS:
@@ -155,12 +155,12 @@ FUNCTION DEFINITION foo  [34:1/1099-38:2/1218] FunctionDDImpl SCOPE: $Global$
             VARIABLE c1 [36:5/1194-36:10/1199]  TYPE: foo::C TEXT=C  [36:5/1194-36:6/1195]  INIT: null  SCOPE: Stmt  [34:76/1174-38:2/1218]
         STATEMENT EXPRESSION  [37:5/1204-37:16/1215] SCOPE: Stmt  [34:76/1174-38:2/1218] text: 'boo(L,T,c1)'
 VARIABLE x [40:1/1221-40:16/1236]  TYPE: T TEXT=T<int>  [40:1/1221-40:13/1233]  INIT: null  SCOPE: $Global$ 
-CLASS A (A ) [42:1/1238-45:3/1281] lcurly=1245 SCOPE: $Global$ 
+CLASS A (A ) [42:1/1238-45:2/1280] lcurly=1245 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PUBLIC static b [44:5/1259-44:24/1278]  TYPE: const int TEXT=const int  [44:5/1259-44:21/1275]  INIT: null  SCOPE: A 
             DEFINITION: b [47:1/1283-47:20/1302]  TYPE: const int TEXT=const int  [47:1/1283-47:10/1292]  INIT: text='1'  SCOPE: templateParams.h
-CLASS T<bool b> (T ) [49:1/1304-50:3/1334] lcurly=1330 SCOPE: $Global$ 
+CLASS T<bool b> (T ) [49:1/1304-50:2/1333] lcurly=1330 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
 TYPEDEF Z  [52:1/1336-52:24/1359] TYPE: T TEXT=T  [52:9/1344-52:21/1356] SCOPE: $Global$ 

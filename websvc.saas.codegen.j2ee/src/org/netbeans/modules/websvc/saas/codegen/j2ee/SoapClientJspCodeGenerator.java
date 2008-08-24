@@ -44,6 +44,7 @@ import java.io.IOException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
+import org.netbeans.modules.websvc.saas.codegen.j2ee.support.J2eeUtil;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
@@ -74,11 +75,12 @@ public class SoapClientJspCodeGenerator extends SoapClientServletCodeGenerator {
      */
     @Override
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
+        addVariablePattern(J2eeUtil.JSP_NAMES_PAGE, 1);
         try {
             String code = "";
-            code = "\n<%\n"; // NOI18n
-            code += getCustomMethodBody()+"\n";
-            code += "%>\n";// NOI18n
+            code += J2eeUtil.getJspImports(getTargetDocument(), getStartPosition(), 
+                    getBean().getSaasServicePackageName());
+            code += J2eeUtil.wrapWithTag(getCustomMethodBody(), getTargetDocument(), getStartPosition()) + "\n";
             insert(code, true);
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());

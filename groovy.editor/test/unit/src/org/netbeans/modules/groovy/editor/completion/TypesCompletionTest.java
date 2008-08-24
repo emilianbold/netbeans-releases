@@ -49,8 +49,7 @@ import java.util.logging.Logger;
  */
 public class TypesCompletionTest extends GroovyTestBase {
 
-    String TEST_BASE = "testfiles/completion/";
-    String TYPES_BASE = TEST_BASE + "types/";
+    String TYPES_BASE = "testfiles/completion/types/";
 
     public TypesCompletionTest(String testName) {
         super(testName);
@@ -162,7 +161,30 @@ public class TypesCompletionTest extends GroovyTestBase {
     // test for types defined in the very same file
 
     public void testSamePackage1() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "SamePackage1.groovy", "println Tes^", false);
+        checkCompletion(TYPES_BASE + "" + "SamePackage1.groovy", "println TestSamePack^", false);
     }
+
+    // test if interfaces and only interfaces are proposed:
+    
+    public void testInterfaceCompletion1() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements ^Runnable, Serializable {", false);
+    }
+
+    public void testInterfaceCompletion2() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements R^unnable, Serializable {", false);
+    }
+
+    public void testInterfaceCompletion3() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runn^able, Serializable {", false);
+    }
+
+    public void testInterfaceCompletion4() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runnable, Ser^ializable {", false);
+    }
+
+    public void testInterfaceCompletion5() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runnable, Se^rializable {", false);
+    }
+    
 
 }

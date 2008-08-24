@@ -41,6 +41,14 @@
 
 package org.netbeans.modules.web.project;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -83,4 +91,5 @@ public class UtilsTest extends NbTestCase {
         final String CASE_5_EXPECTED = "${some.directory}";
         assertEquals(CASE_5_EXPECTED, Utils.correctDebugClassPath(CASE_5));
     }
+
 }

@@ -53,7 +53,7 @@ import org.openide.util.LookupListener;
  *
  * @author vita
  */
-@RandomlyFails
+@RandomlyFails // uses TestUtilities.sleepForWhile()
 public class SwitchLookupTest extends NbTestCase {
 
     /** Creates a new instance of FolderPathLookupTest */

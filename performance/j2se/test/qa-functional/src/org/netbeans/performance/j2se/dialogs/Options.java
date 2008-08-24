@@ -63,14 +63,14 @@ public class Options extends PerformanceTestCase {
     public Options(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 10000;
+        WAIT_AFTER_OPEN = 3000;
     }
     
     /** Creates a new instance of Options */
     public Options(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 10000;
+        WAIT_AFTER_OPEN = 3000;
     }
     
     public void testOptions() {

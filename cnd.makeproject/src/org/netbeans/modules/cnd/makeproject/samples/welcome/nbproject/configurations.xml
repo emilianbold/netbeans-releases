@@ -26,7 +26,6 @@
     <conf name="Debug" type="1">
       <compileType>
         <linkerTool>
-          <output>dist/Debug/welcome</output>
           <linkerLibItems>
           </linkerLibItems>
         </linkerTool>
@@ -47,7 +46,6 @@
           <developmentMode>5</developmentMode>
         </ccCompilerTool>
         <linkerTool>
-          <output>dist/Release/welcome</output>
           <linkerLibItems>
           </linkerLibItems>
         </linkerTool>

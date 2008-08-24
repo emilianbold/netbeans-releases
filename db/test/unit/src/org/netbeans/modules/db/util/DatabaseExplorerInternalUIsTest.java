@@ -95,14 +95,23 @@ public class DatabaseExplorerInternalUIsTest extends TestBase {
 
         assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 4);
         JdbcUrl url = (JdbcUrl)combo.getItemAt(0);
-        assertSame(driver2, url.getDriver());
-        assertSame(driver2.getClassName(), url.getClassName());
-        assertSame(driver2.getDisplayName(), url.getDisplayName());
+        assertDriversEqual(driver2, url.getDriver());
+        assertEquals(driver2.getClassName(), url.getClassName());
+        assertEquals(driver2.getDisplayName(), url.getDisplayName());
         
         url = (JdbcUrl)combo.getItemAt(1);
-        assertSame(driver1,  url.getDriver());
-        assertSame(driver1.getClassName(), url.getClassName());
-        assertSame(driver1.getDisplayName(), url.getDisplayName());
+        assertDriversEqual(driver1, url.getDriver());
+        assertEquals(driver1.getClassName(), url.getClassName());
+        assertEquals(driver1.getDisplayName(), url.getDisplayName());
+    }
+
+    private void assertDriversEqual(JDBCDriver driver1, JDBCDriver driver2) throws Exception {
+        // Sometimes Lookup does not return the same driver but we end up
+        // creating a new one.  So we can't be assured they are the same
+        // instance
+        assertEquals(driver1.getClassName(), driver2.getClassName());
+        assertEquals(driver1.getDisplayName(), driver2.getDisplayName());
+        assertEquals(driver1.getName(), driver2.getName());
     }
 
     public void testComboBoxWithDriverClass() throws Exception {
@@ -112,8 +121,8 @@ public class DatabaseExplorerInternalUIsTest extends TestBase {
 
         assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 1);
         JdbcUrl url = (JdbcUrl)combo.getItemAt(0);
-        assertSame(driver2, url.getDriver());
-        assertSame(driver2.getClassName(), url.getClassName());
-        assertSame(driver2.getDisplayName(), url.getDisplayName());
+        assertDriversEqual(driver2, url.getDriver());
+        assertEquals(driver2.getClassName(), url.getClassName());
+        assertEquals(driver2.getDisplayName(), url.getDisplayName());
     }
 }

@@ -78,6 +78,8 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
@@ -99,6 +101,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 
@@ -110,7 +113,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
     private static final List<String> INVALID_PROPOSALS_FOR_CLS_MEMBERS =
             Arrays.asList(new String[] {"__construct","__destruct"});//NOI18N
-    
+
     private static final List<String> CLASS_CONTEXT_KEYWORD_PROPOSAL =
             Arrays.asList(new String[] {"abstract","const","function", "private",
             "protected", "public", "static", "var"});//NOI18N
@@ -161,11 +164,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_TOKEN}
         );
 
-    private static final List<PHPTokenId[]> COMMENT_TOKENCHAINS = Arrays.asList(
-            new PHPTokenId[]{PHPTokenId.PHP_COMMENT_START},
-            new PHPTokenId[]{PHPTokenId.PHP_COMMENT},
-            new PHPTokenId[]{PHPTokenId.PHP_LINE_COMMENT}
-            );
+    private static final PHPTokenId[] COMMENT_TOKENS = new PHPTokenId[]{
+        PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_COMMENT_END};
 
     private static final List<PHPTokenId[]> PHPDOC_TOKENCHAINS = Arrays.asList(
             new PHPTokenId[]{PHPTokenId.PHPDOC_COMMENT_START},
@@ -220,20 +220,28 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             );
 
 
+       private static final List<PHPTokenId[]> SERVER_ARRAY_TOKENCHAINS = Collections.singletonList(
+            new PHPTokenId[]{PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_TOKEN});
+
+       private static final List<String> SERVER_ARRAY_TOKENTEXTS =
+               Arrays.asList(new String[] {"$_SERVER","["});//NOI18N
+
+
     static enum CompletionContext {EXPRESSION, HTML, CLASS_NAME, INTERFACE_NAME, TYPE_NAME, STRING,
         CLASS_MEMBER, STATIC_CLASS_MEMBER, PHPDOC, INHERITANCE, METHOD_NAME,
-        CLASS_CONTEXT_KEYWORDS, NONE};
+        CLASS_CONTEXT_KEYWORDS, SERVER_ENTRY_CONSTANTS, NONE};
 
     private final static String[] PHP_KEYWORDS = {"__FILE__", "exception",
-        "__LINE__", "array()", "class", "const", "continue", "die()", "echo()", "empty()", "endif",
-        "eval()", "exit()", "for", "foreach", "function", "global", "if",
-        "include()", "include_once()", "isset()", "list()", "new",
-        "print()", "require()", "require_once()", "return", "static",
-        "switch", "unset()", "use", "var", "while",
+        "__LINE__", "array()", "class", "const", "continue", "die()", "empty()", "endif",
+        "eval()", "exit()", "for", "foreach", "function", "global", "if", "isset()", "list()", "new",
+        "print()", "static", "switch", "unset()", "use", "var", "while",
         "__FUNCTION__", "__CLASS__", "__METHOD__", "final", "php_user_filter",
         "interface", "implements", "extends", "public", "private",
         "protected", "abstract", "clone", "try", "catch", "throw"
     };
+
+    private final static String[] PHP_KEYWORD_FUNCTIONS = {
+        "echo", "include", "include_once", "require", "require_once"}; //NOI18N
 
     private final static String[] PHP_CLASS_KEYWORDS = {
         "$this->", "self::", "parent::"
@@ -241,7 +249,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
             Arrays.asList(' ', '=', ';', '+', '-', '*', '/',
-                '%', '(', ')', '[', ']', '{', '}')); 
+                '%', '(', ')', '[', ']', '{', '}', '?'));
 
     private boolean caseSensitive;
     private NameKind nameKind;
@@ -264,11 +272,20 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             case T_INLINE_HTML:
                 return CompletionContext.HTML;
             case PHP_CONSTANT_ENCAPSED_STRING:
-                if (tokenSequence.token().text().charAt(0) == '"') {
+                char encChar = tokenSequence.token().text().charAt(0);
+                if (encChar == '"') {//NOI18N
+                    if (acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS)
+                            && acceptTokenChainTexts(tokenSequence, SERVER_ARRAY_TOKENTEXTS)) {
+                        return CompletionContext.SERVER_ENTRY_CONSTANTS;
+                    }
                     return CompletionContext.STRING;
-                } else {
-                    return CompletionContext.NONE;
+                } else if (encChar == '\'') {//NOI18N
+                    if (acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS)
+                            && acceptTokenChainTexts(tokenSequence, SERVER_ARRAY_TOKENTEXTS)) {
+                        return CompletionContext.SERVER_ENTRY_CONSTANTS;
+                    }
                 }
+                return CompletionContext.NONE;
             default:
         }
 
@@ -280,7 +297,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             return CompletionContext.CLASS_MEMBER;
         } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS)){
             return CompletionContext.STATIC_CLASS_MEMBER;
-        } else if (acceptTokenChains(tokenSequence, COMMENT_TOKENCHAINS)){
+        } else if (isOneOfTokens(tokenSequence, COMMENT_TOKENS)){
             return CompletionContext.NONE;
         } else if (acceptTokenChains(tokenSequence, PHPDOC_TOKENCHAINS)){
             return CompletionContext.PHPDOC;
@@ -311,7 +328,33 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return CompletionContext.EXPRESSION;
     }
 
-    private static boolean acceptTokenChains(TokenSequence tokenSequence, List<PHPTokenId[]> tokenIdChains){
+    private static boolean isOneOfTokens(TokenSequence tokenSequence, PHPTokenId[] tokenIds){
+        TokenId searchedId = tokenSequence.token().id();
+
+        for (TokenId tokenId : tokenIds){
+            if (tokenId.equals(searchedId)){
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean acceptTokenChainTexts(TokenSequence tokenSequence, List<String> tokenTexts) {
+        Token[] preceedingTokens = getPreceedingTokens(tokenSequence, tokenTexts.size());
+        if (preceedingTokens.length != tokenTexts.size()) {
+            return false;
+        }
+        for (int idx = 0; idx < preceedingTokens.length; idx++) {
+            String expectedText = tokenTexts.get(idx);
+            if (!expectedText.contentEquals(preceedingTokens[idx].text())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean acceptTokenChains(TokenSequence tokenSequence, List<PHPTokenId[]> tokenIdChains) {
         int maxLen = 0;
 
         for (PHPTokenId tokenIds[] : tokenIdChains){
@@ -362,12 +405,36 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             int caretOffset, TokenSequence tokenSequence){
         List<ASTNode> nodePath = NavUtils.underCaret(info, caretOffset);
         boolean methDecl = false;
+        boolean funcDecl = false;
+        boolean clsDecl = false;
+        boolean isClassInsideFunc = false;
+        boolean isFuncInsideClass = false;
         for (ASTNode aSTNode : nodePath) {
-            if (aSTNode instanceof FunctionDeclaration && !methDecl) {
-                return false;
+            if (aSTNode instanceof FunctionDeclaration) {
+                funcDecl = true;
+                if (clsDecl) isFuncInsideClass = true;
             } else if (aSTNode instanceof MethodDeclaration) {
-                methDecl = true;
+                methDecl = true;            
+            } else if (aSTNode instanceof ClassDeclaration) {
+                clsDecl = true;
+                if (funcDecl) isClassInsideFunc = true;
             }
+        }
+        if (funcDecl && !methDecl && !clsDecl) {
+            final StringBuilder sb = new StringBuilder();
+            new DefaultVisitor(){
+                @Override
+                public void visit(ASTError astError) {
+                    super.visit(astError);
+                    sb.append(astError.toString());
+                }
+            }.scan(Utils.getRoot(info));
+            if (sb.length() == 0) {
+                return false;
+            }
+        }
+        if (isClassInsideFunc && !isFuncInsideClass) {
+            return true;
         }
         int orgOffset = tokenSequence.offset();
         try {
@@ -381,11 +448,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 } else if (id.equals(PHPTokenId.PHP_CURLY_CLOSE)) {
                     curly_close++;
                 } else if ((id.equals(PHPTokenId.PHP_FUNCTION) ||
-                        id.equals(PHPTokenId.PHP_WHILE) || id.equals(PHPTokenId.PHP_IF)) 
+                        id.equals(PHPTokenId.PHP_WHILE) || id.equals(PHPTokenId.PHP_IF))
                         && (curly_open > curly_close)) {
                     return false;
                 } else if (id.equals(PHPTokenId.PHP_CLASS)) {
-                    boolean isClassScope = curly_open > 0 && (curly_open + curly_close) % 2 == 1;
+                    boolean isClassScope = curly_open > 0 && (curly_open > curly_close);
                     return isClassScope;
                 }
             }
@@ -482,6 +549,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             case INHERITANCE:
                 autoCompleteKeywords(proposals, request, INHERITANCE_KEYWORDS);
                 break;
+            case SERVER_ENTRY_CONSTANTS:
+                //TODO: probably better PHPCompletionItem instance should be used
+                autoCompleteMagicItems(proposals, request, PredefinedSymbols.SERVER_ENTRY_CONSTANTS);
+                break;
         }
 
         if (LOGGER.isLoggable(Level.FINE)){
@@ -506,9 +577,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteMethodName(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request) {
-        for (String keyword : PredefinedSymbols.MAGIC_METHODS) {
+        autoCompleteMagicItems(proposals, request, PredefinedSymbols.MAGIC_METHODS);
+    }
+
+    private void autoCompleteMagicItems(List<CompletionProposal> proposals,
+            PHPCompletionItem.CompletionRequest request,final Collection<String> proposedTexts) {
+        for (String keyword : proposedTexts) {
             if (keyword.startsWith(request.prefix)) {
-                proposals.add(new PHPCompletionItem.SpecialFunctionItem(keyword, request));
+                proposals.add(new PHPCompletionItem.MagicMethodItem(keyword, request));
             }
         }
     //autoCompleteKeywords(proposals, request, METHOD_NAME_PROPOSALS);
@@ -522,12 +598,228 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
     }
+    
+    private static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
+            PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
+            PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
+            PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT,
+            PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT
+            );
+   
+    private String findLHSExpressionType(TokenSequence<PHPTokenId> tokenSequence,
+            PHPCompletionItem.CompletionRequest request){
+        int startPos = tokenSequence.offset();
+        // find the beginning of the left hand side expression
+        
+        while (!CTX_DELIMITERS.contains(tokenSequence.token().id())
+                && findLHSExpressionType_skipArgs(tokenSequence)
+                && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN){
+            if (!tokenSequence.movePrevious()){
+                break;
+            }
+        }
+
+        //move forward to the first text
+        do {
+            if (!tokenSequence.moveNext()){
+                return null;
+            }
+        } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
+
+        if (LOGGER.isLoggable(Level.FINE)){
+            try {
+                LOGGER.fine("evaluating expression '" + request.info.getDocument().getText(
+                        tokenSequence.offset(), startPos - tokenSequence.offset()) + "'");
+                
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+                
+        String preceedingType = null;
+        boolean staticContex = false;
+        PHPTokenId tokenID = tokenSequence.token().id();
+        String varName = "";//NOI18N
+        switch (tokenID) {
+            case PHP_SELF:
+            case PHP_PARENT:
+                staticContex = true;
+                 {
+                    ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+
+                     if (classDecl != null) {
+                         if (tokenSequence.token().id() == PHPTokenId.PHP_PARENT) {
+                             Identifier superIdentifier = classDecl.getSuperClass();
+
+                             if (superIdentifier != null) {
+                                 preceedingType = superIdentifier.getName();
+                             }
+                         } else {
+                            preceedingType = classDecl.getName().getName();
+                        }
+                    }
+                }
+
+                break;
+            case PHP_STRING: //class name in static invokation or function name
+                String functionName = findLHSideExpressionType_extractFunctionNameFromCall(tokenSequence);
+
+                if (functionName != null) {
+                    for (IndexedFunction func : request.index.getFunctions(request.result,
+                            functionName, NameKind.EXACT_NAME)) {
+
+                        preceedingType = func.getReturnType();
+                    }
+                } else {
+                    // class name or a special var in a static method call
+                    preceedingType = tokenSequence.token().text().toString();
+                }
+
+                break;
+            case PHP_NEW:
+                tokenSequence.moveNext();
+                tokenSequence.moveNext(); // skip the whitespace
+                preceedingType = tokenSequence.token().text().toString();
+                break;
+
+            case PHP_VARIABLE:
+                varName = tokenSequence.token().text().toString();
+
+                if ("$this".equalsIgnoreCase(varName)) { //NOI18N
+                    ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
+                    if (classDecl != null) {
+                        preceedingType = classDecl.getName().getName();
+                    }
+                    
+                } else {
+                    Collection<IndexedConstant> vars = getVariables(request.result, request.index,
+                            request.result.getProgram().getStatements(),
+                            varName, request.anchor, request.currentlyEditedFileURL);
+
+                    if (vars != null) {
+                        for (IndexedConstant var : vars) {
+                            if (var.getName().equals(varName)) { // could be just a prefix
+                                preceedingType = var.getTypeName();
+                                break;
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+
+        do {
+            if (!tokenSequence.moveNext()){
+                return null;
+            }
+        } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
+
+        if (preceedingType == null && tokenID == PHPTokenId.PHP_VARIABLE && varName != null && varName.length() > 0) {
+            VarTypeResolver typeResolver = VarTypeResolver.getInstance(request, varName);
+            preceedingType = typeResolver.resolveType();
+        }
+        if (preceedingType == null || tokenSequence.offset() == startPos){
+            return preceedingType;
+        }
+
+        assert startPos > tokenSequence.offset();
+        
+        return findLHSExpressionType_recursive(tokenSequence, request,
+                preceedingType, staticContex, startPos);
+    }
+
+     private boolean findLHSExpressionType_skipArgs(TokenSequence<PHPTokenId> tokenSequence){
+        if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
+                && ")".equals(tokenSequence.token().text().toString())){
+            
+            do {
+                if (!tokenSequence.movePrevious()){
+                    return true;
+                }
+            } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
+                && "(".equals(tokenSequence.token().text().toString())));
+
+            tokenSequence.movePrevious();
+        }
+        
+        return true;
+    }
+    
+    private String findLHSExpressionType_recursive(TokenSequence<PHPTokenId> tokenSequence,
+            PHPCompletionItem.CompletionRequest request,
+            String preceedingType, boolean staticContext, int startPos){
+        String type = null;
+
+        do {
+            if (!tokenSequence.moveNext()){
+                return null;
+            }
+        } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
+        
+        String methodName = findLHSideExpressionType_extractFunctionNameFromCall(tokenSequence);
+
+        if (methodName != null){
+            for (IndexedFunction func : request.index.getAllMethods(request.result, preceedingType,
+                    methodName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
+
+                type = func.getReturnType();
+            }
+        }
+
+        tokenSequence.moveNext();
+        
+        if (type == null || tokenSequence.offset() == startPos)
+        {
+            return type;
+        }
+
+        assert startPos > tokenSequence.offset();
+        return findLHSExpressionType_recursive(tokenSequence, request,
+                type, staticContext, startPos);
+    }
+    
+    private String findLHSideExpressionType_extractFunctionNameFromCall(TokenSequence tokenSequence) {
+        String functionName = tokenSequence.token().text().toString();
+        int orgPos = tokenSequence.offset();
+        
+        do {
+            tokenSequence.moveNext();
+        }  while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
+        
+        if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN) {
+            CharSequence tokenTxt = tokenSequence.token().text();
+
+            // function call
+            if (tokenTxt.length() == 1 && tokenTxt.charAt(0) == '(') {
+                // confirmed, it is a function call
+                // position the token sequence after the call
+                do {
+                    tokenSequence.moveNext();
+                } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
+                        && ")".equals(tokenSequence.token().text().toString()))); //NOI18N
+            } else {
+                functionName = null;
+            }
+        } else {
+            functionName = null;
+        }
+        
+        if (functionName == null) {
+            tokenSequence.move(orgPos);
+            tokenSequence.moveNext();
+        }
+        
+        return functionName;
+    }
+    
     private void autoCompleteClassMembers(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request, boolean staticContext) {
         Document document = request.info.getDocument();
         if (document == null) {
             return;
         }
+
+        // TODO: remove duplicate/redundant code from here
 
         TokenHierarchy th = TokenHierarchy.get(document);
         TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
@@ -594,6 +886,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
             }
 
+            // end of a cluster of concentrated duplicated/redundant code
+
+            tokenSequence.move(request.anchor);
+
+            if (typeName == null && tokenSequence.movePrevious()){
+                typeName = findLHSExpressionType(tokenSequence, request);
+            }
+
             if (typeName != null){
                 Collection<IndexedFunction> methods = includeInherited ?
                     request.index.getAllMethods(request.result, typeName, request.prefix, nameKind, attrMask) :
@@ -656,15 +956,27 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         }
 
+        for (String keyword : PHP_KEYWORD_FUNCTIONS) {
+            if (startsWith(keyword, request.prefix)) {
+                proposals.add(new PHPCompletionItem.SpecialFunctionItem(keyword, request));
+            }
+        }
+
+        if (startsWith("return", request.prefix)){ //NOI18N
+            proposals.add(new PHPCompletionItem.ReturnItem(request));
+        }
+
+        // end: KEYWORDS
+
         PHPIndex index = request.index;
         if (request.prefix.length() == 0) {
             Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram().getStatements(), request.prefix, request.anchor, request.currentlyEditedFileURL);
             Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
-            
+
             for (IndexedConstant var : localVars){
                 allVars.put(var.getName(), var);
             }
-            
+
             for (IndexedElement element : index.getAll(request.result, request.prefix, nameKind)) {
                 if (element instanceof IndexedFunction) {
                     IndexedFunction function = (IndexedFunction) element;
@@ -691,7 +1003,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
             }
-            
+
             for (IndexedConstant var : allVars.values()){
                 CodeUtils.resolveFunctionType(request.result, index, allVars, var);
                 proposals.add(new PHPCompletionItem.VariableItem(var, request));
@@ -709,11 +1021,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             for (IndexedConstant constant : index.getConstants(request.result, request.prefix, nameKind)) {
                 proposals.add(new PHPCompletionItem.ConstantItem(constant, request));
             }
-            
+
             // CLASS NAMES
             // TODO only show classes with static elements
             autoCompleteClassNames(proposals, request);
-            
+
             // LOCAL VARIABLES
             proposals.addAll(getVariableProposals(request.result.getProgram().getStatements(), request));
         }

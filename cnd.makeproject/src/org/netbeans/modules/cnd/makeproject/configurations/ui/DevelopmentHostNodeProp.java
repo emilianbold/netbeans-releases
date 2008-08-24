@@ -123,7 +123,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
         
         @Override
         public String getAsText() {
-            return configuration.getDisplayName();
+            return configuration.getDisplayName(true);
         }
         
         @Override

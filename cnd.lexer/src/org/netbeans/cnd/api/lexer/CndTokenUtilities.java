@@ -55,7 +55,7 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock
+     * method should be called under document read lock
      * @param doc
      * @param offset
      * @return
@@ -72,7 +72,7 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock and token processor must be
+     * method should be called under document read lock and token processor must be
      * very fast to prevent document blocking
      * @param tp
      * @param doc
@@ -84,9 +84,14 @@ public class CndTokenUtilities {
         if (cppTokenSequence == null) {
             return;
         }
-        int shift = cppTokenSequence.move(startOffset);
         if (startOffset > lastOffset) {
             return;
+        }
+        int shift = cppTokenSequence.move(startOffset);
+        if (tp.getLastSeparatorOffset() >=0 && 
+            tp.getLastSeparatorOffset() > startOffset && 
+            tp.getLastSeparatorOffset() < lastOffset) {
+            shift = cppTokenSequence.move(tp.getLastSeparatorOffset());
         }
         tp.start(startOffset, startOffset - shift);
         if (processTokensImpl(tp, cppTokenSequence, startOffset, lastOffset)) {
@@ -97,7 +102,7 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock
+     * method should be called under document read lock
      * @param doc
      * @param offset
      * @return
@@ -119,7 +124,7 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock
+     * method should be called under document read lock
      * returns offsetable token on interested offset
      * @param cppTokenSequence token sequence
      * @param offset interested offset
@@ -131,7 +136,7 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock
+     * method should be called under document read lock
      * @param doc
      * @param offset
      * @return
@@ -141,7 +146,7 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock
+     * method should be called under document read lock
      * @param doc
      * @param offset
      * @param tokenizePP

@@ -175,6 +175,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
         set.setShortDescription(getString("HINT_TabsAndIndents")); // NOI18N
 	set.put(new IntNodeProp(language, preferences, EditorOptions.indentSize));
 	set.put(new BooleanNodeProp(language, preferences, EditorOptions.expandTabToSpaces));
+	set.put(new IntNodeProp(language, preferences, EditorOptions.tabSize));
 	set.put(new IntNodeProp(language, preferences, EditorOptions.statementContinuationIndent));
 	set.put(new PreprocessorIndentProperty(language, preferences, EditorOptions.indentPreprocessorDirectives));
 	set.put(new BooleanNodeProp(language, preferences, EditorOptions.sharpAtStartLine));
@@ -357,6 +358,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
             Preferences toSave = EditorOptions.getPreferences(language, style);
             if (style.equals(defaultStyles)){
                 EditorOptions.setPreferences(CodeStyle.getDefault(language), toSave);
+                EditorOptions.updateSimplePreferences(language, CodeStyle.getDefault(language));
             }
             for(String key : EditorOptions.keys()){
                 Object o = EditorOptions.getDefault(language, style, key);
@@ -444,7 +446,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
         if (category == null) {
             category = (EntryWrapper)styleComboBox.getItemAt(0);
         }
-        JEditorPane previewPane = topController.getPreviewPane();
+        JEditorPane previewPane = (JEditorPane) topController.getPreviewComponent();
         if (loaded) {
             PreviewPreferences p = new PreviewPreferences(category.preferences,
                     category.preferences.getLanguage(), category.preferences.getStyleId());

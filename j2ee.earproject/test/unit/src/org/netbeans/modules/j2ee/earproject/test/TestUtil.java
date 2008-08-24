@@ -51,8 +51,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
@@ -69,17 +67,13 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
-import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
-import org.xml.sax.SAXException;
 
 /**
  * Help set up org.netbeans.api.project.*Test.
@@ -96,12 +90,7 @@ public final class TestUtil {
     
     /** It is usually good idea to clear working directory before calling this method */
     public static void initLookup(NbTestCase test) throws Exception {
-        initLookup(test, null);
-    }
-    
-    /** It is usually good idea to clear working directory before calling this method */
-    public static void initLookup(NbTestCase test, String... additionalLayers) throws Exception {
-        MockLookup.setInstances(new Object[] { new Repo(test, additionalLayers), new IFL() });
+        MockLookup.setInstances(new IFL());
         
         FileObject root = FileUtil.toFileObject(test.getWorkDir());
         FileObject systemDir = FileUtil.createFolder(root, "ud/system"); // NOI18N
@@ -254,12 +243,12 @@ public final class TestUtil {
         FileObject systemDir = FileUtil.createFolder(root, "ud/system"); // NOI18N
         FileUtil.createFolder(systemDir, "J2EE/InstalledServers"); // NOI18N
         FileUtil.createFolder(systemDir, "J2EE/DeploymentPlugins"); // NOI18N
-        FileUtil.createFolder(root, "nb"); // NOI18N
-        System.setProperty("netbeans.home", new File(test.getWorkDir(), "nb").getAbsolutePath()); // NOI18N
+        FileUtil.createFolder(root, "nb/platform"); // NOI18N
+        System.setProperty("netbeans.home", new File(test.getWorkDir(), "nb/platform").getAbsolutePath()); // NOI18N
         System.setProperty("netbeans.user", new File(test.getWorkDir(), "ud").getAbsolutePath()); // NOI18N
         
         // lookup content
-        Object[] appServerNeed = new Object[] { new Repo(test), new IFL() };
+        Object[] appServerNeed = new Object[] { new IFL() };
         Object[] instances = new Object[additionalLookupItems.length + appServerNeed.length];
         System.arraycopy(additionalLookupItems, 0, instances, 0, additionalLookupItems.length);
         System.arraycopy(appServerNeed, 0, instances, additionalLookupItems.length, appServerNeed.length);
@@ -521,61 +510,6 @@ public final class TestUtil {
             }
         }
         return fo;
-    }
-    
-    private static final class Repo extends Repository {
-        private static final long serialVersionUID = 1L;
-        
-        public Repo(NbTestCase t) throws Exception {
-            super(mksystem(t));
-        }
-        
-        public Repo(NbTestCase t, String... additionalLayers) throws Exception {
-            super(mksystem(t, additionalLayers));
-        }
-        
-        private static FileSystem mksystem(NbTestCase t) throws Exception {
-            return mksystem(t, null);
-        }
-        
-        private static FileSystem mksystem(NbTestCase t, String... additionalLayers) throws Exception {
-            LocalFileSystem lfs = new LocalFileSystem();
-            File systemDir = new File(t.getWorkDir(), "ud/system");
-            FileUtil.createFolder(systemDir);
-            lfs.setRootDirectory(systemDir);
-            lfs.setReadOnly(false);
-            List<FileSystem> layers = new ArrayList<FileSystem>();
-            layers.add(lfs);
-            /*
-            //get layer for the generic server
-            java.net.URL layerFile = Repo.class.getClassLoader().getResource("org/netbeans/modules/j2ee/genericserver/resources/layer.xml");
-            assert layerFile != null;
-            layers.add(new XMLFileSystem(layerFile));
-             */
-            // get layer for the AS/GlassFish
-            addLayer(layers, "org/netbeans/modules/j2ee/sun/ide/j2ee/layer.xml");
-            addLayer(layers, "org/netbeans/modules/j2ee/earproject/ui/resources/layer.xml");
-            // needed for ejb-related tests
-            addLayer(layers, "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/layer.xml");
-            // needed for appclient-related tests
-            addLayer(layers, "org/netbeans/modules/j2ee/clientproject/ui/resources/layer.xml");
-            // needed for webmodule-related tests
-            addLayer(layers, "org/netbeans/modules/web/project/ui/resources/layer.xml");
-            if (additionalLayers != null) {
-                for (String layer : additionalLayers) {
-                    addLayer(layers, layer);
-                }
-            }
-            MultiFileSystem mfs = new MultiFileSystem(layers.toArray(new FileSystem[layers.size()]));
-            return mfs;
-        }
-        
-        private static void addLayer(List<FileSystem> layers, String layerRes) throws SAXException {
-            URL layerFile = Repo.class.getClassLoader().getResource(layerRes);
-            assert layerFile != null;
-            layers.add(new XMLFileSystem(layerFile));
-        }
-        
     }
     
     /** Copied from AntLoggerTest. */

@@ -150,7 +150,6 @@ public class BackoutPanel extends javax.swing.JPanel {
             }
         });
 
-        infoLabel.setFont(new java.awt.Font("Dialog", 1, 11)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(infoLabel, org.openide.util.NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.infoLabel.text")); // NOI18N
 
         infoLabel2.setForeground(new java.awt.Color(153, 153, 153));
@@ -195,15 +194,15 @@ public class BackoutPanel extends javax.swing.JPanel {
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, infoLabel2)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, infoLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, infoLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(40, 40, 40)
                         .add(revisionsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(revisionsComboBox, 0, 223, Short.MAX_VALUE))
+                        .add(revisionsComboBox, 0, 247, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE))
+                        .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
@@ -230,7 +229,7 @@ public class BackoutPanel extends javax.swing.JPanel {
 
     private void doMergeChxBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doMergeChxBoxActionPerformed
         if( doMergeChxBox.isSelected()){
-            commitMsgField.setEnabled(true);
+            commitMsgField.setEnabled(true);//GEN-HEADEREND:event_doMergeChxBoxActionPerformed
             commitMsgField.setEditable(true);
             commitLabel.setEnabled(true);
         }else{
@@ -238,18 +237,18 @@ public class BackoutPanel extends javax.swing.JPanel {
             commitMsgField.setEditable(false);
             commitLabel.setEnabled(false);
         }
-    }//GEN-LAST:event_doMergeChxBoxActionPerformed
+    }                                             
 
-private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revisionsComboBoxActionPerformed
-    int index = revisionsComboBox.getSelectedIndex();
-    if(getMore((String) revisionsComboBox.getSelectedItem())) return;
+private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-LAST:event_doMergeChxBoxActionPerformed
+    int index = revisionsComboBox.getSelectedIndex();//GEN-FIRST:event_revisionsComboBoxActionPerformed
+    if(getMore((String) revisionsComboBox.getSelectedItem())) return;//GEN-HEADEREND:event_revisionsComboBoxActionPerformed
     
     if(messages != null && index >= 0 && index < messages.length ){
         changesetPanel1.setInfo(messages[index]);
     }
-}//GEN-LAST:event_revisionsComboBoxActionPerformed
+}                                                 
     
-    private boolean getMore(String revStr) {
+    private boolean getMore(String revStr) {//GEN-LAST:event_revisionsComboBoxActionPerformed
         if (bGettingRevisions) return false;
         boolean bGetMore = false;
         int limit = -1;

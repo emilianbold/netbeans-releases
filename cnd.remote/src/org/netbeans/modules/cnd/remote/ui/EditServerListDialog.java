@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -58,12 +59,14 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
+import org.netbeans.modules.cnd.ui.options.ToolsPanel;
 import org.openide.DialogDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -128,14 +131,23 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         lstDevHosts.setCellRenderer(new MyCellRenderer());
     }
 
-    private void revalidateRecord(final String entry, String password) {
+    private boolean isEmptyToolchains(String key) {
+        if (CompilerSetManager.LOCALHOST.equals(key)) {
+            return false;
+        } else {
+            CompilerSetManager compilerSetManagerCopy = ToolsPanel.getToolsPanel().getCompilerSetManagerCopy(key);
+            return compilerSetManagerCopy.isEmpty();
+        }
+    }
+
+    private void revalidateRecord(final String entry, String password, boolean rememberPassword) {
         final RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(entry);
         if (!record.isOnline()) {
             record.resetOfflineState(); // this is a do-over
             setButtons(false);
             hideReason();            
             RemoteUserInfo userInfo = RemoteUserInfo.getUserInfo(entry, true);
-            userInfo.setPassword(password);
+            userInfo.setPassword(password, rememberPassword);
             phandle = ProgressHandleFactory.createHandle("");
             pbarStatusPanel.removeAll();
             pbarStatusPanel.add(ProgressHandleFactory.createProgressComponent(phandle), BorderLayout.CENTER);
@@ -147,7 +159,11 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    record.init(false, pcs);
+                    record.init(pcs);
+                    if (record.isOnline()) {
+                        CompilerSetManager csm = ToolsPanel.getToolsPanel().getCompilerSetManagerCopy(entry);
+                        csm.initialize(false);
+                    }
                     phandle.finish();
                     // back to EDT to work with Swing
                     SwingUtilities.invokeLater(new Runnable() {
@@ -215,12 +231,9 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 return;
             }
             if (!model.contains(entry)) {
-                model.addElement(entry);                
-                if (dlg.isDefault()) {
-                    defaultIndex = model.getSize() - 1;
-                }                
-                lstDevHosts.setSelectedValue(entry, true);                
-                revalidateRecord(entry, dlg.getPassword());
+                model.addElement(entry);                              
+                lstDevHosts.setSelectedValue(entry, true);
+                revalidateRecord(entry, dlg.getPassword(), dlg.isRememberPassword());
             }
         }
     }
@@ -239,6 +252,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btRemoveServer.setEnabled(enable);
         btPathMapper.setEnabled(enable);
         btSetAsDefault.setEnabled(enable);
+        btRetry.setEnabled(enable);
     }
 
     /** Helps the AddServerDialog know when to enable/disable the OK button */
@@ -262,7 +276,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             RemoteServerRecord record = (RemoteServerRecord) RemoteServerList.getInstance().get(key);
             tfStatus.setText(record.getStateAsText());
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
-            btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled);
+            btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(key));
             btPathMapper.setEnabled(!CompilerSetManager.LOCALHOST.equals(lstDevHosts.getSelectedValue()) && buttonsEnabled);
             if (!record.isOnline()) {
                 showReason(record.getReason());
@@ -484,7 +498,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }// </editor-fold>//GEN-END:initComponents
 
     private void btRetryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btRetryActionPerformed
-        this.revalidateRecord((String)lstDevHosts.getSelectedValue(), "");
+        this.revalidateRecord((String)lstDevHosts.getSelectedValue(), null, false);
     }//GEN-LAST:event_btRetryActionPerformed
 
 

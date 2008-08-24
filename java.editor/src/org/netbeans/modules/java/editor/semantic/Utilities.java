@@ -46,6 +46,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -183,6 +184,31 @@ public class Utilities {
         return null;
     }
     
+    private static Token<JavaTokenId> findIdentifierSpanImpl(CompilationInfo info, IdentifierTree tree, CompilationUnitTree cu, SourcePositions positions) {
+        int start = (int)positions.getStartPosition(cu, tree);
+        int endPosition = (int)positions.getEndPosition(cu, tree);
+        
+        if (start == (-1) || endPosition == (-1))
+            return null;
+
+        TokenHierarchy<?> th = info.getTokenHierarchy();
+        TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
+
+        if (ts.move(start) == Integer.MAX_VALUE) {
+            return null;
+        }
+
+        ts.moveNext();
+
+        if (ts.offset() >= start) {
+            Token<JavaTokenId> t = ts.token();
+
+            return t;
+        }
+        
+        return null;
+    }
+
     private static final Map<Class, List<Kind>> class2Kind;
     
     static {
@@ -246,7 +272,13 @@ public class Utilities {
             
             return findTokenWithText(info, name, start, end);
         }
-        throw new IllegalArgumentException("Only MethodDecl, VariableDecl and ClassDecl are accepted by this method.");
+        if (class2Kind.get(IdentifierTree.class).contains(leaf.getKind())) {
+            return findIdentifierSpanImpl(info, (IdentifierTree) leaf, info.getCompilationUnit(), info.getTrees().getSourcePositions());
+        }
+        if (class2Kind.get(ParameterizedTypeTree.class).contains(leaf.getKind())) {
+            return findIdentifierSpanImpl(info, new TreePath(decl, ((ParameterizedTypeTree) leaf).getType()));
+        }
+        throw new IllegalArgumentException("Only MethodDecl, VariableDecl, MemberSelectTree, IdentifierTree and ClassDecl are accepted by this method. Got: " + leaf.getKind());
     }
 
     public static int[] findIdentifierSpan( final TreePath decl, final CompilationInfo info, final Document doc) {

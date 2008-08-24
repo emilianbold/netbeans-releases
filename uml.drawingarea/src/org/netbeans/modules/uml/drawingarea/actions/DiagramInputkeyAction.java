@@ -88,6 +88,8 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
             if ( selectedObjs != null && selectedObjs.size() > 0)
             {
                 scene.setSelectedObjects(Collections.EMPTY_SET);
+                scene.clearLockedSelected();
+                
                 // cancel context palette
                 ContextPaletteManager contextManager = scene.getContextPaletteManager();
                 if(contextManager != null)

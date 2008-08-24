@@ -68,19 +68,23 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IStateVertex;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.IterateSelectAction;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
 import org.netbeans.modules.uml.drawingarea.actions.MoveControlPointAction;
+import org.netbeans.modules.uml.drawingarea.actions.MoveNodeKeyAction;
 import org.netbeans.modules.uml.drawingarea.actions.NavigateLinkAction;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.SwingPaletteManager;
+import org.netbeans.modules.uml.drawingarea.support.ValidDropTargets;
 import org.netbeans.modules.uml.drawingarea.view.AlignWithMoveStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.GraphSceneNodeAlignCollector;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.ui.support.diagramsupport.IDiagramTypesManager;
 import org.openide.util.Lookup;
 
 
@@ -95,6 +99,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
     
     private final static PopupMenuProvider CONTEXT_MENU_PROVIDER = new DiagramPopupMenuProvider();
     public final static WidgetAction POPUP_ACTION = ActionFactory.createPopupMenuAction(CONTEXT_MENU_PROVIDER);
+    public final static MoveNodeKeyAction MOVE_NODE_KEY_ACTION = new MoveNodeKeyAction();
     
     private RelationshipDiscovery relDiscovery = null;
     
@@ -179,7 +184,26 @@ public class DefaultDiagramEngine extends  DiagramEngine {
     }
 
     public boolean isDropPossible(INamedElement node) {
-        return true;
+        boolean okToDrop = true;
+        try
+        {
+            IDiagramTypesManager pManager = DiagramTypesManager.instance();
+            if (node != null && pManager != null)
+            {
+                String sElementType = node.getElementType();
+                String diagramKindName = getScene().getDiagram().getDiagramKindAsString();
+                String sShortDisplayName = pManager.getShortDiagramTypeName(diagramKindName);
+
+                // Make sure our diagram type is in the ok-to-drop list, or ALL is in the list.
+                okToDrop = ValidDropTargets.instance().isValidDropTarget(sElementType, sShortDisplayName);
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            okToDrop = false;
+        }
+
+        return okToDrop;
     }
 
     public INamedElement processDrop(INamedElement elementToDrop) {
@@ -222,7 +246,8 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         
         WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT);      
                 
-        
+        selectTool.addAction(DiagramEngine.lockSelectionAction);
+        selectTool.addAction(MOVE_NODE_KEY_ACTION);
         selectTool.addAction(selectAction);
         selectTool.addAction(POPUP_ACTION);
         selectTool.addAction(mouseHoverAction);
@@ -249,6 +274,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         widget.setPaintControlPoints (true);
         widget.setControlPointShape (PointShape.SQUARE_FILLED_BIG);
         
+        selectTool.addAction( DiagramEngine.lockSelectionAction);
         selectTool.addAction(POPUP_ACTION);
         selectTool.addAction(ActionFactory.createReconnectAction(new SceneReconnectProvider()));
         

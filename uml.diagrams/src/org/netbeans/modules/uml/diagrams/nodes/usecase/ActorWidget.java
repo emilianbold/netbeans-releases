@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes.usecase;
 
+import java.awt.Color;
+import java.awt.Paint;
 import java.beans.PropertyChangeEvent;
 import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
@@ -53,6 +55,9 @@ import org.netbeans.modules.uml.diagrams.nodes.EditableCompartmentWidget;
 import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.view.Customizable;
+import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
+import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
 import org.openide.util.NbBundle;
@@ -102,6 +107,7 @@ public class ActorWidget extends UMLNodeWidget
                 setFont(getCurrentView().getFont());
             }
         }
+        super.initializeNode(element);
     }
 
     private Widget initActorWidget(IActor actor)
@@ -113,9 +119,10 @@ public class ActorWidget extends UMLNodeWidget
 //            actorWidget.setBorder(BorderFactory.createEmptyBorder());
 
         //create the stick figure widget
+        // The stick figure will override the customizable display name.
         stickFigureWidget = new ActorSymbolWidget(
-                scene, DEFAULT_WIDTH, DEFAULT_WIDTH, getWidgetID(),
-                bundle.getString("LBL_body"));
+                scene, DEFAULT_WIDTH, DEFAULT_WIDTH, getStickFigureId(),
+                "");
         stickFigureWidget.setUseGradient(useGradient);
         stickFigureWidget.setOpaque(false);
 
@@ -145,11 +152,30 @@ public class ActorWidget extends UMLNodeWidget
     {
         if (element instanceof IPartFacade)
         {
-            String sStaticText = "<<role>>";
+            String sStaticText = "<<role>>"; // NOI18N
             nameWidget.setStaticText(sStaticText);
         }
     }
 
+    @Override
+    protected void notifyBackgroundChanged(Paint paint)
+    {
+        String id =  getStickFigureId() + "." + ResourceValue.BGCOLOR; // NOI18N
+        getResourceTable().addProperty(id, paint);
+    }
+
+//    @Override
+//    protected void notifyForegroundChanged(Color newColor)
+//    {
+//        String id =  getStickFigureId() + "." + ResourceValue.FGCOLOR; // NOI18N
+//        getResourceTable().addProperty(id, newColor);
+//    }
+
+    protected String getStickFigureId()
+    {
+        return getWidgetID() + ".stickfigure"; // NOI18N
+    }
+    
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {

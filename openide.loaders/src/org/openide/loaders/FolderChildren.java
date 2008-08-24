@@ -192,8 +192,8 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     * @param key DataObject
     */
     protected Node[] createNodes(FileObject fo) {
-        err.fine("createNodes: " + fo);
         DataObject obj;
+        long time = System.currentTimeMillis();
         try {
             obj = DataObject.find (fo);
             if (
@@ -204,6 +204,11 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             } 
         } catch (DataObjectNotFoundException e) {
             Logger.getLogger(FolderChildren.class.getName()).log(Level.FINE, null, e);
+        } finally {
+            long took = System.currentTimeMillis() - time;
+            if (err.isLoggable(Level.FINE)) {
+                err.fine("createNodes: " + fo + " took: " + took + " ms");
+            }
         }
         return null;
     }
@@ -320,5 +325,6 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     }
 
     public void fileRenamed(FileRenameEvent fe) {
+        refreshChildren(0);
     }
 }

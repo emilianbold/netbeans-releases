@@ -1030,7 +1030,7 @@ public class ResourceUtils implements WizardConstants{
     
     public static void createSampleDataSource(J2eeModuleProvider provider){
         DeploymentManager dm = getDeploymentManager(provider);
-        if (dm != null) {
+        if ((dm != null) && (dm instanceof SunDeploymentManagerInterface)) {
             SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface) dm;
             try {
                 ObjectName configObjName = new ObjectName(MAP_RESOURCES);
@@ -1094,8 +1094,8 @@ public class ResourceUtils implements WizardConstants{
             List datasources = getResourceNames(eightDM, __GetJdbcResource, "jndi-name"); //NOI18N
             if(! datasources.contains(SAMPLE_DATASOURCE)){
                 ServerInterface mejb = (ServerInterface)eightDM.getManagement();
-                
-                if(getConnectionPoolObjByName(mejb, configObjName, SAMPLE_CONNPOOL) == null){
+                List pools = getResourceNames(eightDM, __GetJdbcConnectionPool, "name"); //NOI18N
+                if(! pools.contains(SAMPLE_CONNPOOL)){
                     AttributeList poolAttrs = new AttributeList();
                     Attribute attr = new Attribute("name", SAMPLE_CONNPOOL); //NOI18N
                     poolAttrs.add(attr);

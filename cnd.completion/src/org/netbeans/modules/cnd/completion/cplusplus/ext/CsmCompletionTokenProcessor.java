@@ -134,8 +134,9 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
     private boolean java15;
     private int nrQuestions = 0;
 
-    CsmCompletionTokenProcessor(int endScanOffset) {
+    CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset) {
         this.endScanOffset = endScanOffset;
+        this.lastSeparatorOffset = lastSeparatorOffset;
     }
 
     /**
@@ -349,6 +350,10 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             case PLUSPLUS:
                             case MINUSMINUS:
                                 break;
+                            case LT:
+                                if (java15) {
+                                    break;
+                                }
 
                             case LPAREN:
                             {
@@ -1025,6 +1030,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                                     case CONSTANT: // check for "List<const" plus ">" case
                                     case VARIABLE: // check for "List<var" plus ">" case
                                     case TYPE: // check for "List<int" plus ">" case
+                                    case TYPE_REFERENCE: // check for "List<int*" plus ">" case
                                     case DOT: // check for "List<var1.var2" plus ">" case
                                     case ARROW: // check for "List<var1.var2" plus ">" case
                                     case SCOPE: // check for "List<NS::Class" plus ">" case
@@ -1844,7 +1850,9 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                         break;
 
                     case LONG_LITERAL:
+                    case LONG_LONG_LITERAL:
                     case UNSIGNED_LONG_LITERAL:
+                    case UNSIGNED_LONG_LONG_LITERAL:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("long"); // NOI18N
                         break;
@@ -1858,10 +1866,11 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("double"); // NOI18N
                         break;
-                    case CONST:
-                        // only type has const
-                        kwdType = "const"; // NOI18N
+
+                    case TYPENAME:
+                        // OK, just skip it
                         break;
+
                     default:
                         errorState = true;
                 } // end of testing keyword type
@@ -1917,19 +1926,31 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                 break;
             }
             case METHOD_OPEN:
+            case GENERIC_TYPE_OPEN:
             {
-                // TODO: we know, this is method declaration/definition
-                CsmCompletionExpression kwdExp = createTokenExp(
-                        "const".equals(kwdType)? TYPE_PREFIX : TYPE); // NOI18N
-                //addTokenTo(kwdExp);
+                int expType = TYPE;
+                switch (token.id()) {
+                    case CONST:
+                    case VOLATILE:
+                        expType = TYPE_PREFIX;
+                }
+                CsmCompletionExpression kwdExp = createTokenExp(expType);
                 kwdExp.setType(kwdType);
                 pushExp(kwdExp);
                 errorState = false;
                 break;
             }
             case TYPE_PREFIX:
-                top.setExpID(TYPE);
+            {
+                int expType = TYPE;
+                switch (token.id()) {
+                    case CONST:
+                    case VOLATILE:
+                        expType = TYPE_PREFIX;
+                }
+                top.setExpID(expType);
                 // fallthrough
+            }
             case TYPE:
             {
                 CsmCompletionExpression kwdExp = top;
@@ -1946,14 +1967,6 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                 errorState = false;
                 break;
             }
-            case GENERIC_TYPE_OPEN:
-            {
-                CsmCompletionExpression kwdExp = createTokenExp(TYPE);
-                kwdExp.setType(kwdType);
-                pushExp(kwdExp);
-                errorState = false;
-                break;
-            }
             default: // otherwise not recognized
                 errorState = true;
                 break;
@@ -1966,6 +1979,8 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
             if (tokenID == CppTokenId.IDENTIFIER) {
                 pushExp(createTokenExp(VARIABLE));
                 errorState = false;
+            } else {
+                lastSeparatorOffset = tokenOffset;
             }
         }
 
@@ -1973,6 +1988,12 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
         return false;
     }
 
+    private int lastSeparatorOffset = -1;
+    
+    public int getLastSeparatorOffset() {
+        return lastSeparatorOffset;
+    }
+    
     public void start(int startOffset, int firstTokenOffset) {
     }
 

@@ -39,13 +39,8 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmTypedef;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo.Severity;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
@@ -63,15 +58,25 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
 
     private static final boolean ENABLED =
             getBoolean("cnd.identifier.error.provider", true); //NOI18N
+    private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.identifier.error.provider.times");
 
     @Override
-    public void getErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-        if (ENABLED && request.getFile().isParsed()) {
-            CsmFileReferences.getDefault().accept(
-                    request.getFile(), new ReferenceVisitor(request, response),
-                    CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
-        }
-        response.done();
+    protected boolean validate(CsmErrorProvider.Request request) {
+        return super.validate(request) && ENABLED && !disableAsLibraryHeaderFile(request.getFile()) && request.getFile().isParsed();
+    }
+
+    @Override
+    protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+        long start = System.currentTimeMillis();
+        if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() have started for file " + request.getFile().getAbsolutePath());
+        CsmFileReferences.getDefault().accept(
+                request.getFile(), new ReferenceVisitor(request, response),
+                CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
+        if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + request.getFile().getAbsolutePath());
+    }
+    
+    public String getName() {
+        return "unresolved-identifier"; //NOI18N
     }
 
     private static class ReferenceVisitor implements CsmFileReferences.Visitor {
@@ -84,13 +89,23 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
             this.response = response;
         }
 
-        public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
-            if (ref.getReferencedObject() == null) {
+        public void visit(CsmReferenceContext context) {
+            CsmReference ref = context.getReference();
+            if (!request.isCancelled() && ref.getReferencedObject() == null) {
+                if (CsmFileReferences.isAfterUnresolved(context)) {
+                    return;
+                }
+                if (CsmFileReferences.isMacroBased(context)) {
+                    return;
+                }
                 Severity severity = Severity.ERROR;
-                if (CsmFileReferences.isTemplateBased(ref, prev, parent) ||
-                        CsmFileReferences.isMacroBased(ref, prev, parent)) {
+
+                if (CsmFileReferences.isTemplateBased(context)) {
+                    severity = Severity.WARNING;
+                } else if (CsmKindUtilities.isClassForwardDeclaration(ref.getOwner())) {
                     severity = Severity.WARNING;
                 }
+
                 response.addError(new IdentifierErrorInfo(
                         ref.getStartOffset(), ref.getEndOffset(),
                         ref.getText().toString(), severity));

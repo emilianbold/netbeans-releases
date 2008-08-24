@@ -97,10 +97,10 @@ public class RemoteServerList implements ServerList {
         unlisted = new ArrayList<RemoteServerRecord>();
         
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        addServer(CompilerSetManager.LOCALHOST, false);
+        addServer(CompilerSetManager.LOCALHOST, false, RemoteServerRecord.STATE_ONLINE);
         if (slist != null) {
             for (String hkey : slist.split(",")) { // NOI18N
-                addServer(hkey, false, true);
+                addServer(hkey, false, RemoteServerRecord.STATE_OFFLINE);
             }
         }
         refresh();
@@ -157,12 +157,13 @@ public class RemoteServerList implements ServerList {
         return sa;
     }
     
-    private void addServer(final String name, boolean asDefault) {
-        addServer(name, asDefault, true);
+    private void addServer(final String name, boolean asDefault, Object state) {
+        RemoteServerRecord addServer = (RemoteServerRecord) addServer(name, asDefault, false);
+        addServer.setState(state);
     }
 
 
-    public synchronized void addServer(final String name, boolean asDefault, boolean connect) {
+    public synchronized ServerRecord addServer(final String name, boolean asDefault, boolean connect) {
         RemoteServerRecord record = null;
         
         // First off, check if we already have this record
@@ -172,7 +173,7 @@ public class RemoteServerList implements ServerList {
                     defaultIndex = items.indexOf(r);
                     getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
                 }
-                return;
+                return r;
             }
         }
         
@@ -215,6 +216,7 @@ public class RemoteServerList implements ServerList {
             }
         }
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
+        return record;
     }
 
     public synchronized void removeServer(int idx) {
@@ -297,11 +299,11 @@ public class RemoteServerList implements ServerList {
         if (SwingUtilities.isEventDispatchThread()) {
             log.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
         }
-        String cmd = "PATH=/bin:/usr/bin:$PATH test -x " + path; // NOI18N
+        String cmd = "test -x " + path; // NOI18N
         int exit_status = RemoteCommandSupport.run(hkey, cmd);
         if (exit_status != 0 && !IpeUtils.isPathAbsolute(path)) {
             // Validate 'path' against user's PATH.
-            cmd = "PATH=/bin:/usr/bin:$PATH test -x " + "`which " + path + "`"; // NOI18N
+            cmd = "test -x " + "`which " + path + "`"; // NOI18N
             exit_status = RemoteCommandSupport.run(hkey, cmd);
         }
         return exit_status == 0;

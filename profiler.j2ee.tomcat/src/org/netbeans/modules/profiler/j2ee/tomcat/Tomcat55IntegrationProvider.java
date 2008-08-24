@@ -58,10 +58,6 @@ public class Tomcat55IntegrationProvider extends Tomcat5IntegrationProvider {
         return TOMCAT_55_TITLE;
     }
 
-    public boolean supportsJVM(TargetPlatformEnum jvm) {
-        return true;
-    }
-
     protected int getAttachWizardPriority() {
         return 10;
     }

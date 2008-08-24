@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
 # Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -57,14 +57,14 @@ while [ -h "$PRG" ]; do
     fi
 done
 
-CND=`dirname "$PRG"`
-cd ${CND}
-CND=`pwd`
-cd $OLDPWD
-
 while [ -n "$1" ]
 do
     case "$1" in
+	--cache)
+		shift
+                echo "Redirecting cache to $1"
+                PARAMS="${PARAMS} -J-Dcnd.repository.cache.path="$1""
+                ;;
         --nb)
 		shift
                 echo "Using NB from $1"
@@ -110,6 +110,10 @@ do
 		echo "suppressing parser errors"
 		PARSERRORS=""
 		;;
+	--hardrefs|--hard)
+                echo "using in-memory (hard refs) repository"
+		PARAMS="${PARAMS} -J-Dcnd.repository.hardrefs=true"
+		;;
 	*)
 		PARAMS="${PARAMS} $1"
 		;;
@@ -117,8 +121,13 @@ do
     shift
 done
 
-DEFAULT_NB="${CND}/../nbbuild/netbeans"
-NBDIST="${NBDIST-${DEFAULT_NB}}"
+if [ -z "${NBDIST}" ]; then
+	CND=`dirname "$PRG"`
+	cd ${CND}
+	CND=`pwd`
+	cd $OLDPWD
+	NBDIST="${CND}/../nbbuild/netbeans"
+fi
 
 if [ -z "${NBDIST}" ]; then
 	echo "Please specify NBDIST environment variable; it should point to Netbeans installation"

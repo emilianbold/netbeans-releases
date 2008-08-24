@@ -58,6 +58,7 @@
 	<mapID target="filter_addtodd" url="web/create/filter/filter_addtodd.html"/>
 	<mapID target="filter_create" url="web/create/filter/filter_create.html"/>
 	<mapID target="filter_run" url="web/create/filter/filter_run.html"/>
+	<mapID target="framework_jsf_about" url="web/create/tag/framework/jsf/about_jsf_support.html"/>
 	<mapID target="framework_jsf_add" url="web/create/tag/framework/framework_jsf_add.html"/>
 	<mapID target="framework_jsf_create" url="web/create/tag/framework/framework_jsf_create.html"/>
 	<mapID target="framework_jsf_datatable" url="web/create/tag/framework/framework_jsf_datatable.html"/>
@@ -128,6 +129,11 @@
 	<mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/create/tag/framework/struts/file_ActionPanel1.html"/>
 	<mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/create/tag/framework/struts/file_FormBeanNewPanel.html"/>
 	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetProjectLocationStep" url="web/create/tag/framework/grails/NewGrailsProjectWizard.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-controller" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-domain-class" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-script" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-service" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
+	<mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-unit-test" url="web/create/tag/framework/grails/NewGrailsArtifact.html"/>
 	<mapID target="projrave_a11y_navigation_editor_shortcuts" url="a11y/navigation_editor_shortcuts.html"/>
 	<mapID target="projrave_a11y_query_editor_shortcuts" url="a11y/query_editor_shortcuts.html"/>
 	<mapID target="projrave_components_about_complibs" url="components/about_complibs.html"/>

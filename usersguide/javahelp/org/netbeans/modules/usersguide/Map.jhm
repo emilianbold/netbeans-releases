@@ -101,7 +101,6 @@
 <mapID target="configure.importing" url="configure/configure_importing.html" />
 <mapID target="configure.options" url="configure/configure_options.html" />
 <mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
-<mapID target="configure.system.settings" url="configure/system_settings.html" />
 <mapID target="project.encoding" url="project/proj_encoding.html" />
 
 <mapID target="workspace.window.managing" url="configure/workspace/window_managing.html" />
@@ -319,7 +318,6 @@
    
    <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="configure/diff_textual.html" />
 <!--possibly remap the following target to configure_options.html :-->
-   <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
 
    <!-- Diff: options window help ids -->
    <mapID target="org.netbeans.modules.diff.options.DiffOptionsController" url="configure/options_diffengine.html" />

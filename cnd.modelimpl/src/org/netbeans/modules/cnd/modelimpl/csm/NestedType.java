@@ -43,8 +43,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -53,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.services.CsmMemberResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
@@ -64,6 +67,11 @@ public class NestedType extends TypeImpl {
 
     public NestedType(CsmType parent, CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
         super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+        this.parentType = parent;
+    }
+    
+    public NestedType(CsmType parent, CsmType type) {
+        super(type);
         this.parentType = parent;
     }
 
@@ -115,7 +123,10 @@ public class NestedType extends TypeImpl {
         return res;
     }
 
-
+    /*package local*/ CsmType getParent() {
+        return parentType;
+    }
+    
     /*
      * Classifier text should contain specialization of the parent classifier
      */
@@ -130,13 +141,23 @@ public class NestedType extends TypeImpl {
 
     @Override
     public boolean isTemplateBased() {
-        if (parentType != null && parentType.isTemplateBased()) {
-            return true;
-        } else {
-            return super.isTemplateBased();
-        }
+        return isTemplateBased(new HashSet<CsmType>());
     }
 
+    @Override
+    public boolean isTemplateBased(Set<CsmType> visited) {
+        if (parentType instanceof SafeTemplateBasedProvider) {
+            if (visited.contains(this)) {
+                return false;
+            }
+            visited.add(this);
+            return ((SafeTemplateBasedProvider)parentType).isTemplateBased(visited);
+        } else if (parentType != null && parentType.isTemplateBased()) {
+            return true;
+        } else {
+            return super.isTemplateBased(visited);
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent

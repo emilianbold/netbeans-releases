@@ -96,9 +96,12 @@ public final class ActiveDocumentSupport {
     }
 
     /**
-     * Returns an active document in whole environment.
+     * Returns an active document in whole environment. Insted of this method 
+     * try to get real references of your document throgh DesignComponent.
+     * 
      * @return the active document
      */
+    @Deprecated
     public DesignDocument getActiveDocument () {
         return activeDocument;
     }

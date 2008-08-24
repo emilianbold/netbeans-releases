@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.remote.mapper;
 
-import java.io.Reader;
 import java.io.StringReader;
 import java.util.Map;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
@@ -58,6 +57,11 @@ public class MappingsTestCase extends RemoteTestBase {
 //        Map<String, String> mappings = new HostMappingProviderSamba().findMappings("tester@eaglet-sr", "");
 //        assert mappings != null && "/export/pub".equals(mappings.get("pub"));
 //    }
+    
+    public void testAnalyzer() throws Exception {
+        HostMappingsAnalyzer ham = new HostMappingsAnalyzer("sg155630@elif");
+        System.err.println(ham.getMappings());
+    }
 
     public void testHostMappingProviderWindows() throws Exception {
         StringBuilder sb = new StringBuilder();

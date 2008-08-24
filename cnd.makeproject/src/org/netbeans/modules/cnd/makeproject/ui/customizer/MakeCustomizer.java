@@ -163,6 +163,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         allConfigurationComboBox.addItem(getString("ALL_CONFIGURATIONS"));
         allConfigurationComboBox.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATIONS_BUTTON_AD"));
         allConfigurationComboBox.getAccessibleContext().setAccessibleDescription(getString("CONFIGURATION_COMBOBOX_AD"));
+        allConfigurationComboBox.setToolTipText(getString("ALL_CONFIGURATIONS_TOOLTIP"));
     }
     
     public void setDialogDescriptor(DialogDescriptor dialogDescriptor) {
@@ -609,8 +610,14 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         
         Vector descriptions = new Vector();
-        descriptions.add(createGeneralDescription(project));
-        descriptions.add(createBuildDescription(project));
+        CustomizerNode node = createGeneralDescription(project);
+        if (node != null) {
+            descriptions.add(node);
+        }
+        node = createBuildDescription(project);
+        if (node != null) {
+            descriptions.add(node);
+        }
         // Add customizer nodes
         if (includeRunDebugDescriptions) {
             if (!descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes("Run"))) { // NOI18N
@@ -621,8 +628,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             }
     //      descriptions.addAll(CustomizerRootNodeProvider.getInstance().getCustomizerNodes(false));
             CustomizerNode advanced = getAdvancedCutomizerNode(descriptions);
-            if (advanced != null)
+            if (advanced != null) {
                 descriptions.add(advanced);
+            }
         }
         if (includeMakefileDescription) {
             //descriptions.add(createMakefileDescription(project));
@@ -657,8 +665,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         Vector advancedNodes = new Vector();
         List<CustomizerNode> nodes = CustomizerRootNodeProvider.getInstance().getCustomizerNodes();
         for (CustomizerNode node : nodes) {
-            if (!descriptions.contains(node))
+            if (node != null && !descriptions.contains(node)) {
                 advancedNodes.add(node);
+            }
         }
         if (advancedNodes.size() == 0)
             return null;
@@ -1399,6 +1408,17 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
                 }
             }
             return active;
+        }
+        
+        @Override
+        protected void checkSelection() {
+            super.checkSelection();
+            int i = getSelectedIndex();
+            if (i < 0) {
+                return;
+            }
+            Configuration conf = (Configuration)getListData().get(i);
+            getDefaultButton().setEnabled(!conf.isDefault());
         }
     }
     

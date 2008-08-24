@@ -36,56 +36,148 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.mapper;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 
 /**
  *
  * @author gordonp
+ * @author Sergey Grinev
  */
 public class RemoteHostInfoProvider extends HostInfoProvider {
-    
-    @Override
-    public PathMap getMapper(String key) {
-        return RemotePathMap.getMapper(key);
-    }
 
-    // TODO: can be wrong in imaginary situations user has some tool in PATH he forgot to add and want's
-    // to fix this on the fly. He must rerun IDE in this case. And we save 5-10 ssh calls at each routine.
-    private final Map<String, Map<String, String>> envCache = new HashMap<String, Map<String, String>>();
+    public static class RemoteHostInfo {
 
-    @Override
-    public synchronized Map<String, String> getEnv(String key) {
-        Map<String, String> map = envCache.get(key);
-        if (map == null) {
-            map = new HashMap<String, String>();
-            RemoteCommandSupport support = new RemoteCommandSupport(key, "PATH=/bin:/usr/bin; env"); // NOI18N
-            if (support.getExitStatus() == 0) {
-                String val = support.toString();
-                String[] lines = val.split("\n"); // NOI18N
-                for (int i = 0; i < lines.length; i++) {
-                    int pos = lines[i].indexOf('=');
-                    if (pos > 0) {
-                        map.put(lines[i].substring(0, pos), lines[i].substring(pos+1));
+        private final String hkey;
+        private String home = null;
+        private PathMap mapper;
+        private Map<String, String> envCache = null;
+        private Boolean isCshShell;
+        private Integer platform;
+
+        private RemoteHostInfo(String hkey) {
+            this.hkey = hkey;
+        }
+
+        public String getHome() {
+            if (home == null) {
+                RemoteCommandSupport support = new RemoteCommandSupport(hkey, "pwd"); // NOI18N
+                if (support.run() == 0) {
+                    home = support.toString().trim();
+                }
+            }
+            return home;
+        }
+
+        public synchronized PathMap getMapper() {
+            if (mapper == null) {
+                mapper = RemotePathMap.getMapper(hkey);
+            }
+            return mapper;
+        }
+
+        public synchronized Map<String, String> getEnv() {
+            if (envCache == null) {
+                envCache = new HashMap<String, String>();
+                RemoteCommandSupport support = new RemoteCommandSupport(hkey, "env"); // NOI18N
+                if (support.run() == 0) {
+                    String val = support.toString();
+                    String[] lines = val.split("\n"); // NOI18N
+                    for (int i = 0; i < lines.length; i++) {
+                        int pos = lines[i].indexOf('=');
+                        if (pos > 0) {
+                            envCache.put(lines[i].substring(0, pos), lines[i].substring(pos + 1));
+                        }
                     }
                 }
             }
-            envCache.put(key, map);
+            return envCache;
         }
-        
-        return map;
+
+        public boolean isCshShell() {
+            if (isCshShell == null) {
+                //N.B.: this is only place where RemoteCommandSupport should take PATH= !!
+                RemoteCommandSupport support = new RemoteCommandSupport(hkey, "PATH=/bin:/usr/bin export"); // NOI18N
+                support.setPreserveCommand(true); // to avoid endless loop
+                isCshShell = new Boolean(support.run() != 0);
+            }
+            return isCshShell.booleanValue();
+        }
+
+        public int getPlatform() {
+            if (platform == null) {
+                RemoteCommandSupport support = new RemoteCommandSupport(hkey, "uname -s"); //NOI18N
+                int result;
+                if (support.run() == 0) {
+                    result = recognizePlatform(support.toString());
+                } else {
+                    result = PlatformTypes.PLATFORM_GENERIC;
+                }
+                platform = new Integer(result);
+            }
+            return platform.intValue();
+        }
+
+        private static int recognizePlatform(String platform) {
+            if (platform.startsWith("Windows")) { // NOI18N
+                return PlatformTypes.PLATFORM_WINDOWS;
+            } else if (platform.startsWith("Linux")) { // NOI18N
+                return PlatformTypes.PLATFORM_LINUX;
+            } else if (platform.startsWith("SunOS")) { // NOI18N
+                return platform.contains("86") ? PlatformTypes.PLATFORM_SOLARIS_INTEL : PlatformTypes.PLATFORM_SOLARIS_SPARC; // NOI18N
+            } else if (platform.toLowerCase().startsWith("mac")) { // NOI18N
+                return PlatformTypes.PLATFORM_MACOSX;
+            } else {
+                return PlatformTypes.PLATFORM_GENERIC;
+            }
+        }
+    }
+    private final static Map<String, RemoteHostInfo> hkey2hostInfo = new HashMap<String, RemoteHostInfo>();
+
+    public static synchronized RemoteHostInfo getHostInfo(String hkey) {
+        RemoteHostInfo hi = hkey2hostInfo.get(hkey);
+        if (hi == null) {
+            hi = new RemoteHostInfo(hkey);
+            hkey2hostInfo.put(hkey, hi);
+        }
+        return hi;
+    }
+
+    @Override
+    public PathMap getMapper(String hkey) {
+        return getHostInfo(hkey).getMapper();
+    }
+
+    @Override
+    public Map<String, String> getEnv(String hkey) {
+        return getHostInfo(hkey).getEnv();
+    }
+
+    @Override
+    public String getLibDir(String key) {
+        String home = getHostInfo(key).getHome();
+        if (home == null) {
+            return null;
+        }
+        return home + "/" + RemoteServerSetup.REMOTE_LIB_DIR;
     }
 
     @Override
     public boolean fileExists(String key, String path) {
-        RemoteCommandSupport support = new RemoteCommandSupport(key, 
+        RemoteCommandSupport support = new RemoteCommandSupport(key,
                 "/usr/bin/test -d \"" + path + "\" -o -f \"" + path + "\""); // NOI18N
-        return support.getExitStatus() == 0;
+        return support.run() == 0;
+    }
+
+    @Override
+    public int getPlatform(String hkey) {
+        return getHostInfo(hkey).getPlatform();
     }
 }

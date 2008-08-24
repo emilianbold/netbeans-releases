@@ -123,6 +123,18 @@ public class QuoterTest extends DDLTestBase {
         } catch ( NullPointerException npe ) {
             // expected
         }
+        try {
+            quoter.quoteAlways(null);
+            fail("Expected a NullPointerException");
+        } catch ( NullPointerException npe ) {
+            // expected
+        }
+        try {
+            quoter.unquote(null);
+            fail("Expected a NullPointerException");
+        } catch ( NullPointerException npe ) {
+            // expected
+        }
     }
     
     public void testFirstCharIsUnderbar() throws Exception {
@@ -143,5 +155,14 @@ public class QuoterTest extends DDLTestBase {
         String result = quoter.quoteIfNeeded(identifier);
         
         assertEquals(expResult, result);
+    }
+
+    public void testUnquote() {
+        assertEquals("", quoter.unquote(""));
+        assertEquals("", quoter.unquote("\"\""));
+        assertEquals("id", quoter.unquote("id"));
+        assertEquals("id", quoter.unquote("\"id"));
+        assertEquals("id", quoter.unquote("id\""));
+        assertEquals("id", quoter.unquote("\"id"));
     }
 }

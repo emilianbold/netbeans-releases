@@ -275,7 +275,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run(CompilationController cc) throws Exception {
             cc.toPhase(Phase.RESOLVED);
-            org.mozilla.javascript.Node root = AstUtilities.getRoot(cc);
+            org.mozilla.nb.javascript.Node root = AstUtilities.getRoot(cc);
             if (root == null) {
                 // TODO How do I add some kind of error message?
                 System.out.println("FAILURE - can't refactor uncompileable sources");
@@ -340,7 +340,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run(CompilationController info) throws Exception {
             info.toPhase(Phase.ELEMENTS_RESOLVED);
-            org.mozilla.javascript.Node root = AstUtilities.getRoot(info);
+            org.mozilla.nb.javascript.Node root = AstUtilities.getRoot(info);
             if (root != null) {
                 Element element = AstElement.getElement(info, root);
                 JsElementCtx fileCtx = new JsElementCtx(root, root, element, info.getFileObject(), info);
@@ -380,7 +380,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public void run(CompilationController info) throws Exception {
             info.toPhase(Phase.ELEMENTS_RESOLVED);
-            org.mozilla.javascript.Node root = AstUtilities.getRoot(info);
+            org.mozilla.nb.javascript.Node root = AstUtilities.getRoot(info);
             if (root != null) {
                 JsParseResult rpr = AstUtilities.getParseResult(info);
                 if (rpr != null) {
@@ -391,7 +391,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                         // In Java, we look for a class with the name corresponding to the file.
                         // It's not as simple in Ruby.
                         AstElement element = els.get(0);
-                        org.mozilla.javascript.Node node = element.getNode();
+                        org.mozilla.nb.javascript.Node node = element.getNode();
                         JsElementCtx representedObject = new JsElementCtx(root, node, element, info.getFileObject(), info);
                         representedObject.setNames(element.getFqn(), element.getName());
                         handles.add(representedObject);

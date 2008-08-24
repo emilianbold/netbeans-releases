@@ -41,6 +41,8 @@
 package org.netbeans.modules.web.debug;
 
 import java.io.File;
+import java.io.IOException;
+import javax.swing.JDialog;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -59,7 +61,9 @@ import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 
 /** Test of web application debugging. Manual test specification is here:
  * http://qa.netbeans.org/modules/webapps/promo-f/jspdebug/jspdebug-testspec.html
@@ -75,7 +79,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(ServletDebuggingTest.class),
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH,NbModuleSuite.createConfiguration(ServletDebuggingTest.class),
                 "testSetBreakpoint",
                 "testStepInto",
                 "testStepOut",
@@ -95,6 +99,12 @@ public class ServletDebuggingTest extends J2eeTestCase {
         // increase timeout to 60 seconds when waiting for status bar text
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 60000);
         // find servlet node in Projects view
+        try {
+            openProjects(new File(getDataDir(), SAMPLE_WEB_PROJECT_NAME).getAbsolutePath());
+            ProjectSupport.waitScanFinished();
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
         servletNode = new Node(new SourcePackagesNode(SAMPLE_WEB_PROJECT_NAME),
                                "org.netbeans.test.servlets|DivideServlet.java"); //NOI18N
     }
@@ -144,6 +154,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
         new ActionNoBlock(null, debugFileItem).perform(servletNode);
         String setURITitle = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "TTL_setServletExecutionUri");
         new NbDialogOperator(setURITitle).ok();
+        Utils.confirmInformationMessage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N
@@ -170,6 +181,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testStepOut() {
         new DebugAction().perform(servletNode);
+        Utils.confirmInformationMessage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N
@@ -191,6 +203,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testStepOver() {
         new DebugAction().perform(servletNode);
+        Utils.confirmInformationMessage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N
@@ -212,6 +225,7 @@ public class ServletDebuggingTest extends J2eeTestCase {
      */
     public void testApplyCodeChanges() {
         new DebugAction().perform(servletNode);
+        Utils.confirmInformationMessage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/DivideServlet");
         stt.waitText("DivideServlet.java:"+line); //NOI18N

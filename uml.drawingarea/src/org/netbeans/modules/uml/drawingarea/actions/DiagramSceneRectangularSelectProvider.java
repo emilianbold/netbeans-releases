@@ -40,20 +40,13 @@
  */
 package org.netbeans.modules.uml.drawingarea.actions;
 
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Line2D;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.visual.action.RectangularSelectProvider;
 import org.netbeans.api.visual.model.ObjectScene;
-import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
-import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
-import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
  *
@@ -72,7 +65,9 @@ public class DiagramSceneRectangularSelectProvider implements RectangularSelectP
         if (scene instanceof DesignerScene)
         {
             DesignerScene designerScene = (DesignerScene) scene;
-            Set < IPresentationElement > set = designerScene.getGraphObjectInRectangle(sceneSelection, false);
+            Set < IPresentationElement > set = 
+                    designerScene.getGraphObjectInRectangle(sceneSelection, true, true);
+            
             Iterator<IPresentationElement> iterator = set.iterator ();
             scene.setFocusedObject (iterator.hasNext () ? iterator.next () : null);
             scene.userSelectionSuggested (set, false);

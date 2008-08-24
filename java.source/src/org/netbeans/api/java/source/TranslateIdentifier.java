@@ -749,7 +749,10 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
             if (copyComments) {
                 mapComments(tree);
             }
-            return tree.accept(this, null);
+            Tree newTree = tree.accept(this, null);
+            // #144209
+            commentService.copyComments(tree, newTree);
+            return newTree;
         }
     }
     

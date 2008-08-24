@@ -79,8 +79,9 @@ public final class HLFactory implements HighlightsLayerFactory {
             true,  // fixedSize
             new ComposedTextHighlighting(c, d, mimeType)
         ));
-        
-        if (!TokenHierarchy.get(context.getDocument()).isActive()) {
+
+
+        if (!new TokenHierarchyActiveRunnable(context.getDocument()).isActive()) {
             // There is no lexer yet, we will use this layer for backwards compatibility
             layers.add(HighlightsLayer.create(
                 NonLexerSyntaxHighlighting.LAYER_TYPE_ID, 
@@ -102,4 +103,26 @@ public final class HLFactory implements HighlightsLayerFactory {
         
         return mimeType == null ? "" : mimeType; //NOI18N
     }
+
+    private static final class TokenHierarchyActiveRunnable implements Runnable {
+
+        private Document doc;
+
+        private boolean tokenHierarchyActive;
+
+        TokenHierarchyActiveRunnable(Document doc) {
+            this.doc = doc;
+        }
+
+        boolean isActive() {
+            doc.render(this);
+            return tokenHierarchyActive;
+        }
+
+        public void run() {
+            tokenHierarchyActive = TokenHierarchy.get(doc).isActive();
+        }
+
+    }
+
 }

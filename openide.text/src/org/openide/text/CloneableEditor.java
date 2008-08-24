@@ -289,8 +289,26 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 + " Name:" + CloneableEditor.this.getName());
             }
             Task prepareTask = support.prepareDocument();
-
             // load the doc synchronously
+            if (prepareTask == null) {
+                Throwable exc = support.getPrepareDocumentRuntimeException();
+                if (exc instanceof CloneableEditorSupport.DelegateIOExc) {
+                    if ("org.openide.text.DataEditorSupport$Env$ME".equals(exc.getCause().getClass().getName())) {
+                        if (exc.getCause() instanceof UserQuestionException) {
+                            UserQuestionException e = (UserQuestionException) exc.getCause();
+                            try {
+                                e.confirmed();
+                            } catch (IOException ioe) {
+                            }
+                            prepareTask = support.prepareDocument();
+                        }
+                    }
+                }
+            }
+            if (prepareTask == null) {
+                LOG.log(Level.WARNING,"Failed to get prepareTask");
+                return;
+            }
             prepareTask.waitFinished();
 
             // Init action map: cut,copy,delete,paste actions.
@@ -480,6 +498,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     caret.setDot(cursorPosition);
                 }
             }
+            ActionMap p = getActionMap().getParent();
+            getActionMap().setParent(null);
+            getActionMap().setParent(p);
             //#134910: If editor TopComponent is already activated request focus
             //to it again to get focus to correct subcomponent eg. QuietEditorPane which
             //is added above.

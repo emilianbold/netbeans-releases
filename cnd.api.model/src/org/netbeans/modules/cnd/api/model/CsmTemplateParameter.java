@@ -61,6 +61,8 @@ public interface CsmTemplateParameter extends CsmNamedElement {
     // TODO: perhaps we'd  better move this to some common interface
     //CharSequence getText();
     
+    /** Gets this parameter default value  */
+    CsmObject getDefaultValue();
     
 }
 

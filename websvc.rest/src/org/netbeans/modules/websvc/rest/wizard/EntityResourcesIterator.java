@@ -103,7 +103,7 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
         });
         transformTask.schedule(50);
         progressDialog.open();
-        
+            
         return Collections.singleton(DataFolder.findFolder(targetFolder));
     }
     

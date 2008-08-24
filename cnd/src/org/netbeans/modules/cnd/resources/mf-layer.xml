@@ -566,7 +566,7 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="850"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/makefiles.html"/>
             
-            <file name="ComplexMakefile">
+            <file name="Makefile">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
