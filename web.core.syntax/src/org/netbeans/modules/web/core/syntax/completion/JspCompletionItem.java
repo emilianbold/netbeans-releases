@@ -758,7 +758,7 @@ public class JspCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return super.getSortPriority() + 1; //be first of the file compl. items
+            return super.getSortPriority() - 1; //be first of the file compl. items
         }
         
     }

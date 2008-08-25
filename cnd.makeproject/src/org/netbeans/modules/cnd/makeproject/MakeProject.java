@@ -165,7 +165,7 @@ public final class MakeProject implements Project, AntProjectListener {
             nl = nl.item(0).getChildNodes();
             if (nl.getLength() == 1) {
                 String extensions = nl.item(0).getNodeValue();
-                for(String e : extensions.split(",")){
+                for (String e : extensions.split(",")) { // NOI18N
                     set.add(e);
                 }
             }

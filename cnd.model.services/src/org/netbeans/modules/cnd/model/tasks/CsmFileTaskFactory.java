@@ -43,9 +43,11 @@ package org.netbeans.modules.cnd.model.tasks;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
@@ -81,7 +83,7 @@ public abstract class CsmFileTaskFactory {
     protected abstract Collection<FileObject> getFileObjects();
     
     protected final void fileObjectsChanged() {
-        final List<FileObject> currentFiles = new ArrayList<FileObject>(getFileObjects());
+        final Set<FileObject> currentFiles = new HashSet<FileObject>(getFileObjects());
         final long id = Math.round(100.0*Math.random());
         final String name = this.getClass().getName();
         if (OpenedEditors.SHOW_TIME) System.err.println("CsmFileTaskFactory: POST worker " + id);
@@ -96,7 +98,7 @@ public abstract class CsmFileTaskFactory {
         });
     }
 
-    private void stateChangedImpl(List<FileObject> currentFiles) {
+    private void stateChangedImpl(Collection<FileObject> currentFiles) {
         Map<CsmFile, Pair> toRemove = new HashMap<CsmFile, Pair>();
         Map<CsmFile, Pair> toAdd = new HashMap<CsmFile, Pair>();
 
@@ -155,7 +157,9 @@ public abstract class CsmFileTaskFactory {
         }
 
         for (Entry<CsmFile, Pair> e : toAdd.entrySet()) {
-            if (OpenedEditors.SHOW_TIME) System.err.println("CFTF: adding " + e.getKey().getAbsolutePath());
+            if (OpenedEditors.SHOW_TIME) System.err.println("CFTF: adding "+
+                    (e.getKey().isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT)+
+                    " "+e.getValue().runner.toString()+" " + e.getKey().getAbsolutePath());
             post(e.getValue(), e.getKey(), e.getKey().isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT, DELAY);
         }
     }
@@ -195,10 +199,15 @@ public abstract class CsmFileTaskFactory {
     }
     
     private final void post(Pair pr, CsmFile file, PhaseRunner.Phase phase, int delay) {
-        pr.task = WORKER.post(new CsmSafeRunnable( getRunnable(pr.runner, phase), file), delay );
+        if (pr.runner.isHighPriority()) {
+            pr.task = HIGH_PRIORITY_WORKER.post(new CsmSafeRunnable( getRunnable(pr.runner, phase), file), delay , Thread.NORM_PRIORITY);
+        } else {
+            pr.task = WORKER.post(new CsmSafeRunnable( getRunnable(pr.runner, phase), file), delay );
+        }
     }
     
     private static RequestProcessor WORKER = new RequestProcessor("CsmFileTaskFactory", 1); //NOI18N
+    private static RequestProcessor HIGH_PRIORITY_WORKER = new RequestProcessor("CsmHighPriorityFileTaskFactory", 1); //NOI18N
 
     static {
         CsmFileTaskFactoryManager.ACCESSOR = new CsmFileTaskFactoryManager.Accessor() {
@@ -259,6 +268,7 @@ public abstract class CsmFileTaskFactory {
         public abstract void run(Phase phase);
         public abstract boolean isValid();
         public abstract void cancel();
+        public abstract boolean isHighPriority();
     }
     
     private static final class Pair {
@@ -288,6 +298,10 @@ public abstract class CsmFileTaskFactory {
             }
 
             public void cancel() {
+            }
+
+            public boolean isHighPriority() {
+                return false;
             }
         };
     }

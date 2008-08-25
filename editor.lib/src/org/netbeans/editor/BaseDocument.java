@@ -44,12 +44,10 @@ package org.netbeans.editor;
 import java.awt.Font;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
-import java.lang.StackTraceElement;
 import java.util.Hashtable;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Map;
 import java.io.Reader;
 import java.io.Writer;
@@ -450,7 +448,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      *
      * @param kitClass class used to initialize this document with proper settings
      *   category based on the editor kit for which this document is created
-     * @param addToRegistry XXX
+     * @param addToRegistry If <code>true</code> the document will be listed in the
+     *   <code>EditorRegistry</code>. In most situations <code>true</code> is the
+     *   correct. However, if you are absolutely sure that document should not be
+     *   listed in the registry, then set this parameter to <code>false</code>.
      *
      * @deprecated Use of editor kit's implementation classes is deprecated
      *   in favor of mime types.
@@ -479,7 +480,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /**
      * Creates a new document.
      *
-     * @param addToRegistry XXX You probabaly want to pass <code>true</code>.
+     * @param addToRegistry If <code>true</code> the document will be listed in the
+     *   <code>EditorRegistry</code>. In most situations <code>true</code> is the
+     *   correct. However, if you are absolutely sure that document should not be
+     *   listed in the registry, then set this parameter to <code>false</code>.
      * @param mimeType The mime type for the document.
      *
      * @since 1.26

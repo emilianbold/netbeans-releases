@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <tags source="london">
+        <tag>england</tag>
+        <tag>thames</tag>
+        <tag>tube</tag>
+        <tag>bigben</tag>
+        <tag>uk</tag>
+    </tags>
+</rsp>

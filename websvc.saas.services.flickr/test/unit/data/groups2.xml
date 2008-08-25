@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <groups>
+        <group nsid="34427469792@N01" name="FlickrCentral"
+		admin="0" eighteenplus="0" />
+        <group nsid="37114057624@N01" name="Cal's Test Group"
+		admin="1" eighteenplus="0" />
+        <group nsid="34955637532@N01" name="18+ Group"
+		admin="1" eighteenplus="1" />
+    </groups>
+</rsp>

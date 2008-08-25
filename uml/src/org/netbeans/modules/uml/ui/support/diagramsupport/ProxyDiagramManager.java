@@ -219,12 +219,14 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
                 {
                     try {
                         FileObject parentFolder = diagFO.getParent(); 
-                        String fileNameWithExt = diagFO.getNameExt();
+                        String fileNameWithoutExt = diagFO.getName(); 
                         FileObject destFolderFO = FileUtil.createFolder(parentFolder, "DiagramBackup");
                         
                         //move diagram file to backupp folder
-                        FileUtil.copyFile(diagFO, destFolderFO, fileNameWithExt);
-                        if(lock!=null)diagFO.delete(lock);
+                        FileUtil.copyFile(diagFO, destFolderFO, fileNameWithoutExt);
+                        
+                        if(lock != null)
+                            diagFO.delete(lock);
                         else diagFO.delete();
 
                         IDrawingAreaEventDispatcher dispatcher = getDispatcher();

@@ -40,17 +40,26 @@
  */
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.components.categories.DisplayablesCategoryCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement.DesignComponentWrapper;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementEvent;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementListener;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorUserCode;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormSupport;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,17 +86,17 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorSVGImage.class, "LBL_SVGIMAGE_STR")); // NOI18N;
-        
-        radioButton.getAccessibleContext().setAccessibleName( 
+
+        radioButton.getAccessibleContext().setAccessibleName(
                 NbBundle.getMessage(PropertyEditorSVGImage.class, "ACSN_SVGIMAGE_STR")); // NOI18N;
         radioButton.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(PropertyEditorSVGImage.class, "ACSD_SVGIMAGE_STR")); // NOI18N;
-        
+
         customEditor = new SVGImageEditorElement();
         customEditor.addPropertyEditorResourceElementListener(this);
         customEditor.setPropertyEditorMessageAwareness(this);
     }
-    
+
     @Override
     public void customEditorOKButtonPressed() {
         super.customEditorOKButtonPressed();
@@ -149,7 +158,51 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
         radioButton.setSelected(true);
     }
 
-    private void saveValue(String text) {
-        super.setValue(MidpTypes.createStringValue(text));
+    private void saveValue(final String text) {
+        if (component == null || component.get() == null) {
+            return;
+        }
+        
+        final DesignComponent component_ = component.get();
+        final PropertyValue oldValue[] = new PropertyValue[1];
+        component_.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                  oldValue[0] = component_.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
+                  System.out.println("Property oldValue " +  oldValue[0]);
+                  System.out.println("Property new Value " +  text);
+            }
+        });
+        component_.getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+            public void run() {
+                DesignComponent category = MidpDocumentSupport.getCategoryComponent(component_.getDocument(), DisplayablesCategoryCD.TYPEID);
+                Collection<DesignComponent> svgForms = new HashSet<DesignComponent>();
+                for (DesignComponent child : category.getComponents()) {
+                    if (component_.getDocument().getDescriptorRegistry().isInHierarchy(SVGFormCD.TYPEID, child.getType())) {
+                        if (child.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent() == component_) {
+                            svgForms.add(child);
+                        }
+                    }
+                }
+               
+                if (!svgForms.isEmpty() && oldValue[0].getKind() == PropertyValue.Kind.VALUE) {
+                    if (oldValue[0].getPrimitiveValue().equals(text)) {
+                        return;
+                    }
+                    for (DesignComponent svgForm : svgForms) {
+                        SVGFormSupport.removeAllSVGFormComponents(svgForm);
+                        FileObject svgImageFile = SVGFormSupport.getSVGFile(component_.getDocument(), text);
+                        if (svgImageFile != null) {
+                            SVGFormSupport.parseSVGImageItems(svgImageFile, svgForm);
+                        }
+                    }
+                    PropertyEditorSVGImage.super.setValue(MidpTypes.createStringValue(text));
+                } else {
+                    PropertyEditorSVGImage.super.setValue(MidpTypes.createStringValue(text));
+                }
+            }
+        });
+
     }
 }

@@ -734,6 +734,9 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     
     
     public boolean isActionEnabled( String command, Lookup context ) {
+        if (getPlatform() == null) {
+            return false;
+        }
         // We don't require files to be in the source roots to be executable/debuggable;
         // for example, in Rails you may want to switch to the Files view and execute
         // some of the files in scripts/, even though these are not considered sources

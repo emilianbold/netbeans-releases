@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <person nsid="12037949754@N01" isadmin="0" ispro="0" iconserver="122" iconfarm="1">
+        <username>bees</username>
+        <realname>Cal Henderson</realname>
+        <mbox_sha1sum>eea6cd28e3d0003ab51b0058a684d94980b727ac</mbox_sha1sum>
+        <location>Vancouver, Canada</location>
+        <photosurl>http://www.flickr.com/photos/bees/</photosurl>
+        <profileurl>http://www.flickr.com/people/bees/</profileurl>
+        <photos>
+            <firstdate>1071510391</firstdate>
+            <firstdatetaken>1900-09-02 09:11:24</firstdatetaken>
+            <count>449</count>
+        </photos>
+    </person>
+</rsp>
