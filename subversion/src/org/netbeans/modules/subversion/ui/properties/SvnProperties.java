@@ -90,7 +90,6 @@ public class SvnProperties implements ActionListener, DocumentListener {
     private SvnProgressSupport support;
     private boolean loadedFromFile;
     private File loadedValueFile;
-    private Font fontTextArea;
     
     /** Creates a ew instance of SvnProperties */
     public SvnProperties(PropertiesPanel panel, PropertiesTable propTable, File root) {
@@ -211,7 +210,6 @@ public class SvnProperties implements ActionListener, DocumentListener {
             Subversion.LOG.log(Level.SEVERE, null, ex);
         }
         fontTextArea = panel.txtAreaValue.getFont();
-        panel.txtAreaValue.setFont(new Font("Monospaced", Font.ITALIC, 12));
         panel.txtAreaValue.setText(txtValue.toString());
         setLoadedFromFile(true); 
     }
@@ -447,7 +445,6 @@ public class SvnProperties implements ActionListener, DocumentListener {
                 if (isLoadedFromFile()) {
                    EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            panel.txtAreaValue.setFont(fontTextArea);
                             panel.txtAreaValue.setText("");
                         }
                    });
