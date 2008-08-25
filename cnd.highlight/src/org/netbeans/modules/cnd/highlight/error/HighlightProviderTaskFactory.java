@@ -123,6 +123,10 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
             }
         }
 
+        public boolean isHighPriority() {
+            return false;
+        }
+
         protected class MyInterruptor implements Interrupter, Cancellable {
             private boolean canceled = false;
             public boolean cancelled() {
