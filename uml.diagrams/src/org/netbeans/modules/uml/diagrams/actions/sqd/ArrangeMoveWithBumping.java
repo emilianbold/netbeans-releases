@@ -152,8 +152,18 @@ public class ArrangeMoveWithBumping extends ArrangeMessagesProvider {
                         {
                             ExecutionSpecificationThinWidget prevEx=(ExecutionSpecificationThinWidget) parent.getParentWidget().getChildren().get(pos-1);
                             toBump=(MessagePinWidget) prevEx.getChildren().get(0);//bump first pin, so ex spec is bumped as solid
-                            MessagePinWidget lastInPrev=(MessagePinWidget) prevEx.getChildren().get(prevEx.getChildren().size()-1);//but determine free space from last pin
-                            dFr=lastInPrev.getPreferredLocation().y+lastInPrev.getMarginAfter()-(w.getPreferredLocation().y-w.getMarginBefore())+gap;
+                            Widget lastInPrevW=prevEx.getChildren().get(prevEx.getChildren().size()-1);
+                            if(lastInPrevW instanceof MessagePinWidget)
+                            {
+                                MessagePinWidget lastInPrev=(MessagePinWidget) lastInPrevW;//but determine free space from last pin
+                                dFr=lastInPrev.getPreferredLocation().y+lastInPrev.getMarginAfter()-(w.getPreferredLocation().y-w.getMarginBefore())+gap;
+                            }
+                            else if(lastInPrevW instanceof ExecutionSpecificationThinWidget)
+                            {
+                                //it currently may happens for asynch message to self only
+                                ExecutionSpecificationThinWidget lastInPrev=(ExecutionSpecificationThinWidget)lastInPrevW;
+                                dFr=lastInPrev.getPreferredLocation().y+lastInPrev.getBounds().y+lastInPrev.getBounds().height+-(w.getPreferredLocation().y-w.getMarginBefore())+gap;
+                            }
                         }
                         else
                         {
