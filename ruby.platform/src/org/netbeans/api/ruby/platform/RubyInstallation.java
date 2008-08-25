@@ -108,6 +108,10 @@ public class RubyInstallation {
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
+
+        if (!new File(jruby).isFile()) {
+            return null;
+        }
         
         return jruby;
     }
