@@ -229,7 +229,7 @@ public class IgnoreAction extends ContextAction {
         // technically, this block need not be synchronized but we want to have svn:ignore property set correctly at all times
         synchronized(IgnoreAction.class) {                        
             List<String> patterns = Subversion.getInstance().getClient(true).getIgnoredPatterns(parent);
-            if (patterns.contains(file.getName()) == false) {
+            if (patterns != null && patterns.contains(file.getName()) == false) {
                 patterns.add(file.getName());
                 Subversion.getInstance().getClient(true).setIgnoredPatterns(parent, patterns);
             }            
