@@ -51,7 +51,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.util.CsmTracer;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -342,34 +342,62 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return true;
     }
 
-    public void registerDeclaration(CsmOffsetableDeclaration decl) {
+    public boolean registerDeclaration(CsmOffsetableDeclaration decl) {
 
         if( !ProjectBase.canRegisterDeclaration(decl) ) {
-            if (TraceFlags.TRACE_REGISTRATION) {
-                System.err.println("not registered decl " + decl + " UID " + decl.getUID()); //NOI18N
+            if (TraceFlags.TRACE_REGISTRATION) traceRegistration("not registered decl " + decl + " UID " + decl.getUID()); //NOI18N
+            return false;
+        }
+
+        if (CsmKindUtilities.isClass(decl) || CsmKindUtilities.isEnum(decl)) {
+            
+            ClassEnumBase cls = (ClassEnumBase) decl;
+            CharSequence qname = cls.getQualifiedName();
+            
+            synchronized (classifierReplaceLock) {
+                CsmClassifier old = classifierContainer.getClassifier(qname);
+                if (old != null) {
+                    // don't register if the new one is weaker
+                    if (cls.shouldBeReplaced(old)) {
+                        if (TraceFlags.TRACE_REGISTRATION) traceRegistration("not registered decl " + decl + " UID " + decl.getUID()); //NOI18N
+                        return false;
+                    }
+                    // remove the old one if the new one is stronger
+                    if ((old instanceof ClassEnumBase) && ((ClassEnumBase) old).shouldBeReplaced(cls)) {
+                        if (TraceFlags.TRACE_REGISTRATION) System.err.println("disposing old decl " + old + " UID " + decl.getUID()); //NOI18N
+                        ((ClassImpl) old).dispose();
+                    }
+                }
+                getDeclarationsSorage().putDeclaration(decl);
+                classifierContainer.putClassifier((CsmClassifier) decl);
             }
-            return;
+            
+        } else if( CsmKindUtilities.isTypedef(decl)) { // isClassifier(decl) or isTypedef(decl) ??
+            getDeclarationsSorage().putDeclaration(decl);
+            classifierContainer.putClassifier((CsmClassifier) decl);
+        } else {
+            // only classes, enums and typedefs are registered as classifiers;
+            // even if you implement CsmClassifier, this doesn't mean you atomatically get there ;)
+            getDeclarationsSorage().putDeclaration(decl);
         }
 
-        getDeclarationsSorage().putDeclaration(decl);
-        if( decl instanceof CsmClassifier ) {
-            CharSequence qn = decl.getQualifiedName();
-            classifierContainer.putClassifier((CsmClassifier)decl);
-        }
-
-        if (TraceFlags.TRACE_REGISTRATION) {
-            System.err.println("registered " + decl + " UID " + decl.getUID()); //NOI18N
-        }
+        if (TraceFlags.TRACE_REGISTRATION) System.err.println("registered " + decl + " UID " + decl.getUID()); //NOI18N
+        return true;
     }
 
     public void unregisterDeclaration(CsmDeclaration decl) {
         if (TraceFlags.TRACE_REGISTRATION) {
-            System.err.println("unregistered " + decl+ " UID " + decl.getUID()); //NOI18N
+            traceRegistration("unregistered " + decl+ " UID " + decl.getUID()); //NOI18N
         }
         if( decl instanceof CsmClassifier ) {
             classifierContainer.removeClassifier(decl);
         }
         getDeclarationsSorage().removeDeclaration(decl);
+    }
+
+    private static void traceRegistration(String text) {
+        assert TraceFlags.TRACE_REGISTRATION : "TraceFlags.TRACE_REGISTRATION should be checked *before* call !"; //NOI18N
+        System.err.printf("registration: %s\n", text);
     }
 
     public void waitParse() {
@@ -1930,6 +1958,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private final Object waitParseLock = new Object();
 
+
+// to profile monitor usages    
+//    private static final class ClassifierReplaceLock {
+//    }
+
+    private final Object classifierReplaceLock = new Object(); // ClassifierReplaceLock();
+    
     private ModelImpl model;
     private Unresolved unresolved;
     private CharSequence name;
