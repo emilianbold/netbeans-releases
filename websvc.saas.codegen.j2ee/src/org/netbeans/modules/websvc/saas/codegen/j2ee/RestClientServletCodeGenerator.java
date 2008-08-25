@@ -56,6 +56,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.codegen.java.support.JavaUtil;
 import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
+import org.netbeans.modules.websvc.saas.codegen.j2ee.support.J2eeUtil;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 
@@ -65,8 +66,9 @@ import org.netbeans.modules.websvc.saas.model.SaasMethod;
  * @author ayubskhan
  */
 public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator {
+    
     private SaasClientJ2eeAuthenticationGenerator j2eeAuthGen;
-
+    
     public RestClientServletCodeGenerator() {
         setDropFileType(Constants.DropFileType.SERVLET);
         setPrecedence(1);
@@ -75,7 +77,7 @@ public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator 
     @Override
     public boolean canAccept(SaasMethod method, Document doc) {
         if (SaasBean.canAccept(method, WadlSaasMethod.class, getDropFileType()) &&
-                Util.isServlet(NbEditorUtilities.getDataObject(doc))) {
+                J2eeUtil.isServlet(NbEditorUtilities.getDataObject(doc))) {
             return true;
         }
         return false;
@@ -105,27 +107,30 @@ public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator 
         String indent2 = "                 ";
 
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
-        List<ParameterInfo> filterParams = getServiceMethodParameters();//includes request, response also
+        List<ParameterInfo> params = getServiceMethodParameters();
+        clearVariablePatterns();
+        updateVariableNames(params);
+        List<ParameterInfo> renamedParams = renameParameterNames(params);
 
-        paramUse += Util.getHeaderOrParameterUsage(filterParams);
-        filterParams = super.getServiceMethodParameters();
-        paramDecl += getHeaderOrParameterDeclaration(filterParams);
-        return getCustomMethodBody(paramDecl, paramUse, indent2);
+        paramUse += Util.getHeaderOrParameterUsage(renamedParams);
+        paramDecl += getHeaderOrParameterDeclaration(renameParameterNames(super.getServiceMethodParameters()));
+        return getCustomMethodBody(paramDecl, paramUse, getResultPattern(), indent2);
     }
 
-    protected String getCustomMethodBody(String paramDecl, String paramUse, String indent2) {
+    protected String getCustomMethodBody(String paramDecl, String paramUse, 
+            String resultVarName, String indent2) {
         String indent = "             ";
-        String methodBody = "";
+        String methodBody = "\n";
         methodBody += indent + "try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += indent2 + REST_RESPONSE + " result = " + getBean().getSaasServiceName() +
+        methodBody += indent2 + REST_RESPONSE + " "+resultVarName+" = " + getBean().getSaasServiceName() +
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
         methodBody += Util.createPrintStatement(
                 getBean().getOutputWrapperPackageName(),
                 getBean().getOutputWrapperName(),
                 getDropFileType(),
                 getBean().getHttpMethod(),
-                getBean().canGenerateJAXBUnmarshaller(), indent2);
+                getBean().canGenerateJAXBUnmarshaller(), resultVarName, indent2);
         methodBody += indent + "} catch (Exception ex) {\n";
         methodBody += indent2 + "ex.printStackTrace();\n";
         methodBody += indent + "}\n";

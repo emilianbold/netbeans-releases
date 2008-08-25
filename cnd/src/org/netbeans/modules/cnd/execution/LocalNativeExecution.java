@@ -157,33 +157,9 @@ public class LocalNativeExecution extends NativeExecution {
     }
 
     @Override
-    protected String getUnbufferPath(int platformType) {
-        String unbufferName = getUnbufferName(platformType);
-        if (unbufferName == null) {
-            return null;
-        }
-        File file = InstalledFileLocator.getDefault().locate("bin/" + unbufferName, null, false);
-        if (file != null && file.exists()) {
-            return fixPath(file.getAbsolutePath());
-        } else {
-            log.warning("unbuffer: " + unbufferName + " not found");
-            return null;
-        }
+    protected String getUnbufferPath(String host) {
+        return Unbuffer.getLocalPath();
     }
-
-    private String fixPath(String path) {
-        // TODO: implement
-        /*
-        if (isCygwin() && path.charAt(1) == ':') {
-            return "/cygdrive/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
-        } else if (isMinGW() && path.charAt(1) == ':') {
-            return "/" + path.charAt(0) + path.substring(2).replace("\\", "/"); // NOI18N
-        } else {
-            return path;
-        }*/
-        return path;
-    }
-
 
     /** Helper class to read the input from the build */
     private static final class OutputReaderThread  extends Thread {
@@ -276,7 +252,7 @@ public class LocalNativeExecution extends NativeExecution {
      * Find the script stdouterr.sh somewhere in the installation tree. It is needed to merge stdout and stderr
      * for for instance makefile execution.
      */
-    public static File getStdOutErrFile() {
+    private static File getStdOutErrFile() {
         if (stdOutErrFile == null) {
             String stderrCmd;
 

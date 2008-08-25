@@ -42,6 +42,7 @@
 XREF=""
 ERROR=""
 QUITE=""
+AWK=${AWK-"nawk"}
 
 function classpath() {
 
@@ -177,7 +178,7 @@ function classpath() {
 function trace_classpath() {
     local paths=$@
     local ERROR=""
-    for F in `echo ${paths} | nawk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
+    for F in `echo ${paths} | ${AWK} -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
 	if [ ! -r ${F} ]; then
 	    echo "File ${F} doesn't exist"
 	    ERROR="y"
@@ -189,7 +190,7 @@ function trace_classpath() {
     else
 	#print classpath
 	echo "Using classpath:"
-	for F in `echo ${paths} | nawk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
+	for F in `echo ${paths} | ${AWK} -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
 	    echo $F
 	done
     fi

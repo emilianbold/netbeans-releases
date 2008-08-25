@@ -98,7 +98,9 @@ public class SourceNodeFactory implements NodeFactory {
             List<SourceGroupKey> result =  new ArrayList<SourceGroupKey>();
 
             for (SourceGroup sourceGroup : sourceGroups) {
-                result.add(new SourceGroupKey(sourceGroup));
+                if (sourceGroup.getRootFolder() != null) {
+                    result.add(new SourceGroupKey(sourceGroup));
+                }
             }
             
             Collections.sort(result);

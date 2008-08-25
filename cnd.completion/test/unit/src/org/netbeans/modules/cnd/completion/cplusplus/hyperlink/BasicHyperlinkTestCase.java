@@ -380,6 +380,31 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ143226.cc", 3, 18, "IZ143226.cc", 2, 5);
     }
 
+    public void testIZ144154() throws Exception {
+        // IZ#144154 : nested typedef "type" is unresolved in Boost
+        performTest("IZ144154.cc", 24, 49, "IZ144154.cc", 12, 9);
+        performTest("IZ144154.cc", 57, 52, "IZ144154.cc", 31, 5);
+    }
+
+    public void testIZ144360() throws Exception {
+        // IZ#144360 : unable to resolve typedef-ed class member in loki
+        performTest("IZ144360.cc", 12, 22, "IZ144360.cc", 12, 9);
+        performTest("IZ144360.cc", 13, 9, "IZ144360.cc", 12, 9);
+        performTest("IZ144360.cc", 13, 15, "IZ144360.cc", 7, 9);
+    }
+
+    public void testIZ140795() throws Exception {
+        // IZ#140795 : Usage of enumerators of nested enums
+        // of the template specializations are unresolved
+        performTest("IZ140795.cc", 8, 30, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 9, 29, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 10, 30, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 11, 34, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 12, 36, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 13, 37, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 14, 43, "IZ140795.cc", 4, 16);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

@@ -59,10 +59,12 @@ import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSuppor
 import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormSupport;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGMenuImageParser;
 import org.openide.filesystems.FileObject;
 
@@ -85,8 +87,11 @@ public class SVGImageAcceptTrensferableKindPresenter extends MidpAcceptTrensfera
 
         if (isAcceptableForComponent(svgPlayer)) {
             Set<FileObject> images = getImagesFO(svgPlayer, component);
+            if (getComponent().getDocument().getDescriptorRegistry().isInHierarchy(SVGFormCD.TYPEID, getComponent().getType())) {
+                SVGFormSupport.removeAllSVGFormComponents(getComponent());
+            }
             for (FileObject img : images) {
-                parseSVGImageItems(img, svgPlayer);
+                SVGFormSupport.parseSVGImageItems(img, svgPlayer);
             }
         }
 
@@ -126,31 +131,4 @@ public class SVGImageAcceptTrensferableKindPresenter extends MidpAcceptTrensfera
         return Collections.EMPTY_SET;
     }
     
-    private void parseSVGImageItems(FileObject imageFO, DesignComponent parentComponent) {
-        if (imageFO == null) {
-            return;
-        }
-        SVGComponentImageParser parser = SVGComponentImageParser.getParserByComponent(parentComponent);
-        if (parser == null) {
-            return;
-        }
-
-        InputStream inputStream = null;
-        try {
-            inputStream = imageFO.getInputStream();
-            if (inputStream != null) {
-                SVGMenuImageParser.parseSVGMenu(inputStream, parentComponent);
-            }
-        } catch (FileNotFoundException ex) {
-            Debug.warning(ex);
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException ioe) {
-                    Debug.warning(ioe);
-                }
-            }
-        }
-    }        
 }

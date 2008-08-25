@@ -135,10 +135,6 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     }
     
     private void queryImpl(CompletionResultSet resultSet, Document doc, int caretOffset) throws InterruptedException, ExecutionException {
-        if (!JavadocCompletionUtils.isJavadocContext(doc, caretOffset)) {
-            return;
-        }
-        
         JavadocContext jdctx = new JavadocContext();
         items = new  ArrayList<CompletionItem>();
         this.caretOffset = caretOffset;
@@ -173,6 +169,10 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             return js.runWhenScanFinished(new Task<CompilationController>() {
 
                 public void run(CompilationController javac) throws Exception {
+                    if (!JavadocCompletionUtils.isJavadocContext(javac.getTokenHierarchy(), caretOffset)) {
+                        return;
+                    }
+        
                     javac.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     if (isTaskCancelled()) {
                         return;

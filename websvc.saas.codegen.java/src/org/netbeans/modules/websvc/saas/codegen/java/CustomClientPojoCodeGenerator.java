@@ -75,6 +75,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.*;
  * @author nam
  */
 public class CustomClientPojoCodeGenerator extends SaasClientCodeGenerator {
+    public static final String VAR_NAMES_RESULT_DECL = RestClientPojoCodeGenerator.VAR_NAMES_RESULT_DECL;
     
     private JavaSource targetSource;  
     private FileObject serviceFolder;
@@ -204,38 +205,36 @@ public class CustomClientPojoCodeGenerator extends SaasClientCodeGenerator {
 //                        getBean().getDisplayName()).toLowerCase());
 //        }
     }
-
+    
     @Override
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
         String paramDecl = "";
-        
+
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
         String indent = "        ";
         String indent2 = "             ";
-        List<ParameterInfo> filterParams = getServiceMethodParameters();
-        paramUse += Util.getHeaderOrParameterUsage(getBean().getInputParameters());
-        paramDecl += getHeaderOrParameterDeclaration(filterParams, indent2);
-        
-        String methodBody = indent+"try {\n";
-        
-        //Insert authentication code before invoking custom service
-        methodBody += "             " +
-                getAuthenticationGenerator().getPreAuthenticationCode() + "\n";
-        
+        List<ParameterInfo> params = getServiceMethodParameters();
+        clearVariablePatterns();
+        updateVariableNames(params);
+        List<ParameterInfo> renamedParams = renameParameterNames(params);
+        paramUse += Util.getHeaderOrParameterUsage(renamedParams);
+        paramDecl += getHeaderOrParameterDeclaration(renamedParams);
+
+        String methodBody = "\n"+indent + "try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
+        methodBody += indent2 + REST_RESPONSE + " "+getResultPattern()+" = " + getBean().getSaasServiceName() +
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
         methodBody += Util.createPrintStatement(
-                getBean().getOutputWrapperPackageName(), 
+                getBean().getOutputWrapperPackageName(),
                 getBean().getOutputWrapperName(),
-                getDropFileType(), 
-                getBean().getHttpMethod(), 
-                getBean().canGenerateJAXBUnmarshaller(), indent2);
+                getDropFileType(),
+                getBean().getHttpMethod(),
+                getBean().canGenerateJAXBUnmarshaller(), getResultPattern(), indent2);
         methodBody += indent+"} catch (Exception ex) {\n";
         methodBody += indent2+"ex.printStackTrace();\n";
         methodBody += indent+"}\n";
-       
+
         return methodBody;
     }
     
@@ -250,7 +249,7 @@ public class CustomClientPojoCodeGenerator extends SaasClientCodeGenerator {
             } else {
                 code = "\nprivate String call" + getBean().getName() + "Service() {\n"; // NOI18n
                 code += getCustomMethodBody() + "\n";
-                code += "return result;\n";
+                code += "return "+getResultPattern()+";\n";
                 code += "}\n";
             }
             insert(code, true);

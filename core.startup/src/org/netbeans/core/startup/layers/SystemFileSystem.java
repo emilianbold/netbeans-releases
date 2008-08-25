@@ -330,7 +330,7 @@ implements FileSystem.Status {
             }
         }
 
-        if (homeDir == null) {
+        if (homeDir == null || !homeDir.isDirectory()) {
             home = null;
         } else {
             home = new LocalFileSystemEx ();

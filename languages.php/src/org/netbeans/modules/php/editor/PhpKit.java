@@ -58,7 +58,7 @@ import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.HTMLLexerFormatter;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.php.doc.DocumentationRegistry;
 import org.netbeans.modules.php.lexer.PhpTokenId;

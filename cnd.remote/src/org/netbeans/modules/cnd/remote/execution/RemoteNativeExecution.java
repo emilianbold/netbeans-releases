@@ -44,11 +44,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
+import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
-import org.openide.util.Lookup;
 
 /**
  * This implementation of NativeExecution provides execution on a remote server.
@@ -87,29 +84,7 @@ public class RemoteNativeExecution extends NativeExecution {
     }
 
     @Override
-    protected String getUnbufferPath(int platformType) {
-        String path = null;
-        CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-        if (provider != null) {
-            int rc = provider.run(host, "echo $HOME", null); // NOI18N
-            if (rc == 0) {
-                path = provider.toString().trim(); // remote the newline
-            }
-        }
-        if (path == null) {
-            path = "/home/" + System.getProperty("user.name"); // NOI18N
-        }
-        path += "/" + RemoteServerSetup.REMOTE_LIB_DIR;
-        String unbufferName = getUnbufferName(platformType);
-        if (unbufferName != null) {
-            path += unbufferName;
-            // check file existence
-            if (HostInfoProvider.getDefault().fileExists(host, path)) {
-                return path;
-            } else {
-                log.warning("unbuffer: " + path + " does not exist");
-            }
-        }
-        return null;
+    protected String getUnbufferPath(String host) {
+        return Unbuffer.getRemotePath(host);
     }
 }

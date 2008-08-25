@@ -18,9 +18,9 @@
 ==============================================================
 'Module', tokenID=identifier, offset=2211 [51:7/2211-51:13/2217]
 --OWNER:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'Module', tokenID=identifier, offset=2232 [53:5/2232-53:11/2238]
 --OWNER:
@@ -80,7 +80,7 @@
 --OWNER:
     TYPE const &Module TEXT=const Module&  [57:12/2444-57:25/2457] ReferencesTestCase/module.h
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'obj', tokenID=identifier, offset=2458 [57:26/2458-57:29/2461]
 --OWNER:
@@ -92,13 +92,13 @@
 --OWNER:
     TYPE &Module TEXT=Module&  [58:5/2487-58:12/2494] ReferencesTestCase/module.h
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'Module', tokenID=identifier, offset=2512 [58:30/2512-58:36/2518]
 --OWNER:
     TYPE const &Module TEXT=const Module&  [58:24/2506-58:37/2519] ReferencesTestCase/module.h
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'obj', tokenID=identifier, offset=2520 [58:38/2520-58:41/2523]
 --OWNER:
@@ -296,5 +296,5 @@
 --OWNER:
     VARIABLE  [91:39/3403-91:52/3416] ReferencesTestCase/module.h  TYPE: const &Module TEXT=const Module&  [91:39/3403-91:44/3408]  INIT: null  SCOPE: operator << 
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================

@@ -131,7 +131,7 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
 
         if (unbuffer) {
             int platformType  = (host == null) ? PlatformInfo.localhost().getPlatform() : PlatformInfo.getDefault(host).getPlatform();
-            String unbufferPath = getUnbufferPath(platformType);
+            String unbufferPath = getUnbufferPath(host);
             if (unbufferPath != null) {
                 if (platformType == PlatformTypes.PLATFORM_MACOSX) {
                     envpList.add("DYLD_INSERT_LIBRARIES=" + unbufferPath); // NOI18N
@@ -147,21 +147,10 @@ public abstract class NativeExecution extends ExecutionSupport implements Native
     }
 
     // override in descendants
-    protected String getUnbufferPath(int platformType) {
+    protected String getUnbufferPath(String host) {
         return null;
     }
-    
-    protected static String getUnbufferName(int platform) {
-        switch (platform) {
-            case PlatformTypes.PLATFORM_LINUX : return "unbuffer-Linux-x86.so"; // NOI18N
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC : return "unbuffer-SunOS-sparc.so"; // NOI18N
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL : return "unbuffer-SunOS-x86.so"; // NOI18N
-            case PlatformTypes.PLATFORM_WINDOWS : return "unbuffer-Windows_XP-x86.dll"; // NOI18N
-            case PlatformTypes.PLATFORM_MACOSX : return "unbuffer-Mac_OS_X-x86.dylib"; // NOI18N
-            default: log.warning("unbuffer search: unknown platform number " + platform); return null;
-        }
-    }
-    
+
     /**
      * Simple class whose sole purpose is to let us instantiate a NativeExecution so we can
      * call the getNativeExecution() method.

@@ -134,7 +134,7 @@ public class VersionsCache {
                                 url = url.appendPath("@" + revision);
                                 in = client.getContent(url, svnrevision);
                             } else {
-                                in = client.getContent(url, svnrevision);
+                                in = client.getContent(url, svnrevision, svnrevision);
                             }
                         } else {
                             in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes()); // NOI18N

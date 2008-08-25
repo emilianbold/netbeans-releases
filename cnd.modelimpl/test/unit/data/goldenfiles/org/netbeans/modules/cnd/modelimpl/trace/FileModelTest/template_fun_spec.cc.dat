@@ -11,7 +11,7 @@ Includes:
 <stdio.h> <FAILED inclusion> [1:1/0-1:19/18]
 Macros:
     <no macros>
-CLASS pair<typename K,typename V=K> (pair ) [3:1/20-6:3/99] lcurly=68 SCOPE: $Global$ 
+CLASS pair<typename K,typename V=K> (pair ) [3:1/20-6:2/98] lcurly=68 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PRIVATE first [4:5/74-4:13/82]  TYPE: pair::K TEXT=K  [4:5/74-4:6/75]  INIT: null  SCOPE: pair 
@@ -32,8 +32,8 @@ FUNCTION func [12:1/213-12:42/254] FunctionImpl SCOPE: $Global$
     RETURNS const *char TEXT=const char*  [12:19/231-12:30/242]
 FUNCTION func [15:1/297-15:49/345] FunctionImpl SCOPE: $Global$ 
     DEFINITION: func  [45:1/1110-47:2/1180]
-    SIGNATURE func<class>(pair<T,T>)
-    UNIQUE NAME F:func<class>(pair<T,T>)
+    SIGNATURE func<class>(pair<class,class>)
+    UNIQUE NAME F:func<class>(pair<class,class>)
     PARAMETERS:
         p [15:36/332-15:47/343]  TYPE: pair TEXT=pair<T,T>  [15:36/332-15:45/341]  INIT: null  SCOPE: func 
     RETURNS const *char TEXT=const char*  [15:19/315-15:30/326]
@@ -89,8 +89,8 @@ FUNCTION DEFINITION func  [40:1/1001-42:2/1067] FunctionDDImpl SCOPE: $Global$
     STATEMENT COMPOUND  [40:42/1042-42:2/1067] SCOPE: func 
         STATEMENT RETURN  [41:5/1048-41:22/1065] SCOPE: Stmt  [40:42/1042-42:2/1067] text: 'return "pointer";'
 FUNCTION DEFINITION func  [45:1/1110-47:2/1180] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE func<class>(pair<T,T>)
-    UNIQUE NAME f:func<class>(pair<T,T>)
+    SIGNATURE func<class>(pair<class,class>)
+    UNIQUE NAME f:func<class>(pair<class,class>)
     DECLARATION: func  [15:1/297-15:49/345]
     PARAMETERS:
         p [45:36/1145-45:47/1156]  TYPE: pair TEXT=pair<T,T>  [45:36/1145-45:45/1154]  INIT: null  SCOPE: func 
@@ -117,7 +117,7 @@ FUNCTION DEFINITION func  [55:1/1319-57:2/1400] FunctionDDImpl SCOPE: $Global$
         STATEMENT RETURN  [56:5/1372-56:31/1398] SCOPE: Stmt  [55:48/1366-57:2/1400] text: 'return "pair<char, char>";'
 
 ========== Dumping model of PROJECT DummyProject
-CLASS pair<typename K,typename V=K> (pair ) [3:1/20-6:3/99] lcurly=68 SCOPE: $Global$ 
+CLASS pair<typename K,typename V=K> (pair ) [3:1/20-6:2/98] lcurly=68 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PRIVATE first [4:5/74-4:13/82]  TYPE: pair::K TEXT=K  [4:5/74-4:6/75]  INIT: null  SCOPE: pair 
@@ -138,8 +138,8 @@ FUNCTION func [12:1/213-12:42/254] FunctionImpl SCOPE: $Global$
     RETURNS const *char TEXT=const char*  [12:19/231-12:30/242]
 FUNCTION func [15:1/297-15:49/345] FunctionImpl SCOPE: $Global$ 
     DEFINITION: func  [45:1/1110-47:2/1180]
-    SIGNATURE func<class>(pair<T,T>)
-    UNIQUE NAME F:func<class>(pair<T,T>)
+    SIGNATURE func<class>(pair<class,class>)
+    UNIQUE NAME F:func<class>(pair<class,class>)
     PARAMETERS:
         p [15:36/332-15:47/343]  TYPE: pair TEXT=pair<T,T>  [15:36/332-15:45/341]  INIT: null  SCOPE: func 
     RETURNS const *char TEXT=const char*  [15:19/315-15:30/326]
@@ -195,8 +195,8 @@ FUNCTION DEFINITION func  [40:1/1001-42:2/1067] FunctionDDImpl SCOPE: $Global$
     STATEMENT COMPOUND  [40:42/1042-42:2/1067] SCOPE: func 
         STATEMENT RETURN  [41:5/1048-41:22/1065] SCOPE: Stmt  [40:42/1042-42:2/1067] text: 'return "pointer";'
 FUNCTION DEFINITION func  [45:1/1110-47:2/1180] FunctionDDImpl SCOPE: $Global$ 
-    SIGNATURE func<class>(pair<T,T>)
-    UNIQUE NAME f:func<class>(pair<T,T>)
+    SIGNATURE func<class>(pair<class,class>)
+    UNIQUE NAME f:func<class>(pair<class,class>)
     DECLARATION: func  [15:1/297-15:49/345]
     PARAMETERS:
         p [45:36/1145-45:47/1156]  TYPE: pair TEXT=pair<T,T>  [45:36/1145-45:45/1154]  INIT: null  SCOPE: func 

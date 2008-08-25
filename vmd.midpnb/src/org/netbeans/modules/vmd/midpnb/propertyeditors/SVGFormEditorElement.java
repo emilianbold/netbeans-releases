@@ -71,13 +71,18 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
+import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorMessageAwareness;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormSupport;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGImageComponent;
@@ -106,8 +111,8 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private DesignComponentWrapper wrapper;
     private PropertyEditorMessageAwareness messageAwareness;
     private WeakReference<DesignDocument> documentReferences;
-    private Map<String,String> pathMap;
-    
+    private Map<String, String> pathMap;
+
     public SVGFormEditorElement() {
         paths = new HashMap<String, FileObject>();
         comboBoxModel = new DefaultComboBoxModel();
@@ -136,15 +141,31 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         return Arrays.asList(SVGImageCD.PROP_RESOURCE_PATH);
     }
 
+    @Override
+    public void preResetToDefaultValue(final DesignComponent component) {
+        if (component.getType() != SVGFormCD.TYPEID) {
+            return;
+        }
+        component.getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+            public void run() {
+                Collection<DesignComponent> svgComponents = new ArrayList<DesignComponent>(component.getComponents());
+                component.resetToDefault(SVGFormCD.PROP_COMPONENTS);
+                component.getDocument().deleteComponents(svgComponents);
+            }
+        });
+        super.preResetToDefaultValue(component);
+    }
+
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         this.wrapper = wrapper;
-        
+
         if (documentReferences == null || documentReferences.get() == null) {
             return;
         }
         final DesignDocument document = documentReferences.get();
         project = ProjectUtils.getProject(document);
-        
+
 
         if (wrapper == null) {
             // UI stuff
@@ -204,25 +225,10 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     @Override
-    public void nullValueSet(final DesignComponent component) {
-        component.getDocument().getTransactionManager().writeAccess(new Runnable() {
-
-            public void run() {
-                Collection<DesignComponent> components = new HashSet(component.getComponents());
-                DescriptorRegistry registry = component.getDocument().getDescriptorRegistry();
-                for (DesignComponent component : components) {
-                    if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
-                        component.getDocument().deleteComponent(component);
-                    }
-                }
-            }
-        });
-    }
-
-    @Override
     public void postSetValue(final DesignComponent parentComponent, final DesignComponent childComponent) {
-         
+
         final FileObject[] svgImageFileObject = new FileObject[1];
+        final Boolean[] parseIt = new Boolean[1];
         parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
@@ -230,22 +236,40 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
 //                if (childComponent == null) {
 //                    return;
 //                }
+
                 PropertyValue propertyValue = childComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
                 if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
                     //String svgImagePath = MidpTypes.getString(propertyValue);
                     Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(parentComponent.getDocument(), MidpTypes.getString(propertyValue));
                     Iterator<FileObject> iterator = images.keySet().iterator();
                     svgImageFileObject[0] = iterator.hasNext() ? iterator.next() : null;
+                    parseIt[0] = Boolean.TRUE;
+                }
+                DesignComponent oldComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
+                if (oldComponent == childComponent && svgImageFileObject[0] != null) {
+                    parseIt[0] = Boolean.FALSE;
                 }
             }
         });
-        parseSVGImageItems(svgImageFileObject[0], parentComponent);
+
+        if (parseIt[0]) {
+            parseSVGImageItems(svgImageFileObject[0], parentComponent);
+        }
     }
 
-    
+    @Override
+    public  void nullValueSet(final DesignComponent svgForm) {
+        svgForm.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
+            public void run() {
+                SVGFormSupport.removeAllSVGFormComponents(svgForm);
+            }
+        });
+    }
+    
     private void parseSVGImageItems(FileObject imageFO, final DesignComponent parentComponent) {
         if (imageFO == null) {
+            nullValueSet(parentComponent);
             return;
         }
         final SVGComponentImageParser[] svgComponentImageParser = new SVGComponentImageParser[1];
@@ -446,17 +470,17 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     public void run() {
-        
+
         if (documentReferences == null || documentReferences.get() == null) {
             return;
         }
-        
+
         final DesignDocument document = documentReferences.get();
-        
+
         project = ProjectUtils.getProject(document);
-        
+
         updateModel(document);
-        
+
         showProgressBar(false);
         setDesignComponentWrapper(wrapper);
         requiresModelUpdate.set(false);
@@ -478,7 +502,8 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                progressBar.setVisible(isShowing);
+                progressBar.setVisible(
+                        isShowing);
             }
         });
     }
@@ -528,7 +553,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         documentReferences = new WeakReference<DesignDocument>(document);
         super.setDesignDocument(document);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

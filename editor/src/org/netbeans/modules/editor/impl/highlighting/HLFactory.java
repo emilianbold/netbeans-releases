@@ -81,7 +81,7 @@ public final class HLFactory implements HighlightsLayerFactory {
         ));
 
 
-        if (new TokenHierarchyActiveRunnable(context.getDocument()).isActive()) {
+        if (!new TokenHierarchyActiveRunnable(context.getDocument()).isActive()) {
             // There is no lexer yet, we will use this layer for backwards compatibility
             layers.add(HighlightsLayer.create(
                 NonLexerSyntaxHighlighting.LAYER_TYPE_ID, 

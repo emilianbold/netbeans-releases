@@ -82,6 +82,10 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
             
             public void cancel() {
             }
+
+            public boolean isHighPriority() {
+                return false;
+            }
         };
     }
     

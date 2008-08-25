@@ -41,14 +41,24 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.Map;
 import java.util.Set;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -130,9 +140,78 @@ public abstract class CsmFileReferences {
         if (2 <= context.size() && isDereference(context.getToken())) {
             CsmReference ref = context.getReference(context.size() - 2);
             if (ref != null) {
-                CsmObject obj = ref.getReferencedObject();
-                if (obj == null || isTemplateParameterInvolved(obj)) {
+                CsmObject refObj = ref.getReferencedObject();
+                if (isTemplateParameterInvolved(refObj)) {
                     return true;
+                } else {
+                    return hasTemplateBasedAncestors(getType(refObj));
+                }
+            }
+        } else {
+            // it isn't a dereference - check current context
+            return hasTemplateBasedAncestors(findContextClass(context));
+        }
+        return false;
+    }
+
+    private static CsmType getType(CsmObject obj) {
+        if (CsmKindUtilities.isFunction(obj)) {
+            return ((CsmFunction)obj).getReturnType();
+        } else if (CsmKindUtilities.isVariable(obj)) {
+            return ((CsmVariable)obj).getType();
+        } else if(CsmKindUtilities.isTypedef(obj)) {
+            return ((CsmTypedef) obj).getType();
+        }
+        return null;
+    }
+    
+    private static CsmClass findContextClass(CsmReferenceContext context) {
+        CsmObject owner = context.getReference().getOwner();
+        while (CsmKindUtilities.isScopeElement(owner)) {
+            if (CsmKindUtilities.isClass(owner)) {
+                return (CsmClass) owner;
+            } else if (CsmKindUtilities.isClassMember(owner)) {
+                return ((CsmMember) owner).getContainingClass();
+            } else if (CsmKindUtilities.isFunctionDefinition(owner)) {
+                CsmFunction decl = ((CsmFunctionDefinition) owner).getDeclaration();
+                if (CsmKindUtilities.isClassMember(decl)) {
+                    return ((CsmMember) decl).getContainingClass();
+                }
+            } else if (CsmKindUtilities.isVariableDefinition(owner)) {
+                CsmVariable decl = ((CsmVariableDefinition) owner).getDeclaration();
+                if (CsmKindUtilities.isClassMember(decl)) {
+                    return ((CsmMember) decl).getContainingClass();
+                }
+            }
+            owner = ((CsmScopeElement) owner).getScope();
+        }
+        return null;
+    } 
+    
+    private static boolean hasTemplateBasedAncestors(CsmType type) {
+        if( type != null) {
+            CsmClassifier cls = type.getClassifier();
+            if (CsmKindUtilities.isClass(cls)) {
+                return hasTemplateBasedAncestors((CsmClass) cls);
+            }
+        }
+        return false;
+    }
+    
+    private static boolean hasTemplateBasedAncestors(CsmClass cls) {
+        if (cls != null) {
+            if (isActualInstantiation(cls)) {
+                return false; // like my_class<int, char>
+            }
+            for (CsmInheritance inh : cls.getBaseClasses()) {
+                if (inh.getAncestorType().isTemplateBased()) {
+                    return true;
+                }
+                CsmClassifier classifier = inh.getClassifier();
+                if (classifier instanceof CsmClass) { // paranoia
+                    if (hasTemplateBasedAncestors((CsmClass) classifier)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -140,14 +219,33 @@ public abstract class CsmFileReferences {
     }
 
     /**
-     * Determines whether reference is dereferenced macro
+     * Determines whether it is indeed instantiation -
+     * not a specialization, not a part of the template itself, etc.
+     * @return true
+     */
+    private static boolean isActualInstantiation(CsmClass cls) {
+        if (CsmKindUtilities.isInstantiation(cls)) {
+            CsmInstantiation instantiation = (CsmInstantiation) cls;
+            Map<CsmTemplateParameter, CsmType> mapping = instantiation.getMapping();
+            for (CsmType type : mapping.values()) {
+                if (type.isTemplateBased()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Determines whether reference is dereferenced macro or
+     * if it's in macro arguments
      */
     public static boolean isMacroBased(CsmReferenceContext context) {
         if (2 <= context.size() && isDereference(context.getToken())) {
             CsmReference ref = context.getReference(context.size() - 2);
             if (ref != null) {
-                CsmObject obj = ref.getReferencedObject();
-                if (obj == null || CsmKindUtilities.isMacro(obj)) {
+                if (CsmKindUtilities.isMacro(ref.getReferencedObject())) {
                     return true;
                 }
             }
@@ -163,18 +261,23 @@ public abstract class CsmFileReferences {
         return false;
     }
 
+    public static boolean isAfterUnresolved(CsmReferenceContext context) {
+        if (2 <= context.size() && isDereference(context.getToken())) {
+            CsmReference ref = context.getReference(context.size() - 2);
+            if (ref != null) {
+                if (ref.getReferencedObject() == null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static boolean isTemplateParameterInvolved(CsmObject obj) {
         if (CsmKindUtilities.isTemplateParameter(obj)) {
             return true;
         }
-        CsmType type = null;
-        if (CsmKindUtilities.isFunction(obj)) {
-            type = ((CsmFunction)obj).getReturnType();
-        } else if (CsmKindUtilities.isVariable(obj)) {
-            type = ((CsmVariable)obj).getType();
-        } else if(CsmKindUtilities.isTypedef(obj)) {
-            type = ((CsmTypedef) obj).getType();
-        }
+        CsmType type = getType(obj);
         return (type == null) ? false : type.isTemplateBased();
     }
 

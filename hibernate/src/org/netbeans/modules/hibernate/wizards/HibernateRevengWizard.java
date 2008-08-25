@@ -336,7 +336,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
                 if (helper.getDomainGen()) {
                     handle.progress(NbBundle.getMessage(HibernateRevengWizard.class, "HibernateRevengCodeGenerationPanel_WizardProgress_GenPOJO"), 2); // NOI18N
                     POJOExporter exporter = new POJOExporter(cfg, outputDir);
-                    exporter.getProperties().setProperty("jdk", new Boolean(helper.getJavaSyntax()).toString());
+                    exporter.getProperties().setProperty("jdk5", new Boolean(helper.getJavaSyntax()).toString());
                     exporter.getProperties().setProperty("ejb3", new Boolean(helper.getEjbAnnotation()).toString());
                     exporter.start();
                 }

@@ -1552,7 +1552,6 @@ public abstract class TreeView extends JScrollPane {
     private final class ExplorerTree extends JTree implements Autoscroll {
         AutoscrollSupport support;
         private String maxPrefix;
-        int SEARCH_FIELD_PREFERRED_SIZE = 160;
         int SEARCH_FIELD_SPACE = 3;
         private boolean firstPaint = true;
 
@@ -1756,10 +1755,7 @@ public abstract class TreeView extends JScrollPane {
             Rectangle visibleRect = getVisibleRect();
 
             if ((searchpanel != null) && searchpanel.isDisplayable()) {
-                int width = Math.min(
-                        getPreferredSize().width - (SEARCH_FIELD_SPACE * 2),
-                        SEARCH_FIELD_PREFERRED_SIZE - SEARCH_FIELD_SPACE
-                    );
+                int width = searchpanel.getPreferredSize().width;
 
                 searchpanel.setBounds(
                     Math.max(SEARCH_FIELD_SPACE, (visibleRect.x + visibleRect.width) - width),
@@ -1820,6 +1816,7 @@ public abstract class TreeView extends JScrollPane {
                 searchpanel.add(lbl);
                 searchpanel.add(searchTextField);
                 lbl.setLabelFor(searchTextField);
+                searchTextField.setColumns(10);
                 searchpanel.setBorder(BorderFactory.createRaisedBevelBorder());
                 lbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
             }

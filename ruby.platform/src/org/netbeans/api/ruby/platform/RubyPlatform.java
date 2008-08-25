@@ -39,10 +39,12 @@
 package org.netbeans.api.ruby.platform;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Properties;
@@ -652,9 +654,24 @@ public final class RubyPlatform {
      */
     public boolean installFastDebugger() {
         assert gemManager != null : "has gemManager when trying to install fast debugger";
-        // TODO: ideally this would be e.g. '< 0.3' but then running external
-        // process has problems with the '<'. See issue 142240.
-        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.2.1");
+        Runnable installer = new Runnable() {
+            public void run() {
+                // TODO: ideally this would be e.g. '< 0.3' but then running external
+                // process has problems with the '<'. See issue 142240.
+                gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.2.1");
+            }
+        };
+        if (!EventQueue.isDispatchThread()) {
+            try {
+                EventQueue.invokeAndWait(installer);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            installer.run();
+        }
         return hasFastDebuggerInstalled();
     }
 
@@ -874,7 +891,7 @@ public final class RubyPlatform {
             info.libDir = FileUtil.toFile(libDirFO.getFileObject("/1.8")).getAbsolutePath(); // NOI18N
             info.gemHome = FileUtil.toFile(libDirFO.getFileObject("/gems/1.8")).getAbsolutePath(); // NOI18N
             info.gemPath = info.gemHome;
-            info.gemVersion = "1.2.0 (1.2.0)"; // NOI18N
+            info.gemVersion = "1.2.0"; // NOI18N
             return info;
         }
 

@@ -85,6 +85,8 @@ import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 public class ConnectUsingDriverAction extends DatabaseAction {
     static final long serialVersionUID =8245005834483564671L;
@@ -118,6 +120,13 @@ public class ConnectUsingDriverAction extends DatabaseAction {
         boolean advancedPanel = false;
         boolean okPressed = false;
 
+        // the most recent task passed to the RequestProcessor
+        Task activeTask = null;
+
+        // the panels
+        private NewConnectionPanel basePanel = null;
+        private SchemaPanel schemaPanel = null;
+        
         public void showDialog(String driverName, String driverClass) {
             showDialog(driverName, driverClass, null, null, null);
         }
@@ -176,8 +185,8 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                 cinfo.setDatabase(databaseUrl);
             }
             
-            final NewConnectionPanel basePanel = new NewConnectionPanel(this, finalDriverClass, cinfo);
-            final SchemaPanel schemaPanel = new SchemaPanel(this, cinfo);
+            basePanel = new NewConnectionPanel(this, finalDriverClass, cinfo);
+            schemaPanel = new SchemaPanel(this, cinfo);
 
             PropertyChangeListener argumentListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent event) {
@@ -274,22 +283,26 @@ public class ConnectUsingDriverAction extends DatabaseAction {
             cinfo.addExceptionListener(excListener);
 
             ActionListener actionListener = new ActionListener() {
+                
                 public void actionPerformed(ActionEvent event) {
                     if (event.getSource() == DialogDescriptor.OK_OPTION) {
                         okPressed = true;
                         basePanel.setConnectionInfo();
                         try {
                             if (cinfo.getConnection() == null || cinfo.getConnection().isClosed())
-                                cinfo.connectAsync();
+                                activeTask = cinfo.connectAsync();
                             else {
                                 cinfo.setSchema(schemaPanel.getSchema());
                                 ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(cinfo);
-                                if(dlg != null)
+                                if (dlg != null)
+                                {
+                                    cancelActiveTask();
                                     dlg.close();
+                                }
                             }
                         } catch (SQLException exc) {
                             //isClosed() method failed, try to connect
-                            cinfo.connectAsync();
+                            activeTask = cinfo.connectAsync();
                         } catch (DatabaseException exc) {
                             Logger.getLogger("global").log(Level.INFO, null, exc);
                             DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N
@@ -303,6 +316,12 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                             }
                         }
                         return;
+                    }
+                    else if (event.getSource() == DialogDescriptor.CANCEL_OPTION) {
+                        if (dlg != null)
+                        {
+                            cancelActiveTask();
+                        }
                     }
                 }
             };
@@ -329,6 +348,30 @@ public class ConnectUsingDriverAction extends DatabaseAction {
 //        cinfo.removeExceptionListener(excListener);
 //    }
 
+        /**
+         * Cancels the current active task.
+         */
+        private void cancelActiveTask()
+        {
+            if (activeTask != null)
+            {
+                activeTask.cancel();
+                activeTask = null;
+            }
+
+            // in case a task is underway...
+            basePanel.terminateProgress();
+            schemaPanel.terminateProgress();
+        }
+        
+        @Override
+        protected Task retrieveSchemasAsync(final SchemaPanel schemaPanel, final DatabaseConnection dbcon, final String defaultSchema)
+        {
+            activeTask = super.retrieveSchemasAsync(schemaPanel, dbcon, defaultSchema);
+            
+            return activeTask;
+        }
+        
         protected boolean retrieveSchemas(SchemaPanel schemaPanel, DatabaseConnection dbcon, String defaultSchema) {
             fireConnectionStep(bundle().getString("ConnectionProgress_Schemas")); // NOI18N
             Vector schemas = new Vector();

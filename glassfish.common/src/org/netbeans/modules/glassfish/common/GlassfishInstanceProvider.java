@@ -43,6 +43,7 @@ package org.netbeans.modules.glassfish.common;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -74,7 +75,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     static final String DIR_GLASSFISH_INSTANCES = "/GlassFish/Instances"; //NOI18N
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
-    private static final GlassfishInstanceProvider singleton = new GlassfishInstanceProvider();
+    private static GlassfishInstanceProvider singleton;
     
     private final Map<String, GlassfishInstance> instanceMap = 
             Collections.synchronizedMap(new HashMap<String, GlassfishInstance>());
@@ -89,7 +90,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         }
     }
 
-    public static GlassfishInstanceProvider getDefault() {
+    public static synchronized boolean initialized() {
+        return singleton != null;
+    }
+
+    public static synchronized GlassfishInstanceProvider getDefault() {
+        if(singleton == null) {
+            singleton = new GlassfishInstanceProvider();
+        }
         return singleton;
     }
 
@@ -196,6 +204,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
         return instance == null ? null : instance.getCommonInstance();
     }
 
+    // ------------------------------------------------------------------------
+    // Internal use only.  Used by Installer.close() to quickly identify and
+    // shutdown any instances we started during this IDE session.
+    // ------------------------------------------------------------------------
+    Collection<GlassfishInstance> getInternalInstances() {
+        return instanceMap.values();
+    }
+    
     // ------------------------------------------------------------------------
     // Persistence for server instances.
     // ------------------------------------------------------------------------

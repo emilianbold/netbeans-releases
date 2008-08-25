@@ -54,17 +54,17 @@ import org.netbeans.modules.editor.FormatterIndentEngine;
 
 public class JavaIndentEngine extends FormatterIndentEngine {
 
-    public static final String JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP
-        = "javaFormatNewlineBeforeBrace"; // NOI18N
-
-    public static final String JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP
-        = "javaFormatSpaceBeforeParenthesis"; // NOI18N
-
-    public static final String JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP
-        = "javaFormatLeadingStarInComment"; // NOI18N
-    
-    public static final String JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP
-        = "javaFormatStatementContinuationIndent"; // NOI18N
+//    public static final String JAVA_FORMAT_NEWLINE_BEFORE_BRACE_PROP
+//        = "javaFormatNewlineBeforeBrace"; // NOI18N
+//
+//    public static final String JAVA_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP
+//        = "javaFormatSpaceBeforeParenthesis"; // NOI18N
+//
+//    public static final String JAVA_FORMAT_LEADING_STAR_IN_COMMENT_PROP
+//        = "javaFormatLeadingStarInComment"; // NOI18N
+//
+//    public static final String JAVA_FORMAT_STATEMENT_CONTINUATION_INDENT_PROP
+//        = "javaFormatStatementContinuationIndent"; // NOI18N
 
     static final long serialVersionUID = -7936605291288152329L;
 
@@ -77,35 +77,35 @@ public class JavaIndentEngine extends FormatterIndentEngine {
     }
 
 
-    public boolean getJavaFormatSpaceBeforeParenthesis() {
-        return CodeStyle.getDefault(null).spaceBeforeMethodDeclParen();
-    }
-    public void setJavaFormatSpaceBeforeParenthesis(boolean b) {
-        assert false : "Java formatting options can only be customized from Tools-Options -> Java Code"; //NOI18N
-    }
-
-    public boolean getJavaFormatNewlineBeforeBrace() {
-        return CodeStyle.getDefault(null).getMethodDeclBracePlacement() == CodeStyle.BracePlacement.NEW_LINE;
-    }
-    public void setJavaFormatNewlineBeforeBrace(boolean b) {
-        assert false : "Java formatting options can only be customized from Tools-Options -> Java Code"; //NOI18N
-    }
-    
-    public boolean getJavaFormatLeadingStarInComment() {
-        // XXX: add support for this to FmtOptions
-        return true;
-    }        
-    public void setJavaFormatLeadingStarInComment(boolean b) {
-        assert false : "Java formatting options can only be customized from Tools-Options -> Java Code"; //NOI18N
-    }
-    
-    public int getJavaFormatStatementContinuationIndent() {
-        return CodeStyle.getDefault(null).getContinuationIndentSize();
-    }
-
-    public void setJavaFormatStatementContinuationIndent(int javaFormatStatementContinuationIndent) {
-        assert false : "Java formatting options can only be customized from Tools-Options -> Java Code"; //NOI18N
-    }
+//    public boolean getJavaFormatSpaceBeforeParenthesis() {
+//        return CodeStyle.getDefault(null).spaceBeforeMethodDeclParen();
+//    }
+//    public void setJavaFormatSpaceBeforeParenthesis(boolean b) {
+//        assert false : "Java formatting options can only be customized from Tools-Options -> Java Code"; //NOI18N
+//    }
+//
+//    public boolean getJavaFormatNewlineBeforeBrace() {
+//        return CodeStyle.getDefault(null).getMethodDeclBracePlacement() == CodeStyle.BracePlacement.NEW_LINE;
+//    }
+//    public void setJavaFormatNewlineBeforeBrace(boolean b) {
+//        assert false : "Java formatting options can only be customized from Tools-Options -> Java Code"; //NOI18N
+//    }
+//
+//    public boolean getJavaFormatLeadingStarInComment() {
+//        // XXX: add support for this to FmtOptions
+//        return true;
+//    }
+//    public void setJavaFormatLeadingStarInComment(boolean b) {
+//        assert false : "Java formatting options can only be customized from Tools-Options -> Java Code"; //NOI18N
+//    }
+//
+//    public int getJavaFormatStatementContinuationIndent() {
+//        return CodeStyle.getDefault(null).getContinuationIndentSize();
+//    }
+//
+//    public void setJavaFormatStatementContinuationIndent(int javaFormatStatementContinuationIndent) {
+//        assert false : "Java formatting options can only be customized from Tools-Options -> Java Code"; //NOI18N
+//    }
 
 // XXX: remove
 //    // Serialization ------------------------------------------------------------

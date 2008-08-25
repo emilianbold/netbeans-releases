@@ -50,8 +50,8 @@ CFLAGS-SunOS := -c -g -fPIC
 CFLAGS-Mac_OS_X := -c -g -fPIC
 
 LDFLAGS-Windows_XP = -mno-cygwin -Wl,--out-implib,build/$(OSNAME)-$(PLATFORM)/libGdbHelper.import.a -shared
-LDFLAGS-Linux = -shared -fPIC
-LDFLAGS-SunOS = -G -fPIC
+LDFLAGS-Linux = -g -shared -fPIC
+LDFLAGS-SunOS = -g -shared -fPIC
 LDFLAGS-Mac_OS_X = -dynamiclib -g -fPIC -install_name GdbHelper-${OSNAME}-${PLATFORM}.${SOEXT}
 
 # The following sets UNAME_S to a platform dependent string. Since

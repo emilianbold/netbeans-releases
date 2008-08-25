@@ -40,10 +40,13 @@
  */
 package org.netbeans.lib.lexer.test.join;
 
+import java.io.PrintStream;
 import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -71,6 +74,11 @@ public class JoinSectionsMod2Test extends NbTestCase {
     @Override
     protected Level logLevel() {
         return Level.INFO;
+    }
+
+    @Override
+    public PrintStream getLog(String logName) {
+        return System.out;
     }
 
     /**
@@ -124,6 +132,103 @@ public class JoinSectionsMod2Test extends NbTestCase {
             } catch (ConcurrentModificationException e) {
                 // Expected
             }
+    }
+
+    public void testEmbeddingDynamicCreation() throws Exception {
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        String text = "a%";
+        ModificationTextDocument doc = new ModificationTextDocument();
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class, TestJoinTopTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        LanguagePath embLP = LanguagePath.get(TestJoinTopTokenId.language()).
+                embedded(TestJoinTextTokenId.inPercentsLanguage);
+        List<TokenSequence<?>> tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
+        assertEquals(0, tsList.size());
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        
+//        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenHierarchyUpdate").setLevel(Level.FINEST); // Extra logging
+//        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenListUpdater").setLevel(Level.FINE); // Extra logging
+//        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenListListUpdate").setLevel(Level.FINE); // Extra logging
+        
+        doc.insertString(2, "%", null);
+        tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
+        assertEquals(1, tsList.size());
+
+        doc.remove(2, 1);
+        tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
+        assertEquals(0, tsList.size());
+    }
+
+    public void testEmbeddingDynamicUpdate() throws Exception {
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        String text = "a%";
+        ModificationTextDocument doc = new ModificationTextDocument();
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class, TestJoinTopTokenId.language());
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        
+//        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenHierarchyUpdate").setLevel(Level.FINEST); // Extra logging
+//        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenListUpdater").setLevel(Level.FINE); // Extra logging
+//        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenListListUpdate").setLevel(Level.FINE); // Extra logging
+        
+        doc.insertString(2, "%", null);
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        LanguagePath embLP = LanguagePath.get(TestJoinTopTokenId.language()).
+                embedded(TestJoinTextTokenId.inPercentsLanguage);
+        List<TokenSequence<?>> tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
+        assertEquals(1, tsList.size());
+
+        doc.remove(2, 1);
+        tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
+        assertEquals(0, tsList.size());
+        
+        doc.insertString(2, "%", null); // BTW does not have to be '%'
+        tsList = hi.tokenSequenceList(embLP, 0, Integer.MAX_VALUE);
+        assertEquals(1, tsList.size());
+    }
+
+    public void testNestedEmbeddingOffsetsRetaining() throws Exception {
+        //             000000000011111111112222222222
+        //             012345678901234567890123456789
+        String text = "a%";
+        ModificationTextDocument doc = new ModificationTextDocument();
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class, TestJoinTopTokenId.language());
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        
+//        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenHierarchyUpdate").setLevel(Level.FINEST); // Extra logging
+//        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenListUpdater").setLevel(Level.FINE); // Extra logging
+//        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenListListUpdate").setLevel(Level.FINE); // Extra logging
+        
+        doc.insertString(2, "x", null);
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        doc.insertString(3, "y", null);
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        doc.remove(3, 1);
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        doc.remove(2, 1);
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        doc.insertString(2, "x", null);
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        doc.insertString(3, "y", null);
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+    }
+
+    public void testEmptyEmbedding() throws Exception {
+        String text = "ab<[x]j>c<k[ y ]>d<[z]>";
+        ModificationTextDocument doc = new ModificationTextDocument();
+        doc.insertString(0, text, null);
+        doc.putProperty(Language.class, TestJoinTopTokenId.language());
+        LexerTestUtilities.incCheck(doc, true); // Ensure the whole embedded hierarchy gets created
+        
+//        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenHierarchyUpdate").setLevel(Level.FINEST); // Extra logging
+//        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenListUpdater").setLevel(Level.FINE); // Extra logging
+//        Logger.getLogger("org.netbeans.lib.lexer.inc.TokenListListUpdate").setLevel(Level.FINE); // Extra logging
+        
+        doc.remove(8, 10);
     }
 
 }

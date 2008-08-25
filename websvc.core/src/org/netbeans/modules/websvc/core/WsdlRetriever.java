@@ -168,9 +168,7 @@ public class WsdlRetriever implements Runnable {
     private InputStream in;
     
     public void run() {
-        // Set name of thread for easier debugging in case of deadlocks, etc.
-        Thread.currentThread().setName("WsdlRetrieval"); // NOI18N
-        
+       
         wsdlUrl = null;
         connection = null;
         in = null;

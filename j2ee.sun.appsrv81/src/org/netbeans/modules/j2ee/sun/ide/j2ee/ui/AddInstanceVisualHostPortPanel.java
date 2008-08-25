@@ -69,6 +69,11 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
                 fireChangeEvent();
             }
         });
+        valueModel.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent ev) {
+                fireChangeEvent();
+            }
+        });
         hostName.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 fireChangeEvent();

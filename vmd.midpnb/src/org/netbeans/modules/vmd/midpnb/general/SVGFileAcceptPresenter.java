@@ -56,10 +56,13 @@ import org.openide.filesystems.FileObject;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.HashSet;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormSupport;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
 
@@ -89,6 +92,7 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
 
         // TODO use SVGComponentImageParser.getParserByComponent. 
         // problem is that here we check for svg menu items count
+        
         SVGComponentImageParser parser = getParserByComponent(svgComponent);
         parseSVGImageItems(transferable, svgComponent, parser);
 
@@ -101,7 +105,7 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
      * @param svgComponent
      * @return
      */
-    private SVGComponentImageParser getParserByComponent(DesignComponent svgComponent){
+    protected SVGComponentImageParser getParserByComponent(DesignComponent svgComponent){
         DescriptorRegistry descrRegistry = svgComponent.getDocument().getDescriptorRegistry();
         TypeID typeID = svgComponent.getType();
         if (descrRegistry.isInHierarchy(SVGMenuCD.TYPEID, typeID)) {
@@ -109,12 +113,13 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
                 return new SVGMenuImageParser();
             }
         } else if (descrRegistry.isInHierarchy(SVGFormCD.TYPEID, typeID)) {
+            SVGFormSupport.removeAllSVGFormComponents(svgComponent);
             return new SVGFormImageParser();
         }
         return null;
     }
 
-    private void parseSVGImageItems(Transferable transferable, 
+    protected void parseSVGImageItems(Transferable transferable, 
             final DesignComponent svgMenuComponent,
             SVGComponentImageParser parser) 
     {

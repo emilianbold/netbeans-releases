@@ -49,6 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
@@ -65,7 +67,9 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -239,7 +243,22 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
             FileObject shellFolder = Repository.getDefault().getDefaultFileSystem().findResource(
                 "org-netbeans-modules-swingapp/appshells"); // NOI18N
             DataObject dobj = DataObject.find(shellFolder);
-            return dobj.getNodeDelegate();
+            return new FilterNode(dobj.getNodeDelegate(), new FilterNode.Children(dobj.getNodeDelegate()) {
+                @Override
+                protected Node[] createNodes(Node key) {
+                    try {
+                        String className = (String)fileFromNode(key).getAttribute("requiredClass"); // NOI18N
+                        if (className != null) {
+                            ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+                            classLoader.loadClass(className);
+                        }
+                        return new Node[] { copyNode(key) };
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                    }
+                    return new Node[0];
+                }
+            });
         }
         catch (Exception ex) { // should not happen, but...
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -371,14 +390,18 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
                                     .add(projectNameLabel)
                                     .add(projectLocationLabel)
                                     .add(createdFolderLabel)
-                                    .add(appNameLabel))
+                                    .add(appNameLabel)
+                                    .add(layout.createSequentialGroup()
+                                        .add(19, 19, 19)
+                                        .add(libFolderLabel)))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(appNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
-                                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
-                                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
-                                    .add(libFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))
+                                    .add(appNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                                    .add(libFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE)
+                                    .add(libHintLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                                     .add(browseButton)
@@ -387,12 +410,6 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(libFolderCheckBox)
-                            .add(layout.createSequentialGroup()
-                                .add(19, 19, 19)
-                                .add(libFolderLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(libHintLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE)
-                                .add(91, 91, 91))
                             .add(mainProjectCheckBox))
                         .add(14, 14, 14))))
         );
@@ -421,21 +438,21 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
                 .add(18, 18, 18)
                 .add(shellListLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(descBrowser, 0, 0, Short.MAX_VALUE)
-                    .add(shellList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(shellList, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE))
                 .add(18, 18, 18)
                 .add(libFolderCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(libFolderLabel)
                     .add(libFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(libFolderButton))
+                    .add(libFolderButton)
+                    .add(libFolderLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(libHintLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mainProjectCheckBox)
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         descBrowser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConfigureProjectVisualPanel.class, "ConfigureProjectVisualPanel.descBrowser.accessibleName")); // NOI18N

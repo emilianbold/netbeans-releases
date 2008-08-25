@@ -43,6 +43,7 @@ package org.netbeans.lib.lexer;
 
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.lib.editor.util.FlyOffsetGapList;
 import org.netbeans.lib.lexer.inc.MutableTokenList;
@@ -76,9 +77,6 @@ import org.netbeans.lib.lexer.token.TextToken;
 
 public final class EmbeddedTokenList<T extends TokenId>
 extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
-    
-    /** Flag for additional correctness checks (may degrade performance). */
-    private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
     
     /**
      * Marker value that represents that an attempt to create default embedding was
@@ -165,7 +163,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     }
 
     private void initLAState() {
-        this.laState = (modCount() != LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT || testing)
+        this.laState = (modCount() != LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT || TokenList.LOG.isLoggable(Level.FINE))
                 ? LAState.empty() // Will collect LAState
                 : null;
     }
@@ -404,6 +402,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     }
 
     public void replaceTokens(TokenListChange<T> change, TokenHierarchyEventInfo eventInfo, boolean modInside) {
+        assert (embeddingContainer.checkStatusUpdated());
         // Increase the extraModCount which helps to invalidate token-sequence in case
         // when an explicit embedding was created in join-sections setup which can affect adjacent ETLs.
         extraModCount++;
@@ -416,8 +415,29 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
             TokenOrEmbedding<T>[] removedTokensOrEmbeddings = new TokenOrEmbedding[removedTokenCount];
             copyElements(index, index + removedTokenCount, removedTokensOrEmbeddings, 0);
             firstRemovedToken = removedTokensOrEmbeddings[0].token();
+            // Here a possible offset correction of the removed tokens needs to be made.
+            // For example have a jsp with embedded html having embedded javascript.
+            // It's possible that there will be a remove after which an html section
+            // will stay but its embedded JS will be removed. When processing JS the outer html token
+            // already holds the updated offset so when removing JS tokens they will have incorrect (lower) offsets.
+            // This would lead to situation when the JS removed ETLs would have non-ordered offsets within TLL
+            // that would make binary search impossible. So the removed tokens must have retained offsets
+            // upon removal.
+            // The rule is that if the parent EC is still part of token hierarchy i.e. the parent token was just possibly moved
+            // then if the parent's offset is above or equal to modOffset+insertedLength (offset was already updated by diffLength)
+            // then all the removed tokens from ETL will be corrected back by -diffLength.
+            //
+            // However the condition should not apply in case of bounds-change in parents.
+            // For example if there's a big html token at offset=0 (with several JS sections)
+            // and a removal at offset=0. If the removal only means a bounds-change for the initial html token
+            // then the html token will still be connected to the hierarchy (the EC will physically change)
+            // and the token still starts at offset=0 so the previously mentioned condition would apply
+            // and the tokens removed from a JS sections would have their offsets corrected which would be wrong.
             int removedOffsetShift = 0;
-            if (!embeddingContainer.isRemoved() && embeddingContainer.branchTokenStartOffset() >= eventInfo.modOffset()) {
+            if (!embeddingContainer.isRemoved()
+                    && embeddingContainer.branchTokenStartOffset() >= eventInfo.modOffset() + eventInfo.insertedLength()
+                    && !change.parentChangeIsBoundsChange()
+            ) {
                 removedOffsetShift -= eventInfo.diffLength();
             }
             for (int i = 0; i < removedTokenCount; i++) {

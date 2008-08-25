@@ -367,6 +367,11 @@ public class BinaryFS extends FileSystem {
         public Object getAttribute(String attrName) {
             initialize();
             AttrImpl attr = attrs.get(attrName);
+            if (attr == null && attrName.startsWith("class:")) {
+                attr = attrs.get(attrName.substring(6));
+                return attr == null ? null : attr.getType(this);
+            }
+
             return (attr != null) ? attr.getValue(this, attrName) : null;
         }
         
@@ -482,7 +487,7 @@ public class BinaryFS extends FileSystem {
                     case 9: // urlvalue
                         return new URL(value);
                     case 10: // methodvalue
-                        return methodValue (value,foProvider,attrName);
+                        return methodValue(value, foProvider, attrName).invoke();
                     case 11: // newvalue
                         Class<?> cls =  findClass (value);
                         // special support for singletons
@@ -507,13 +512,66 @@ public class BinaryFS extends FileSystem {
             return null; // problem getting the value...
         }
 
-        /** Constructs new attribute as Object. Used for dynamic creation: methodvalue. */
-        private Object methodValue(String method, BFSBase foProvider, String attr) throws Exception {
+        public Class<?> getType( BFSBase foProvider) {
+            try {
+                switch(index) {
+                    case 0: return Byte.class;
+                    case 1: return Short.class;
+                    case 2: return Integer.class;
+                    case 3: return Long.class;
+                    case 4: return Float.class;
+                    case 5: return Double.class;
+                    case 6: return Boolean.class;
+                    case 7: return Character.class;
+                    case 8: return String.class;
+                    case 9: return URL.class;
+                    case 10: // methodvalue
+                        return methodValue(value, foProvider, null).getMethod().getReturnType();
+                    case 11: // newvalue
+                        return findClass (value);
+                    case 12: // serialvalue
+                        return null;
+                    case 13: // bundle value
+                        return String.class;
+                    default:
+                        throw new IllegalStateException("Bad index: " + index); // NOI18N
+                }
+            } catch (Exception exc) {
+                Exceptions.attachMessage(exc, "value = " + value + " from " + foProvider.getPath()); //NOI18N
+                Logger.getLogger(BinaryFS.class.getName()).log(Level.WARNING, null, exc);
+            }
+            return null; // problem getting the value...
+        }
+
+        /** Used to store Method and its parameters. */
+        private static class MethodAndParams {
+            private Method method;
+            private Object[] params;
+
+            MethodAndParams(Method method, Object[] params) {
+                this.method = method;
+                this.params = params;
+            }
+
+            public Object invoke() throws Exception {
+                method.setAccessible(true); //otherwise cannot invoke private
+                return method.invoke(null, params);
+            }
+            
+            public Method getMethod() {
+                return method;
+            }
+        }
+
+        /** Constructs new attribute as Object. Used for dynamic creation: methodvalue. 
+         * @return MethodAndParams object or throws InstantiationException if method is not found
+         */
+        private MethodAndParams methodValue(String method, BFSBase foProvider, String attr) throws Exception {
             int i = method.lastIndexOf('.');
             if (i != -1) {
                 // Cf. XMLMapAttr.Attr.methodValue:
-                Class cls = findClass(value.substring(0, i));
-                String methodName = value.substring(i + 1);
+                Class cls = findClass(method.substring(0, i));
+                String methodName = method.substring(i + 1);
                 Class[][] paramArray = {
                     {FileObject.class, String.class}, {String.class, FileObject.class},
                     {FileObject.class}, {String.class}, {},
@@ -537,12 +595,11 @@ public class BinaryFS extends FileSystem {
                             values[j] = wrapToMap(foProvider.getFileObjectForAttr());
                         }
                     }
-                    m.setAccessible(true); //otherwise cannot invoke private
-                    return m.invoke(null, values);
+                    return new MethodAndParams(m, values);
                 }
             }
             // Some message to logFile
-            throw new InstantiationException (value);
+            throw new InstantiationException(method);
         }
 
         private Object decodeValue(String value) throws Exception {
