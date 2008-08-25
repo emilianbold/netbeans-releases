@@ -36,30 +36,69 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.mapper;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.netbeans.modules.cnd.remote.support.RunFacade;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class HostMappingProviderUnix implements HostMappingProvider {
-
-    // TODO:
+public class HostMappingProviderSolaris implements HostMappingProvider {
 
     public Map<String, String> findMappings(String hkey, String otherHkey) {
         Map<String, String> mappings = new HashMap<String, String>();
+        if (!RemoteUtils.isLocalhost(hkey)) {
+            RunFacade runner = RunFacade.getInstance(hkey);
+            if (runner.run("/usr/sbin/share")) { //NOI18N
+                mappings.putAll(parseOutput(hkey, new StringReader(runner.getOutput())));
+            }
+        } else {
+            //TODO
+        }
         return mappings;
     }
 
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
-        // TODO: other platform can be Windows with SFU
-        return otherPlatform.isUnix() && hostPlatform.isUnix();
+        return hostPlatform.isUnix();
     }
 
+    private static final String NET = "/net/";
+
+    /**
+     * This method parses lines like
+     * -               /export1/sside   rw   "sside"
+     * TODO: It assumes 2nd param is always path we want
+     * @param outputReader
+     * @return
+     */
+    // 
+    static Map<String, String> parseOutput(String hkey, Reader outputReader) {
+        Map<String, String> mappings = new HashMap<String, String>();
+        try {
+            BufferedReader reader = new BufferedReader(outputReader);
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                String[] values = line.split(" +");
+                if (values.length > 2) {
+                    String path = values[1];
+                    if (HostInfoProvider.getDefault().fileExists(hkey, path)) {
+                        mappings.put( NET + RemoteUtils.getHostName(hkey) + path, path); // NOI18N
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return mappings;
+    }
 }
