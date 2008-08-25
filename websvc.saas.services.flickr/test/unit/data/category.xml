@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <category name="Alt" path="/Alt" pathids="/63">
+        <subcat id="80" name="18+" count="0" />
+        <subcat id="82" name="Absurd" count="4" />
+        <group nsid="34955637532@N01" name="Cal's Public Test Group"
+		members="13" online="1" chatnsid="34955637533@N01" inchat="0" />
+        <group nsid="34158032587@N01" name="Eric's Alt Group Test"
+		members="3" online="0" chatnsid="34158032588@N01" inchat="0" />
+    </category>
+</rsp>
