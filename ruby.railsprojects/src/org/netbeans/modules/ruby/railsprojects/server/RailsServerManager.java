@@ -748,7 +748,9 @@ public final class RailsServerManager {
 
         public ServerListModel(RubyPlatform platform) {
             this.servers = ServerRegistry.getDefault().getServers(platform);
-            this.selected = servers.get(0);
+            if (!servers.isEmpty()) {
+                this.selected = servers.get(0);
+            }
         }
 
         public int getSize() {

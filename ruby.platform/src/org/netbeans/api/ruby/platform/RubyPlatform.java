@@ -414,7 +414,8 @@ public final class RubyPlatform {
     }
 
     public boolean isDefault() {
-        return interpreter.equals(RubyPlatformManager.getDefaultPlatform().getInterpreter());
+        RubyPlatform defaultPlatform = RubyPlatformManager.getDefaultPlatform();
+        return defaultPlatform != null && interpreter.equals(defaultPlatform.getInterpreter());
     }
 
     public boolean isJRuby() {
