@@ -45,6 +45,7 @@ import java.awt.Toolkit;
 import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.Set;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -166,18 +167,16 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
     }
 
     static Token<CppTokenId> getToken(final Document doc, final int offset) {
-        final Token<CppTokenId> out[] = new Token[] {null};
-        Runnable run = new Runnable() {
-            public void run() {
-                out[0] = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
-            }
-        };
-        if (doc instanceof BaseDocument) {
-            ((BaseDocument)doc).runAtomic(run);
-        } else {
-            run.run();
+        if (doc instanceof AbstractDocument) {
+            ((AbstractDocument)doc).readLock();
         }
-        return out[0];
+        try {
+            return CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+        } finally {
+            if (doc instanceof AbstractDocument) {
+                ((AbstractDocument) doc).readUnlock();
+            }
+        }
     }
 
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
