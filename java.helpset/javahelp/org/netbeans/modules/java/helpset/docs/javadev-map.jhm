@@ -494,8 +494,10 @@
     <mapID target="hibernate_about" url="hibernate/hibernate_about.html" />
     <mapID target="hibernate_add" url="hibernate/hibernate_addsupport.html" />
     <mapID target="hibernate_cfg" url="hibernate/hibernate_cfg.html" />
+    <mapID target="hibernate_cfgedit" url="hibernate/hibernate_cfgedit.html" />
     <mapID target="hibernate_fromdb" url="hibernate/hibernate_fromdb.html" />
     <mapID target="hibernate_util" url="hibernate/hibernate_util.html" />
+    <mapID target="hibernate_hql" url="hibernate/hibernate_hql.html" />
 
 <!-- Hibernate topics CSH -->
     

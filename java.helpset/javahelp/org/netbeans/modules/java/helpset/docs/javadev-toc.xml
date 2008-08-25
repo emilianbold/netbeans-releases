@@ -195,6 +195,8 @@
             <tocitem text="About Hibernate Support" target="hibernate_about"/>
             <tocitem text="Adding Hibernate Support to a Project" target="hibernate_add"/>
             <tocitem text="Creating a Hibernate Configuration File" target="hibernate_cfg"/>
+            <tocitem text="Editing the Hibernate Configuration File" target="hibernate_cfgedit"/>
+            <tocitem text="Using the Hibernate Query Language Editor" target="hibernate_hql"/>
             <tocitem text="Creating a Hibernate Utility Helper File" target="hibernate_util"/>
         </tocitem>
         <tocitem text="Working with the Spring Framework">

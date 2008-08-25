@@ -160,7 +160,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }    
     
     private boolean isOutsideRuby(Lookup lookup, FileObject fo) {
-        if (RubyUtils.isRhtmlFile(fo)) {
+        if (RubyUtils.isRhtmlOrYamlFile(fo)) {
             // We're attempting to refactor in an RHTML file... If it's in
             // the editor, make sure we're trying to refactoring in a Ruby section;
             // if not, we shouldn't grab it. (JavaScript refactoring won't get
@@ -204,7 +204,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             return false;
         }
         
-        if ((dob!=null) && RubyUtils.isRubyOrRhtmlFile(fo)) { //NOI18N
+        if ((dob!=null) && RubyUtils.canContainRuby(fo)) { //NOI18N
             return true;
         }
         return false;

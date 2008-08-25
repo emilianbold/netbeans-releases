@@ -840,7 +840,7 @@ public class IpeUtils {
             if (i > 0)
                 newName = name + "_" + i; // NOI18N
             newPath = folder + "/" + newName; // NOI18N
-            if (ext.length() > 0)
+            if (ext != null && ext.length() > 0)
                 newPath = newPath + "." + ext; // NOI18N
             if (!new File(newPath).exists()) {
                 break;

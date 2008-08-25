@@ -90,6 +90,10 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("template_parameter_ancestor.cpp");
     }
     
+    public void testIZ144873() throws Exception {
+        performStaticTest("iz_144873.cpp");
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

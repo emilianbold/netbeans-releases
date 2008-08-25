@@ -168,7 +168,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.scala.stdplatform</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>net.java.dev.nbpython.project</friend>
-                <friend>org.codehaus.mevenide.gsf</friend>
                 <package>org.netbeans.modules.gsfpath.api.classpath</package>
                 <package>org.netbeans.modules.gsfpath.api.platform</package>
                 <package>org.netbeans.modules.gsfpath.api.queries</package>
