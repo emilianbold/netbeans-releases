@@ -1080,6 +1080,10 @@ public final class Product extends RegistryNode implements StatusInterface {
     }
     
     private void saveLegalArtifacts() throws IOException {
+        if (!configurationLogic.requireLegalArtifactSaving()) {
+            return;
+        }
+
         final Text license = configurationLogic.getLicense();
         if (license != null) {
             final File file = new File(
