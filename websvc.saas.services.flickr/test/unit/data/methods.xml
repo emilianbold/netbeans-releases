@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <methods>
+        <method>flickr.blogs.getList</method>
+        <method>flickr.blogs.postPhoto</method>
+        <method>flickr.contacts.getList</method>
+        <method>flickr.contacts.getPublicList</method>
+    </methods>
+</rsp>

@@ -583,6 +583,9 @@ public class CompletionResolverImpl implements CompletionResolver {
                     }
                 }
             }
+            if (CsmKindUtilities.isTemplate(obj) && obj != fun) {
+                analyzeTemplates.add((CsmTemplate)obj);
+            }
         }
         if (CsmKindUtilities.isTemplate(fun)) {
             analyzeTemplates.add((CsmTemplate)fun);

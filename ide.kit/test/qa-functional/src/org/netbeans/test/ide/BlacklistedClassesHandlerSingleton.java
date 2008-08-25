@@ -435,38 +435,43 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
 
     public String reportViolations(PrintWriter out) {
         listViolationsAsXML(out, true);
-        return listViolations(false);
+        return listViolations(false, true);
     }
-
 
     public String listViolations() {
-        return listViolations(true);
+        return listViolations(true, true);
     }
 
-    public String listViolations(boolean listExceptions) {
+    public String listViolations(boolean printCaptions) {
+        return listViolations(printCaptions, printCaptions);
+    }
+
+    public String listViolations(boolean listExceptions, boolean printCaptions) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos);
-        listViolations(ps, listExceptions);
+        listViolations(ps, listExceptions, printCaptions);
         ps.flush();
         return baos.toString();
     }
 
-    public void listViolations(PrintStream out) {
-        listViolations(out, false);
+    public void listViolations(PrintStream out, boolean printCaptions) {
+        listViolations(out, false, printCaptions);
     }
 
-    public void listViolations(PrintWriter out) {
-        listViolations(out, false);
+    public void listViolations(PrintWriter out, boolean printCaptions) {
+        listViolations(out, false, printCaptions);
     }
 
-    public void listViolations(PrintStream out, boolean listExceptions) {
-        listViolations(new PrintWriter(out), listExceptions);
+    public void listViolations(PrintStream out, boolean listExceptions, boolean printCaptions) {
+        listViolations(new PrintWriter(out), listExceptions, printCaptions);
     }
 
-    public void listViolations(PrintWriter out, boolean listExceptions) {
-        out.println("BlacklistedClassesHandler identified the following violations:");
-        listViolationsMap("Blacklist violations:", blacklist, out, listExceptions);
-        listViolationsMap("Whitelist violations:", whitelistViolators, out, listExceptions);
+    public void listViolations(PrintWriter out, boolean listExceptions, boolean printCaptions) {
+        if (printCaptions) {
+            out.println("BlacklistedClassesHandler identified the following violations:");
+        }
+        listViolationsMap("Blacklist violations:", blacklist, out, listExceptions, printCaptions);
+        listViolationsMap("Whitelist violations:", whitelistViolators, out, listExceptions, printCaptions);
         out.flush();
     }
 
@@ -478,9 +483,11 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
         out.flush();
     }
 
-    private void listViolationsMap(String caption, Map map, PrintWriter out, boolean listExceptions) {
+    private void listViolationsMap(String caption, Map map, PrintWriter out, boolean listExceptions, boolean printCaptions) {
         long violationsCount = 0;
-        out.println("  " + caption);
+        if (printCaptions) {
+            out.println("  " + caption);
+        }
         synchronized (map) {
             final Set keySet = map.keySet();
             Iterator iter = keySet.iterator();
@@ -500,12 +507,13 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                 }
             }
         }
-        if (violationsCount > 0) {
-            out.println("    Total: " + violationsCount + " violation(s).");
-        } else {
-            out.println("    No violations");
+        if (printCaptions) {
+            if (violationsCount > 0) {
+                out.println("    Total: " + violationsCount + " violation(s).");
+            } else {
+                out.println("    No violations");
+            }
         }
-
     }
 
     public String reportDifference() {

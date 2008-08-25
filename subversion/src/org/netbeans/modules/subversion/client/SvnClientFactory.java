@@ -286,14 +286,21 @@ public class SvnClientFactory {
         }
         String name = "libsvnjavahl-1.so";
         String[] locations = new String[] {"/usr/lib/", "/usr/lib/jni/", "/usr/local/lib/"};
+        File location = null;
         for (String loc : locations) {
             File file = new File(loc, name);
             LOG.log(Level.FINE, " checking existence of {0}", new Object[] { file.getAbsolutePath() });
-            if (file.exists()) {                
-                System.setProperty("subversion.native.library", file.getAbsolutePath());
-                LOG.log(Level.FINE, "   found javahl library. Setting subversion.native.library={0}", new Object[] { file.getAbsolutePath() });
-                return;
+            if (file.exists()) {
+                location = file;
+                break;
             }
+        }
+        if(location == null) {
+            location = getJavahlFromExecutablePath(name);
+        }
+        if(location != null) {
+            System.setProperty("subversion.native.library", location.getAbsolutePath());
+            LOG.log(Level.FINE, "   found javahl library. Setting subversion.native.library={0}", new Object[] { location.getAbsolutePath() });
         }
     }
 
@@ -315,11 +322,14 @@ public class SvnClientFactory {
         File location = InstalledFileLocator.getDefault().locate("modules/lib/libsvnjavahl-1.dll", JAVAHL_MODULE_CODE_NAME, false);
         if(location == null) {
             LOG.fine("could not find location for bundled javahl library");
-            return; // can't do anything here
+            location = getJavahlFromExecutablePath("libsvnjavahl-1.dll");
+            if(location == null) {
+                return;
+            }
         }
         // the library seems to be available in the netbeans install/user dir
         // => set it up so that it will used by the svnClientAdapter
-        LOG.fine("libsvnjavahl-1 located : " + location.getAbsolutePath());
+        LOG.fine("libsvnjavahl-1.dll located : " + location.getAbsolutePath());
         String locationPath = location.getParentFile().getAbsolutePath();
         // svnClientAdapter workaround - we have to explicitly load the
         // libsvnjavahl-1 dependencies as svnClientAdapter  tryies to get them via loadLibrary.
@@ -327,8 +337,9 @@ public class SvnClientFactory {
         loadJavahlDependencies(locationPath);
 
         // libsvnjavahl-1 must be loaded by the svnClientAdapter to get the factory initialized
-        LOG.log(Level.FINE, "setting subversion.native.library={0}", new Object[] { location.getAbsolutePath() });
-        System.setProperty("subversion.native.library", location.getAbsolutePath());
+        locationPath = location.getAbsolutePath();
+        LOG.log(Level.FINE, "setting subversion.native.library={0}", new Object[] { locationPath });
+        System.setProperty("subversion.native.library", locationPath);
     }
 
     private void loadJavahlDependencies(String locationPath) {
@@ -349,6 +360,24 @@ public class SvnClientFactory {
         try { System.load(locationPath + "/libsvn_repos-1.dll"); }  catch (Throwable t) { }
         try { System.load(locationPath + "/libsvn_ra-1.dll"); }     catch (Throwable t) { }
         try { System.load(locationPath + "/libsvn_client-1.dll"); } catch (Throwable t) { }
+    }
+
+
+    private File getJavahlFromExecutablePath(String libName) {
+        String executablePath = SvnModuleConfig.getDefault().getExecutableBinaryPath();
+        LOG.log(Level.FINE, "looking for svn native library in executable path={0}", new Object[] { executablePath });
+        File location = new File(executablePath);
+        if (location.isFile()) {
+            location = location.getParentFile();
+        }
+        if (location != null) {
+            location = new File(location.getAbsolutePath() + File.separatorChar + libName);
+            if(location.exists()) {
+                LOG.log(Level.FINE, "found svn native library in executable path={0}", new Object[] { location.getAbsolutePath() });
+                return location;
+            }
+        }
+        return null;
     }
 
     private boolean checkJavahlCrash(File initFile) {
