@@ -151,7 +151,7 @@ public class CsmDisplayUtilities {
     public static String getTooltipText(CsmObject item) {
         CharSequence tooltipText = null;
         if (CsmKindUtilities.isMethod(item)) {
-            String functionDisplayName = ((CsmMethod) item).getSignature().toString();
+            String functionDisplayName = htmlize(((CsmMethod) item).getSignature());
             CsmClass methodDeclaringClass = ((CsmMember) item).getContainingClass();
             String displayClassName = methodDeclaringClass.getName().toString();
             String key = "DSC_MethodTooltip";  // NOI18N
@@ -162,7 +162,7 @@ public class CsmDisplayUtilities {
             }
             tooltipText = getString(key, functionDisplayName, displayClassName);
         } else if (CsmKindUtilities.isFunction(item)) {
-            String functionFQN = ((CsmFunction) item).getSignature().toString();
+            String functionFQN = htmlize(((CsmFunction) item).getSignature());
             functionFQN = CsmDisplayUtilities.htmlize(functionFQN);
             tooltipText = getString("DSC_FunctionTooltip", functionFQN); // NOI18N
         } else if (CsmKindUtilities.isClass(item)) {
@@ -187,13 +187,13 @@ public class CsmDisplayUtilities {
         } else if (CsmKindUtilities.isField(item)) {
             String fieldName = ((CsmField) item).getName().toString();
             String displayClassName = ((CsmField) item).getContainingClass().getName().toString();
-            tooltipText = getString("DSC_FieldTooltip", fieldName, displayClassName); // NOI18N
+            tooltipText = getString("DSC_FieldTooltip", fieldName, displayClassName, htmlize(((CsmField) item).getText())); // NOI18N
         } else if (CsmKindUtilities.isParamVariable(item)) {
             String varName = ((CsmParameter) item).getName().toString();
-            tooltipText = getString("DSC_ParameterTooltip", varName); // NOI18N
+            tooltipText = getString("DSC_ParameterTooltip", varName, htmlize(((CsmParameter) item).getText())); // NOI18N
         } else if (CsmKindUtilities.isVariable(item)) {
             String varName = ((CsmVariable) item).getName().toString();
-            tooltipText = getString("DSC_VariableTooltip", varName); // NOI18N
+            tooltipText = getString("DSC_VariableTooltip", varName, htmlize(((CsmVariable) item).getText())); // NOI18N
         } else if (CsmKindUtilities.isFile(item)) {
             String fileName = ((CsmFile) item).getName().toString();
             tooltipText = getString("DSC_FileTooltip", fileName); // NOI18N
@@ -227,6 +227,10 @@ public class CsmDisplayUtilities {
     
     private static String getString(String key, CharSequence value1, CharSequence value2) {
         return NbBundle.getMessage(CsmDisplayUtilities.class, key, value1, value2);
+    } 
+    
+    private static String getString(String key, CharSequence value1, CharSequence value2, CharSequence value3) {
+        return NbBundle.getMessage(CsmDisplayUtilities.class, key, value1, value2, value3);
     } 
     
     private final static boolean SKIP_COLORING = Boolean.getBoolean("cnd.test.skip.coloring");
