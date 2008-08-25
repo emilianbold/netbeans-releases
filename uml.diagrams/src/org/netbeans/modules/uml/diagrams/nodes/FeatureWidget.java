@@ -85,7 +85,7 @@ public abstract class FeatureWidget extends CustomizableWidget
 {
     private EditableCompartmentWidget label = null;
     public static final String ID = "feature";
-    private Alignment alignment = Alignment.LEFT;
+    private Alignment myAlignment = Alignment.LEFT;
     
     private InstanceContent lookupContent = new InstanceContent();
     private Lookup lookup = new AbstractLookup(lookupContent);
@@ -99,7 +99,14 @@ public abstract class FeatureWidget extends CustomizableWidget
     {
         super(scene, propId, propDisplayName);
         setForeground((Color)null); 
-        setLayout(LayoutFactory.createHorizontalFlowLayout());
+        
+        // Someday it would be nice to put a icon beside the feature.  In which
+        // case we would need to use a horizontal flow layout.  However since
+        // we currently do not have an icon beside the feature label, and 
+        // the horizontal flow layout does not work well with being able to
+        // center the label text (for enumerations) use an overlay layout for
+        // now.
+        setLayout(LayoutFactory.createOverlayLayout());
         
         if (scene instanceof ObjectScene) 
         {
@@ -138,12 +145,7 @@ public abstract class FeatureWidget extends CustomizableWidget
     
     public void setAlignment(Alignment alignment)
     {
-        if(alignment == Alignment.CENTER)
-        {
-            setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.CENTER, 0));
-        }
-        
-        this.alignment = alignment;
+        this.myAlignment = alignment;
     }
     
     @Override
@@ -171,9 +173,7 @@ public abstract class FeatureWidget extends CustomizableWidget
             setOpaque(false);
             if((label != null) && (getParentWidget() != null))
             {
-                //label.setForeground(getParentWidget().getForeground());
                 label.setForeground(null);
-                //label.closeEditorCommitChanges();//
             }
             
             setParentSelectedState(false);
@@ -204,17 +204,12 @@ public abstract class FeatureWidget extends CustomizableWidget
         }
 
         label = new EditableCompartmentWidget(getScene(), this, ID);
-        label.setAlignment(alignment);
+        label.setAlignment(myAlignment);
         label.setLabel(formatedStr);
         addChild(label);
         
         // Use the parents foreground color.
         label.setForeground(null);
-        
-        if(alignment == Alignment.CENTER)
-        {
-            setChildConstraint(label, 100);
-        }
         setBorder(BorderFactory.createEmptyBorder(1));
     }
     
