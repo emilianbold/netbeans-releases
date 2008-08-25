@@ -890,7 +890,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             tokenSequence.move(request.anchor);
 
-            if (tokenSequence.movePrevious()){
+            if (typeName == null && tokenSequence.movePrevious()){
                 typeName = findLHSExpressionType(tokenSequence, request);
             }
 

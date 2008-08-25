@@ -118,8 +118,8 @@ public class PersistenceManager {
             //clear the anchor map
             PersistenceUtil.clearAnchorMap();
         }
-        float elapsedTimeSec = (System.currentTimeMillis() - start) / 1000F;
-        System.err.println(" !!!!!!!!!!!!!!!!!!!! Total time to SAVE the diagram : " +elapsedTimeSec);
+//        float elapsedTimeSec = (System.currentTimeMillis() - start) / 1000F;
+//        System.err.println(" !!!!!!!!!!!!!!!!!!!! Total time to SAVE the diagram : " +elapsedTimeSec);
     }
     
     private boolean hasContainerWidgetAsParent(Widget widget) {
@@ -195,14 +195,14 @@ public class PersistenceManager {
         try
         {
             DiagramLoader diagLoader = new DiagramLoader(fileName, topComp, groupEdges);
-            long start = System.currentTimeMillis();
+//            long start = System.currentTimeMillis();
             //set to diagramLoading mode
             PersistenceUtil.setDiagramLoading(true);
             scene = diagLoader.openDiagram();
             //done with diagramLoading.. unset the mode
             PersistenceUtil.setDiagramLoading(false);
-            float elapsedTimeSec = (System.currentTimeMillis() - start) / 1000F;
-            System.err.println(" !!!!!!!!!!!!!!!!!!!! Total time to load the diagram : " + elapsedTimeSec);
+//            float elapsedTimeSec = (System.currentTimeMillis() - start) / 1000F;
+//            System.err.println(" !!!!!!!!!!!!!!!!!!!! Total time to load the diagram : " + elapsedTimeSec);
         }
         catch (Exception e)
         {
