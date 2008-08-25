@@ -105,6 +105,9 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-uml-drawingarea-actions-ResizeToContentAction.instance">
                         <attr name="position" intvalue="580"/>
                     </file>
+                    <file name="org.netbeans.modules.uml.diagrams.actions.ResizeToDimensionAction.instance">
+                        <attr name="position" intvalue="581"/>
+                    </file>
                     <file name="org-netbeans-modules-uml-drawingarea-actions-SyncElementWithDataAction.instance">
                         <attr name="position" intvalue="590"/>
                     </file>
@@ -213,7 +216,7 @@ made subject to such option by the copyright holder.
                 <folder name="Popup">
                     <file name="org-netbeans-modules-uml-drawingarea-actions-SelectAllAction.instance">
                         <attr name="position" intvalue="100"/>
-                    </file>
+                    </file>                    
                     <file name="org.netbeans.modules.uml.diagrams.actions.ShowHideListCompartmentAction.instance">
                         <attr name="position" intvalue="101"/>
                     </file>
