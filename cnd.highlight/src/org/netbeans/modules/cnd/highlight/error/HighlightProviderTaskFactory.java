@@ -90,6 +90,7 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
         public void run(Phase phase) {
             if (phase == Phase.PARSED || phase == Phase.INIT) {
                 MyInterruptor interruptor = new MyInterruptor();
+                addCancelListener(interruptor);
                 try {
                     HighlightProvider.getInstance().update(file, doc, dobj, interruptor);
                 } finally {
