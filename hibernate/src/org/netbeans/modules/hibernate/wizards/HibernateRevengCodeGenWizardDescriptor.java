@@ -62,10 +62,11 @@ public class HibernateRevengCodeGenWizardDescriptor implements WizardDescriptor.
     private boolean componentInitialized;
     private WizardDescriptor wizardDescriptor;
     private Project project;
+    private String title;
 
-    public HibernateRevengCodeGenWizardDescriptor(Project project, WizardDescriptor wizardDescriptor) {
+    public HibernateRevengCodeGenWizardDescriptor(Project project, String title) {
         this.project = project;
-        this.wizardDescriptor = wizardDescriptor;
+        this.title = title;
     }
 
     public HibernateRevengCodeGenerationPanel getComponent() {
@@ -90,6 +91,8 @@ public class HibernateRevengCodeGenWizardDescriptor implements WizardDescriptor.
 
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
+        wizardDescriptor.putProperty("NewFileWizard_Title", title);
+        
         HibernateRevengWizardHelper helper = HibernateRevengWizard.getHelper(wizardDescriptor);
 
         if (!componentInitialized) {
