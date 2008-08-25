@@ -138,23 +138,22 @@ public class FilesViewRefTest extends JellyTestCase {
             TestKit.createNewElement(PROJECT_NAME, "a.b.c", "CClass");
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME);
-            node.performPopupActionNoBlock("Subversion|Show Changes");
+            node.performPopupAction("Subversion|Show Changes");
             CommitOperator cmo = CommitOperator.invoke(node);
             cmo.commit();
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME + "|src|a");
-            node.performPopupActionNoBlock("Cut");
+            node.performPopupAction("Cut");
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME + "|src|javaapp");
             node.performPopupAction("Paste|Refactor Move");
 
             nbdialog = new NbDialogOperator("Move Classes");
-            JButtonOperator refBut = new JButtonOperator(nbdialog, "Refactor");
-            refBut.push();
+            new JButtonOperator(nbdialog, "Refactor").push();
             nbdialog.waitClosed();
             Thread.sleep(1000);
             node = new Node(new FilesTabOperator().tree(), PROJECT_NAME);
-            node.performPopupActionNoBlock("Subversion|Show Changes");
+            node.performPopupAction("Subversion|Show Changes");
             vo = VersioningOperator.invoke();
-            Thread.sleep(2000);
+            Thread.sleep(5000);
             String[] expected = new String[]{"AClass.java", "BClass.java", "CClass.java", "a", "AClass.java", "b", "BClass.java", "c", "CClass.java"};
             String[] actual = new String[vo.tabFiles().getRowCount()];
             for (int i = 0; i < vo.tabFiles().getRowCount(); i++) {
@@ -171,7 +170,7 @@ public class FilesViewRefTest extends JellyTestCase {
             assertEquals("Wrong status in Versioning View", expected.length, result);
             Exception e = null;
             try {
-                Thread.sleep(1500);
+                Thread.sleep(3500);
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "a|b|BClass.java");
             } catch (Exception ex) {
                 e = ex;
@@ -179,7 +178,7 @@ public class FilesViewRefTest extends JellyTestCase {
             assertNotNull("Unexpected behavior - File shouldn't be in explorer!!!", e);
             e = null;
             try {
-                Thread.sleep(1500);
+                Thread.sleep(3500);
                 node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp.a.b|BClass.java");
             } catch (Exception ex) {
                 e = ex;
