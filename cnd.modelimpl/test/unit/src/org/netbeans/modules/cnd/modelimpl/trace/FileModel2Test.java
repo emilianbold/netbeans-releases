@@ -84,4 +84,8 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz143977_3.cc");
     }
 
+    public void testIZ103462_1() throws Exception {
+        // IZ#103462: Errors in template typedef processing:   'first' and 'second' are missed in Code Completion listbox
+        performTest("iz103462_first_and_second_1.cc");
+    }
 }
