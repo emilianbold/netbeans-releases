@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
+import org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -176,7 +177,7 @@ public final class RemoteConnections {
      */
     public boolean openManager(final RemoteConfiguration remoteConfiguration) {
         initPanel();
-        String title = NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ManageRemoteConnections");
+        String title = NbBundle.getMessage(RemoteConnections.class, "LBL_ManageRemoteConnections");
         descriptor = new DialogDescriptor(panel, title, true, null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         try {

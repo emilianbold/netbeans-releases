@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.php.project.connections;
+package org.netbeans.modules.php.project.connections.ui;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -60,6 +60,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.UIResource;
+import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.RemoteConnections.ConnectionType;
 import org.openide.util.ChangeSupport;
@@ -67,13 +68,13 @@ import org.openide.util.ChangeSupport;
 /**
  * @author Tomas Mysik
  */
-class RemoteConnectionsPanel extends JPanel {
-    private static final long serialVersionUID = -286345875298064616L;
+public class RemoteConnectionsPanel extends JPanel {
+    private static final long serialVersionUID = -2863458752980644116L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final ConfigListModel configListModel = new ConfigListModel();
 
-    RemoteConnectionsPanel() {
+    public RemoteConnectionsPanel() {
         initComponents();
         errorLabel.setText(" "); // NOI18N
         warningLabel.setText(" "); // NOI18N
