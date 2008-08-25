@@ -49,15 +49,15 @@ public class IpeUtilsTest {
 
     @Test
     public void testGetPathNameArray() {
-        assertEquals(new String[] {"C:", "tmp", "test.cpp"}, // NOI18N
+        assertArrayEquals(new String[] {"C:", "tmp", "test.cpp"}, // NOI18N
                      IpeUtils.getPathNameArray("C:\\tmp\\test.cpp")); // NOI18N
-        assertEquals(new String[] {"C:", "tmp", "test.cpp"}, // NOI18N
+        assertArrayEquals(new String[] {"C:", "tmp", "test.cpp"}, // NOI18N
                      IpeUtils.getPathNameArray("C:/tmp/test.cpp")); // NOI18N
-        assertEquals(new String[] {"tmp", "test.cpp"}, // NOI18N
+        assertArrayEquals(new String[] {"tmp", "test.cpp"}, // NOI18N
                      IpeUtils.getPathNameArray("\\tmp\\test.cpp")); // NOI18N
-        assertEquals(new String[] {"tmp", "test.cpp"}, // NOI18N
+        assertArrayEquals(new String[] {"tmp", "test.cpp"}, // NOI18N
                      IpeUtils.getPathNameArray("/tmp/test.cpp")); // NOI18N
-        assertEquals(new String[] {}, // NOI18N
+        assertArrayEquals(new String[] {}, // NOI18N
                      IpeUtils.getPathNameArray("tmp/test.cpp")); // NOI18N
     }
 
