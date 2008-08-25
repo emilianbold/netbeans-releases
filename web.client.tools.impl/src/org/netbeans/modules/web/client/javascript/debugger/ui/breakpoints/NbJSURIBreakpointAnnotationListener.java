@@ -44,6 +44,7 @@ package org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.netbeans.api.debugger.Breakpoint;
@@ -58,6 +59,8 @@ public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnn
     private final List<NbJSURIBreakpoint> uriBreakpoints = new CopyOnWriteArrayList<NbJSURIBreakpoint>();
     private final Map<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>> engineToBreakpointsToAnnotations = new HashMap<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>>();
     
+    private final Map<Breakpoint, Annotation> lingeringAnnotations = new WeakHashMap<Breakpoint, Annotation>();
+
     @Override
     public String[] getProperties() {
         return new String[] { DebuggerManager.PROP_BREAKPOINTS, DebuggerManager.PROP_DEBUGGER_ENGINES };
@@ -112,6 +115,8 @@ public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnn
     @Override
     public void engineRemoved(DebuggerEngine engine){
         /* Remove the engine */
+        Map<NbJSURIBreakpoint, Annotation> map = engineToBreakpointsToAnnotations.get(engine);
+        lingeringAnnotations.putAll(map);
         engineToBreakpointsToAnnotations.remove(engine);
         
         /* I don't think I need to remove the annotation because it is closing. */
@@ -130,8 +135,18 @@ public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnn
     @Override
     protected final void removeBreakpointAnnotation(final NbJSBreakpoint b){
         assert b instanceof NbJSURIBreakpoint;
+
+        boolean annotationFound = false;
+
         for( DebuggerEngine engine : engineToBreakpointsToAnnotations.keySet()){ 
             removeBreakpointAnnotation((NbJSURIBreakpoint)b,engine);
+            annotationFound = true;
+        }
+        if ( !annotationFound ){
+            Annotation annotation = lingeringAnnotations.remove(b);
+            if (annotation != null ) {
+                annotation.detach();
+            }
         }
         assert enableBreakpointPropertyChangeListener != null;
         b.removePropertyChangeListener(enableBreakpointPropertyChangeListener);
