@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.java.j2seplatform.libraries;
 
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -51,6 +53,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 public class J2SELibraryClassPathProvider implements ClassPathProvider {
 
@@ -75,7 +78,7 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
     }
     private ClassPath[] findClassPathOrNull(FileObject file, String type, Library lib) {
         if (lib.getType().equals(J2SELibraryTypeProvider.LIBRARY_TYPE)) {
-            List<URL> resources = lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
+            List<URL> resources = check(lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC));            
             ClassPath sourcePath = ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]));
             FileObject root = sourcePath.findOwnerRoot(file);
             if (root != null) {
@@ -83,7 +86,7 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
                 if (ClassPath.SOURCE.equals(type)) {
                     return new ClassPath[] {sourcePath};
                 } else if (ClassPath.COMPILE.equals(type)) {
-                    resources = lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
+                    resources = check(lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH));
                     return new ClassPath[] {ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]))};
                 } else if (ClassPath.BOOT.equals(type)) {
                     return new ClassPath[] {JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries()};
@@ -93,6 +96,24 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
             }
         }
         return null;
+    }
+    
+    
+    private static List<URL> check (final List<? extends URL> resources) {
+        final List<URL> checkedResources = new ArrayList<URL>(resources.size());
+        for (URL u : resources) {
+            final String surl = u.toString();
+            if (!surl.endsWith("/")) {              //NOI18N
+                try {
+                    u = new URL (surl+'/');         //NOI18N
+                } catch (MalformedURLException e) {
+                    //Never thrown
+                    Exceptions.printStackTrace(e);
+                }
+            }
+            checkedResources.add(u);
+        }
+        return checkedResources;
     }
     
     private synchronized Library getLastUsedLibrary (FileObject fo) {
