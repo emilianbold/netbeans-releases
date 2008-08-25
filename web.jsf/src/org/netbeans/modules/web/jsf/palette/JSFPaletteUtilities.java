@@ -47,8 +47,8 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.filesystems.FileObject;
@@ -137,12 +137,12 @@ public final class JSFPaletteUtilities {
                         // format the inserted text
                         if (reformat && start >= 0) {
                             int end = start + str.length();
-                            Formatter formatter = baseDoc.getFormatter();
-                            formatter.reformatLock();
+                            Reformat reformat = Reformat.get(baseDoc);
+                            reformat.lock();
                             try {
-                                formatter.reformat(baseDoc, start, end);
+                                reformat.reformat(start, end);
                             } finally {
-                                formatter.reformatUnlock();
+                                reformat.unlock();
                             }
                         }
                     } catch (BadLocationException e) {
