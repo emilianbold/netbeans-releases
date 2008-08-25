@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <photos page="1" pages="1" perpage="1" total="1">
+        <photo id="2645" owner="12037949754@N01" title="36679_o"
+	secret="a9f4a06091" server="2"
+	ispublic="1" isfriend="0" isfamily="0"
+	ownername="Bees / ?" dateadded="1089918707" />
+    </photos>
+</rsp>

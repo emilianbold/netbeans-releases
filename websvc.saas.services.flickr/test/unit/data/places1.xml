@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <places latitude="37.765168" longitude="-122.419936" accuracy="11" total="1">
+        <place place_id="kH8dLOubBZRvX_YZ" woeid="2487956"
+               latitude="37.779" longitude="-122.420"
+               place_url="/United+States/California/San+Francisco"
+               place_type="locality"/>
+    </places>
+</rsp>
