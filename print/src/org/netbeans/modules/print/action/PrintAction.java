@@ -43,7 +43,7 @@ package org.netbeans.modules.print.action;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
 import javax.swing.JComponent;
@@ -144,7 +144,7 @@ public final class PrintAction extends IconAction {
     if (top == null) {
       return null;
     }
-    List<JComponent> printable = new LinkedList<JComponent>();
+    List<JComponent> printable = new ArrayList<JComponent>();
     findPrintable(top, printable);
 
     if (printable.size() == 0) {
@@ -220,7 +220,7 @@ public final class PrintAction extends IconAction {
 //out("NODES NULL");
       return null;
     }
-    List<PrintProvider> providers = new LinkedList<PrintProvider>();
+    List<PrintProvider> providers = new ArrayList<PrintProvider>();
 
     for (Node node : nodes) {
 //out("  see: " + node);

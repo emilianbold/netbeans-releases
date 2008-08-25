@@ -79,6 +79,7 @@ public abstract class TestBase extends RubyTestBase {
 
     static {
         RubySession.TEST = true;
+        EditorUtil.showLines = false;
     }
 
     private enum Engine { CLASSIC, RDEBUG_IDE }

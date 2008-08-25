@@ -209,11 +209,12 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             }
             final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, sup.getLastSeparatorOffset());
             tp.setJava15(true);
-            doc.runAtomic(new Runnable() {
-                public void run() {
-                    CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
-                }
-            });
+            doc.readLock();
+            try {
+                CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
+            } finally {
+                doc.readUnlock();
+            }
             sup.setLastSeparatorOffset(tp.getLastSeparatorOffset());
 //            boolean cont = true;
 //            while (cont) {

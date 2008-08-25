@@ -81,7 +81,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
                     CsmObject defaultValue = param.getDefaultValue();
                     if (CsmKindUtilities.isType(defaultValue)) {
                         CsmType defaultType = (CsmType) defaultValue;
-                        defaultType = TemplateUtils.checkTemplateType(defaultType, ((CsmTemplate) declaration));
+                        defaultType = TemplateUtils.checkTemplateType(defaultType, ((CsmScope) declaration));
                         defaultType = Instantiation.createType(defaultType, this);
                         if (defaultType != null) {
                             mapping.put(param, defaultType);
