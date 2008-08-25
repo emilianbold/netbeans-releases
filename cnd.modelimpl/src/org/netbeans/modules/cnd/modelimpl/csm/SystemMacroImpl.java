@@ -76,7 +76,7 @@ public class SystemMacroImpl implements CsmMacro {
         assert containingFile instanceof Unresolved.UnresolvedFile;
         this.containingFile = containingFile;
         uid = new SelfUID<CsmMacro>(this);
-        this.macroText = "#define " + macroName + " " + macroBody;
+        this.macroText = "#define " + macroName + " " + macroBody; // NOI18N
     }
     
     public List<? extends CharSequence> getParameters() {
