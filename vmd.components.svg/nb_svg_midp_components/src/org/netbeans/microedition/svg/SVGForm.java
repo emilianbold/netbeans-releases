@@ -53,12 +53,12 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
     
     public void add(SVGComponent component ){
         components.addElement( component );
-        if ( components.size() == 1 ){
+        if ( getFocusedField()==null && component.isFocusable() ){
             component.requestFocus();
         }
     }
          
-    public SVGComponent getFocusedField() {
+    public synchronized SVGComponent getFocusedField() {
         return focusedComponent;
     }    
     
@@ -120,18 +120,31 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
                 int index;
                 switch( keyCode) {
                     case InputHandler.UP:
+                        SVGComponent next = null;
                         index = components.indexOf(focusedComponent);
-                        if ( --index < 0) {
-                            index = components.size() - 1;
+                        while (next != focusedComponent) {
+                            if (--index < 0) {
+                                index = components.size() - 1;
+                            }
+                            next = (SVGComponent) components.elementAt(index);
+                            if (next.isFocusable()) {
+                                requestFocus(next);
+                                break;
+                            }
                         }
-                        requestFocus( (SVGComponent) components.elementAt(index));
                         break;
                     case InputHandler.DOWN:
+                        next = null;
                         index = components.indexOf(focusedComponent);
-                        if ( ++index >= components.size()) {
-                            index = 0;
+                        while (next != focusedComponent) {
+                            if (++index >= components.size()) {
+                                index = 0;
+                            }
+                            next = (SVGComponent) components.elementAt(index);
+                            if (next.isFocusable()) {
+                                requestFocus(next);
+                            }
                         }
-                        requestFocus( (SVGComponent) components.elementAt(index));
                         break;
                     default:
                         InputHandler handler = focusedComponent.getInputHandler();

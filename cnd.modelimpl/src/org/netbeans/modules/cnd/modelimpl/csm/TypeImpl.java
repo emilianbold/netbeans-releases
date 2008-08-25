@@ -399,7 +399,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         Resolver resolver = ResolverFactory.createResolver(getContainingFile(), getStartOffset(), parent);
         if (isInstantiationOrSpecialization()) {
             CharSequence[] specializationQname = new CharSequence[qname.length];
-            int last = qname.length - 1;
+            final int last = qname.length - 1;
             StringBuilder sb = new StringBuilder(qname[last]);
             sb.append('<');
             for (int i = 0; i < instantiationParams.size(); i++) {
@@ -418,6 +418,13 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
             CsmObject o = resolver.resolve(specializationQname, Resolver.CLASSIFIER);
             if( CsmKindUtilities.isClassifier(o) ) {
                 result = (CsmClassifier) o;
+            }
+            if (result == null) {
+                specializationQname[last] = qname[last].toString() + "<>";
+                o = resolver.resolve(specializationQname, Resolver.CLASSIFIER);
+                if( CsmKindUtilities.isClassifier(o) ) {
+                    result = (CsmClassifier) o;
+                }
             }
         }
         if (result == null) {
