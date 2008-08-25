@@ -194,6 +194,10 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         return valid;
     }
 
+    public boolean isHighPriority() {
+        return true;
+    }
+
 /*    private Collection<CsmReference> getOccurrences() {
         Collection<CsmReference> out = null;
         CsmFile file = getCsmFile();
