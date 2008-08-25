@@ -155,7 +155,9 @@ public abstract class CsmFileTaskFactory {
         }
 
         for (Entry<CsmFile, Pair> e : toAdd.entrySet()) {
-            if (OpenedEditors.SHOW_TIME) System.err.println("CFTF: adding " + e.getKey().getAbsolutePath());
+            if (OpenedEditors.SHOW_TIME) System.err.println("CFTF: adding "+
+                    (e.getKey().isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT)+
+                    " "+e.getValue().runner.toString()+" " + e.getKey().getAbsolutePath());
             post(e.getValue(), e.getKey(), e.getKey().isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT, DELAY);
         }
     }
