@@ -58,9 +58,16 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -128,6 +135,34 @@ public class CsmDisplayUtilities {
         return buf.toString();
     }
 
+    public static String getTooltipText(CsmOffsetable item) {
+        String displayName = null;
+        if (CsmKindUtilities.isNamedElement(item)) {
+            displayName = ((CsmNamedElement) item).getName().toString();
+        }
+        if (displayName != null) {
+            displayName = CsmDisplayUtilities.htmlize(displayName);
+        }
+        if (CsmKindUtilities.isClassMember(item)) {
+            if (displayName == null) {
+                displayName = "";
+            }
+            CsmClass cls = ((CsmMember) item).getContainingClass();
+            if (cls != null && cls.getName().length() > 0) {
+                String className = CsmDisplayUtilities.htmlize(cls.getName().toString());
+                displayName = NbBundle.getMessage(CsmDisplayUtilities.class, "MSG_ITEM_TOOLTIP2", displayName, className); //NOI18N
+            }
+        } else if (CsmKindUtilities.isMacro(item)) {
+            CsmMacro macro = (CsmMacro)item;
+            if (macro.isSystem()) {
+                displayName = NbBundle.getMessage(CsmDisplayUtilities.class, "DISPLAY_TEXT_SYS_MACRO", macro.getBody()); //NOI18N
+            } else {
+                displayName = NbBundle.getMessage(CsmDisplayUtilities.class, "DISPLAY_TEXT_USR_MACRO", macro.getBody()); //NOI18N
+            }
+        }
+        return displayName;
+    }
+    
     private final static boolean SKIP_COLORING = Boolean.getBoolean("cnd.test.skip.coloring");
 
     private static void appendHtml(StringBuilder buf, TokenSequence<?> ts) {

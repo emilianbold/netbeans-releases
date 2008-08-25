@@ -181,12 +181,11 @@ public abstract class CsmAbstractHyperlinkProvider implements HyperlinkProviderE
     }
 
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        if (true) return null;
         if (doc == null || offset < 0 || offset > doc.getLength()) {
             return null;
         }
         
-        Token token = jumpToken;//getToken(doc, offset, true);
+        Token token = jumpToken;
         if (token == null || token.offset(null) > offset || 
                 (token.offset(null) + token.length()) < offset) {
             token = getToken(doc, offset);

@@ -191,14 +191,14 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 CharSequence path = targetFile.getAbsolutePath();
                 CsmProject targetPrj = targetFile.getProject();
                 if (targetPrj.isArtificial() || csmFile.getProject().equals(targetPrj)) {
-                    msg = NbBundle.getMessage(CsmIncludeHyperlinkProvider.class, "TOOLTIP_INCLUDE_MSG", path);  //NOI18N 
+                    msg = NbBundle.getMessage(CsmIncludeHyperlinkProvider.class, "MSG_TOOLTIP_INCLUDE", path);  //NOI18N 
                 } else {
                     msg = NbBundle.getMessage(CsmIncludeHyperlinkProvider.class, 
-                            "TOOLTIP_INCLUDE_MSG_FILE_IN_PROJECT", path, targetPrj.getName());  //NOI18N 
+                            "MSG_TOOLTIP_INCLUDE_FILE_IN_PROJECT", path, targetPrj.getName());  //NOI18N 
                 }
             } else {
                 msg = NbBundle.getMessage(CsmIncludeHyperlinkProvider.class, 
-                        "TOOLTIP_INCLUDE_MSG_UNRESOLVED", target.getText());  //NOI18N 
+                        "MSG_TOOLTIP_INCLUDE_UNRESOLVED", target.getText());  //NOI18N 
             }
         }
         return msg;
