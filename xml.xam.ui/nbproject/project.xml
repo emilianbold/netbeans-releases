@@ -192,6 +192,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.tmap</friend>
                 <friend>org.netbeans.modules.compapp.projects.base</friend>
+                <friend>org.netbeans.modules.scheduler.ui</friend>
+                <friend>org.netbeans.modules.dm.di.core</friend>
                 <package>org.netbeans.modules.xml.xam.ui</package>
                 <package>org.netbeans.modules.xml.xam.ui.actions</package>
                 <package>org.netbeans.modules.xml.xam.ui.category</package>
