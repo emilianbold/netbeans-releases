@@ -78,6 +78,8 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
@@ -99,6 +101,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 
@@ -402,12 +405,36 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             int caretOffset, TokenSequence tokenSequence){
         List<ASTNode> nodePath = NavUtils.underCaret(info, caretOffset);
         boolean methDecl = false;
+        boolean funcDecl = false;
+        boolean clsDecl = false;
+        boolean isClassInsideFunc = false;
+        boolean isFuncInsideClass = false;
         for (ASTNode aSTNode : nodePath) {
-            if (aSTNode instanceof FunctionDeclaration && !methDecl) {
-                return false;
+            if (aSTNode instanceof FunctionDeclaration) {
+                funcDecl = true;
+                if (clsDecl) isFuncInsideClass = true;
             } else if (aSTNode instanceof MethodDeclaration) {
-                methDecl = true;
+                methDecl = true;            
+            } else if (aSTNode instanceof ClassDeclaration) {
+                clsDecl = true;
+                if (funcDecl) isClassInsideFunc = true;
             }
+        }
+        if (funcDecl && !methDecl && !clsDecl) {
+            final StringBuilder sb = new StringBuilder();
+            new DefaultVisitor(){
+                @Override
+                public void visit(ASTError astError) {
+                    super.visit(astError);
+                    sb.append(astError.toString());
+                }
+            }.scan(Utils.getRoot(info));
+            if (sb.length() == 0) {
+                return false;
+            }
+        }
+        if (isClassInsideFunc && !isFuncInsideClass) {
+            return true;
         }
         int orgOffset = tokenSequence.offset();
         try {
@@ -425,7 +452,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         && (curly_open > curly_close)) {
                     return false;
                 } else if (id.equals(PHPTokenId.PHP_CLASS)) {
-                    boolean isClassScope = curly_open > 0 && (curly_open + curly_close) % 2 == 1;
+                    boolean isClassScope = curly_open > 0 && (curly_open > curly_close);
                     return isClassScope;
                 }
             }
