@@ -426,15 +426,18 @@ public class FileChooserAccessory extends javax.swing.JPanel
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        lblReference = new javax.swing.JLabel();
         rbRelative = new javax.swing.JRadioButton();
         relativePath = new javax.swing.JTextField();
+        rbVariable = new javax.swing.JRadioButton();
+        variablePath = new javax.swing.JTextField();
+        variablesButton = new javax.swing.JButton();
         rbCopy = new javax.swing.JRadioButton();
         copyTo = new javax.swing.JTextField();
         rbAbsolute = new javax.swing.JRadioButton();
         absolutePath = new javax.swing.JTextField();
-        rbVariable = new javax.swing.JRadioButton();
-        variablePath = new javax.swing.JTextField();
-        variablesButton = new javax.swing.JButton();
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblReference, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.lblReference.text")); // NOI18N
 
         buttonGroup1.add(rbRelative);
         rbRelative.setSelected(true);
@@ -442,6 +445,16 @@ public class FileChooserAccessory extends javax.swing.JPanel
 
         relativePath.setEditable(false);
         relativePath.setText(null);
+
+        buttonGroup1.add(rbVariable);
+        org.openide.awt.Mnemonics.setLocalizedText(rbVariable, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.rbVariable.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(variablesButton, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.variablesButton.text")); // NOI18N
+        variablesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                variablesButtonActionPerformed(evt);
+            }
+        });
 
         buttonGroup1.add(rbCopy);
         org.openide.awt.Mnemonics.setLocalizedText(rbCopy, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.rbCopy.text")); // NOI18N
@@ -455,70 +468,65 @@ public class FileChooserAccessory extends javax.swing.JPanel
         absolutePath.setEditable(false);
         absolutePath.setText(null);
 
-        buttonGroup1.add(rbVariable);
-        org.openide.awt.Mnemonics.setLocalizedText(rbVariable, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.rbVariable.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(variablesButton, org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "FileChooserAccessory.variablesButton.text")); // NOI18N
-        variablesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                variablesButtonActionPerformed(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(rbAbsolute)
-                .addContainerGap(119, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(rbCopy, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE)
-                .addContainerGap(12, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(rbVariable)
-                .addContainerGap(121, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(rbRelative)
-                .addContainerGap(123, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(21, 21, 21)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(copyTo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .add(relativePath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(variablePath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                    .add(lblReference)
+                    .add(rbRelative)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(rbVariable)
+                            .add(layout.createSequentialGroup()
+                                .add(21, 21, 21)
+                                .add(variablePath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 118, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(variablesButton))
-                    .add(absolutePath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)))
+                    .add(rbCopy, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(21, 21, 21)
+                        .add(copyTo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE))
+                    .add(rbAbsolute)
+                    .add(layout.createSequentialGroup()
+                        .add(21, 21, 21)
+                        .add(absolutePath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(21, 21, 21)
+                        .add(relativePath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .add(lblReference)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rbRelative)
-                .add(0, 0, 0)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(relativePath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rbVariable)
-                .add(0, 0, 0)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(variablesButton)
                     .add(variablePath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rbCopy)
-                .add(0, 0, 0)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(copyTo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rbAbsolute)
-                .add(0, 0, 0)
-                .add(absolutePath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(absolutePath, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         rbRelative.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "ACSD_FileChooserAccessory_NA")); // NOI18N
-        rbCopy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "ACSD_FileChooserAccessory_NA")); // NOI18N
-        rbAbsolute.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "ACSD_FileChooserAccessory_NA")); // NOI18N
         rbVariable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "ACSD_FileChooserAccessory_NA")); // NOI18N
         variablesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "ACSD_FileChooserAccessory.variablesButton.text")); // NOI18N
+        rbCopy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "ACSD_FileChooserAccessory_NA")); // NOI18N
+        rbAbsolute.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FileChooserAccessory.class, "ACSD_FileChooserAccessory_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void variablesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_variablesButtonActionPerformed
@@ -537,6 +545,7 @@ private void variablesButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JTextField absolutePath;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTextField copyTo;
+    private javax.swing.JLabel lblReference;
     private javax.swing.JRadioButton rbAbsolute;
     private javax.swing.JRadioButton rbCopy;
     private javax.swing.JRadioButton rbRelative;
