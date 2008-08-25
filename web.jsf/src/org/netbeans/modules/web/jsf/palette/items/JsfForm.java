@@ -116,23 +116,19 @@ public final class JsfForm implements ActiveEditorDrop {
     }
     
     public boolean handleTransfer(JTextComponent targetComponent) {
-        
         JsfFormCustomizer jsfFormCustomizer = new JsfFormCustomizer(this, targetComponent);
         boolean accept = jsfFormCustomizer.showDialog();
         if (accept) {
             try {
+                String prefixHtml = JSFPaletteUtilities.findJsfHtmlPrefix(targetComponent);
+                String prefixCore = JSFPaletteUtilities.findJsfCorePrefix(targetComponent);
+                
                 Caret caret = targetComponent.getCaret();
                 int position0 = Math.min(caret.getDot(), caret.getMark());
                 int position1 = Math.max(caret.getDot(), caret.getMark());
                 int len = targetComponent.getDocument().getLength() - position1;
                 boolean containsFView = targetComponent.getText(0, position0).contains("<f:view>")
-                    && targetComponent.getText(position1, len).contains("</f:view>");
-                
-                String prefixHtml = JSFPaletteUtilities.findJsfHtmlPrefix(targetComponent);
-                if (!containsFView) {
-                    String prefixCore = JSFPaletteUtilities.findJsfCorePrefix(targetComponent);
-                }
-                
+                        && targetComponent.getText(position1, len).contains("</f:view>");
                 String body = createBody(targetComponent, !containsFView);
                 JSFPaletteUtilities.insert(body, targetComponent);
             } catch (IOException ioe) {

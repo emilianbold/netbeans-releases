@@ -82,17 +82,21 @@ public class GenerateEntityClassesTest extends DDTestCase {
     }
 
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         System.out.println("########  "+getName()+"  #######");
     }
     
+    @Override
     protected void tearDown() throws Exception {
     }
     
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(GenerateEntityClassesTest.class);
-        conf = addServerTests(conf,"testOpenProject","testGenerateBeans");
+        conf = addServerTests(Server.GLASSFISH,conf,"testOpenProject");
+        if (isRegistered(Server.GLASSFISH))
+            conf = addServerTests(conf, "testGenerateBeans");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
     }

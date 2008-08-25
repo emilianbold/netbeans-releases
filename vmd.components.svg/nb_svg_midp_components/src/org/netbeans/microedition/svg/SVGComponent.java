@@ -62,6 +62,8 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
     protected final SVGLocatableElement wrapperElement;
     protected       Vector              actionListeners;
 
+    private boolean isFocusable      = true;
+
     public SVGComponent( SVGForm form, SVGLocatableElement element ) {
         this.form = form;
         wrapperElement = element;
@@ -93,6 +95,14 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
     
     public InputHandler getInputHandler() {
         return null;
+    }
+
+    public synchronized boolean isFocusable(){
+        return isFocusable;
+    }
+    
+    public synchronized void setFocusable( boolean focusable ){
+        isFocusable = focusable;
     }
     
     public synchronized void addActionListener(SVGActionListener listener) {

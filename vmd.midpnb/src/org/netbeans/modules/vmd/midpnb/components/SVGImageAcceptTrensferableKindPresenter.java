@@ -87,11 +87,11 @@ public class SVGImageAcceptTrensferableKindPresenter extends MidpAcceptTrensfera
 
         if (isAcceptableForComponent(svgPlayer)) {
             Set<FileObject> images = getImagesFO(svgPlayer, component);
-            if (images.size() == 0 && getComponent().getDocument().getDescriptorRegistry().isInHierarchy(SVGFormCD.TYPEID, getComponent().getType())) {
+            if (getComponent().getDocument().getDescriptorRegistry().isInHierarchy(SVGFormCD.TYPEID, getComponent().getType())) {
                 SVGFormSupport.removeAllSVGFormComponents(getComponent());
             }
             for (FileObject img : images) {
-                parseSVGImageItems(img, svgPlayer);
+                SVGFormSupport.parseSVGImageItems(img, svgPlayer);
             }
         }
 
@@ -131,36 +131,4 @@ public class SVGImageAcceptTrensferableKindPresenter extends MidpAcceptTrensfera
         return Collections.EMPTY_SET;
     }
     
-    private void parseSVGImageItems(FileObject imageFO, DesignComponent parentComponent) {
-        if (imageFO == null) {
-            return;
-        }
-        SVGComponentImageParser parser = SVGComponentImageParser.getParserByComponent(parentComponent);
-        if (parser == null) {
-            return;
-        }
-
-        InputStream inputStream = null;
-        try {
-            inputStream = imageFO.getInputStream();
-            if (inputStream != null) {
-                DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
-                if (registry.isInHierarchy(SVGFormCD.TYPEID, getComponent().getType())) {
-                    SVGFormImageParser.parseSVGForm(inputStream, parentComponent);
-                } else {
-                    SVGMenuImageParser.parseSVGMenu(inputStream, parentComponent);
-                }
-            }
-        } catch (FileNotFoundException ex) {
-            Debug.warning(ex);
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException ioe) {
-                    Debug.warning(ioe);
-                }
-            }
-        }
-    }        
 }

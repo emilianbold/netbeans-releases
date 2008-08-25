@@ -314,14 +314,14 @@ public class CodeCompleter implements CodeCompletionHandler {
         if (active != null) {
             if ((active.id() == GroovyTokenId.WHITESPACE && difference == 0) ||
                 active.id().primaryCategory().equals("separator")) {
-                LOG.log(Level.FINEST, "ts.movePrevious()");
+                LOG.log(Level.FINEST, "ts.movePrevious() - 1");
                 ts.movePrevious();
             } else if (active.id() == GroovyTokenId.NLS ) {
                 ts.movePrevious();
                 if(((Token<? extends GroovyTokenId>) ts.token()).id() == GroovyTokenId.DOT) {
                     ts.moveNext();
                 } else {
-                    LOG.log(Level.FINEST, "ts.movePrevious()");
+                    LOG.log(Level.FINEST, "ts.movePrevious() - 2");
                 }
                
             }
@@ -361,6 +361,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                 break;
             } else if (t.id().primaryCategory().equals("keyword")) {
                 beforeLiteral = t;
+                break;
             }
         }
 
@@ -375,6 +376,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                 break;
             } else if (t.id().primaryCategory().equals("keyword")) {
                 afterLiteral = t;
+                break;
             }
         }
 
@@ -1631,6 +1633,16 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
+        // are we dealing with a class xyz implements | { 
+        // kind of completion?
+        
+        boolean onlyInterfaces = false;
+        
+        if (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) {
+            LOG.log(Level.FINEST, "Completing only interfaces after implements keyword.");
+            onlyInterfaces = true;
+        }
+        
         // get the JavaSource for our file.
 
         final JavaSource javaSource = getJavaSourceFromRequest(request);
@@ -1650,7 +1662,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                 LOG.log(Level.FINEST, "Number of types found:  {0}", stringTypelist.size());
 
                 for (TypeHolder singleType : stringTypelist) {
-                    addToProposalUsingFilter(proposals, request, singleType, false);
+                    addToProposalUsingFilter(proposals, request, singleType, onlyInterfaces);
                 }
             }
 
@@ -1712,7 +1724,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                     
                     for (TypeHolder type : typelist) {
                         // now finally add to proposals
-                        addToProposalUsingFilter(proposals, request, type, false);
+                        addToProposalUsingFilter(proposals, request, type, onlyInterfaces);
                     }
                         
                 }
@@ -1742,7 +1754,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                     }
                     
                     
-                    addToProposalUsingFilter(proposals, request, new TypeHolder(importNode.getClassName(), ek), false);
+                    addToProposalUsingFilter(proposals, request, new TypeHolder(importNode.getClassName(), ek), onlyInterfaces);
                 }
             }
 
@@ -1785,14 +1797,14 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             for (TypeHolder element : typeList) {
                 // LOG.log(Level.FINEST, "Single Type : {0}", element.toString());
-                addToProposalUsingFilter(proposals, request, element, false);
+                addToProposalUsingFilter(proposals, request, element, onlyInterfaces);
             }
         }
 
         // Adding two single classes per hand
 
-        addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigDecimal", ElementKind.CLASS), false);
-        addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigInteger", ElementKind.CLASS), false);
+        addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigDecimal", ElementKind.CLASS), onlyInterfaces);
+        addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigInteger", ElementKind.CLASS), onlyInterfaces);
 
         return true;
     }
@@ -1807,14 +1819,14 @@ public class CodeCompleter implements CodeCompletionHandler {
      */
     void addToProposalUsingFilter(List<CompletionProposal> proposals, CompletionRequest request, TypeHolder type, boolean onlyInterfaces) {
 
-        if(onlyInterfaces && type.getKind() == ElementKind.CLASS) {
+        if((onlyInterfaces == true ) && (type.getKind() != ElementKind.INTERFACE)) {
             return;
         }
         
         String typeName = NbUtilities.stripPackage(type.getName());
 
         if (typeName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
-            LOG.log(Level.FINEST, "Filter, Adding Type : {0}", type.getName());
+            // LOG.log(Level.FINEST, "Filter, Adding Type : {0}", type.getName());
             proposals.add(new TypeItem(typeName, anchor, request, type.getKind()));
         }
         

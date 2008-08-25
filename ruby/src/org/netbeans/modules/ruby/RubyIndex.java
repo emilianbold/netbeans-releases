@@ -1767,18 +1767,19 @@ public final class RubyIndex {
         } else {
             // FIXME: use right platform
             RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-            String s = getGemHomeURL(platform);
+            if (platform != null) {
+                String s = getGemHomeURL(platform);
 
-            if (s != null && url.startsWith(s)) {
-                return GEM_URL + url.substring(s.length());
-            }
+                if (s != null && url.startsWith(s)) {
+                    return GEM_URL + url.substring(s.length());
+                }
 
-            s = platform.getHomeUrl();
+                s = platform.getHomeUrl();
 
-            if (url.startsWith(s)) {
-                url = RUBYHOME_URL + url.substring(s.length());
-
-                return url;
+                if (url.startsWith(s)) {
+                    url = RUBYHOME_URL + url.substring(s.length());
+                    return url;
+                }
             }
         }
 

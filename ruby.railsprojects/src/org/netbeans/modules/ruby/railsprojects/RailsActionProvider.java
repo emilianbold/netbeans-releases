@@ -206,8 +206,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             return false;
         }
         
-        // 001_whatever.rb
-        return file.getName().matches("\\d\\d\\d_.*"); // NOI18N
+        return MigrateAction.getMigrationVersion(file.getName()) != null;
     }
     
     private FileObject getCurrentFile(Lookup context) {
@@ -358,7 +357,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             
             if (isMigrationFile(file)) {
                 String name = file.getName();
-                String version = Integer.toString(Integer.parseInt(name.substring(0, 3)));
+                Long version = MigrateAction.getMigrationVersion(name);
                 RakeRunner runner = new RakeRunner(project);
                 runner.setPWD(FileUtil.toFile(project.getProjectDirectory()));
                 runner.setFileLocator(new RailsFileLocator(context, project));
@@ -735,6 +734,9 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     
     
     public boolean isActionEnabled( String command, Lookup context ) {
+        if (getPlatform() == null) {
+            return false;
+        }
         // We don't require files to be in the source roots to be executable/debuggable;
         // for example, in Rails you may want to switch to the Files view and execute
         // some of the files in scripts/, even though these are not considered sources

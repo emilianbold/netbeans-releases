@@ -105,30 +105,19 @@ public class UMLProjectModule extends ModuleInstall
                             .lookup(IProductDiagramManager.class);
                         product.setDiagramManager(diagManager);
 
-//         RequestProcessor.getDefault().post(new Runnable()
-//         {
-//             public void run()
 			{
                 
 			    DispatchHelper helper = new DispatchHelper();
-                            // TODO: meteora
-//			    helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
 			}
-//         });
-            
-			//product.setDiagramManager(new UMLDiagramManager());
             
 			// Put the user interface proxy
 			product.setProxyUserInterface(new UMLUserInterface());
 			product.setProjectManager(new UMLProductProjectManager());
                         product.setProjectTreeModel(mModel);
-			// m_AcceleratorMgr = m_ADProduct.getAcceleratorManager();
 		    }
 		    else
 		    {
 			DispatchHelper helper = new DispatchHelper();
-                        // TODO: meteora
-//			helper.registerDrawingAreaEvents(mModel.getDrawingAreaListener());
 		    }      
 		    lightInitialized = true;
 		}

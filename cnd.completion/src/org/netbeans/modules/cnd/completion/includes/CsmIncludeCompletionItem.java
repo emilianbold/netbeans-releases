@@ -150,21 +150,24 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                     Completion.get().hideCompletion();
                     break;
                 case '"':
-                    doc.runAtomic(new Runnable() {
-                        public void run() {
-                            try {
-                                if (len > 0) {
-                                    String toReplace = doc.getText(substitutionOffset, len);
-                                    if (toReplace.startsWith("\"") && len > 1) { // NOI18N
-                                        Completion.get().hideDocumentation();
-                                        Completion.get().hideCompletion();
-                                    }
-                                }
-                            } catch (BadLocationException ex) {
-                                Exceptions.printStackTrace(ex);
+                    doc.readLock();
+                    boolean hide = false;
+                    try {
+                        if (len > 0) {
+                            String toReplace = doc.getText(substitutionOffset, len);
+                            if (toReplace.startsWith("\"") && len > 1) { // NOI18N
+                                hide = true;
                             }
                         }
-                    });
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        doc.readUnlock();
+                    }
+                    if (hide) {
+                        Completion.get().hideDocumentation();
+                        Completion.get().hideCompletion();
+                    }
                     break;
                 case '/':
                     if (len > 1 && isFolder()) {
