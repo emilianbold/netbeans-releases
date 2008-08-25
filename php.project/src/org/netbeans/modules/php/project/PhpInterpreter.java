@@ -59,6 +59,7 @@ public final class PhpInterpreter {
      * Parse command which can be just binary or binary with parameters.
      * As a parameter separator, "-" or "/" is used.
      * @param command command to parse, can be <code>null</code>.
+     * @see #isValid()
      */
     public PhpInterpreter(String command) {
         if (command == null) {
