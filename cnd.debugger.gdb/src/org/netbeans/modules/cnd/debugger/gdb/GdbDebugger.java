@@ -2216,7 +2216,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     return type;
                 }
             } else {
-		log.fine("GD.requestSymbolType[" + cb.getID() + "]: " + type + " --> [" + info + "]");
+                log.fine("GD.requestSymbolType[" + cb.getID() + "]: " + type + " --> [" + info + "]");
                 return info.substring(7, info.length() - 2);
             }
         } else {
