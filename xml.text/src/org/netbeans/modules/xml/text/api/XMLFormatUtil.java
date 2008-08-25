@@ -49,7 +49,7 @@ public class XMLFormatUtil {
 
     public static void reformat(final BaseDocument doc, final int startOffset, final int endOffset) {
         final XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        doc.render(new Runnable() {
+        doc.runAtomic(new Runnable() {
             public void run() {
                 formatter.doReformat(doc, startOffset, endOffset);
             }
