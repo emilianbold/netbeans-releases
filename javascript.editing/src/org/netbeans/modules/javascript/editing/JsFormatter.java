@@ -45,17 +45,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
+import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -80,9 +79,9 @@ import org.openide.util.Exceptions;
  */
 public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     private boolean embeddedJavaScript;
-    private CodeStyle codeStyle;
-    private int rightMarginOverride = -1;
     private int embeddededIndent = 0;
+    private int indentSize;
+    private int continuationIndentSize;
     
     /**
      * <p>
@@ -103,14 +102,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     private Stack<StackItem> stack = new Stack<StackItem>();
 
     public JsFormatter() {
-        //this.codeStyle = CodeStyle.getDefault(null);
-        this.codeStyle = new DocSyncedCodeStyle();
-    }
-    
-    public JsFormatter(CodeStyle codeStyle, int rightMarginOverride) {
-        assert codeStyle != null;
-        this.codeStyle = codeStyle;
-        this.rightMarginOverride = rightMarginOverride;
     }
     
     public boolean needsParserResult() {
@@ -118,6 +109,9 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     public void reformat(Document document, int startOffset, int endOffset, CompilationInfo info) {
+        Preferences prefs = MimeLookup.getLookup(MimePath.get(JsTokenId.JAVASCRIPT_MIME_TYPE)).lookup(Preferences.class);
+        indentSize = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+        continuationIndentSize = indentSize; // No separate setting for this yet!
         
         JsParseResult jsParseResult = null;
         if (info != null) {
@@ -130,9 +124,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         }
         
         BaseDocument doc = (BaseDocument) document;
-        syncOptions(doc, codeStyle);
         
-        JsPretty jsPretty = new JsPretty(info, doc, startOffset, endOffset, codeStyle);
+        JsPretty jsPretty = new JsPretty(info, doc, startOffset, endOffset, indentSize, continuationIndentSize);
         jsPretty.format();
         
         try {
@@ -151,16 +144,18 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
     
     public void reindent(Document document, int startOffset, int endOffset) {
+        Preferences prefs = MimeLookup.getLookup(MimePath.get(JsTokenId.JAVASCRIPT_MIME_TYPE)).lookup(Preferences.class);
+        indentSize = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+        continuationIndentSize = indentSize; // No separate setting for this yet!
+
         reindent(document, startOffset, endOffset, null, true);
     }
     
     public int indentSize() {
-        //return codeStyle.getIndentSize();
         return -1; // Use IDE defaults
     }
     
     public int hangingIndentSize() {
-        //return codeStyle.getContinuationIndentSize();
         return -1; // Use IDE defaults
     }
 
@@ -583,8 +578,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 }
             }
 
-            syncOptions(doc, codeStyle);
-
             if (endOffset > doc.getLength()) {
                 endOffset = doc.getLength();
             }
@@ -667,10 +660,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                         editorFormatter.changeRowIndent(doc, lineBegin, indent);
                     }
                 }
-                
-                if (!indentOnly && codeStyle.reformatComments()) {
-                    reformatComments(doc, startOffset, endOffset);
-                }
             } finally {
                 doc.atomicUnlock();
             }
@@ -705,10 +694,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             // State:
             int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
             int end = endOffset;
-            
-            int indentSize = codeStyle.getIndentSize();
-            int hangingIndentSize = codeStyle.getContinuationIndentSize();
-            
+
+
             // Pending - apply comment formatting too?
 
             // XXX Look up RHTML too
@@ -788,7 +775,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                     }
                 }
                 
-                int hangingIndent = continued ? (hangingIndentSize) : 0;
+                int hangingIndent = continued ? (continuationIndentSize) : 0;
 
                 if (lineType == IN_LITERAL) {
                     // Skip this line - leave formatting as it is prior to reformatting 
@@ -856,95 +843,6 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         }
     }
     
-    void reformatComments(BaseDocument doc, int start, int end) {
-        int rightMargin = rightMarginOverride;
-        if (rightMargin == -1) {
-            CodeStyle style = codeStyle;
-            if (style == null) {
-                style = CodeStyle.getDefault(null);
-            }
-
-            rightMargin = style.getRightMargin();
-        }
-
-//        ReflowParagraphAction action = new ReflowParagraphAction();
-//        action.reflowComments(doc, start, end, rightMargin);
-        throw new RuntimeException("Not yet implemented!");
-    }
-    
-    /**
-     * Ensure that the editor-settings for tabs match our code style, since the
-     * primitive "doc.getFormatter().changeRowIndent" calls will be using
-     * those settings
-     */
-    private static void syncOptions(BaseDocument doc, CodeStyle style) {
-        if (style instanceof DocSyncedCodeStyle) {
-            ((DocSyncedCodeStyle)style).syncToDocument(doc);
-        }
-    }
-    
-    private static final class DocSyncedCodeStyle extends CodeStyle {
-        private DocSyncedCodeStyle() {
-            super(null);
-        }
-        
-        private int indentSize = 4;
-        private int continuationIndentSize = 4;
-        private int rightMargin = 80;
-        private EditorKit kit;
-        
-        // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
-        private EditorKit getEditorKit() {
-            if(kit == null) {
-                kit = MimeLookup.getLookup(MimePath.parse("text/xml")).lookup(EditorKit.class); // NOI18N
-            } // NOI18N
-            return kit;
-        }
-
-        // Copied from option.editor's org.netbeans.modules.options.indentation.IndentationModel
-        private Integer getSpacesPerTab() {
-            Integer sp =
-                    (Integer) Settings.getValue(getEditorKit().getClass(), SettingsNames.SPACES_PER_TAB);
-            return sp;
-        }
-        
-        public void syncToDocument(BaseDocument doc) {
-            Integer sp = getSpacesPerTab();
-            int indent = sp.intValue();
-            if (indent <= 0) {
-                indent = 4;
-            }
-            indentSize = continuationIndentSize = indent;
-        }
-        
-        @Override
-        public int getIndentSize() {
-            return indentSize;
-        }
-
-        @Override
-        public int getContinuationIndentSize() {
-            return continuationIndentSize;
-        }
-
-        @Override
-        public boolean reformatComments() {
-            // This isn't used in JavaScript yet
-            return false;
-        }
-
-        @Override
-        public boolean indentHtml() {
-            // This isn't used in JavaScript yet
-            return false;
-        }
-
-        @Override
-        public int getRightMargin() {
-            return rightMargin;
-        }
-    }
-
     /**
      * One item in indent stack, see description of stack variable
      */
