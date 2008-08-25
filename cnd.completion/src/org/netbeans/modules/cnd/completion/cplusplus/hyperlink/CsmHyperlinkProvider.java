@@ -101,18 +101,18 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             return false;
         }
         Token<CppTokenId> jumpToken = getJumpToken();
-        CsmOffsetable item = findTargetObject(doc, jumpToken, offset, true);
+        CsmOffsetable item = (CsmOffsetable) findTargetObject(doc, jumpToken, offset, true);
         return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
     }
 
-    /*package*/ CsmOffsetable findTargetObject(final Document doc, final Token jumpToken, final int offset, boolean toBestTarget) {
-        CsmOffsetable item = null;
+    /*package*/ CsmObject findTargetObject(final Document doc, final Token jumpToken, final int offset, boolean toOffsetable) {
+        CsmObject item = null;
         assert jumpToken != null;
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         CsmObject csmObject = file == null ? null : ReferencesSupport.findDeclaration(file, doc, jumpToken, offset);
-        if (toBestTarget && csmObject != null) {
+        if (csmObject != null) {
             // convert to jump object
-            item = toJumpObject(csmObject, file, offset);
+            item = toOffsetable ? toJumpObject(csmObject, file, offset) : csmObject;
         }
         return item;
     }
@@ -194,8 +194,8 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     }
     
     protected String getTooltipText(Document doc, Token token, int offset) {
-        CsmOffsetable item = findTargetObject(doc, token, offset, false);
-        String msg = CsmDisplayUtilities.getTooltipText(item);
+        CsmObject item = findTargetObject(doc, token, offset, false);
+        String msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
         return msg;
     }    
 }
