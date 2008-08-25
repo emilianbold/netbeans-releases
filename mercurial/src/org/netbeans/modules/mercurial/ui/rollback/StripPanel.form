@@ -28,6 +28,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -42,16 +43,16 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel1" alignment="0" pref="396" max="32767" attributes="1"/>
+                  <Component id="jLabel1" alignment="0" pref="421" max="32767" attributes="1"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" alignment="0" attributes="1">
                               <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                               <Component id="revisionsLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="revisionsComboBox" pref="219" max="32767" attributes="0"/>
+                              <Component id="revisionsComboBox" pref="228" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="jLabel2" alignment="0" pref="396" max="32767" attributes="1"/>
+                          <Component id="jLabel2" alignment="0" pref="421" max="32767" attributes="1"/>
                           <Component id="changesetPanel1" alignment="0" max="32767" attributes="0"/>
                           <Component id="jPanel1" alignment="0" max="32767" attributes="1"/>
                       </Group>
@@ -116,9 +117,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Dialog" size="11" style="1"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mercurial/ui/rollback/Bundle.properties" key="StripPanel.infoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -151,7 +149,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="doBackupChxBox" min="-2" pref="327" max="-2" attributes="0"/>
-                  <EmptySpace pref="45" max="32767" attributes="0"/>
+                  <EmptySpace pref="65" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

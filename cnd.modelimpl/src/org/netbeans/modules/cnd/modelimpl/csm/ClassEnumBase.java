@@ -172,12 +172,11 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     abstract public Kind getKind();
     
     protected void register(CsmScope scope, boolean registerUnnamedInNamespace) {
-        
+
         RepositoryUtils.put(this);
         boolean registerInNamespace = registerUnnamedInNamespace;
         if( ProjectBase.canRegisterDeclaration(this) ) {
-            registerInProject();
-	    registerInNamespace = true;
+	    registerInNamespace = registerInProject();
         }
         if (registerInNamespace) {
             if (getContainingClass() == null) {
@@ -187,19 +186,37 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
             }
         }
     }
-    
-    private void registerInProject() {
+
+    private boolean registerInProject() {
         ClassImpl.ClassMemberForwardDeclaration fd = isClassDefinition();
         if (fd != null && CsmKindUtilities.isClass(this))  {
             fd.setCsmClass((CsmClass)this);
-            return;
+            //return true;
         }
-       ((ProjectBase) getContainingFile().getProject()).registerDeclaration(this);
+       return ((ProjectBase) getContainingFile().getProject()).registerDeclaration(this);
     }
-    
+
     private void unregisterInProject() {
         ((ProjectBase) getContainingFile().getProject()).unregisterDeclaration(this);
         this.cleanUID();
+    }
+
+    /**
+     * Some classifiers, such as forward class declarations,
+     * are registered fake classes prematurely,
+     * to help the model cope with the absence of "real" classifiers
+     *
+     * In this case, as soon as "real" classifier appears,
+     * it should replace such fake one;
+     * and if the "real" one already exists,
+     * then the fake one should not be registered
+     *
+     * @param another
+     * @return true is this one is "weaker" than other onw,
+     * i.e. this one should be substituted by other
+     */
+    public boolean shouldBeReplaced(CsmClassifier another) {
+        return false;
     }
     
     public NamespaceImpl getContainingNamespaceImpl() {

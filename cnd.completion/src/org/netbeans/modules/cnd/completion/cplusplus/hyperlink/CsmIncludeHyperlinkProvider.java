@@ -48,8 +48,10 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * Implementation of the hyperlink provider for java language.
@@ -175,4 +177,30 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             return -1;
         }
     };
+    
+    protected String getTooltipText(Document doc, Token token, int offset) {
+        CsmFile csmFile = CsmUtilities.getCsmFile(doc, true);
+        CsmInclude target = null;
+        if (csmFile != null) {
+            target = ReferencesSupport.findInclude(csmFile, offset);
+        }
+        String msg = null;
+        if (target != null) {
+            CsmFile targetFile = target.getIncludeFile();
+            if (targetFile != null) {
+                CharSequence path = targetFile.getAbsolutePath();
+                CsmProject targetPrj = targetFile.getProject();
+                if (targetPrj.isArtificial() || csmFile.getProject().equals(targetPrj)) {
+                    msg = NbBundle.getMessage(CsmIncludeHyperlinkProvider.class, "TOOLTIP_INCLUDE_MSG", path);  //NOI18N 
+                } else {
+                    msg = NbBundle.getMessage(CsmIncludeHyperlinkProvider.class, 
+                            "TOOLTIP_INCLUDE_MSG_FILE_IN_PROJECT", path, targetPrj.getName());  //NOI18N 
+                }
+            } else {
+                msg = NbBundle.getMessage(CsmIncludeHyperlinkProvider.class, 
+                        "TOOLTIP_INCLUDE_MSG_UNRESOLVED", target.getText());  //NOI18N 
+            }
+        }
+        return msg;
+    }    
 }

@@ -166,7 +166,8 @@ public class CsmDisplayUtilities {
     }
 
     public static String htmlize(String input) {
-        String temp = org.openide.util.Utilities.replaceString(input, "<", "&lt;"); // NOI18N
+        String temp = org.openide.util.Utilities.replaceString(input, "&", "&amp;");
+        temp = org.openide.util.Utilities.replaceString(temp, "<", "&lt;"); // NOI18N
         temp = org.openide.util.Utilities.replaceString(temp, ">", "&gt;"); // NOI18N
         return temp;
     }

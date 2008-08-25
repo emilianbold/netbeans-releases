@@ -761,6 +761,7 @@ public class AstRenderer {
                 if( container != null ) {
                     container.addDeclaration(cfdi);
                 }
+                cfdi.init(ast, currentNamespace);
                 return true;
         }
                 
