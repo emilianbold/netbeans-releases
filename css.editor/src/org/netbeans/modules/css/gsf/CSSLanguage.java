@@ -74,7 +74,7 @@ public class CSSLanguage extends DefaultLanguageConfig {
 
     @Override
     public String getDisplayName() {
-        return "CSS";
+        return "CSS"; //NOI18N ???
     }
     
     @Override

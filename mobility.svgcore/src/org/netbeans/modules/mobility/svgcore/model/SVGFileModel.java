@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JEditorPane;
@@ -396,7 +397,9 @@ public final class SVGFileModel {
         return (SVGDataObject) m_edSup.getDataObject();
     }
 
-    public SVGImage parseSVGImage() throws IOException, BadLocationException {
+    public SVGImage parseSVGImage() 
+            throws IOException, BadLocationException, InterruptedException 
+    {
         SceneManager.log(Level.INFO, "Parsing image..."); //NOI18N
         checkModel();
         SVGImage svgImage = m_mapping.parseDocument(true);

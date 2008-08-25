@@ -239,6 +239,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
                 case NEW_LINE:
                 case BLOCK_COMMENT:
                 case LINE_COMMENT:
+                case TEMPLATE:
                     // OK, do nothing
                     break;
                 default:

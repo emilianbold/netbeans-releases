@@ -204,5 +204,14 @@ public final class TestEntry {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        try {
+            return "TestEntry[" + jarFile + ",src=" + getSrcDir() + "]"; // NOI18N
+        } catch (IOException x) {
+            return "TestEntry[" + jarFile + ",src=<" + x.getMessage() + ">]"; // NOI18N
+        }
+    }
     
 } 

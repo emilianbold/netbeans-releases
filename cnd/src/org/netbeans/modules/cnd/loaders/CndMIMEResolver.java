@@ -121,7 +121,12 @@ public class CndMIMEResolver extends MIMEResolver {
             String name = fo.getName().toLowerCase();
             if (name.startsWith("makefile") || name.endsWith("makefile") ||name.startsWith("gnumakefile")) { // NOI18N
                 return MIMENames.MAKEFILE_MIME_TYPE;
-            }          
+            }
+            // Also recognize names like "newMakefile" and "newMakefile_1" as a makefile
+            name = fo.getName();
+            if (name.indexOf(".") < 0 && name.indexOf("Makefile") >= 0) { // NOI18N
+                return MIMENames.MAKEFILE_MIME_TYPE;
+            }
         }
 	return null;
     }

@@ -497,6 +497,17 @@ class ExpressionScanner extends TreeScanner<List<Tree>, ExpressionScanner.Expres
         return reduce(cond, statements);
     }
 
+    @Override
+    public List<Tree> visitReturn(ReturnTree node, ExpressionsInfo p) {
+        if (acceptsTree(node)) {
+            return scan(node.getExpression(), p);
+        } else {
+            return null;
+        }
+    }
+
+
+
     //public List<Tree> visitWildcard(WildcardTree node, ExpressionScanner.ExpressionsInfo p) {
     //}
 

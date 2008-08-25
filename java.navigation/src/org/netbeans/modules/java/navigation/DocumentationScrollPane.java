@@ -110,7 +110,8 @@ public class DocumentationScrollPane extends JScrollPane {
         setViewportView(view);
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(DocumentationScrollPane.class, "ACSN_DocScrollPane"));
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentationScrollPane.class, "ACSD_DocScrollPane"));
-        
+        view.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DocumentationScrollPane.class, "ACSN_DocScrollPane"));
+        view.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DocumentationScrollPane.class, "ACSD_DocScrollPane"));
         installTitleComponent();
 //        installKeybindings(view);
         setFocusable(true);
@@ -254,7 +255,7 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private synchronized void backHistory() {
-        if (currentHistoryIndex > 0) {
+        if (currentHistoryIndex > 0 && currentHistoryIndex <= history.size()) {
             currentHistoryIndex--;
             setDocumentation(history.get(currentHistoryIndex));            
             if (currentHistoryIndex == 0)
@@ -419,19 +420,7 @@ public class DocumentationScrollPane extends JScrollPane {
         public @Override void mouseExited(MouseEvent ev) {
             button.setContentAreaFilled(false);
             button.setBorderPainted(false);
-        }
-        
-        public @Override void mouseClicked(MouseEvent evt) {
-            if (button.equals(bBack)){
-                backHistory();
-            }else if(button.equals(bForward)){
-                forwardHistory();
-            }else if(button.equals(bGoToSource)){
-                goToSource();
-            }else if (button.equals(bShowWeb)){
-                openInExternalBrowser();
-            }
-        }
+        }          
     }
 
     private class HyperlinkAction implements HyperlinkListener {

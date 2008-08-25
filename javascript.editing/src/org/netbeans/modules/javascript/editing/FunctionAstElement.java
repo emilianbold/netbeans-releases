@@ -41,7 +41,7 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.mozilla.javascript.FunctionNode;
+import org.mozilla.nb.javascript.FunctionNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 

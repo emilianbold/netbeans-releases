@@ -55,11 +55,11 @@ import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
-import org.jruby.ast.AliasNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.IScopingNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.AliasNode;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.IScopingNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -80,8 +80,6 @@ import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyMimeResolver;
@@ -92,7 +90,6 @@ import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -113,7 +110,7 @@ import org.openide.xml.XMLUtil;
 public class RetoucheUtils {
     // XXX Should this be unused now?
     public static Source createSource(ClasspathInfo cpInfo, FileObject fo) {
-        if (RubyUtils.isRubyOrRhtmlFile(fo)) {
+        if (RubyUtils.canContainRuby(fo)) {
             return Source.create(cpInfo, fo);
         }
         
@@ -345,7 +342,7 @@ public class RetoucheUtils {
     }
     
     public static boolean isRefactorable(FileObject file) {
-        return RubyUtils.isRubyOrRhtmlFile(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
+        return RubyUtils.canContainRuby(file) && isFileInOpenProject(file) && isOnSourceClasspath(file);
     }
     
     public static String getPackageName(FileObject folder) {
@@ -482,7 +479,7 @@ public class RetoucheUtils {
             for (FileObject child : f.getChildren()) {
                 addRubyFiles(list, child);
             }
-        } else if (RubyUtils.isRubyOrRhtmlFile(f)) {
+        } else if (RubyUtils.canContainRuby(f)) {
             list.add(f);
         }
     }
