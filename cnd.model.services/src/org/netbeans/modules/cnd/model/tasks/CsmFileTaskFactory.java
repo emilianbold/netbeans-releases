@@ -195,10 +195,15 @@ public abstract class CsmFileTaskFactory {
     }
     
     private final void post(Pair pr, CsmFile file, PhaseRunner.Phase phase, int delay) {
-        pr.task = WORKER.post(new CsmSafeRunnable( getRunnable(pr.runner, phase), file), delay );
+        if (pr.runner.isHighPriority()) {
+            pr.task = HIGH_PRIORITY_WORKER.post(new CsmSafeRunnable( getRunnable(pr.runner, phase), file), delay , Thread.NORM_PRIORITY);
+        } else {
+            pr.task = WORKER.post(new CsmSafeRunnable( getRunnable(pr.runner, phase), file), delay );
+        }
     }
     
     private static RequestProcessor WORKER = new RequestProcessor("CsmFileTaskFactory", 1); //NOI18N
+    private static RequestProcessor HIGH_PRIORITY_WORKER = new RequestProcessor("CsmHighPriorityFileTaskFactory", 1); //NOI18N
 
     static {
         CsmFileTaskFactoryManager.ACCESSOR = new CsmFileTaskFactoryManager.Accessor() {
@@ -259,6 +264,7 @@ public abstract class CsmFileTaskFactory {
         public abstract void run(Phase phase);
         public abstract boolean isValid();
         public abstract void cancel();
+        public abstract boolean isHighPriority();
     }
     
     private static final class Pair {
@@ -288,6 +294,10 @@ public abstract class CsmFileTaskFactory {
             }
 
             public void cancel() {
+            }
+
+            public boolean isHighPriority() {
+                return false;
             }
         };
     }

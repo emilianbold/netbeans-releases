@@ -37,51 +37,27 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+package org.openide.filesystems;
 
 /**
- * Just a continuation of the FileModelTest
- * (which became too large)
- * @author Vladimir Kvashin
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class FileModelTest2 extends TraceModelTestBase {
+public class Count implements Runnable {
+    static int cnt;
 
-    public FileModelTest2(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-    System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-        super.setUp();
-    }
-    
-    @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
-    }
-    
-    public void testIZ143977_0() throws Exception {
-        // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
-        performTest("iz143977_0.cc");
-    }
-    
-    public void testIZ143977_1() throws Exception {
-        // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
-        performTest("iz143977_1.cc");
-    }
-    
-    public void testIZ143977_2() throws Exception {
-        // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
-        performTest("iz143977_2.cc");
-    }
-    
-    public void testIZ143977_3() throws Exception {
-        // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
-        performTest("iz143977_3.cc");
+    public Count() {
+        cnt++;
     }
 
+    public static Count create() {
+        return new Count();
+    }
+
+    public static Runnable exec() {
+        return new Count();
+    }
+
+    public void run() {
+    }
 }

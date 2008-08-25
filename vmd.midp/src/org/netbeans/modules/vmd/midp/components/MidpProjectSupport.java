@@ -162,8 +162,9 @@ public final class MidpProjectSupport {
         if (relativeResourcePath.startsWith("/")) { // NOI18N
             relativeResourcePath = relativeResourcePath.substring(1);
         }
-        
-        Map<FileObject, FileObject> matches = new WeakHashMap<FileObject, FileObject>();
+
+        // Fix for 144950 - [65cat] java.util.NoSuchElementException at java.util.WeakHashMap$HashIterator.nextEntry
+        Map<FileObject, FileObject> matches = new HashMap<FileObject, FileObject>();
         
         DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
         // document is not leaded yet
