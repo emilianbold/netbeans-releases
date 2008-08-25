@@ -52,11 +52,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
@@ -65,6 +68,9 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  * @author Tomas Mysik
@@ -88,6 +94,8 @@ public final class RemoteConnections {
     static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
 
     private static final String PREFERENCES_PATH = "RemoteConnections"; // NOI18N
+
+    private static final RequestProcessor TEST_CONNECTION_RP = new RequestProcessor("Test Remote Connection", 1); // NOI18N
 
     private static final ConnectionType DEFAULT_TYPE = ConnectionType.FTP;
     private static final int DEFAULT_PORT = 21;
@@ -124,6 +132,8 @@ public final class RemoteConnections {
     private final ChangeListener defaultChangeListener = new DefaultChangeListener();
     RemoteConnectionsPanel panel = null;
     private DialogDescriptor descriptor = null;
+    private JButton testConnectionButton = null;
+    private RequestProcessor.Task testConnectionTask = null;
 
     public static RemoteConnections get() {
         return new RemoteConnections();
@@ -156,6 +166,7 @@ public final class RemoteConnections {
         panel.addConfigListListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 selectCurrentConfig();
+                enableTestConnection();
             }
         });
     }
@@ -177,8 +188,32 @@ public final class RemoteConnections {
      */
     public boolean openManager(final RemoteConfiguration remoteConfiguration) {
         initPanel();
-        String title = NbBundle.getMessage(RemoteConnections.class, "LBL_ManageRemoteConnections");
-        descriptor = new DialogDescriptor(panel, title, true, null);
+        testConnectionButton = new JButton(NbBundle.getMessage(RemoteConnections.class, "LBL_TestConnection"));
+        testConnectionTask = TEST_CONNECTION_RP.create(new Runnable() {
+            public void run() {
+                testConnection();
+            }
+        }, true);
+        descriptor = new DialogDescriptor(
+                panel,
+                NbBundle.getMessage(RemoteConnections.class, "LBL_ManageRemoteConnections"),
+                true,
+                new Object[] {testConnectionButton, NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION},
+                NotifyDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
+        descriptor.setClosingOptions(new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION});
+        testConnectionButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                testConnectionTask.schedule(0);
+            }
+        });
+        testConnectionTask.addTaskListener(new TaskListener() {
+            public void taskFinished(Task task) {
+                enableTestConnection();
+            }
+        });
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
             // XXX probably not the best solution
@@ -242,6 +277,61 @@ public final class RemoteConnections {
             }
         }
         return null;
+    }
+
+    void testConnection() {
+        testConnectionButton.setEnabled(false);
+
+        Configuration selectedConfiguration = panel.getSelectedConfiguration();
+        assert selectedConfiguration != null;
+
+        String configName = selectedConfiguration.getDisplayName();
+        String progressTitle = NbBundle.getMessage(RemoteConnections.class, "MSG_TestingConnection", configName);
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle);
+        RemoteClient client = new RemoteClient(new RemoteConfiguration(selectedConfiguration));
+        RemoteException exception = null;
+        try {
+            progressHandle.start();
+            client.connect();
+        } catch (RemoteException ex) {
+            exception = ex;
+        } finally {
+            try {
+                client.disconnect();
+            } catch (RemoteException ex) {
+                // ignored
+            }
+            progressHandle.finish();
+        }
+
+        // notify user
+        String msg = null;
+        int msgType = 0;
+        if (exception != null) {
+            if (exception.getRemoteServerAnswer() == null) {
+                msg = exception.getMessage();
+            } else {
+                msg = NbBundle.getMessage(RemoteConnections.class, "MSG_TestConnectionFailed", exception.getMessage(), exception.getRemoteServerAnswer());
+            }
+            msgType = NotifyDescriptor.ERROR_MESSAGE;
+        } else {
+            msg = NbBundle.getMessage(RemoteConnections.class, "MSG_TestConnectionSucceeded");
+            msgType = NotifyDescriptor.INFORMATION_MESSAGE;
+        }
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                    msg,
+                    configName,
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    msgType,
+                    new Object[] {NotifyDescriptor.OK_OPTION},
+                    NotifyDescriptor.OK_OPTION));
+    }
+
+    void enableTestConnection() {
+        assert testConnectionButton != null;
+        assert testConnectionTask != null;
+        assert panel != null;
+        testConnectionButton.setEnabled(testConnectionTask.isFinished() && panel.getSelectedConfiguration() != null && panel.getSelectedConfiguration().isValid());
     }
 
     private List<Configuration> getConfigurations() {
@@ -453,6 +543,7 @@ public final class RemoteConnections {
         panel.setError(error);
         assert descriptor != null;
         descriptor.setValid(error == null);
+        enableTestConnection();
     }
 
     private void setWarning(String error) {
