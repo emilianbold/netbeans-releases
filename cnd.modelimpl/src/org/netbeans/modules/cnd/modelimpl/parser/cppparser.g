@@ -871,7 +871,7 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 			printf("external_declaration_0[%d]: Suppressed instantiation of the following declaration\n",
 				LT(1).getLine());
 		}
-		LITERAL_extern LITERAL_template external_declaration                
+		(LITERAL___extension__!)? LITERAL_extern LITERAL_template external_declaration
 		{ #external_declaration = #(#[CSM_EXTERN_TEMPLATE, "CSM_EXTERN_TEMPLATE"], #external_declaration); }
         |
 	    {isCPlusPlus()}? ((LITERAL_export)? LITERAL_template) => external_declaration_template

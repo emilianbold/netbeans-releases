@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -55,7 +56,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
@@ -171,11 +171,7 @@ public class PackagingInfoPanel extends ListEditorPanel {
         getTargetList().setModel(new MyTableModel());
         // Set column sizes
         getTargetList().getColumnModel().getColumn(0).setPreferredWidth(100);
-        getTargetList().getColumnModel().getColumn(0).setMaxWidth(100);
-//	//getTargetList().getColumnModel().getColumn(1).setResizable(true);
-//	getTargetList().getColumnModel().getColumn(2).setPreferredWidth(40);
-//	getTargetList().getColumnModel().getColumn(2).setMaxWidth(40);
-//	getTargetList().getColumnModel().getColumn(2).setResizable(false);
+        getTargetList().getColumnModel().getColumn(0).setMaxWidth(400);
         //
         getTargetList().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         getTargetList().getSelectionModel().addListSelectionListener(new TargetSelectionListener());
