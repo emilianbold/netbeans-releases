@@ -117,7 +117,7 @@ public enum TestPlainTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return MIME_TYPE;
+            return mimeType;
         }
         
     }

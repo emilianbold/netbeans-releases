@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;

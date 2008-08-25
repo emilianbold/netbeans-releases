@@ -82,6 +82,9 @@ public class GsfTypeDescription extends TypeDescriptor {
         if ( cacheItem.isBinary() ) {
             final ClasspathInfo ci = ClasspathInfo.create(cacheItem.getRoot());
             Source js = Source.create( ci );
+            if (js == null) {
+                return;
+            }
             final ElementHandle eh = handle;
             final ElementHandle[] el = new ElementHandle[1];
             try {
@@ -121,7 +124,9 @@ public class GsfTypeDescription extends TypeDescriptor {
                          LanguageRegistry.getInstance().isSupported(fileObject.getMIMEType())) {
                         //UiUtils.open(fileObject, handle);
                         Source js = Source.forFileObject(fileObject);
-                        UiUtils.open(js, handle);
+                        if (js != null) {
+                            UiUtils.open(js, handle);
+                        }
                     }
                 }
             }

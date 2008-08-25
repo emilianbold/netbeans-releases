@@ -43,9 +43,9 @@ package org.netbeans.modules.javascript.editing;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.mozilla.javascript.FunctionNode;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.FunctionNode;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;

@@ -39,15 +39,10 @@
 
 package org.netbeans.modules.projectimport.eclipse.gui;
 
-import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
  *
@@ -65,7 +60,7 @@ public class ImportJavaCParams extends ProjectImporterTestCase {
         ExtractToWorkDir(getDataDir().getAbsolutePath(),"testdata.jar");
     }
 
-    public void testImportjavaCParams() {
+    public void testImportJavaCParams() {
         importProject("JavaCParams");
         validateJavaCParams("JavaCParams");
     }
@@ -86,24 +81,7 @@ public class ImportJavaCParams extends ProjectImporterTestCase {
     }
 
     private void validateJavaCParams(String projectName) {
-        pto = new ProjectsTabOperator();
-        ProjectRootNode projectRoot = null;
-        try {
-            projectRoot = pto.getProjectRootNode(projectName);
-        } catch(TimeoutExpiredException tex) {
-            fail("No project [ "+projectName+" ] loaded");
-        }
-        projectRoot.properties();
-        String propsDialogCaption = Bundle.getString("org.netbeans.modules.apisupport.project.ui.customizer.Bundle", "LBL_CustomizerTitle", new Object[]{projectName});
-        NbDialogOperator propsDialog = null;
-        try {
-            propsDialog = new NbDialogOperator(propsDialogCaption);
-        } catch(TimeoutExpiredException tex) {
-            fail("Unable to open project [ "+projectName+" ] properties dialog");
-        }
-        JTreeOperator tree = new JTreeOperator(propsDialog);
-        TreePath path = tree.findPath("Build|Compiling");
-        tree.selectPath(path);        
+        NbDialogOperator propsDialog = invokeProjectPropertiesDialog(projectName,"Build|Compiling");    
         
         JTextFieldOperator javaCParamsBox = new JTextFieldOperator(propsDialog, 0);
         String params = javaCParamsBox.getText();
@@ -121,6 +99,6 @@ public class ImportJavaCParams extends ProjectImporterTestCase {
         if(!params.contains("-Xlint:unchecked")) {
             fail("-Xlint:unchecked parameter missed");
         }        
-        
+        propsDialog.close();        
     }
 }

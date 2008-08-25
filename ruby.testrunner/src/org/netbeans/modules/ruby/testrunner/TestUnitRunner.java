@@ -40,7 +40,6 @@ package org.netbeans.modules.ruby.testrunner;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +50,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
@@ -77,7 +75,12 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
     public static final String MEDIATOR_SCRIPT_NAME = "nb_test_mediator.rb";  //NOI18N
     public static final String RUNNER_SCRIPT_NAME = "nb_test_runner.rb";  //NOI18N
     private static final TestRunner INSTANCE = new TestUnitRunner();
-
+    /**
+     * Sometimes, or rather for some projects (such as RubyGems), when running the test task the underlying
+     * stream stalls for some time in the middle of the test run. 5000ms seems to enough
+     * for most cases.
+     */
+    static final int DEFAULT_WAIT_TIME = 5000;
 
     static {
         // this env variable is referenced from nb_test_runner.rb, where it
@@ -192,6 +195,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         addTestUnitRunnerToEnv(env);
         taskDescriptor.addAdditionalEnv(env);
         taskDescriptor.addOutputRecognizer(recognizer);
+        taskDescriptor.setReadMaxWaitTime(DEFAULT_WAIT_TIME);
     }
 
 

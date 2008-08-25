@@ -156,7 +156,8 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     }
 
     protected void validateFields() {
-        // nothing needed in this panel
+        // validation is done in RunConfigurationPanel
+        changeSupport.fireChange();
     }
 
     public void addRunAsScriptListener(ChangeListener listener) {

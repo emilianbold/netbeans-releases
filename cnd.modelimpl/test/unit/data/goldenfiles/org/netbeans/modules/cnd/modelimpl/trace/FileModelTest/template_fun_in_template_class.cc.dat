@@ -11,7 +11,7 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS Object<class T1> (Object ) [1:1/0-6:3/166] lcurly=32 SCOPE: $Global$ 
+CLASS Object<class T1> (Object ) [1:1/0-6:2/165] lcurly=32 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION useT2Declaration [3:5/46-3:58/99] MethodImpl SCOPE: Object 
@@ -31,7 +31,7 @@ CLASS Object<class T1> (Object ) [1:1/0-6:3/166] lcurly=32 SCOPE: $Global$
             STATEMENT COMPOUND  [4:57/156-5:6/163] SCOPE: useT3Definition 
 
 ========== Dumping model of PROJECT DummyProject
-CLASS Object<class T1> (Object ) [1:1/0-6:3/166] lcurly=32 SCOPE: $Global$ 
+CLASS Object<class T1> (Object ) [1:1/0-6:2/165] lcurly=32 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION useT2Declaration [3:5/46-3:58/99] MethodImpl SCOPE: Object 

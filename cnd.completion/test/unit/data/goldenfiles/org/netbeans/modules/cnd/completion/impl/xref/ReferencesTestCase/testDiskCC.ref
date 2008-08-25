@@ -8,7 +8,7 @@
 --OWNER:
     FUNCTION_DEFINITION Disk(int,int,int)  [46:1/2163-49:2/2334] ReferencesTestCase/disk.cc
 --RESOLVED TO:
-    CLASS Disk [46:1/2156-57:3/2535] ReferencesTestCase/disk.h
+    CLASS Disk [46:1/2156-57:2/2534] ReferencesTestCase/disk.h
 ==============================================================
 'Disk', tokenID=identifier, offset=2169 [46:7/2169-46:11/2173]
 --OWNER:
@@ -68,7 +68,7 @@
 --OWNER:
     FUNCTION_DEFINITION ComputeSupportMetric()  [56:1/2505-64:2/2683] ReferencesTestCase/disk.cc
 --RESOLVED TO:
-    CLASS Disk [46:1/2156-57:3/2535] ReferencesTestCase/disk.h
+    CLASS Disk [46:1/2156-57:2/2534] ReferencesTestCase/disk.h
 ==============================================================
 'ComputeSupportMetric', tokenID=identifier, offset=2516 [56:12/2516-56:32/2536]
 --OWNER:
@@ -122,7 +122,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetType() const  [66:1/2689-77:2/2931] ReferencesTestCase/disk.cc
 --RESOLVED TO:
-    CLASS Disk [46:1/2156-57:3/2535] ReferencesTestCase/disk.h
+    CLASS Disk [46:1/2156-57:2/2534] ReferencesTestCase/disk.h
 ==============================================================
 'GetType', tokenID=identifier, offset=2707 [66:19/2707-66:26/2714]
 --OWNER:
@@ -152,7 +152,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetCategory() const  [79:1/2937-93:2/3261] ReferencesTestCase/disk.cc
 --RESOLVED TO:
-    CLASS Disk [46:1/2156-57:3/2535] ReferencesTestCase/disk.h
+    CLASS Disk [46:1/2156-57:2/2534] ReferencesTestCase/disk.h
 ==============================================================
 'GetCategory', tokenID=identifier, offset=2955 [79:19/2955-79:30/2966]
 --OWNER:

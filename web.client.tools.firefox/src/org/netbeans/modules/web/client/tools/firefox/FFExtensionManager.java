@@ -50,6 +50,9 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -89,7 +92,7 @@ public class FFExtensionManager {
     private static final String PROFILE_LOCK_WINDOWS = "parent.lock";
     private static final String PROFILE_LOCK = "lock";
     
-    private static final String FIREBUG_MIN_VERSION = "1.1.0b12";
+    private static final String FIREBUG_1_2_MIN_VERSION = "1.2.0b13";
     
     private static final String EXTENSION_CACHE = "extensions.cache";
     private static final String UNINSTALL_KEYWORD = "needs-uninstall";
@@ -97,7 +100,7 @@ public class FFExtensionManager {
     
     private static final String FIREBUG_EXTENSION_ID = "firebug@software.joehewitt.com"; // NOI18N
     
-    private static final String FIREBUG_EXTENSION_PATH = "modules/ext/firebug-1.1.0b12.xpi"; // NOI18N
+    private static final String FIREBUG_EXTENSION_PATH = "modules/ext/firebug-1.2.0b13.xpi"; // NOI18N
                
     private static final String FIREFOX_EXTENSION_ID = "netbeans-firefox-extension@netbeans.org"; // NOI18N
 
@@ -106,29 +109,14 @@ public class FFExtensionManager {
     private static final String CHECKSUM_FILENAME = "netbeans-firefox-extension.jar.MD5"; // NOI18N
     
     public static boolean installFirefoxExtensions(HtmlBrowser.Factory browser) {
-        File defaultProfile = FirefoxBrowserUtils.getDefaultProfile();
+        File customProfile = FirefoxBrowserUtils.getProfileFromPreferences();
+        File defaultProfile = customProfile != null ? customProfile : FirefoxBrowserUtils.getDefaultProfile();
+        
         if (defaultProfile == null) {
             Log.getLogger().severe("Could not find Firefox default profile.  Firefox debugging not available.");
             return false;
         }
-        
-        // Check supported firefox versions first
-        if (!FirefoxBrowserUtils.isSupportedFirefox(browser, defaultProfile)) {
-            final JButton ok = new JButton();
-            Mnemonics.setLocalizedText(ok, NbBundle.getMessage(FFExtensionManager.class, "OK_BUTTON"));
 
-            NotifyDescriptor nd = new NotifyDescriptor(
-                    NbBundle.getMessage(FFExtensionManager.class, "FIREFOX_VERSION_MSG"),
-                    NbBundle.getMessage(FFExtensionManager.class, "FIREFOX_VERSION_TITLE"),
-                    NotifyDescriptor.DEFAULT_OPTION,
-                    NotifyDescriptor.ERROR_MESSAGE,
-                    new Object[]{ok},
-                    ok);
-
-            DialogDisplayer.getDefault().notify(nd);
-            return false;
-        }
-        
         File nbExtensionFile = InstalledFileLocator.getDefault().locate(FIREFOX_EXTENSION_PATH,
                 "org.netbeans.modules.web.client.tools.firefox.extension", // NOI18N
                 false);
@@ -140,15 +128,16 @@ public class FFExtensionManager {
         File firebugExtensionFile = InstalledFileLocator.getDefault().locate(FIREBUG_EXTENSION_PATH,
                 "org.netbeans.modules.web.client.tools.firefox.extension", // NOI18N 
                 false);
-        if (nbExtensionFile == null) {
+        if (firebugExtensionFile == null) {
             Log.getLogger().severe("Could not find firebug extension in installation directory");
             return false;
         }
         
         boolean nbExtInstall = extensionRequiresInstall(browser, FIREFOX_EXTENSION_ID, 
                 null, nbExtensionFile, defaultProfile, true);
-        boolean firebugInstall = extensionRequiresInstall(browser, FIREBUG_EXTENSION_ID, 
-                FIREBUG_MIN_VERSION, firebugExtensionFile, defaultProfile, false);
+        
+        boolean firebugInstall = extensionRequiresInstall(browser, FIREBUG_EXTENSION_ID,
+                    FIREBUG_1_2_MIN_VERSION, firebugExtensionFile, defaultProfile, false);
         
         if (!nbExtInstall || !firebugInstall) {
             List<String> extensionIds = new LinkedList<String>();
@@ -685,4 +674,47 @@ public class FFExtensionManager {
         
         return false;
     }
+    
+    private static boolean isHttpURLValid(String urlString) {
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            int response = connection.getResponseCode();
+
+            return response == HttpURLConnection.HTTP_OK;
+
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    private static File getURLResource(String urlString) {
+        try {
+            URL url = new URL(urlString);
+            URLConnection connection = url.openConnection();
+            connection.setReadTimeout(5000);
+
+            File f = File.createTempFile("firebug-1.2.0b9", "xpi"); // NOI18N
+            BufferedInputStream input = new BufferedInputStream(connection.getInputStream());
+            BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(f));
+            
+            try {
+                final byte[] buffer = new byte[4096];
+                int len;
+                while ((len = input.read(buffer)) >= 0) {
+                    output.write(buffer, 0, len);
+                }
+            } finally {
+                output.close();
+                input.close();
+            }
+            
+            return f;
+        } catch (Exception ex) {
+            Log.getLogger().log(Level.INFO, "Unable to get Firebug 1.2.0b9 from http://www.getfirebug.com", ex);
+        }
+        
+        return null;
+    }
+    
 }

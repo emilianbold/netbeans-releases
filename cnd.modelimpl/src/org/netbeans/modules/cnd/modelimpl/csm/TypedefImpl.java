@@ -87,7 +87,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
 	
         super(ast, file);
 	
-	if (container instanceof CsmIdentifiable) {
+	if (CsmKindUtilities.isIdentifiable(container)) {
 	    this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable) container);
 	    assert (containerUID != null || container == null);
 	    this.containerRef = null;
@@ -149,8 +149,8 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     
     private void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
-            // restore container from it's UID
-            this.containerRef = UIDCsmConverter.UIDtoIdentifiable(this.containerUID);
+            // restore container from it's UID when needed
+            this.containerRef = this.containerRef != null ? this.containerRef : UIDCsmConverter.UIDtoIdentifiable(this.containerUID);
             assert (this.containerRef != null || this.containerUID == null) : "null object for UID " + this.containerUID;
         }
     }

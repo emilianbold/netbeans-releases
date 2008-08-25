@@ -43,16 +43,14 @@ package org.openide.text;
 
 
 import java.beans.PropertyChangeListener;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JEditorPane;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.lookup.*;
-
+import org.openide.util.lookup.Lookups;
 
 /** Testing the behavior of editor reusal framework. It uses new Line.show API.
  * The behavior was discussed thoroughly at issue 94607.
@@ -102,6 +100,7 @@ public class ReusableEditor2Test extends NbTestCase {
      * 4. Open first file with ShowOpenType.REUSE
      * 5. Verify second is closed
      */
+    @RandomlyFails
     public void testReuse() {
         openAndCheck(c1, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 1
         openAndCheck(c2, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 2

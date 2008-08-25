@@ -1035,7 +1035,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
                     default: // Regular constant
                         String var = item.getTokenText(0);
-                        int varPos = item.getTokenOffset(0);
+                        int varPos = item.getTokenOffset(0) + item.getTokenLength(0);
                         if (first) { // try to find variable for the first item
                             if (last && !findType) { // both first and last item
                                 CompletionResolver.Result res = null;

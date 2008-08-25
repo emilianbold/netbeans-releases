@@ -202,7 +202,7 @@ public abstract class RubyRefactoringPlugin extends ProgressProviderAdapter impl
             for (FileObject file : files) {
                 if (RubyUtils.isRubyFile(file)) {
                     rubyFiles.add(file);
-                } else if (RubyUtils.isRhtmlFile(file)) {
+                } else if (RubyUtils.isRhtmlOrYamlFile(file)) {
                     rhtmlFiles.add(file);
                 }
             }

@@ -190,12 +190,16 @@ final class XMLMapAttr implements Map {
         }
 
         Object retVal = null;
-
-        try {
-            retVal = (attr == null) ? attr : attr.get(params);
-        } catch (Exception e) {
-            ExternalUtil.annotate(e, "attrName = " + attrName); //NOI18N                                                 
-            throw e;
+        if (attr == null && origAttrName.startsWith("class:")) { // NOI18N
+            attr = (Attr) map.get(origAttrName.substring(6));
+            retVal = attr.getType(params);
+        } else {
+            try {
+                retVal = (attr == null) ? attr : attr.get(params);
+            } catch (Exception e) {
+                ExternalUtil.annotate(e, "attrName = " + attrName); //NOI18N
+                throw e;
+            }
         }
 
         if (retVal instanceof ModifiedAttribute) {
@@ -733,6 +737,47 @@ final class XMLMapAttr implements Map {
             }
         }
 
+        final Class<?> getType(Object[] params) {
+            try {
+                if (obj != null) {
+                    return obj.getClass();
+                }
+                switch (keyIndex) {
+                    case 0:
+                        return Byte.class;
+                    case 1:
+                        return Short.class;
+                    case 2:
+                        return Integer.class;
+                    case 3:
+                        return Long.class;
+                    case 4:
+                        return Float.class;
+                    case 5:
+                        return Double.class;
+                    case 6:
+                        return Boolean.class;
+                    case 7:
+                        return Character.class;
+                    case 8:
+                        return value.getClass();
+                    case 9:
+                        return methodValue(value, params).getMethod().getReturnType();
+                    case 10:
+                        return null; // return decodeValue(value);
+                    case 11:
+                        return URL.class;
+                    case 12:
+                        return ExternalUtil.findClass(Utilities.translate(value));
+                    case 13:
+                        return String.class;
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return null;
+        }
+
         /** Returns class name of value object.*/
         final String getClassName() {
             if (obj != null) {
@@ -839,47 +884,32 @@ final class XMLMapAttr implements Map {
                     switch (index) {
                     case 0:
                         return new Byte(value);
-
                     case 1:
                         return new Short(value);
-
                     case 2:
                         return new Integer(value); //(objI);
-
                     case 3:
                         return new Long(value);
-
                     case 4:
                         return new Float(value);
-
                     case 5:
                         return new Double(value);
-
                     case 6:
                         return Boolean.valueOf(value);
-
                     case 7:
-
                         if (value.trim().length() != 1) {
                             break;
                         }
-
                         return new Character(value.charAt(0));
-
                     case 8:
                         return value;
-
                     case 9:
-                        return methodValue(value, params);
-
+                        return methodValue(value, params).invoke();
                     case 10:
                         return decodeValue(value);
-
                     case 11:
                         return new URL(value);
-
                     case 12:
-
                         // special support for singletons
                         Class cls = ExternalUtil.findClass(Utilities.translate(value));
 
@@ -903,14 +933,32 @@ final class XMLMapAttr implements Map {
             throw new InstantiationException(value);
         }
 
+        /** Used to store Method and its parameters. */
+        private static class MethodAndParams {
+            private Method method;
+            private Object[] params;
+
+            MethodAndParams(Method method, Object[] params) {
+                this.method = method;
+                this.params = params;
+            }
+
+            public Object invoke() throws Exception {
+                method.setAccessible(true); //otherwise cannot invoke private
+                return method.invoke(null, params);
+            }
+            
+            public Method getMethod() {
+                return method;
+            }
+        }
+
         /** Constructs new attribute as Object. Used for dynamic creation: methodvalue .
          * @param params only 2 parametres will be used
-         * @return   Object or null
+         * @return MethodAndParams object or throws InstantiationException if method is not found
          */
-        private final Object methodValue(String value, Object[] params)
-        throws Exception {
+        private final MethodAndParams methodValue(String value, Object[] params) throws Exception {
             int sepIdx = value.lastIndexOf('.');
-
             if (sepIdx != -1) {
                 String methodName = value.substring(sepIdx + 1);
                 Class cls = ExternalUtil.findClass(value.substring(0, sepIdx));
@@ -932,41 +980,27 @@ final class XMLMapAttr implements Map {
                         { FileObject.class }, { String.class }, {  },
                         { Map.class, String.class }, { Map.class },
                     };
-
-                // XXX clearer and more efficient version now lives in BinaryFS:
-                boolean both = ((fo != null) && (attrName != null));
-                Object[] objectsList = new Object[7];
-                objectsList[0] = (both) ? new Object[] { fo, attrName } : null;
-                objectsList[1] = (both) ? new Object[] { attrName, fo } : null;
-                objectsList[2] = (fo != null) ? new Object[] { fo } : null;
-                objectsList[3] = (attrName != null) ? new Object[] { attrName } : null;
-                objectsList[4] = new Object[] {  };
-
-                Map fileMap = wrapToMap(fo);
-                objectsList[5] = attrName != null ? new Object[] { fileMap, attrName } : null;
-                objectsList[6] = new Object[] { fileMap };
-
-                for (int i = 0; i < paramArray.length; i++) {
-                    Object[] objArray = (Object[]) objectsList[i];
-
-                    if (objArray == null) {
-                        continue;
-                    }
-
+                for (Class[] paramTypes : paramArray) {
+                    Method m;
                     try {
-                        Method method = cls.getDeclaredMethod(methodName, paramArray[i]);
-
-                        if (method != null) {
-                            method.setAccessible(true);
-
-                            return method.invoke(null, objArray);
-                        }
-                    } catch (NoSuchMethodException nsmExc) {
+                        m = cls.getDeclaredMethod(methodName, paramTypes);
+                    } catch (NoSuchMethodException x) {
                         continue;
                     }
+                    Object[] values = new Object[paramTypes.length];
+                    for (int j = 0; j < paramTypes.length; j++) {
+                        if (paramTypes[j] == FileObject.class) {
+                            values[j] = fo;
+                        } else if (paramTypes[j] == String.class) {
+                            values[j] = attrName;
+                        } else {
+                            assert paramTypes[j] == Map.class;
+                            values[j] = wrapToMap(fo);
+                        }
+                    }
+                    return new MethodAndParams(m, values);
                 }
             }
-
             throw new InstantiationException(value);
         }
 

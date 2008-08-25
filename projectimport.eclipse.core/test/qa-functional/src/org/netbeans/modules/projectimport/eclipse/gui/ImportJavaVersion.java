@@ -39,15 +39,10 @@
 
 package org.netbeans.modules.projectimport.eclipse.gui;
 
-import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
  *
@@ -85,24 +80,8 @@ public class ImportJavaVersion extends ProjectImporterTestCase {
         validateProjectJavaVersionProperties(projectName, "1.6");
     }
     private void validateProjectJavaVersionProperties(String projectName, String expectedVersion) {
-        pto = new ProjectsTabOperator();
-        ProjectRootNode projectRoot = null;
-        try {
-            projectRoot = pto.getProjectRootNode(projectName);
-        } catch(TimeoutExpiredException tex) {
-            fail("No project [ "+projectName+" ]loaded");
-        }
-        projectRoot.properties();
-        String propsDialogCaption = Bundle.getString("org.netbeans.modules.apisupport.project.ui.customizer.Bundle", "LBL_CustomizerTitle", new Object[]{projectName});
-        NbDialogOperator propsDialog = null;
-        try {
-            propsDialog = new NbDialogOperator(propsDialogCaption);
-        } catch(TimeoutExpiredException tex) {
-            fail("Unable to open project [ "+projectName+" ] properties dialog");
-        }
-        JTreeOperator tree = new JTreeOperator(propsDialog);
-        TreePath path = tree.findPath("Sources");
-        tree.selectPath(path);
+        NbDialogOperator propsDialog = invokeProjectPropertiesDialog(projectName,"Sources");        
+
         JComboBoxOperator versionCombo = new JComboBoxOperator(propsDialog, 0);
         if(!versionCombo.getSelectedItem().toString().endsWith(expectedVersion)) {
             fail("No expected java version set");

@@ -212,7 +212,7 @@ public class FSCompletion implements CompletionProvider {
         }
 
         public boolean accept(FileObject file) {
-            if (file.equals(currentFile)){
+            if (file.equals(currentFile) || isNbProjectMetadata(file)){
                 return false; //do not include self in the cc result
             }
 
@@ -225,6 +225,20 @@ public class FSCompletion implements CompletionProvider {
             return mimeType != null && mimeType.startsWith("text/");
         }
 
+        private static boolean isNbProjectMetadata(FileObject fo) {
+            final String metadataName = "nbproject";//NOI18N
+            if (fo.getPath().indexOf(metadataName) != -1) {
+                while(fo != null) {
+                    if (fo.isFolder()) {
+                        if (metadataName.equals(fo.getNameExt())) {
+                            return true;
+                        }
+                    }
+                    fo = fo.getParent();
+                }
+            }
+            return false;
+        }
     }
 
     static final class FSCompletionItem implements CompletionItem {
