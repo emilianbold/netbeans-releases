@@ -393,17 +393,17 @@ public class PackagingFilesPanel extends ListEditorPanel {
     protected void setData(Vector data) {
         getTargetList().setModel(new MyTableModel());
         // Set column sizes
-        getTargetList().getColumnModel().getColumn(0).setPreferredWidth(40);
-        getTargetList().getColumnModel().getColumn(0).setMaxWidth(40);
         if (getTargetList().getColumnModel().getColumnCount() >= 4) {
+            getTargetList().getColumnModel().getColumn(0).setPreferredWidth(40);
+            getTargetList().getColumnModel().getColumn(0).setMaxWidth(200);
             getTargetList().getColumnModel().getColumn(3).setPreferredWidth(50);
-            getTargetList().getColumnModel().getColumn(3).setMaxWidth(50);
+            getTargetList().getColumnModel().getColumn(3).setMaxWidth(200);
         }
         if (getTargetList().getColumnModel().getColumnCount() >= 6) {
             getTargetList().getColumnModel().getColumn(4).setPreferredWidth(50);
-            getTargetList().getColumnModel().getColumn(4).setMaxWidth(50);
+            getTargetList().getColumnModel().getColumn(4).setMaxWidth(200);
             getTargetList().getColumnModel().getColumn(5).setPreferredWidth(50);
-            getTargetList().getColumnModel().getColumn(5).setMaxWidth(50);
+            getTargetList().getColumnModel().getColumn(5).setMaxWidth(200);
         }
         //
         getTargetList().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
