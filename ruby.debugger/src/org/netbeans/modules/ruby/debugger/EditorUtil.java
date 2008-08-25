@@ -53,6 +53,9 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 
 public final class EditorUtil {
+
+    /** For unit tests to be able to prevent editor pop-ups. */
+    public static boolean showLines = true;
     
     private EditorUtil() {}
     
@@ -143,6 +146,9 @@ public final class EditorUtil {
     }
     
     public static void showLine(final Line lineToShow, final boolean toFront) {
+        if (!showLines) {
+            return;
+        }
         if (lineToShow == null) {
             return;
         }

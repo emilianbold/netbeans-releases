@@ -9,7 +9,6 @@ namespace iz143977_2 {
         typedef typename Impl::Parm1 Parm1; // should be resolved
     };
 }
-
 //using namespace iz143977_2;
 //void foo_iz143977_2() {
 //    Factory<int,int> f2;

@@ -37,51 +37,75 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+package org.netbeans.modules.cnd.modelimpl.csm;
+
+import antlr.collections.AST;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 
 /**
- * Just a continuation of the FileModelTest
- * (which became too large)
+ * A dummy class that is added to model in the case
+ * there is a forward class declaration that does not refer to a class
  * @author Vladimir Kvashin
  */
-public class FileModelTest2 extends TraceModelTestBase {
+public class ForwardClass extends ClassImpl {
 
-    public FileModelTest2(String testName) {
-        super(testName);
+    protected ForwardClass(String name, CsmFile file, AST ast) {
+        super(ast, file);
+    }
+
+    public static ForwardClass create(String name, CsmFile file, AST ast, CsmScope scope) {
+        ForwardClass fwd = new ForwardClass(name, file, ast);
+        fwd.initQualifiedName(scope, ast);
+        if (fwd.getProject().findClassifier(fwd.getQualifiedName()) == null) {
+            fwd.initScope(scope, ast);
+            fwd.register(scope, false);
+            return fwd;
+        }
+        return null;
+    }
+    
+    @Override
+    public boolean shouldBeReplaced(CsmClassifier another) {
+        if (another == null) {
+            return true;
+        } else if (another instanceof ForwardClass) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    @Override
+    public Collection<CsmScopeElement> getScopeElements() {
+        return Collections.emptyList();
     }
 
     @Override
-    protected void setUp() throws Exception {
-    System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-        super.setUp();
-    }
-    
-    @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
-    }
-    
-    public void testIZ143977_0() throws Exception {
-        // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
-        performTest("iz143977_0.cc");
-    }
-    
-    public void testIZ143977_1() throws Exception {
-        // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
-        performTest("iz143977_1.cc");
-    }
-    
-    public void testIZ143977_2() throws Exception {
-        // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
-        performTest("iz143977_2.cc");
-    }
-    
-    public void testIZ143977_3() throws Exception {
-        // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
-        performTest("iz143977_3.cc");
+    public List<CsmInheritance> getBaseClasses() {
+        return Collections.emptyList();
     }
 
+    @Override
+    public Collection<CsmFriend> getFriends() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public int getLeftBracketOffset() {
+        return getEndOffset() - 1;
+    }
+
+    @Override
+    public Collection<CsmMember> getMembers() {
+        return Collections.emptyList();
+    }
 }

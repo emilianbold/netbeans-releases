@@ -49,7 +49,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBox;
@@ -68,7 +70,6 @@ import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -93,6 +94,18 @@ import org.openide.util.actions.SystemAction;
  * @author Tor Norbye
  */
 public final class MigrateAction extends SystemAction implements ContextAwareAction {
+    
+    private static final Logger LOGGER = Logger.getLogger(MigrateAction.class.getName());
+    /**
+     * The pattern for recognizing sequential migrations, e.g. 001_something.rb.
+     */
+    private static final Pattern SEQ_PATTERN = Pattern.compile("^\\d\\d\\d_.*"); //NOI18N
+    /**
+     * The pattern for recognizing UTC timestamp migrations, e.g. 20080825092811_something.rb.
+     * (can be used since Rails 2.1).
+     */
+    private static final Pattern TIMESTAMP_PATTERN = Pattern.compile("^\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d_.*"); //NOI18N
+    
     @Override
     public String getName() {
         return NbBundle.getMessage(MigrateAction.class, "LBL_rake_migrate");
@@ -220,24 +233,13 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
         for (FileObject fo : migrate.getChildren()) {
             String name = fo.getName();
             if (fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
-                if (name.matches("^\\d\\d\\d_.*")) { // NOI18N
-                    try {
-                        long version = Integer.parseInt(fo.getName().substring(0, 3));
-                        String description = RubyUtils.underlinedNameToCamel(name.substring(4));
-                        versions.put(version, "- " + description);
-                    } catch (NumberFormatException nfe) {
-                        // Shouldn't happen since we've prevetted the digits
-                        Exceptions.printStackTrace(nfe);
-                    }
-                } else if (name.matches("^\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d_.*")) { // NOI18N
-                    try {
-                        long version = Long.parseLong(fo.getName().substring(0, 14));
-                        String description = RubyUtils.underlinedNameToCamel(name.substring(15));
-                        versions.put(version, "- " + description);
-                    } catch (NumberFormatException nfe) {
-                        // Shouldn't happen since we've prevetted the digits
-                        Exceptions.printStackTrace(nfe);
-                    }
+                Long version = getMigrationVersion(name);
+                String description = getMigrationDescription(name);
+                if (version != null && description != null) {
+                    versions.put(version, "- " + description);
+                } else {
+                    // likely not a migration file, so just log a msg
+                    LOGGER.finer("Could not parse version and description for: " + name);
                 }
             }
         }
@@ -246,6 +248,49 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
     }
     
 
+    private static boolean isSequentialMigration(String name) {
+        return SEQ_PATTERN.matcher(name).matches();
+    }
+
+    private static boolean isTimestampMigration(String name) {
+        return TIMESTAMP_PATTERN.matcher(name).matches();
+    }
+
+    /**
+     * Gets the version of the given migration.
+     *
+     * @param name the name of a migration file.
+     * @return the version, or <code>null</code> if the given 
+     * <code>name</code> didn't represent a migration file.
+     * @see #SEQ_PATTERN
+     * @see #TIMESTAMP_PATTERN
+     */
+    static Long getMigrationVersion(String name) {
+        if (isSequentialMigration(name)) {
+            return Long.parseLong(name.substring(0, 3));
+        } else if (isTimestampMigration(name)) {
+            return Long.parseLong(name.substring(0, 14));
+        }
+        return null;
+    }
+
+    /**
+     * Gets the descripion for the given migration.
+     * 
+     * @param name the name of a migration file.
+     * @return the description, i.e. the name of the migration class,
+     * or <code>null</code> if the given
+     * <code>name</code> didn't represent a migration file.
+     */
+    static String getMigrationDescription(String name) {
+        if (isSequentialMigration(name)) {
+            return RubyUtils.underlinedNameToCamel(name.substring(4));
+        } else if (isTimestampMigration(name)) {
+            return RubyUtils.underlinedNameToCamel(name.substring(15));
+        }
+        return null;
+        
+    }
     /**
      * The particular instance of this action for a given project.
      */
