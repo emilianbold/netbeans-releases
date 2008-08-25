@@ -823,6 +823,9 @@ public class CsmTracer {
 	    dumpModel((CsmUsingDirective) decl);
 	} else if( decl.getKind() == CsmDeclaration.Kind.TYPEDEF ) {
 	    dumpModel((CsmTypedef) decl);
+// commented out till there is convenient moment to update tests                
+//        } else if ( decl.getKind() == CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION ) {
+//            dumpModel((CsmClassForwardDeclaration) decl);
 	} else {
 	    String ofStr = getOffsetString(decl, false);
 	    print("" + decl.getKind() + ' ' + decl.getName() + ofStr);
@@ -910,6 +913,9 @@ public class CsmTracer {
 		dumpModel((CsmFunctionDefinition) member);
 	    } else if ( member.getKind() == CsmDeclaration.Kind.TYPEDEF ) {
 		dumpModel((CsmTypedef) member);
+// commented out till there is convenient moment to update tests                
+//	    } else if ( member.getKind() == CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION ) {
+//		dumpModel((CsmClassForwardDeclaration) member);
 	    } else {
 		StringBuilder sb = new StringBuilder(member.getKind().toString());
 		sb.append(' ');
@@ -958,6 +964,29 @@ public class CsmTracer {
 	unindent();
     }
 
+// commented out till there is convenient moment to update tests                
+//    public void dumpModel(CsmClassForwardDeclaration fwd) {
+//        StringBuilder sb = new StringBuilder("CLASS FORWARD "); // NOI18N
+//	if( CsmKindUtilities.isClassMember(fwd) ) {
+//            sb.append(((CsmMember) fwd).getVisibility().toString());
+//	}
+//        sb.append(' '); //NOI18N
+//        sb.append(fwd.getName());
+//        sb.append(getOffsetString(fwd, false));
+//        sb.append(' ');
+//        sb.append(" CLASS: ");
+//        CsmClass cls = fwd.getCsmClass();
+//        if (cls == null) {
+//            sb.append("null"); //NOI18N
+//        } else {
+//            sb.append(cls.getQualifiedName());
+//            sb.append(' '); //NOI18N
+//            sb.append(getOffsetString(cls, true));
+//        }
+//        //sb.append(getBriefClassName(fwd));
+//        print(sb.toString());
+//    }
+    
     public void dumpModel(CsmEnum enumeration) {
 	print("ENUM " + enumeration.getName() + getOffsetString(enumeration, false) + ' ' + getScopeString(enumeration)); // NOI18N
 	indent();
@@ -982,7 +1011,7 @@ public class CsmTracer {
 	unindent();
     }
 
-    private Object modelChangeEventLock = new Object();
+    private final Object modelChangeEventLock = new Object();
 
     public void dumpModelChangeEvent(CsmChangeEvent e) {
 	synchronized( modelChangeEventLock ) {
