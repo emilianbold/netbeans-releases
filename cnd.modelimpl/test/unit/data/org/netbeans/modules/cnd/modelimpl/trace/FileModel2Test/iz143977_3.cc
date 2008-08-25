@@ -1,17 +1,12 @@
 namespace iz143977_3 {
-
     class NullType {};
-
     template <class T1, class T2> struct FactoryImpl {};
-    
     template<class T> struct FactoryImpl<T, NullType> {
         typedef NullType Parm_null;
     };
-
     template<class T> struct FactoryImpl<T, int> {
         typedef NullType Parm_int;
     };
-    
     template<class T, class T2 = NullType, class T3 = int> struct Factory {
         typedef FactoryImpl<T, NullType> Impl1;
         typedef FactoryImpl<T, int> Impl2;

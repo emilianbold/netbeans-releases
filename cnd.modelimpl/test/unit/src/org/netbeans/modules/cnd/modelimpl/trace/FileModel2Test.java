@@ -44,9 +44,9 @@ package org.netbeans.modules.cnd.modelimpl.trace;
  * (which became too large)
  * @author Vladimir Kvashin
  */
-public class FileModelTest2 extends TraceModelTestBase {
+public class FileModel2Test extends TraceModelTestBase {
 
-    public FileModelTest2(String testName) {
+    public FileModel2Test(String testName) {
         super(testName);
     }
 
