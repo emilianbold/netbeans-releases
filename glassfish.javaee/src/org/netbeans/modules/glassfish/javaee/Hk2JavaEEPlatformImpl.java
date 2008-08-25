@@ -243,6 +243,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     public Set getSupportedModuleTypes() {
         Set<Object> result = new HashSet<Object>();
         result.add(J2eeModule.WAR);
+        if("true".equals(System.getProperty("glassfish.javaee.ejbsupport.enable"))) {
+            result.add(J2eeModule.EJB);
+        }
         return result;
     }
     

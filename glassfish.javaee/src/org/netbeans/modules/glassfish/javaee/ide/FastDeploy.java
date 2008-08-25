@@ -196,12 +196,14 @@ public class FastDeploy extends IncrementalDeployment {
             return false;
         }
         
-        if (deployable.getModuleType() == ModuleType.EAR ||
-                deployable.getModuleType() == ModuleType.EJB){
+        if (deployable.getModuleType() == ModuleType.EAR) {
             return false;
         }
-        // return dm.isLocal();
-//        System.out.println("canFileDeploy");
+
+        if (deployable.getModuleType() == ModuleType.EJB){
+            return "true".equals(System.getProperty("glassfish.javaee.ejbsupport.enable"));
+        }
+
         return true;
         
     }
