@@ -162,7 +162,7 @@ public class ArrangeMoveWithBumping extends ArrangeMessagesProvider {
                             {
                                 //it currently may happens for asynch message to self only
                                 ExecutionSpecificationThinWidget lastInPrev=(ExecutionSpecificationThinWidget)lastInPrevW;
-                                dFr=lastInPrev.getPreferredLocation().y+lastInPrev.getBounds().y+lastInPrev.getBounds().height+-(w.getPreferredLocation().y-w.getMarginBefore())+gap;
+                                dFr=lastInPrev.getPreferredLocation().y+lastInPrev.getBounds().y+lastInPrev.getBounds().height+10+-(w.getPreferredLocation().y-w.getMarginBefore())+gap;//TODO make 10 not hardcoded margin from inner specification
                             }
                         }
                         else
