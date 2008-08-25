@@ -61,7 +61,6 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
@@ -75,6 +74,7 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
  * Wizard to create a new Web project for an existing web module.
@@ -198,6 +198,13 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         FileObject dir = FileUtil.toFileObject(dirF);
         
         resultSet.add(dir);
+        
+        // save last project location
+        dirF = (dirF != null) ? dirF.getParentFile() : null;
+        if (dirF != null && dirF.exists()) {
+            ProjectChooser.setProjectsFolder (dirF);
+        }
+
         
         Project earProject = (Project) wiz.getProperty(ProjectServerWizardPanel.EAR_APPLICATION);
         WebProject createdWebProject = (WebProject) ProjectManager.getDefault().findProject(dir);
