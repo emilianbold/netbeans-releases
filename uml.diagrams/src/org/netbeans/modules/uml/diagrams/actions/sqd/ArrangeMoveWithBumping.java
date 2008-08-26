@@ -304,7 +304,8 @@ public class ArrangeMoveWithBumping extends ArrangeMessagesProvider {
             for(MessagePinWidget w:pins)
             {
                 int dFr=0;
-                int currentYWithMargin=w.getPreferredLocation().y+w.getMarginAfter();
+                int wY=w.getPreferredLocation()!=null ? w.getPreferredLocation().y : w.getLocation().y; 
+                int currentYWithMargin=wY+w.getMarginAfter();
                 //check if it's asynch message to self movent, so have unique margin after
                 if(w.getKind()==MessagePinWidget.PINKIND.ASYNCHRONOUS_CALL_OUT)
                 {
@@ -314,7 +315,7 @@ public class ArrangeMoveWithBumping extends ArrangeMessagesProvider {
                         if(opposite.getParentWidget().getParentWidget()==w.getParentWidget())
                         {
                             //message to self
-                            currentYWithMargin+=30;
+                            currentYWithMargin+=45;
                         }
                     }
                 }
