@@ -41,10 +41,10 @@ NAMESPACE DEFINITOIN resolver_typedef_string [10:1/135-20:2/325] SCOPE: resolver
         UNIQUE NAME f:resolver_typedef_string::ClassA::read() const
         DECLARATION: read  [40:5/734-40:26/755]
         PARAMETERS:
-        RETURNS $unresolved$::wstring TEXT=wstring  [16:5/246-16:12/253]
+        RETURNS std_2::wstring TEXT=wstring  [16:5/246-16:12/253]
         STATEMENT COMPOUND  [16:34/275-19:6/323] SCOPE: read 
             STATEMENT DECLARATION  [17:9/285-17:21/297] SCOPE: Stmt  [16:34/275-19:6/323]
-                VARIABLE str [17:9/285-17:21/297]  TYPE: $unresolved$::wstring TEXT=wstring  [17:9/285-17:16/292]  INIT: null  SCOPE: Stmt  [16:34/275-19:6/323]
+                VARIABLE str [17:9/285-17:21/297]  TYPE: std_2::wstring TEXT=wstring  [17:9/285-17:16/292]  INIT: null  SCOPE: Stmt  [16:34/275-19:6/323]
             STATEMENT RETURN  [18:9/306-18:20/317] SCOPE: Stmt  [16:34/275-19:6/323] text: 'return str;'
 
 ========== Dumping model of PROJECT DummyProject
