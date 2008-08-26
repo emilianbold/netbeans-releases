@@ -46,9 +46,9 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.filesystems.FileObject;
@@ -119,55 +119,42 @@ public final class JSFPaletteUtilities {
         return fobj;
     }
     
-    public static void insert(String s, JTextComponent target) 
-    throws BadLocationException 
-    {
+    public static void insert(String s, JTextComponent target) throws BadLocationException {
         insert(s, target, true);
     }
     
-    public static void insert(String s, JTextComponent target, boolean reformat) 
-    throws BadLocationException 
-    {
-        Document _doc = target.getDocument();
-        if (_doc == null || !(_doc instanceof BaseDocument)) {
-            return;
-        }
+    public static void insert(String s, final JTextComponent target, final boolean reformat) throws BadLocationException {
+        Document doc = target.getDocument();
+        if (doc != null && doc instanceof BaseDocument) {
+            final String str = (s == null) ? "" : s;
         
-        //check whether we are not in a scriptlet 
-//        JspSyntaxSupport sup = (JspSyntaxSupport)(doc.getSyntaxSupport().get(JspSyntaxSupport.class));
-//        int start = target.getCaret().getDot();
-//        TokenItem token = sup.getTokenChain(start, start + 1);
-//        if (token != null && token.getTokenContextPath().contains(JavaTokenContext.contextPath)) // we are in a scriptlet
-//            return false;
+            final BaseDocument baseDoc = (BaseDocument) doc;
+            Runnable edit = new Runnable() {
+                public void run() {
+                    try {
+                        int start = insert(str, target, baseDoc);
 
-        if (s == null)
-            s = "";
-        
-        BaseDocument doc = (BaseDocument)_doc;
-        Indent indent = Indent.get(doc);
-        indent.lock();
-        try {
-            doc.atomicLock();
-            try {
-                int start = insert(s, target, _doc);
-                if (reformat && start >= 0 && _doc instanceof BaseDocument) {
-                    // format the inserted text
-                    int end = start + s.length();
-                    indent.reindent(start, end);
+                        // format the inserted text
+                        if (reformat && start >= 0) {
+                            int end = start + str.length();
+                            Reformat reformat = Reformat.get(baseDoc);
+                            reformat.lock();
+                            try {
+                                reformat.reformat(start, end);
+                            } finally {
+                                reformat.unlock();
+                            }
+                        }
+                    } catch (BadLocationException e) {
+                        Exceptions.printStackTrace(e);
+                    }
                 }
-            } finally {
-                doc.atomicUnlock();
-            }
-        } finally {
-            indent.unlock();
+            };
+            baseDoc.runAtomic(edit);
         }
-        
     }
     
-    private static int insert(String s, JTextComponent target, Document doc) 
-    throws BadLocationException 
-    {
-
+    private static int insert(String s, JTextComponent target, Document doc) throws BadLocationException {
         int start = -1;
         try {
             //at first, find selected text range
@@ -179,8 +166,8 @@ public final class JSFPaletteUtilities {
             //replace selected text by the inserted one
             start = caret.getDot();
             doc.insertString(start, s, null);
+        } catch (BadLocationException ble) {
         }
-        catch (BadLocationException ble) {}
         
         return start;
     }

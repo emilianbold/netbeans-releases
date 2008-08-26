@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <photos page="1" pages="1" perpage="100" total="2">
+        <photo id="169885459" owner="35034348999@N01"
+               secret="c85114c195" server="46" title="Doubting Michael"
+               ispublic="1" isfriend="0" isfamily="0" lastupdate="1150755888" />
+        <photo id="85022332" owner="35034348999@N01"
+               secret="23de6de0c0" server="41"
+               title="&quot;Do you think we're allowed to tape stuff to the walls?&quot;"
+               ispublic="1" isfriend="0" isfamily="0" lastupdate="1150564974" />
+    </photos>
+</rsp>

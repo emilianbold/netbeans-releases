@@ -1090,6 +1090,9 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 pname = ((AbstractField) parent).getFullName(showBaseClass);
             } else {
                 pname = parent.getName();
+                if (pname.startsWith("*")) { // NOI18N
+                    pname = '(' + pname + ')';
+                }
             }
 
             if (name.equals(NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"))) { // NOI18N

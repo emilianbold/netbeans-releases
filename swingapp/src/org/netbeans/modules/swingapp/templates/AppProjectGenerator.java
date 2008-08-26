@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.properties.UtilConvert;
 
@@ -80,6 +81,11 @@ class AppProjectGenerator {
 
         unzip(zippedTemplate, projectFolderFO, toReplace, replaceWith);
         projectFolderFO.refresh(false);
+        //#129405 when creating content in folder that used to exist before, but ceased
+        // the projectmanager will remember that there's no project in the given
+        // location, we need to clear the cache here, to get it loaded subsequently.
+        ProjectManager.getDefault().clearNonProjectCache();
+        
         return projectFolderFO;
     }
 

@@ -90,15 +90,22 @@ public final class MoveControlPointAction extends WidgetAction.LockedAdapter {
         return State.REJECTED;
     }
 
-    public State mouseReleased (Widget widget, WidgetMouseEvent event) {
-        State state = move (widget, event.getPoint ());
-        if (state.isConsumed ())
+    @Override
+    public State mouseReleased(Widget widget, WidgetMouseEvent event) {
+        State state = move(widget, event.getPoint());
+        if (state == State.REJECTED) {
             movingWidget = null;
+        }
         return state;
     }
 
-    public State mouseDragged (Widget widget, WidgetMouseEvent event) {
-        return move (widget, event.getPoint ());
+    @Override
+    public State mouseDragged(Widget widget, WidgetMouseEvent event) {
+        State state = move(widget, event.getPoint());
+        if (state == State.REJECTED) {
+            movingWidget = null;
+        }
+        return state;
     }
 
     private State move (Widget widget, Point newLocation) {

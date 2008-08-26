@@ -276,8 +276,8 @@ public final class PlatformUiSupport {
      * The model listens on the platform's {@link ComboBoxModel} and update its
      * state according to the changes. It is possible to define minimal JDK version.
      * @param platformComboBoxModel the platform's model used for listenning.
-     * @param initialSourceLevel initial source level value.
-     * @param initialTargetLevel initial target level value.
+     * @param initialSourceLevel initial source level value, null if unknown.
+     * @param initialTargetLevel initial target level value, null if unknown.
      * @param minimalSpecificationVersion minimal JDK version to be displayed. It can be <code>null</code> if all the JDK versions
      *                          should be displayed (typically for Java SE project).
      * @return {@link ComboBoxModel} of {@link SourceLevelKey}.
@@ -286,9 +286,6 @@ public final class PlatformUiSupport {
     public static ComboBoxModel createSourceLevelComboBoxModel(ComboBoxModel platformComboBoxModel,
             String initialSourceLevel, String initialTargetLevel, SpecificationVersion minimalSpecificationVersion) {
         Parameters.notNull("platformComboBoxModel", platformComboBoxModel); // NOI18N
-        Parameters.notNull("initialSourceLevel", initialSourceLevel); // NOI18N
-        Parameters.notNull("initialTargetLevel", initialTargetLevel); // NOI18N
-
         return new SourceLevelComboBoxModel(platformComboBoxModel, initialSourceLevel, initialTargetLevel,
                 minimalSpecificationVersion);
     }
@@ -297,16 +294,14 @@ public final class PlatformUiSupport {
      * Exactly like {@link #createSourceLevelComboBoxModel(ComboBoxModel, String, String, JDK)}
      * but without any minimal JDK version.
      * @param platformComboBoxModel the platform's model used for listenning.
-     * @param initialSourceLevel initial source level value.
-     * @param initialTargetLevel initial target level value.
+     * @param initialSourceLevel initial source level value, null if unknown.
+     * @param initialTargetLevel initial target level value, null if unknown.
      * @return {@link ComboBoxModel} of {@link SourceLevelKey}.
      * @see #createSourceLevelComboBoxModel(ComboBoxModel, String, String, JDK)
      */
     public static ComboBoxModel createSourceLevelComboBoxModel(ComboBoxModel platformComboBoxModel,
             String initialSourceLevel, String initialTargetLevel) {
         Parameters.notNull("platformComboBoxModel", platformComboBoxModel); // NOI18N
-        Parameters.notNull("initialSourceLevel", initialSourceLevel); // NOI18N
-        Parameters.notNull("initialTargetLevel", initialTargetLevel); // NOI18N
 
         return new SourceLevelComboBoxModel(platformComboBoxModel, initialSourceLevel, initialTargetLevel, null);
     }

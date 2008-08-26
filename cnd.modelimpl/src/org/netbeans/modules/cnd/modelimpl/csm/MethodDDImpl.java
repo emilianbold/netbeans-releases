@@ -79,6 +79,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         }
     }
 
+    @Override
     public CsmFunction getDeclaration() {
         return this;
     }

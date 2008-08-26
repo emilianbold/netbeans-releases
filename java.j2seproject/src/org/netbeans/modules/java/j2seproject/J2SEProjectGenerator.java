@@ -335,13 +335,16 @@ public class J2SEProjectGenerator {
         if (!h.isSharableProject()) {
             return; 
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit") == null) {
+        if (rh.getProjectLibraryManager().getLibrary("junit") == null 
+                && LibraryManager.getDefault().getLibrary("junit") != null) {
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) {
+        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null
+                && LibraryManager.getDefault().getLibrary("junit_4") != null) {
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
-        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null) {
+        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null
+                && LibraryManager.getDefault().getLibrary("CopyLibs") != null) {
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
         }
     }

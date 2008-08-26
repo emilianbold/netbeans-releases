@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <photo id="2733" secret="123456" server="12"
+	isfavorite="0" license="3" rotation="90"
+	originalsecret="1bc09ce34a" originalformat="png">
+        <owner nsid="12037949754@N01" username="Bees"
+		realname="Cal Henderson" location="Bedford, UK" />
+        <title>orford_castle_taster</title>
+        <description>hello!</description>
+        <visibility ispublic="1" isfriend="0" isfamily="0" />
+        <dates posted="1100897479" taken="2004-11-19 12:51:19"
+		takengranularity="0" lastupdate="1093022469" />
+        <permissions permcomment="3" permaddmeta="2" />
+        <editability cancomment="1" canaddmeta="1" />
+        <comments>1</comments>
+        <notes>
+            <note id="313" author="12037949754@N01"
+			authorname="Bees" x="10" y="10"
+			w="50" h="50">foo
+            </note>
+        </notes>
+        <tags>
+            <tag id="1234" author="12037949754@N01" raw="woo yay">wooyay</tag>
+            <tag id="1235" author="12037949754@N01" raw="hoopla">hoopla</tag>
+        </tags>
+        <urls>
+            <url type="photopage">http://www.flickr.com/photos/bees/2733/</url>
+        </urls>
+    </photo>
+</rsp>

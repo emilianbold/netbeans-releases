@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <groups page="1" pages="1" per_page="400" total="3">
+        <group nsid="33853651696@N01" name="Art and Literature Hoedown"
+		admin="0" privacy="3" photos="2" iconserver="1" />
+        <group nsid="34427465446@N01" name="FlickrIdeas"
+		admin="1" privacy="3" photos="20" iconserver="1" />
+        <group nsid="34427465497@N01" name="GNEverybody"
+		admin="0" privacy="3" photos="4" iconserver="1" />
+    </groups>
+</rsp>

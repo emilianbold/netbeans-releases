@@ -76,7 +76,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
-        this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, this);
+        this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, null);
     }
 
     public CsmScope getScope() {

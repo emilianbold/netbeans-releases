@@ -322,4 +322,55 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test140758_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue140758.php", "echo $_SERVER[\"^", false);
     }
+    public void testVarAssignment_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarA1=$clsVarA->^", false);
+    }
+    public void testVarAssignment_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarC1=$clsVarC->^", false);
+    }
+    public void testVarAssignment_3() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarA1->^", false);
+    }
+    public void testVarAssignment_4() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarC1->^", false);
+    }
+    public void testVarAssignment_5() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarA2->^", false);
+    }
+    public void testVarAssignment_6() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarC2->^", false);
+    }
+    public void testVarAssignment_7() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$stVarAA1=$stVarAA->^", false);
+    }
+    public void testVarAssignment_8() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$stVarAC1 = $stVarAC->^", false);
+    }
+    public void testVarAssignment_9() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$stVarAA1->^", false);
+    }
+    public void testVarAssignment_10() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$stVarAC1->^", false);
+    }
+    public void testVarAssignment_11() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$stVarAA2->^", false);
+    }
+    public void testVarAssignment_12() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$fncVarA1=$fncVarA->^", false);
+    }
+    public void testVarAssignment_13() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$fncVarC1=$fncVarC->^", false);
+    }
+    public void testVarAssignment_14() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$fncVarA1->^", false);
+    }
+    public void testVarAssignment_15() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$fncVarC1->^", false);
+    }
+    public void testVarAssignment_16() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$fncVarA2->^", false);
+    }
+    public void testVarAssignment_17() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarCErr->^", false);
+    }
 }

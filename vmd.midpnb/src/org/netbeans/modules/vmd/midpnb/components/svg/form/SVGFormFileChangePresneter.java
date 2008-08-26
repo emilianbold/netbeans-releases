@@ -135,7 +135,7 @@ public class SVGFormFileChangePresneter extends DynamicPresenter implements Desi
         if (svgImageComponent == null) {
             return;
         }
-        FileObject svgFileObjectNew = getSVGFile(svgImageComponent);
+        FileObject svgFileObjectNew = SVGFormSupport.getSVGFile(svgImageComponent);
         if (svgFileObjectNew != null) {
             try {
                 //Check if this file is SVG file
@@ -178,14 +178,5 @@ public class SVGFormFileChangePresneter extends DynamicPresenter implements Desi
         svgFileObject = null;
     }
 
-    private static synchronized FileObject getSVGFile(DesignComponent svgImageComponent) {
-        PropertyValue propertyValue = svgImageComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
-        FileObject svgFileObject = null;
-        if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
-            Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(svgImageComponent.getDocument(), MidpTypes.getString(propertyValue));
-            Iterator<FileObject> iterator = images.keySet().iterator();
-            svgFileObject = iterator.hasNext() ? iterator.next() : null;
-        }
-        return svgFileObject;
-    }
+    
 }

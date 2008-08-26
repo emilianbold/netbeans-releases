@@ -127,7 +127,7 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     }
     
     public CsmScope getScope() {
-        return scope.getObject();
+        return scope == null? null : scope.getObject();
     }
 
     public CsmDeclaration.Kind getKind() {
@@ -135,7 +135,7 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
     }
 
     public CharSequence getQualifiedName() {
-        CsmScope s = scope.getObject();
+        CsmScope s = getScope();
         if (CsmKindUtilities.isFunction(s)) {
             return ((CsmFunction)s).getQualifiedName()+"::"+name; // NOI18N
         } else if (CsmKindUtilities.isClass(s)) {

@@ -55,7 +55,7 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock
+     * method should be called under document read lock
      * @param doc
      * @param offset
      * @return
@@ -72,7 +72,7 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock and token processor must be
+     * method should be called under document read lock and token processor must be
      * very fast to prevent document blocking
      * @param tp
      * @param doc
@@ -102,7 +102,7 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock
+     * method should be called under document read lock
      * @param doc
      * @param offset
      * @return
@@ -124,7 +124,7 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock
+     * method should be called under document read lock
      * returns offsetable token on interested offset
      * @param cppTokenSequence token sequence
      * @param offset interested offset
@@ -136,7 +136,7 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock
+     * method should be called under document read lock
      * @param doc
      * @param offset
      * @return
@@ -146,7 +146,7 @@ public class CndTokenUtilities {
     }
 
     /**
-     * method should be called under document lock
+     * method should be called under document read lock
      * @param doc
      * @param offset
      * @param tokenizePP

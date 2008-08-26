@@ -38,11 +38,26 @@
  */
 package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
+import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGMenuImageParser;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author karol harezlak
@@ -51,7 +66,7 @@ public final class SVGFormSupport {
 
     private SVGFormSupport() {
     }
-    
+
     /**
      * Removes all SVGForm components and all related components
      * 
@@ -60,7 +75,7 @@ public final class SVGFormSupport {
     public static final void removeAllSVGFormComponents(final DesignComponent svgForm) {
         DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
         if (!registry.isInHierarchy(SVGFormCD.TYPEID, svgForm.getType())) {
-            throw new IllegalArgumentException("Design Component is not SVGFormCD type" + svgForm.getType());
+            throw new IllegalArgumentException("Design Component is not SVGFormCD type" + svgForm.getType()); //NOI18N
         }
         Collection<DesignComponent> components = new HashSet(svgForm.getComponents());
 
@@ -82,6 +97,56 @@ public final class SVGFormSupport {
             if (parentComponent.getDocument().getDescriptorRegistry().isInHierarchy(SVGButtonEventSourceCD.TYPEID, child.getType())) {
                 if (child.readProperty(SVGButtonEventSourceCD.PROP_SVGBUTTON).getComponent() == svgButton) {
                     parentComponent.getDocument().deleteComponent(child);
+                }
+            }
+        }
+    }
+
+    public static synchronized FileObject getSVGFile(DesignComponent svgImageComponent) {
+        PropertyValue propertyValue = svgImageComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
+        if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
+            return getSVGFile(svgImageComponent.getDocument(), MidpTypes.getString(propertyValue));
+        }
+
+        return null;
+    }
+
+    public static synchronized FileObject getSVGFile(DesignDocument document, String path) {
+        Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(document, path);
+        Iterator<FileObject> iterator = images.keySet().iterator();
+        FileObject svgFileObject = iterator.hasNext() ? iterator.next() : null;
+
+        return svgFileObject;
+    }
+
+    public static void parseSVGImageItems(FileObject imageFO, DesignComponent parentComponent) {
+        if (imageFO == null) {
+            return;
+        }
+        SVGComponentImageParser parser = SVGComponentImageParser.getParserByComponent(parentComponent);
+        if (parser == null) {
+            return;
+        }
+
+        InputStream inputStream = null;
+        try {
+            inputStream = imageFO.getInputStream();
+            if (inputStream != null) {
+                DescriptorRegistry registry = parentComponent.getDocument().getDescriptorRegistry();
+                if (registry.isInHierarchy(SVGFormCD.TYPEID, parentComponent.getType())) {
+                    SVGFormImageParser.parseSVGForm(inputStream, parentComponent);
+                } else {
+                    SVGMenuImageParser.parseSVGMenu(inputStream, parentComponent);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            Debug.warning(ex);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException ioe) {
+                    Debug.warning(ioe);
                 }
             }
         }
