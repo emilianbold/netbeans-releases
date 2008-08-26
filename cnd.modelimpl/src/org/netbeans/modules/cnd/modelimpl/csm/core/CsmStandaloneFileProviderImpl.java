@@ -196,6 +196,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     }
 }
 
+
 final class NativeProjectImpl implements NativeProject {
 
     private final List<String> sysIncludes;
@@ -206,7 +207,7 @@ final class NativeProjectImpl implements NativeProject {
     private final String projectRoot;
     boolean pathsRelCurFile;
     private List<NativeProjectItemsListener> listeners = new ArrayList<NativeProjectItemsListener>();
-    private Object listenersLock = new Object();
+    private final Object listenersLock = new Object();
 
     static NativeProject getNativeProjectImpl(File file) {
 
@@ -377,8 +378,11 @@ final class NativeProjectImpl implements NativeProject {
     public List<NativeProject> getDependences() {
         return Collections.<NativeProject>emptyList();
     }
+    
+    public void runOnCodeModelReadiness(Runnable task) {
+        task.run();
+    }
 }
-
 class NativeFileItemImpl implements NativeFileItem {
 
     private final File file;
