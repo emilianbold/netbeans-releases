@@ -40,7 +40,6 @@
  Version 2 license, then the option applies only if the new code is
  made subject to such option by the copyright holder.
 -->
-
 <xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
     <xsd:element name="rsp">
         <xsd:complexType>
@@ -224,6 +223,7 @@
                         <xsd:attribute name="pages" type="xsd:int"/>
                         <xsd:attribute name="perpage" type="xsd:int"/>
                         <xsd:attribute name="total" type="xsd:int"/>
+                        <xsd:attribute name="per_page" type="xsd:int"/>
                     </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="prevphoto" minOccurs="0">
@@ -752,6 +752,39 @@
                     <xsd:complexType>
                         <xsd:attribute name="code" type="xsd:int"/>
                         <xsd:attribute name="msg" type="xsd:string"/>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="frob" minOccurs="0">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string"/>
+                    </xsd:simpleType>
+                </xsd:element>
+                <xsd:element name="auth" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="token">
+                                <xsd:simpleType>
+                                    <xsd:restriction base="xsd:long"/>
+                                </xsd:simpleType>
+                            </xsd:element>
+                            <xsd:element name="perms">
+                                <xsd:simpleType>
+                                    <xsd:restriction base="xsd:string">
+                                        <xsd:enumeration value="none"/>
+                                        <xsd:enumeration value="read"/>
+                                        <xsd:enumeration value="write"/>
+                                        <xsd:enumeration value="delete"/>
+                                    </xsd:restriction>
+                                </xsd:simpleType>
+                            </xsd:element>
+                            <xsd:element name="user">
+                                <xsd:complexType>
+                                    <xsd:attribute name="nsid" type="xsd:string"/>
+                                    <xsd:attribute name="username" type="xsd:string"/>
+                                    <xsd:attribute name="fullname" type="xsd:string"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
             </xsd:sequence>
