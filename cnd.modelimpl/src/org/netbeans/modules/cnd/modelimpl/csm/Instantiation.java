@@ -677,6 +677,8 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
             CsmType instantiatedType = instantiation.getMapping().get(((CsmTemplateParameterType) type).getParameter());
             if (instantiatedType == null || CsmKindUtilities.isTemplateParameterType(instantiatedType)) {
                 return new TemplateParameterType(type, instantiation);
+//            } else {
+//                type = instantiatedType;
             }
         }
         if (type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
