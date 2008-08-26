@@ -60,6 +60,13 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
+    @Override
+    protected void assertDocumentText(String msg, String expectedText) {
+        super.assertDocumentText(msg, expectedText);
+        reformat();
+        super.assertDocumentText(msg+" (not stable)", expectedText);
+    }
+
     // -------- Reformat tests -----------
     
     public void testReformatMultiLineSystemOutPrintln() {
@@ -140,7 +147,6 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 + "    int printf(int);\n"
                 + "};\n"
                 );
-        
     }
     
     // tests for regressions
@@ -4696,5 +4702,53 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    Menu();\n" +
                 "};\n"
                 );
+    }
+
+    public void testExpandToTab() {
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.expandTabToSpaces, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.tabSize, 4);
+        setLoadDocumentText(
+                "typedef struct pcihp {\n" +
+                "\n" +
+                " struct pcihp_slotinfo {\n" +
+                "\t\tchar *name;\n" +
+                "\t} slotinfo[10];\n" +
+                "} pcihp_t;\n"
+                );
+        for(int i = 0; i < 2; i++){
+        reformat();
+        assertDocumentText("Incorrect tab formatting",
+                "typedef struct pcihp {\n" +
+                "\n" +
+                "\tstruct pcihp_slotinfo {\n" +
+                "\t\tchar *name;\n" +
+                "\t} slotinfo[10];\n" +
+                "} pcihp_t;\n");
+        }
+    }
+
+    public void testExpandToTab2() {
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.expandTabToSpaces, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.tabSize, 8);
+        setLoadDocumentText(
+                "typedef struct pcihp {\n" +
+                "\n" +
+                " struct pcihp_slotinfo {\n" +
+                "\t\tchar *name;\n" +
+                "\t} slotinfo[10];\n" +
+                "} pcihp_t;\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect tab formatting",
+                "typedef struct pcihp {\n" +
+                "\n" +
+                "    struct pcihp_slotinfo {\n" +
+                "\tchar *name;\n" +
+                "    } slotinfo[10];\n" +
+                "} pcihp_t;\n");
     }
 }

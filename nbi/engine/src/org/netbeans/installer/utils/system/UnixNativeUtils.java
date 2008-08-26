@@ -141,7 +141,32 @@ public class UnixNativeUtils extends NativeUtils {
     }
     @Override
     protected Platform getPlatform() {
-        return Platform.UNIX;
+        final String osName = System.getProperty("os.name");
+        if (osName.endsWith("BSD")) {
+            if (osName.equals("FreeBSD")) {
+                if(System.getProperty("os.arch").contains("ppc")) {
+                    return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_PPC: Platform.FREEBSD_PPC64;
+                } else {
+                    return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_X64 : Platform.FREEBSD_X86;
+                }
+            } else {
+                if(System.getProperty("os.arch").contains("ppc")) {
+                    return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_PPC64 : Platform.BSD_PPC;
+                } else {
+                    return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_X64 : Platform.BSD_X86;
+                }
+            }
+        } else if(osName.equals("AIX")) {
+            if(System.getProperty("os.arch").contains("ppc")) {
+                return SystemUtils.isCurrentJava64Bit() ? Platform.AIX_PPC64 : Platform.AIX_PPC;
+            } else { 
+                return Platform.AIX;
+            }
+        } else if(osName.equals("HP-UX")) {
+            return Platform.HPUX;
+        } else {
+            return Platform.UNIX;
+        }
     }
     
     public boolean isCurrentUserAdmin() throws NativeException{
@@ -254,6 +279,9 @@ public class UnixNativeUtils extends NativeUtils {
     }
     
     private File getDesktopFolder() {
+        // TODO
+        // If using XDG, desktop folder can be obtained simpler using '/usr/bin/xdg-user-dir DESKTOP' command
+        // See also http://www.netbeans.org/issues/show_bug.cgi?id=144646
         final String desktopDir = System.getenv(XDG_DESKTOP_DIR_ENV_VARIABLE);
         final File globalConfigFile = new File(XDG_USERDIRS_GLOBAL_CONF);
         final File userHome       = SystemUtils.getUserHomeDirectory();

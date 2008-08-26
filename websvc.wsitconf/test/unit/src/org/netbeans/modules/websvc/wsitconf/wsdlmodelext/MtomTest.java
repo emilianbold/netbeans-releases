@@ -44,6 +44,7 @@ import java.io.File;
 import junit.framework.*;
 import org.netbeans.modules.websvc.wsitconf.util.TestCatalogModel;
 import org.netbeans.modules.websvc.wsitconf.util.TestUtil;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
@@ -70,9 +71,11 @@ public class MtomTest extends TestCase {
     public void testMtom() throws Exception {
         TestCatalogModel.getDefault().setDocumentPooling(true);
         WSDLModel model = TestUtil.loadWSDLModel("../wsdlmodelext/resources/policy.xml");
-        WSDLComponentFactory fact = model.getFactory();
         
-        model.startTransaction();
+        File f = new File("MtomTest.wsdl");
+        if (f.exists()) {
+            f.delete();
+        }
 
         Definitions d = model.getDefinitions();
         Binding b = (Binding) d.getBindings().toArray()[0];
@@ -80,12 +83,13 @@ public class MtomTest extends TestCase {
         assertFalse("MTOM enabled indicated on empty WSDL", TransportModelHelper.isMtomEnabled(b));
         TransportModelHelper.enableMtom(b, true);
         assertTrue("MTOM not enabled correctly", TransportModelHelper.isMtomEnabled(b));
+        assertFalse("Addressing enabled for MTOM", AddressingModelHelper.isAddressingEnabled(b));
         TransportModelHelper.enableMtom(b, false);
         assertFalse("MTOM enabled indicated", TransportModelHelper.isMtomEnabled(b));
-      
-        model.endTransaction();
+        assertFalse("Addressing enabled when MTOM disabled", AddressingModelHelper.isAddressingEnabled(b));
 
-        TestUtil.dumpToFile(model.getBaseDocument(), new File("C:\\MtomService.wsdl"));
+        TestUtil.dumpToFile(model.getBaseDocument(), f);
+        PolicyModelHelper.cleanPolicies(b);        
     }
 
     public String getTestResourcePath() {

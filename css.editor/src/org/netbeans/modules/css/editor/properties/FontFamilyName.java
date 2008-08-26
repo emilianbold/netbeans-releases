@@ -46,12 +46,12 @@ package org.netbeans.modules.css.editor.properties;
 public class FontFamilyName implements CssPropertyValueAcceptor {
 
     public String id() {
-        return "font-family";
+        return "font-family"; //NOI18N
     }
 
     public boolean accepts(String token) {
         //TODO make me really work
-        if(token.contains(" ")) {
+        if(token.contains(" ")) { //NOI18N
             //SHOULD be quoted
             char f = token.charAt(0);
             char l = token.charAt(token.length() - 1);

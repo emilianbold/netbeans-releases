@@ -8,7 +8,7 @@
 --OWNER:
     FUNCTION_DEFINITION Customer(const string,int)  [44:1/2128-47:2/2240] ReferencesTestCase/customer.cc
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'Customer', tokenID=identifier, offset=2138 [44:11/2138-44:19/2146]
 --OWNER:
@@ -62,7 +62,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetDiscount() const  [49:1/2242-51:2/2300] ReferencesTestCase/customer.cc
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'GetDiscount', tokenID=identifier, offset=2256 [49:15/2256-49:26/2267]
 --OWNER:
@@ -86,7 +86,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetName() const  [53:1/2302-55:2/2355] ReferencesTestCase/customer.cc
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'GetName', tokenID=identifier, offset=2319 [53:18/2319-53:25/2326]
 --OWNER:
@@ -122,7 +122,7 @@
 --OWNER:
     TYPE const &Customer TEXT=const Customer&  [57:39/2395-57:54/2410] ReferencesTestCase/customer.cc
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'customer', tokenID=identifier, offset=2411 [57:55/2411-57:63/2419]
 --OWNER:

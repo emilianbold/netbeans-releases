@@ -13,7 +13,7 @@ Macros:
     <no macros>
 NAMESPACE DEFINITOIN ns [1:1/0-3:2/42] SCOPE: conversion_operator.cc
     TYPEDEF string  [2:5/19-2:26/40] TYPE: *char TEXT=char*  [2:13/27-2:18/32] SCOPE: ns 
-CLASS C (C ) [5:1/44-22:3/413] lcurly=52 SCOPE: $Global$ 
+CLASS C (C ) [5:1/44-22:2/412] lcurly=52 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PRIVATE msg [7:5/67-7:15/77]  TYPE: *char TEXT=char*  [7:5/67-7:10/72]  INIT: null  SCOPE: C 
@@ -59,7 +59,7 @@ CLASS C (C ) [5:1/44-22:3/413] lcurly=52 SCOPE: $Global$
                 STATEMENT RETURN  [20:9/368-20:45/404] SCOPE: Stmt  [19:35/358-21:6/410] text: 'return this->operator const char*();'
 
 ========== Dumping model of PROJECT DummyProject
-CLASS C (C ) [5:1/44-22:3/413] lcurly=52 SCOPE: $Global$ 
+CLASS C (C ) [5:1/44-22:2/412] lcurly=52 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PRIVATE msg [7:5/67-7:15/77]  TYPE: *char TEXT=char*  [7:5/67-7:10/72]  INIT: null  SCOPE: C 

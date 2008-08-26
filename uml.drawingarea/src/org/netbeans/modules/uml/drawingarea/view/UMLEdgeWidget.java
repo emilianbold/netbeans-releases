@@ -46,12 +46,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.AnchorShapeFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.widget.ResourceTable;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -62,6 +60,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
+import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
 import org.openide.util.Lookup;
 
 /**
@@ -105,12 +104,19 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
 
     @Override
     public void setControlPoints(Collection<Point> controlPoints, boolean sceneLocations) {
-        int ctrlPtCount = this.getControlPoints().size();
-        super.setControlPoints(controlPoints, sceneLocations);
-        //Mark the diagram dirty after setting control points
-        if (scene != null && ctrlPtCount != this.getControlPoints().size())
+        if (scene != null && scene.getEngine() instanceof SQDDiagramEngineExtension)
         {
-            ((DesignerScene)scene).getDiagram().setDirty(true);
+            super.setControlPoints(controlPoints, sceneLocations);
+        }
+        else 
+        {
+            int ctrlPtCount = this.getControlPoints().size();
+            super.setControlPoints(controlPoints, sceneLocations);
+            //Mark the diagram dirty after setting control points
+            if (scene != null && ctrlPtCount != this.getControlPoints().size()) 
+            {
+                ((DesignerScene) scene).getDiagram().setDirty(true);
+            }
         }
     }
 

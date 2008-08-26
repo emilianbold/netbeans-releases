@@ -219,4 +219,8 @@ public class RemoteServerRecord implements ServerRecord {
     public String getReason() {
         return reason == null ? "" : reason;
     }
+
+    /*package*/void setState(Object state) {
+        this.state = state;
+    }
 }

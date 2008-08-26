@@ -211,6 +211,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
                             if (fd != null){
                                 addMember(fd);
+                                fd.init(token, ClassImpl.this);
                                 break;
                             }
                         }
@@ -220,6 +221,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             ClassMemberForwardDeclaration fd = renderClassForwardDeclaration(token);
                             if (fd != null){
                                 addMember(fd);
+                                fd.init(token, ClassImpl.this);
                                 break;
                             }
                         }
@@ -457,14 +459,32 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 
         @Override
         public CsmClass getCsmClass() {
+            CsmClass cls = null;
             if (classDefinition != null){
-                return classDefinition.getObject();
+                cls = classDefinition.getObject();
             }
-            return  super.getCsmClass();
+            // we need to replace i.e. ForwardClass stub
+            if (cls != null && cls.isValid()) {
+                return cls;
+            } else {
+                cls = super.getCsmClass();
+                setCsmClass(cls);
+            }
+            return cls;
         }
 
+        @Override
+        protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope) {
+            CsmClass cls = super.createForwardClassIfNeed(ast, scope);
+            if (cls != null) {
+                classDefinition = cls.getUID();
+                RepositoryUtils.put(this);
+            }
+            return cls;
+        }
+        
         public void setCsmClass(CsmClass cls) {
-            classDefinition = cls.getUID();
+            classDefinition = cls == null ? null : cls.getUID();
         }
 
         @Override

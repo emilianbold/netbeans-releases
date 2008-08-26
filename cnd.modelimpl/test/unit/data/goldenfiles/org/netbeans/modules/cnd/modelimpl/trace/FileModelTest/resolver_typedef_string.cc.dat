@@ -41,10 +41,10 @@ NAMESPACE DEFINITOIN resolver_typedef_string [10:1/135-20:2/325] SCOPE: resolver
         UNIQUE NAME f:resolver_typedef_string::ClassA::read() const
         DECLARATION: read  [40:5/734-40:26/755]
         PARAMETERS:
-        RETURNS $unresolved$::wstring TEXT=wstring  [16:5/246-16:12/253]
+        RETURNS std_2::wstring TEXT=wstring  [16:5/246-16:12/253]
         STATEMENT COMPOUND  [16:34/275-19:6/323] SCOPE: read 
             STATEMENT DECLARATION  [17:9/285-17:21/297] SCOPE: Stmt  [16:34/275-19:6/323]
-                VARIABLE str [17:9/285-17:21/297]  TYPE: $unresolved$::wstring TEXT=wstring  [17:9/285-17:16/292]  INIT: null  SCOPE: Stmt  [16:34/275-19:6/323]
+                VARIABLE str [17:9/285-17:21/297]  TYPE: std_2::wstring TEXT=wstring  [17:9/285-17:16/292]  INIT: null  SCOPE: Stmt  [16:34/275-19:6/323]
             STATEMENT RETURN  [18:9/306-18:20/317] SCOPE: Stmt  [16:34/275-19:6/323] text: 'return str;'
 
 ========== Dumping model of PROJECT DummyProject
@@ -90,7 +90,7 @@ NAMESPACE resolver_typedef_string (resolver_typedef_string)
         PARAMETERS:
         RETURNS std_2::string TEXT=string  [35:3/662-35:9/668]
     USING NAMESPACE. std_2  [36:3/679-36:24/700]; REF NS: std_2 SCOPE: null
-    CLASS ClassA (resolver_typedef_string::ClassA ) [37:3/704-41:5/760] lcurly=717 SCOPE: resolver_typedef_string 
+    CLASS ClassA (resolver_typedef_string::ClassA ) [37:3/704-41:4/759] lcurly=717 SCOPE: resolver_typedef_string 
         BASE CLASSES:
         MEMBERS:
             FUNCTION read [40:5/734-40:26/755] MethodImpl SCOPE: ClassA 
@@ -103,7 +103,7 @@ NAMESPACE DEFINITIONS for std_2 (std_2)
     resolver_typedef_string.h  [11:1/173-24:2/499]
     resolver_typedef_string.h  [26:1/501-28:2/563]
 NAMESPACE std_2 (std_2) 
-    CLASS basic_string<typename _CharT,typename _Traits=char_traits<_CharT>,typename _Alloc=allocator<_CharT>> (std_2::basic_string ) [18:5/307-21:7/446] lcurly=438 SCOPE: std_2 
+    CLASS basic_string<typename _CharT,typename _Traits=char_traits<_CharT>,typename _Alloc=allocator<_CharT>> (std_2::basic_string ) [18:5/307-21:6/445] lcurly=438 SCOPE: std_2 
         BASE CLASSES:
         MEMBERS:
     TYPEDEF string  [23:5/456-23:46/497] TYPE: std_2::basic_string TEXT=std_2::basic_string<char>  [23:13/464-23:38/489] SCOPE: std_2 

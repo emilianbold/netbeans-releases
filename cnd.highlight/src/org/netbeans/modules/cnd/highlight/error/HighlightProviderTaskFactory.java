@@ -77,7 +77,7 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
     }
 
     private static class PhaseRunnerImpl implements PhaseRunner {
-        private Collection<Cancellable> listeners = new HashSet<Cancellable>();
+        private final Collection<Cancellable> listeners = new HashSet<Cancellable>();
         private final DataObject dobj;
         private final CsmFile file;
         private final Document doc;
@@ -90,6 +90,7 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
         public void run(Phase phase) {
             if (phase == Phase.PARSED || phase == Phase.INIT) {
                 MyInterruptor interruptor = new MyInterruptor();
+                addCancelListener(interruptor);
                 try {
                     HighlightProvider.getInstance().update(file, doc, dobj, interruptor);
                 } finally {
@@ -102,6 +103,7 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
         public boolean isValid() {
             return true;
         }
+        
         protected void addCancelListener(Cancellable interruptor){
             synchronized(listeners) {
                 listeners.add(interruptor);
@@ -120,6 +122,10 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
                     interruptor.cancel();
                 }
             }
+        }
+
+        public boolean isHighPriority() {
+            return false;
         }
 
         protected class MyInterruptor implements Interrupter, Cancellable {

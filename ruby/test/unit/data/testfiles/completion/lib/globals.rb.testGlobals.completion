@@ -1,0 +1,5 @@
+Code completion result for source line:
+$|m # input
+(QueryType=COMPLETION, NameKind=PREFIX)
+GLOBAL     $myglob                                    globals.rb
+GLOBAL     $myotherglob                               globals.rb

@@ -20,6 +20,7 @@
   </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -32,7 +33,7 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -51,14 +52,19 @@
                                   <Component id="projectLocationLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="createdFolderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="appNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace min="19" pref="19" max="19" attributes="0"/>
+                                      <Component id="libFolderLabel" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="appNameTextField" pref="260" max="32767" attributes="0"/>
-                                  <Component id="createdFolderTextField" pref="260" max="32767" attributes="0"/>
-                                  <Component id="projectNameTextField" pref="260" max="32767" attributes="0"/>
-                                  <Component id="projectLocationTextField" alignment="1" pref="260" max="32767" attributes="0"/>
-                                  <Component id="libFolderTextField" alignment="0" pref="260" max="32767" attributes="0"/>
+                                  <Component id="appNameTextField" pref="277" max="32767" attributes="0"/>
+                                  <Component id="createdFolderTextField" pref="277" max="32767" attributes="0"/>
+                                  <Component id="projectNameTextField" pref="277" max="32767" attributes="0"/>
+                                  <Component id="projectLocationTextField" alignment="1" pref="277" max="32767" attributes="0"/>
+                                  <Component id="libFolderTextField" alignment="0" pref="277" max="32767" attributes="0"/>
+                                  <Component id="libHintLabel" alignment="0" pref="277" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
@@ -72,13 +78,6 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="libFolderCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="19" pref="19" max="19" attributes="0"/>
-                              <Component id="libFolderLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="libHintLabel" pref="256" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" pref="91" max="-2" attributes="0"/>
-                          </Group>
                           <Component id="mainProjectCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
@@ -94,42 +93,42 @@
                   <Component id="projectNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="projectNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="projectLocationTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="projectLocationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="browseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="createdFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="createdFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="appNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="appNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Component id="shellListLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="descBrowser" min="0" pref="0" max="32767" attributes="1"/>
-                  <Component id="shellList" alignment="0" max="32767" attributes="1"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="descBrowser" min="0" pref="0" max="32767" attributes="2"/>
+                  <Component id="shellList" alignment="0" pref="86" max="32767" attributes="2"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Component id="libFolderCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="libFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="libFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="libFolderButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="libFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="libHintLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="mainProjectCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

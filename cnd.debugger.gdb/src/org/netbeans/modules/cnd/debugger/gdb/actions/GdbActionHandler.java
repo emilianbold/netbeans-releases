@@ -66,22 +66,16 @@ public class GdbActionHandler implements CustomProjectActionHandler {
         if (profile != null) { // profile can be null if dbxgui is enabled
             String gdb = profile.getGdbPath((MakeConfiguration)ev.getConfiguration());
             if (gdb != null) {
-                final GdbActionHandler gah = this;
                 executionStarted();
-                Runnable loadProgram = new Runnable() {
-                    public void run() {
-                        if (ev.getID() == ProjectActionEvent.DEBUG) {
+                if (ev.getID() == ProjectActionEvent.DEBUG || ev.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
                             DebuggerManager.getDebuggerManager().startDebugging(
                                     DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
-                                    new Object[] {ev, io, gah}));
-                        } else if (ev.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
-                            DebuggerManager.getDebuggerManager().startDebugging(
-                                    DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
-                                    new Object[] {ev, io, gah}));
+                                    new Object[]{ev, io, GdbActionHandler.this}));
                         }
-                    }
-                };
-                SwingUtilities.invokeLater(loadProgram);
+                    });
+                }
             } else {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(GdbActionHandler.class, "Err_NoGdbFound"))); // NOI18N

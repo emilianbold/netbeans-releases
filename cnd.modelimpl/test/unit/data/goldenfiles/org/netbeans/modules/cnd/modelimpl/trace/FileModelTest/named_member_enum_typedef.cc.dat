@@ -11,13 +11,13 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS Cls (Cls ) [1:1/0-3:3/60] lcurly=10 SCOPE: $Global$ 
+CLASS Cls (Cls ) [1:1/0-3:2/59] lcurly=10 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         TYPEDEF pletters  [2:9/13-2:53/57] TYPE: *Cls::letters TEXT=letters*  [2:9/13-2:53/57] SCOPE: Cls 
 
 ========== Dumping model of PROJECT DummyProject
-CLASS Cls (Cls ) [1:1/0-3:3/60] lcurly=10 SCOPE: $Global$ 
+CLASS Cls (Cls ) [1:1/0-3:2/59] lcurly=10 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         TYPEDEF pletters  [2:9/13-2:53/57] TYPE: *Cls::letters TEXT=letters*  [2:9/13-2:53/57] SCOPE: Cls 

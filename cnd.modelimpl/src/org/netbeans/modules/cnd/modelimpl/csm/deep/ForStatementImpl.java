@@ -46,7 +46,6 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
-import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
@@ -110,7 +109,7 @@ public class ForStatementImpl extends StatementBase implements CsmForStatement {
         for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
             case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
-                AST child = token.getFirstChild();
+                AST child = AstRenderer.getFirstChildSkipQualifiers(token);
                 if( child != null ) {
                     switch( child.getType() ) {
                         case CPPTokenTypes.SEMICOLON:

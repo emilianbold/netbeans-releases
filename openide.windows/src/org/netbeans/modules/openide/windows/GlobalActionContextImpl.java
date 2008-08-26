@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.openide.windows;
 
-import org.openide.util.Exceptions;
+import java.awt.EventQueue;
+import javax.swing.ActionMap;
 import org.openide.util.Lookup;
 import org.openide.util.ContextGlobalProvider;
 import org.openide.util.lookup.Lookups;
@@ -70,7 +71,20 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
     private static volatile Lookup temporary;
     /** Temporarily provides different action map in the lookup.
      */
-    public static void blinkActionMap(javax.swing.ActionMap map) {
+    public static void blickActionMap(final ActionMap map) {
+        if (EventQueue.isDispatchThread()) {
+            blickActionMapImpl(map);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    blickActionMapImpl(map);
+                }
+            });
+        }
+    }
+
+    static void blickActionMapImpl(ActionMap map) {
+        assert EventQueue.isDispatchThread();
         Object obj = Lookup.getDefault ().lookup (ContextGlobalProvider.class);
         if (obj instanceof GlobalActionContextImpl) {
             GlobalActionContextImpl g = (GlobalActionContextImpl)obj;
@@ -79,27 +93,14 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
                 Lookups.singleton (map),
                 Lookups.exclude (g.getLookup (), new Class[] { javax.swing.ActionMap.class }),
             };
-
-            ProxyLookup pl = new ProxyLookup (arr);
+            
+            Lookup prev = temporary;
             try {
-                synchronized (g) {
-                    while (temporary != null) {
-                        try {
-                            g.wait();
-                        } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                    temporary = pl;
-                }
+                temporary = new ProxyLookup (arr);
                 Object q = org.openide.util.Utilities.actionsGlobalContext ().lookup (javax.swing.ActionMap.class);
                 assert q == map : "We really get map from the lookup. Map: " + map + " returned: " + q; // NOI18N
             } finally {
-                synchronized (g) {
-                    assert temporary == pl;
-                    temporary = null;
-                    g.notifyAll();
-                }
+                temporary = prev;
                 // fire the changes about return of the values back
                 org.openide.util.Utilities.actionsGlobalContext ().lookup (javax.swing.ActionMap.class);
             }

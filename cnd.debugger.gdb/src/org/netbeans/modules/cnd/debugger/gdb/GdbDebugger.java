@@ -69,7 +69,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
@@ -86,6 +85,7 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -102,7 +102,6 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -381,13 +380,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    String gdbHelper = getGdbHelper();
-                    if (gdbHelper != null) {
+                    String unbuffer = getUnbuffer();
+                    if (unbuffer != null) {
                         if (platform == PlatformTypes.PLATFORM_MACOSX) {
-                            gdb.gdb_set("environment", "DYLD_INSERT_LIBRARIES=" + gdbHelper); // NOI18N
+                            gdb.gdb_set("environment", "DYLD_INSERT_LIBRARIES=" + unbuffer); // NOI18N
                             gdb.gdb_set("environment", "DYLD_FORCE_FLAT_NAMESPACE=yes"); // NOI18N
                         } else {
-                            gdb.gdb_set("environment", "LD_PRELOAD=" + gdbHelper); // NOI18N
+                            gdb.gdb_set("environment", "LD_PRELOAD=" + unbuffer); // NOI18N
                         }
                     }
                 }
@@ -487,36 +486,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return csdirs;
     }
 
-    private String getGdbHelper() {
+    private String getUnbuffer() {
         if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
-            String home = null;
-            CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
-            if (provider != null) {
-                int rc = provider.run(hkey, "echo $HOME", null); // NOI18N
-                if (rc == 0) {
-                    home = provider.toString().trim(); // remote the newline
-                }
-            }
-            if (home == null) {
-                home = "/home/" + System.getProperty("user.name"); // NOI18N
-            }
-            if (platform == PlatformTypes.PLATFORM_LINUX) {
-                return home + "/.netbeans/6.5/cnd2/lib/GdbHelper-Linux-x86.so"; // NOI18N
-            } else if (platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) {
-                return home + "/.netbeans/6.5/cnd2/lib/GdbHelper-SunOS-sparc.so"; // NOI18N
-            } else if (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL) {
-                return home + "/.netbeans/6.5/cnd2/lib/GdbHelper-SunOS-x86.so"; // NOI18N
-            } else {
-                return home + "/.netbeans/6.5/cnd2/lib/GdbHelper.so"; // NOI18N
-            }
+            return Unbuffer.getRemotePath(hkey);
         } else {
-            String name = "bin/GdbHelper" + getOsName() + getOsArch() + getExtension(); // NOI18N
-            File file = InstalledFileLocator.getDefault().locate(name, null, false);
-            if (file != null && file.exists()) {
-                return fixPath(file.getAbsolutePath());
-            } else {
-                return null;
-            }
+            return Unbuffer.getLocalPath();
         }
     }
 
@@ -1043,14 +1017,14 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.done();
                 if (token == shareToken) {
                     shareTab = createShareTab(info);
-                    if (shareTab.containsKey("GdbHelper")) { // NOI18N
+                    /*if (shareTab.containsKey("GdbHelper")) { // NOI18N
                         ProjectActionEvent pae;
                         pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                         int conType = pae.getProfile().getConsoleType().getValue();
                         if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                             gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N // FIXME (broken on Mac)
                         }
-                    }
+                    }*/
                 }
             }
         } else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) {
@@ -1068,7 +1042,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.done();
                 if (token == shareToken) {
                     shareTab = createShareTab(cb.toString());
-                    if (shareTab.containsKey("GdbHelper")) { // NOI18N
+                    /*if (shareTab.containsKey("GdbHelper")) { // NOI18N
                         ProjectActionEvent pae;
                         pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
                         int conType = pae.getProfile().getConsoleType().getValue();
@@ -1076,7 +1050,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                             // FIXME - core dumping on Windows...
                             gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N
                         }
-                    }
+                    }*/
                 }
             } else if (pendingBreakpointMap.get(itok) != null) {
                 breakpointValidation(token, null);
@@ -2242,7 +2216,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     return type;
                 }
             } else {
-		log.fine("GD.requestSymbolType[" + cb.getID() + "]: " + type + " --> [" + info + "]");
+                log.fine("GD.requestSymbolType[" + cb.getID() + "]: " + type + " --> [" + info + "]");
                 return info.substring(7, info.length() - 2);
             }
         } else {

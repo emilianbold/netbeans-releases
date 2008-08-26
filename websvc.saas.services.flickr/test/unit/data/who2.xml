@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <who id="12037949754@N01">
+        <tags>
+            <tag clean="foo">
+                <raw>foo</raw>
+                <raw>Foo</raw>
+                <raw>f:oo</raw>
+            </tag>
+        </tags>
+    </who>
+</rsp>

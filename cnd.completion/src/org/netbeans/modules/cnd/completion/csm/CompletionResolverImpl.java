@@ -201,7 +201,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             return;
         }
         CacheEntry key = null;
-        CsmFunction fun = CsmContextUtilities.getFunction(context);
+        CsmFunction fun = CsmContextUtilities.getFunction(context, true);
         ResultImpl resImpl = new ResultImpl();
         boolean isLocalVariable = resolveLocalContext(prj, resImpl, fun, context, offset, strPrefix, match);
         if (USE_CACHE && isEnough(strPrefix, match)) {
@@ -243,7 +243,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
         }
         //long timeStart = System.nanoTime();
-        resolveContext(prj, resImpl, fun, context, offset, strPrefix, match);
+        resolveContext(prj, resImpl, context, offset, strPrefix, match);
         result = buildResult(context, resImpl);
         if (key != null){
             getCache().put(key, result);
@@ -298,19 +298,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         return false;
     }
 
-    private boolean resolveContext(CsmProject prj, ResultImpl resImpl, CsmFunction fun, CsmContext context, int offset, String strPrefix, boolean match) {
-        if (needClasses(context, offset)) {
-            // list of classesEnumsTypedefs
-            resImpl.classesEnumsTypedefs = getClassesEnums(context, prj, strPrefix, match, offset,false);
-            if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
-        } else if (needContextClasses(context, offset)) {
-            resImpl.classesEnumsTypedefs = getClassesEnums(context, prj, strPrefix, match, offset,true);
-            if (!needNestedClassifiers(context, offset) && isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
-        }
-        if (needTemplateParameters(context, offset)) {
-            resImpl.templateParameters = getTemplateParameters(context, strPrefix, match);
-            if (isEnough(strPrefix, match, resImpl.templateParameters)) return true;
-        }
+    private boolean resolveContext(CsmProject prj, ResultImpl resImpl, CsmContext context, int offset, String strPrefix, boolean match) {
+        CsmFunction fun = CsmContextUtilities.getFunction(context, true);
         if (needLocalVars(context, offset)) {
             resImpl.fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);
             if (isEnough(strPrefix, match, resImpl.fileLocalEnumerators)) return true;
@@ -319,7 +308,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (needClassElements(context, offset)) {
                 //if (fun == null) System.err.printf("\nFunction is null. Offset: %d Context:\n%s \n", offset, context.toString());
                 CsmClass clazz = (fun == null) ? null : CsmBaseUtilities.getFunctionClass(fun);
-                clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
+                clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false, true);
                 if (clazz != null) {
                     // get class variables visible in this method
                     resImpl.classFields = contResolver.getFields(clazz, fun, strPrefix, staticContext, match, true,false);
@@ -334,50 +323,58 @@ public class CompletionResolverImpl implements CompletionResolver {
                     if (isEnough(strPrefix, match, resImpl.classMethods)) return true;
                     if (needNestedClassifiers(context, offset)) {
                         // get class nested classifiers visible in this context
-                        List<CsmClassifier> innerCls = contResolver.getNestedClassifiers(clazz, fun, strPrefix, match, needClasses(context, offset));
-                        if (resImpl.classesEnumsTypedefs == null) {
-                            resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
-                        }
-                        innerCls.addAll(resImpl.classesEnumsTypedefs);
-                        resImpl.classesEnumsTypedefs = innerCls;
+                        resImpl.classesEnumsTypedefs = contResolver.getNestedClassifiers(clazz, fun, strPrefix, match, needClasses(context, offset));
                         if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
                     }
                 }
             }
         } else if (needClassElements(context, offset)) {
             CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
-            clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
+            clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false, true);
             if (clazz != null) {
                 boolean staticContext = false;
                 // get class methods visible in this method
-                CsmOffsetableDeclaration contextDeclaration = fun != null ? fun : CsmContextUtilities.getClass(context, false);
-                if (needClassMethods(context, offset)) {
+                CsmOffsetableDeclaration contextDeclaration = fun != null ? fun : clazz;
+                if (needClassMethods(context, offset) && !CsmContextUtilities.isInType(context, offset)) {
                     if (clazz != null) {
                         resImpl.classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, true,false);
                         if (isEnough(strPrefix, match, resImpl.classMethods)) return true;
                     }
                 }
-                if (needClassFields(context, offset)) {
+                if (needClassFields(context, offset) && !CsmContextUtilities.isInType(context, offset)) {
                     // get class variables visible in this context
                     resImpl.classFields = contResolver.getFields(clazz, contextDeclaration, strPrefix, staticContext, match, true,false);
                     if (isEnough(strPrefix, match, resImpl.classFields)) return true;
                 }
-                if (needClassEnumerators(context, offset)) {
+                if (needClassEnumerators(context, offset) && !CsmContextUtilities.isInType(context, offset)) {
                     // get class enumerators visible in this context
                     resImpl.classEnumerators = contResolver.getEnumerators(clazz, contextDeclaration, strPrefix, match, true,false);
                     if (isEnough(strPrefix, match, resImpl.classEnumerators)) return true;
                 }
                 if (needNestedClassifiers(context, offset)) {
                     // get class nested classifiers visible in this context
-                    List<CsmClassifier> innerCls = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, true);
-                    if (resImpl.classesEnumsTypedefs == null) {
-                        resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
-                    }
-                    innerCls.addAll(resImpl.classesEnumsTypedefs);
-                    resImpl.classesEnumsTypedefs = innerCls;
+                    resImpl.classesEnumsTypedefs = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, true);
                     if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
                 }
             }
+        }
+        if (needTemplateParameters(context, offset)) {
+            resImpl.templateParameters = getTemplateParameters(context, strPrefix, match);
+            if (isEnough(strPrefix, match, resImpl.templateParameters)) return true;
+        }
+        if (needClasses(context, offset)) {
+            // list of classesEnumsTypedefs
+            if (resImpl.classesEnumsTypedefs == null) {
+                resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
+            }
+            resImpl.classesEnumsTypedefs.addAll(getClassesEnums(context, prj, strPrefix, match, offset, false));
+            if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
+        } else if (needContextClasses(context, offset)) {
+            if (resImpl.classesEnumsTypedefs == null) {
+                resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
+            }
+            resImpl.classesEnumsTypedefs.addAll(getClassesEnums(context, prj, strPrefix, match, offset, true));
+            if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) return true;
         }
         if (needFileLocalMacros(context, offset)) {
             resImpl.fileLocalMacros = contResolver.getFileLocalMacros(context, strPrefix, match);
@@ -566,7 +563,7 @@ public class CompletionResolverImpl implements CompletionResolver {
 
     private Collection<CsmTemplateParameter> getTemplateParameters(CsmContext context, String strPrefix, boolean match) {
         Collection<CsmTemplateParameter> templateParameters = null;
-        CsmFunction fun = CsmContextUtilities.getFunction(context);
+        CsmFunction fun = CsmContextUtilities.getFunction(context, false);
         Collection<CsmTemplate> analyzeTemplates = new ArrayList<CsmTemplate>();
         if (fun == null && context.getLastObject() != null) {
             // Fix for IZ#138099: unresolved identifier for functions' template parameter.
@@ -586,17 +583,20 @@ public class CompletionResolverImpl implements CompletionResolver {
                     }
                 }
             }
+            if (CsmKindUtilities.isTemplate(obj) && obj != fun) {
+                analyzeTemplates.add((CsmTemplate)obj);
+            }
         }
         if (CsmKindUtilities.isTemplate(fun)) {
             analyzeTemplates.add((CsmTemplate)fun);
         }
         CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
-        clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
+        clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false, false);
         if (CsmKindUtilities.isTemplate(clazz)) {
             // We add template parameters to function parameters on function init,
             // so we dont need to add them to completion list again.
-            if (!CsmKindUtilities.isTemplate(fun) || clazz.equals(CsmContextUtilities.getClass(context, false))) {
-            analyzeTemplates.add((CsmTemplate)clazz);
+            if (!CsmKindUtilities.isTemplate(fun) || clazz.equals(CsmContextUtilities.getClass(context, false, false))) {
+                analyzeTemplates.add((CsmTemplate)clazz);
             }
             CsmScope scope = clazz.getScope();
             while (CsmKindUtilities.isClass(scope)) {
@@ -1374,7 +1374,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (CsmContextUtilities.isInFunction(context, offset)) {
                 // for speed up remember result
                 updateResolveTypesInFunction(offset, context, match);
-            } else if (CsmContextUtilities.getClass(context, false) != null) {
+            } else if (CsmContextUtilities.getClass(context, false, true) != null) {
                 // for speed up remember result
                 resolveTypes |= RESOLVE_CLASS_FIELDS;
                 resolveTypes |= RESOLVE_CLASS_METHODS;

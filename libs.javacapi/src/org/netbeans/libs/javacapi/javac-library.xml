@@ -50,8 +50,4 @@ made subject to such option by the copyright holder.
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/javac-api-nb-7.0-b07.jar!/</resource>
     </volume>
-    <volume>
-        <type>javadoc</type>
-        <resource>jar:nbinst:///docs/org-netbeans-libs-javacapi.zip!/</resource>
-    </volume>
 </library>

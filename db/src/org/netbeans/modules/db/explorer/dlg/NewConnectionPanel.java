@@ -324,6 +324,8 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         passwordLabel.setLabelFor(passwordField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, bundle.getString("NewConnectionPassword")); // NOI18N
 
+        passwordField.setToolTipText(bundle.getString("ACS_NewConnectionPasswordA11yDesc")); // NOI18N
+
         dsnLabel.setLabelFor(dsnField);
         org.openide.awt.Mnemonics.setLocalizedText(dsnLabel, bundle.getString("NewConnectionDSN")); // NOI18N
 
@@ -733,6 +735,14 @@ private void showUrl() {
         });
     }
 
+    /**
+     * Terminates the use of the progress bar.
+     */
+    public void terminateProgress()
+    {
+        stopProgress(false);
+    }
+    
     private void stopProgress(final boolean connected) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {

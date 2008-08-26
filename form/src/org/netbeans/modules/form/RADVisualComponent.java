@@ -524,9 +524,14 @@ public class RADVisualComponent extends RADComponent {
                         setValue(new Integer(LayoutConstants.NOT_EXPLICITLY_DEFINED));
                     } else {
                         try {
-                            setValue(new Integer(Integer.parseInt(str)));
-                        } 
-                        catch (NumberFormatException e) {} // ignore                        
+                            int size = Integer.parseInt(str);
+                            if (size < 0) {
+                                throw new IllegalArgumentException();
+                            }
+                            setValue(size);
+                        }  catch (NumberFormatException e) {
+                            throw new IllegalArgumentException();
+                        }
                     }
                 }
             };

@@ -52,9 +52,9 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileReferences.Visitor;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
-import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
+import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 
 /**
@@ -108,7 +108,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                 // and gathers collectors for the next step
                 for (Iterator<SemanticEntity> i = entities.iterator(); i.hasNext(); ) {
                     SemanticEntity se = i.next();
-                    if (SemanticHighlightingOptions.instance().isEnabled(se.getName())) {
+                    if (NamedEntityOptions.instance().isEnabled(se)) {
                         ReferenceCollector collector = se.getCollector();
                         if (collector != null) {
                             // remember the collector for future use
@@ -181,5 +181,9 @@ public final class SemanticHighlighter extends HighlighterBase {
     
     public boolean isValid() {
         return true;
+    }
+
+    public boolean isHighPriority() {
+        return false;
     }
 }

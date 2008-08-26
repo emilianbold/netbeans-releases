@@ -45,7 +45,7 @@ package org.netbeans.modules.css.editor.properties;
  */
 public class KeywordUtil {
 
-    private static final String[] KEYWORDS = new String[]{"inherit"};
+    private static final String[] KEYWORDS = new String[]{"inherit"}; //NOI18N
     
     //XXX may be sorted array - binary search
     public static boolean isKeyword(String text) {

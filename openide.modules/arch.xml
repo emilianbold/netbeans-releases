@@ -272,7 +272,7 @@ Yes (as part of <samp>openide.nbm</samp> and <samp>core.nbm</samp>).
             public, though it is made available to <code>autoupdate</code> and
             <code>apisupport</code> as these special modules deal directly with
             the module system at a deeper level than the API provides for.
-            <api name="CoreModulesAPI" group="java" type="export" category="friend" url="http://www.netbeans.org/unbranded-source/browse/~checkout~/core/src/org/netbeans/core/modules/package.html"/>
+            <api name="CoreModulesAPI" group="java" type="export" category="friend"/>
         </p>
     </answer>
 

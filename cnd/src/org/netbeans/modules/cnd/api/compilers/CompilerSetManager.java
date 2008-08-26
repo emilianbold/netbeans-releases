@@ -73,6 +73,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.TaskListener;
 
 /**
  * Manage a set of CompilerSets. The CompilerSets are dynamically created based on which compilers
@@ -221,8 +222,14 @@ public class CompilerSetManager {
     private CompilerSetManager(String hkey, List<CompilerSet> sets, int platform) {
         this.hkey = hkey;
         this.sets = sets;
-        this.state = STATE_COMPLETE;
         this.platform = platform;
+        if (!LOCALHOST.equals(hkey) && isEmpty()) {
+            this.state = STATE_UNINITIALIZED;
+            log.fine("CSM restoring from pref: Adding empty CS to host " + hkey);
+            add(CompilerSet.createEmptyCompilerSet(platform));            
+        } else {
+            this.state = STATE_COMPLETE;
+        }
     }
 
     private void init() {
@@ -285,7 +292,7 @@ public class CompilerSetManager {
         }
     }
 
-    private static int computeLocalPlatform() {
+    public static int computeLocalPlatform() {
         String os = System.getProperty("os.name"); // NOI18N
 
         if (os.equals("SunOS")) {
@@ -301,7 +308,7 @@ public class CompilerSetManager {
         }
     }
     
-    public CompilerSetManager deepCopy() {
+   public CompilerSetManager deepCopy() {
         waitForCompletion(); // in case its a remote connection...
         List<CompilerSet> setsCopy =  new ArrayList<CompilerSet>();
         for (CompilerSet set : getCompilerSets()) {
@@ -464,7 +471,14 @@ public class CompilerSetManager {
                     }
                     log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
                     state = STATE_COMPLETE;
-                    provider.loadCompilerSetData(setsCopy);
+
+                    provider.loadCompilerSetData(setsCopy).addTaskListener(new TaskListener() {
+
+                        public void taskFinished(org.openide.util.Task task) {
+                            log.fine("Code Model Ready for " + CompilerSetManager.this.toString());
+                            CompilerSetManagerEvents.get(hkey).runTasks();
+                        }
+                    });
                 }
             });
         } else {
@@ -617,6 +631,13 @@ public class CompilerSetManager {
         }
     }
 
+    public final boolean isEmpty() {
+        if ((sets.size() == 0) ||
+            (sets.size() == 1 && sets.get(0).getName().equals(CompilerSet.None))) {
+            return true;
+        }
+        return false;
+    }
     /**
      * Remove a CompilerSet from this CompilerSetManager. Use caution with this method. Its primary
      * use is to remove temporary CompilerSets which were added to represent missing compiler sets. In
@@ -928,4 +949,17 @@ public class CompilerSetManager {
         return NbBundle.getMessage(CompilerSetManager.class, s);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder out = new StringBuilder();
+        out.append("CSM for ").append(hkey);
+        out.append(" with toolchains:[");
+        for (CompilerSet compilerSet : sets) {
+            out.append(compilerSet.getName()).append(" ");
+        }
+        out.append("]");
+        out.append(" platform:").append(PlatformTypes.toString(platform));
+        out.append(" in state ").append(state.toString());
+        return out.toString();
+    }
 }

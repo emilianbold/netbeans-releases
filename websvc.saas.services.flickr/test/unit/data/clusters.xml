@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <clusters source="cows" total="2">
+        <cluster total="3">
+            <tag>farm</tag>
+            <tag>animals</tag>
+            <tag>cattle</tag>
+        </cluster>
+        <cluster total="3">
+            <tag>green</tag>
+            <tag>landscape</tag>
+            <tag>countryside</tag>
+        </cluster>
+    </clusters>
+</rsp>
