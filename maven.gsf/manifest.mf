@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.maven.gsf/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/maven/gsf/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/modules/maven/gsf/layer.xml
+OpenIDE-Module-Public-Packages: -

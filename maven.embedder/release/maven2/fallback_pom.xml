@@ -1,0 +1,12 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>error</groupId>
+    <artifactId>error</artifactId>
+    <packaging>unknown</packaging>
+    <version>unknown</version>
+    <name>&lt;Badly formed Maven project&gt;</name>
+    <description>The project could not be loaded by the NetBeans integration. 
+    That usually means something is wrong with your POM. Check your project definition XML syntax. In some rare cases it can also
+    be caused by the failure in the project loading code. Please check the View/IDE Log file action for error traces in such a case.</description>
+</project>

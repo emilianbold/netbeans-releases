@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://maven.apache.org/POM/4.0.0" xmlns="http://maven.apache.org/POM/4.0.0">
+  <xs:element name="archetype" type="ArchetypeModel">
+    <xs:annotation>
+      <xs:documentation source="version">1.0.0</xs:documentation>
+      <xs:documentation source="description">Describes the assembly layout and packaging.</xs:documentation>
+    </xs:annotation>
+  </xs:element>
+  <xs:complexType name="ArchetypeModel">
+    <xs:annotation>
+      <xs:documentation source="version">1.0.0</xs:documentation>
+      <xs:documentation source="description">Describes the assembly layout and packaging.</xs:documentation>
+    </xs:annotation>
+    <xs:all>
+      <xs:element name="id" minOccurs="0" type="xs:string">
+        <xs:annotation>
+          <xs:documentation source="version">1.0.0</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="allowPartial" minOccurs="0" type="xs:boolean" default="false">
+        <xs:annotation>
+          <xs:documentation source="version">1.0.0</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="sources" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation source="version">1.0.0</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="source" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="resources" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation source="version">1.0.0</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="resource" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="testSources" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation source="version">1.0.0</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="testSource" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="testResources" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation source="version">1.0.0</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="testResource" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="siteResources" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation source="version">1.0.0</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="siteResource" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:all>
+  </xs:complexType>
+</xs:schema>
