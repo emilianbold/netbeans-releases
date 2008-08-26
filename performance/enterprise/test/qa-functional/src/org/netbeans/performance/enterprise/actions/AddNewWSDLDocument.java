@@ -95,7 +95,6 @@ public class AddNewWSDLDocument extends PerformanceTestCase {
     @Override
     protected void shutdown() {
         super.shutdown();
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
         new EventTool().waitNoEvent(1000);
     }
     

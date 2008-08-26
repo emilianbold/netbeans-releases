@@ -79,16 +79,22 @@ public class RevertModifications implements PropertyChangeListener {
     public boolean showDialog() {
         File[] revertFiles = panel.getRevertFiles();
         DialogDescriptor dialogDescriptor;
-        if (revertFiles.length == 1) {
-            dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertDialog", revertFiles[0].getName())); // NOI18N
-        } else {
-            dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_MultiRevertDialog")); // NOI18N 
-        }
-        dialogDescriptor.setOptions(new Object[] {cancelButton, okButton});
 
-        dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
-        dialogDescriptor.setValid(false);
+        String title;
+        if (revertFiles.length == 1) {
+            title = org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_RevertDialog", revertFiles[0].getName()); // NOI18N
+        } else {
+            title = org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_MultiRevertDialog"); // NOI18N
+        }
+        dialogDescriptor =
+            new DialogDescriptor(panel,
+                title,
+                true,
+                new Object[] {okButton, cancelButton},
+                okButton, 
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(this.getClass()),
+                null);
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     
         if (revertFiles.length == 1) {

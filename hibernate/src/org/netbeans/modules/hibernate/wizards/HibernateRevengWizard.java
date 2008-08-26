@@ -67,7 +67,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
-import org.xml.sax.EntityResolver;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.JDBCMetaDataConfiguration;
@@ -76,7 +75,6 @@ import org.hibernate.cfg.reveng.OverrideRepository;
 import org.hibernate.cfg.reveng.ReverseEngineeringSettings;
 import org.hibernate.tool.hbm2x.HibernateMappingExporter;
 import org.hibernate.tool.hbm2x.POJOExporter;
-import org.hibernate.util.XMLHelper;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.util.CustomClassLoader;
@@ -97,6 +95,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
     private Project project;
     private WizardDescriptor wizardDescriptor;
     private HibernateRevengWizardHelper helper;
+    private HibernateRevengNameLocationWizardDescriptor nameLocationDescriptor;
     private HibernateRevengDbTablesWizardDescriptor dbTablesDescriptor;
     private HibernateRevengCodeGenWizardDescriptor codeGenDescriptor;
     private WizardDescriptor.Panel[] panels;
@@ -107,8 +106,6 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
     private final String MATCH_NAME = "match-name"; // NOI18N
     private final String resourceAttr = "resource"; // NOI18N
     private final String classAttr = "class"; // NOI18N
-    private XMLHelper xmlHelper;
-    private EntityResolver entityResolver;
     private Logger logger = Logger.getLogger(HibernateRevengWizard.class.getName());
 
     public static HibernateRevengWizard create() {
@@ -130,9 +127,10 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
                         };
 
             } else {
-                Project p = Templates.getProject(wizardDescriptor);
-                SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-                WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
+                Project prj = Templates.getProject(wizardDescriptor);
+                
+                SourceGroup[] groups = ProjectUtils.getSources(prj).getSourceGroups(Sources.TYPE_GENERIC);
+                WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(prj, groups, nameLocationDescriptor);
 
                 panels = new WizardDescriptor.Panel[]{
                             targetChooser,
@@ -258,6 +256,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
 
         wiz.putProperty(PROP_HELPER, helper);
         String wizardTitle = NbBundle.getMessage(HibernateRevengWizard.class, "Templates/Hibernate/HibernateReveng"); // NOI18N   
+        nameLocationDescriptor = new HibernateRevengNameLocationWizardDescriptor(project, wizardTitle);
         dbTablesDescriptor = new HibernateRevengDbTablesWizardDescriptor(project, wizardTitle);
         codeGenDescriptor = new HibernateRevengCodeGenWizardDescriptor(project, wizardTitle);
 

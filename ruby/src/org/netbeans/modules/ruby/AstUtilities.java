@@ -283,6 +283,56 @@ public class AstUtilities {
         }
     }
 
+    public static Node getForeignNode(final IndexedElement o, final CompilationInfo[] foreignInfoHolder) {
+        FileObject fo = o.getFileObject();
+        if (fo == null) {
+            return null;
+        }
+
+        SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+        if (model == null) {
+            return null;
+        }
+
+        final Node[] nodeHolder = new Node[1];
+        try {
+            model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+
+                public void cancel() {
+                }
+
+                public void run(CompilationInfo info) throws Exception {
+                    if (foreignInfoHolder != null) {
+                        assert foreignInfoHolder.length == 1;
+                        foreignInfoHolder[0] = info;
+
+                        Node root = AstUtilities.getRoot(info);
+
+                        if (root != null) {
+                            String signature = o.getSignature();
+
+                            if (signature != null) {
+                                Node node = AstUtilities.findBySignature(root, signature);
+
+                                // Special handling for "new" - these are synthesized from "initialize" methods
+                                if ((node == null) && "new".equals(o.getName())) { // NOI18N
+                                    signature = signature.replaceFirst("new", "initialize"); //NOI18N
+                                    node = AstUtilities.findBySignature(root, signature);
+                                }
+
+                                nodeHolder[0] = node;
+                            }
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return nodeHolder[0];
+    }
+
     public static Node getForeignNode(final IndexedElement o, Node[] foreignRootRet) {
         ParserFile file = o.getFile();
 

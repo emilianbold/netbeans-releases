@@ -49,6 +49,7 @@ import java.util.regex.Pattern;
 
 import javax.swing.text.BadLocationException;
 
+import org.jruby.nb.ast.Node;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
@@ -475,7 +476,7 @@ public class GotoTest implements TestLocator {
 
             if (fo != null) {
                 int offset = 0;
-                org.jruby.nb.ast.Node node = AstUtilities.getForeignNode(c, null);
+                org.jruby.nb.ast.Node node = AstUtilities.getForeignNode(c, (Node[])null);
 
                 if (node != null) {
                     offset = node.getPosition().getStartOffset();

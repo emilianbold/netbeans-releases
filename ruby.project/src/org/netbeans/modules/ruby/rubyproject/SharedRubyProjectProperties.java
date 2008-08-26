@@ -74,6 +74,16 @@ public abstract class SharedRubyProjectProperties {
     public static final String JRUBY_PROPS = "jruby.props"; // NOI18N
     public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
+    /**
+     * The key for the names of the rake tasks that invoke RSpec tests and should be
+     * run using the UI test runner.
+     */
+    public static final String SPEC_TASKS = "spec.tasks"; //NOI18N
+    /**
+     * The key for the names of the rake tasks that invoke Test/Unit tests and should be 
+     * run using the UI test runner.
+     */
+    public static final String TEST_TASKS = "test.tasks"; //NOI18N
 
     // External Java integration
     public DefaultListModel JAVAC_CLASSPATH_MODEL;
