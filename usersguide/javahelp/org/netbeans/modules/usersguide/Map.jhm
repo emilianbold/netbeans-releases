@@ -103,9 +103,6 @@
 <mapID target="project.encoding" url="project/proj_encoding.html" />
 
 <mapID target="workspace.window.managing" url="configure/workspace/window_managing.html" />
-<mapID target="configure.menucustomize" url="configure/workspace/menu_customize.html" />
-<mapID target="configure.menucommands" url="configure/workspace/menu_commands.html" />
-<mapID target="configure.menucontextual" url="configure/workspace/menu_contextual.html" />
 <mapID target="configure.tbcustomize" url="configure/workspace/toolbar_customize.html" />
 <mapID target="configure.tbcommands" url="configure/workspace/toolbar_commands.html" />
 
@@ -297,7 +294,6 @@
    <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="files/files_unknown.html" /> 
    <mapID target="objects.object-types" url="files/files_unknown.html" /> 
      
-   <mapID target="org.netbeans.core.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
    <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
 
    <!--nodes for Diff Settings and Diff and Merge Types:-->
@@ -330,7 +326,6 @@
 <mapID target="dbexpovew" url="files/files_runtime.html" />
 
  <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars:-->  
-   <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
    <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
 
 
@@ -393,10 +388,6 @@
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnode" url="pending.html" />
   <!--for Services node and its subnodes in Templates folder:-->
   <mapID target="org.netbeans.core.actions.OptionsAction$TemplatesSubnodeServices" url="pending.html" />
-
-   <!--Write topic to say what you can do with Actions pool?:-->
-   <mapID target="org.netbeans.core.ActionsPoolNode" url="configure/workspace/menu_commands.html" />
-   
  
 <!--found as ID for subfolders of Actions in Options; probably used in other  places as well:-->
    <mapID target="org.openide.explorer.view.TreeTable" url="pending.html" />
