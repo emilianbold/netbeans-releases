@@ -74,51 +74,44 @@ public final class TextProvider extends ComponentProvider {
 
   @Override
   protected JComponent getComponent() {
-    JTextComponent component = getTextComponent();
+    JTextComponent text = getTextComponent();
 
-    if (Config.getDefault().isAsEditor()) {
-      return component;
+    if (text == null) {
+      return null;
     }
-    if (Config.getDefault().isSelection()) {
-      if (component == null) {
-        return null;
-      }
-      String text = component.getSelectedText();
-
-      if (text == null) {
-        return null;
-      }
-      return new ComponentDocument(text);
+    if (Config.getDefault().isAsEditor()) {
+      return text;
     }
     Document document = myEditor.getDocument();
-      
+
     if (document == null) {
       return null;
     }
-    if (document instanceof BaseDocument && document.getLength() < MAX_TEXT_LENGTH) {
-//out();
-//out("GET ITERATOR");
-//out();
+    int start;
+    int end;
+
+    if (Config.getDefault().isSelection()) {
+      start = text.getSelectionStart();
+      end = text.getSelectionEnd();
+    }
+    else {
+      start = 0;
+      end = document.getLength();
+    }
+    int length = end - start;
+      
+    if (document instanceof BaseDocument && length < MAX_LENGTH) {
       PrintContainer container = new PrintContainer();
-      ((BaseDocument) document).print(container, false, true, 0, document.getLength());
+      ((BaseDocument) document).print(container, false, true, start, end);
       return new ComponentDocument(container.getIterators());
     }
     else {
-      String text = getText(document);
-
-      if (text == null) {
+      try {
+        return new ComponentDocument(text.getText(start, length));
+      }
+      catch (BadLocationException e) {
         return null;
       }
-      return new ComponentDocument(text);
-    }
-  }
-
-  private String getText(Document document) {
-    try {
-      return document.getText(0, document.getLength());
-    }
-    catch (BadLocationException e) {
-      return null;
     }
   }
 
@@ -176,5 +169,5 @@ public final class TextProvider extends ComponentProvider {
   }
 
   private EditorCookie myEditor;
-  private static final int MAX_TEXT_LENGTH = 64000;
+  private static final int MAX_LENGTH = 64000;
 }
