@@ -147,7 +147,7 @@ public class WSStackUtils {
         return getServerType(project);
     }
     
-    public WSStack getWsStack(Class stackDescriptor) {
+    public <T> WSStack<T> getWsStack(Class<T> stackDescriptor) {
         if (j2eePlatform != null) {
             return WSStack.findWSStack(j2eePlatform.getLookup(), stackDescriptor);
         }
