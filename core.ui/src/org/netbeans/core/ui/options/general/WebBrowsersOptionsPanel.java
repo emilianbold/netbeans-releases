@@ -63,7 +63,7 @@ public class WebBrowsersOptionsPanel extends JPanel implements ListSelectionList
     }
     
     /** Creates new form WebBrowsersOptionsPanel */
-    public WebBrowsersOptionsPanel(WebBrowsersOptionsModel mdl) {
+    public WebBrowsersOptionsPanel(WebBrowsersOptionsModel mdl, String selectedItem) {
         
         browsersModel = mdl;
         initComponents();
@@ -75,7 +75,7 @@ public class WebBrowsersOptionsPanel extends JPanel implements ListSelectionList
         
         browsersList.setModel(browsersModel);
         browsersList.addListSelectionListener(this);
-        browsersList.setSelectedIndex(0);
+        browsersList.setSelectedValue(selectedItem, true);
         
         fieldDocListener = new BrowsersDocListener();
         addListenerToField();
