@@ -78,6 +78,8 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
@@ -99,6 +101,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 
@@ -402,12 +405,36 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             int caretOffset, TokenSequence tokenSequence){
         List<ASTNode> nodePath = NavUtils.underCaret(info, caretOffset);
         boolean methDecl = false;
+        boolean funcDecl = false;
+        boolean clsDecl = false;
+        boolean isClassInsideFunc = false;
+        boolean isFuncInsideClass = false;
         for (ASTNode aSTNode : nodePath) {
-            if (aSTNode instanceof FunctionDeclaration && !methDecl) {
-                return false;
+            if (aSTNode instanceof FunctionDeclaration) {
+                funcDecl = true;
+                if (clsDecl) isFuncInsideClass = true;
             } else if (aSTNode instanceof MethodDeclaration) {
-                methDecl = true;
+                methDecl = true;            
+            } else if (aSTNode instanceof ClassDeclaration) {
+                clsDecl = true;
+                if (funcDecl) isClassInsideFunc = true;
             }
+        }
+        if (funcDecl && !methDecl && !clsDecl) {
+            final StringBuilder sb = new StringBuilder();
+            new DefaultVisitor(){
+                @Override
+                public void visit(ASTError astError) {
+                    super.visit(astError);
+                    sb.append(astError.toString());
+                }
+            }.scan(Utils.getRoot(info));
+            if (sb.length() == 0) {
+                return false;
+            }
+        }
+        if (isClassInsideFunc && !isFuncInsideClass) {
+            return true;
         }
         int orgOffset = tokenSequence.offset();
         try {
@@ -425,7 +452,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         && (curly_open > curly_close)) {
                     return false;
                 } else if (id.equals(PHPTokenId.PHP_CLASS)) {
-                    boolean isClassScope = curly_open > 0 && (curly_open + curly_close) % 2 == 1;
+                    boolean isClassScope = curly_open > 0 && (curly_open > curly_close);
                     return isClassScope;
                 }
             }
@@ -571,16 +598,20 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
 
     }
+    
+    private static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
+            PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
+            PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
+            PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT,
+            PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT
+            );
    
     private String findLHSExpressionType(TokenSequence<PHPTokenId> tokenSequence,
             PHPCompletionItem.CompletionRequest request){
         int startPos = tokenSequence.offset();
         // find the beginning of the left hand side expression
         
-        while (tokenSequence.token().id() != PHPTokenId.PHP_SEMICOLON 
-                && tokenSequence.token().id() != PHPTokenId.PHP_CURLY_OPEN
-                && tokenSequence.token().id() != PHPTokenId.PHP_CURLY_CLOSE
-                && tokenSequence.token().id() != PHPTokenId.PHP_RETURN
+        while (!CTX_DELIMITERS.contains(tokenSequence.token().id())
                 && findLHSExpressionType_skipArgs(tokenSequence)
                 && tokenSequence.token().id() != PHPTokenId.PHP_TOKEN){
             if (!tokenSequence.movePrevious()){
@@ -607,8 +638,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 
         String preceedingType = null;
         boolean staticContex = false;
-        
-        switch (tokenSequence.token().id()) {
+        PHPTokenId tokenID = tokenSequence.token().id();
+        String varName = "";//NOI18N
+        switch (tokenID) {
             case PHP_SELF:
             case PHP_PARENT:
                 staticContex = true;
@@ -651,7 +683,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 break;
 
             case PHP_VARIABLE:
-                String varName = tokenSequence.token().text().toString();
+                varName = tokenSequence.token().text().toString();
 
                 if ("$this".equalsIgnoreCase(varName)) { //NOI18N
                     ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
@@ -682,6 +714,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
 
+        if (preceedingType == null && tokenID == PHPTokenId.PHP_VARIABLE && varName != null && varName.length() > 0) {
+            VarTypeResolver typeResolver = VarTypeResolver.getInstance(request, varName);
+            preceedingType = typeResolver.resolveType();
+        }
         if (preceedingType == null || tokenSequence.offset() == startPos){
             return preceedingType;
         }
@@ -691,7 +727,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return findLHSExpressionType_recursive(tokenSequence, request,
                 preceedingType, staticContex, startPos);
     }
-    
+
      private boolean findLHSExpressionType_skipArgs(TokenSequence<PHPTokenId> tokenSequence){
         if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
                 && ")".equals(tokenSequence.token().text().toString())){
@@ -729,6 +765,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 type = func.getReturnType();
             }
         }
+
+        tokenSequence.moveNext();
         
         if (type == null || tokenSequence.offset() == startPos)
         {
@@ -759,8 +797,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     tokenSequence.moveNext();
                 } while (!(tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
                         && ")".equals(tokenSequence.token().text().toString()))); //NOI18N
-                
-                tokenSequence.moveNext();
             } else {
                 functionName = null;
             }
@@ -854,7 +890,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             tokenSequence.move(request.anchor);
 
-            if (tokenSequence.movePrevious()){
+            if (typeName == null && tokenSequence.movePrevious()){
                 typeName = findLHSExpressionType(tokenSequence, request);
             }
 

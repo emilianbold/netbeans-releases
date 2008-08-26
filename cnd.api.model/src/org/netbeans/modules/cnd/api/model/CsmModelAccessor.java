@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.api.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 
 /**
@@ -88,12 +89,17 @@ public final class CsmModelAccessor {
             return CsmModelState.OFF;
         }
 
-	public void enqueue(Runnable task) {}
+	public Cancellable enqueue(Runnable task) { return cancellableStub; }
 
-	public void enqueue(Runnable task, CharSequence name) {}
+	public Cancellable enqueue(Runnable task, CharSequence name) { return cancellableStub; }
 	
     }
-    
+
+    private static final Cancellable cancellableStub = new Cancellable() {
+        public boolean cancel() {
+            return true;
+        }
+    };
     /** Creates a new instance of CsmModelAccessor */
     private CsmModelAccessor() {
     }

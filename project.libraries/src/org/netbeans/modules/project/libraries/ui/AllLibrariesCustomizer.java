@@ -54,6 +54,7 @@ import org.netbeans.modules.project.libraries.LibraryAccessor;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -145,7 +146,9 @@ class AllLibrariesCustomizer extends javax.swing.JPanel {
         } else if (index > 0) {
             URL u = null;
             try {
-                u = new File((String) libraryManagerComboBox.getModel().getSelectedItem()).toURL();
+                //#131452 prevent space in path problem when converting to URL.
+                File loc = FileUtil.normalizeFile(new File((String) libraryManagerComboBox.getModel().getSelectedItem()));
+                u = loc.toURI().toURL();
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }

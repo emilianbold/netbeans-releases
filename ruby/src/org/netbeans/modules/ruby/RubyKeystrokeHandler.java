@@ -50,8 +50,8 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import org.jruby.ast.NewlineNode;
-import org.jruby.ast.Node;
+import org.jruby.nb.ast.NewlineNode;
+import org.jruby.nb.ast.Node;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.EditorOptions;
 import org.netbeans.modules.gsf.api.OffsetRange;

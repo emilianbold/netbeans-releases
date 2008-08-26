@@ -84,7 +84,8 @@ public class SVGButtonCD extends ComponentDescriptor {
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
                 MidpCodePresenterSupport.createAddImportPresenter(),
-                new SVGCodeFooter());
+                new SVGCodeFooter()               
+        );
     }
 
     private class SVGCodeFooter extends CodeClassInitHeaderFooterPresenter {
@@ -139,4 +140,5 @@ public class SVGButtonCD extends ComponentDescriptor {
             section.getWriter().write("});\n"); //NOI18N
         }
     }
+    
 }

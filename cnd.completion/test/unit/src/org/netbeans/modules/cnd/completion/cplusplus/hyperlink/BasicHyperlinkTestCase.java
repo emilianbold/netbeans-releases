@@ -393,6 +393,38 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ144360.cc", 13, 15, "IZ144360.cc", 7, 9);
     }
 
+    public void testIZ140795() throws Exception {
+        // IZ#140795 : Usage of enumerators of nested enums
+        // of the template specializations are unresolved
+        performTest("IZ140795.cc", 8, 30, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 9, 29, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 10, 30, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 11, 34, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 12, 36, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 13, 37, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 14, 43, "IZ140795.cc", 4, 16);
+    }
+
+    public void testIZ140757() throws Exception {
+        // IZ#140757 : Template parameter in the definition of the static
+        // template class field is highlighted as an error
+        performTest("IZ140757.cc", 17, 12, "IZ140757.cc", 17, 5);
+        performTest("IZ140757.cc", 18, 29, "IZ140757.cc", 18, 5);
+        performTest("IZ140757.cc", 19, 29, "IZ140757.cc", 19, 5);
+        performTest("IZ140757.cc", 20, 36, "IZ140757.cc", 20, 5);
+        performTest("IZ140757.cc", 21, 12, "IZ140757.cc", 21, 5);
+        performTest("IZ140757.cc", 23, 27, "IZ140757.cc", 17, 5);
+        performTest("IZ140757.cc", 23, 30, "IZ140757.cc", 18, 5);
+        performTest("IZ140757.cc", 23, 33, "IZ140757.cc", 19, 5);
+        performTest("IZ140757.cc", 23, 36, "IZ140757.cc", 20, 5);
+        performTest("IZ140757.cc", 23, 39, "IZ140757.cc", 21, 5);
+        performTest("IZ140757.cc", 24, 22, "IZ140757.cc", 17, 5);
+        performTest("IZ140757.cc", 24, 25, "IZ140757.cc", 18, 5);
+        performTest("IZ140757.cc", 24, 28, "IZ140757.cc", 19, 5);
+        performTest("IZ140757.cc", 24, 31, "IZ140757.cc", 20, 5);
+        performTest("IZ140757.cc", 24, 34, "IZ140757.cc", 21, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

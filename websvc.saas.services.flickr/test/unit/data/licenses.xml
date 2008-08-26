@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <licenses>
+        <license id="4" name="Attribution License"
+		url="http://creativecommons.org/licenses/by/2.0/" />
+        <license id="6" name="Attribution-NoDerivs License"
+		url="http://creativecommons.org/licenses/by-nd/2.0/" />
+        <license id="3" name="Attribution-NonCommercial-NoDerivs License"
+		url="http://creativecommons.org/licenses/by-nc-nd/2.0/" />
+        <license id="2" name="Attribution-NonCommercial License"
+		url="http://creativecommons.org/licenses/by-nc/2.0/" />
+        <license id="1" name="Attribution-NonCommercial-ShareAlike License"
+		url="http://creativecommons.org/licenses/by-nc-sa/2.0/" />
+        <license id="5" name="Attribution-ShareAlike License"
+		url="http://creativecommons.org/licenses/by-sa/2.0/" />
+        <license id="7" name="No known copyright restrictions"
+		url="http://flickr.com/commons/usage/" />
+    </licenses>
+</rsp>

@@ -165,7 +165,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }
 
     private void updateEnabled() {
-        boolean irJRuby = uiProperties.getPlatform().isJRuby();
+        RubyPlatform platform = uiProperties.getPlatform();
+        boolean irJRuby = platform != null && platform.isJRuby();
         jrubyPropsExample.setEnabled(irJRuby);
         jrubyPropsLabel.setEnabled(irJRuby);
         jrubyPropsText.setEnabled(irJRuby);
@@ -176,9 +177,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         platformListener = new PlatformComponentFactory.PlatformChangeListener() {
             public void platformChanged() {
                 RubyPlatform platform = (RubyPlatform) platforms.getSelectedItem();
-                uiProperties.setPlatform(platform);
-                configs.get(getSelectedConfig()).put(RubyProjectProperties.PLATFORM_ACTIVE, platform.getID());
-                updateEnabled();
+                if (platform != null) {
+                    uiProperties.setPlatform(platform);
+                    configs.get(getSelectedConfig()).put(RubyProjectProperties.PLATFORM_ACTIVE, platform.getID());
+                    updateEnabled();
+                }
             }
         };
         PlatformComponentFactory.addPlatformChangeListener(platforms, platformListener);

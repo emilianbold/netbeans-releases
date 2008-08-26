@@ -252,4 +252,8 @@ public class RubyStructureAnalyzerTest extends RubyTestBase {
     public void testLocals() throws Exception {
         checkStructure("testfiles/locals.rb");
     }
+
+    public void testGlobals() throws Exception {
+        checkStructure("testfiles/globals.rb");
+    }
 }

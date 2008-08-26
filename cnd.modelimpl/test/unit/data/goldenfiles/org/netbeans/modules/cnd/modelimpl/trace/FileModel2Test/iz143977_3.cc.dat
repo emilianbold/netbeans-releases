@@ -1,0 +1,70 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE iz143977_3.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+NAMESPACE DEFINITOIN iz143977_3 [1:1/0-20:2/888] SCOPE: iz143977_3.cc
+    CLASS NullType (iz143977_3::NullType ) [2:5/27-2:22/44] lcurly=42 SCOPE: iz143977_3 
+        BASE CLASSES:
+        MEMBERS:
+    STRUCT FactoryImpl<class T1,class T2> (iz143977_3::FactoryImpl ) [3:5/50-3:56/101] lcurly=99 SCOPE: iz143977_3 
+        BASE CLASSES:
+        MEMBERS:
+    STRUCT FactoryImpl<class,NullType> (iz143977_3::FactoryImpl<class,NullType> ) [4:5/107-6:6/200] lcurly=157 SCOPE: iz143977_3 
+        BASE CLASSES:
+        MEMBERS:
+            TYPEDEF Parm_null  [5:9/167-5:36/194] TYPE: iz143977_3::NullType TEXT=NullType  [5:17/175-5:25/183] SCOPE: FactoryImpl 
+    STRUCT FactoryImpl<class,int> (iz143977_3::FactoryImpl<class,int> ) [7:5/206-9:6/293] lcurly=251 SCOPE: iz143977_3 
+        BASE CLASSES:
+        MEMBERS:
+            TYPEDEF Parm_int  [8:9/261-8:35/287] TYPE: iz143977_3::NullType TEXT=NullType  [8:17/269-8:25/277] SCOPE: FactoryImpl 
+    STRUCT Factory<class T,class T2=NullType,class T3=int> (iz143977_3::Factory ) [10:5/299-19:6/885] lcurly=369 SCOPE: iz143977_3 
+        BASE CLASSES:
+        MEMBERS:
+            TYPEDEF Impl1  [11:9/379-11:48/418] TYPE: iz143977_3::FactoryImpl<class,NullType> TEXT=FactoryImpl<T,NullType>  [11:17/387-11:41/411] SCOPE: Factory 
+            TYPEDEF Impl2  [12:9/427-12:43/461] TYPE: iz143977_3::FactoryImpl<class,int> TEXT=FactoryImpl<T,int>  [12:17/435-12:36/454] SCOPE: Factory 
+            TYPEDEF Impl3  [13:9/470-13:42/503] TYPE: iz143977_3::FactoryImpl<class,NullType> TEXT=FactoryImpl<T,T2>  [13:17/478-13:35/496] SCOPE: Factory 
+            TYPEDEF Impl4  [14:9/512-14:42/545] TYPE: iz143977_3::FactoryImpl<class,int> TEXT=FactoryImpl<T,T3>  [14:17/520-14:35/538] SCOPE: Factory 
+            TYPEDEF Parm1  [15:9/554-15:49/594] TYPE: iz143977_3::NullType TEXT=Impl1::Parm_null  [15:26/571-15:42/587] SCOPE: Factory 
+            TYPEDEF Parm1  [16:9/638-16:48/677] TYPE: iz143977_3::NullType TEXT=Impl2::Parm_int  [16:26/655-16:41/670] SCOPE: Factory 
+            TYPEDEF Parm1  [17:9/721-17:49/761] TYPE: iz143977_3::NullType TEXT=Impl3::Parm_null  [17:26/738-17:42/754] SCOPE: Factory 
+            TYPEDEF Parm1  [18:9/805-18:48/844] TYPE: iz143977_3::NullType TEXT=Impl4::Parm_int  [18:26/822-18:41/837] SCOPE: Factory 
+
+========== Dumping model of PROJECT DummyProject
+NAMESPACE DEFINITIONS for iz143977_3 (iz143977_3) 
+    iz143977_3.cc  [1:1/0-20:2/888]
+NAMESPACE iz143977_3 (iz143977_3) 
+    CLASS NullType (iz143977_3::NullType ) [2:5/27-2:22/44] lcurly=42 SCOPE: iz143977_3 
+        BASE CLASSES:
+        MEMBERS:
+    STRUCT FactoryImpl<class T1,class T2> (iz143977_3::FactoryImpl ) [3:5/50-3:56/101] lcurly=99 SCOPE: iz143977_3 
+        BASE CLASSES:
+        MEMBERS:
+    STRUCT FactoryImpl<class,NullType> (iz143977_3::FactoryImpl<class,NullType> ) [4:5/107-6:6/200] lcurly=157 SCOPE: iz143977_3 
+        BASE CLASSES:
+        MEMBERS:
+            TYPEDEF Parm_null  [5:9/167-5:36/194] TYPE: iz143977_3::NullType TEXT=NullType  [5:17/175-5:25/183] SCOPE: FactoryImpl 
+    STRUCT FactoryImpl<class,int> (iz143977_3::FactoryImpl<class,int> ) [7:5/206-9:6/293] lcurly=251 SCOPE: iz143977_3 
+        BASE CLASSES:
+        MEMBERS:
+            TYPEDEF Parm_int  [8:9/261-8:35/287] TYPE: iz143977_3::NullType TEXT=NullType  [8:17/269-8:25/277] SCOPE: FactoryImpl 
+    STRUCT Factory<class T,class T2=NullType,class T3=int> (iz143977_3::Factory ) [10:5/299-19:6/885] lcurly=369 SCOPE: iz143977_3 
+        BASE CLASSES:
+        MEMBERS:
+            TYPEDEF Impl1  [11:9/379-11:48/418] TYPE: iz143977_3::FactoryImpl<class,NullType> TEXT=FactoryImpl<T,NullType>  [11:17/387-11:41/411] SCOPE: Factory 
+            TYPEDEF Impl2  [12:9/427-12:43/461] TYPE: iz143977_3::FactoryImpl<class,int> TEXT=FactoryImpl<T,int>  [12:17/435-12:36/454] SCOPE: Factory 
+            TYPEDEF Impl3  [13:9/470-13:42/503] TYPE: iz143977_3::FactoryImpl<class,NullType> TEXT=FactoryImpl<T,T2>  [13:17/478-13:35/496] SCOPE: Factory 
+            TYPEDEF Impl4  [14:9/512-14:42/545] TYPE: iz143977_3::FactoryImpl<class,int> TEXT=FactoryImpl<T,T3>  [14:17/520-14:35/538] SCOPE: Factory 
+            TYPEDEF Parm1  [15:9/554-15:49/594] TYPE: iz143977_3::NullType TEXT=Impl1::Parm_null  [15:26/571-15:42/587] SCOPE: Factory 
+            TYPEDEF Parm1  [16:9/638-16:48/677] TYPE: iz143977_3::NullType TEXT=Impl2::Parm_int  [16:26/655-16:41/670] SCOPE: Factory 
+            TYPEDEF Parm1  [17:9/721-17:49/761] TYPE: iz143977_3::NullType TEXT=Impl3::Parm_null  [17:26/738-17:42/754] SCOPE: Factory 
+            TYPEDEF Parm1  [18:9/805-18:48/844] TYPE: iz143977_3::NullType TEXT=Impl4::Parm_int  [18:26/822-18:41/837] SCOPE: Factory 
+

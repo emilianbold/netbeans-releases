@@ -209,11 +209,12 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             }
             final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, sup.getLastSeparatorOffset());
             tp.setJava15(true);
-            doc.runAtomic(new Runnable() {
-                public void run() {
-                    CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
-                }
-            });
+            doc.readLock();
+            try {
+                CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
+            } finally {
+                doc.readUnlock();
+            }
             sup.setLastSeparatorOffset(tp.getLastSeparatorOffset());
 //            boolean cont = true;
 //            while (cont) {
@@ -1035,7 +1036,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
                     default: // Regular constant
                         String var = item.getTokenText(0);
-                        int varPos = item.getTokenOffset(0);
+                        int varPos = item.getTokenOffset(0) + item.getTokenLength(0);
                         if (first) { // try to find variable for the first item
                             if (last && !findType) { // both first and last item
                                 CompletionResolver.Result res = null;

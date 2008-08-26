@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <photo id="2619">
+        <tags>
+            <tag id="156" author="12037949754@N01"
+			authorname="Bees" raw="tag 1">tag1
+            </tag>
+            <tag id="157" author="12037949754@N01"
+			authorname="Bees" raw="tag 2">tag2
+            </tag>
+        </tags>
+    </photo>
+</rsp>

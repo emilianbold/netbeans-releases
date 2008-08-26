@@ -25,8 +25,8 @@
           <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="progressPanel" pref="465" max="32767" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="progressPanel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -40,9 +40,9 @@
           </Group>
           <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace min="-2" pref="134" max="-2" attributes="0"/>
-                  <Component id="progressPanel" pref="71" max="32767" attributes="0"/>
-                  <EmptySpace min="-2" pref="134" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="157" max="-2" attributes="0"/>
+                  <Component id="progressPanel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace pref="123" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -54,32 +54,44 @@
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
       </AuxValues>
 
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="1" attributes="0">
+                  <Component id="progressLabel" pref="237" max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="progressBarPanel" min="-2" pref="236" max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Component id="progressBarPanel" alignment="0" pref="19" max="32767" attributes="1"/>
+                      <Component id="progressLabel" alignment="0" min="-2" max="-2" attributes="3"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
       <SubComponents>
         <Component class="javax.swing.JLabel" name="progressLabel">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/subversion/ui/wizards/missingclientstep/Bundle.properties" key="DownloadPanel.progressLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/subversion/client/Bundle.properties" key="DownloadPanel.progressLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
-              <BorderConstraints direction="West"/>
-            </Constraint>
-          </Constraints>
         </Component>
         <Container class="javax.swing.JPanel" name="progressBarPanel">
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
           </AuxValues>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
-              <BorderConstraints direction="Center"/>
-            </Constraint>
-          </Constraints>
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
         </Container>
@@ -94,24 +106,18 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel1" max="32767" attributes="0"/>
+                          <Component id="jLabel1" pref="139" max="32767" attributes="0"/>
                           <EmptySpace min="342" pref="342" max="342" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="acceptCheckBox" max="32767" attributes="0"/>
+                          <Component id="acceptCheckBox" pref="355" max="32767" attributes="0"/>
                           <EmptySpace min="126" pref="126" max="126" attributes="0"/>
                       </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jScrollPane1" alignment="0" pref="465" max="32767" attributes="0"/>
-                              <Component id="jScrollPane2" alignment="0" pref="465" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
+                      <Component id="jScrollPane1" alignment="0" pref="481" max="32767" attributes="0"/>
+                      <Component id="jScrollPane2" alignment="0" pref="481" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
               </Group>
@@ -143,7 +149,7 @@
             <Component class="javax.swing.JTextPane" name="licenseTextPane">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/subversion/ui/wizards/missingclientstep/Bundle.properties" key="DownloadPanel.licenseTextPane.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="" key="DownloadPanel.licenseTextPane.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <AuxValues>
@@ -155,7 +161,7 @@
         <Component class="javax.swing.JCheckBox" name="acceptCheckBox">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/subversion/ui/wizards/missingclientstep/Bundle.properties" key="DownloadPanel.acceptCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/subversion/client/Bundle.properties" key="DownloadPanel.acceptCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
           <AuxValues>

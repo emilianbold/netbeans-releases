@@ -484,6 +484,8 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ144062.cc", 12, 17, "IZ144062.cc", 12, 13);
         performTest("IZ144062.cc", 12, 21, "IZ144062.cc", 11, 18);
         performTest("IZ144062.cc", 14, 8, "IZ144062.cc", 14, 7);
+        performTest("IZ144062.cc", 15, 16, "IZ144062.cc", 15, 5);
+        performTest("IZ144062.cc", 15, 18, "IZ144062.cc", 15, 18);
     }
 
     public void testIZ144679() throws Exception {

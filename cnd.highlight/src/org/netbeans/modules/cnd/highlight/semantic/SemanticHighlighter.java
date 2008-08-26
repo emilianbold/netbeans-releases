@@ -182,4 +182,8 @@ public final class SemanticHighlighter extends HighlighterBase {
     public boolean isValid() {
         return true;
     }
+
+    public boolean isHighPriority() {
+        return false;
+    }
 }

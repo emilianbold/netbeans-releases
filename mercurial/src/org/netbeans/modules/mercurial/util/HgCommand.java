@@ -1063,13 +1063,16 @@ public class HgCommand {
 
         command.add(file.getAbsolutePath());
 
-        List<String> list = exec(command);
+        List<String> list = null;
         try {
             list = exec(command);
-            if (!list.isEmpty() && isErrorAbort(list.get(0)))
+            if (list.isEmpty() || isErrorAbort(list.get(0))) {
                 return null;
+            }
         } catch (HgException e) {
-            return null;
+            Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N
+            Mercurial.LOG.log(Level.WARNING, null, e); // NOI18N
+            throw new HgException(e.getMessage());
         }
         String[] fileNames = list.get(0).split(" ");
         for (int j = fileNames.length -1 ; j > 0; j--) {

@@ -46,16 +46,16 @@ import java.util.List;
 
 import javax.swing.tree.TreeNode;
 
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.ConstDeclNode;
-import org.jruby.ast.DefnNode;
-import org.jruby.ast.DefsNode;
-import org.jruby.ast.GlobalVarNode;
-import org.jruby.ast.ModuleNode;
-import org.jruby.ast.NewlineNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.ClassNode;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.ConstDeclNode;
+import org.jruby.nb.ast.DefnNode;
+import org.jruby.nb.ast.DefsNode;
+import org.jruby.nb.ast.GlobalVarNode;
+import org.jruby.nb.ast.ModuleNode;
+import org.jruby.nb.ast.NewlineNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.openide.util.Enumerations;
 

@@ -39,16 +39,11 @@
 
 package org.netbeans.modules.projectimport.eclipse.gui;
 
-import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
  *
@@ -87,24 +82,7 @@ public class ImportSourceFilters extends ProjectImporterTestCase {
     }
 
     private void validate() {
-        pto = new ProjectsTabOperator();
-        ProjectRootNode projectRoot = null;
-        try {
-            projectRoot = pto.getProjectRootNode(projectName);
-        } catch(TimeoutExpiredException tex) {
-            fail("No project [ "+projectName+" ] loaded");
-        }
-        projectRoot.properties();
-        String propsDialogCaption = Bundle.getString("org.netbeans.modules.apisupport.project.ui.customizer.Bundle", "LBL_CustomizerTitle", new Object[]{projectName});
-        NbDialogOperator propsDialog = null;
-        try {
-            propsDialog = new NbDialogOperator(propsDialogCaption);
-        } catch(TimeoutExpiredException tex) {
-            fail("Unable to open project [ "+projectName+" ] properties dialog");
-        }
-        JTreeOperator tree = new JTreeOperator(propsDialog);
-        TreePath path = tree.findPath("Sources");
-        tree.selectPath(path);
+        NbDialogOperator propsDialog = invokeProjectPropertiesDialog(projectName,"Sources");
         
         String btnCaption = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "CustomizerSources.includeExcludeButton");
         JButtonOperator btn = new JButtonOperator(propsDialog,btnCaption);
@@ -116,24 +94,28 @@ public class ImportSourceFilters extends ProjectImporterTestCase {
         JTextFieldOperator includesBox = new JTextFieldOperator(customizer,1);
         JTextFieldOperator excludesBox = new JTextFieldOperator(customizer,0);
 
-        if(!includesBox.getText().contains(menuPath)) {
+        log(includesBox.getText());
+        log(excludesBox.getText());
+        
+        if(!includesBox.getText().contains("IncludeOne*.java")) {
             fail("Includes doesn't contain expected "+"IncludeOne*.java"+" mask");
         }
-        if(!includesBox.getText().contains(menuPath)) {
+        if(!includesBox.getText().contains("IncludeTwo*.java")) {
             fail("Includes doesn't contain expected "+"IncludeTwo*.java"+" mask");
         }
-        if(!includesBox.getText().contains(menuPath)) {
+        if(!includesBox.getText().contains("IncludeThree*.java")) {
             fail("Includes doesn't contain expected "+"IncludeThree*.java"+" mask");
         } 
-        if(!excludesBox.getText().contains(menuPath)) {
+        if(!excludesBox.getText().contains("ExcludeThree*.java")) {
             fail("Excludes doesn't contain expected "+"ExcludeThree*.java"+" mask");
         }
-        if(!excludesBox.getText().contains(menuPath)) {
+        if(!excludesBox.getText().contains("ExcludeTwo*.java")) {
             fail("Excludes doesn't contain expected "+"ExcludeTwo*.java"+" mask");
         }   
-        if(!excludesBox.getText().contains(menuPath)) {
+        if(!excludesBox.getText().contains("ExcludeOne*.java")) {
             fail("Excludes doesn't contain expected "+"ExcludeOne*.java"+" mask");
         }           
         customizer.close();
+        propsDialog.close();
     }
 }

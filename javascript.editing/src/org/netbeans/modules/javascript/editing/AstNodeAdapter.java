@@ -19,17 +19,17 @@ import java.util.List;
 
 import javax.swing.tree.TreeNode;
 
-//import org.mozilla.javascript.Node;
+//import org.mozilla.nb.javascript.Node;
 //import com.sun.phobos.script.javascript.lang.ast.Node;
 //import com.sun.phobos.script.javascript.lang.ast.PropertyGetNode;
 //import com.sun.phobos.script.javascript.lang.ast.TreeWalker;
 //import com.sun.phobos.script.javascript.lang.ast.VariableNode;
 //import com.sun.semplice.javascript.AstNodeAdapter;
 //import org.netbeans.api.languages.parsing.ParserResult;
-import org.mozilla.javascript.FunctionNode;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.ScriptOrFnNode;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.FunctionNode;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.ScriptOrFnNode;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.openide.util.Enumerations;
 

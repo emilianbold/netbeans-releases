@@ -142,7 +142,7 @@ public class TestCatalogModel extends CatalogWriteModelImpl{
             File file = FileUtil.toFile(fo);
             FileInputStream fis = new FileInputStream(file);
             byte buffer[] = new byte[fis.available()];
-            result = new BaseDocument(BaseKit.class, false);
+            result = new BaseDocument(true, "text/xml"); //NOI18N
             result.remove(0, result.getLength());
             fis.read(buffer);
             fis.close();

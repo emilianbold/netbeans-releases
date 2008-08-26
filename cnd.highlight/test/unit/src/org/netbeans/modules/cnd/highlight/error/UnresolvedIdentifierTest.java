@@ -70,7 +70,7 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("attributes.cpp");
     }
 
-    public void testTepedefTemplate() throws Exception {
+    public void testTypedefTemplate() throws Exception {
         performStaticTest("typedef_templ.cpp");
     }
 
@@ -86,6 +86,14 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("forward_class_decl.cpp");
     }
     
+    public void testTemplateParameterAncestor() throws Exception {
+        performStaticTest("template_parameter_ancestor.cpp");
+    }
+    
+    public void testIZ144873() throws Exception {
+        performStaticTest("iz_144873.cpp");
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
@@ -99,10 +107,6 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
 	protected Class getTestCaseDataClass() {
 	    return UnresolvedIdentifierTest.class;
 	}
-
-        public void testTemplateClassEnum() throws Exception {
-            performStaticTest("template_class_enums.cpp");
-        }
 
     }
 }

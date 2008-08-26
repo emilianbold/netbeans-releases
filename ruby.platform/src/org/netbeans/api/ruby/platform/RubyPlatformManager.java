@@ -296,7 +296,9 @@ public final class RubyPlatformManager {
     /** Typically bundled JRuby. */
     public static RubyPlatform getDefaultPlatform() {
         RubyPlatform defaultPlatform = RubyPlatformManager.getPlatformByID(PLATFORM_ID_DEFAULT);
-        assert defaultPlatform != null : "Cannot find default platform";
+        if (defaultPlatform == null) {
+            LOGGER.fine("Default platform is not installed");
+        }
         return defaultPlatform;
     }
 
