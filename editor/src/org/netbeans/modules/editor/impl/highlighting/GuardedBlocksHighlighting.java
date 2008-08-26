@@ -46,6 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
@@ -65,7 +67,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Vita Stejskal
  */
-public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer implements PropertyChangeListener {
+public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer implements PropertyChangeListener, DocumentListener {
     
     private static final Logger LOG = Logger.getLogger(GuardedBlocksHighlighting.class.getName());
     public static final String LAYER_TYPE_ID = "org.netbeans.modules.editor.oldlibbridge.GuardedBlocksHighlighting"; //NOI18N
@@ -82,6 +84,7 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
         if (document instanceof GuardedDocument) {
             this.guardedBlocksChain = ((GuardedDocument) document).getGuardedBlockChain();
             this.guardedBlocksChain.addPropertyChangeListener(WeakListeners.propertyChange(this, this.guardedBlocksChain));
+            this.document.addDocumentListener(WeakListeners.create(DocumentListener.class, this, this.document));
         } else {
             this.guardedBlocksChain = null;
         }
@@ -118,11 +121,56 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
             fireHighlightsChange(start, end);
         }
     }
+
+    // ----------------------------------------------------------------------
+    //  PropertyChangeListener implementation
+    // ----------------------------------------------------------------------
+
+    public void changedUpdate(DocumentEvent e) {
+        // ignore
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        int changeStart = e.getOffset();
+        int changeEnd = e.getOffset() + e.getLength();
+
+        if (isAffectedByChange(changeStart, changeEnd)) {
+            fireHighlightsChange(changeStart, changeEnd);
+        }
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        int changeStart = e.getOffset();
+        int changeEnd = e.getOffset() + e.getLength();
+
+        if (isAffectedByChange(changeStart, changeEnd)) {
+            fireHighlightsChange(changeStart, changeEnd);
+        }
+    }
     
     // ----------------------------------------------------------------------
     //  Private implementation
     // ----------------------------------------------------------------------
 
+    private boolean isAffectedByChange(int startOffset, int endOffset) {
+        for(MarkBlock b = guardedBlocksChain.getChain(); b != null; b = b.getNext()) {
+            int c = b.compare(startOffset, endOffset);
+            if ((c & MarkBlock.OVERLAP) != 0 || (c & MarkBlock.CONTINUE) != 0) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("<" + startOffset + ", " + endOffset + "> collides with guarded block <" //NOI18N
+                        + b.getStartOffset() + ", " + b.getEndOffset() + ">"); //NOI18N
+                }
+                return true;
+            } else {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("<" + startOffset + ", " + endOffset + "> is outside of guarded block <" //NOI18N
+                        + b.getStartOffset() + ", " + b.getEndOffset() + ">"); //NOI18N
+                }
+            }
+        }
+        return false;
+    }
+    
     private final class HSImpl implements HighlightsSequence {
         
         private final int startOffset;
