@@ -40,6 +40,7 @@ package org.netbeans.api.ruby.platform;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.openide.filesystems.FileUtil;
@@ -68,7 +69,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         assertEquals("platform already present", defPlatform, RubyPlatformManager.addPlatform(defPlatform.getInterpreterFile()));
         assertEquals("was not added twice", 1, RubyPlatformManager.getPlatforms().size());
     }
-    
+
     public void testAddingTheSamePlatformTwice() throws Exception {
         assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
@@ -80,6 +81,15 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         assertEquals("platform removed", 1, RubyPlatformManager.getPlatforms().size());
     }
     
+    public void testBundledPlatformAutodetection() throws IOException {
+        for (RubyPlatform platform : RubyPlatformManager.getPlatforms()) {
+            RubyPlatformManager.removePlatform(platform);
+        }
+        assertEquals("no platform", 0, RubyPlatformManager.getPlatforms().size());
+        RubyPlatformManager.performPlatformDetection();
+        assertNotNull("bundled platform detected", RubyPlatformManager.getDefaultPlatform());
+    }
+    
     public void testGetPlatformByPath() throws Exception {
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         RubyPlatform alsoRuby = RubyPlatformManager.getPlatformByPath(ruby.getInterpreter());
@@ -87,7 +97,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         RubyPlatform jruby = RubyPlatformManager.getPlatformByPath(TestUtil.getXTestJRubyPath());
         assertSame("found by path", RubyPlatformManager.getDefaultPlatform(), jruby);
     }
-    
+
     public void test60PlatformInBuildProperties() throws Exception {
         EditableProperties ep = new EditableProperties();
         ep.setProperty("rubyplatform.ruby_(1_8_6).interpreter", "/a/path/to/ruby");
@@ -98,7 +108,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         fos.close();
         RubyPlatformManager.getDefaultPlatform();
     }
-    
+
     public void testPlatformDetection() throws Exception {
         // sanity-check test
         RubyPlatformManager.performPlatformDetection();
@@ -117,7 +127,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         GemManager gemManager = platform.getGemManager();
         File dummyRepo = new File(getWorkDirPath(), "/a");
         assertEquals("one repositories", 1, gemManager.getRepositories().size());
-        
+
         // add and check
         gemManager.addGemPath(dummyRepo);
         assertEquals("two repositories", 2, gemManager.getRepositories().size());

@@ -136,12 +136,12 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
             tfFileName.getPreferredSize().height));
         tfURL.setText(resolvedLocation);
         tfLineNumber.setText(Integer.toString(orLineNum));
-        
-        
-        conditionsPanel = new NbJSBreakpointConditionsPanel(breakpoint);
+        if ( breakpoint != null ){
+            conditionsPanel = new NbJSBreakpointConditionsPanel(breakpoint);
+        } else {
+            conditionsPanel = new NbJSBreakpointConditionsPanel();
+        }
         cPanel.add(conditionsPanel, "Center");
-//        actionsPanel = new  NbJSBreakpointActionsPanel():
-//        pActions.add (actionsPanel, "Center");
     }
 
     private static int getMaxLineNumber(final FileObject fileObject) {
@@ -333,6 +333,9 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
             
             if (createBreakpoint) {
                 breakpoint = NbJSBreakpointManager.addBreakpoint(line);
+                if( conditionsPanel != null ){
+                    conditionsPanel.setBreakpoint(breakpoint);
+                }
             }
             
             if ( breakpoint instanceof NbJSFileObjectBreakpoint ){
@@ -389,6 +392,8 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
                 return validateURIMsg( sourceName, lineNum);
             else if (breakpoint instanceof NbJSBreakpoint )
                 return validateFileNameMsg(sourceName, lineNum);
+        } else if ( breakpoint == null ){
+            return validateFileNameMsg(sourceName, lineNum);
         }
         return null;
     }
@@ -417,6 +422,9 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
     }
 
     private String validateFileNameMsg(String fileName, int lineNum) {
+        if (fileName == null || fileName.equals("")){
+            return NbBundle.getMessage(NbJSBreakpointPanel.class, "MSG_NotAFILE");
+        }
 
         FileObject fileObject = (breakpoint != null ) ? breakpoint.getFileObject() : null;
         
@@ -425,6 +433,8 @@ public class NbJSBreakpointPanel extends JPanel implements Controller, org.openi
                 fileObject = URLMapper.findFileObject(new URL("file:" + fileName));
             } catch (MalformedURLException e) {
                 Exceptions.printStackTrace(e);
+            } catch ( IllegalArgumentException iae){
+                return NbBundle.getMessage(NbJSBreakpointPanel.class, "MSG_NotAFILE");
             }
         }
         

@@ -494,6 +494,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ144679.cc", 12, 22, "IZ144679.cc", 11, 1);
     }
 
+    public void testIZ145077() throws Exception {
+        // IZ#145077: Internal C++ compiler cannot resolve inner classes
+        performTest("iz145077.cc", 128, 17, "iz145077.cc", 47, 9);
+        performTest("iz145077.cc", 43, 50, "iz145077.cc", 33, 9);
+        performTest("iz145077.cc", 44, 60, "iz145077.cc", 112, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

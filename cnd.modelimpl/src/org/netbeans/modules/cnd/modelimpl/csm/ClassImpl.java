@@ -459,10 +459,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 
         @Override
         public CsmClass getCsmClass() {
+            CsmClass cls = null;
             if (classDefinition != null){
-                return classDefinition.getObject();
+                cls = classDefinition.getObject();
             }
-            return  super.getCsmClass();
+            // we need to replace i.e. ForwardClass stub
+            if (cls != null && cls.isValid()) {
+                return cls;
+            } else {
+                cls = super.getCsmClass();
+                setCsmClass(cls);
+            }
+            return cls;
         }
 
         @Override
@@ -476,7 +484,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }
         
         public void setCsmClass(CsmClass cls) {
-            classDefinition = cls.getUID();
+            classDefinition = cls == null ? null : cls.getUID();
         }
 
         @Override
