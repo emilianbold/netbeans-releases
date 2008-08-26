@@ -57,6 +57,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Nejedly, Marek Slama
  */
+@RandomlyFails // #144747
 public class ReusableEditor2Test extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
@@ -100,7 +101,6 @@ public class ReusableEditor2Test extends NbTestCase {
      * 4. Open first file with ShowOpenType.REUSE
      * 5. Verify second is closed
      */
-    @RandomlyFails
     public void testReuse() {
         openAndCheck(c1, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 1
         openAndCheck(c2, Line.ShowOpenType.REUSE, Line.ShowVisibilityType.NONE); // 2
