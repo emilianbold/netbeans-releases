@@ -51,13 +51,16 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
+import org.netbeans.modules.glassfish.eecommon.api.Utils;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
@@ -89,11 +92,19 @@ public class FastDeploy extends IncrementalDeployment {
      * @param file 
      * @return 
      */
-    public ProgressObject initialDeploy(Target target, J2eeModule app, ModuleConfiguration configuration, File dir) {
-        // !PW FIXME Hack from old V3 plugin for name field.  What is the correct way?
-        String moduleName = dir.getParentFile().getParentFile().getName();
-        Hk2TargetModuleID moduleId = new Hk2TargetModuleID(target, moduleName, 
-                moduleName, dir.getAbsolutePath());
+    public ProgressObject initialDeploy(Target target, J2eeModule module, ModuleConfiguration configuration, File dir) {
+        String moduleName = Utils.computeModuleID(module, dir, Integer.toString(hashCode()));
+        String contextRoot;
+        try {
+            ContextRootConfiguration contextRootConfig = configuration.getLookup().lookup(ContextRootConfiguration.class);
+            contextRoot = contextRootConfig.getContextRoot();
+        } catch(ConfigurationException ex) {
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "Unable to read context-root for " + moduleName, ex);
+            contextRoot = moduleName;
+        }
+        // XXX fix cast -- need error instance for ProgressObject to return errors
+        Hk2TargetModuleID moduleId = new Hk2TargetModuleID((Hk2Target) target, moduleName, 
+                contextRoot, dir.getAbsolutePath());
         MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId);
 
         GlassfishModule commonSupport = dm.getCommonServerSupport();
@@ -107,40 +118,12 @@ public class FastDeploy extends IncrementalDeployment {
                 commonSupport.restartServer(progressObject);
             }
         } catch (IOException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
-                    ex);
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
         } catch (SAXException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
-                    ex);
+            Logger.getLogger("glassfish.javaee").log(Level.WARNING, "http monitor state", ex);
         }
         commonSupport.deploy(progressObject, dir, moduleName);
 
-        return progressObject;
-    }
-    
-    public ProgressObject initialDeploy(Target target,  File dir, String moduleName) {
-        // !PW FIXME Hack from old V3 plugin for name field.  What is the correct way?
-        Hk2TargetModuleID moduleId = new Hk2TargetModuleID(target, moduleName, 
-                moduleName, dir.getAbsolutePath());
-        MonitorProgressObject progressObject = new MonitorProgressObject(dm, moduleId);
-        GlassfishModule commonSupport = dm.getCommonServerSupport();
-        try {
-            boolean restart = HttpMonitorHelper.synchronizeMonitor(
-                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR),
-                    commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
-                    Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
-                    "modules/org-netbeans-modules-schema2beans.jar");
-            if (restart) {
-                commonSupport.restartServer(progressObject);
-            }
-        } catch (IOException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
-                    ex);
-        } catch (SAXException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
-                    ex);
-        }
-        commonSupport.deploy(progressObject, dir, moduleName);
         return progressObject;
     }
     
