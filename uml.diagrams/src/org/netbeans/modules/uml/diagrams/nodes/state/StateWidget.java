@@ -206,8 +206,7 @@ public class StateWidget extends UMLNodeWidget
             eventsWidget.addChild(exitWidget);
         }
 
-        updateTransitions();
-        updateSizeWithOptions();
+        updateTransitions();       
     }
 
     private void updateTransitions()
