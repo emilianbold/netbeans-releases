@@ -41,11 +41,12 @@
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
-import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.TestCatalogModel;
 import org.netbeans.modules.websvc.wsitconf.util.TestUtil;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
@@ -59,6 +60,8 @@ import org.openide.filesystems.FileUtil;
  * @author Martin Grebac
  */
 public class ProfileTest extends NbTestCase {
+
+    public static boolean justGenerate = false;
     
     public ProfileTest(String testName) {
         super(testName);
@@ -74,50 +77,26 @@ public class ProfileTest extends NbTestCase {
         TestCatalogModel.getDefault().setDocumentPooling(false);
     }
 
-    public void testWrite() throws Exception {
+    public void testSecurityProfilesLayout() throws Exception {
         TestCatalogModel.getDefault().setDocumentPooling(true);
         WSDLModel model = TestUtil.loadWSDLModel("../wsdlmodelext/resources/policy.xml");
         
         Definitions d = model.getDefinitions();
         Binding b = (Binding) d.getBindings().toArray()[0];
 
-        String[] profiles10 = new String[] {
-            "",
-            ComboConstants.PROF_TRANSPORT,
-            ComboConstants.PROF_MSGAUTHSSL,
-            ComboConstants.PROF_SAMLSSL,
-            ComboConstants.PROF_USERNAME,
-            ComboConstants.PROF_MUTUALCERT,
-            ComboConstants.PROF_ENDORSCERT,
-            ComboConstants.PROF_SAMLHOLDER,
-            ComboConstants.PROF_STSISSUED,
-            ComboConstants.PROF_STSISSUEDCERT,
-            ComboConstants.PROF_STSISSUEDENDORSE,
-            ComboConstants.PROF_STSISSUEDSUPPORTING
-        };
-
-        String[] profiles13 = new String[] {
-            "",
-            ComboConstants.PROF_TRANSPORT,
-            ComboConstants.PROF_MSGAUTHSSL,
-            ComboConstants.PROF_SAMLSSL,
-            ComboConstants.PROF_USERNAME,
-            ComboConstants.PROF_MUTUALCERT,
-            ComboConstants.PROF_ENDORSCERT,
-            ComboConstants.PROF_SAMLSENDER,
-            ComboConstants.PROF_SAMLHOLDER,
-            ComboConstants.PROF_KERBEROS,
-            ComboConstants.PROF_STSISSUED,
-            ComboConstants.PROF_STSISSUEDCERT,
-            ComboConstants.PROF_STSISSUEDENDORSE,
-            ComboConstants.PROF_STSISSUEDSUPPORTING
-        };
+        Set<SecurityProfile> secProfiles = SecurityProfileRegistry.getDefault().getSecurityProfiles();
 
         for (ConfigVersion cfgV : ConfigVersion.values()) {
-            String[] profileSet = ConfigVersion.CONFIG_1_0.equals(cfgV) ? profiles10 : profiles13;
             String cfgStr = ConfigVersion.CONFIG_1_0.equals(cfgV) ? "10-" : "13-";
-            for (int i=1; i<profileSet.length; i++) {
-                String profile = profileSet[i];
+            ArrayList<String> profiles = new ArrayList();
+            PolicyModelHelper.setConfigVersion(b, cfgV, null);
+            for (SecurityProfile sP : secProfiles) {
+                if (sP.isProfileSupported(null, b, false)) {
+                    profiles.add(sP.getDisplayName());
+                };
+            }
+            for (int i=1; i<profiles.size(); i++) {
+                String profile = profiles.get(i);
                 String profFileName = profile.replaceAll(" ", "");
 
                 //default profile set
@@ -125,30 +104,38 @@ public class ProfileTest extends NbTestCase {
                 SecurityProfile readSP = SecurityProfileRegistry.getDefault().getProfile(profile);
                 assertEquals("Security profile set and read don't match", profile, readSP.getDisplayName());
 
+                String extension = justGenerate ? ".pass" : "";
+                
                 File profWorkDir = new File(getWorkDirPath() + File.separator + profFileName);
                 FileUtil.createFolder(profWorkDir);
                 String fStr = cfgStr + "test";
-                File dumpFile = new File(profWorkDir.getAbsolutePath() + File.separator + fStr);
+                File dumpFile = new File(profWorkDir.getAbsolutePath() + File.separator + fStr + extension);
                 FileUtil.createData(dumpFile);
                 
                 TestUtil.dumpToFile(model.getBaseDocument(), dumpFile);
-                assertFile(dumpFile, TestUtil.getGoldenFile(getDataDir(), profFileName, fStr));
+                if (!justGenerate) {
+                    assertFile(dumpFile, TestUtil.getGoldenFile(getDataDir(), profFileName, fStr));
+                }
 
                 if (readSP instanceof SecureConversationFeature) {
                     ProfilesModelHelper.getInstance(cfgV).setSecureConversation(b, true);     // enable SC
 
-                    dumpFile = new File(profWorkDir.getAbsolutePath() + File.separator + fStr + "SC");
+                    dumpFile = new File(profWorkDir.getAbsolutePath() + File.separator + fStr + "SC" + extension);
                     TestUtil.dumpToFile(model.getBaseDocument(), dumpFile);
-                    assertFile(dumpFile, TestUtil.getGoldenFile(getDataDir(), profFileName, fStr + "SC"));
+                    if (!justGenerate) {
+                        assertFile(dumpFile, TestUtil.getGoldenFile(getDataDir(), profFileName, fStr + "SC"));
+                    }
 
                     readSP = SecurityProfileRegistry.getDefault().getProfile(profile);
                     assertEquals("Security profile with SC set and read don't match", profile, readSP.getDisplayName());
                     
                     ProfilesModelHelper.getInstance(cfgV).setSecureConversation(b, false);     // disable SC
 
-                    dumpFile = new File(profWorkDir.getAbsolutePath() + File.separator + fStr + "AfterSC");
+                    dumpFile = new File(profWorkDir.getAbsolutePath() + File.separator + fStr + "AfterSC" + extension);
                     TestUtil.dumpToFile(model.getBaseDocument(), dumpFile);
-                    assertFile(dumpFile, TestUtil.getGoldenFile(getDataDir(), profFileName, fStr + "AfterSC"));
+                    if (!justGenerate) {
+                        assertFile(dumpFile, TestUtil.getGoldenFile(getDataDir(), profFileName, fStr + "AfterSC"));
+                    }
                 }
 
                 readAndCheck(model, profile);
