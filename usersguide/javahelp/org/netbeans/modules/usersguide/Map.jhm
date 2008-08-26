@@ -294,7 +294,6 @@
    <mapID target="org.netbeans.core.actions.OptionsAction$OptionsPanel$OptionsFilterNode" url="configure/configure_options.html" />
    <mapID target="org.netbeans.core.EnvironmentNode" url="files/files_runtime.html" />
 
-   <mapID target="org.netbeans.core.LoaderPoolNode" url="configure/options_object_types.html" /> 
 <!--nodes in Options | System | Object Types:-->
    <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="files/files_unknown.html" /> 
    <mapID target="objects.object-types" url="files/files_unknown.html" /> 
