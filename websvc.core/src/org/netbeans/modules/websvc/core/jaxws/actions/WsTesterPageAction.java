@@ -56,6 +56,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsTesterCookie;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -158,7 +159,7 @@ public class WsTesterPageAction extends CookieAction {
             if (serverInstanceId != null) {
                 try {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
-                    WSStack wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
+                    WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
                     return wsStack != null && wsStack.isFeatureSupported(JaxWs.Feature.TESTER_PAGE);
                 } catch (InstanceRemovedException ex) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
