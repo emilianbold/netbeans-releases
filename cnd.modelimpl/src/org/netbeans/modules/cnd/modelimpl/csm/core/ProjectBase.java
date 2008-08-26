@@ -365,7 +365,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     // remove the old one if the new one is stronger
                     if ((old instanceof ClassEnumBase) && ((ClassEnumBase) old).shouldBeReplaced(cls)) {
                         if (TraceFlags.TRACE_REGISTRATION) System.err.println("disposing old decl " + old + " UID " + decl.getUID()); //NOI18N
-                        ((ClassImpl) old).dispose();
+                        ((ClassEnumBase) old).dispose();
                     }
                 }
                 getDeclarationsSorage().putDeclaration(decl);

@@ -178,27 +178,25 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
 
     private synchronized void activeConfigurationChanged(final ProjectConfiguration config) {
         LOGGER.log(Level.FINER, "activeConfigurationChanged: {0}", config);
-        listeningToCombo = false;
-        try {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                listeningToCombo = false;
+                try {
                     configListCombo.setSelectedIndex(-1);
                     if (config != null) {
                         ComboBoxModel m = configListCombo.getModel();
                         for (int i = 0; i < m.getSize(); i++) {
                             if (config.equals(m.getElementAt(i))) {
-                                listeningToCombo = false;
                                 configListCombo.setSelectedIndex(i);
-                                listeningToCombo = true;
                                 break;
                             }
                         }
                     }
+                } finally {
+                    listeningToCombo = true;
                 }
-            });
-        } finally {
-            listeningToCombo = true;
-        }
+            }
+        });
     }
     
     private synchronized void activeConfigurationSelected(ProjectConfiguration cfg, ProjectConfigurationProvider ppcp) {

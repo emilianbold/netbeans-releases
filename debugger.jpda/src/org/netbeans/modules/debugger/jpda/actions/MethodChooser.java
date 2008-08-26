@@ -41,14 +41,9 @@
 package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.VirtualMachine;
 
-import com.sun.jdi.event.Event;
-import com.sun.jdi.request.BreakpointRequest;
-import com.sun.jdi.request.EventRequest;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.FocusEvent;
@@ -67,8 +62,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
@@ -78,10 +71,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
 
-import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -94,8 +84,6 @@ import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
-import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
-import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 
 import org.netbeans.spi.debugger.jpda.EditorContext;
@@ -195,8 +183,8 @@ public class MethodChooser implements KeyListener, MouseListener,
         if (selectionIsFinal || operations.length == 1) {
             // perform action directly
             String name = operations[selectedIndex].getMethodName();
-            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex]);
-            return true;
+            boolean success = RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], true);
+            return success;
         }
         // continue by showing method selection ui
         
@@ -247,7 +235,7 @@ public class MethodChooser implements KeyListener, MouseListener,
         if (performAction) {
             performAction = false;
             String name = operations[selectedIndex].getMethodName();
-            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex]);
+            RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], true);
         }
     }
     
