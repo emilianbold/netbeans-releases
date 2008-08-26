@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
@@ -57,6 +58,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
+import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
 
@@ -149,7 +151,7 @@ public class FastDeploy extends IncrementalDeployment {
      * @return 
      */
     public ProgressObject incrementalDeploy(TargetModuleID targetModuleID, AppChangeDescriptor appChangeDescriptor) {
-        MonitorProgressObject progressObject = new MonitorProgressObject(dm, targetModuleID);
+        MonitorProgressObject progressObject = new MonitorProgressObject(dm, targetModuleID,CommandType.REDEPLOY);
         GlassfishModule commonSupport = dm.getCommonServerSupport();
         try {
             boolean restart = HttpMonitorHelper.synchronizeMonitor(
@@ -167,7 +169,16 @@ public class FastDeploy extends IncrementalDeployment {
             Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
                     ex);
         }
-        commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
+        // j2eeserver does this check for "regular" in-place deployment
+        // but not for "on-save" in-place deploymnent
+        if (appChangeDescriptor.classesChanged() || appChangeDescriptor.descriptorChanged() ||
+                appChangeDescriptor.ejbsChanged() || appChangeDescriptor.manifestChanged() ||
+                appChangeDescriptor.serverDescriptorChanged()) {
+            commonSupport.redeploy(progressObject, targetModuleID.getModuleID());
+        } else {
+            progressObject.operationStateChanged(GlassfishModule.OperationState.COMPLETED,
+                    NbBundle.getMessage(FastDeploy.class, "MSG_RedeployUnneeded"));
+        }
         return progressObject;
     }
     
