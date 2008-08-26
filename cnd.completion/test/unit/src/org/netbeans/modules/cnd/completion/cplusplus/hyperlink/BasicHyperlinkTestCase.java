@@ -425,6 +425,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ140757.cc", 24, 34, "IZ140757.cc", 21, 5);
     }
 
+    public void testIZ144363() throws Exception {
+        // IZ#144363 : typename in for-loop leads to unresolved identifier error
+        performTest("IZ144363.cc", 17, 48, "IZ144363.cc", 17, 13);
+        performTest("IZ144363.cc", 18, 15, "IZ144363.cc", 17, 13);
+        performTest("IZ144363.cc", 20, 43, "IZ144363.cc", 9, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
