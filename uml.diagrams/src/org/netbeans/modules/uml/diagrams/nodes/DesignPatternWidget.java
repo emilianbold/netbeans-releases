@@ -60,6 +60,7 @@ import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
+import org.netbeans.modules.uml.core.metamodel.core.foundation.FactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
@@ -111,6 +112,19 @@ public class DesignPatternWidget extends UMLNodeWidget
         getScene().validate();
     }
 
+    @Override
+    public void initializeNode(IPresentationElement presentation, boolean show) {
+        //isShowWidget=show;
+        if(show)
+        {
+            ICollaboration c = (ICollaboration) presentation.getFirstSubject();
+            IParameterableElement parameter = (IParameterableElement) FactoryRetriever.instance()
+                .createType("ParameterableElement", null); // NOI18N
+            c.addTemplateParameter(parameter);
+        }
+        initializeNode(presentation);
+    }
+    
     private DefaultContextPaletteModel initializeContextPalette()
     {
         DefaultContextPaletteModel paletteModel = new DefaultContextPaletteModel(this);
