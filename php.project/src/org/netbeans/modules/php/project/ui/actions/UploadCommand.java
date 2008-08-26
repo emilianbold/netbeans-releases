@@ -40,12 +40,14 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.RemoteSettings;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.TransferInfo;
 import org.netbeans.modules.php.project.connections.ui.TransferFilter;
@@ -98,7 +100,7 @@ public class UploadCommand extends FtpCommand implements Displayable {
             progressHandle.start();
             Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], selectedFiles);
 
-            forUpload = TransferFilter.showUploadDialog(forUpload);
+            forUpload = TransferFilter.showUploadDialog(forUpload, getProject());
             if (forUpload.size() == 0) {
                 return;
             }
@@ -110,6 +112,7 @@ public class UploadCommand extends FtpCommand implements Displayable {
                 transferInfo = remoteClient.upload(sources[0], forUpload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
+                rememberLastUpload(sources[0], selectedFiles);
             }
         } catch (RemoteException ex) {
             processRemoteException(ex);
@@ -128,5 +131,17 @@ public class UploadCommand extends FtpCommand implements Displayable {
 
     public String getDisplayName() {
         return DISPLAY_NAME;
+    }
+
+    // #142955 - but remember only if one of the selected files is source directory
+    //  (otherwise it would make no sense, consider this scenario: upload just one file -> remember timestamp
+    //  -> upload another file or the whole project [timestamp is irrelevant])
+    private void rememberLastUpload(FileObject sources, FileObject[] selectedFiles) {
+        for (FileObject fo : selectedFiles) {
+            if (sources.equals(fo)) {
+                RemoteSettings.setLastUpload(getProject(), TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
+                return;
+            }
+        }
     }
 }
