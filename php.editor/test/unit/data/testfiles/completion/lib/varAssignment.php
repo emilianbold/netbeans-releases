@@ -56,6 +56,32 @@ class clsCVarAssignment {
 
 }
 
+class clsBVarAssignment extends clsAVarAssignment {
+    /**
+     * @return clsAVarAssignment
+     */
+    function bCreateA() {
+        $this1 = $this->aCreateA();
+        $this1->aCreateA();
+        return new clsAVarAssignment();
+    }
+    /**
+     * @return clsCVarAssignment
+     */
+    function bcreateC() {
+        $self1 = self::bCreateA();
+        $self1->aCreateA();
+        return new clsCVarAssignment();
+    }
+    /**
+     * @return clsCVarAssignment
+     */
+    function bcreateB() {
+        $parent1 = parent::aStaticCreateA();
+        $parent1->aCreateA();
+        return new clsCVarAssignment();
+    }
+}
 
 /**
  * @return clsAVarAssignment

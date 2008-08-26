@@ -379,4 +379,13 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testVarAssignment_19() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$cParam2->^", false);
     }
+    public void testVarAssignment_20() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$this1->^", false);
+    }
+    public void testVarAssignment_21() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$parent1->^", false);
+    }
+    public void testVarAssignment_22() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$self1->^", false);
+    }
 }

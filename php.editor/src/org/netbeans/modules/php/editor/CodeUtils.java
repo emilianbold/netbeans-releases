@@ -85,6 +85,13 @@ public class CodeUtils {
         Expression name = instanceCreation.getClassName().getName();
         return (name instanceof Identifier) ? ((Identifier) name).getName() : "";//NOI18N
     }
+    public static String extractClassName(ClassDeclaration clsDeclaration) {
+        return clsDeclaration.getName().getName();
+    }
+    public static String extractSuperClassName(ClassDeclaration clsDeclaration) {
+        Identifier superClass = clsDeclaration.getSuperClass();
+        return (superClass != null) ? superClass.getName():null;
+    }
 
     public static String extractVariableName(Variable var) {
         if (var.getName() instanceof Identifier) {
