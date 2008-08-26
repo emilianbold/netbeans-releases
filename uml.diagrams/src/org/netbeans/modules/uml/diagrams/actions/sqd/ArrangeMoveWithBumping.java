@@ -304,6 +304,20 @@ public class ArrangeMoveWithBumping extends ArrangeMessagesProvider {
             for(MessagePinWidget w:pins)
             {
                 int dFr=0;
+                int currentYWithMargin=w.getPreferredLocation().y+w.getMarginAfter();
+                //check if it's asynch message to self movent, so have unique margin after
+                if(w.getKind()==MessagePinWidget.PINKIND.ASYNCHRONOUS_CALL_OUT)
+                {
+                    if(w.getNumbetOfConnections()>0)
+                    {
+                        MessagePinWidget opposite=(MessagePinWidget) w.getConnection(0).getTargetAnchor().getRelatedWidget();
+                        if(opposite.getParentWidget().getParentWidget()==w.getParentWidget())
+                        {
+                            //message to self
+                            currentYWithMargin+=30;
+                        }
+                    }
+                }
                 toBump=null;
                 Widget parent=w.getParentWidget();
                 if(parent instanceof ExecutionSpecificationThinWidget || parent instanceof LifelineBoxWidget || parent instanceof LifelineLineWidget)
@@ -329,7 +343,8 @@ public class ArrangeMoveWithBumping extends ArrangeMessagesProvider {
                             {
                                 ExecutionSpecificationThinWidget nxtEx=(ExecutionSpecificationThinWidget) parent.getParentWidget().getChildren().get(pos+1);//only execution specs
                                 toBump=(MessagePinWidget) nxtEx.getChildren().get(0);
-                                dFr=(toBump.getPreferredLocation().y-toBump.getMarginBefore())-w.getPreferredLocation().y-w.getMarginAfter();//(parent.getPreferredLocation().y+parent.getClientArea().y+parent.getClientArea().height)-gap;
+                                //
+                                dFr=(toBump.getPreferredLocation().y-toBump.getMarginBefore())-currentYWithMargin;//(parent.getPreferredLocation().y+parent.getClientArea().y+parent.getClientArea().height)-gap;
                             }
                         }
                         else if(parent.getParentWidget() instanceof ExecutionSpecificationThinWidget)
@@ -351,7 +366,7 @@ public class ArrangeMoveWithBumping extends ArrangeMessagesProvider {
                                 {
                                     toBump= (MessagePinWidget) nxtW;
                                 }
-                                dFr=(toBump.getPreferredLocation().y-toBump.getMarginBefore())-w.getPreferredLocation().y-w.getMarginAfter();//(parent.getPreferredLocation().y+parent.getClientArea().y+parent.getClientArea().height)-gap;
+                                dFr=(toBump.getPreferredLocation().y-toBump.getMarginBefore())-currentYWithMargin;//(parent.getPreferredLocation().y+parent.getClientArea().y+parent.getClientArea().height)-gap;
                               }
                         }
                         else if(parent instanceof LifelineBoxWidget)
@@ -375,7 +390,7 @@ public class ArrangeMoveWithBumping extends ArrangeMessagesProvider {
                             if(parent instanceof ExecutionSpecificationThinWidget)
                             {
                                 y_up=Integer.MAX_VALUE;
-                                int y_par=w.getPreferredLocation().y+w.getMarginAfter();//parent.getPreferredLocation().y+parent.getClientArea().y+parent.getClientArea().height;
+                                int y_par=currentYWithMargin;//parent.getPreferredLocation().y+parent.getClientArea().y+parent.getClientArea().height;
                                 int parIndex=parent.getParentWidget().getChildren().indexOf(parent);
                                 if(parIndex<(parent.getParentWidget().getChildren().size()-1))
                                 {
@@ -398,7 +413,6 @@ public class ArrangeMoveWithBumping extends ArrangeMessagesProvider {
                         else
                         {
                             Widget nxtW=parent.getChildren().get(pinPos+1);
-                            //y_up=nxtW.getPreferredLocation().y+nxtW.getClientArea().y;
                             if(nxtW instanceof ExecutionSpecificationThinWidget)
                             {
                                 toBump=(MessagePinWidget) nxtW.getChildren().get(0);
