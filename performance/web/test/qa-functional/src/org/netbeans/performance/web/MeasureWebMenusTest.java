@@ -43,6 +43,7 @@ package org.netbeans.performance.web;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.web.menus.*;
 
 /**
@@ -54,6 +55,8 @@ public class MeasureWebMenusTest {
     
     
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite");
         System.setProperty("suitename", "org.netbeans.performance.web.MeasureWebMenusTest");
 

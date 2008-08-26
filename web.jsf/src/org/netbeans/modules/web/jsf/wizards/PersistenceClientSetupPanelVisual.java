@@ -146,7 +146,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle"); // NOI18N
         jLabel2.setText(bundle.getString("LBL_JSF_pages_folder")); // NOI18N
 
-        browseFolderButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_Browse2").charAt(0));
+        browseFolderButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_Browse").charAt(0));
         browseFolderButton.setText(bundle.getString("LBL_Browse")); // NOI18N
         browseFolderButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

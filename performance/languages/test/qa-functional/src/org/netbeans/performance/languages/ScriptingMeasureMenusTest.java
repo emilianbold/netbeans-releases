@@ -45,6 +45,7 @@ package org.netbeans.performance.languages;
 
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.menus.ScriptingNodePopup;
 import org.netbeans.performance.languages.menus.ScriptingProjectNodePopup;
 
@@ -54,6 +55,8 @@ import org.netbeans.performance.languages.menus.ScriptingProjectNodePopup;
  */
 public class ScriptingMeasureMenusTest {
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Menus suite");
         System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureMenusTest");
 

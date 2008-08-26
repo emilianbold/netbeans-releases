@@ -84,10 +84,10 @@ class NbTestRunner
 
   # run the test mediator for the given suites
   def run_mediator(suites)
-    start_suite_timer
     suites.each do |suite|
       @mediator = Test::Unit::UI::TestRunnerMediator.new(suite)
       attach_listeners
+      start_suite_timer
       begin
         $stdout.print "%SUITE_STARTING% #{suite}\n"
         result = @mediator.run_suite

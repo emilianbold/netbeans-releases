@@ -852,13 +852,6 @@ public class PHPIndex {
         return url.substring("file:".length()); //NOI18N
     }
     
-    static String dequote(String string){
-        assert string.length() >= 2;
-        assert string.startsWith("\"") || string.startsWith("'");
-        assert string.endsWith("\"") || string.endsWith("'");
-        return string.substring(1, string.length() - 1);
-    }
-    
     // copied from JspUtils
     /** Returns an absolute context URL (starting with '/') for a relative URL and base URL.
     *  @param relativeTo url to which the relative URL is related. Treated as directory iff

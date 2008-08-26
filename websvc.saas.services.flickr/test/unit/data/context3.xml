@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <prevphoto id="2980" secret="973da1e709"
+	title="boo!" url="/photos/bees/2980/" />
+    <nextphoto id="2985" secret="059b664012"
+	title="Amsterdam Amstel" url="/photos/bees/2985/" />
+</rsp>

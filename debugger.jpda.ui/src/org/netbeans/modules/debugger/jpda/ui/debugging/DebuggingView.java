@@ -460,7 +460,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         super.componentOpened();
         Mode debuggingMode = WindowManager.getDefault().findMode(this);
         lastSelectedTCRef = new WeakReference(debuggingMode.getSelectedTopComponent());
-        requestActive();
+        requestVisible();
     }
 
     @Override

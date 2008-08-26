@@ -91,11 +91,10 @@ public class WhitelistTest extends JellyTestCase {
     public void testWhitelist() throws Exception {
         BlacklistedClassesHandler bcHandler = BlacklistedClassesHandlerSingleton.getBlacklistedClassesHandler();
         assertNotNull("BlacklistedClassesHandler should be available", bcHandler);
-        if (bcHandler.isGeneratingWhitelist()) {
-            bcHandler.saveWhiteList(getLog("whitelist.txt"));
-        }
+        bcHandler.saveWhiteList(getLog("loadedClasses.txt"));
         try {
-            bcHandler.listViolations(getLog("report.txt"), false);
+            bcHandler.listViolations(getLog("whitelist_violators.txt"), false);
+            bcHandler.listViolations(getLog("report.txt"), false, true);
             assertTrue(bcHandler.reportViolations(getLog("violations.xml")), bcHandler.noViolations());
         } finally {
             bcHandler.unregister();

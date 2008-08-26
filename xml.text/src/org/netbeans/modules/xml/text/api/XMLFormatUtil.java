@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.xml.text.api;
 
 import org.netbeans.editor.BaseDocument;
@@ -47,20 +46,13 @@ import org.netbeans.modules.xml.text.indent.XMLLexerFormatter;
  * @author Sonali
  */
 public class XMLFormatUtil {
-    
-    public static void reformat(BaseDocument doc, int startOffset, int endOffset) {
-        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(doc, startOffset, endOffset);
-        doc.atomicLock();
-        try {
-            doc.replace(0, doc.getLength(),
-            formattedDoc.getText(0, formattedDoc.getLength()), null);
-            
-        } catch(Exception ex) {
-           
-        } finally {
-            doc.atomicUnlock();
-        }
-    }
 
+    public static void reformat(final BaseDocument doc, final int startOffset, final int endOffset) {
+        final XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        doc.runAtomic(new Runnable() {
+            public void run() {
+                formatter.doReformat(doc, startOffset, endOffset);
+            }
+        });
+    }
 }

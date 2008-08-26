@@ -397,6 +397,8 @@ public class AttrSupports {
                 fileNamePart = (lastSlash == valuePart.length())? "": valuePart.substring(lastSlash+1);    // NOI18N
             }
             
+            int anchor = offset - valuePart.length() + lastSlash + 1;  // works even with -1
+            
             try {
                 FileObject orig = sup.getFileObject();
                 FileObject documentBase = JspUtils.guessWebModuleRoot(sup.getDocument(), orig);
@@ -414,12 +416,12 @@ public class AttrSupports {
                 FileObject folder = fs.findResource(ctxPath);
                 if (folder != null) {
                     //add all accessible files from current context
-                    result.addAllItems(files(offset, folder, fileNamePart, sup));
+                    result.addAllItems(files(anchor, folder, fileNamePart, sup));
                     
                     //add go up in the directories structure item
                     if (!folder.equals(documentBase) && !path.startsWith("/") // NOI18N
                             && (path.length() == 0 || (path.lastIndexOf("../")+3 == path.length()))){ // NOI18N
-                        result.addItem(JspCompletionItem.createGoUpFileCompletionItem(offset, java.awt.Color.BLUE, PACKAGE_ICON)); // NOI18N
+                        result.addItem(JspCompletionItem.createGoUpFileCompletionItem(anchor, java.awt.Color.BLUE, PACKAGE_ICON)); // NOI18N
                     }
                 }
             } catch (FileStateInvalidException ex) {
@@ -427,8 +429,6 @@ public class AttrSupports {
             } catch (IllegalArgumentException ex) {
                 // resolving failed
             }
-            
-            int anchor = offset - valuePart.length() + lastSlash + 1;  // works even with -1
             
             result.setAnchorOffset(anchor);
         }

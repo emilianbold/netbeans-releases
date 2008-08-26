@@ -175,6 +175,9 @@ public class SVGList extends SVGComponent implements DataListener {
                 }
             }
         }
+        else if ( source == getModel() ){
+            renderList();
+        }
     }
     
     SVGLocatableElement getHiddenText(){

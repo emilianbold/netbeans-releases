@@ -200,7 +200,7 @@ public class RunProfile implements ConfigurationAuxObject {
             // for gnome-terminal, konsole, and xterm.
             String path = Path.getPathAsString() + 
                 ":/usr/X11/bin:/usr/X/bin:/usr/X11R6/bin:/opt/gnome/bin" + // NOI18N
-                ":/usr/gnome/bin:/opt/kde/bin:/opt/kde3/bin/usr/kde/bin:/usr/openwin/bin"; // NOI18N
+                ":/usr/gnome/bin:/opt/kde/bin:/opt/kde3/bin:/usr/kde/bin:/usr/openwin/bin"; // NOI18N
             
             termPath = searchPath(path, "gnome-terminal", "/usr/bin"); // NOI18N
             if (termPath != null) {

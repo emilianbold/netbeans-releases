@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.customizer;
 
 import java.awt.Dimension;
@@ -57,17 +56,44 @@ import org.openide.util.NbBundle;
 public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 1L;
-
     private String orCondition;
     private int orFilter;
     private HIT_COUNT_FILTERING_STYLE orFilterStyle;
     private NbJSBreakpoint breakpoint;
 
+    public NbJSBreakpointConditionsPanel() {
+        setupPanel();
+
+        orCondition = "";
+        orFilterStyle = HIT_COUNT_FILTERING_STYLE.GREATER;
+        orFilter = 0;
+        initConditionPanel(orCondition, orFilterStyle, orFilter);
+    }
+
     /** Creates new form ConditionsPanel */
     public NbJSBreakpointConditionsPanel(NbJSBreakpoint breakpoint) {
-        initComponents();
-
+        setupPanel();
         this.breakpoint = breakpoint;
+        FileObject fo = null;
+        if (breakpoint != null) {
+            orCondition = breakpoint.getCondition();
+            orFilterStyle = breakpoint.getHitCountFilteringStyle();
+            orFilter = breakpoint.getHitCountFilter();
+            fo = breakpoint.getFileObject();
+        } else {
+            orCondition = "";
+            orFilterStyle = HIT_COUNT_FILTERING_STYLE.GREATER;
+            orFilter = 0;
+        }
+
+        initConditionPanel(orCondition, orFilterStyle, orFilter);
+        if (fo != null) {
+            setupConditionPaneContext(fo.getPath(), breakpoint.getLineNumber());
+        }
+    }
+
+    private void setupPanel() {
+        initComponents();
 
         tfConditionFieldForUI = new javax.swing.JTextField();
         tfConditionFieldForUI.setEnabled(false);
@@ -90,28 +116,17 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
                     tfConditionFieldForUI.getPreferredSize().width,
                     preferredHeight));
         }
-        tfHitCountFilter.setPreferredSize(new Dimension(8 * tfHitCountFilter
-                .getFontMetrics(tfHitCountFilter.getFont()).charWidth('8'),
+        tfHitCountFilter.setPreferredSize(new Dimension(8 * tfHitCountFilter.getFontMetrics(tfHitCountFilter.getFont()).charWidth('8'),
                 tfHitCountFilter.getPreferredSize().height));
-        cbHitStyle.setModel(new javax.swing.DefaultComboBoxModel(new String[] {
-                NbBundle.getMessage(NbJSBreakpointConditionsPanel.class,
-                        "ConditionsPanel.cbWhenHitCount.equals"), // NOI18N
-                NbBundle.getMessage(NbJSBreakpointConditionsPanel.class,
-                        "ConditionsPanel.cbWhenHitCount.greaterThanOrEquals"), // NOI18N
-                NbBundle.getMessage(NbJSBreakpointConditionsPanel.class,
-                        "ConditionsPanel.cbWhenHitCount.multiple") // NOI18N
+        cbHitStyle.setModel(new javax.swing.DefaultComboBoxModel(new String[]{
+                    NbBundle.getMessage(NbJSBreakpointConditionsPanel.class,
+                    "ConditionsPanel.cbWhenHitCount.equals"), // NOI18N
+                    NbBundle.getMessage(NbJSBreakpointConditionsPanel.class,
+                    "ConditionsPanel.cbWhenHitCount.greaterThanOrEquals"), // NOI18N
+                    NbBundle.getMessage(NbJSBreakpointConditionsPanel.class,
+                    "ConditionsPanel.cbWhenHitCount.multiple") // NOI18N
                 // NOI18N
                 }));
-
-        orCondition = breakpoint.getCondition();
-        orFilterStyle = breakpoint.getHitCountFilteringStyle();
-        orFilter = breakpoint.getHitCountFilter();
-        FileObject fo = breakpoint.getFileObject();
-
-        initConditionPanel(orCondition, orFilterStyle, orFilter);
-        if( fo != null  ){
-            setupConditionPaneContext(fo.getPath(), breakpoint.getLineNumber());
-        }
     }
 
     private void initConditionPanel(String condition,
@@ -122,7 +137,6 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
     }
 
     // Data Show:
-
     public void showCondition(boolean show) {
         conditionCheckBox.setVisible(show);
         if (show) {
@@ -160,7 +174,6 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
         NbJSDialogUtil.setupContext(tfCondition, url, line);
     }
 
-
     public String getCondition() {
         if (conditionCheckBox.isSelected()) {
             return tfCondition.getText().trim();
@@ -170,8 +183,7 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
     }
 
     public HIT_COUNT_FILTERING_STYLE getHitCountFilteringStyle() {
-        return HIT_COUNT_FILTERING_STYLE.values()[cbHitStyle
-                .getSelectedIndex()];
+        return HIT_COUNT_FILTERING_STYLE.values()[cbHitStyle.getSelectedIndex()];
     }
 
     public int getHitCount() {
@@ -209,8 +221,7 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
                         "MSG_No_Hit_Count_Filter_Spec");
             }
         }
-        if (conditionCheckBox.isSelected()
-                && tfCondition.getText().trim().length() == 0) {
+        if (conditionCheckBox.isSelected() && tfCondition.getText().trim().length() == 0) {
             return NbBundle.getMessage(NbJSBreakpointConditionsPanel.class,
                     "MSG_No_Condition_Spec");
         }
@@ -355,11 +366,10 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
             tfCondition.setVisible(true);
             spCondition.setVisible(true);
             tfConditionFieldForUI.setVisible(false);
-            if (spCondition.getPreferredSize().height > tfCondition
-                    .getPreferredSize().height) {
-                final int shift = -(spCondition.getPreferredSize().height - tfCondition
-                        .getPreferredSize().height) / 2;
+            if (spCondition.getPreferredSize().height > tfCondition.getPreferredSize().height) {
+                final int shift = -(spCondition.getPreferredSize().height - tfCondition.getPreferredSize().height) / 2;
                 javax.swing.SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         spCondition.getViewport().setViewPosition(
                                 new java.awt.Point(0, shift));
@@ -376,16 +386,15 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
         revalidate();
         repaint();
 
-        // tfConditionFieldForUI.setEnabled(isSelected);
-        // System.err.println("TF Background =
-        // "+tfConditionFieldForUI.getBackground());
-        // tfCondition.setBackground(tfConditionFieldForUI.getBackground());
-        // spCondition.setBorder(tfConditionFieldForUI.getBorder());
+    // tfConditionFieldForUI.setEnabled(isSelected);
+    // System.err.println("TF Background =
+    // "+tfConditionFieldForUI.getBackground());
+    // tfCondition.setBackground(tfConditionFieldForUI.getBackground());
+    // spCondition.setBorder(tfConditionFieldForUI.getBorder());
     }// GEN-LAST:event_conditionCheckBoxActionPerformed
 
     private void cbHitStyleActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cbHitStyleActionPerformed
     }// GEN-LAST:event_cbHitStyleActionPerformed
-
     private javax.swing.JTextField tfConditionFieldForUI;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbHitStyle;
@@ -418,4 +427,7 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
         }
     }
 
+    public void setBreakpoint(NbJSBreakpoint b) {
+        breakpoint = b;
+    }
 }

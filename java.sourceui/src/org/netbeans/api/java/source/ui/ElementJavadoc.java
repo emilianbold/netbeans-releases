@@ -142,6 +142,9 @@ public class ElementJavadoc {
             if (fo != null && fo.isFolder() && linkDoc.getKind() == ElementKind.PACKAGE) {
                 fo = fo.getFileObject("package-info", "java"); //NOI18N
             }
+            if (cpInfo==null && fo == null)
+                //link cannot be resolved by this element
+                return null;
             JavaSource js = fo != null ? JavaSource.forFileObject(fo) : JavaSource.create(cpInfo);
             if (js != null) {
                 js.runUserActionTask(new Task<CompilationController>() {

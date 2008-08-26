@@ -47,8 +47,11 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JViewport;
@@ -131,6 +134,10 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
     private Router edgeRouter;
     private Router selfLinkRouter;
     public static String SceneDefaultWidgetID = "default";
+    
+    private HashSet < IPresentationElement > lockedSelected = 
+            new HashSet < IPresentationElement >();
+            
 
     public DesignerScene(IDiagram diagram,UMLDiagramTopComponent topcomponent)
     {
@@ -561,7 +568,9 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
                                                           boolean canIntersect)
     {
         Set < IPresentationElement > retVal = new HashSet < IPresentationElement >();
-        for(IPresentationElement item : getGraphObjectInRectangle(sceneSelection, canIntersect))
+        for(IPresentationElement item : getGraphObjectInRectangle(sceneSelection, 
+                                                                  true, 
+                                                                  canIntersect))
         {
             if(isEdge(item) == true)
             {
@@ -582,7 +591,8 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
     public Set <IPresentationElement> getNodesInRectangle(Rectangle sceneSelection)
     {
         Set < IPresentationElement > retVal = new HashSet < IPresentationElement >();
-        for(IPresentationElement item : getGraphObjectInRectangle(sceneSelection, false))
+        for(IPresentationElement item : getGraphObjectInRectangle(sceneSelection, 
+                                                                  true, false))
         {
             if(isNode(item) == true)
             {
@@ -598,11 +608,15 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
      * specified in screen coordinates.
      * 
      * @param sceneSelection The area that must contain the nodes and edges.
+     * @param containedOnly Only select nodes and edges that are fully contained.
+     * 
      * @return The nodes and edges in the specified area.
      */
-    public Set <IPresentationElement> getGraphObjectInRectangle(Rectangle sceneSelection, boolean intersectEdges)
+    public Set <IPresentationElement> getGraphObjectInRectangle(Rectangle sceneSelection,
+                                                                boolean intersectNodes,
+                                                                boolean intersectEdges)
     {
-        boolean entirely = sceneSelection.width > 0;
+        //boolean entirely = sceneSelection.width > 0;
         int w = sceneSelection.width;
         int h = sceneSelection.height;
         Rectangle rect = new Rectangle(w >= 0 ? 0 : w, h >= 0 ? 0 : h, w >= 0 ? w : -w, h >= 0 ? h : -h);
@@ -623,9 +637,10 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
             
             if(widget==null)continue;
 
-            if (((isNode == true) && (entirely == true)) || 
+            if (((isNode == true) && (intersectNodes == false)) || 
                 ((isEdge == true) && (intersectEdges == false)))
             {
+                // The node or edge must be entirely contained.  
                 Rectangle widgetRect = widget.convertLocalToScene(widget.getBounds());
                 if (rect.contains(widgetRect) && (object instanceof IPresentationElement))
                 {
@@ -634,6 +649,7 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
             }
             else
             {
+                // The node or edge can intersect the rectangle.
                 if (widget instanceof ConnectionWidget)
                 {
                     ConnectionWidget conn = (ConnectionWidget) widget;
@@ -660,5 +676,45 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         }
         
         return set;
+    }
+    
+    public void addLockedSelected(IPresentationElement element)
+    {
+        lockedSelected.add(element);
+    }
+    
+    public void removeLockSelected(IPresentationElement element)
+    {
+        lockedSelected.remove(element);
+    }
+    
+    public Set < IPresentationElement > getLockedSelected()
+    {
+        return Collections.unmodifiableSet(lockedSelected);
+    }
+    
+    public void clearLockedSelected()
+    {
+        lockedSelected.clear();
+    }
+    
+    public void userSelectionSuggested (Set<?> suggestedSelectedObjects, boolean invertSelection)
+    {
+        Set < IPresentationElement > lockedSet = getLockedSelected();
+
+        HashSet < Object > selection = new HashSet < Object >();
+        if(lockedSet.size() > 0)
+        {
+            selection.addAll(lockedSet);
+        }
+        selection.addAll(suggestedSelectedObjects);
+        
+        // If the selection is inverted then the locked set needs to be cleared.
+        if(invertSelection == true)
+        {
+            clearLockedSelected();
+        }
+        
+        super.userSelectionSuggested(selection, invertSelection);
     }
 }

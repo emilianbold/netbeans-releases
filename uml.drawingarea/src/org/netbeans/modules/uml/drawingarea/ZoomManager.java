@@ -754,14 +754,14 @@ public class ZoomManager implements Scene.SceneListener
             
             KeyStroke[] additionalKeystrokes = 
             {
-                 KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK),
+                 //KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK),
                  KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.CTRL_MASK),
                  KeyStroke.getKeyStroke(KeyEvent.VK_ADD, KeyEvent.CTRL_MASK)
             };
             
             KeyStroke[] additionalMacKeystrokes = 
             {
-                 KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK),
+                 //KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK),
                  KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.META_MASK),
                  KeyStroke.getKeyStroke(KeyEvent.VK_ADD, KeyEvent.CTRL_MASK)
             };          
@@ -821,13 +821,13 @@ public class ZoomManager implements Scene.SceneListener
             
             KeyStroke[] additionalKeystrokes = 
             {
-                 KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK),
+                 //KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK),
                  KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, KeyEvent.CTRL_MASK)
             };
             
             KeyStroke[] additionalMacKeystrokes = 
             {
-                KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK),
+                 //KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, KeyEvent.META_MASK|KeyEvent.SHIFT_MASK),
                  KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, KeyEvent.META_MASK)
             };
             

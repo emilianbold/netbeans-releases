@@ -46,9 +46,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import java.text.AttributedCharacterIterator;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
-
 import javax.swing.JComponent;
 
 import org.netbeans.modules.print.util.Config;
@@ -80,7 +79,7 @@ final class ComponentDocument extends JComponent {
     myTextFont = Config.getDefault().getTextFont();
     myBackgroundColor = Config.getDefault().getBackgroundColor();
     myLineSpacing = Config.getDefault().getLineSpacing();
-    myLines = new LinkedList<ComponentLine>();
+    myLines = new ArrayList<ComponentLine>();
   }
 
   private void prepare(String text) {
@@ -175,7 +174,7 @@ final class ComponentDocument extends JComponent {
   private void prepareWrapLines() {
     myWidth = Config.getDefault().getPageWidth();
 //out("Width: " + myWidth);
-    List<ComponentLine> lines = new LinkedList<ComponentLine>();
+    List<ComponentLine> lines = new ArrayList<ComponentLine>();
 
     for (ComponentLine line : myLines) {
 //out("  see: " + line.getWidth() + " " + line);
@@ -370,6 +369,7 @@ final class ComponentDocument extends JComponent {
 
         if (c == '\r' || c == '\n') {
           if (c == '\r' && myPos < myLength && myValue.charAt(myPos) == '\n') {
+            // Unix - "\n", Windows - "\r\n", Mac - "\r"
             myPos++;
           }
           break;
@@ -383,7 +383,6 @@ final class ComponentDocument extends JComponent {
     private int myLength;
     private String myValue;
     private StringBuffer myBuffer;
-    // { Unix - "\n", Windows - "\r\n", Mac - "\r" }
   }
 
   private int myWidth;

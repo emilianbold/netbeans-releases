@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <photos>
+        <photo id="2801" owner="12037949629@N01"
+		secret="123456" server="1"
+		username="Eric is 'the best'" title="grease" /> 
+        <photo id="2499" owner="33853651809@N01"
+		secret="123456" server="1"
+		username="cal18" title="36679_o" />
+        <photo id="2437" owner="12037951898@N01"
+		secret="123456" server="1"
+		username="georgie parker" title="phoenix9_stewart" />
+    </photos>
+</rsp>

@@ -43,13 +43,14 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.util.Pair;
@@ -69,7 +70,8 @@ public class MemoryCache {
         }
     }
     
-    private final Map<Key, Object> cache;
+    private final Map<Key, Object> cache = new HashMap<Key, Object>(1024);
+    private ReadWriteLock cacheLock = new ReentrantReadWriteLock();
     private Lock refQueueLock;
     private ReferenceQueue refQueue;
     
@@ -78,17 +80,26 @@ public class MemoryCache {
     private int readHitCnt = 0;
     
     public MemoryCache() {
-        cache = new ConcurrentHashMap<Key, Object>(1024);
         refQueueLock = new ReentrantLock();
         refQueue = new ReferenceQueue();
     }
     
     public void hang(Key key, Persistent obj) {
-        cache.put(key, obj);
+        try {
+            cacheLock.writeLock().lock();
+            cache.put(key, obj);
+        } finally {
+            cacheLock.writeLock().unlock();
+        }
     }
     
     public void put(Key key, Persistent obj, boolean primary) {
-        cache.put(key, new SoftValue(obj, key, refQueue));
+        try {
+            cacheLock.writeLock().lock();
+            cache.put(key, new SoftValue(obj, key, refQueue));
+        } finally {
+            cacheLock.writeLock().unlock();
+        }
         if( ! primary ) {
             processQueue();
         }
@@ -96,7 +107,13 @@ public class MemoryCache {
     
     public Persistent get(Key key) {
         readCnt++;
-        Object value = cache.get(key);
+        Object value;
+        try{
+            cacheLock.readLock().lock();
+            value = cache.get(key);
+        } finally {
+            cacheLock.readLock().unlock();
+        }
         if (value instanceof Persistent) {
             readHitCnt++;
             return (Persistent) value;
@@ -111,17 +128,39 @@ public class MemoryCache {
     }
     
     public void remove(Key key) {
-        cache.remove(key);
+        try {
+            cacheLock.writeLock().lock();
+            cache.remove(key);
+        } finally {
+            cacheLock.writeLock().unlock();
+        }
     }
     
     public void clearSoftRefs() {
         //cleanWriteHungObjects(null, false);
         processQueue();
-        Set<Key> keys = new HashSet<Key>(cache.keySet());
+        Set<Key> keys;
+        try{
+            cacheLock.readLock().lock();
+            keys = new HashSet<Key>(cache.keySet());
+        } finally {
+            cacheLock.readLock().unlock();
+        }
         for (Key key : keys) {
-            Object value = cache.get(key);
+            Object value;
+            try{
+                cacheLock.readLock().lock();
+                value = cache.get(key);
+            } finally {
+                cacheLock.readLock().unlock();
+            }
             if (value != null && !(value instanceof Persistent)) {
-                cache.remove(key);
+                try {
+                    cacheLock.writeLock().lock();
+                    cache.remove(key);
+                } finally {
+                    cacheLock.writeLock().unlock();
+                }
             }
         }
     }
@@ -131,11 +170,19 @@ public class MemoryCache {
             try {
                 SoftValue sv;
                 while ((sv = (SoftValue) refQueue.poll()) != null) {
-                    Object value = cache.get(sv.key);
-                    // check if the object has already been added by another thread
-                    // it is more efficient than blocking puts from the disk
-                    if ((value != null) && (value instanceof SoftReference) && (((SoftReference) value).get() == null)) {
-                        cache.remove(sv.key);
+                    Object value;
+                    try{
+                        cacheLock.writeLock().lock();
+                        value = cache.get(sv.key);
+                        // check if the object has already been added by another thread
+                        // it is more efficient than blocking puts from the disk
+                        if ((value != null) && (value instanceof SoftReference) && (((SoftReference) value).get() == null)) {
+                            cache.remove(sv.key);
+                            assert (value != null) && (value instanceof SoftReference) && (((SoftReference) value).get() == null);
+
+                        }
+                    } finally {
+                        cacheLock.writeLock().unlock();
                     }
                 }
             } finally {
@@ -147,13 +194,29 @@ public class MemoryCache {
     public Collection<Pair<Key, Persistent>> clearHungObjects(/*Filter<Key> filter*/) {
         processQueue();
         Collection<Pair<Key, Persistent>> result = new ArrayList<Pair<Key, Persistent>>();
-        for( Iterator<Map.Entry<Key, Object>> iter = cache.entrySet().iterator(); iter.hasNext(); ) {
-            Map.Entry<Key, Object> entry = iter.next();
-            if( entry.getValue() instanceof Persistent ) {
-                //if( filter.accept(entry.getKey()) ) {
-                    result.add(new Pair(entry.getKey(), (Persistent) entry.getValue()));
-                    iter.remove();
-                //}
+        Set<Key> keys;
+        try{
+            cacheLock.readLock().lock();
+            keys = new HashSet<Key>(cache.keySet());
+        } finally {
+            cacheLock.readLock().unlock();
+        }
+        for (Key key : keys) {
+            Object value;
+            try{
+                cacheLock.readLock().lock();
+                value = cache.get(key);
+            } finally {
+                cacheLock.readLock().unlock();
+            }
+            if (value instanceof Persistent ) {
+                result.add(new Pair(key, (Persistent) value));
+                try {
+                    cacheLock.writeLock().lock();
+                    cache.remove(key);
+                } finally {
+                    cacheLock.writeLock().unlock();
+                }
             }
         }
         return result;
