@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -102,6 +103,15 @@ public final class VarTypeResolver {
                 super.scan(node);
                 path.remove(node);
             }
+
+            @Override
+            public void visit(ClassDeclaration node) {
+                assignments.put("$this", Union2.<Variable, String>createSecond(CodeUtils.extractClassName(node)));//NOI18N
+                assignments.put("self", Union2.<Variable, String>createSecond(CodeUtils.extractClassName(node)));//NOI18N
+                assignments.put("parent", Union2.<Variable, String>createSecond(CodeUtils.extractSuperClassName(node)));//NOI18N                
+                super.visit(node);
+            }
+
 
             @Override
             public void visit(FunctionDeclaration node) {
