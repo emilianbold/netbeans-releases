@@ -1,5 +1,5 @@
 Name: SVNClientAdapter Library
-Version: 0.9.23
+Version: 1.4.0
 Description: Integration library for subversion client
 License: Apache-2.0
 OSR: 4077

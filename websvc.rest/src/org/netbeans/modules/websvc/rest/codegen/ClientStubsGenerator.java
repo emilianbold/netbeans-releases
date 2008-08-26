@@ -240,11 +240,11 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 if(path != null && path.startsWith(DEFAULT_HOST) &&
                         i+1 < paths.length && paths[i+1] != null &&
                         paths[i+1].trim().length() > 0) {
-                    return paths[i+1];
+                    return ClientStubModel.normalizeName(paths[i+1]);
                 }
             }
         }
-        return ClientStubModel.normailizeName(appName);
+        return ClientStubModel.normalizeName(appName);
     }
     
     private String findBaseUrl(Project p) {

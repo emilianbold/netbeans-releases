@@ -166,7 +166,7 @@ public class ClientStubModel {
                     }
                     String name = path.replaceAll("/", "");
                     name = name.substring(0, 1).toUpperCase()+name.substring(1);
-                    Resource r = new Resource(name, path);
+                    Resource r = new Resource(normalizeName(name), path);
                     //Methods
                     NodeList methods = RestUtils.getNodeList(resource, "method");
                     if (methods != null && methods.getLength() > 0) {
@@ -299,7 +299,7 @@ public class ClientStubModel {
         return sb.toString();
     }
     
-    public static String normailizeName(final String name) {
+    public static String normalizeName(final String name) {
         //String normalized = name;
         //normalized = normalized.replaceAll("\\p{Punct}", "_");
         //normalized = normalized.replaceAll("\\p{Space}", "_");
@@ -324,7 +324,7 @@ public class ClientStubModel {
             name = RestUtils.findStubNameFromClass(className);
             path = name.substring(0, 1).toLowerCase()+name.substring(1);
         }
-        Resource r = new Resource(name, path);
+        Resource r = new Resource(normalizeName(name), path);
         buildResource(r, rSrc);        
         return r;
     }

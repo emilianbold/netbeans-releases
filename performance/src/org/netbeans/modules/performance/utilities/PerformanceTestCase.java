@@ -81,7 +81,7 @@ import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 public abstract class PerformanceTestCase extends JellyTestCase implements NbPerformanceTest{
     public static final String OPEN_AFTER = "OPEN - after";
     public static final String OPEN_BEFORE = "OPEN - before";
-
+    
 
     private static final boolean logMemory = Boolean.getBoolean("org.netbeans.performance.memory.usage.log");
 
@@ -1102,6 +1102,22 @@ protected static int repeat = 4
             exc.printStackTrace(getLog());
         }
 
+    }
+
+    /**
+     * Workaround for issue 145119. Disables NetBeans status bar effects
+     * Invoke this from suite() method
+     */
+    public static void disableStatusBarEffects() {
+        System.setProperty("org.openide.awt.StatusDisplayer.DISPLAY_TIME", "0");
+    }
+
+    /**
+     * This method should be called from suite() method to initialize 
+     * environment before performance tests are executed
+     */
+    public static void prepareForMeasurements() {
+        disableStatusBarEffects();
     }
 
 }
