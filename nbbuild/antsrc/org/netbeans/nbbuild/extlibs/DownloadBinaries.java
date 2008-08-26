@@ -161,7 +161,7 @@ public class DownloadBinaries extends Task {
                         }
                         File f = new File(manifest.getParentFile(), hashAndFile[1]);
                         if (!clean) {
-                            if (!f.exists()) {
+                            if (!f.exists() || !hash(f).equals(hashAndFile[0])) {
                                 log("Creating " + f);
                                 String cacheName = hashAndFile[0] + "-" + f.getName();
                                 if (cache != null) {
