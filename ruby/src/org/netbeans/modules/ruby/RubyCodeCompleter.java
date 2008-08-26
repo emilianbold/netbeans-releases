@@ -2250,6 +2250,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             if ((prefix.length() == 0) || (first == '$') || showSymbols) {
                 if (prefix.startsWith("$") || showSymbols) {
                     completeGlobals(proposals, request, showSymbols);
+                    // Dollar variables too
+                    completeKeywords(proposals, request, showSymbols);
                     if (!showSymbols) {
                         return completionResult;
                     }
