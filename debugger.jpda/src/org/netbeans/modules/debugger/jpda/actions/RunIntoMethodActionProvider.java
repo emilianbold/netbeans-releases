@@ -44,12 +44,10 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
-import com.sun.jdi.request.StepRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
@@ -79,7 +77,6 @@ import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
-import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
@@ -314,57 +311,6 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         return true;
     }
 
-    /*
-    private static StepRequest setBoundaryStepRequest(final JPDADebuggerImpl debugger,
-                                                      final VirtualMachine vm,
-                                                      ThreadReference trRef,
-                                                      final Executor tracingExecutor) {
-        // We need to also submit a step request so that we're sure that we end up at least on the next execution line
-        final StepRequest boundaryStepRequest = vm.eventRequestManager().createStepRequest(
-            trRef,
-            StepRequest.STEP_LINE,
-            StepRequest.STEP_OVER
-        );
-        boundaryStepRequest.addCountFilter(1);
-        debugger.getOperator().register(boundaryStepRequest, new Executor() {
-
-            public boolean exec(Event event) {
-                destroyBoundaryStepRequest(debugger, boundaryStepRequest);
-                return false;
-            }
-
-            public void removed(EventRequest eventRequest) {
-            }
-        });
-        boundaryStepRequest.setSuspendPolicy(debugger.getSuspend());
-        try {
-            boundaryStepRequest.enable ();
-        } catch (IllegalThreadStateException itsex) {
-            // the thread named in the request has died.
-            debugger.getOperator().unregister(boundaryStepRequest);
-            return null;
-        }
-        return boundaryStepRequest;
-    }
-
-    private static void destroyBoundaryStepRequest(JPDADebuggerImpl debugger,
-                                                   StepRequest boundaryStepRequest) {
-        if (boundaryStepRequest == null) return ;
-        VirtualMachine vm = debugger.getVirtualMachine();
-        if (vm == null) return ;
-        vm.eventRequestManager().deleteEventRequest(boundaryStepRequest);
-        debugger.getOperator().unregister(boundaryStepRequest);
-    }
-     */
-    
-    private static void destroyBoundaryStep(JPDAStep[] boundaryStep) {
-        synchronized (boundaryStep) {
-            if (boundaryStep[0] != null) {
-                ((JPDAStepImpl) boundaryStep[0]).cancel();
-            }
-        }
-    }
-
     private static JPDAStep setBoundaryStepRequest(final JPDADebuggerImpl debugger,
                                                    JPDAThread tr,
                                                    final EventRequest request) {
@@ -391,36 +337,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         final int depth = debugger.getCurrentThread().getStackDepth();
         final JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_INTO);
         step.setHidden(true);
-        final boolean[] methodIsInDisabledSources = new boolean[] { false };
-        step.addPropertyChangeListener(new PropertyChangeListener() {
+        step.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                String propertyName = evt.getPropertyName();
-                if (JPDAStepImpl.PROP_STOPPED_IN_DISABLED_SOURCES.equals(propertyName)) {
-                    if (methodIsInDisabledSources[0]) return ;
-                    JPDAThread t = debugger.getCurrentThread();
-                    int currentDepth = t.getStackDepth();
-                    if (currentDepth == depth + 1) {
-                        if (t.getMethodName().equals(method)
-                            // We've found it :-)
-                                ||
-                            t.getMethodName().equals("<init>") && (t.getClassName().endsWith("."+method) || t.getClassName().equals(method))
-                            // The method can be a constructor
-                            ) {
-
-                            // The method was in disabled sources, let the step finish...
-                            Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                                    fine("traceLineForMethod("+method+") - method reached in disabled sources.");
-                            //step.setHidden(false);
-                            methodIsInDisabledSources[0] = true;
-                            //step.removePropertyChangeListener(this);
-                            //destroyBoundaryStep(boundaryStepPtr);
-                        }
-                    }
-                    return ;
-                }
-                if (!JPDAStep.PROP_STATE_EXEC.equals(propertyName)) {
-                    return ;
-                }
                 if (Logger.getLogger(RunIntoMethodActionProvider.class.getName()).isLoggable(Level.FINE)) {
                     Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
                         fine("traceLineForMethod("+method+") step is at "+debugger.getCurrentThread().getClassName()+":"+debugger.getCurrentThread().getMethodName());
@@ -436,10 +354,9 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                         if (t.getCallStack()[0].getLineNumber("Java") != methodLine) {
                             // We've missed the method :-(
                             step.setHidden(false);
-                            //destroyBoundaryStep(boundaryStepPtr);
                         } else {
                             Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
-                                fine("  back on the method invoaction line, setting additional step into, method is in disabled sources = "+methodIsInDisabledSources[0]);
+                                fine("  back on the method invoaction line, setting additional step into.");
                             step.setDepth(JPDAStep.STEP_INTO);
                             step.addStep(debugger.getCurrentThread());
                         }
@@ -447,17 +364,14 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
                         // We're somewhere strange...
                         step.setHidden(false);
-                        //destroyBoundaryStep(boundaryStepPtr);
                     }
                 } else {
                     if (t.getMethodName().equals(method)) {
                         // We've found it :-)
                         step.setHidden(false);
-                        //destroyBoundaryStep(boundaryStepPtr);
                     } else if (t.getMethodName().equals("<init>") && (t.getClassName().endsWith("."+method) || t.getClassName().equals(method))) {
                         // The method can be a constructor
                         step.setHidden(false);
-                        //destroyBoundaryStep(boundaryStepPtr);
                     } else {
                         if (finishWhenNotFound) {
                             // We've missed the method, finish.
@@ -470,9 +384,6 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                 }
             }
         });
-        //synchronized (tracingStepPtr) {
-        //    tracingStepPtr[0] = step;
-        //}
         step.addStep(debugger.getCurrentThread());
     } 
 
