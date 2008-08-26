@@ -81,7 +81,7 @@ public class ExecutionChecker implements ExecutionResultChecker {
             String clientUrl = config.getProperties().getProperty(CLIENTURLPART, "");
             boolean redeploy = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_REDEPLOY, "true")); //NOI18N
             boolean debugmode = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE)); //NOI18N
-            performDeploy(res, debugmode, clientUrl, moduleUri, redeploy);
+            performDeploy(res, debugmode, moduleUri, clientUrl, redeploy);
         }
     }
 
