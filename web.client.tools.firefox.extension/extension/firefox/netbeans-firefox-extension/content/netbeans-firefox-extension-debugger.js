@@ -241,9 +241,11 @@
         port = _port;
         sessionId = _sessionId;
 
-        jsDebuggerService = FBL.jsd;
+        jsDebuggerService = NetBeans.Utils.CCSV(
+        NetBeans.Constants.jsdIDebuggerServiceCID,
+        NetBeans.Utils.CI("jsdIDebuggerService"));
 
-        firebugDebuggerService = FBL.fbs;
+        firebugDebuggerService = NetBeans.Utils.CC(NetBeans.Constants.FirebugCID).getService().wrappedJSObject;
 
         const socketListener = {
             onDBGPCommand: function(command) {
