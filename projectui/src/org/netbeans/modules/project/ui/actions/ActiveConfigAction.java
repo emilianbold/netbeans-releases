@@ -182,16 +182,16 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
             public void run() {
                 listeningToCombo = false;
                 try {
-                configListCombo.setSelectedIndex(-1);
-                if (config != null) {
-                    ComboBoxModel m = configListCombo.getModel();
-                    for (int i = 0; i < m.getSize(); i++) {
-                        if (config.equals(m.getElementAt(i))) {
-                            configListCombo.setSelectedIndex(i);
-                            break;
+                    configListCombo.setSelectedIndex(-1);
+                    if (config != null) {
+                        ComboBoxModel m = configListCombo.getModel();
+                        for (int i = 0; i < m.getSize(); i++) {
+                            if (config.equals(m.getElementAt(i))) {
+                                configListCombo.setSelectedIndex(i);
+                                break;
+                            }
                         }
                     }
-                }
                 } finally {
                     listeningToCombo = true;
                 }
