@@ -172,11 +172,6 @@ public class CreateWebPackProject extends org.netbeans.modules.performance.utili
         log("::close");
 
         try {
-            new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-        } catch (Exception ex) {
-            log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
-        }
-        try {
             VWPFootprintUtilities.deleteProject(project_name);
         } catch(Exception ee) {
             log("Exception during project deletion: "+ee.getMessage());

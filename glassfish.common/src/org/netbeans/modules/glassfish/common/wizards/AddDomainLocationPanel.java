@@ -84,7 +84,12 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         if (isValidating.compareAndSet(false, true)) {
             try {
                 AddDomainLocationVisualPanel panel = (AddDomainLocationVisualPanel) getComponent();
-                String domainField = panel.getDomainField();
+                String domainField = panel.getDomainField().trim();
+                if (domainField.length() < 1) {
+                    wizard.putProperty(PROP_ERROR_MESSAGE, 
+                            NbBundle.getMessage(this.getClass(), "MSG_MustHaveName",domainField)); // NOI18N
+                    return false;
+                }
                 int dex = domainField.indexOf(File.separator);
                 File domainDirCandidate = new File(gfRoot, "domains" + File.separator + domainField); // NOI18N
                 if (AddServerLocationPanel.isRegisterableV3Domain(domainDirCandidate)) {

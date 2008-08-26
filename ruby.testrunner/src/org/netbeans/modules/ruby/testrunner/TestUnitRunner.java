@@ -52,9 +52,11 @@ import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
+import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities.DefaultTaskEvaluator;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
@@ -176,9 +178,17 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
     }
 
     public void customize(Project project, RakeTask task, ExecutionDescriptor taskDescriptor, boolean debug) {
-        if (!(task.getTask().equals("test") || task.getTask().startsWith("test:"))) { //NOI18N
+        boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.TEST_TASKS, task, new DefaultTaskEvaluator() {
+
+            public boolean isDefault(RakeTask task) {
+                return "test".equals(task.getTask()) || task.getTask().startsWith("test:"); //NOI18N
+            }
+        });
+
+        if (!useRunner) {
             return;
         }
+        
         TestExecutionManager.getInstance().reset();
         // this takes care of loading our custom TestTask, which in turn passes
         // the custom test runner as an option for the task. This is needed since
@@ -197,6 +207,5 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         taskDescriptor.addOutputRecognizer(recognizer);
         taskDescriptor.setReadMaxWaitTime(DEFAULT_WAIT_TIME);
     }
-
 
 }

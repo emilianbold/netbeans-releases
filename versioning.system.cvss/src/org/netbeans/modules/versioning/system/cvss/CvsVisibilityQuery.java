@@ -53,6 +53,7 @@ import javax.swing.event.ChangeEvent;
 import java.util.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 
 /**
  * Hides folders that have 'Localy removed' status.
@@ -78,9 +79,19 @@ public class CvsVisibilityQuery implements VisibilityQueryImplementation2, Versi
     }
 
     public boolean isVisible(FileObject fileObject) {
-        if (fileObject.isData()) return true;
-        File file = FileUtil.toFile(fileObject);
-        return isVisible(file);
+        long t = System.currentTimeMillis();
+        CvsVersioningSystem.LOG.log(Level.FINE, "isVisible {0}", new Object[] { fileObject });
+        boolean ret = true;
+        try {
+            if (fileObject.isData()) return ret;
+            File file = FileUtil.toFile(fileObject);
+            ret = isVisible(file);
+            return ret;
+        } finally {
+            if(CvsVersioningSystem.LOG.isLoggable(Level.FINE)) {
+                CvsVersioningSystem.LOG.log(Level.FINE, "isVisible returns {0} in {1} millis", new Object[] { ret, System.currentTimeMillis() - t });
+            }
+        }
     }
     
     public boolean isVisible(File file) {

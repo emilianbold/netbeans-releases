@@ -322,6 +322,11 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test140758_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue140758.php", "echo $_SERVER[\"^", false);
     }
+    
+    public void testSanitizedCode() throws Exception {
+        checkCompletion("testfiles/sanitize/curly04.php", "$baba = $param^", false);
+    }
+    
     public void testVarAssignment_1() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarA1=$clsVarA->^", false);
     }
@@ -372,5 +377,20 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
     public void testVarAssignment_17() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarCErr->^", false);
+    }
+    public void testVarAssignment_18() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$aParam2->^", false);
+    }
+    public void testVarAssignment_19() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$cParam2->^", false);
+    }
+    public void testVarAssignment_20() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$this1->^", false);
+    }
+    public void testVarAssignment_21() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$parent1->^", false);
+    }
+    public void testVarAssignment_22() throws Exception {
+        checkCompletion("testfiles/completion/lib/varAssignment.php", "$self1->^", false);
     }
 }

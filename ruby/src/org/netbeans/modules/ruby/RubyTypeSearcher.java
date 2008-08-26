@@ -294,7 +294,7 @@ public class RubyTypeSearcher implements TypeSearcher {
         }
 
         public void open() {
-            Node node = AstUtilities.getForeignNode(element, null);
+            Node node = AstUtilities.getForeignNode(element, (Node[])null);
             
             if (node != null) {
                 NbUtilities.open(element.getFileObject(), node.getPosition().getStartOffset(), element.getName());

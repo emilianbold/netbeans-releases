@@ -99,6 +99,7 @@ import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.ErrorManager;
@@ -521,7 +522,7 @@ public class JaxWsUtils {
             if (serverInstance != null) {
                 try {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstance).getJ2eePlatform();
-                    WSStack wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
+                    WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
                     if (wsStack != null) {
                         jsr109Supported =  wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
                         

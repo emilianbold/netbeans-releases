@@ -152,14 +152,13 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         private final Map<String, IdentifierColoring> privateFieldsUsed;
         // for unsed private method: name, identifier
         private final Map<String, IdentifierColoring> privateMethod;
-        // this is holder of blocks, which has to be scanned for usages.
-        private final List<Block> needToScan;
+        // this is holder of blocks, which has to be scanned for usages in the class.
+        private List<Block> needToScan;
 
         public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights) {
             this.highlights = highlights;
             privateFieldsUsed = new HashMap<String, IdentifierColoring>();
             privateMethod = new HashMap<String, IdentifierColoring>();
-            needToScan = new ArrayList<Block>();
         }
 
         private OffsetRange createOffsetRange(ASTNode node) {
@@ -174,6 +173,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             Identifier name = cldec.getName();
             OffsetRange or = new OffsetRange(name.getStartOffset(), name.getEndOffset());
             highlights.put(or, ColoringAttributes.CLASS_SET);
+            needToScan = new ArrayList<Block>();
             if (cldec.getBody() != null) {
                 cldec.getBody().accept(this);
 
