@@ -93,7 +93,7 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         lblPattern = new javax.swing.JLabel();
         btnDefaultIgnored = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        txtPattern = new javax.swing.JTextPane();
+        txtPattern = new javax.swing.JTextArea();
         txtPatternError = new javax.swing.JTextPane();
 
         lblExtension.setLabelFor(cbExtension);
@@ -160,6 +160,8 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
 
         jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        txtPattern.setLineWrap(true);
         jScrollPane1.setViewportView(txtPattern);
         txtPattern.getAccessibleContext().setAccessibleParent(this);
 
@@ -211,8 +213,8 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                             .add(layout.createSequentialGroup()
                                 .add(10, 10, 10)
                                 .add(lblPattern)
-                                .add(37, 37, 37)
-                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                                .add(41, 41, 41)
+                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                                 .add(btnDefaultIgnored))))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
@@ -409,7 +411,7 @@ private void btnDefaultIgnoredActionPerformed(java.awt.event.ActionEvent evt) {/
     private javax.swing.JLabel lblType;
     private javax.swing.JSeparator sepFileAssociations;
     private javax.swing.JSeparator setFilesIgnored;
-    private javax.swing.JTextPane txtPattern;
+    private javax.swing.JTextArea txtPattern;
     private javax.swing.JTextPane txtPatternError;
     // End of variables declaration//GEN-END:variables
 
