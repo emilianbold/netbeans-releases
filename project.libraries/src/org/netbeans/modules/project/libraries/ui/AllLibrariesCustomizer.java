@@ -148,7 +148,7 @@ class AllLibrariesCustomizer extends javax.swing.JPanel {
             try {
                 //#131452 prevent space in path problem when converting to URL.
                 File loc = FileUtil.normalizeFile(new File((String) libraryManagerComboBox.getModel().getSelectedItem()));
-                u = loc.toURI().to`URL();
+                u = loc.toURI().toURL();
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
             }

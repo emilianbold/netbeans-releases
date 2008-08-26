@@ -267,14 +267,26 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
          * Line index that should be excluded from whitespace removal (line with caret)
          * or -1 for none.
          */
-        private final int excludeLineIndex;
+        private final int caretLineIndex;
+
+        /**
+         * Shift offset of the caret relative to caretLineIndex's line begining.
+         */
+        private final int caretRelativeOffset;
 
         ModsProcessor() {
             lineElementRoot = DocumentUtilities.getParagraphRootElement(doc);
             JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
-            excludeLineIndex = (lastFocusedComponent != null && lastFocusedComponent.getDocument() == doc)
-                    ? lineElementRoot.getElementIndex(lastFocusedComponent.getCaretPosition())
-                    : -1;
+            if (lastFocusedComponent != null && lastFocusedComponent.getDocument() == doc) {
+                int caretOffset = lastFocusedComponent.getCaretPosition();
+                caretLineIndex = lineElementRoot.getElementIndex(caretOffset);
+                // Assign the relativeCaretOffset since the subsequent modifications
+                // done by physical whitespace removal would make the absolute offsets unusable.
+                caretRelativeOffset = caretOffset - lineElementRoot.getElement(caretLineIndex).getStartOffset();
+            } else {
+                caretLineIndex = -1;
+                caretRelativeOffset = 0;
+            }
         }
 
         void removeWhitespace() {
@@ -325,14 +337,16 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         }
 
         private void removeWhitespaceOnLine() {
-            if (lineIndex == excludeLineIndex) {
+            int startOffset = lineStartOffset; // lowest offset where WS can be removed
+            if (lineIndex == caretLineIndex) {
+                startOffset += caretRelativeOffset;
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Line index " + lineIndex + " excluded from whitespace removal.\n"); // NOI18N
+                    LOG.fine("Line index " + lineIndex + " contains caret at relative offset " + // NOI18N
+                            caretRelativeOffset + ".\n"); // NOI18N
                 }
-                return;
             }
             int offset;
-            for (offset = lineLastOffset - 1; offset >= lineStartOffset; offset--) {
+            for (offset = lineLastOffset - 1; offset >= startOffset; offset--) {
                 char c = docText.charAt(offset);
                 // Currently only remove ' ' and '\t' - may be revised
                 if (c != ' ' && c != '\t') {

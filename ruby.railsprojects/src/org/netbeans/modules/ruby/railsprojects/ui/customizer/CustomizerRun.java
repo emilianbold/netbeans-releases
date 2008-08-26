@@ -293,7 +293,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }
 
     private void selectServer(String serverId) {
-        RubyInstance server = ServerRegistry.getDefault().getServer(serverId, uiProperties.getPlatform());
+        RubyPlatform platform = uiProperties.getPlatform();
+        if (platform == null) {
+            return;
+        }
+        RubyInstance server = ServerRegistry.getDefault().getServer(serverId, platform);
         if (server != null) {
             serverComboBox.setSelectedItem(server);
         }
@@ -553,10 +557,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_platformsActionPerformed
 
     private void initServerComboBox(){
-        serverComboBox.setModel(new RailsServerManager.ServerListModel(getPlatform()));
-        String serverID = configs.get(getSelectedConfig()).get(RailsProjectProperties.RAILS_SERVERTYPE);
-        if (serverID != null) {
-            selectServer(serverID);
+        if (getPlatform() == null) {
+            serverComboBox.setModel(new DefaultComboBoxModel());
+        } else {
+            serverComboBox.setModel(new RailsServerManager.ServerListModel(getPlatform()));
+            String serverID = configs.get(getSelectedConfig()).get(RailsProjectProperties.RAILS_SERVERTYPE);
+            if (serverID != null) {
+                selectServer(serverID);
+            }
         }
     }
     

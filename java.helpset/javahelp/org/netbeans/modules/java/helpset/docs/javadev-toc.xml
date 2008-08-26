@@ -193,9 +193,12 @@
         </tocitem>
         <tocitem text="Working with Hibernate">
             <tocitem text="About Hibernate Support" target="hibernate_about"/>
+            <tocitem text="Working with Hibernate" target="hibernate_workingwith"/>
             <tocitem text="Adding Hibernate Support to a Project" target="hibernate_add"/>
             <tocitem text="Creating a Hibernate Configuration File" target="hibernate_cfg"/>
             <tocitem text="Editing the Hibernate Configuration File" target="hibernate_cfgedit"/>
+            <tocitem text="Creating Hibernate Mapping Files" target="hibernate_map"/>
+            <tocitem text="Generating Hibernate Mapping Files and POJOs from a Database" target="hibernate_fromdb"/>
             <tocitem text="Using the Hibernate Query Language Editor" target="hibernate_hql"/>
             <tocitem text="Creating a Hibernate Utility Helper File" target="hibernate_util"/>
         </tocitem>

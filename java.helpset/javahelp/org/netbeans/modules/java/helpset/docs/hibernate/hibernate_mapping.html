@@ -15,42 +15,47 @@
         
         <h2>Creating Hibernate Mapping Files</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <!--
-        <p>To use Hibernate your application must have the <tt>hibernate.cfg.xml</tt> 
-         configuration file. 
-         The <tt>hibernate.cfg.xml</tt> configuration file contains the database connection details 
-         enabling the application to connect to a database.
-         The file also contains information about the location of Hibernate mapping files.
-         Edit this file if you need to change the database connection details.</p>
-
-         <p>The Hibernate configuration file is created automatically if you create a web application and 
-         you select the Hibernate framework in the New Project wizard.</p>
+        <p>Hibernate mapping files are XML files that contain object relational mapping (ORM) data that Hibernate 
+        uses to determine how classes are mapped to table columns and primary keys.</p>
+            
+        <p>You can use the following wizards to generate Hibernate mapping files:</p>
+        
+        <ul>
+            <li><strong>Hibernate Mapping Files.</strong>
+            This wizard generates a single mapping file for a specified class.
+            After you create the mapping file you need to edit the mapping file 
+            in the XML editor to map the fields in the class to the corresponding columns in the table.
+            You can use the IDE's code completion feature to help you edit the mapping file. </li>
+            <li><strong>POJOs and Hibernate Mapping Files from Database.</strong> 
+            If you use this wizard you can set the option for the IDE to automatically generate 
+            Hibernate mapping files for the tables you select in the wizard.
+            The wizard automatically modifies the Hibernate configuration file
+            to specify the Hibernate mapping files.</li>
+        </ul>
          
-         <p>You can also create this file using the New File wizard
-         if you want to use Hibernate in your application, for example in
-         a Java SE application.</p>
+
            
-           <p><b>To create <tt>hibernate.cfg.xml</tt> using the New File wizard:</b></p>
+           <p><b>To create a Hibernate mapping file for a class:</b></p>
             <ol>
-               <li>Open the New File wizard.</li>
-               <li>Select Hibernate from the Categories list and Hibernate Configuration File from the File Types list. Click Next.</li>
-               <li>Type hibernate.cfg for the class name. Click Next.</li>
-               <li>Select a Database Connection from the dropdown list. Click Finish.</li>
+               <li>Right-click the package node containing the class to be mapped and choose New &gt; Other to open the New File wizard.</li>
+               <li>Select Hibernate from the Categories list and Hibernate Mapping File from the File Types list. Click Next.</li>
+               <li>Type <i>&lt;CLASS_NAME&gt;</i>.hbm for the file name, where <i>&lt;CLASS_NAME&gt;</i>
+               is the name of the class that you want to map. Click Next.</li>
+               <li>Specify the Class that you want to map to a table.
+               <p>You can click the button to locate the class.</p></li>
+               <li>Choose the corresponding database table from the dropdown list.
+               Click Finish.</li>
             </ol>
         
-            <p>When you click Finish, the file <tt>hibernate.cfg.xml</tt> is created in a source package with the name
-            <tt>&lt;default package&gt;</tt> and the file opens in the Source Editor.</p>
-            <ul class="note">
-                <li>In a web application the hibernate configuration file is also visible under the Configuration Files node
-                in the Projects window.</li>
-            </ul>
-        -->
+            <p>When you click Finish, the mapping file is created in the source package you specified 
+            and the file opens in the Source Editor.
+            The Hibernate configuration file is modified to specify the mapping file.</p>
         
         <dl>
         <dt><a name="seealso">See Also</a></dt>
         <dd><a href="hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
         <dd><a href="hibernate_cfgedit.html">Editing the Hibernate Configuration File</a> </dd>
-        <dd><a href="hibernate_support.html">Adding Hibernate Support to a Project</a></dd>
+        <dd><a href="hibernate_addsupport.html">Adding Hibernate Support to a Project</a></dd>
         <dd><a href="hibernate_about.html">About Hibernate Support</a> </dd>
         </dl>
         

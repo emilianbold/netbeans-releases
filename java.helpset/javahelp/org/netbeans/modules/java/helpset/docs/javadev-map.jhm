@@ -498,6 +498,8 @@
     <mapID target="hibernate_fromdb" url="hibernate/hibernate_fromdb.html" />
     <mapID target="hibernate_util" url="hibernate/hibernate_util.html" />
     <mapID target="hibernate_hql" url="hibernate/hibernate_hql.html" />
+    <mapID target="hibernate_map" url="hibernate/hibernate_mapping.html" />
+    <mapID target="hibernate_workingwith" url="hibernate/hibernate_workingwith.html" />
 
 <!-- Hibernate topics CSH -->
     

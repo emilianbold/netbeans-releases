@@ -56,16 +56,12 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
-import org.openide.util.NbBundle;
 
 /**
  * Implementation of the hyperlink provider for C/C++ language.
@@ -105,18 +101,18 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             return false;
         }
         Token<CppTokenId> jumpToken = getJumpToken();
-        CsmOffsetable item = findTargetObject(doc, jumpToken, offset, true);
+        CsmOffsetable item = (CsmOffsetable) findTargetObject(doc, jumpToken, offset, true);
         return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
     }
 
-    /*package*/ CsmOffsetable findTargetObject(final Document doc, final Token jumpToken, final int offset, boolean toBestTarget) {
-        CsmOffsetable item = null;
+    /*package*/ CsmObject findTargetObject(final Document doc, final Token jumpToken, final int offset, boolean toOffsetable) {
+        CsmObject item = null;
         assert jumpToken != null;
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         CsmObject csmObject = file == null ? null : ReferencesSupport.findDeclaration(file, doc, jumpToken, offset);
-        if (toBestTarget && csmObject != null) {
+        if (csmObject != null) {
             // convert to jump object
-            item = toJumpObject(csmObject, file, offset);
+            item = toOffsetable ? toJumpObject(csmObject, file, offset) : csmObject;
         }
         return item;
     }
@@ -198,31 +194,8 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     }
     
     protected String getTooltipText(Document doc, Token token, int offset) {
-        CsmOffsetable item = findTargetObject(doc, token, offset, false);
-        String msg = getItemString(item);
+        CsmObject item = findTargetObject(doc, token, offset, false);
+        String msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
         return msg;
-    }
-    
-    private String getItemString(CsmObject item) {
-        String displayName = null;
-        if (CsmKindUtilities.isNamedElement(item)) {
-            displayName = ((CsmNamedElement)item).getName().toString();
-        }
-        if (displayName != null) {
-            displayName = CsmDisplayUtilities.htmlize(displayName);
-        }
-        if (CsmKindUtilities.isClassMember(item)) {
-            if (displayName == null) {
-                displayName = "";
-            }
-		    CsmClass cls = ((CsmMember)item).getContainingClass();
-		    if (cls != null && cls.getName().length()>0) {
-                String className = CsmDisplayUtilities.htmlize(cls.getName().toString());
-                displayName = NbBundle.getMessage(CsmHyperlinkProvider.class, "TOOLTIP_MSG_MEMBER", displayName,  className); //NOI18N
-            }
-        }
-        return displayName;
-    }
-    
-    
+    }    
 }

@@ -69,6 +69,7 @@ public class PaletteButton extends JPanel
     private ContextPaletteButtonModel model = null;
     private WidgetAction[] actions = null;
     private String currentTool = "";
+    private boolean recordedCurrentTool = false; 
     private PaletteDirection direction = PaletteDirection.RIGHT;
     private boolean filler = true;
     private ArrayList < ContextButtonListener > listeners = 
@@ -249,6 +250,7 @@ public class PaletteButton extends JPanel
             if(scene.getActiveTool().equals(DesignerTools.CONTEXT_PALETTE) != true)
             {
                 currentTool = scene.getActiveTool();
+                recordedCurrentTool = true;
             }
             
             scene.setActiveTool(DesignerTools.CONTEXT_PALETTE);
@@ -324,8 +326,11 @@ public class PaletteButton extends JPanel
             finally
             {
                 //need to be sure to restore tools etc even if something fails in event handling
-                scene.setActiveTool(currentTool);
-            
+                if (recordedCurrentTool) 
+                {
+                    scene.setActiveTool(currentTool);
+                    recordedCurrentTool = false;
+                }
                 removeMouseListener(this);
                 removeMouseMotionListener(this);
             }
@@ -364,7 +369,11 @@ public class PaletteButton extends JPanel
         public State mouseReleased(Widget widget, WidgetMouseEvent event)
         {
             State state =  delegatedAction.mouseReleased(widget, event);
-            actionTarget.getScene().setActiveTool(currentTool);
+            if (recordedCurrentTool) 
+            {
+                actionTarget.getScene().setActiveTool(currentTool);
+                recordedCurrentTool = false;
+            }
             return fireWidgetActionHandedEvent(state);
         }
 

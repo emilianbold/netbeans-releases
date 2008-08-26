@@ -67,7 +67,6 @@ public class IterateSelectAction extends WidgetAction.Adapter
             if(event.getKeyCode() == KeyEvent.VK_UP)
             {
                 toSelect = findPreviousSelectedWidget(widget);
-                System.out.println("Here");
                 retVal = State.CONSUMED;
             }
             else if(event.getKeyCode() == KeyEvent.VK_DOWN)

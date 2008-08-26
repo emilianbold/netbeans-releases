@@ -62,9 +62,11 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
     private boolean componentInitialized;
     private WizardDescriptor wizardDescriptor;
     private Project project;
+    private String title;
 
-    public HibernateRevengDbTablesWizardDescriptor(Project project) {
+    public HibernateRevengDbTablesWizardDescriptor(Project project, String title) {
         this.project = project;
+        this.title = title;
     }
 
     public HibernateRevengDatabaseTablesPanel getComponent() {
@@ -89,6 +91,8 @@ public class HibernateRevengDbTablesWizardDescriptor implements WizardDescriptor
 
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
+        wizardDescriptor.putProperty("NewFileWizard_Title", title);
+        
         if (!componentInitialized) {
             componentInitialized = true;
             project = Templates.getProject(wizardDescriptor);

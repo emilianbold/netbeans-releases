@@ -638,8 +638,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 
         String preceedingType = null;
         boolean staticContex = false;
-        
-        switch (tokenSequence.token().id()) {
+        PHPTokenId tokenID = tokenSequence.token().id();
+        String varName = "";//NOI18N
+        switch (tokenID) {
             case PHP_SELF:
             case PHP_PARENT:
                 staticContex = true;
@@ -682,7 +683,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 break;
 
             case PHP_VARIABLE:
-                String varName = tokenSequence.token().text().toString();
+                varName = tokenSequence.token().text().toString();
 
                 if ("$this".equalsIgnoreCase(varName)) { //NOI18N
                     ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
@@ -713,6 +714,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
 
+        if (preceedingType == null && tokenID == PHPTokenId.PHP_VARIABLE && varName != null && varName.length() > 0) {
+            VarTypeResolver typeResolver = VarTypeResolver.getInstance(request, varName);
+            preceedingType = typeResolver.resolveType();
+        }
         if (preceedingType == null || tokenSequence.offset() == startPos){
             return preceedingType;
         }
@@ -722,7 +727,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return findLHSExpressionType_recursive(tokenSequence, request,
                 preceedingType, staticContex, startPos);
     }
-    
+
      private boolean findLHSExpressionType_skipArgs(TokenSequence<PHPTokenId> tokenSequence){
         if (tokenSequence.token().id() == PHPTokenId.PHP_TOKEN 
                 && ")".equals(tokenSequence.token().text().toString())){
@@ -885,7 +890,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             tokenSequence.move(request.anchor);
 
-            if (tokenSequence.movePrevious()){
+            if (typeName == null && tokenSequence.movePrevious()){
                 typeName = findLHSExpressionType(tokenSequence, request);
             }
 

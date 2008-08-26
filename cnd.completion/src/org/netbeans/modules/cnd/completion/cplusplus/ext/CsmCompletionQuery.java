@@ -74,10 +74,13 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
 import org.openide.util.NbBundle;
 
@@ -209,11 +212,12 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             }
             final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, sup.getLastSeparatorOffset());
             tp.setJava15(true);
-            doc.runAtomic(new Runnable() {
-                public void run() {
-                    CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
-                }
-            });
+            doc.readLock();
+            try {
+                CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
+            } finally {
+                doc.readUnlock();
+            }
             sup.setLastSeparatorOffset(tp.getLastSeparatorOffset());
 //            boolean cont = true;
 //            while (cont) {
@@ -564,11 +568,28 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         return cls;
     }
 
+    private static CsmFunction getOperator(CsmClassifier cls, CsmFunction.OperatorKind opKind) {
+        if (!CsmKindUtilities.isClass(cls)) {
+            return null;
+        }
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createNameFilter("operator ", false, true, false); // NOI18N
+        Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers((CsmClass)cls, filter);
+        while(it.hasNext()) {
+            CsmMember member = it.next();
+            if (CsmKindUtilities.isOperator(member)) {
+                if (((CsmFunction)member).getOperatorKind() == opKind) {
+                    return (CsmFunction)member;
+                }
+            }
+        }
+        return null;
+    }
+
     private static CsmClassifier getClassifier(CsmType type, CsmFunction.OperatorKind operator) {
         CsmClassifier cls = type.getClassifier();
         cls = cls != null ? CsmBaseUtilities.getOriginalClassifier(cls) : cls;
         if (CsmKindUtilities.isClass(cls)) {
-            CsmFunction op = CsmBaseUtilities.getOperator((CsmClass)cls, operator);
+            CsmFunction op = CsmCompletionQuery.getOperator((CsmClass)cls, operator);
             if (op != null) {
                 CsmType opType = op.getReturnType();
                 if (operator == CsmFunction.OperatorKind.ARROW) {
@@ -1243,7 +1264,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                            if (lastType.getArrayDepth() == 0) {
                                CsmClassifier cls = getClassifier(lastType);
                                if (cls != null) {
-                                   CsmFunction opArray = CsmBaseUtilities.getOperator(cls, CsmFunction.OperatorKind.ARRAY);
+                                   CsmFunction opArray = CsmCompletionQuery.getOperator(cls, CsmFunction.OperatorKind.ARRAY);
                                    if (opArray != null) {
                                        lastType = opArray.getReturnType();
                                    }

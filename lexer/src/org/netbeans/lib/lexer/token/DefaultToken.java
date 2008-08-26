@@ -74,7 +74,7 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
      * Field that is of type CharSequence and is either length of the token
      * or cached text of the token as String.
      */
-    private CharSequence tokenLengthOrCachedText; // 24 bytes (20-super + 4)
+    CharSequence tokenLengthOrCachedText; // 24 bytes (20-super + 4)
     
     /**
      * Construct new default token.
@@ -107,7 +107,7 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
      * Get text represented by this token.
      */
     @Override
-    public CharSequence text() {
+    public synchronized CharSequence text() { // synchronized due to tokenLengthOrCachedText mutability
         CharSequence text;
         if (tokenLengthOrCachedText.getClass() == TokenLength.class) {
             if (!isRemoved()) { // Updates status for EmbeddedTokenList; tokenList != null
@@ -154,7 +154,7 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
      * Implementation of <code>CharSequence.subSequence()</code>
      * for case when this token is used as token's text char sequence.
      */
-    public final CharSequence subSequence(int start, int end) {
+    public final synchronized CharSequence subSequence(int start, int end) { // synchronized due to tokenLengthOrCachedText mutability
         // Create subsequence of token's text
         CharSequence text;
         int textLength = tokenLengthOrCachedText.length();
@@ -180,7 +180,7 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
      * for case when this token is used as token's text char sequence.
      */
     @Override
-    public String toString() {
+    public synchronized String toString() { // synchronized due to tokenLengthOrCachedText mutability
         // In reality this method can either be called as result of calling Token.text().toString()
         // or just calling Token.toString() for debugging purposes
         String textStr;
@@ -200,7 +200,6 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
                 } else { // Should become cached
                     tokenLengthOrCachedText = textStr;
                 }
-                setTokenLengthOrCachedText(tokenLengthOrCachedText);
             } else { // Token already removed
                 textStr = "<null>";
             }
@@ -210,15 +209,6 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
         }
         return textStr;
     }
-
-    synchronized CharSequence tokenLengthOrCachedText() {
-        return tokenLengthOrCachedText;
-    }
-    
-    synchronized void setTokenLengthOrCachedText(CharSequence tokenLengthOrCachedText) {
-        this.tokenLengthOrCachedText = tokenLengthOrCachedText;
-    }
-    
 
     private static final class InputSourceSubsequence implements CharSequence {
         
@@ -264,29 +254,29 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> implements
         public String toString() {
             String textStr;
             // Increase usage
-            CharSequence tokenLengthOrCachedText = token.tokenLengthOrCachedText();
-            if (tokenLengthOrCachedText.getClass() == TokenLength.class) {
-                TokenLength tokenLength = (TokenLength) tokenLengthOrCachedText;
-                int nextCacheFactor = tokenLength.nextCacheFactor();
-                int threshold = (inputSourceText.getClass() == String.class)
-                            ? LexerUtilsConstants.INPUT_TEXT_STRING_THRESHOLD
-                            : LexerUtilsConstants.CACHE_TOKEN_TO_STRING_THRESHOLD;
-                if (nextCacheFactor < threshold) {
-                    textStr = inputSourceText.subSequence(start, end).toString();
-                    tokenLengthOrCachedText = tokenLength.next(nextCacheFactor);
-                } else { // Should become cached
-                    // Create cached text
-                    String tokenTextString = inputSourceText.subSequence(tokenStart, tokenEnd).toString();
-                    tokenLengthOrCachedText = tokenTextString;
-                    // Substring returns this for start == 0 && end == length()
-                    textStr = tokenTextString.substring(start - tokenStart, end - tokenStart);
-                }
-                token.setTokenLengthOrCachedText(tokenLengthOrCachedText);
+            synchronized (token) { // synchronized due to tokenLengthOrCachedText mutability
+                if (token.tokenLengthOrCachedText.getClass() == TokenLength.class) {
+                    TokenLength tokenLength = (TokenLength) token.tokenLengthOrCachedText;
+                    int nextCacheFactor = tokenLength.nextCacheFactor();
+                    int threshold = (inputSourceText.getClass() == String.class)
+                                ? LexerUtilsConstants.INPUT_TEXT_STRING_THRESHOLD
+                                : LexerUtilsConstants.CACHE_TOKEN_TO_STRING_THRESHOLD;
+                    if (nextCacheFactor < threshold) {
+                        textStr = inputSourceText.subSequence(start, end).toString();
+                        token.tokenLengthOrCachedText = tokenLength.next(nextCacheFactor);
+                    } else { // Should become cached
+                        // Create cached text
+                        String tokenTextString = inputSourceText.subSequence(tokenStart, tokenEnd).toString();
+                        token.tokenLengthOrCachedText = tokenTextString;
+                        // Substring returns this for start == 0 && end == length()
+                        textStr = tokenTextString.substring(start - tokenStart, end - tokenStart);
+                    }
 
-            } else { // Already cached text
-                textStr = tokenLengthOrCachedText.subSequence(start - tokenStart, end - tokenStart).toString();
+                } else { // Already cached text
+                    textStr = token.tokenLengthOrCachedText.subSequence(start - tokenStart, end - tokenStart).toString();
+                }
+                return textStr;
             }
-            return textStr;
         }
 
     }
