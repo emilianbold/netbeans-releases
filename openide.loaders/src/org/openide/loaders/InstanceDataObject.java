@@ -1147,11 +1147,19 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         private static String getClassName(FileObject fo) {
             // first of all try "instanceClass" property of the primary file
             Object attr = fo.getAttribute (EA_INSTANCE_CLASS);
+            if (attr instanceof Class) {
+                return ((Class)attr).getName();
+            }
             if (attr instanceof String) {
                 return Utilities.translate((String) attr);
             } else if (attr != null) {
                 err.warning(
                     "instanceClass was a " + attr.getClass().getName()); // NOI18N
+            }
+            
+            attr = fo.getAttribute ("class:" + EA_INSTANCE_CREATE);
+            if (attr instanceof Class) {
+                return ((Class)attr).getName();
             }
 
             attr = fo.getAttribute (EA_INSTANCE_CREATE);
@@ -1191,6 +1199,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         /** Uses cache to remember list of classes to them this object is
         * assignable.
         */
+        @Override
         public Class instanceClass() throws IOException, ClassNotFoundException {
             return super.instanceClass (customClassLoader);
         }
@@ -1198,6 +1207,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         /** Uses the cache to answer this question without loading the class itself, if the
         * cache exists.
         */
+        @Override
         public boolean instanceOf (Class type) {
             // try the life object if any
             FileObject fo = entry ().getFile ();

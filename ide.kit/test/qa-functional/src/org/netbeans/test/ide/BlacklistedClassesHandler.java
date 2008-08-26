@@ -63,32 +63,47 @@ public interface BlacklistedClassesHandler {
     boolean isGeneratingWhitelist();
 
     /**
-     * Lists violations
+     * Lists violations with captions
      * @return list of all violations
      */
     String listViolations();
 
     /**
-     * Prints list of all violations to the specified PrintStream
+     * Lists violations
+     * @param printCaptions if true prints caption and summary information
+     * @return list of all violations
      */
-    void listViolations(PrintStream out);
-
-    /**
-     * Prints list of all violations using specified PrintWriter
-     */
-    void listViolations(PrintWriter out);
+    String listViolations(boolean printCaptions);
 
     /**
      * Prints list of all violations to the specified PrintStream
-     * @param listExceptions if true all exceptions are printed
+     * @param out PrintStream
+     * @param printCaptions if true prints caption and summary information
      */
-    void listViolations(PrintStream out, boolean listExceptions);
+    void listViolations(PrintStream out, boolean printCaptions);
 
     /**
      * Prints list of all violations using specified PrintWriter
-     * @param listExceptions if true all exceptions are printed
+     * @param out PrintWriter
+     * @param printCaptions if true prints caption and summary information
      */
-    void listViolations(PrintWriter out, boolean listExceptions);
+    void listViolations(PrintWriter out, boolean printCaptions);
+
+    /**
+     * Prints list of all violations to the specified PrintStream
+     * @param out PrintStream
+     * @param listExceptions if true all exceptions are printed
+     * @param printCaptions if true prints caption and summary information
+     */
+    void listViolations(PrintStream out, boolean listExceptions, boolean printCaptions);
+
+    /**
+     * Prints list of all violations using specified PrintWriter
+     * @param out PrintWriter
+     * @param listExceptions if true all exceptions are printed
+     * @param printCaptions if true prints caption and summary information
+     */
+    void listViolations(PrintWriter out, boolean listExceptions, boolean printCaptions);
 
     /**
      * Logs list of all violations using Logger

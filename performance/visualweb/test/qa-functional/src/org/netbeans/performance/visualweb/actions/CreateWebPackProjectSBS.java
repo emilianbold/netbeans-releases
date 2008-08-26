@@ -160,11 +160,6 @@ public class CreateWebPackProjectSBS extends org.netbeans.modules.performance.ut
     public void close(){
         log("::close");
         PerformanceCounters.reportPerformanceCounters();
-        try {
-            new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-        } catch (Exception ex) {
-            log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
-        }
         VWPFootprintUtilities.deleteProject(project_name);
     }
     private void waitProjectCreatingDialogClosed()

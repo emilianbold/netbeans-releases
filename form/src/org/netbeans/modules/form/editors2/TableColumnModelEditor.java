@@ -353,9 +353,18 @@ public class TableColumnModelEditor extends PropertyEditorSupport
         if (property.isChanged()) {
             PropertyEditor editor = property.getCurrentEditor();
             if (editor instanceof XMLPropertyEditor) {
-                element.setAttribute(ATTR_PROP_EDITOR, editor.getClass().getName());
-                Node node = ((XMLPropertyEditor)editor).storeToXML(doc);
-                element.appendChild(node);
+                try {
+                    editor.setValue(property.getValue());
+                    element.setAttribute(ATTR_PROP_EDITOR, editor.getClass().getName());
+                    Node node = ((XMLPropertyEditor)editor).storeToXML(doc);
+                    if (node != null) {
+                        element.appendChild(node);
+                    }
+                } catch (IllegalAccessException iaex) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, iaex.getMessage(), iaex);
+                } catch (InvocationTargetException itex) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, itex.getMessage(), itex);
+                }
             } else {
                 try {
                     Object value = property.getValue();

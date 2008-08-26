@@ -8,6 +8,7 @@
 package ${package};
 
 </#if>
+import flickr.photoservice.flickrresponse.Rsp;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URLEncoder;
@@ -20,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.netbeans.saas.RestConnection;
+import org.netbeans.saas.RestResponse;
 
 /**
  *
@@ -30,6 +32,7 @@ public class ${name} {
     private static String apiKey;
     private static String secret;
     private static String authToken;
+    private static String authUser;
     private static boolean readOnly = false;
     private static final String PROP_FILE = ${name}.class.getSimpleName().toLowerCase() + ".properties";
     
@@ -66,6 +69,13 @@ public class ${name} {
         return authToken;
     }
 
+    public static String getAuthUser() throws IOException {
+        if (authUser == null || authUser.length() == 0) {
+            throw new IOException("Failed to get a valid authentication token.");
+        }
+        return authUser;
+    }
+
     public static void login() throws IOException {
         if (authToken == null) {
             String frob = getFrob();
@@ -86,13 +96,14 @@ public class ${name} {
                         {"api_sig", apiSig},
                         {"frob", frob}
                     });
-            String result = conn.get().getDataAsString();
+             RestResponse response = conn.get();
 
             try {
-                authToken = result.substring(result.indexOf("<token>") + 7,
-                        result.indexOf("</token>"));
+                Rsp rsp = response.getDataAsObject(Rsp.class);
+                authToken = Long.toString(rsp.getAuth().getToken());
+                authUser = rsp.getAuth().getUser().getNsid();
             } catch (Exception ex) {
-                throw new IOException("Failed to get authentication token: " + result);
+                throw new IOException("Failed to get authentication token: " + response.getDataAsString(), ex);
             }
         }
     }

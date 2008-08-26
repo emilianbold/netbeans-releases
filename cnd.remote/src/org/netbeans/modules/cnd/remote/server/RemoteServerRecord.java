@@ -221,6 +221,6 @@ public class RemoteServerRecord implements ServerRecord {
     }
 
     /*package*/void setState(Object state) {
-        state = STATE_OFFLINE;
+        this.state = state;
     }
 }

@@ -45,11 +45,13 @@ import org.netbeans.performance.j2se.menus.*;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 public class MeasureJ2SEMenusTest {
 
 
     public static Test suite() {
+        PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite s = new NbTestSuite("UI Responsiveness J2SE Menus suite");
         System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEMenusTest");

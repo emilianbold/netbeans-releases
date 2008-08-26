@@ -80,7 +80,7 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
     public Result accept(Transferable transferable, AcceptSuggestion suggestion) {
         Result result = super.accept(transferable, suggestion);
         DesignComponent svgImage = result.getComponents().iterator().next();
-        DesignComponent svgForm = getComponent();
+        DesignComponent svgComponent = getComponent();
         FileObject fileObject = getNodeFileObject(transferable);
         if (fileObject == null) {
             return result;
@@ -88,13 +88,13 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
 
         String path = getFileClasspath(fileObject);
         svgImage.writeProperty(SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(path));
-        MidpDocumentSupport.getCategoryComponent(svgForm.getDocument(), ResourcesCategoryCD.TYPEID).addComponent(svgImage);
+        MidpDocumentSupport.getCategoryComponent(svgComponent.getDocument(), ResourcesCategoryCD.TYPEID).addComponent(svgImage);
 
         // TODO use SVGComponentImageParser.getParserByComponent. 
         // problem is that here we check for svg menu items count
         
-        SVGComponentImageParser parser = getParserByComponent(svgForm);
-        parseSVGImageItems(transferable, svgForm, parser);
+        SVGComponentImageParser parser = getParserByComponent(svgComponent);
+        parseSVGImageItems(transferable, svgComponent, parser);
 
         return result;
     }
@@ -113,6 +113,7 @@ public class SVGFileAcceptPresenter extends FileAcceptPresenter {
                 return new SVGMenuImageParser();
             }
         } else if (descrRegistry.isInHierarchy(SVGFormCD.TYPEID, typeID)) {
+            SVGFormSupport.removeAllSVGFormComponents(svgComponent);
             return new SVGFormImageParser();
         }
         return null;

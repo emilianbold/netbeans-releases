@@ -472,21 +472,9 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
     }
 
     private void jCheckBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox1ItemStateChanged
-        if (jCheckBox1.isSelected()) {
-            //tldTextField.setEnabled(true);
-            browseButton.setEnabled(true);
-            nameTextField.setEnabled(true);
-            emptyButton.setEnabled(true);
-            scriptlessButton.setEnabled(true);
-            tegdependentButton.setEnabled(true);
-        } else {
-            //tldTextField.setEnabled(false);
-            browseButton.setEnabled(false);
-            nameTextField.setEnabled(false);
-            emptyButton.setEnabled(false);
-            scriptlessButton.setEnabled(false);
-            tegdependentButton.setEnabled(false);
-        }
+        boolean enable = jCheckBox1.isSelected();
+        browseButton.setEnabled(enable);
+        nameTextField.setEnabled(enable);
         panel.fireChangeEvent();
     }//GEN-LAST:event_jCheckBox1ItemStateChanged
 

@@ -45,6 +45,7 @@ package org.netbeans.performance.j2ee;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.j2ee.dialogs.*;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
@@ -55,6 +56,8 @@ public class MeasureJ2EEDialogsTest {
 
     
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Dialogs suite");
         System.setProperty("suitename", "org.netbeans.performance.j2ee.MeasureJ2EEDialogsTest");
 

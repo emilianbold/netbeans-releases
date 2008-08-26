@@ -140,11 +140,12 @@ public class FileReferencesImpl extends CsmFileReferences  {
             deadBlocks = Collections.<CsmOffsetable>emptyList();
         }
         final ReferencesProcessor tp = new ReferencesProcessor(csmFile, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks);
-        doc.runAtomic(new Runnable() {
-            public void run() {
-                CndTokenUtilities.processTokens(tp, doc, start, end);
-            }
-        });
+        doc.readLock();
+        try {
+            CndTokenUtilities.processTokens(tp, doc, start, end);
+        } finally {
+            doc.readUnlock();
+        }
         return tp.references;
     }
 

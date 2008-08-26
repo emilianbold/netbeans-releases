@@ -56,9 +56,10 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public class SystemMacroImpl implements CsmMacro {
     
-    private String macroName;
-    private String macroBody;
-    private boolean isUserDefined;
+    private final String macroName;
+    private final String macroBody;
+    private final String macroText;
+    private final boolean isUserDefined;
     private final List<? extends CharSequence> params;
     private CsmFile containingFile;
     private CsmUID<CsmMacro> uid;
@@ -75,6 +76,7 @@ public class SystemMacroImpl implements CsmMacro {
         assert containingFile instanceof Unresolved.UnresolvedFile;
         this.containingFile = containingFile;
         uid = new SelfUID<CsmMacro>(this);
+        this.macroText = "#define " + macroName + " " + macroBody; // NOI18N
     }
     
     public List<? extends CharSequence> getParameters() {
@@ -114,7 +116,7 @@ public class SystemMacroImpl implements CsmMacro {
     }
 
     public CharSequence getText() {
-        return ""; //NOI18N
+        return macroText; //NOI18N
     }
 
     public CsmUID<CsmMacro> getUID() {

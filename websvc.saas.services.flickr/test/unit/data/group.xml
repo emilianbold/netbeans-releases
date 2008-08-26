@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <group id="34427465497@N01" iconserver="1" lang="en-us" ispoolmoderated="0">
+        <name>GNEverybody</name>
+        <description>The group for GNE players</description>
+        <members>69</members>
+        <privacy>3</privacy>
+        <throttle count="10" mode="month" remaining="3"/>
+    </group>
+</rsp>

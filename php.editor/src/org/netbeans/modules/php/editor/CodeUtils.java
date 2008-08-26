@@ -83,6 +83,11 @@ public class CodeUtils {
 
     public static String extractClassName(ClassInstanceCreation instanceCreation) {
         Expression name = instanceCreation.getClassName().getName();
+        
+        assert name instanceof Identifier : 
+            "unsupported type of InstanceCreation.getClassName().getName(): "
+            + name.getClass().getName();
+
         return (name instanceof Identifier) ? ((Identifier) name).getName() : "";//NOI18N
     }
     public static String extractClassName(ClassDeclaration clsDeclaration) {
@@ -97,18 +102,19 @@ public class CodeUtils {
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
             StringBuilder varName = new StringBuilder();
-            
-            if (var.isDollared()){
+
+            if (var.isDollared()) {
                 varName.append("$");
             }
-            
+
             varName.append(id.getName());
             return varName.toString();
+        } else if (var.getName() instanceof Variable) {
+            Variable name = (Variable) var.getName();
+            return extractVariableName(name);
         } else {
-            if (var.getName() instanceof Variable) {
-                Variable name = (Variable) var.getName();
-                return extractVariableName(name);
-            }
+            assert false : "unsupported type returned by Variable.getName():"
+                    + var.getName().getClass().toString();
         }
 
         return null;

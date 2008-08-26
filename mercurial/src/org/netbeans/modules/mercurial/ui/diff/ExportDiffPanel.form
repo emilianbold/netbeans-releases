@@ -4,6 +4,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -28,7 +29,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="browseButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jLabel1" alignment="0" pref="394" max="32767" attributes="0"/>
+                          <Component id="jLabel1" alignment="0" pref="437" max="32767" attributes="0"/>
                           <Component id="exportHintLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                       </Group>
                   </Group>
@@ -36,11 +37,11 @@
                       <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
                       <Component id="revisionsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="revisionsComboBox" pref="253" max="32767" attributes="1"/>
+                      <Component id="revisionsComboBox" pref="269" max="32767" attributes="1"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="changesetPanel1" pref="394" max="32767" attributes="0"/>
+                      <Component id="changesetPanel1" pref="437" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -144,9 +145,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-          <Font name="Arial" size="12" style="1"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mercurial/ui/diff/Bundle.properties" key="ExportDiffPanel.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

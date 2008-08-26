@@ -46,6 +46,30 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="getAttribute.class">
+            <api name="filesystems"/>
+            <summary>XMLFileSystem attributes can be queried for instance class</summary>
+            <version major="7" minor="12"/>
+            <date day="25" month="8" year="2008"/>
+            <author login="jskrivanek"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    If you are interested just in the Class of an attribute, but
+                    without creating its instance, use <code>fileObject.getAttribute("class:attrName")</code>.
+                    This instructs the <a href="@TOP@/org/openide/filesystems/XMLFileSystem.html">XMLFileSystem</a>
+                    to scan its XML files for definition of <code>attrName</code>
+                    attribute and <i>guess</i> its class. The <i>guessing</i> is
+                    usually easy, just for <code>methodvalue</code> types, the system
+                    needs to use some kind of heuristic: it locates the
+                    appropriate factory method and returns its return type. This may
+                    not be the actual type of the returned object at the end, but
+                    it seems as the best guess without instantiating it.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="XMLFileSystem"/>
+            <issue number="131951"/>
+        </change>
         <change id="testable-declarative-resolvers">
             <api name="filesystems"/>
             <summary>Declarative MIME resolvers now available in standalone mode</summary>

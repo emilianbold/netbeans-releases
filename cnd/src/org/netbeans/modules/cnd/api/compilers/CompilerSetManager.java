@@ -292,7 +292,7 @@ public class CompilerSetManager {
         }
     }
 
-    private static int computeLocalPlatform() {
+    public static int computeLocalPlatform() {
         String os = System.getProperty("os.name"); // NOI18N
 
         if (os.equals("SunOS")) {
