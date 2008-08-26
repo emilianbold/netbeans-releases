@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.core.jaxwsstack;
+package org.netbeans.modules.websvc.wsstack.jaxws.impl;
 
 import java.net.URL;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;

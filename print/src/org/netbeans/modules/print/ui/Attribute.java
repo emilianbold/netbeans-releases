@@ -604,11 +604,6 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         public void actionPerformed(ActionEvent event) {}
       }
     );
-    mySelection.addItemListener(new ItemListener() {
-      public void itemStateChanged(ItemEvent event) {
-        updateText();
-      }
-    });
     panel.add(mySelection, c);
 
     // line spacing
@@ -740,21 +735,20 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
   }
 
   private void updateText() {
-    boolean editor = myAsEditor.isSelected();
-    boolean selection = mySelection.isSelected();
+    boolean enabled = !myAsEditor.isSelected();
 
-    mySelection.setEnabled( !editor);
-    myLineNumbers.setEnabled( !editor);
-    myWrapLines.setEnabled( !editor);
-    myUseColor.setEnabled( !editor && !selection);
-    myUseFont.setEnabled( !editor && !selection);
-    myTextFont.setEnabled( !editor);
-    myTextColor.setEnabled( !editor);
-    myTextFontColorLabel.setEnabled( !editor);
-    myBackgroundColor.setEnabled( !editor);
-    myBackgroundColorLabel.setEnabled( !editor);
-    myLineSpacing.setEnabled( !editor);
-    myLineSpacingLabel.setEnabled( !editor);
+    mySelection.setEnabled(enabled);
+    myLineNumbers.setEnabled(enabled);
+    myWrapLines.setEnabled(enabled);
+    myUseColor.setEnabled(enabled);
+    myUseFont.setEnabled(enabled);
+    myTextFont.setEnabled(enabled);
+    myTextColor.setEnabled(enabled);
+    myTextFontColorLabel.setEnabled(enabled);
+    myBackgroundColor.setEnabled(enabled);
+    myBackgroundColorLabel.setEnabled(enabled);
+    myLineSpacing.setEnabled(enabled);
+    myLineSpacingLabel.setEnabled(enabled);
   }
 
   private String getString(int value) {

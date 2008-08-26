@@ -369,6 +369,7 @@ final class ComponentDocument extends JComponent {
 
         if (c == '\r' || c == '\n') {
           if (c == '\r' && myPos < myLength && myValue.charAt(myPos) == '\n') {
+            // Unix - "\n", Windows - "\r\n", Mac - "\r"
             myPos++;
           }
           break;
@@ -382,7 +383,6 @@ final class ComponentDocument extends JComponent {
     private int myLength;
     private String myValue;
     private StringBuffer myBuffer;
-    // { Unix - "\n", Windows - "\r\n", Mac - "\r" }
   }
 
   private int myWidth;

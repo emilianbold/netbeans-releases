@@ -1033,15 +1033,19 @@ public final class CsmProjectContentResolver {
                     CharSequence memberName = member.getName();
                     if ((matchName(memberName.toString(), strPrefix, match)) ||
                             (memberName.length() == 0 && returnUnnamedMembers)) {
+                        CharSequence qname;
                         if (CsmKindUtilities.isFunction(member)) {
-                            res.put(((CsmFunction) member).getSignature(), member);
+                            qname = ((CsmFunction) member).getSignature();
                         } else {
-                            CharSequence qname = member.getQualifiedName();
+                            qname = member.getQualifiedName();
                             if (member.getName().length() == 0 && CsmKindUtilities.isEnum(member)) {
                                 // Fix for IZ#139784: last unnamed enum overrides previous ones
                                 qname = new StringBuilder(qname).append('$')
                                         .append(++unnamedEnumCount).toString();
                             }
+                        }
+                        // do not replace inner objects by outer ones
+                        if (!res.containsKey(qname)) {
                             res.put(qname, member);
                         }
                     }
@@ -1064,7 +1068,11 @@ public final class CsmProjectContentResolver {
                     if (memberName.length() == 0) {
                         Map<CharSequence, CsmMember> set = getClassMembers((CsmClass) member, contextDeclaration, kinds, strPrefix, staticOnly, match,
                                 handledClasses, CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, returnUnnamedMembers);
-                        res.putAll(set);
+                        // replace by own elements in nested set
+                        if (set != null && set.size() > 0) {
+                            set.putAll(res);
+                            res = set;
+                        }                        
                     }
                 }
             }
@@ -1093,6 +1101,7 @@ public final class CsmProjectContentResolver {
 
                         Map<CharSequence, CsmMember> baseRes = getClassMembers(baseClass, contextDeclaration, kinds, strPrefix, staticOnly, match,
                                 handledClasses, nextMinVisibility, nextInheritanceLevel, inspectParentClasses, returnUnnamedMembers);
+                        // replace by own elements in inherited set
                         if (baseRes != null && baseRes.size() > 0) {
                             baseRes.putAll(res);
                             res = baseRes;

@@ -106,6 +106,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N
 
+    /** Property fired when the step performed in sources that are not enabled for debugging
+     * and the thread is going to be resumed with the next step. */
+    public static final String PROP_STOPPED_IN_DISABLED_SOURCES = "stoppedInDisabledSources";
+
     /** The source tree with location info of this step */
     //private ASTL stepASTL;
     private Operation[] currentOperations;
@@ -114,6 +118,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     private Set<BreakpointRequest> operationBreakpoints;
     private StepRequest boundaryStepRequest;
     //private SingleThreadedStepWatch stepWatch;
+    private Set<EventRequest> requestsToCancel = new HashSet<EventRequest>();
     
     private Session session;
     
@@ -164,7 +169,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     size,
                     getDepth()
                 );
-                stepRequest.addCountFilter(1);
+                //stepRequest.addCountFilter(1); - works bad with exclusion filters!
                 String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
                 for (int i = 0; i < exclusionPatterns.length; i++) {
                     stepRequest.addClassExclusionFilter(exclusionPatterns [i]);
@@ -176,6 +181,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 try {
                     stepRequest.enable ();
                     trImpl.setInStep(true, stepRequest);
+                    requestsToCancel.add(stepRequest);
                 } catch (IllegalThreadStateException itsex) {
                     // the thread named in the request has died.
                     debuggerImpl.getOperator().unregister(stepRequest);
@@ -316,6 +322,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 brReq.putProperty("thread", trRef); // NOI18N
                 brReq.enable();
                 tr.setInStep(true, brReq);
+                requestsToCancel.add(brReq);
             }
         } else if (lineStepExec) {
             return false;
@@ -336,6 +343,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         boundaryStepRequest.setSuspendPolicy(debugger.getSuspend());
         try {
             boundaryStepRequest.enable ();
+            requestsToCancel.add(boundaryStepRequest);
         } catch (IllegalThreadStateException itsex) {
             // the thread named in the request has died.
             ((JPDADebuggerImpl) debugger).getOperator().unregister(boundaryStepRequest);
@@ -404,6 +412,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             }
             if (!stepAdded) {
                 if ((event.request() instanceof StepRequest) && shouldNotStopHere(event)) {
+                    firePropertyChange(PROP_STOPPED_IN_DISABLED_SOURCES, null, null);
                     return true; // Resume
                 }
             }
@@ -536,6 +545,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     stepRequest.setSuspendPolicy (debugger.getSuspend ());
                     try {
                         stepRequest.enable ();
+                        requestsToCancel.add(stepRequest);
                     } catch (IllegalThreadStateException itsex) {
                         // the thread named in the request has died.
                         debuggerImpl.getOperator ().unregister (stepRequest);
@@ -587,11 +597,24 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             stepRequest.setSuspendPolicy (debugger.getSuspend ());
             try {
                 stepRequest.enable ();
+                requestsToCancel.add(stepRequest);
             } catch (IllegalThreadStateException itsex) {
                 // the thread named in the request has died.
                 debuggerImpl.getOperator ().unregister (stepRequest);
             }
             return true; // resume
+        }
+    }
+
+    /** Cancel this step - remove all submitted event requests. */
+    public void cancel() {
+        JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
+        VirtualMachine vm = debuggerImpl.getVirtualMachine();
+        if (vm == null) return ;
+        EventRequestManager erm = vm.eventRequestManager();
+        for (EventRequest er : requestsToCancel) {
+            erm.deleteEventRequest(er);
+            debuggerImpl.getOperator ().unregister (er);
         }
     }
     

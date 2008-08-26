@@ -1459,7 +1459,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             // of remebered modified regions should be cleared.
 
             // Reset modified regions accounting after the initial load
-            TrailingWhitespaceRemove.install(this).resetModRegions();
+            Boolean inPaste = BaseKit.IN_PASTE.get();
+            if (inPaste == null || !inPaste) {
+                TrailingWhitespaceRemove.install(this).resetModRegions();
+            }
             
             // Compact storage - can also be called from Paste so only compact for first read
             Content content = getContent();

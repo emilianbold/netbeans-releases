@@ -80,7 +80,6 @@
 
 
 <mapID target="webbrowser" url="webbrowser/webbrowser.html" />
-<mapID target="webbrowser.homepage" url="webbrowser/home_page.html" />
 <mapID target="webbrowser.config" url="webbrowser/config_browser.html" />
 <mapID target="proxy" url="webbrowser/proxy.html" />
 <mapID target="bypass.proxy" url="webbrowser/bypassproxy.html" />
@@ -101,7 +100,6 @@
 <mapID target="configure.importing" url="configure/configure_importing.html" />
 <mapID target="configure.options" url="configure/configure_options.html" />
 <mapID target="configure.startup-switches" url="configure/configure_startup-switches.html" />
-<mapID target="configure.system.settings" url="configure/system_settings.html" />
 <mapID target="project.encoding" url="project/proj_encoding.html" />
 
 <mapID target="workspace.window.managing" url="configure/workspace/window_managing.html" />
@@ -295,7 +293,6 @@
    <mapID target="org.netbeans.core.actions.OptionsAction$OptionsPanel$OptionsFilterNode" url="configure/configure_options.html" />
    <mapID target="org.netbeans.core.EnvironmentNode" url="files/files_runtime.html" />
 
-   <mapID target="org.netbeans.core.LoaderPoolNode" url="configure/options_object_types.html" /> 
 <!--nodes in Options | System | Object Types:-->
    <mapID target="org.netbeans.core.LoaderPoolNode$LoaderPoolItemNode" url="files/files_unknown.html" /> 
    <mapID target="objects.object-types" url="files/files_unknown.html" /> 
@@ -319,7 +316,6 @@
    
    <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="configure/diff_textual.html" />
 <!--possibly remap the following target to configure_options.html :-->
-   <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
 
    <!-- Diff: options window help ids -->
    <mapID target="org.netbeans.modules.diff.options.DiffOptionsController" url="configure/options_diffengine.html" />

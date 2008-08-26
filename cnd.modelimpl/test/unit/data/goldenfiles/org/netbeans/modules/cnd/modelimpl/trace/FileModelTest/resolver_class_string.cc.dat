@@ -45,7 +45,7 @@ FUNCTION DEFINITION read  [20:1/260-23:2/329] FunctionDefinitionImpl SCOPE: reso
     RETURNS $unresolved$::wstring TEXT=wstring  [20:1/260-20:8/267]
     STATEMENT COMPOUND  [20:30/289-23:2/329] SCOPE: read 
         STATEMENT DECLARATION  [21:5/299-21:17/311] SCOPE: Stmt  [20:30/289-23:2/329]
-            VARIABLE str [21:5/299-21:17/311]  TYPE: $unresolved$::wstring TEXT=wstring  [21:5/299-21:12/306]  INIT: null  SCOPE: Stmt  [20:30/289-23:2/329]
+            VARIABLE str [21:5/299-21:17/311]  TYPE: std_1::wstring TEXT=wstring  [21:5/299-21:12/306]  INIT: null  SCOPE: Stmt  [20:30/289-23:2/329]
         STATEMENT RETURN  [22:5/316-22:16/327] SCOPE: Stmt  [20:30/289-23:2/329] text: 'return str;'
 
 ========== Dumping model of PROJECT DummyProject
