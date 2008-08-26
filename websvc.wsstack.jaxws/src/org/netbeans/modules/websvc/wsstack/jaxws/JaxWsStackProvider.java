@@ -37,14 +37,13 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.core;
+package org.netbeans.modules.websvc.wsstack.jaxws;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.websvc.core.jaxwsstack.IdeJaxWsStack;
-import org.netbeans.modules.websvc.core.jaxwsstack.JdkJaxWsStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.impl.IdeJaxWsStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.impl.JdkJaxWsStack;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 
 /**
@@ -53,7 +52,7 @@ import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
  */
 public class JaxWsStackProvider {
     
-    private static WSStack jdkJaxWsStack, ideJaxWsStack;
+    private static WSStack<JaxWs> jdkJaxWsStack, ideJaxWsStack;
     
     public static WSTool getJaxWsStackTool(J2eePlatform j2eePlatform, WSStack.Tool toolId) {
         WSStack wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
@@ -64,7 +63,7 @@ public class JaxWsStackProvider {
         }
     }
     
-    public static synchronized WSStack getJdkJaxWsStack() {
+    public static synchronized WSStack<JaxWs> getJdkJaxWsStack() {
         if (jdkJaxWsStack == null) {
             String jaxWsVersion = getJaxWsStackVersion(System.getProperty("java.version"));
             if (jaxWsVersion != null) {
@@ -74,7 +73,7 @@ public class JaxWsStackProvider {
         return jdkJaxWsStack;
     }
     
-    public static synchronized WSStack getIdeJaxWsStack() {
+    public static synchronized WSStack<JaxWs> getIdeJaxWsStack() {
         if (ideJaxWsStack == null) {
             ideJaxWsStack =  WSStackFactory.createWSStack(JaxWs.class, new IdeJaxWsStack(), WSStack.Source.IDE);
         }

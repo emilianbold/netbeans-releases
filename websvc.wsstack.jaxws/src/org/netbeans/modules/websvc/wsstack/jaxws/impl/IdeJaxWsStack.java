@@ -37,24 +37,17 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.core.jaxwsstack;
+package org.netbeans.modules.websvc.wsstack.jaxws.impl;
 
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
-import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 
 /**
  *
  * @author mkuchtiak
  */
-public final class JdkJaxWsStack extends AbstractJaxWsStack {
-    private String jaxWsVersion;
+public final class IdeJaxWsStack<JaxWs> extends AbstractJaxWsStack {
     
-    public JdkJaxWsStack(String jaxWsVersion) {
-        this.jaxWsVersion = jaxWsVersion;
-    }
-
     public WSStackVersion getVersion() {
-        return WSStackFactory.createWSStackVersion(jaxWsVersion);
+        return WSStackVersion.valueOf(2,1,4,0);
     }
-
 }
