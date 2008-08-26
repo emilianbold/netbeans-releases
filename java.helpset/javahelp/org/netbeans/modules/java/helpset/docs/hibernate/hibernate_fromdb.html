@@ -16,10 +16,8 @@
         <h2>Generating Hibernate Mapping Files and POJOs from a Database</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>In addition to writing Hibernate mapping files and POJOs and from scratch, 
-        you can also use reverse engineering to generate the mapping files and POJO from a database.
-        You can use the Hibernate Mapping Files and POJOs from Database wizard to generate 
-        a <tt>hibernate.reveng</tt> reverse engineering file from a connected database.
-        The IDE can use the <tt>hibernate.reveng</tt> file to create the mapping files and POJOs.</p>
+        you can also generate the mapping files and POJO from a connected database with the
+        Hibernate Mapping Files and POJOs from Database wizard.</p>
 
         <p><b>To generate Hibernate mapping files and POJOs from a database:</b></p> 
         <ol>
@@ -44,16 +42,18 @@
             </li>
             <li>Click Next.</li>
             <li>Specify any options for the generated files.</li>
-            <li>Specify if you want to the IDE to automatically generate the mapping files and POJOs.</li>
+            <li>Select Domain Code to generate the POJOs.</li> 
+            <li>Select Hibernate XML Mappings to generate the mapping files.</li>
             <li>Select an existing package from the Package drop-down menu or type the name of a new package.</li>
             <li>Click Finish.</li>
         </ol>
         
-        <p>When you click Finish, the IDE generates the <tt>hibernate.reveng</tt> reverse engineering file
-        in the specified location.
-        If you selected Domain Code in the wizard the IDE also generates POJOs based on the reverse engineering file.
-        If you selected Hibernate XML Mappings in the wizard the IDE also generates Hibernate mapping files based on the reverse engineering file.
-        </p>
+        <p>When you click Finish the IDE generates the following files:</p>
+        <ul>
+            <li>POJOs based on the selected specified tables (if you selected Domain Code in the wizard)</li>
+            <li>Hibernate mapping files based on the specified tables (if you selected Hibernate XML Mappings in the wizard)</li>
+            <li>A <tt>hibernate.reveng</tt> reverse engineering file in the specified location</li>
+        </ul>
         
 
         
@@ -61,7 +61,8 @@
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
             <dd><a href="hibernate_cfgedit.html">Editing the Hibernate Configuration File</a> </dd>
-            <dd><a href="hibernate_support.html">Adding Hibernate Support to a Project</a></dd>
+            <dd><a href="hibernate_mapping.html">Creating Hibernate Mapping Files</a> </dd>
+            <dd><a href="hibernate_addsupport.html">Adding Hibernate Support to a Project</a></dd>
             <dd><a href="hibernate_about.html">About Hibernate Support</a> </dd>
             <dd><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a></dd>
         </dl>
