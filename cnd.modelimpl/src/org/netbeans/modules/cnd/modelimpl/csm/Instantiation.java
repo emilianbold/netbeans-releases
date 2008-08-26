@@ -56,8 +56,11 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.services.CsmMemberResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -178,7 +181,8 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
     
     //////////////////////////////
     ////////////// STATIC MEMBERS
-    private static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate {
+    public static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate,
+                                    SelectImpl.FilterableMembers {
         public Class(CsmClass clazz, CsmType type) {
             super(clazz, type);
             assert type.isInstantiation() : "Instantiation without parameters"; // NOI18N
@@ -231,6 +235,15 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
             return res;
         }
 
+        public Iterator<CsmMember> getMembers(CsmFilter filter) {
+            Collection<CsmMember> res = new ArrayList<CsmMember>();
+            Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers((CsmClass) declaration, filter);
+            while(it.hasNext()){
+                res.add(createMember(it.next()));
+            }
+            return res.iterator();
+        }
+        
         public int getLeftBracketOffset() {
             return ((CsmClass)declaration).getLeftBracketOffset();
         }
