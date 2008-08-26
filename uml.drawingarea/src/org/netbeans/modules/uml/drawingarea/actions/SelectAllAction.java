@@ -81,7 +81,8 @@ public final class SelectAllAction extends NodeAction
             }
             selected.add(o);
         }
-        scene.setSelectedObjects(selected);
+        scene.clearLockedSelected();
+        scene.userSelectionSuggested(selected, false);
     }
 
     protected boolean enable(Node[] activatedNodes)
