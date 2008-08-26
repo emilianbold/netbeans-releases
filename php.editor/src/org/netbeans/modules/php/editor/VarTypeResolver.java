@@ -56,7 +56,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
@@ -99,6 +102,32 @@ public final class VarTypeResolver {
                 super.scan(node);
                 path.remove(node);
             }
+
+            @Override
+            public void visit(FunctionDeclaration node) {
+                int offset = request.anchor;
+                if ((offset != (-1) && offset >= node.getStartOffset())) {
+                    if (isValidBlock(path)) {
+                        List<FormalParameter> formalParameters = node.getFormalParameters();
+                        for (FormalParameter param : formalParameters) {
+                            Identifier parameterType = param.getParameterType();
+                            if (parameterType == null) continue;
+                            String typeName = parameterType.getName();
+                            String paramName = null;
+                            Expression parameterName = param.getParameterName();
+                            if (parameterName instanceof Variable) {
+                                paramName = CodeUtils.extractVariableName((Variable) parameterName);
+                            }
+                            if (paramName != null && typeName != null && typeName.length() > 0) {
+                                assignments.put(paramName, Union2.<Variable, String>createSecond(typeName));
+                            }
+                        }
+                    }
+                }
+
+                super.visit(node);
+            }
+
 
             public void visit(Assignment node) {
                 int offset = request.anchor;
@@ -246,7 +275,7 @@ public final class VarTypeResolver {
         int size = path.size();
         for (int i = size - 1; i >= 0; i--) {
             ASTNode node = path.get(i);
-            if (node instanceof Program || node instanceof Block) {
+            if (node instanceof Program || node instanceof Block || node instanceof FunctionDeclaration) {
                 retval = node;
                 break;
             }
@@ -264,6 +293,15 @@ public final class VarTypeResolver {
         int size = pathUnderCaret.size();
         for (int i = size - 1; i >= 0; i--) {
             ASTNode node = pathUnderCaret.get(i);
+            if (node instanceof FunctionDeclaration) {
+                if (nearestBlock instanceof FunctionDeclaration) {
+                    String fncName = CodeUtils.extractFunctionName((FunctionDeclaration) node);
+                    String fncName2 = CodeUtils.extractFunctionName((FunctionDeclaration) nearestBlock);
+                    return (fncName.equals(fncName2));
+                } else {
+                    return false;
+                }
+            }
             if (node == nearestBlock) {
                 return true;
             }

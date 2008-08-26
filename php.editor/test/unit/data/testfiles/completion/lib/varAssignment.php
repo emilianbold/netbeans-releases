@@ -70,6 +70,15 @@ function fncCreateC() {
     return new clsAVarAssignment();
 }
 
+function fn1(clsAVarAssignment $aParam) {
+    $aParam2 = $aParam;
+    $aParam2->aCreateA();
+    function fn2(clsAVarAssignment $cParam) {
+        $cParam2 = $cParam;
+        $cParam2->aCreateA();
+    }
+}
+
 function mytest() {
     if (1) {
         $clsVarA=new clsAVarAssignment;
