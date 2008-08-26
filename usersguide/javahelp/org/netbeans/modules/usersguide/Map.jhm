@@ -80,7 +80,6 @@
 
 
 <mapID target="webbrowser" url="webbrowser/webbrowser.html" />
-<mapID target="webbrowser.homepage" url="webbrowser/home_page.html" />
 <mapID target="webbrowser.config" url="webbrowser/config_browser.html" />
 <mapID target="proxy" url="webbrowser/proxy.html" />
 <mapID target="bypass.proxy" url="webbrowser/bypassproxy.html" />
