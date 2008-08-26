@@ -363,13 +363,13 @@ public class GotoTest implements TestLocator {
                     }
 
                     public void run(CompilationInfo info) {
-                        org.jruby.ast.Node root = AstUtilities.getRoot(info);
+                        org.jruby.nb.ast.Node root = AstUtilities.getRoot(info);
 
                         if (root == null) {
                             return;
                         }
 
-                        org.jruby.ast.ClassNode cls = AstUtilities.findClassAtOffset(root, offset);
+                        org.jruby.nb.ast.ClassNode cls = AstUtilities.findClassAtOffset(root, offset);
 
                         if (cls == null) {
                             // It's possible the user had the caret on a line
@@ -475,7 +475,7 @@ public class GotoTest implements TestLocator {
 
             if (fo != null) {
                 int offset = 0;
-                org.jruby.ast.Node node = AstUtilities.getForeignNode(c, null);
+                org.jruby.nb.ast.Node node = AstUtilities.getForeignNode(c, null);
 
                 if (node != null) {
                     offset = node.getPosition().getStartOffset();

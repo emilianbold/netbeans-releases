@@ -48,10 +48,10 @@ import java.util.List;
  */
 public class Percentage extends NumberPostfixAcceptor {
 
-    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"%"});
+    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"%"}); //NOI18N
     
     public String id() {
-        return "percentage";
+        return "percentage"; //NOI18N
     }
 
     public List<String> postfixes() {

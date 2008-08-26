@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
@@ -238,11 +239,16 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
         Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
         CsmObject[] objs = csmObjects.toArray(new CsmObject[csmObjects.size()]);
+        Interrupter interrupter = new Interrupter(){
+            public boolean cancelled() {
+                return cancelRequest;
+            }
+        };
         for (CsmFile file : files) {
             if (cancelRequest) {
                 break;
             }
-            Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds);
+            Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
             for (CsmReference csmReference : refs) {
                 elements.add(CsmRefactoringElementImpl.create(csmReference, true));
             }      

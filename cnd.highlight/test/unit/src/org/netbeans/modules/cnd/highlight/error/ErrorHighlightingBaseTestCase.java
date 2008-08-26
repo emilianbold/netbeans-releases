@@ -54,6 +54,7 @@ import org.netbeans.editor.BaseDocumentEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
@@ -73,7 +74,12 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
 
     protected Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile csmFile) {
         final List<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
-        CsmErrorProvider.Request request = new HighlightProvider.RequestImpl(csmFile);
+        CsmErrorProvider.Request request = new HighlightProvider.RequestImpl(csmFile,
+                new Interrupter(){
+            public boolean cancelled() {
+                return false;
+            }
+        });
         CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
             public void addError(CsmErrorInfo info) {
                 result.add(info);

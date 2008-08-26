@@ -41,29 +41,12 @@
 
 package org.netbeans.core.multiview;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.DefaultKeyboardFocusManager;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.ActionEvent;
-import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeListener;
-import java.util.*;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.JTextField;
-
-import junit.framework.*;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-
-import org.netbeans.junit.*;
 import org.openide.nodes.Node;
-
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 
 /**
@@ -72,6 +55,10 @@ import org.openide.windows.TopComponent;
  */
 public class MVInnerComponentGetLookupTest extends org.openide.windows.TopComponentGetLookupTest {
     
+    static {
+        System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+    }
+
     private TopComponent mvtc;
     private TopComponent top2;
     private TopComponent top3;
@@ -83,16 +70,7 @@ public class MVInnerComponentGetLookupTest extends org.openide.windows.TopCompon
         super(testName);
     }
     
-    
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static Test suite() {
-        return new NbTestSuite(MVInnerComponentGetLookupTest.class);
-    }
-    
-    
+    @Override
     protected boolean runInEQ () {
         return true;
     }
@@ -101,9 +79,9 @@ public class MVInnerComponentGetLookupTest extends org.openide.windows.TopCompon
         return 0;
     }
     
-    
     /** Setup component with lookup.
      */
+    @Override
     protected void setUp () {
         final MVElemTopComponent elem1 = new MVElemTopComponent();
         final MVElemTopComponent elem2 = new MVElemTopComponent();

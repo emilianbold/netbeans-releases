@@ -383,12 +383,10 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @return the message or null if nothing should be displayed
      */
     protected String messageOpening() {
-        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N
-        
         return NbBundle.getMessage(
             PropertiesEditorSupport.class,
             "LBL_ObjectOpen", // NOI18N
-            name
+            getFileLabel()
         );
     }
     
@@ -398,20 +396,18 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @return the message or null if nothing should be displayed
      */
     protected String messageOpened() {
-        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N        
-        
         return NbBundle.getMessage(
             PropertiesEditorSupport.class,
             "LBL_ObjectOpened", // NOI18N
-            name
+            getFileLabel()
        );
     }
     
-    /**
-     */
-    private String getRawMessageName() {
-        return myEntry.getDataObject().getName()        
-               + '(' + Util.getLocaleLabel(myEntry) + ')';
+    private String getFileLabel() {
+        PropertiesDataObject propDO = (PropertiesDataObject) myEntry.getDataObject();
+        return propDO.isMultiLocale()
+                ? (propDO.getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")") // NOI18N
+                : propDO.getPrimaryFile().getNameExt();
     }
     
     /**
@@ -435,7 +431,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             return "";                                                  //NOI18N       
         }
         
-        return addModifiedInfo(getRawMessageName());
+        return addModifiedInfo(getFileLabel());
     }
 
     /** */
@@ -445,7 +441,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             return null;
         }
 
-        String rawName = getRawMessageName();
+        String rawName = getFileLabel();
         
         String annotatedName = null;
         final FileObject entry = myEntry.getFile();
@@ -483,12 +479,10 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @return text to show to the user
      */
     protected String messageSave () {
-        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N        
-        
         return NbBundle.getMessage (
             PropertiesEditorSupport.class,
             "MSG_SaveFile", // NOI18N
-            name
+            getFileLabel()
         );
     }
     
@@ -1121,7 +1115,11 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         /** Overrides superclass method. Gets <code>Icon</code>. */
         @Override
         public Image getIcon () {
-            return Utilities.loadImage("org/netbeans/modules/properties/propertiesLocale.gif"); // NOI18N
+            PropertiesDataObject propDO = (PropertiesDataObject) entry.getDataObject();
+            return Utilities.loadImage(
+                    propDO.isMultiLocale()
+                    ? "org/netbeans/modules/properties/propertiesLocale.gif" // NOI18N
+                    : "org/netbeans/modules/properties/propertiesObject.png"); // NOI18N
         }
         
         /** Overrides superclass method. Gets help context. */

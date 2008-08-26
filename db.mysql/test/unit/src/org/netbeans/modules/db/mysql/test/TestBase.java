@@ -114,10 +114,6 @@ public class TestBase extends NbTestCase  {
         if (dbconn == null) {
             dbconn = DatabaseConnection.create(driver, url, user, schema, password, true);
             ConnectionManager.getDefault().addConnection(dbconn);
-
-            while (ConnectionManager.getDefault().getConnection(dbconn.getName()) == null) {
-                Thread.sleep(1000);
-            }
         }
 
 

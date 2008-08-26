@@ -33,7 +33,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         EditPathMapDialog dlg = new EditPathMapDialog(hkey, pathToValidate);
 
         DialogDescriptor dd = new DialogDescriptor(dlg,
-                NbBundle.getMessage(EditServerListDialog.class, "EditPathMapDialogTitle"),
+                NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialogTitle"),
                 true, DialogDescriptor.OK_CANCEL_OPTION, null, dlg);
         dd.setClosingOptions(new Object[]{DialogDescriptor.CANCEL_OPTION});
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);

@@ -84,18 +84,47 @@ public class GemManagerTest extends RubyTestBase {
         GemManager gm = jruby.getGemManager();
 
         List<String> errors = new ArrayList<String>();
-        List<Gem> available = gm.getRemoteGems(errors);
-        assertNotNull("gem not null", available);
-        System.out.println("available: " + available.size());
+        List<Gem> remote = gm.getRemoteGems(errors);
+        assertNotNull("remote gems not null", remote);
+        System.out.println("remote: " + remote.size());
         assertTrue("no errros: " + errors, errors.isEmpty());
 
-        List<Gem> installed = gm.getInstalledGems(errors);
+        List<Gem> installed = gm.getLocalGems();
         assertNotNull("gem not null", installed);
         System.out.println("installed: " + installed.size());
         assertTrue("no errros", errors.isEmpty());
 
         gm.reloadIfNeeded(errors);
         assertTrue("no errros", errors.isEmpty());
+    }
+
+    public void testReloadLocalIfNeeded() {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        GemManager gm = jruby.getGemManager();
+        gm.reset();
+        try {
+            assertTrue("local not loaded yet", gm.needsLocalReload());
+            List<String> errors = gm.reloadLocalIfNeeded();
+            assertTrue("no errros", errors.isEmpty());
+            assertTrue("local loaded", !gm.needsLocalReload());
+            gm.reset();
+        } finally {
+            gm.reset();
+        }
+    }
+
+    public void testReloadRemoteIfNeeded() {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        GemManager gm = jruby.getGemManager();
+        gm.reset();
+        try {
+            assertTrue("remote not loaded yet", gm.needsRemoteReload());
+            List<String> errors = gm.reloadRemoteIfNeeded();
+            assertTrue("no errros", errors.isEmpty());
+            assertTrue("remote loaded", !gm.needsRemoteReload());
+        } finally {
+            gm.reset();
+        }
     }
 
     public void testIsValidGemHome() throws Exception {
@@ -274,6 +303,12 @@ public class GemManagerTest extends RubyTestBase {
         assertNotSame("hashCode", jGemManager.hashCode(), cGemManager.hashCode());
     }
 
+    public void testHasOldAndHasAncientRubyGemsVersion() {
+        GemManager gm = RubyPlatformManager.getDefaultPlatform().getGemManager();
+        assertFalse("does not have ancient RubyGems version", gm.hasAncientRubyGemsVersion());
+        assertFalse("does not have old RubyGems version", gm.hasOldRubyGemsVersion());
+    }
+    
     private File getRakeGem() throws IOException {
         File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.8.1.gem");
         assertNotNull("rake gem found", rakeGem);

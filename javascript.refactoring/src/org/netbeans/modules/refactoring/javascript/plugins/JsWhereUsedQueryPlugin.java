@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.text.Document;
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Error;
@@ -426,9 +426,9 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
             } else*/ if (isFindUsages()) {
 
                 Node scopeNode = null;
-                if (node.getType() == org.mozilla.javascript.Token.NAME ||
-                    node.getType() == org.mozilla.javascript.Token.BINDNAME ||
-                    node.getType() == org.mozilla.javascript.Token.PARAMETER) {
+                if (node.getType() == org.mozilla.nb.javascript.Token.NAME ||
+                    node.getType() == org.mozilla.nb.javascript.Token.BINDNAME ||
+                    node.getType() == org.mozilla.nb.javascript.Token.PARAMETER) {
                     // TODO - map this node to our new tree.
                     // In the mean time, just search in the old seach tree.
                     Node searchRoot = node;
@@ -524,7 +524,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
         @SuppressWarnings("fallthrough")
         private void find(AstPath path, JsElementCtx searchCtx, JsElementCtx fileCtx, Node node, String name) {
             switch (node.getType()) {
-            case org.mozilla.javascript.Token.OBJLITNAME: {
+            case org.mozilla.nb.javascript.Token.OBJLITNAME: {
                 if (node.getString().equals(name) && AstUtilities.isLabelledFunction(node)) {
                     // TODO - implement skip semantics here, as is done for functions!
                     // AstUtilities.getLabelledFunction(node);
@@ -536,7 +536,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
                 return;
             }
             
-            case org.mozilla.javascript.Token.FUNCNAME: {
+            case org.mozilla.nb.javascript.Token.FUNCNAME: {
                 if (node.getString().equals(name)) {
                     boolean skip = false;
 
@@ -580,7 +580,7 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
                     break;
             }
 
-            case org.mozilla.javascript.Token.CALL: {
+            case org.mozilla.nb.javascript.Token.CALL: {
                 String s = AstUtilities.getCallName(node, false);
                 if (s.equals(name)) {
                      // TODO - if it's a call without a lhs (e.g. Call.LOCAL),
@@ -594,21 +594,21 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
                  break;
             }
             
-            case org.mozilla.javascript.Token.NAME:
-                if (node.getParentNode().getType() == org.mozilla.javascript.Token.CALL) {
+            case org.mozilla.nb.javascript.Token.NAME:
+                if (node.getParentNode().getType() == org.mozilla.nb.javascript.Token.CALL) {
                     // Skip - call name is already handled as part of parent
                     break;
                 }
                 // Fallthrough
-            case org.mozilla.javascript.Token.STRING: {
+            case org.mozilla.nb.javascript.Token.STRING: {
                 int parentType = node.getParentNode().getType();
-                if (!(parentType == org.mozilla.javascript.Token.GETPROP ||
-                        parentType == org.mozilla.javascript.Token.SETPROP)) {
+                if (!(parentType == org.mozilla.nb.javascript.Token.GETPROP ||
+                        parentType == org.mozilla.nb.javascript.Token.SETPROP)) {
                     break;
                 }
                 // Fallthrough
             }
-            case org.mozilla.javascript.Token.BINDNAME: {
+            case org.mozilla.nb.javascript.Token.BINDNAME: {
                 // Global vars
                 if (node.getString().equals(name)) {
                     JsElementCtx matchCtx = new JsElementCtx(fileCtx, node);
@@ -631,15 +631,15 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
         @SuppressWarnings("fallthrough")
         private void findLocal(JsElementCtx searchCtx, JsElementCtx fileCtx, Node node, String name) {
             switch (node.getType()) {
-            case org.mozilla.javascript.Token.NAME:
-                if (node.getParentNode().getType() == org.mozilla.javascript.Token.CALL &&
+            case org.mozilla.nb.javascript.Token.NAME:
+                if (node.getParentNode().getType() == org.mozilla.nb.javascript.Token.CALL &&
                         node.getParentNode().getFirstChild() == node) {
                     // Ignore calls
                     break;
                 }
                 // Fallthrough
-            case org.mozilla.javascript.Token.PARAMETER:
-            case org.mozilla.javascript.Token.BINDNAME:
+            case org.mozilla.nb.javascript.Token.PARAMETER:
+            case org.mozilla.nb.javascript.Token.BINDNAME:
                 // Global vars
                 if (node.getString().equals(name)) {
                     JsElementCtx matchCtx = new JsElementCtx(fileCtx, node);

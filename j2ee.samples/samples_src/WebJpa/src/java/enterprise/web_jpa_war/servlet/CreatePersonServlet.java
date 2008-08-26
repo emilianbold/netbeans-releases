@@ -92,7 +92,9 @@ public class CreatePersonServlet extends HttpServlet {
             throw new ServletException(ex);
         } finally {
             //close the em to release any resources held up by the persistebce provider
-            em.close();
+            if(em != null) {
+                em.close();
+            }
         }
     }
     

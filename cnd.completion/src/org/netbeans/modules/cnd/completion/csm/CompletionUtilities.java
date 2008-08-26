@@ -101,7 +101,7 @@ public class CompletionUtilities {
     public static CsmClass findClassOnPosition(BaseDocument doc, int offset) {
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
         CsmContext context = CsmOffsetResolver.findContext(file, offset);
-        CsmClass clazz = CsmContextUtilities.getClass(context, true);
+        CsmClass clazz = CsmContextUtilities.getClass(context, true, false);
         return clazz;
     }
 
@@ -112,7 +112,7 @@ public class CompletionUtilities {
             CsmContext context = CsmOffsetResolver.findContext(file, offset);
             out = CsmContextUtilities.getFunctionDefinition(context);
             if (out == null || !CsmContextUtilities.isInFunctionBodyOrInitializerList(context, offset)) {
-                out = CsmContextUtilities.getClass(context, false);
+                out = CsmContextUtilities.getClass(context, false, false);
             }
         }
         return out;

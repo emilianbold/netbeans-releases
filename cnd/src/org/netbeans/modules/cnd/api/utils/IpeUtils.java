@@ -766,6 +766,9 @@ public class IpeUtils {
 		string.charAt(i) == '-' ||
 		string.charAt(i) == '.' ||
 		string.charAt(i) == '/' ||
+		string.charAt(i) == '$' ||
+		string.charAt(i) == '{' ||
+		string.charAt(i) == '}' ||
 		string.charAt(i) == '\\') {
             }
             else {
@@ -837,7 +840,7 @@ public class IpeUtils {
             if (i > 0)
                 newName = name + "_" + i; // NOI18N
             newPath = folder + "/" + newName; // NOI18N
-            if (ext.length() > 0)
+            if (ext != null && ext.length() > 0)
                 newPath = newPath + "." + ext; // NOI18N
             if (!new File(newPath).exists()) {
                 break;
@@ -923,6 +926,18 @@ public class IpeUtils {
             return true;
         }
         return false;
+    }
+    
+    public static String expandMacro(String string, String macro, String value) {
+        // Substitute macro
+        int i = string.indexOf((macro));
+        if (i == 0) {
+            string = value + string.substring(macro.length());
+        }
+        else if (i > 0) {
+            string = string.substring(0, i) + value + string.substring(i + macro.length());
+        }
+        return string;
     }
 }
 

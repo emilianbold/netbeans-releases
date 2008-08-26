@@ -55,6 +55,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.windows.WindowManager;
 
 /**
@@ -64,7 +65,7 @@ import org.openide.windows.WindowManager;
 public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     
     private static Map<String, RemoteUserInfo> map;
-  
+    private static final String REMOTE_USER_INFO = "remote.user.info";
     private String passwd;
     private JTextField passwordField = (JTextField) new JPasswordField(20);
     private final GridBagConstraints gbc = new GridBagConstraints(0, 0, 1, 1, 1, 1,
@@ -74,9 +75,13 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private final static Object DLGLOCK = new Object();
     private Component parent;
     private final String host;
+    private final Encrypter crypter;
     
     private RemoteUserInfo(String host) {
         this.host = host;
+        this.crypter = new Encrypter(host);
+        String hostKey = encrypt(REMOTE_USER_INFO + host);
+        this.passwd = decrypt(NbPreferences.forModule(RemoteUserInfo.class).get(hostKey, null));
         setParentComponent(this);
     }
     /**
@@ -95,6 +100,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         if (ui == null) {
             ui = new RemoteUserInfo(key);
             map.put(key, ui);
+            retry = false;
         }
         if (retry) {
             ui.cancelled = false;
@@ -102,9 +108,17 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         }
         return ui;
     }
+
+    private String encrypt(String pwd) {
+        return crypter.encrypt(pwd);
+    }
+
+    private String decrypt(String pwd) {
+        return crypter.decrypt(pwd);
+    }
     
     private void reset() {
-        passwd = "";
+        setPassword(null, false);
         passwordField.setText(""); // clear textfield
         cancelled = false;
     }
@@ -113,8 +127,19 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         return passwd;
     }
 
-    public void setPassword(String pwd) {
+    /**
+     *
+     * @param pwd password or null to reset password
+     * @param rememberPassword
+     */
+    public void setPassword(String pwd, boolean rememberPassword) {
         this.passwd = pwd;
+        String hostKey = encrypt(REMOTE_USER_INFO + host);
+        if (rememberPassword && pwd != null) {
+            NbPreferences.forModule(RemoteUserInfo.class).put(hostKey, encrypt(pwd));
+        } else {
+            NbPreferences.forModule(RemoteUserInfo.class).remove(hostKey);
+        }
     }
     
     public synchronized boolean promptYesNo(String str) {
@@ -139,7 +164,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     public synchronized boolean promptPassword(String message) {
         if (!isCancelled()) {
-            if (passwd != null && passwd.length() > 0) {
+            if (passwd != null) {
                 return true;
             } else {
                 boolean result;
@@ -149,10 +174,10 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                 }
 
                 if (result) {
-                    passwd = pwdDlg.getPassword();
+                    setPassword(pwdDlg.getPassword(), pwdDlg.isRememberPassword());
                     return true;
                 } else {
-                    passwd = "";
+                    setPassword(null, false);
                     cancelled = true;
                     return false; 
                 }

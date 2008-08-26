@@ -90,7 +90,7 @@ public class FortranDataLoader extends CndAbstractDataLoaderExt {
     }
 
     public String getDisplayNameForExtensionList() {
-	throw new UnsupportedOperationException();
+        return NbBundle.getMessage(FortranDataLoader.class, "FortranDataLoader_Name_ForExtList"); // NOI18N
     }
 
     public String getSettingsName() {

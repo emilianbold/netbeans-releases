@@ -61,11 +61,14 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     /** All per-configuration properties to be stored. */
     private static final String[] CONFIG_PROPS = {
         RAILS_PORT, RAILS_SERVERTYPE, RAKE_ARGS, RAILS_ENV,
-        MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS
+        MAIN_CLASS, APPLICATION_ARGS, RUBY_OPTIONS, RAILS_SERVERTYPE,
+        PLATFORM_ACTIVE
     };
     
     /** Private per-configuration properties. */
-    private static final String[] CONFIG_PRIVATE_PROPS = { RAILS_PORT, RAILS_ENV, RAKE_ARGS, APPLICATION_ARGS, RAILS_SERVERTYPE };
+    private static final String[] CONFIG_PRIVATE_PROPS = {
+        RAILS_PORT, RAILS_ENV, RAKE_ARGS, APPLICATION_ARGS, PLATFORM_ACTIVE
+    };
 
     private RubyInstance server;
     private String railsEnvironment;
@@ -100,28 +103,32 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
 
     @Override
     protected void storeProperties(EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
-        RailsProjectProperties.storeServer(privateProperties, getServer());
+        if (server != null) {
+            privateProperties.remove(RAILS_SERVERTYPE);
+            projectProperties.setProperty(RAILS_SERVERTYPE, server.getServerUri());
+        }
         if (getRailsEnvironment() != null) {
             privateProperties.setProperty(RAILS_ENV, getRailsEnvironment());
         }
     }
+    
     RubyInstance getServer() {
         return this.server;
     }
 
-    void setServer(RubyInstance server) {
+    void setServer(final RubyInstance server, final String config) {
+        getRunConfigs().get(config).put(RailsProjectProperties.RAILS_SERVERTYPE, server.getServerUri());
         this.server = server;
     }
 
-    public static void storeServer(final EditableProperties ep, final RubyInstance server) {
-        ep.setProperty(RAILS_SERVERTYPE, server.getServerUri());
-    }
-
     String getRailsEnvironment() {
-        return this.railsEnvironment;
+        return railsEnvironment;
     }
 
-    void setRailsEnvironment(String railsEnvironment) {
+    void setRailsEnvironment(final String railsEnvironment, final String config) {
+        if (railsEnvironment != null) {
+            getRunConfigs().get(config).put(RailsProjectProperties.RAILS_ENV, railsEnvironment);
+        }
         this.railsEnvironment = railsEnvironment;
     }
 

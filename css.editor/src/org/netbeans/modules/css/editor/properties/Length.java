@@ -63,10 +63,10 @@ public class Length extends NumberPostfixAcceptor {
     * pt: points -- the points used by CSS2 are equal to 1/72th of an inch.
     * pc: picas -- 1 pica is equal to 12 points. 
     */
-    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"px", "ex", "em", "in", "cm", "mm", "pt", "pc"});
+    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"px", "ex", "em", "in", "cm", "mm", "pt", "pc"}); //NOI18N
     
     public String id() {
-        return "length";
+        return "length"; //NOI18N
     }
 
     public List<String> postfixes() {
@@ -77,7 +77,7 @@ public class Length extends NumberPostfixAcceptor {
     public boolean accepts(String text) {
         boolean sa = super.accepts(text);
         if(!sa) {
-            return "0".equals(text);
+            return "0".equals(text); //NOI18N
         } else {
             return sa;
         }

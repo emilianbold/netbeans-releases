@@ -43,18 +43,16 @@ package org.netbeans.modules.websvc.saas.codegen.model;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
-import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamStyle;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
@@ -81,6 +79,7 @@ public class SoapClientOperationInfo {
     private WSService service;
     private WSOperation operation;
     private WSPort port;
+    private List<ParameterInfo> headerParams = Collections.emptyList();
 
     public SoapClientOperationInfo(WsdlSaasMethod m, Project project) {
         this.method = m;
@@ -97,6 +96,10 @@ public class SoapClientOperationInfo {
         this.service = method.getSaas().getWsdlModel();
         this.port = method.getWsdlPort();
         this.operation = method.getWsdlOperation();
+    }
+
+    public Project getProject() {
+        return project;
     }
 
     public WsdlSaasMethod getMethod() {
@@ -129,8 +132,6 @@ public class SoapClientOperationInfo {
     }
 
     public void initWsdlModelInfo() {
-        //FIXME - Refactor
-//        LibrariesHelper.addDefaultJaxWsClientJars(project, null, method.getSaas());
     }
 
     public static WSOperation findOperationByName(WSPort port, String name) {
@@ -222,7 +223,7 @@ public class SoapClientOperationInfo {
                 synchronized (this) {
                     try {
                         while (repeatCount < 60) {
-                            type = Util.getType(project, ((WSParameter)p).getTypeName());
+                            type = getType(project, ((WSParameter)p).getTypeName());
 
                             if (type != null) {
                                 break;
@@ -249,25 +250,15 @@ public class SoapClientOperationInfo {
         return types.toArray(new Class[types.size()]);
     }
     
+    public Class getType(Project project, String typeName) {
+        return Util.getType(project, typeName);
+    }
+    
     public boolean needsSoapHandler() {
         return getSoapHeaderParameters().size() > 0;
     }
     
-    private List<ParameterInfo> headerParams;
     public List<ParameterInfo> getSoapHeaderParameters() {
-        if (headerParams == null) {
-            headerParams = new java.util.ArrayList<ParameterInfo>();
-
-            //FIXME - Refactor
-//            Map<QName,String> params = SoapClientUtils.getSoapHandlerParameters(
-//                    getXamWsdlModel(), getPort(), getOperation());
-//            for (Map.Entry<QName,String> entry : params.entrySet()) {
-//                Class type = Util.getType(project, entry.getValue());
-//                ParameterInfo info = new ParameterInfo(entry.getKey(), type, entry.getValue());
-//                info.setStyle(ParamStyle.UNKNOWN);
-//                headerParams.add(info);
-//            }
-        }
         return headerParams;
     }
 

@@ -300,7 +300,13 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             logger.info(
                     "Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
 
-
+            if(!hibernateEnvironment.canLoadDBDriver(hdo.getHibernateConfiguration())) {
+                logger.info("DB Driver not registered with the project. Registering now..");
+                logger.info("DB Driver registered : " + hibernateEnvironment.registerDBDriver(
+                        descriptor.getDriver(),
+                        hdo.getPrimaryFile()
+                        ));
+            }
 
 
 

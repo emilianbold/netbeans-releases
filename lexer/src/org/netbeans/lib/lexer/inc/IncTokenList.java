@@ -156,7 +156,7 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
                 : rawOffset - offsetGapLength());
     }
 
-    public int tokenOffsetByIndex(int index) {
+    public int tokenOffset(int index) {
         return elementOffset(index);
     }
     

@@ -287,7 +287,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             assert nbroot != null : "netbeans.org-type module not in a complete netbeans.org source root " + dir;
             stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
             // Only needed for netbeans.org modules, since for external modules suite.properties suffices.
-            stock.put("netbeans.dest.dir", new File(nbroot, ModuleList.DEST_DIR_IN_NETBEANS_ORG).getAbsolutePath()); // NOI18N
+            stock.put("netbeans.dest.dir", ModuleList.findNetBeansOrgDestDir(nbroot).getAbsolutePath()); // NOI18N
         } else {
             nbroot = null;
         }

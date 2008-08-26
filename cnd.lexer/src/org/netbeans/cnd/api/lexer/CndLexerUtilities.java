@@ -180,6 +180,7 @@ public final class CndLexerUtilities {
             case AUTO:
             case BOOL:
             case CHAR:
+            case CONST:
             case DOUBLE:
             case ENUM:
             case EXPORT:
@@ -199,13 +200,13 @@ public final class CndLexerUtilities {
             case SIZEOF:
             case TYPEDEF:
             case TYPEID:
-            case TYPENAME:
             case TYPEOF:
             case __TYPEOF:
             case __TYPEOF__:
             case UNSIGNED:
             case __UNSIGNED__:
             case VOID:
+            case VOLATILE:
             case WCHAR_T:
             case _BOOL:
             case _COMPLEX:

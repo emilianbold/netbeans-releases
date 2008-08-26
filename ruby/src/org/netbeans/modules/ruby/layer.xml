@@ -51,6 +51,12 @@
                         </folder>
                     </folder>
                 </folder>
+
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-ruby-preferences.xml" url="preferences.xml"/>
+                    </folder>
+                </folder>
             </folder>
             
             <!-- Embedded double-quoted strings -->
@@ -121,7 +127,7 @@
               <folder name="text">
                   <folder name="x-ruby">
                       <file name="TabsAndIndents.instance">
-                          <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.options.FmtTabsIndents.getController"/>
                           <attr name="position" intvalue="100"/>
                       </file>

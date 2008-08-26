@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.nav;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -330,6 +331,14 @@ public class DeclarationFinderImplTest extends TestBase {
                                          "    }\n" +
                                          "}\n" +
                                          "?>");
+    }
+    
+    public void testExtendedClass() throws Exception {
+        String userClass = TestUtilities.copyFileToString(new File(getDataDir(), "testfiles/classUser.php"));
+        userClass = userClass.replace("extends Man {", "extends M|an {");
+        String manClass = TestUtilities.copyFileToString(new File(getDataDir(), "testfiles/classMan.php"));
+        manClass = manClass.replace("class Man {", "^class Man {");
+        performTestSimpleFindDeclaration(-1, userClass, manClass);
     }
 
     private void performTestSimpleFindDeclaration(int declarationFile, String... code) throws Exception {

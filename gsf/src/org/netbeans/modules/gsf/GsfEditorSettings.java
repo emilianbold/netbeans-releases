@@ -55,6 +55,14 @@ import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
  * or a table or some external xml-like file.
  * Maybe that is all there already in NetBeans but I could not find it.
  * This is called from the ModuleInstall class and it's key for the editor to work.
+ *
+ * vstejskal:
+ * - all the settings defined in afterLoad can be suppied through an
+ *   XML file registered in module's layer in Editors/&lt;mime-type&gt;/Preferences/Defaults.
+ *   The format of the file is described in http://www.netbeans.org/dtds/EditorPreferences-1_0.dtd
+ * - the values supplied from afterLoad are the default values for __all__ GSF based languages,
+ *   but each language cna override them by registering its own values throught
+ *   the XML file described above
  */
 public class GsfEditorSettings extends StorageFilter<String, TypedValue> {
 
@@ -74,9 +82,6 @@ public class GsfEditorSettings extends StorageFilter<String, TypedValue> {
                 
                 if (!map.containsKey(SimpleValueNames.CODE_FOLDING_ENABLE)) {
                     map.put(SimpleValueNames.CODE_FOLDING_ENABLE, new TypedValue("true", Boolean.class.getName())); //NOI18N
-                }
-                if (!map.containsKey(SimpleValueNames.SPACES_PER_TAB)) {
-                    map.put(SimpleValueNames.SPACES_PER_TAB, new TypedValue("2", Integer.class.getName())); //NOI18N
                 }
                 if (!map.containsKey("word-match-match-case")) { //NOI18N
                     map.put("word-match-match-case", new TypedValue("true", Boolean.class.getName())); //NOI18N

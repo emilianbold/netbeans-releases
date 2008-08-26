@@ -43,7 +43,6 @@
 
 package org.netbeans.debuggercore;
 
-import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
@@ -54,9 +53,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 
 public class StartDebuggerTest extends JellyTestCase {
     

@@ -61,6 +61,11 @@ public class ConvertToRestAction extends CookieAction {
     }
 
     @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    @Override
     protected void performAction(Node[] activatedNodes) {
         if(activatedNodes.length == 1){
             Node node = activatedNodes[0];

@@ -84,6 +84,11 @@ public class CollapsibleWidget extends Widget implements CollapsibleWidgetManage
 
         addChild(separator);
         addChild(targetWidget);
+        
+        // Use the parents properties.
+        setForeground(null);
+        setBackground(null);
+        setFont(null);
     }
 
     public void setCompartmentName(String name)

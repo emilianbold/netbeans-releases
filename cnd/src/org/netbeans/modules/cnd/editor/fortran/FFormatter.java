@@ -44,12 +44,15 @@ package org.netbeans.modules.cnd.editor.fortran;
 import java.io.IOException;
 import java.io.Writer;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 
+import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.AbstractFormatLayer;
 import org.netbeans.editor.ext.FormatSupport;
 import org.netbeans.editor.ext.ExtFormatter;
+import org.netbeans.editor.ext.FormatTokenPosition;
 import org.netbeans.editor.ext.FormatWriter;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
@@ -61,45 +64,125 @@ public class FFormatter extends ExtFormatter {
         super(kitClass);
     }
 
+    @Override
     protected boolean acceptSyntax(Syntax syntax) {
         return (syntax instanceof FSyntax);
     }
     
+    @Override
     protected void initFormatLayers() {
         addFormatLayer(new FortranLayer());
     }
     
+    @Override
     public Writer reformat(BaseDocument doc, int startOffset, int endOffset,
             boolean indentOnly) throws BadLocationException, IOException {
-        return null;
+        return super.reformat(doc, startOffset, endOffset, indentOnly);
     }
 
+    @Override
     public int reformat(BaseDocument doc, int startOffset, int endOffset)
     throws BadLocationException {
         return 0;
     }
 
     
+    @Override
     public void shiftLine(BaseDocument doc, int dotPos, boolean right) throws BadLocationException {
         StatusDisplayer.getDefault().setStatusText(
                 NbBundle.getBundle(FFormatter.class).getString("MSG_NoFortranShifting")); // NOI18N
     }
-    
+        
+    @Override
+    public int[] getReformatBlock(JTextComponent target, String typedText) {
+        int[] ret = null;
+        BaseDocument doc = Utilities.getDocument(target);
+        int dotPos = target.getCaret().getDot();
+        if (doc != null) {
+            ret = getKeywordBasedReformatBlock(doc, dotPos, typedText);
+            if (ret == null) {
+                ret = super.getReformatBlock(target, typedText);
+            }
+        }
+        return ret;
+    }
+
+    private int[] getKeywordBasedReformatBlock(BaseDocument doc, int dotPos, String typedText) {
+        /* Check whether the user has written the ending 'e'
+         * of the first 'else' on the line.
+         */
+        int[] ret = null;
+        if ("e".equals(typedText) || "E".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "else")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 4};
+                }
+            } catch (BadLocationException e) {
+            }
+        }else if ("o".equals(typedText) || "O".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "enddo")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 5};
+                } else if (checkCase(doc, fnw, "end do")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 6};
+                }
+            } catch (BadLocationException e) {
+            }
+        }else if ("f".equals(typedText) || "F".equals(typedText)) { // NOI18N
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, "endif")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 5};
+                } else if (checkCase(doc, fnw, "end if")) { // NOI18N
+                    ret = new int[]{fnw, fnw + 6};
+                }
+            } catch (BadLocationException e) {
+            }
+        }
+        if (ret == null && typedText != null &&
+            typedText.length() == 1 && Character.isLetter(typedText.charAt(0))) {
+            try {
+                int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
+                if (checkCase(doc, fnw, typedText+"\n") || // NOI18N
+                    dotPos == doc.getLength() && checkCase(doc, fnw, typedText)) { // NOI18N
+                    ret = new int[]{fnw, fnw + 1};
+                }
+            } catch (BadLocationException e) {
+            }
+        }
+        return ret;
+    }
+
+    private boolean checkCase(BaseDocument doc, int fnw, String what) throws BadLocationException {
+        return fnw >= 0 && fnw + what.length() <= doc.getLength() && what.equalsIgnoreCase(doc.getText(fnw, what.length()));
+    }
+
     public class FortranLayer extends AbstractFormatLayer {
 
         public FortranLayer() {
             super("fortran-layer"); // NOI18N
         }
 
+        @Override
         protected FormatSupport createFormatSupport(FormatWriter fw) {
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getBundle(FFormatter.class).getString("MSG_NoFortranReformatting")); // NOI18N
-            return null;
+            return new FFormatSupport(fw);
+            //StatusDisplayer.getDefault().setStatusText(
+            //        NbBundle.getBundle(FFormatter.class).getString("MSG_NoFortranReformatting")); // NOI18N
+            //return null;
         }
 
         public void format(FormatWriter fw) {
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getBundle(FFormatter.class).getString("MSG_NoFortranReformatting")); // NOI18N
+            try {
+                FFormatSupport ffs = (FFormatSupport) createFormatSupport(fw);
+                FormatTokenPosition pos = ffs.getFormatStartPosition();
+                if (ffs.getFreeFormat() && ffs.isIndentOnly()) {  // create indentation only
+                    ffs.indentLine(pos);
+                }
+            } catch (IllegalStateException e) {
+            }
         }
+        
     } // end class FortranLayer
 }

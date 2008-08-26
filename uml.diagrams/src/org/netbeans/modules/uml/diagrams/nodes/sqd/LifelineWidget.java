@@ -44,6 +44,7 @@ package org.netbeans.modules.uml.diagrams.nodes.sqd;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Paint;
 import java.awt.Point;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -121,7 +122,7 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
        this(scene,"defNM","defCL");
     }
     public LifelineWidget(Scene scene,String name,String classifier) {
-        super(scene,true);
+        super(scene,false);
         //setLayout(new LifelineLayout());
         //
         lookupContent.add(initializeContextPalette());
@@ -139,9 +140,11 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
     public void initializeNode(IPresentationElement presentation)
     {
         //setLayout(LayoutFactory.createVerticalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY,0));
+        
+        // The ActorSymbolWidget will override the display name.
         actorWidget=new ActorSymbolWidget(getScene(),
-                                          getWidgetID()+".actorsymbol", 
-                                          NbBundle.getMessage(LifelineWidget.class, "LBL_Lifeline_Actor"));
+                                          getWidgetID()+".stickfigure", 
+                                          "");
         
         actorWidget.setMinimumSize(new Dimension(10,SQDDiagramEngineExtension.DEFAULT_LIFELINE_Y-SQDDiagramEngineExtension.DEFAULT_ACTORLIFELINE_Y));
         actorWidget.setMaximumSize(new Dimension(50,SQDDiagramEngineExtension.DEFAULT_LIFELINE_Y-SQDDiagramEngineExtension.DEFAULT_ACTORLIFELINE_Y));
@@ -149,9 +152,11 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
         boxWidget=new LifelineBoxWidget(getScene(),"","");
         boxWidget.setForeground(null);
         boxWidget.setBackground(null);
+        boxWidget.setFont(null);
         lineWidget=new LifelineLineWidget(getScene());
         setBackground(null);
         setForeground(null);
+        setFont(null);
         all=new Widget(getScene());
         all.setBackground(null);
         all.setForeground(null);
@@ -219,6 +224,8 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
                 }
             }, getScene());
         }
+        
+        super.initializeNode(presentation);
     }
 
     @Override
@@ -523,14 +530,20 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
     protected void notifyFontChanged(Font font) {
         if(prevFont==null || prevFont.getSize()!=font.getSize())
         {
-            //need to adjust messages on this lifeline
-            new AfterValidationExecutor(new AdjustAfterBoxChangeProvider(LifelineWidget.this), getScene());
-            //font size was changed, need to revalidate box sizes
-            boxWidget.revalidate();
-            all.revalidate();
-            boxWidget.updateLabel();
-            revalidate();
-            getScene().validate();
+            // If all == null it means we are getting this event during the 
+            // initialization of the node.  We are getting it when we call
+            // setFont(null);
+            if(all != null)
+            {
+                //need to adjust messages on this lifeline
+                new AfterValidationExecutor(new AdjustAfterBoxChangeProvider(LifelineWidget.this), getScene());
+                //font size was changed, need to revalidate box sizes
+                boxWidget.revalidate();
+                all.revalidate();
+                boxWidget.updateLabel();
+                revalidate();
+                getScene().validate();
+            }
         }
         prevFont=font;
     }
@@ -589,4 +602,25 @@ public class LifelineWidget extends UMLNodeWidget implements PropertyChangeListe
     {
         return customizableResTypes;
     }
+
+    @Override
+    public void setNodeBackground(Paint paint)
+    {
+        getResourceTable().addProperty("LIFELINE.LIFELINEBOX." + ResourceValue.BGCOLOR , paint);
+    }
+
+    @Override
+    public void setNodeFont(Font f)
+    {   
+        getResourceTable().addProperty("LIFELINE.LIFELINEBOX." + ResourceValue.FONT , f);
+    }
+
+    @Override
+    public void setNodeForeground(Color color)
+    {
+        
+        getResourceTable().addProperty("LIFELINE.LIFELINEBOX." + ResourceValue.FGCOLOR , color);
+    }
+    
+    
 }

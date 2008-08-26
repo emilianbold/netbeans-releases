@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.hibernate.service.spi;
 
+import java.net.MalformedURLException;
 import org.netbeans.modules.hibernate.service.*;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import java.io.IOException;
@@ -50,6 +51,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hibernate.HibernateException;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -66,6 +69,7 @@ import org.netbeans.modules.hibernate.wizards.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 /**
@@ -266,7 +270,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
             ClassPath cp = ClassPath.getClassPath(getAllHibernateConfigFileObjects().get(0), ClassPath.EXECUTE);
             if (!containsClass(cp, "javax.persistence.EntityManager")) { // NOI18N                
                 addLibraryResult = ProjectClassPathModifier.addLibraries(new Library[]{hibernateLibrary, ejb3PersistenceLibrary}, fileInProject, ClassPath.COMPILE);
-            } else {                
+            } else {
                 addLibraryResult = ProjectClassPathModifier.addLibraries(new Library[]{hibernateLibrary}, fileInProject, ClassPath.COMPILE);
             }
         } catch (IOException ex) {
@@ -294,29 +298,29 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         for (boolean val : fact.getMapping()) {
             String propName = fact.getAttributeValue(SessionFactory.MAPPING,
                     count, "resource"); //NOI18N
-            if(propName != null) {
+            if (propName != null) {
                 mappingsFromConfiguration.add(propName);
             }
             propName = fact.getAttributeValue(SessionFactory.MAPPING,
                     count, "file"); //NOI18N
-            if(propName != null) {
+            if (propName != null) {
                 mappingsFromConfiguration.add(propName);
             }
             propName = fact.getAttributeValue(SessionFactory.MAPPING,
                     count, "package"); //NOI18N
-            if(propName != null) {
+            if (propName != null) {
                 mappingsFromJavaPackage.add(propName);
             }
-            count ++;
+            count++;
         }
-        
+
         // Process mappings from Java Package(s).
-        if(mappingsFromJavaPackage.size() != 0) {
+        if (mappingsFromJavaPackage.size() != 0) {
             List<String> allMappingFilesRelativeToSourceRoot = HibernateUtil.getAllHibernateMappingsRelativeToSourcePath(project);
-            for(String mappingRelativeToSourceRoot : allMappingFilesRelativeToSourceRoot) {
-                for(String mappingFromPackage : mappingsFromJavaPackage) {
+            for (String mappingRelativeToSourceRoot : allMappingFilesRelativeToSourceRoot) {
+                for (String mappingFromPackage : mappingsFromJavaPackage) {
                     mappingFromPackage = mappingFromPackage.replace(".", "/");
-                    if(mappingRelativeToSourceRoot.startsWith(mappingFromPackage)) {
+                    if (mappingRelativeToSourceRoot.startsWith(mappingFromPackage)) {
                         mappingsFromConfiguration.add(mappingRelativeToSourceRoot);
                     }
                 }
@@ -356,7 +360,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     public Project getProject() {
         return project;
     }
-    
+
     /**
      * Returns list of annotated POJO (FQN) classnames (String) found in this 
      * Hibernate configuration.
@@ -366,7 +370,7 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
      */
     public List<String> getAnnotatedPOJOClassNames(FileObject configurationFO) {
         List<String> annototedPOJOClassNameList = new ArrayList<String>();
-        
+
         try {
             HibernateCfgDataObject configDO = (HibernateCfgDataObject) DataObject.find(configurationFO);
             HibernateConfiguration configuration = configDO.getHibernateConfiguration();
@@ -385,7 +389,6 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         return annototedPOJOClassNameList;
     }
 
-
     /**
      * Returns a map of mapping file objects and list of names of Java classes (POJOs) that are defined in 
      * that mapping file for this configuration.
@@ -397,10 +400,10 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         Map<FileObject, List<String>> mappingPOJOMap = new HashMap<FileObject, List<String>>();
         try {
             HibernateCfgDataObject hibernateCfgDO = (HibernateCfgDataObject) DataObject.find(configFileObject);
-            for(String mappingFileName : getAllHibernateMappingsFromConfiguration(hibernateCfgDO.getHibernateConfiguration())) {
-                for(FileObject mappingFO : getAllHibernateMappingFileObjects()) {
-                    if(mappingFileName.contains(mappingFO.getName())) {
-                        List <String> l  = getPOJONameFromMapping(mappingFO);
+            for (String mappingFileName : getAllHibernateMappingsFromConfiguration(hibernateCfgDO.getHibernateConfiguration())) {
+                for (FileObject mappingFO : getAllHibernateMappingFileObjects()) {
+                    if (mappingFileName.contains(mappingFO.getName())) {
+                        List<String> l = getPOJONameFromMapping(mappingFO);
                         mappingPOJOMap.put(mappingFO, l);
                     }
                 }
@@ -408,26 +411,24 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
         return mappingPOJOMap;
     }
-    
+
     private List<String> getPOJONameFromMapping(FileObject mappingFO) {
         List<String> pojoNamesList = new ArrayList<String>();
         try {
-            HibernateMappingDataObject hibernateMappingDO = (HibernateMappingDataObject)DataObject.find(mappingFO);
-            for(MyClass myClass : hibernateMappingDO.getHibernateMapping().getMyClass()) {
+            HibernateMappingDataObject hibernateMappingDO = (HibernateMappingDataObject) DataObject.find(mappingFO);
+            for (MyClass myClass : hibernateMappingDO.getHibernateMapping().getMyClass()) {
                 String propName = myClass.getAttributeValue("name");
                 pojoNamesList.add(propName);
             }
-            
+
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
         return pojoNamesList;
     }
-
-
 
     /**
      *@return true if the given classpath contains a class with the given name.
@@ -436,5 +437,55 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
 
         return cp.findResource(classRelativePath) != null;
+    }
+
+    /**
+     * Registers the selected DB Driver with the project.
+     * @param driver the driver classname.
+     * @param primaryFile a file in the project. Used to extend the classpath.
+     * @return true if successfully registered the given driver or false, if there's problem with registering.
+     */
+    @SuppressWarnings("static-access")
+    public boolean registerDBDriver(String driver, FileObject primaryFile) {
+        boolean registeredDBDriver = false;
+        JDBCDriver[] jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driver);
+        List<URL> driverURLs = new ArrayList<URL>();
+        for (JDBCDriver jdbcDriver : jdbcDrivers) {
+            for (URL url : jdbcDriver.getURLs()) {
+                java.io.File file = null;
+                try {
+                    if (url.getProtocol().equals("nbinst")) { //NOI18N
+                        file = InstalledFileLocator.getDefault().locate(url.getFile().substring(1), null, false);
+                        logger.info("Bundled DB Driver Jar : " + file);
+                    } else {
+                        file = new java.io.File(url.getFile());
+                    }
+                    if (file.isFile() && file.getName().endsWith(".jar")) {
+                        logger.info("DB Driver Jar : " + file);
+                        driverURLs.add(new URL("jar:" + file.toURL() + "!/"));
+
+                    } else {
+                        logger.info("Registering DB Driver from folder : " + url);
+                        driverURLs.add(url);
+                    }
+                } catch (MalformedURLException ex) {
+                    logger.log(Level.INFO, "Problem in converting file url to jar url.", ex);
+                }
+            }
+        }
+
+        ProjectClassPathModifier projectClassPathModifier = project.getLookup().lookup(ProjectClassPathModifier.class);
+
+        try {
+            registeredDBDriver = projectClassPathModifier.addRoots(
+                    driverURLs.toArray(new URL[]{}),
+                    primaryFile,
+                    ClassPath.COMPILE);
+        } catch (Exception e) {
+            registeredDBDriver = false;
+            logger.log(Level.INFO, "Problem in registering db driver.", e);
+        }
+
+        return registeredDBDriver;
     }
 }

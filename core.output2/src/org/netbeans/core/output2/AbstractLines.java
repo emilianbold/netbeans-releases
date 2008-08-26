@@ -580,7 +580,7 @@ abstract class AbstractLines implements Lines, Runnable {
             lastLineFinished = isFinished;
             lastLineLength = isFinished ? -1 : charLineLength;
         }
-        fire();
+        markDirty();
     }
     
     /** Convert an index from chars to byte count (*2).  Simple math, but it

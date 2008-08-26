@@ -126,7 +126,6 @@ public class UpdatePanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 1, 11));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(UpdatePanel.class, "UpdatePanel.infoLabel.text")); // NOI18N
 
         jLabel2.setForeground(new java.awt.Color(153, 153, 153));
@@ -160,14 +159,14 @@ public class UpdatePanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabel2)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(30, 30, 30)
                         .add(revisionsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(revisionsComboBox, 0, 221, Short.MAX_VALUE))
+                        .add(revisionsComboBox, 0, 384, Short.MAX_VALUE))
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE))
+                    .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -189,15 +188,15 @@ public class UpdatePanel extends javax.swing.JPanel {
 
 private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revisionsComboBoxActionPerformed
     int index = revisionsComboBox.getSelectedIndex();
-    if(getMore((String) revisionsComboBox.getSelectedItem())) return;
+    if(getMore((String) revisionsComboBox.getSelectedItem())) return;//GEN-HEADEREND:event_revisionsComboBoxActionPerformed
     
     if(messages != null && index >= 0 && index < messages.length ){
         changesetPanel1.setInfo(messages[index]);
     }
-}//GEN-LAST:event_revisionsComboBoxActionPerformed
+}                                                 
     
     private boolean getMore(String revStr) {
-        if (bGettingRevisions) return false;
+        if (bGettingRevisions) return false;//GEN-LAST:event_revisionsComboBoxActionPerformed
         boolean bGetMore = false;
         int limit = -1;
 

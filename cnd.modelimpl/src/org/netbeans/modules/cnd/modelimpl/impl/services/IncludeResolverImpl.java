@@ -163,7 +163,7 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
                     return getIncludeDerectiveByFile(currentFile, decls.iterator().next());
                 }
             }
-        } else {
+        } else if (!CsmKindUtilities.isNamespace(item)) {
             System.err.println("not yet handled object " + item);
         }
         return ""; // NOI18N
@@ -252,7 +252,7 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
             } else {
                 System.err.println("not handled file instance " + currentFile);
             }
-        } else {
+        } else if (!CsmKindUtilities.isNamespace(item)) {
             System.err.println("not yet handled object " + item);
         }
         return ""; // NOI18N
@@ -290,7 +290,7 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
             } else {
                 return true;
             }
-        } else {
+        } else if (!CsmKindUtilities.isNamespace(item)) {
             System.err.println("not yet handled object " + item);
         }
         return false;

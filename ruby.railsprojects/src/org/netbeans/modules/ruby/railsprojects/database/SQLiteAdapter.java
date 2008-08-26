@@ -76,4 +76,12 @@ class SQLiteAdapter implements RailsDatabaseConfiguration {
         return "db/development." + version; //NOI18N
     }
 
+    public String getTestDatabaseName(String developmentDbName) {
+        return "db/test." + version;
+    }
+
+    public String getProductionDatabaseName(String developmentDbName) {
+        return "db/production." + version;
+    }
+
 }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.groovy.editor.parser;
 
 import groovy.lang.GroovyClassLoader;
+import groovyjarjarasm.asm.Opcodes;
 import java.io.IOException;
 import java.security.CodeSource;
 import java.util.concurrent.ExecutionException;
@@ -86,7 +87,11 @@ public final class NbCompilationUnit extends CompilationUnit {
                         public void run(CompilationController controller) throws Exception {
                             TypeElement typeElement = controller.getElements().getTypeElement(name);
                             if (typeElement != null) {
-                                classNodes[0] = new ClassNode(name, 0, null);
+                                int modifiers = 0;
+                                if (typeElement.getKind().isInterface()) {
+                                    modifiers = Opcodes.ACC_INTERFACE;
+                                }
+                                classNodes[0] = new ClassNode(name, modifiers, null);
                             }
                         }
                     };

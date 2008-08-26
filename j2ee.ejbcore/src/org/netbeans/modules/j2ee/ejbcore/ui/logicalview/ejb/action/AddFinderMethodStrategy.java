@@ -131,15 +131,17 @@ public class AddFinderMethodStrategy extends AbstractAddMethodStrategy {
     private MethodCustomizer createFinderDialog(FileObject fileObject, final MethodModel methodModel) throws IOException{
         String className = _RetoucheUtil.getMainClassName(fileObject);
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(fileObject, className);
+        boolean hasRemote = ejbMethodController != null ? ejbMethodController.hasRemote() : false;
+        boolean hasLocal = ejbMethodController != null ? ejbMethodController.hasLocal() : false;
         MethodsNode methodsNode = getMethodsNode();
         return MethodCustomizerFactory.finderMethod(
                 getTitle(),
                 methodModel, 
                 ClasspathInfo.create(fileObject),
-                ejbMethodController.hasRemote(), 
-                ejbMethodController.hasLocal(), 
-                methodsNode == null ? ejbMethodController.hasLocal() : methodsNode.isLocal(),
-                methodsNode == null ? ejbMethodController.hasRemote() : !methodsNode.isLocal(),
+                hasRemote, 
+                hasLocal, 
+                methodsNode == null ? hasLocal : methodsNode.isLocal(),
+                methodsNode == null ? hasRemote : !methodsNode.isLocal(),
                 ejbMethodController.createDefaultQL(methodModel),
                 _RetoucheUtil.getMethods(fileObject, className)
                 );

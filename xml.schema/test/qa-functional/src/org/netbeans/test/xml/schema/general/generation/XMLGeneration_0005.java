@@ -43,6 +43,10 @@ package org.netbeans.test.xml.schema.general.generation;
 
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.test.xml.schema.lib.SchemaMultiView;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 
@@ -54,33 +58,15 @@ import junit.framework.Test;
 // XML document creation from multiple schemas
 // 
 
-public class XMLGeneration_0005 extends XMLGeneration {
-    
-    static final String TEST_JAVA_APP_NAME = "java4xmlgeneration_0005";
-
-    static final String [] m_aTestMethods = {
-        "CreateJavaApplication",
-        "CreateSchema1",
-        "CreateSchema2",
-        "CreateConstrained",
-        "CheckAndValidate"
-    };
+public class XMLGeneration_0005 extends XMLGeneration
+{
+  static final String TEST_JAVA_APP_NAME = "java4xmlgeneration_0005";
+  static final String SCHEMA_NAME_A = "newXmlSchema";
+  static final String SCHEMA_NAME_B = "newXmlSchema1";
 
     public XMLGeneration_0005(String arg0) {
         super(arg0);
     }
-
-    /*    
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(XMLGeneration_0005.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new XMLGeneration_0005(strMethodName));
-        }
-        
-        return testSuite;
-    }
-    */
 
     public static Test suite( )
     {
@@ -88,7 +74,9 @@ public class XMLGeneration_0005 extends XMLGeneration {
           NbModuleSuite.createConfiguration( XMLGeneration_0005.class ).addTest(
               "CreateJavaApplication",
               "CreateSchema1",
+              "AddElement1",
               "CreateSchema2",
+              "AddElement2",
               "CreateConstrained",
               "CheckAndValidate"
            )
@@ -115,8 +103,17 @@ public class XMLGeneration_0005 extends XMLGeneration {
           TEST_JAVA_APP_NAME,
           TEST_JAVA_APP_NAME,
           "XML Schema",
-          "newXmlSchema"
+          SCHEMA_NAME_A
         );
+
+      endTest( );
+    }
+
+    public void AddElement1( )
+    {
+      startTest( );
+
+      AddElementInternal( SCHEMA_NAME_A + SCHEMA_EXTENSION, "A" );
 
       endTest( );
     }
@@ -129,8 +126,17 @@ public class XMLGeneration_0005 extends XMLGeneration {
           TEST_JAVA_APP_NAME,
           TEST_JAVA_APP_NAME,
           "XML Schema",
-          "newXmlSchema1"
+          SCHEMA_NAME_B
         );
+
+      endTest( );
+    }
+
+    public void AddElement2( )
+    {
+      startTest( );
+
+      AddElementInternal( SCHEMA_NAME_B + SCHEMA_EXTENSION, "B" );
 
       endTest( );
     }
@@ -150,7 +156,8 @@ public class XMLGeneration_0005 extends XMLGeneration {
       };
 
       // TODO : real creation can not be done
-      CreateConstrainedInternal( TEST_JAVA_APP_NAME, aimpData, "hello", 0, 0 );
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("File|Save All");
+      CreateConstrainedInternal( TEST_JAVA_APP_NAME, aimpData, null, 0, 0 );
 
       endTest( );
     }
@@ -162,6 +169,8 @@ public class XMLGeneration_0005 extends XMLGeneration {
       // TODO : CHECKING
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Check XML");
       //new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Validate XML");
+
+      CheckInternal( );
 
       endTest( );
     }

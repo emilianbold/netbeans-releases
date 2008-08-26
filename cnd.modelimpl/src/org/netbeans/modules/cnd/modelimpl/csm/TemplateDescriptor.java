@@ -91,7 +91,7 @@ public final class TemplateDescriptor {
         for( AST token = start; token != null; token = token.getNextSibling() ) {
             if (token.getType() == CPPTokenTypes.LITERAL_template) {
                     return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope),
-                            '<' + TemplateUtils.getClassSpecializationSuffix(token) + '>');
+                            '<' + TemplateUtils.getClassSpecializationSuffix(token, null) + '>');
             }
         }
         return null;

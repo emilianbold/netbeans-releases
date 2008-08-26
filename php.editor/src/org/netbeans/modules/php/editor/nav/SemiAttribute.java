@@ -301,6 +301,7 @@ public class SemiAttribute extends DefaultVisitor {
         
         if (node.getSuperClass() != null) {
             ce.superClass = (ClassElement) lookup(node.getSuperClass().getName(), Kind.CLASS);
+            node2Element.put(node.getSuperClass(), ce.superClass);
         }
                 
         scopes.push(ce.enclosedElements);

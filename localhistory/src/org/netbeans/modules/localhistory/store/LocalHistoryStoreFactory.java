@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.localhistory.store;
 
+import java.io.File;
+
 /**
  *
  * @author Tomas Stupka
@@ -59,8 +61,25 @@ public class LocalHistoryStoreFactory {
         }
         return instance;
     } 
-    
+
+    /**
+     * Creates the storage
+     * @return
+     */
     public synchronized LocalHistoryStore createLocalHistoryStorage() {
+        return createLocalHistoryStorage(true);
+    }
+
+    /**
+     * Creates the storage if it already exists, otherwise return null
+     * @param force - force creation
+     * @return
+     */
+    public synchronized LocalHistoryStore createLocalHistoryStorage(boolean force) {
+        if(!force) {
+            File root = LocalHistoryStoreImpl.getStorageRootFile();
+            if(!root.exists()) return null;
+        }
         if(storage == null) {
             storage = new LocalHistoryStoreImpl();
         }

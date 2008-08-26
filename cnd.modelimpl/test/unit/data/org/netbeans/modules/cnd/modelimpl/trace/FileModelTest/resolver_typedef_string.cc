@@ -1,13 +1,13 @@
 #include "resolver_typedef_string.h"
 
-std::wstring write(string str)
+std_2::wstring wrt_2(string str)
 {
-    using std::wstring;
+    using std_2::wstring;
     wstring out;
     return out;
 }
 
-namespace A {
+namespace resolver_typedef_string {
     string read() {
         string str;
         return str;

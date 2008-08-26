@@ -110,7 +110,7 @@ public final class SubprojectProviderImpl implements SubprojectProvider {
             }
             File moduleProjectDirF = module.getSourceLocation();
             if (moduleProjectDirF == null) {
-                Util.err.log(ErrorManager.WARNING, "Warning - could not find sources for dependent module " + cnb + " for " + project);
+                // Do not log, this is pretty normal.
                 continue;
             }
             FileObject moduleProjectDir = FileUtil.toFileObject(moduleProjectDirF);

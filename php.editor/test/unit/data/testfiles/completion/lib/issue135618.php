@@ -5,9 +5,9 @@ class A135618 {
 class B135618 extends A135618{
     const BBB = "bbb";
     function testMe() {
-        self::
+        self::testMe();
     }
 }
-A135618::
-B135618::
+A135618::AAA;
+B135618::AAA;
 ?>

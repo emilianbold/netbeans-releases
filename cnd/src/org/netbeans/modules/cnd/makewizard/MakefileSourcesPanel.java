@@ -80,7 +80,7 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
 	int flags;
 	String msg;
 	if (getMakefileData().getMakefileType() == MakefileData.COMPLEX_MAKEFILE_TYPE) {
-	    flags = EXPAND_DIRS | MSP_FILTER | DYNAMIC_DEFAULT_BUTTONS | DYNAMIC_LAST_BUTTON | ITEMS_REQUIRED;
+	    flags = EXPAND_DIRS | MSP_FILTER | DYNAMIC_DEFAULT_BUTTONS | DYNAMIC_LAST_BUTTON | ITEMS_REQUIRED | DIR_AND_FILE_CHOOSER;
 	    msg = getString("LBL_SourceNamesComplex"); // NOI18N
 	}
 	else {
@@ -91,11 +91,13 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
     }
 
     /** Set the label for the Source List */
+    @Override
     protected String getListLabel() {
 	return getString("LBL_SourceList");				// NOI18N
     }
 
     /** Set the mnemonic for the Source List */
+    @Override
     protected char getListMnemonic() {
 	return getString("MNEM_SourceList").charAt(0);			// NOI18N
     }
@@ -109,8 +111,9 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
 
 
     /** Validate the source files */
+    @Override
     public void validateData(ArrayList msgs, int key) {
-	TargetData target = (TargetData) getMakefileData().getTarget(key);
+	TargetData target = getMakefileData().getTarget(key);
 
 	String[] slist = target.getSourcesList();
 	if (slist == null) {
@@ -172,6 +175,7 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
 
 
     /** Create the widgets if not initialized. Also initialize the text field */
+    @Override
     public void addNotify() {
 	TargetData target = getMakefileData().getCurrentTarget();
 	key = target.getKey();
@@ -201,6 +205,7 @@ public class MakefileSourcesPanel extends EnterItemsPanel {
 
 
     /** Get the data from the panel and update the target */
+    @Override
     public void removeNotify() {
 	super.removeNotify();
 

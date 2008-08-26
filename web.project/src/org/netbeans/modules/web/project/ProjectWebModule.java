@@ -205,10 +205,16 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
 
     public FileObject getDocumentBase (boolean silent) {
-        FileObject docBase = getFileObject(WebProjectProperties.WEB_DOCBASE_DIR);
+        String value = helper.getAntProjectHelper().getStandardPropertyEvaluator()
+                .getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
+
+        return resolveDocumentBase(value, silent);
+    }
+
+    FileObject resolveDocumentBase(String value, boolean silent) {
+        FileObject docBase = value != null ? helper.getAntProjectHelper().resolveFileObject(value) : null;
         if (docBase == null && !silent) {
-            String relativePath = helper.getAntProjectHelper().getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
-            String path = (relativePath != null ? helper.getAntProjectHelper().resolvePath(relativePath) : null);
+            String path = (value != null ? helper.getAntProjectHelper().resolvePath(value) : null);
             String errorMessage;
             if (path != null) {
                 errorMessage = NbBundle.getMessage(ProjectWebModule.class, "MSG_DocBase_Corrupted", project.getName(), path);
@@ -238,17 +244,29 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public FileObject getWebInf (boolean silent) {
-        FileObject webInf = getFileObject(WebProjectProperties.WEBINF_DIR);
-        
+        String value = helper.getAntProjectHelper().getStandardPropertyEvaluator()
+                .getProperty(WebProjectProperties.WEBINF_DIR);
+
+        return resolveWebInf(null, value, silent, false);
+    }
+
+    FileObject resolveWebInf(String docBaseValue, String webInfValue, boolean silent, boolean useDocBase) {
+        FileObject webInf = webInfValue != null ? helper.getAntProjectHelper().resolveFileObject(webInfValue) : null;
+
         //temporary solution for < 6.0 projects
         if (webInf == null) {
-            FileObject documentBase = getDocumentBase(silent);
+            FileObject documentBase = null;
+            if (useDocBase) {
+                documentBase = resolveDocumentBase(docBaseValue, silent);
+            } else {
+                documentBase = getDocumentBase(silent);
+            }
             if (documentBase == null) {
                 return null;
             }
             webInf = documentBase.getFileObject (FOLDER_WEB_INF);        
         }
-        
+
         if (webInf == null && !silent) {
             showErrorMessage(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted2")); //NOI18N
         }

@@ -43,7 +43,7 @@ package org.netbeans.modules.ruby.hints.infrastructure;
 
 import java.util.List;
 import java.util.Set;
-import org.jruby.ast.NodeType;
+import org.jruby.nb.ast.NodeType;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.Rule.AstRule;
 
@@ -57,7 +57,7 @@ public abstract class RubyAstRule implements AstRule {
     
     /** 
      * Get the ElementKinds this rule should run on.
-     * The integers should correspond to values in {@link org.jruby.ast.NodeTypes}
+     * The integers should correspond to values in {@link org.jruby.nb.ast.NodeTypes}
      */
     public abstract Set<NodeType> getKinds();
 

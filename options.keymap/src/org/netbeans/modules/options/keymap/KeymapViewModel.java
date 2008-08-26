@@ -283,9 +283,9 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
         Iterator it = getItems (category).iterator ();
         while (it.hasNext ()) {
             Object o = it.next ();
-            if (o instanceof String)
+            if (o instanceof String) {
                 cloneProfile ((String) o, result);
-            else {
+            } else {
                 String[] shortcuts = getShortcuts ((ShortcutAction) o);
                 result.put ((ShortcutAction)o, new HashSet<String> (Arrays.asList (shortcuts)));
             }
@@ -370,7 +370,9 @@ public class KeymapViewModel implements TreeModel, ShortcutsFinder {
         }
         Map<ShortcutAction, Set<String>> profileMap = shortcutsCache.get (currentProfile);
         Set<String> shortcuts = profileMap.get (action);
-        if (shortcuts == null) return new String [0];
+        if (shortcuts == null) {
+            return new String [0];
+        }
         return shortcuts.toArray (new String [shortcuts.size ()]);
     }
     

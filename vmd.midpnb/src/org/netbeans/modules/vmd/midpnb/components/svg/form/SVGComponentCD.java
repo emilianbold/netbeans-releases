@@ -45,6 +45,9 @@ import org.netbeans.modules.vmd.midp.components.*;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 
 /**
@@ -73,7 +76,20 @@ public class SVGComponentCD extends ComponentDescriptor {
     }
     
     protected List<? extends Presenter> createPresenters () {
-        return null;
+        return Arrays.asList(
+                // delete
+                DeleteDependencyPresenter.createDependentOnParentComponentPresenter (),
+                new DeletePresenter() {
+                    @Override
+                    protected void delete() {
+                        DesignComponent svgForm = getComponent().getParentComponent();
+                        if (svgForm == null) {
+                            return;
+                        }
+                        ArraySupport.remove (svgForm, SVGFormCD.PROP_COMPONENTS, getComponent());
+                    }
+                    
+                });
     }
 
 }

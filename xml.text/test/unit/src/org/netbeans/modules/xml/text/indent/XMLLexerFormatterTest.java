@@ -59,6 +59,8 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         suite.addTest(new XMLLexerFormatterTest("testFormatSubsection"));
         suite.addTest(new XMLLexerFormatterTest("testFormatForTab"));
         suite.addTest(new XMLLexerFormatterTest("testFormatPerformance"));
+        suite.addTest(new XMLLexerFormatterTest("testFormatSubsection1"));
+        suite.addTest(new XMLLexerFormatterTest("testFormatSubsection2"));
         return suite;
     }
     
@@ -115,5 +117,24 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         formatter.doReformat(inputDoc, 0, inputDoc.getLength());
         t2 = System.currentTimeMillis();
         System.out.println("Time taken to format OTA Schema in ms:: " + (t2-t1) );
+    }
+    public void testFormatSubsection1() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/input_sub1.xml");
+        //format a subsection of the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 39, 68);
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("indent/output_sub1.xml");        
+        assert(compare(formattedDoc, outputDoc));
+    }
+    
+    public void testFormatSubsection2() throws Exception {
+        BaseDocument inputDoc = getDocument("indent/input_sub2.xml");
+        //format a subsection of the inputDoc
+        XMLLexerFormatter formatter = new XMLLexerFormatter(null);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 68, 83);
+        System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
+        BaseDocument outputDoc = getDocument("indent/output_sub2.xml");        
+        assert(compare(formattedDoc, outputDoc));
     }
 }

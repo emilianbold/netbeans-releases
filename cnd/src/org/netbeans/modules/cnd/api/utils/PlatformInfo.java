@@ -132,7 +132,7 @@ public final class PlatformInfo {
 
         for (String dir : list) {
             buf.append(dir);
-            buf.append(File.pathSeparator);
+            buf.append(pathSeparator());
         }
         return buf.substring(0, buf.length() - 1); // remove the trailing pathSeparator...
     }
@@ -228,6 +228,10 @@ public final class PlatformInfo {
         return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC || platform == PlatformTypes.PLATFORM_LINUX || platform == PlatformTypes.PLATFORM_MACOSX;
     }
 
+    public boolean isSolaris() {
+        return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC;
+    }
+
     public boolean isLocalhost() {
         return RemoteUtils.isLocalhost(hkey);
     }
@@ -244,10 +248,15 @@ public final class PlatformInfo {
     public static synchronized PlatformInfo getDefault(String hkey) {
         PlatformInfo pi = map.get(hkey);
         if (pi == null) {
-            int thePlatform = CompilerSetManager.getDefault(hkey).getPlatform();
+            int thePlatform = HostInfoProvider.getDefault().getPlatform(hkey);
             pi = new PlatformInfo(hkey, thePlatform);
+            map.put(hkey, pi);
         }
         return pi;
+    }
+
+    public static PlatformInfo localhost() {
+        return getDefault(CompilerSetManager.LOCALHOST);
     }
 
 }

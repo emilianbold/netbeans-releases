@@ -117,6 +117,9 @@ public class GoToSupport {
             }
 
             Source js = Source.forFileObject(fo);
+            if (js == null) {
+                return null;
+            }
             final String[] result = new String[1];
 
             js.runUserActionTask(new CancellableTask<CompilationController>() {

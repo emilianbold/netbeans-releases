@@ -498,7 +498,12 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 if (root == null) {
                     // TODO: warn user that no source root was found
                     return null;
-                } else {
+                }
+                if (FileUtil.isParentOf(root,fo)) {
+                    // TODO: warn user that selected folder is under source root
+                    return null;
+                }
+                else {
                     assert fo.equals(root) || FileUtil.isParentOf(fo, root) : fo.toString()+" is not parent of "+root; // NOI18N
                     return FileUtil.getRelativePath(fo, root)+File.separatorChar;
                 }

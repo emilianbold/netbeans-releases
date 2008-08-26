@@ -41,7 +41,7 @@
 package org.netbeans.modules.print.provider;
 
 import java.awt.Rectangle;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
 
@@ -71,7 +71,7 @@ public class ComponentProvider implements PrintProvider {
   }
 
   public PrintPage [][] getPages(int pageWidth, int pageHeight, double pageZoom) {
-    List<ComponentPage> pages = new LinkedList<ComponentPage>();
+    List<ComponentPage> pages = new ArrayList<ComponentPage>();
     JComponent component = getComponent();
 
     if (component == null) {

@@ -1,0 +1,7 @@
+Code completion result for source line:
+$tst2 = $tst1->newInstance()->|newInstance();
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     newInstance()                              TestCCOnMethods
+METHOD     parentInstance()                           ParentClass
+------------------------------------
+METHOD     publicParentMethod()                       ParentClass

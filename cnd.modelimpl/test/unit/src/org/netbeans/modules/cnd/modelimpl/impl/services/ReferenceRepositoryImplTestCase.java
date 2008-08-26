@@ -103,9 +103,9 @@ public class ReferenceRepositoryImplTestCase extends TraceModelTestBase {
         ReferenceRepositoryImpl xRefRepository = new ReferenceRepositoryImpl();
         Collection<CsmReference> out;
         if (inProject) {
-            out = xRefRepository.getReferences(target, fileImpl.getProject(), kinds);
+            out = xRefRepository.getReferences(target, fileImpl.getProject(), kinds, null);
         } else {
-            out = xRefRepository.getReferences(target, fileImpl, kinds);
+            out = xRefRepository.getReferences(target, fileImpl, kinds, null);
         }
         TraceXRef.traceRefs(out, target, streamOut);
     }

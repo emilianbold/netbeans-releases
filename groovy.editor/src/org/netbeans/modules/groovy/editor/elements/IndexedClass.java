@@ -53,42 +53,30 @@ import org.netbeans.modules.gsf.api.ElementKind;
  * @author Martin Adamek
  */
 public final class IndexedClass extends IndexedElement implements ClassElement {
+
     /** This class is a module rather than a proper class */
     public static final int MODULE = 1 << 6;
 
-    private String in;
+    private final String simpleName;
 
-    protected IndexedClass(GroovyIndex index, String fileUrl, String fqn,
-        String clz, String attributes, int flags) {
-        super(index, fileUrl, fqn, clz, attributes, flags);
+    protected IndexedClass(GroovyIndex index, String fileUrl, String fqn, String simpleName, String attributes, int flags) {
+        super(index, fileUrl, fqn, attributes, flags);
+        this.simpleName = simpleName;
     }
 
-    public static IndexedClass create(GroovyIndex index, String clz, String fqn, String fileUrl,
+    public static IndexedClass create(GroovyIndex index, String simpleName, String fqn, String fileUrl,
         String attributes, int flags) {
-        IndexedClass c =
-            new IndexedClass(index, fileUrl, fqn, clz, attributes, flags);
-
+        IndexedClass c = new IndexedClass(index, fileUrl, fqn, simpleName, attributes, flags);
         return c;
-    }
-
-    @Override
-    public String getIn() {
-        if (in == null) {
-            if (fqn.endsWith("." + clz)) {
-                in = fqn.substring(0, fqn.length() - (clz.length() + 2));
-            }
-        }
-
-        return in;
     }
 
     // XXX Is this necessary?
     public String getSignature() {
-        return fqn;
+        return classFqn;
     }
 
     public String getName() {
-        return getClz();
+        return simpleName;
     }
 
     public ElementKind getKind() {
@@ -101,14 +89,15 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
     
     @Override 
     public boolean equals(Object o) {
-        //return ((IndexedClass)o).fqn.equals(fqn);
+        if (o instanceof IndexedClass && classFqn != null) {
+            return classFqn.equals(((IndexedClass) o).classFqn);
+        }
         return super.equals(o);
     }
     
     @Override
     public int hashCode() {
-        //return fqn.hashCode();
-        return super.hashCode();
+        return classFqn == null ? super.hashCode() : classFqn.hashCode();
     }
     
     public static String decodeFlags(int flags) {
@@ -123,5 +112,9 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
         }
         
         return sb.toString();
+    }
+
+    public String getFqn() {
+        return classFqn;
     }
 }

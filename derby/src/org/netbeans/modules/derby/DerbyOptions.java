@@ -48,8 +48,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
@@ -248,12 +246,6 @@ public class DerbyOptions {
     }
 
     private static void stopDerbyServer() {
-        DatabaseConnection[] dbconn = ConnectionManager.getDefault().getConnections();
-        for (int i = 0; i < dbconn.length; i++) {
-            if (RegisterDerby.getDefault().acceptsDatabaseURL(dbconn[i].getDatabaseURL())) {
-                ConnectionManager.getDefault().disconnect(dbconn[i]);
-            }
-        }
         RegisterDerby.getDefault().stop();
     }
 

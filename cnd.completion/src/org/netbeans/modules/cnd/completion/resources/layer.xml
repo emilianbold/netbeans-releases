@@ -61,11 +61,11 @@ made subject to such option by the copyright holder.
                 <folder name="HyperlinkProviders">
                     <file name="CsmHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider"/>
-                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                     <file name="CsmIncludeHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider"/>
-                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
                 
@@ -98,11 +98,11 @@ made subject to such option by the copyright holder.
                 <folder name="HyperlinkProviders">
                     <file name="CsmHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider"/>
-                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                     <file name="CsmIncludeHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider"/>
-                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>                    
                 </folder>
                 

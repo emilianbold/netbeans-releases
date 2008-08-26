@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
  * @author John Baker
  */
 public class SpringWebFrameworkUtils {
-    private static final String DISPATCHER_MAPPING = ".htm"; // NOI18N        
+
     private static final char[] INVALID_CHARS = {'<', '>', '*', '\\',  ':', '\"',  '/', '%', '|', '?'}; // NOI18N
     
     public static boolean isDispatcherServletConfigFilenameValid(String name) {
@@ -78,42 +78,41 @@ public class SpringWebFrameworkUtils {
                
         return false;
     }
-    
-    /**
-     * Replace the default extension used in the Spring bean configuration file template based on the the mapping entered by the user.
-     * For the extension to be replaced, this mapping must be an extension, such as *.html
-     * @param line, a line of text in the Spring bean configuration template file.
-     * @param dispatcherMapping, Dispatcher mapping entered by the user
-     * @return line, contains the .htm extension
-     */
-    public static String replaceExtensionInTemplates(String lineInTemplate, String dispatcherMapping) {            
-        if (lineInTemplate.contains(DISPATCHER_MAPPING) && dispatcherMapping.contains("*.")) { // NOI18N
-            int indexOfExtensionInTemplate = lineInTemplate.indexOf(DISPATCHER_MAPPING);
-            int lastIndexOfExtensionInTemplate = indexOfExtensionInTemplate + DISPATCHER_MAPPING.length();
-            int wildCardLocation = dispatcherMapping.indexOf("*") + 1; // NOI18N
-            assert (indexOfExtensionInTemplate != -1);
-            assert (lastIndexOfExtensionInTemplate != -1);
-            assert (wildCardLocation != -1);
-            lineInTemplate = lineInTemplate.substring(0, indexOfExtensionInTemplate) + dispatcherMapping.substring(wildCardLocation) + lineInTemplate.substring(lastIndexOfExtensionInTemplate);  
-        }        
-        return lineInTemplate;
-    }
-    
-    /**
-     * When the dispatcher mapping is of the servlet format /app/* then the redirect jsp file also needs updating to include the relative
-     * @param lineInTemplate, a line of text in the template
-     * @param dispatcherMapping,  the dispatcher mapping entered by the user in the framework section
-     * @return returns the revised line
-     */
-    public static String reviseRedirectJsp(String lineInTemplate, String dispatcherMapping) {
-        if ((dispatcherMapping.length() > 3) && dispatcherMapping.endsWith("/*") && dispatcherMapping.startsWith("/") && !dispatcherMapping.contains(" ")) { // NOI18N            
-            int indexOfWelcomeFile = lineInTemplate.indexOf("index.htm"); // NOI18N
-            if (indexOfWelcomeFile > -1) {
-                String path = dispatcherMapping.substring(1, dispatcherMapping.indexOf("*")); // NOI18N
-                return lineInTemplate.substring(0, indexOfWelcomeFile) + path + lineInTemplate.substring(indexOfWelcomeFile); // NOI18N      
-            }
-        }
 
-        return lineInTemplate;
-    }       
+    /**
+     * Instantiates a servlet mapping pattern into a concrete URL. If the mapping
+     * contains a wildcard, it will be replaced by the page name. Otherwise, if
+     * the mapping is <code>/</code>, the page name will be returned.
+     *
+     * @param  dispatcherMapping the mapping pattern.
+     * @param  page the page name to instantiate the pattern for.
+     * @return the concrete URL based on the pattern.
+     */
+    public static String instantiateDispatcherMapping(String dispatcherMapping, String page) {
+        String result;
+        if (dispatcherMapping.equals("/")) { // NOI18N
+            result = page;
+        } else {
+            result = dispatcherMapping.replace("*", page); // NOI18N
+        }
+        if (result.startsWith("/")) {
+            result = result.substring(1);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the last part of a servlet URL. For example, if the URL
+     * is of the form <code>"/app/index"</code>, this method will return <code>"index"</code>.
+     *
+     * @param fullDispatcherURL a full servlet URL.
+     * @return the last part of the URL.
+     */
+    public static String getSimpleDispatcherURL(String fullDispatcherURL) {
+        int lastSlash = fullDispatcherURL.lastIndexOf('/');
+        if (lastSlash >= 0) {
+            return fullDispatcherURL.substring(lastSlash + 1);
+        }
+        return fullDispatcherURL;
+    }
 }

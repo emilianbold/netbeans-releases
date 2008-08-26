@@ -703,7 +703,7 @@ class Date
 
     def once(*ids) # :nodoc:
       for id in ids
-	module_eval <<-"end;", __FILE__, __LINE__
+        module_eval <<-"end;", __FILE__, __LINE__
 	  alias_method :__#{id.to_i}__, :#{id.to_s}
 	  private :__#{id.to_i}__
 	  def #{id.to_s}(*args, &block)
@@ -715,7 +715,7 @@ class Date
                __#{id.to_i}__(*args, &block)
             end
 	  end
-	end;
+        end;
       end
     end
 

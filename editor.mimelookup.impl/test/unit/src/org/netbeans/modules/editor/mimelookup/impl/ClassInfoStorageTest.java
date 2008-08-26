@@ -44,19 +44,23 @@ package org.netbeans.modules.editor.mimelookup.impl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
  * @author vita
  */
+@RandomlyFails // uses TestUtilities.sleepForWhile()
 public class ClassInfoStorageTest extends NbTestCase {
 
     public ClassInfoStorageTest(String name) {
         super(name);
     }
 
+    @Override
     protected void setUp() throws Exception {
         clearWorkDir();
         // Set up the default lookup, repository, etc.
@@ -98,9 +102,9 @@ public class ClassInfoStorageTest extends NbTestCase {
             assertEquals("Wrong number of change events", 1, listener.changeEventsCnt);
             assertNotNull("Invalid change event", listener.events.get(0));
             assertEquals("Wrong change event", 
-                ClassInfoStorage.PROP_CLASS_INFO_ADDED, ((PropertyChangeEvent)listener.events.get(0)).getPropertyName());
+                ClassInfoStorage.PROP_CLASS_INFO_ADDED, listener.events.get(0).getPropertyName());
             
-            Set value = (Set) ((PropertyChangeEvent)listener.events.get(0)).getNewValue();
+            Set value = (Set) listener.events.get(0).getNewValue();
             assertEquals("Invalid number of class in the change event", 1, value.size());
             assertTrue("Wrong change event value", value.contains(DummySetting.class.getName()));
         } finally {
@@ -128,9 +132,9 @@ public class ClassInfoStorageTest extends NbTestCase {
             assertEquals("Wrong number of change events", 1, listener.changeEventsCnt);
             assertNotNull("Invalid change event", listener.events.get(0));
             assertEquals("Wrong change event", 
-                ClassInfoStorage.PROP_CLASS_INFO_REMOVED, ((PropertyChangeEvent)listener.events.get(0)).getPropertyName());
+                ClassInfoStorage.PROP_CLASS_INFO_REMOVED, listener.events.get(0).getPropertyName());
             
-            Set value = (Set) ((PropertyChangeEvent)listener.events.get(0)).getNewValue();
+            Set value = (Set) listener.events.get(0).getNewValue();
             assertEquals("Invalid number of class in the change event", 1, value.size());
             assertTrue("Wrong change event value", value.contains(DummySetting.class.getName()));
         } finally {
@@ -159,7 +163,7 @@ public class ClassInfoStorageTest extends NbTestCase {
     private static class L implements PropertyChangeListener {
         
         public int changeEventsCnt = 0;
-        public ArrayList events = new ArrayList();
+        public List<PropertyChangeEvent> events = new ArrayList<PropertyChangeEvent>();
         
         public void propertyChange(PropertyChangeEvent evt) {
             changeEventsCnt++;

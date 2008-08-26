@@ -347,6 +347,17 @@ public class JavaBracketCompletionUnitTest extends JavaBaseDocumentUnitTestCase 
             "\"\"|"
         );
     }    
+    
+    /** issue #69524 */
+    public void testQuoteOnFirstQuote () throws Exception {
+        setLoadDocumentText (
+            " |\"asdf\""
+        );
+        typeQuoteChar('"');
+        assertDocumentTextAndCaret ("New Quote Addewd", 
+            " \"|\"asdf\""
+        );
+    }
 
     /** issue #69935 */
     public void testQuoteInsideComments() throws Exception {

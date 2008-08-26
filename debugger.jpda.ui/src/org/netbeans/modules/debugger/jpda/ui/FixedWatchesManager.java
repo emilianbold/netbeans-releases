@@ -47,6 +47,7 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import java.util.*;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.spi.viewmodel.*;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.*;
@@ -57,6 +58,8 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.debugger.jpda.ui.models.WatchesNodeModel;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Manages lifecycle and presentation of fixed watches. Should be
@@ -132,7 +135,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
     );
         
         
-    private Map             fixedWatches = new LinkedHashMap ();
+    private Map             fixedWatches = new LinkedHashMap();
     private HashSet         listeners;
     private ContextProvider contextProvider;
 
@@ -249,10 +252,8 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
         Action [] actions = original.getActions (node);
         List myActions = new ArrayList();
         if (fixedWatches.containsKey (node)) {
-            return new Action[] {
-                DELETE_ACTION
-            };
-        }
+            myActions.add (0, DELETE_ACTION);
+        } else
         if (node instanceof Variable) {
             myActions.add (CREATE_FIXED_WATCH_ACTION);
         } else 
@@ -326,6 +327,16 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
                 this,
                 TreeModel.ROOT,
                 ModelEvent.NodeChanged.CHILDREN_MASK));
+        // Open the watches view, where the fixed watch was added:
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                TopComponent view = WindowManager.getDefault().findTopComponent("watchesView");
+                if (view != null) {
+                    view.open();
+                    view.requestVisible();
+                }
+            }
+        });
     }
 
     private void fireModelChanged (ModelEvent event) {

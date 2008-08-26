@@ -76,6 +76,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         return declarators;
     }
     
+    @Override
     public String toString() {
         return "" + getKind() + ' ' + getOffsetString() + '[' + declarators + ']'; // NOI18N
     }
@@ -92,12 +93,19 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 	    super((FileImpl) getContainingFile());
 	}
 	
+        @Override
 	protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,CsmScope scope) {
 	    VariableImpl var = super.createVariable(offsetAst, file, type, name, _static, container1, container2, getScope());
 	    declarators.add(var);
 	    return var;
 	}
 
+        @Override
+        protected boolean isRenderingLocalContext() {
+            return true;
+        }
+    
+        @Override
 	public void render(AST tree, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
 	    if( tree != null ) {
 		AST token = tree;

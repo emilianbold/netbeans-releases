@@ -113,10 +113,8 @@ public class TableEditorPanel extends ListEditorPanel {
 	// Set column sizes
 	getTargetList().getColumnModel().getColumn(1).setPreferredWidth(100);
 	getTargetList().getColumnModel().getColumn(1).setMaxWidth(200);
-	//getTargetList().getColumnModel().getColumn(1).setResizable(true);
 	getTargetList().getColumnModel().getColumn(2).setPreferredWidth(40);
-	getTargetList().getColumnModel().getColumn(2).setMaxWidth(40);
-	getTargetList().getColumnModel().getColumn(2).setResizable(false);
+	getTargetList().getColumnModel().getColumn(2).setMaxWidth(100);
 	//
 	getTargetList().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	getTargetList().getSelectionModel().addListSelectionListener(new TargetSelectionListener());

@@ -80,6 +80,9 @@ public class RoundedRectWidget extends CustomizableWidget
     public RoundedRectWidget(Scene scene, String propId, String propDisplayName)
     {
         super(scene, propId, propDisplayName);
+        
+        // Always get the parents foreground.
+        setForeground(null);
     }
 
    /**

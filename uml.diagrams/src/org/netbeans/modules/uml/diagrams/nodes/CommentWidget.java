@@ -109,6 +109,7 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
         {
             bodyLabel.setLabel(((IComment) elt).getBody());
         }
+        super.initializeNode(element);
     }
     
     @Override

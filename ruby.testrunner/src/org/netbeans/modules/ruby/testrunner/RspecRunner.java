@@ -198,7 +198,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         return null;
     }
 
-    private static File getMediatorScript() {
+    static File getMediatorScript() {
         File mediatorScript = InstalledFileLocator.getDefault().locate(
                 RSPEC_MEDIATOR_SCRIPT, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
 
@@ -249,6 +249,9 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
                 RspecHandlerFactory.getHandlers(),
                 debug ? SessionType.DEBUG : SessionType.TEST);
         taskDescriptor.addOutputRecognizer(recognizer);
+        // using a shorter wait time than for test/unit since the only cases
+        // i've seen requiring more than 1000ms have all been test/unit executions
+        taskDescriptor.setReadMaxWaitTime(1500);
     }
 
 }

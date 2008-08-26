@@ -51,6 +51,7 @@ import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
@@ -59,7 +60,6 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.text.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -646,8 +646,11 @@ public final class MainWindow extends JFrame {
         final boolean updateBounds = ( !isFullScreenMode );//&& restoreExtendedState != JFrame.MAXIMIZED_BOTH );
 
         GraphicsDevice device = null;
-        if( getGraphics() instanceof Graphics2D ) {
-            device = ((Graphics2D)getGraphics()).getDeviceConfiguration().getDevice();
+        Graphics gc = getGraphics();
+        if( gc instanceof Graphics2D ) {
+            GraphicsConfiguration conf = ((Graphics2D)gc).getDeviceConfiguration();
+            if( null != conf )
+                device = conf.getDevice();
         }
         if( null != device && device.isFullScreenSupported() ) {
             device.setFullScreenWindow( isFullScreenMode ? this : null );

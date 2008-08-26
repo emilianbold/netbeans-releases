@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.ui.options;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -66,7 +67,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -88,12 +88,14 @@ import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.WindowManager;
 
 /** Display the "Tools Default" panel */
 public class ToolsPanel extends JPanel implements ActionListener, DocumentListener,
@@ -159,6 +161,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
 
     private void initialize() {
+        if (instance == null) {
+            instance = this;
+        }
         changingCompilerSet = true;
         if (model == null) {
             model = new GlobalToolsPanelModel();
@@ -337,6 +342,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
         }
         CompilerSetManager.setDefaults(allCSMs);
+        copiedManagers.clear();
     }
 
     private void setSelectedAsDefault() {
@@ -432,13 +438,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             // we need to remember once calculated "valid" state and reuse it
             // instead of check on each unrelated action
             // with remote support it became even more visible in UI freezing
-            if (SwingUtilities.isEventDispatchThread()) {
-                log.fine("ToolsPanel.isPathFieldValid from EDT"); // NOI18N
-                // always return true in remote mode, instead of call to very expensive operation
-                return true;
-            } else {
-                return serverList.isValidExecutable(hkey, txt);
-            }
+            return true;
+//            if (SwingUtilities.isEventDispatchThread()) {
+//                log.fine("ToolsPanel.isPathFieldValid from EDT"); // NOI18N
+//                // always return true in remote mode, instead of call to very expensive operation
+//                return true;
+//            } else {
+//                return serverList.isValidExecutable(hkey, txt);
+//            }
         }
     }
 
@@ -527,9 +534,18 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 cbFamily.addItem(cf);
             cbFamily.setSelectedItem(cs.getCompilerFlavor());
         } else {
-            tfBaseDirectory.setText(""); // NOI18N
-            btBaseDirectory.setEnabled(false);
             cbFamily.removeAllItems();
+            ServerRecord record = null;
+            if (serverList != null) {
+                record = serverList.get(hkey);
+            }            
+            boolean devhostValid = serverList == null || (record != null & record.isOnline());            
+            String errorMsg = "";
+            if (!devhostValid) {
+                errorMsg = NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey);
+            }
+            lblErrors.setText("<html>" + errorMsg + "</html>"); //NOI18N
+            updateToolsControls(false, false, true);
             return;
         }
         if (currentCompilerSet != null && currentCompilerSet != cs) {
@@ -591,7 +607,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                     liveServers = new ArrayList<String>();
                     serverList.clear();
                     for (String key : serverUpdateCache.getHostKeyList()) {
-                        serverList.addServer(key, false, true);
+                        serverList.addServer(key, false, false);
                         liveServers.add(key);
                     }
                     serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
@@ -636,7 +652,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
 
     /** What to do if user cancels the dialog (nothing) */
     public void cancel() {
+        serverUpdateCache = null;
         changed = false;
+        instance = null; // remove the global instance
     }
 
     public static ToolsPanel getToolsPanel() {
@@ -644,13 +662,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
 
     public synchronized CompilerSetManager getCompilerSetManagerCopy(String hKey) {
-        CompilerSetManager out = copiedManagers.get(hkey);
+        CompilerSetManager out = copiedManagers.get(hKey);
         if (out == null) {
             out = CompilerSetManager.getDefault(hKey).deepCopy();
             if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
                 out.remove(out.getCompilerSets().get(0));
             }
-            copiedManagers.put(hkey, out);
+            copiedManagers.put(hKey, out);
         }
         return out;
     }
@@ -733,29 +751,35 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 repaint();
             }
             if (!isRemoteHostSelected() && new File(tfBaseDirectory.getText()).exists()) {
-                updateToolsControls(true, true);
-            }
-            else {
-                updateToolsControls(false, isRemoteHostSelected());
+                updateToolsControls(true, true, false);
+            } else {
+                updateToolsControls(false, isRemoteHostSelected(), false);
             }
 
             return valid;
         }
     }
 
-    private void updateToolsControls(boolean enable, boolean versionEnabled) {
+    private void updateToolsControls(boolean enable, boolean versionEnabled, boolean cleanText) {
         btCBrowse.setEnabled(enable);
         btCppBrowse.setEnabled(enable);
         btFortranBrowse.setEnabled(enable);
         btMakeBrowse.setEnabled(enable);
         btDebuggerBrowse.setEnabled(enable);
         btVersions.setEnabled(versionEnabled);
-        tfMakePath.setEditable(enable);
-        tfGdbPath.setEditable(enable);
-        tfBaseDirectory.setEditable(enable);
-        tfCPath.setEditable(enable);
-        tfCppPath.setEditable(enable);
-        tfFortranPath.setEditable(enable);        
+        updateTextField(tfMakePath, enable, cleanText);
+        updateTextField(tfGdbPath, enable, cleanText);
+        updateTextField(tfBaseDirectory, enable, cleanText);
+        updateTextField(tfCPath, enable, cleanText);
+        updateTextField(tfCppPath, enable, cleanText);
+        updateTextField(tfFortranPath, enable, cleanText);
+    }
+    
+    private void updateTextField(JTextField tf, boolean editable, boolean cleanText) {
+        if (cleanText) {
+            tf.setText("");
+        }
+        tf.setEditable(editable);
     }
     /**
      * Lets caller know if any data has been changed.
@@ -923,7 +947,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     // Implement List SelectionListener
     public void valueChanged(ListSelectionEvent ev) {
 
-        if (!ev.getValueIsAdjusting()) { // we don't want the event until its finished
+        if (!ev.getValueIsAdjusting() && !updating) { // we don't want the event until its finished
             if (ev.getSource() == lstDirlist) {
                 onCompilerSetChanged();
             }
@@ -1643,7 +1667,7 @@ private boolean selectCompiler(JTextField tf, Tool tool) {
 }
 
 private boolean selectTool(JTextField tf) {
-    String seed = tfBaseDirectory.getText();
+    String seed = tf.getText();
     FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {
@@ -1716,43 +1740,57 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     if (ret != NotifyDescriptor.OK_OPTION) {
         return;
     }
-    CompilerSetManager newCsm = CompilerSetManager.create(hkey);
-    copiedManagers.put(hkey, newCsm);
-    List<CompilerSet> list = csm.getCompilerSets();
-    for (CompilerSet cs : list) {
-        if (!cs.isAutoGenerated()) {
-            String name = cs.getName();
-            String newName = newCsm.getUniqueCompilerSetName(name);
-            if (!name.equals(newName)) {
-                // FIXUP: show a dialog with renamed custom sets. Can't do now because of UI freeze.
-                cs.setName(newName);
+    final CompilerSet selectedCS[] = new CompilerSet[] {(CompilerSet)lstDirlist.getSelectedValue()};
+    Runnable longTask = new Runnable() {
+        public void run() {
+            CompilerSetManager newCsm = CompilerSetManager.create(hkey);
+            newCsm.initialize(false);
+            copiedManagers.put(hkey, newCsm);
+            List<CompilerSet> list = csm.getCompilerSets();
+            for (CompilerSet cs : list) {
+                if (!cs.isAutoGenerated()) {
+                    String name = cs.getName();
+                    String newName = newCsm.getUniqueCompilerSetName(name);
+                    if (!name.equals(newName)) {
+                        // FIXUP: show a dialog with renamed custom sets. Can't do now because of UI freeze.
+                        cs.setName(newName);
+                    }
+                    newCsm.add(cs);
+                }
             }
-            newCsm.add(cs);
+            String defaultName = null;
+            CompilerSet defaultCS = csm.getDefaultCompilerSet();
+            if (defaultCS != null) {
+                defaultName = defaultCS.getName();
+            }
+            String selectedName = null;
+            if (selectedCS[0] != null) {
+                selectedName = selectedCS[0].getName();
+            }
+            csm = newCsm;
+            CompilerSet defaultCompilerSet = csm.getCompilerSet(defaultName);
+            if (defaultCompilerSet != null) {
+                csm.setDefault(defaultCompilerSet);
+            }
+            if (selectedName != null) {
+                selectedCS[0] = csm.getCompilerSet(selectedName);
+            }
         }
-    }
-    String defaultName = null;
-    CompilerSet defaultCS = csm.getDefaultCompilerSet();
-    if (defaultCS != null)
-        defaultName = defaultCS.getName();
-    String selectedName = null;
-    CompilerSet selectedCS = (CompilerSet)lstDirlist.getSelectedValue();
-    if (selectedCS != null)
-        selectedName = selectedCS.getName();
-    csm = newCsm;
-    CompilerSet defaultCompilerSet = csm.getCompilerSet(defaultName);
-    if (defaultCompilerSet != null) {
-        csm.setDefault(defaultCompilerSet);
-    }
-    if (selectedName != null) {
-        selectedCS = csm.getCompilerSet(selectedName);
-    }
-    changed = true;
-    if (selectedCS != null) {
-        update(false, selectedCS);
-    }
-    else {
-        update(false);
-    }
+    };
+    Runnable postWork = new Runnable() {
+        public void run() {
+            changed = true;
+            if (selectedCS[0] != null) {
+                update(false, selectedCS[0]);
+            } else {
+                update(false);
+            }
+        }
+    };
+    final Frame mainWindow = WindowManager.getDefault().getMainWindow();
+    String title = getString("TITLE_Configure");
+    String msg = getString("MSG_Configure_Compiler_Sets", hkey);
+    ModalMessageDlg.runLongTask(mainWindow, longTask, postWork, title, msg);
 }//GEN-LAST:event_btRestoreActionPerformed
 
 
@@ -1760,6 +1798,9 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         return NbBundle.getMessage(ToolsPanel.class, key);
     }
 
+    private static String getString(String key, Object param) {
+        return NbBundle.getMessage(ToolsPanel.class, key, param);
+    }    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ToolSetPanel;
     private javax.swing.JButton btAdd;

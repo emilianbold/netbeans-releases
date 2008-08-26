@@ -56,7 +56,6 @@ import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -235,9 +234,9 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         changeSupport.removeChangeListener(l);
     }
 
-    public FileObject getSourcesFolder() {
+    public File getSourcesFolder() {
         getComponent();
-        return FileUtil.toFileObject(new File(configureProjectPanelVisual.getSourcesLocation().getSrcRoot()));
+        return FileUtil.normalizeFile(new File(configureProjectPanelVisual.getSourcesLocation().getSrcRoot()));
     }
 
     public String getSourcesFolderName() {
@@ -257,7 +256,19 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         String projectName = (String) descriptor.getProperty(PROJECT_NAME);
         if (projectName == null) {
             // this can happen only for the first time
-            projectName = getDefaultFreeName(ProjectChooser.getProjectsFolder());
+            File startingLocation = null;
+            switch (wizardType) {
+                case NEW:
+                    startingLocation = new File(configureProjectPanelVisual.getSourcesLocation().getSrcRoot());
+                    break;
+                case EXISTING:
+                    startingLocation = ProjectChooser.getProjectsFolder();
+                    break;
+                default:
+                    assert false : "Unknown wizard type: " + wizardType;
+                    break;
+            }
+            projectName = getDefaultFreeName(startingLocation);
             descriptor.putProperty(PROJECT_NAME, projectName);
             originalProjectName = projectName;
         }
@@ -492,7 +503,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         }
     }
 
-    private void sourceFolderchanged() {
+    private void sourceFolderChanged() {
         String sources = configureProjectPanelVisual.getSourcesLocation().getSrcRoot();
         if (sources.length() == 0) {
             // invalid situation, do not change anything
@@ -502,16 +513,29 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             // no change in sources
             return;
         }
+        adjustProjectName(originalSources, sources);
+        String projectName = new File(sources).getName();
+        String originalName = null;
+        if (originalSources == null) {
+            // only for the first time => project folder *must* be valid
+            assert getProjectFolderFile() != null;
+            originalName = getProjectFolderFile().getName();
+        } else {
+            originalName = new File(originalSources).getName();
+        }
+        adjustProjectFolder(originalName, projectName);
+        originalSources = sources;
+    }
+
+    private void adjustProjectName(String originalSources, String sources) {
         if (originalSources != null) {
             String sourcesFolder = new File(originalSources).getName();
             String projectName = configureProjectPanelVisual.getProjectName();
             if (!sourcesFolder.equals(projectName)) {
-                // already "disconnected" but remember the actual sources
-                originalSources = sources;
+                // already "disconnected"
                 return;
             }
         }
-        originalSources = sources;
         String newProjectName = new File(sources).getName();
         configureProjectPanelVisual.setProjectName(newProjectName);
     }
@@ -524,7 +548,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                 projectNameChanged();
                 break;
             case EXISTING:
-                sourceFolderchanged();
+                sourceFolderChanged();
                 break;
             default:
                 assert false : "Unknown wizard type: " + wizardType;

@@ -39,12 +39,15 @@
 package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.visual.action.CycleFocusProvider;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
  *
@@ -134,7 +137,7 @@ public class CycleObjectSceneSelectProvider implements CycleFocusProvider
                 }
             }
         }
-
+        
         scene.setFocusedObject(bestObject);
         scene.userSelectionSuggested(Collections.singleton(bestObject), false);
         return true;

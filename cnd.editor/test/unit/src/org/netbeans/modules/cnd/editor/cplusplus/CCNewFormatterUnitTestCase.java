@@ -60,6 +60,13 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 	}
     }
 
+    @Override
+    protected void assertDocumentText(String msg, String expectedText) {
+        super.assertDocumentText(msg, expectedText);
+        reformat();
+        super.assertDocumentText(msg+" (not stable)", expectedText);
+    }
+
     // -------- Reformat tests -----------
     
     public void testReformatMultiLineSystemOutPrintln() {
@@ -140,7 +147,6 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 + "    int printf(int);\n"
                 + "};\n"
                 );
-        
     }
     
     // tests for regressions
@@ -4601,7 +4607,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
         reformat();
-        assertDocumentText("Wrong type cast fotmatting",
+        assertDocumentText("Wrong type cast formatting",
                 "int i = ( int ) 'a';\n"+
                 "\n" +
                 "void *\n" +
@@ -4641,4 +4647,108 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 );
     }
     
+    public void testQtExtension() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "#define Q_OBJECT\n" +
+                "#define signals private\n" +
+                "#define slots\n" +
+                "\n" +
+                "class PrettyPopupMenu\n" +
+                "{\n" +
+                "};\n" +
+                "\n" +
+                "class Menu : public PrettyPopupMenu\n" +
+                "{\n" +
+                "    Q_OBJECT\n" +
+                "\n" +
+                "signals:\n" +
+                "    void test();\n" +
+                "\n" +
+                "public slots:\n" +
+                "    void slotActivated(int index);\n" +
+                "\n" +
+                "private slots:\n" +
+                "    void slotAboutToShow();\n" +
+                "\n" +
+                "private:\n" +
+                "    Menu();\n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Wrong QT formatting",
+                "#define Q_OBJECT\n" +
+                "#define signals private\n" +
+                "#define slots\n" +
+                "\n" +
+                "class PrettyPopupMenu\n" +
+                "{\n" +
+                "};\n" +
+                "\n" +
+                "class Menu : public PrettyPopupMenu\n" +
+                "{\n" +
+                "    Q_OBJECT\n" +
+                "\n" +
+                "signals:\n" +
+                "    void test();\n" +
+                "\n" +
+                "public slots:\n" +
+                "    void slotActivated(int index);\n" +
+                "\n" +
+                "private slots:\n" +
+                "    void slotAboutToShow();\n" +
+                "\n" +
+                "private:\n" +
+                "    Menu();\n" +
+                "};\n"
+                );
+    }
+
+    public void testExpandToTab() {
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.expandTabToSpaces, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.tabSize, 4);
+        setLoadDocumentText(
+                "typedef struct pcihp {\n" +
+                "\n" +
+                " struct pcihp_slotinfo {\n" +
+                "\t\tchar *name;\n" +
+                "\t} slotinfo[10];\n" +
+                "} pcihp_t;\n"
+                );
+        for(int i = 0; i < 2; i++){
+        reformat();
+        assertDocumentText("Incorrect tab formatting",
+                "typedef struct pcihp {\n" +
+                "\n" +
+                "\tstruct pcihp_slotinfo {\n" +
+                "\t\tchar *name;\n" +
+                "\t} slotinfo[10];\n" +
+                "} pcihp_t;\n");
+        }
+    }
+
+    public void testExpandToTab2() {
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.expandTabToSpaces, false);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putInt(EditorOptions.tabSize, 8);
+        setLoadDocumentText(
+                "typedef struct pcihp {\n" +
+                "\n" +
+                " struct pcihp_slotinfo {\n" +
+                "\t\tchar *name;\n" +
+                "\t} slotinfo[10];\n" +
+                "} pcihp_t;\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect tab formatting",
+                "typedef struct pcihp {\n" +
+                "\n" +
+                "    struct pcihp_slotinfo {\n" +
+                "\tchar *name;\n" +
+                "    } slotinfo[10];\n" +
+                "} pcihp_t;\n");
+    }
 }

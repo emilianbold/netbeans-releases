@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -221,7 +220,8 @@ public class FilesystemBugsTest extends NbTestCase {
      */
     public void testMultiAttrsBug26400() throws Exception {
         File f1, f2;
-        File dir = new File(File.createTempFile("fsdf", "eew").getParentFile(), "aret");
+        clearWorkDir();
+        File dir = new File(getWorkDir(), "aret");
         dir.mkdirs();
         assertTrue(dir.isDirectory());
         f1 = new File(dir, "tm26400a");

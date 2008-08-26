@@ -3,12 +3,12 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-    <tocitem text="IDE Basics">
-    <tocitem text="Getting Started">
-    <tocitem text="C and C++ Applications" target="WorkingWithCandC++Projects" />
-    </tocitem>
-    </tocitem>
-        <tocitem text="C and C++ Development" expand="false">
+	<tocitem text="IDE Basics">
+		<tocitem text="Getting Started">
+			<tocitem text="C and C++ Applications" target="WorkingWithCandC++Projects" />
+		</tocitem>
+	</tocitem>
+	<tocitem text="C and C++ Development" expand="false">
 		<tocitem text="Getting Started">
 			<tocitem text="C and C++ Development Overview" target="CandC++Overview" />
 			<tocitem text="Key C and C++ Development Concepts" target="KeyCandC++Concepts" />
@@ -34,6 +34,7 @@
 			<tocitem text="Setting File Properties" target="SettingCandC++FileProperties" />
 			<tocitem text="Adding Files and Folders to a C or C++ Project" target="AddingFilesandFolders" />
 			<tocitem text="Setting the Main C or C++ Project" target="SettingMainCorC++Project." />
+			<tocitem text="Packaging a Application" target="Packaging" />
 		</tocitem>
 		<tocitem text="C and C++ Project Basics">
 			<tocitem text="Building C and  C++ Projects">
@@ -56,6 +57,7 @@
 					<tocitem text="C and C++ Code Template Abbreviations: Quick Reference" target="AbbreviationsQuickRef" />
 					<tocitem text="Creating Code Templates" target="CreatingCodeTemplates" />
 				</tocitem>
+				<tocitem text="Error Highlighting" target="ErrorHighlighting" />
 				<tocitem text="Using Pair Completion" target="UsingPairCompletion" />
 				<tocitem text="Using Hyperlink Navigation" target="UsingHyperlinks" />
 				<tocitem text="Switching Between Source and Header Files" target="SourceHeaderSwitch" />
@@ -63,6 +65,7 @@
 				<tocitem text="Going to a Function or Variable" target="GoToDeclaration" />
 				<tocitem text="Going to a Declaration" target="GoToDeclaration1" />
 				<tocitem text="Going to a Type" target="GoToType" />
+				<tocitem text="Using the Call Graph" target="UsingCallGraph" />
 				<tocitem text="Using the Classes Window" target="UsingClassView" />
 				<tocitem text="Using the Navigator Window" target="UsingNavigator" />
 				<tocitem text="Finding Class, Method, and Field Usages" target="FindingUsages" />

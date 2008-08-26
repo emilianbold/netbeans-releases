@@ -117,6 +117,10 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
     }
 
+    public CompilerSetManager getCompilerSetManager(String serverName) {
+        return ToolsPanel.getToolsPanel().getCompilerSetManagerCopy(serverName);
+    }
+    
     private void updateCompilerCollections(CompilerSet csToSelect) {
         compilerCollectionComboBox.removeAllItems();
 
@@ -127,7 +131,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
             String[] servers = serverList.getServerNames();
             if (servers.length > 1) {
                 for (String serverName : servers) {
-                    for (CompilerSet cs : CompilerSetManager.getDefault(serverName).getCompilerSets()) {
+                    for (CompilerSet cs : getCompilerSetManager(serverName).getCompilerSets()) {
                         CompilerSetPresenter csp = new CompilerSetPresenter(cs, serverName + " : " + cs.getName()); //NOI18N
                         if (csToSelect == cs) {
                             toSelect = csp;
@@ -142,7 +146,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
 
         if (allCS.size() == 0) {
             // localhost only mode (either cnd.remote is not installed or no devhosts were specified
-            for (CompilerSet cs : CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSets()) {
+            for (CompilerSet cs : getCompilerSetManager(CompilerSetManager.LOCALHOST).getCompilerSets()) {
                 CompilerSetPresenter csp = new CompilerSetPresenter(cs, cs.getName());
                 if (csToSelect == cs) {
                     toSelect = csp;

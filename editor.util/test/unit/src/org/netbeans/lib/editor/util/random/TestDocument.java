@@ -61,6 +61,7 @@ public class TestDocument extends PlainDocument {
         UndoManager undoManager = new UndoManager();
         addUndoableEditListener(undoManager);
         putProperty(UndoManager.class, undoManager);
+        super.addDocumentListener(org.netbeans.lib.editor.util.swing.DocumentUtilities.initPriorityListening(this));
     }
 
     @Override

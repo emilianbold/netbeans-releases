@@ -314,30 +314,26 @@ public class GsfCompletionProvider implements CompletionProvider {
         @Override
         protected boolean canFilter(JTextComponent component) {
             filterPrefix = null;
-
             int newOffset = component.getSelectionStart();
-
             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                 if (isTruncated || !isFilterable) {
                     return false;
                 }
-                
-                if (newOffset >= caretOffset) {
-                    if (anchorOffset > -1) {
+                int offset = Math.min(anchorOffset, caretOffset);
+                if (offset > -1) {
+                    if (newOffset < offset)
+                        return true;
+                    if (newOffset >= caretOffset) {
                         try {
-                            String prefix =
-                                component.getDocument()
-                                         .getText(anchorOffset, newOffset - anchorOffset);
-
-                            if (isJavaIdentifierPart(prefix)) {
-                                filterPrefix = prefix;
-                            }
-                        } catch (BadLocationException e) {
-                        }
+                            String prefix = component.getDocument().getText(offset, newOffset - offset);
+                            filterPrefix = isJavaIdentifierPart(prefix) ? prefix : null;
+                            if (filterPrefix != null && filterPrefix.length() == 0)
+                                anchorOffset = newOffset;
+                        } catch (BadLocationException e) {}
+                        return true;
                     }
                 }
-
-                return filterPrefix != null;
+                return false;
             } else if (queryType == TOOLTIP_QUERY_TYPE) {
                 try {
                     if (newOffset == caretOffset)
@@ -345,12 +341,12 @@ public class GsfCompletionProvider implements CompletionProvider {
                     else if (newOffset - caretOffset > 0)
                         filterPrefix = component.getDocument().getText(caretOffset, newOffset - caretOffset);
                     else if (newOffset - caretOffset < 0)
+                        //filterPrefix = newOffset > toolTipOffset ? component.getDocument().getText(newOffset, caretOffset - newOffset) : null;
                         filterPrefix = component.getDocument().getText(newOffset, caretOffset - newOffset);
                 } catch (BadLocationException ex) {}
                 return (filterPrefix != null && filterPrefix.indexOf(',') == -1 && filterPrefix.indexOf('(') == -1 && filterPrefix.indexOf(')') == -1); // NOI18N
             }
-
-            return false;
+            return false;            
         }
 
         @Override

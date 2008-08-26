@@ -288,7 +288,7 @@ public class CLIOptions extends CLIHandler {
             if (_homeDir != null) {
                 File homeDirF = FileUtil.normalizeFile(new File(_homeDir));
                 if ((userDirF.getAbsolutePath() + File.separatorChar).startsWith(homeDirF.getParentFile().getAbsolutePath() + File.separatorChar)) {
-                    System.err.println(NbBundle.getMessage(CLIOptions.class, "ERR_user_directory_is_inside_home"));
+                    System.err.println(NbBundle.getMessage(CLIOptions.class, "ERR_user_dir_is_inside_home", userDirF, homeDirF.getParentFile()));
                     TopLogging.exit(1);
                 }
             }
@@ -299,7 +299,7 @@ public class CLIOptions extends CLIHandler {
             File systemDirFile = new File(userDirF, NbRepository.CONFIG_FOLDER);
             makedir (systemDirFile);
             systemDir = systemDirFile.getAbsolutePath ();
-            makedir(new File(userDirF, DIR_MODULES)); // NOI18N
+    //        makedir(new File(userDirF, DIR_MODULES)); // NOI18N
         }
         return userDir;
     }

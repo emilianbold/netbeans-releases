@@ -213,7 +213,7 @@ public class EntityRelations extends J2eeTestCase {
     }
 
     public void testMakePublic() throws Exception {
-        hintTest(new File(getDataDir(), "projects/EntityHintsEJB/src/java/hints/MakePublic.java"), 1, null, 2);
+        hintTest(new File(getDataDir(), "projects/EntityHintsEJB/src/java/hints/MakePublic.java"), 0, null, 1);
     }
 
     public void testDefaultConstructor() throws Exception {

@@ -136,7 +136,7 @@ public class PlatformNodeProp extends Node.Property {
         public String getAsText() {
             if (platformConfiguration instanceof PlatformConfiguration) {
                 if (platformConfiguration.getValue() == Platform.PLATFORM_NONE) {
-                    System.err.println("");
+//                    System.err.println("");
                 }
             }
             return platformConfiguration.getName();
@@ -146,7 +146,7 @@ public class PlatformNodeProp extends Node.Property {
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
             if (platformConfiguration instanceof PlatformConfiguration) {
                 if (platformConfiguration.getValue() == Platform.PLATFORM_NONE) {
-                    System.err.println("");
+//                    System.err.println("");
                 }
             }
             setValue(text);

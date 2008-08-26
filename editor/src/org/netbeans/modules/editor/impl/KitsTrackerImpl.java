@@ -145,6 +145,14 @@ public final class KitsTrackerImpl extends KitsTracker {
         }
     }
 
+    public Class<?> findKitClass(String mimeType) {
+        if (mimeType.length() > 0) {
+            return (Class<?>) updateAndGet(mimeType);
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Gets all know mime types registered in the system.
      * 
@@ -336,6 +344,19 @@ public final class KitsTrackerImpl extends KitsTracker {
         
         return false;
     }
+
+    private static Class<?> instanceClass(FileObject f) {
+        try {
+            DataObject d = DataObject.find(f);
+            InstanceCookie ic = d.getLookup().lookup(InstanceCookie.class);
+            if (ic != null) {
+                return ic.instanceClass();
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        return null;
+    }
     
     private void invalidateCache() {
         synchronized (mimeType2kitClass) {
@@ -369,7 +390,7 @@ public final class KitsTrackerImpl extends KitsTracker {
         }
     }
 
-    private Object updateAndGet(Class kitClass) {
+    private Object updateAndGet(Object kitClassOrMimeType) {
         boolean reload;
         Set<String> reloadedSet = new HashSet<String>();
         List<FileObject> newEventSources = new ArrayList<FileObject>();
@@ -385,9 +406,6 @@ public final class KitsTrackerImpl extends KitsTracker {
         }
             
         synchronized (mimeType2kitClass) {
-            List<String> list = null;
-            Set<String> set = null;
-
             if (reload) {
                 // Stop listening
                 if (eventSources != null) {
@@ -412,7 +430,13 @@ public final class KitsTrackerImpl extends KitsTracker {
             }
             
             // Compute the list
-            if (kitClass != null) {
+            if (kitClassOrMimeType == null) {
+                Set<String> set = new HashSet<String>(knownMimeTypes);
+
+                TIMER.log(Level.FINE, "[M] Mime types", new Object [] { this, set.size() }); //NOI18N
+                return set;
+                
+            } else {
                 if (!mimeType2kitClassLoaded) {
                     long tm = System.currentTimeMillis();
                     
@@ -442,41 +466,44 @@ public final class KitsTrackerImpl extends KitsTracker {
                     // new Throwable("~~~ KitsTrackerImpl._reload took " + (tm2 - tm) + "msec").printStackTrace();
                 }
 
-                list = kitClass2mimeTypes.get(kitClass);
-                if (list == null) {
-                    list = new ArrayList<String>();
-                    kitClass2mimeTypes.put(kitClass, list);
+                if (kitClassOrMimeType instanceof Class) {
+                    Class kitClass = (Class) kitClassOrMimeType;
+                    List<String> list = kitClass2mimeTypes.get(kitClass);
+                    if (list == null) {
+                        list = new ArrayList<String>();
+                        kitClass2mimeTypes.put(kitClass, list);
 
-                    // If kitClass is not registered for any mime type, we have
-                    // to check its superclass, but only up to the well known kit class parents.
-                    // If a kit class is registered for some mime type we must not
-                    // check its superclass.
-                    for(Class clazz = kitClass; 
-                        clazz != null && !WELL_KNOWN_PARENTS.contains(clazz.getName()); 
-                        clazz = clazz.getSuperclass()
-                    ) {
-                        boolean kitClassFinal = (clazz.getModifiers() & Modifier.FINAL) != 0;
-                        for(String mimeType : mimeType2kitClass.keySet()) {
-                            FileObject f = mimeType2kitClass.get(mimeType);
-                            if (isInstanceOf(f, clazz, !kitClassFinal)) {
-                                list.add(mimeType);
+                        // If kitClass is not registered for any mime type, we have
+                        // to check its superclass, but only up to the well known kit class parents.
+                        // If a kit class is registered for some mime type we must not
+                        // check its superclass.
+                        for(Class clazz = kitClass; 
+                            clazz != null && !WELL_KNOWN_PARENTS.contains(clazz.getName()); 
+                            clazz = clazz.getSuperclass()
+                        ) {
+                            boolean kitClassFinal = (clazz.getModifiers() & Modifier.FINAL) != 0;
+                            for(String mimeType : mimeType2kitClass.keySet()) {
+                                FileObject f = mimeType2kitClass.get(mimeType);
+                                if (isInstanceOf(f, clazz, !kitClassFinal)) {
+                                    list.add(mimeType);
+                                }
+                            }
+
+                            if (!list.isEmpty()) {
+                                break;
                             }
                         }
-                        
-                        if (!list.isEmpty()) {
-                            break;
-                        }
                     }
-                }
-                
-                TIMER.log(Level.FINE, "[M] " + kitClass.getSimpleName() + " used", new Object [] { this, list.size() }); //NOI18N
-            } else {
-                set = new HashSet<String>(knownMimeTypes);
-                TIMER.log(Level.FINE, "[M] Mime types", new Object [] { this, set.size() }); //NOI18N
-            }
 
-            assert kitClass != null ? list != null : set != null;
-            return kitClass != null ? list : set;
+                    TIMER.log(Level.FINE, "[M] " + kitClass.getSimpleName() + " used", new Object [] { this, list.size() }); //NOI18N
+                    return list;
+
+                } else {
+                    assert kitClassOrMimeType instanceof String;
+                    FileObject f = mimeType2kitClass.get((String) kitClassOrMimeType);
+                    return instanceClass(f);
+                }
+            }
         }
     }
 }

@@ -48,6 +48,7 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.groovy.grails.api.GrailsConstants;
 import org.netbeans.modules.groovy.grailsproject.GrailsActionProvider;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.actions.CreateWarFileAction;
@@ -109,7 +110,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         }
 
         public Image getIcon(int type) {
-            return Utilities.loadImage("org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png");
+            return Utilities.loadImage(GrailsConstants.GRAILS_ICON_16x16);
         }
 
         public Image getOpenedIcon(int type) {

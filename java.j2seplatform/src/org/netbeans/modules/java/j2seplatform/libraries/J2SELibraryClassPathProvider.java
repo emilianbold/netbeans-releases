@@ -95,6 +95,7 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
         return null;
     }
     
+            
     private synchronized Library getLastUsedLibrary (FileObject fo) {
         if (this.lastUsedRoot != null && FileUtil.isParentOf(this.lastUsedRoot,fo)) {
             return this.lastUsedLibrary;

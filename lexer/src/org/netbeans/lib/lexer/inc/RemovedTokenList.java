@@ -90,7 +90,7 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         return null;
     }
 
-    public int tokenOffsetByIndex(int index) {
+    public int tokenOffset(int index) {
         Token<?> token = existingToken(index);
         if (token.isFlyweight()) {
             int offset = 0;
@@ -169,14 +169,14 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
 
     public int startOffset() {
         if (tokenCountCurrent() > 0 || tokenCount() > 0)
-            return tokenOffsetByIndex(0);
+            return tokenOffset(0);
         return 0;
     }
 
     public int endOffset() {
         int cntM1 = tokenCount() - 1;
         if (cntM1 >= 0)
-            return tokenOffsetByIndex(cntM1) + tokenOrEmbedding(cntM1).token().length();
+            return tokenOffset(cntM1) + tokenOrEmbedding(cntM1).token().length();
         return 0;
     }
 

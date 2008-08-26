@@ -179,15 +179,16 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
                 busyListener.busyStart();
             }
             synchronized(lock) {
-                fileModel.setFile(csmFile);
-                final Children children = root.getChildren();
-                if (!Children.MUTEX.isReadAccess()){
-                     Children.MUTEX.writeAccess(new Runnable(){
-                        public void run() {
-                            children.remove(children.getNodes());
-                            children.add(fileModel.getNodes());
-                        }
-                    });
+                if (fileModel.setFile(csmFile)){
+                    final Children children = root.getChildren();
+                    if (!Children.MUTEX.isReadAccess()){
+                         Children.MUTEX.writeAccess(new Runnable(){
+                            public void run() {
+                                children.remove(children.getNodes());
+                                children.add(fileModel.getNodes());
+                            }
+                        });
+                    }
                 }
             }
         } finally {

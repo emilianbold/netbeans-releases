@@ -750,9 +750,8 @@ public class InstanceDataObjectTest extends NbTestCase {
         }
         // Now the fun part: check that the filesystem can actually store the filenames
         // we are making. For best results, try this on different OS's.
-        File dir = File.createTempFile("InstanceDataObjectTest", "");
-        assertTrue(dir.delete());
-        assertTrue(dir.mkdir());
+        clearWorkDir();
+        File dir = getWorkDir();
         for (int i = 0; i < names.length; i++) {
             String name = InstanceDataObject.escape(names[i]);
             //System.err.println("testing: " + name);
@@ -800,9 +799,8 @@ public class InstanceDataObjectTest extends NbTestCase {
         
         // Now the fun part: check that the filesystem can actually store the filenames
         // we are making. For best results, try this on different OS's.
-        File dir = File.createTempFile("InstanceDataObjectTest", "");
-        assertTrue(dir.delete());
-        assertTrue(dir.mkdir());
+        clearWorkDir();
+        File dir = getWorkDir();
         for (int i = 0; i < names.length; i++) {
             String name = InstanceDataObject.escapeAndCut(names[i]);
             //System.err.println("testing: " + name);

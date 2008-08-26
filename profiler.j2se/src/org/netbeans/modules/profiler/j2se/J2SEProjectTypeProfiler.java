@@ -558,8 +558,12 @@ public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
                                     FileObject configSpecPropFile = configPropsDir.getFileObject(activeConfig + ".properties"); // NOI18N
 
                                     if (configSpecPropFile != null) {
-                                        is = configSpecPropFile.getInputStream();
-                                        configProps.load(is);
+                                        InputStream configSpecIn = configSpecPropFile.getInputStream();
+                                        try {
+                                            configProps.load(configSpecIn);
+                                        } finally {
+                                            configSpecIn.close();
+                                        }
                                     }
                                 }
                             } finally {

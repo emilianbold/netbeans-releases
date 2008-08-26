@@ -160,7 +160,12 @@ public class CommandRunner extends BasicTask<OperationState> {
     
     public Map<String, String> getResourceData(String name) {
         try {
-            GetPropertyCommand cmd = new ServerCommand.GetPropertyCommand("resources.*."+name); // NOI18N
+            GetPropertyCommand cmd;
+            if (null != name) {
+                cmd = new ServerCommand.GetPropertyCommand("resources.*."+name); // NOI18N
+            } else {
+                cmd = new ServerCommand.GetPropertyCommand("resources.*"); // NOI18N
+            }
             serverCmd = cmd;
             Future<OperationState> task = executor().submit(this);
             OperationState state = task.get();

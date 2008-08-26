@@ -94,4 +94,24 @@ public interface RailsDatabaseConfiguration {
      * @return the default development database name.
      */
     String getDatabaseName(String projectName);
+
+    /**
+     * Guesses a name for the test database, possibly based on the given 
+     * <code>developmentDbName</code>. Useful for the case when the user
+     * has specified only the development database.
+     * 
+     * @param developmentDbName the name of the development database.
+     * @return a name for the test database
+     */
+    String getTestDatabaseName(String developmentDbName);
+
+    /**
+     * Guesses a name for the production database, possibly based on the given
+     * <code>developmentDbName</code>. Useful for the case when the user
+     * has specified only the development database.
+     *
+     * @param developmentDbName the name of the development database.
+     * @return a name for the production database
+     */
+    String getProductionDatabaseName(String developmentDbName);
 }

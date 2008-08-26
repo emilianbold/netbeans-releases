@@ -42,9 +42,7 @@
 package org.openide.util;
 
 import java.lang.ref.*;
-import java.util.*;
 import org.openide.ErrorManager;
-import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.util.Task;
 
@@ -1137,6 +1135,7 @@ class R extends Object implements Runnable {
         
     }
 
+    @RandomlyFails // NB-Core-Build #1211
     public void testInterruptedStatusWorksInInversedTasksWhenInterruptedSoon() throws Exception {
         RequestProcessor rp = new RequestProcessor ("testInterruptedStatusWorksInInversedTasksWhenInterruptedSoon", 1, true);
         

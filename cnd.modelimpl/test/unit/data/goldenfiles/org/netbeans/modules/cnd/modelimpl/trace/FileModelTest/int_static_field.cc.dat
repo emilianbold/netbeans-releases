@@ -11,7 +11,7 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS A (A ) [1:1/0-9:3/126] lcurly=8 SCOPE: $Global$ 
+CLASS A (A ) [1:1/0-9:2/125] lcurly=8 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PUBLIC static pub [3:5/22-3:20/37]  TYPE: int TEXT=int  [3:5/22-3:15/32]  INIT: null  SCOPE: A 
@@ -20,7 +20,7 @@ CLASS A (A ) [1:1/0-9:3/126] lcurly=8 SCOPE: $Global$
         FIELD PROTECTED static prot [8:5/107-8:21/123]  TYPE: int TEXT=int  [8:5/107-8:15/117]  INIT: null  SCOPE: A 
 
 ========== Dumping model of PROJECT DummyProject
-CLASS A (A ) [1:1/0-9:3/126] lcurly=8 SCOPE: $Global$ 
+CLASS A (A ) [1:1/0-9:2/125] lcurly=8 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PUBLIC static pub [3:5/22-3:20/37]  TYPE: int TEXT=int  [3:5/22-3:15/32]  INIT: null  SCOPE: A 

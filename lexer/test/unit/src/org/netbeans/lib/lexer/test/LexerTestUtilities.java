@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -72,9 +73,6 @@ import org.netbeans.lib.lexer.test.dump.TokenDumpCheck;
  * @author mmetelka
  */
 public final class LexerTestUtilities {
-    
-    /** Flag for additional correctness checks (may degrade performance). */
-    private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
     
     private static final String LAST_TOKEN_HIERARCHY = "last-token-hierarchy";
 
@@ -228,7 +226,7 @@ public final class LexerTestUtilities {
         TestCase.assertEquals(message + "Invalid tokenSequence offset", ts.offset(), ts2.offset());
 
         // Checking LOOKAHEAD and STATE matching in case they are filled in (during tests)
-        if (testing && testLookaheadAndState) {
+        if (TokenList.LOG.isLoggable(Level.FINE) && testLookaheadAndState) {
             TestCase.assertEquals(message + "Invalid token.lookahead()", lookahead(ts), lookahead(ts2));
             TestCase.assertEquals(message + "Invalid token.state()", state(ts), state(ts2));
         }
@@ -363,10 +361,11 @@ public final class LexerTestUtilities {
                 incCheckNested("TOP", doc, batchTS, batchHi, incTS, incHi);
             } catch (Throwable t) { // Re-throw with hierarchy info
                 StringBuilder sb = new StringBuilder(512);
-                sb.append("\nERROR in HIERARCHY!!!!!!!!\n");
+                sb.append("\n\n\nERROR in HIERARCHY!!!!!!!!\n");
                 sb.append(t.toString());
                 sb.append("\n\nBATCH token hierarchy:\n").append(batchHi);
                 sb.append("\n\n\n\nTEST token hierarchy:\n").append(incHi);
+                t.printStackTrace();
                 throw new IllegalStateException(sb.toString(), t);
             }
         }
@@ -377,6 +376,9 @@ public final class LexerTestUtilities {
             // TODO comparison
         }
         doc.putProperty(LAST_TOKEN_HIERARCHY, batchHi); // new last batch token hierarchy
+
+        // Do another check since some TLLs may be created during embedded TS checking
+        assertConsistency(incHi);
     }
 
     public static void incCheckNested(String message, Document doc,
@@ -390,8 +392,10 @@ public final class LexerTestUtilities {
             TokenSequence<?> incE = inc.embedded();
             String messageE = message + "->[" + i + "]";
             if (incE != null) {
-                TestCase.assertNotNull("Inc embedded sequence is null", batchE);
+                TestCase.assertNotNull("Batch embedded sequence is null", batchE);
                 assertTokenSequencesEqual(messageE, batchE, batchTH, incE, incTH, true, true);
+                incE.moveStart();
+                batchE.moveStart();
 
                 incCheckNested(messageE, doc, batchE, batchTH, incE, incTH);
             } else { // Inc embedded is null
@@ -521,7 +525,7 @@ public final class LexerTestUtilities {
      * additional correctness checks performed.
      */
     public static void setTesting(boolean testing) {
-        System.setProperty("netbeans.debug.lexer.test", testing ? "true" : "false");
+        TokenList.LOG.setLevel(testing ? Level.FINE : Level.INFO);
     }
     
     /**

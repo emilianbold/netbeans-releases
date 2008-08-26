@@ -76,7 +76,8 @@ import org.netbeans.modules.xml.cookies.*;
  * <p>
  * Listens for: text document change (edit), timers and document status change (loading).
  */
-public class TextEditorSupport extends DataEditorSupport implements EditorCookie.Observable, EditCookie, CloseCookie, PrintCookie {
+public class TextEditorSupport extends DataEditorSupport implements EditorCookie.Observable,
+        OpenCookie, EditCookie, CloseCookie, PrintCookie {
 // ToDo:
 // + extend CloneableEditorSupport instead of DataEditorSupport which is associated with DataObject
     
@@ -713,6 +714,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         protected Class[] supportedCookies() {
             return new Class[] { EditorCookie.class,
                     EditorCookie.Observable.class,
+                    OpenCookie.class,
                     EditCookie.class,
                     CloseCookie.class,
                     PrintCookie.class,
@@ -743,7 +745,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         
         /**
          */
-        private final synchronized TextEditorSupport createEditor() { // atomic test and set
+        public final synchronized TextEditorSupport createEditor() { // atomic test and set
             TextEditorSupport editorSupport = null;
             
             if ( editorRef != null ) {

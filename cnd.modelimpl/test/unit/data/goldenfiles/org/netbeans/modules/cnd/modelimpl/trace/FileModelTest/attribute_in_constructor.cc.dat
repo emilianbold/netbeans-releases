@@ -12,7 +12,7 @@ Includes:
     <no includes>
 Macros:
 #define 'BOOST_USED' [2:1/1-2:44/44]
-CLASS pointer_oserializer<class T,class Archive> (pointer_oserializer ) [4:1/46-8:3/165] lcurly=105 SCOPE: $Global$ 
+CLASS pointer_oserializer<class T,class Archive> (pointer_oserializer ) [4:1/46-8:2/164] lcurly=105 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION pointer_oserializer [7:5/120-7:46/161] ConstructorImpl SCOPE: pointer_oserializer 
@@ -23,7 +23,7 @@ CLASS pointer_oserializer<class T,class Archive> (pointer_oserializer ) [4:1/46-
             RETURNS <*no_classifier*> TEXT=  [null-null]
 
 ========== Dumping model of PROJECT DummyProject
-CLASS pointer_oserializer<class T,class Archive> (pointer_oserializer ) [4:1/46-8:3/165] lcurly=105 SCOPE: $Global$ 
+CLASS pointer_oserializer<class T,class Archive> (pointer_oserializer ) [4:1/46-8:2/164] lcurly=105 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FUNCTION pointer_oserializer [7:5/120-7:46/161] ConstructorImpl SCOPE: pointer_oserializer 

@@ -38,9 +38,6 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -59,6 +56,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAs
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator.InvalidUrlException;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -138,9 +136,10 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
 
     protected void validateFields() {
         String url = urlTextField.getText();
+        String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
 
-        String err = RunAsValidator.validateWebFields(url, null, args);
+        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(project.getWebRootDirectory()), indexFile, args);
         category.setErrorMessage(err);
         category.setValid(err == null);
     }

@@ -8,7 +8,7 @@
 --OWNER:
     FUNCTION_DEFINITION System()  [48:1/2227-50:2/2270] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    CLASS System [52:1/2246-68:3/2616] ReferencesTestCase/system.h
+    CLASS System [52:1/2246-68:2/2615] ReferencesTestCase/system.h
 ==============================================================
 'System', tokenID=identifier, offset=2235 [48:9/2235-48:15/2241]
 --OWNER:
@@ -26,7 +26,7 @@
 --OWNER:
     FUNCTION_DEFINITION AddModule(Module*)  [52:1/2272-55:2/2397] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    CLASS System [52:1/2246-68:3/2616] ReferencesTestCase/system.h
+    CLASS System [52:1/2246-68:2/2615] ReferencesTestCase/system.h
 ==============================================================
 'AddModule', tokenID=identifier, offset=2285 [52:14/2285-52:23/2294]
 --OWNER:
@@ -38,7 +38,7 @@
 --OWNER:
     TYPE *Module TEXT=Module*  [52:24/2295-52:31/2302] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'module', tokenID=identifier, offset=2303 [52:32/2303-52:38/2309]
 --OWNER:
@@ -86,13 +86,13 @@
 --OWNER:
     TYPE &Module TEXT=Module&  [57:1/2399-57:8/2406] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'System', tokenID=identifier, offset=2407 [57:9/2407-57:15/2413]
 --OWNER:
     FUNCTION_DEFINITION GetModule(int) const  [57:1/2399-61:2/2530] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    CLASS System [52:1/2246-68:3/2616] ReferencesTestCase/system.h
+    CLASS System [52:1/2246-68:2/2615] ReferencesTestCase/system.h
 ==============================================================
 'GetModule', tokenID=identifier, offset=2415 [57:17/2415-57:26/2424]
 --OWNER:
@@ -152,7 +152,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetModuleCount() const  [63:1/2532-65:2/2600] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    CLASS System [52:1/2246-68:3/2616] ReferencesTestCase/system.h
+    CLASS System [52:1/2246-68:2/2615] ReferencesTestCase/system.h
 ==============================================================
 'GetModuleCount', tokenID=identifier, offset=2544 [63:13/2544-63:27/2558]
 --OWNER:
@@ -176,7 +176,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetSupportMetric() const  [67:1/2602-69:2/2668] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    CLASS System [52:1/2246-68:3/2616] ReferencesTestCase/system.h
+    CLASS System [52:1/2246-68:2/2615] ReferencesTestCase/system.h
 ==============================================================
 'GetSupportMetric', tokenID=identifier, offset=2614 [67:13/2614-67:29/2630]
 --OWNER:
@@ -212,7 +212,7 @@
 --OWNER:
     TYPE const &System TEXT=const System&  [71:39/2709-71:52/2722] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    CLASS System [52:1/2246-68:3/2616] ReferencesTestCase/system.h
+    CLASS System [52:1/2246-68:2/2615] ReferencesTestCase/system.h
 ==============================================================
 'system', tokenID=identifier, offset=2723 [71:53/2723-71:59/2729]
 --OWNER:

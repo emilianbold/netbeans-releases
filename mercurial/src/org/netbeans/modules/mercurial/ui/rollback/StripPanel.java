@@ -142,7 +142,6 @@ public class StripPanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 1, 11));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(StripPanel.class, "StripPanel.infoLabel.text")); // NOI18N
 
         jLabel2.setForeground(new java.awt.Color(153, 153, 153));
@@ -160,7 +159,7 @@ public class StripPanel extends javax.swing.JPanel {
             .add(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .add(doBackupChxBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 327, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(45, Short.MAX_VALUE))
+                .addContainerGap(65, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -189,15 +188,15 @@ public class StripPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(26, 26, 26)
                                 .add(revisionsLabel)
                                 .add(18, 18, 18)
-                                .add(revisionsComboBox, 0, 219, Short.MAX_VALUE))
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                                .add(revisionsComboBox, 0, 228, Short.MAX_VALUE))
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 421, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
@@ -229,15 +228,15 @@ public class StripPanel extends javax.swing.JPanel {
 
 private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revisionsComboBoxActionPerformed
     int index = revisionsComboBox.getSelectedIndex();
-    if(getMore((String) revisionsComboBox.getSelectedItem())) return;
+    if(getMore((String) revisionsComboBox.getSelectedItem())) return;//GEN-HEADEREND:event_revisionsComboBoxActionPerformed
     
     if(messages != null && index >= 0 && index < messages.length ){
         changesetPanel1.setInfo(messages[index]);
     }
-}//GEN-LAST:event_revisionsComboBoxActionPerformed
+}                                                 
     
     private boolean getMore(String revStr) {
-        if (bGettingRevisions) return false;
+        if (bGettingRevisions) return false;//GEN-LAST:event_revisionsComboBoxActionPerformed
         boolean bGetMore = false;
         int limit = -1;
 

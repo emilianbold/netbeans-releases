@@ -78,7 +78,7 @@ public class AutoupdateCatalogFactory {
     private static final String SYSPROP_COUNTRY = "netbeans.autoupdate.country"; // NOI18N
     private static final String SYSPROP_LANGUAGE = "netbeans.autoupdate.language"; // NOI18N
     private static final String SYSPROP_VARIANT = "netbeans.autoupdate.variant"; // NOI18N
-    private static final String PROP_SUPER_IDENTITY = "superId"; // NOI18N
+    private static final String PROP_QUALIFIED_IDENTITY = "qualifiedId"; // NOI18N
     
     public static final String ORIGINAL_URL = "originalUrl"; // NOI18N
     public static final String ORIGINAL_DISPLAY_NAME = "originalDisplayName"; // NOI18N
@@ -172,7 +172,7 @@ public class AutoupdateCatalogFactory {
         }
         
         if (System.getProperty (IDE_HASH_CODE) == null) {
-            String id = getPreferences ().get (PROP_SUPER_IDENTITY, null);
+            String id = getPreferences ().get (PROP_QUALIFIED_IDENTITY, null);
             if (id == null) {
                 // can ignore it, property used only for logging purposes
                 Logger.getLogger(AutoupdateCatalogFactory.class.getName()).warning("Property PROP_IDE_IDENTITY hasn't been initialized yet."); // NOI18N

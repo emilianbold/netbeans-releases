@@ -39,8 +39,10 @@
 package org.netbeans.modules.ruby.railsprojects.database;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
@@ -59,6 +61,7 @@ import org.openide.util.Parameters;
  */
 public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
 
+    private static final Logger LOGGER = Logger.getLogger(ConfigurableRailsAdapter.class.getName());
     private final RailsDatabaseConfiguration delegate;
     private final String userName;
     private final String password;
@@ -86,6 +89,7 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
         this.database = database;
         this.jdbc = jdbc;
     }
+
 
     public String railsGenerationParam() {
         return delegate.railsGenerationParam();
@@ -161,6 +165,8 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
                     // for the javadb adapter
                     changeAttribute(doc, "username:", userName, "url:"); //NOI18N
                     changeAttribute(doc, "password:", password, "username:"); //NOI18N
+                    // see #138294
+                    handleTestAndProduction(doc);
                     SaveCookie sc = dobj.getCookie(SaveCookie.class);
                     if (sc != null) {
                         sc.save();
@@ -176,6 +182,73 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
                 Exceptions.printStackTrace(ioe);
             }
         }
+    }
+
+    /**
+     * Changes the test and production database configs to match that of the development
+     * database config. Basically just copies the development config and changes the database
+     * name.
+     * 
+     * @param databaseYml the document for database.yml that already contains correctly generated
+     * development database config and the default configs for test and production databases.
+     * 
+     * @throws javax.swing.text.BadLocationException
+     */
+    private void handleTestAndProduction(Document databaseYml) throws BadLocationException {
+        String text = getText(databaseYml);
+        int start = text.indexOf("development:\n"); //NOI18N
+        int end = text.indexOf("test:\n"); //NOI18N
+        if (end == -1) {
+            // log a warning and return. "test:" should be present, 
+            // if it is not, we will do more harm than good by trying to 
+            // modify the document further
+            LOGGER.warning("Could not find 'test:' in database.yml. Its content is: " + text);
+            return;
+        }
+
+        databaseYml.remove(end, databaseYml.getLength() - end);
+        String developmentConfig = databaseYml.getText(start, end - start);
+        String developmentDbName = !isEmpty(database) ? database : RailsAdapters.getPropertyValue(databaseYml, "database:"); //NOI18N
+        
+        PlainDocument test = new PlainDocument();
+        String testConfig = developmentConfig.replace("development:\n", "test:\n");//NOI18N
+        // remove the comment that rails generates for the test database. removes
+        // it from the end so that it doesn't get added for the production database too,
+        // the comment will still be there for the test database.
+        int warningIndex = testConfig.lastIndexOf("# Warning: The database defined as \"test\" will be erased");//NOI18N
+        if (warningIndex != -1) {
+            testConfig = testConfig.substring(0, warningIndex);
+        }
+        test.insertString(0, testConfig, null);
+        changeDatabase(test, getTestDatabaseName(developmentDbName));
+        
+        PlainDocument production = new PlainDocument();
+        String productionConfig = testConfig.replace("test:\n", "production:\n");//NOI18N
+        production.insertString(0, productionConfig, null);
+        changeDatabase(production, getProductionDatabaseName(developmentDbName));
+
+        databaseYml.insertString(databaseYml.getLength(), getText(test) + getText(production), null);
+    }
+
+    /**
+     * Changes the database name specified in the given document. If using JDBC, 
+     * changes the url instead.
+     * 
+     * @param doc
+     * @param databaseName the new name for the database.
+     * @throws javax.swing.text.BadLocationException
+     */
+    private void changeDatabase(Document doc, String databaseName) throws BadLocationException {
+        JdbcInfo jdbcInfo = getJdbcInfo();
+        if (!jdbc || jdbcInfo == null) {
+            changeAttribute(doc, "database:", databaseName, null); //NOI18N
+        } else {
+            changeAttribute(doc, "url:", jdbcInfo.getURL("localhost", databaseName), "adapter:"); //NOI18N
+        }
+    }
+
+    private String getText(Document doc) throws BadLocationException {
+        return doc.getText(0, doc.getLength());
     }
 
     private void setDatabase(Document databaseYml) throws BadLocationException {
@@ -210,5 +283,13 @@ public class ConfigurableRailsAdapter implements RailsDatabaseConfiguration {
 
     public String getDatabaseName(String projectName) {
         return delegate.getDatabaseName(projectName);
+    }
+
+    public String getTestDatabaseName(String developmentDbName) {
+        return delegate.getTestDatabaseName(developmentDbName);
+    }
+
+    public String getProductionDatabaseName(String developmentDbName) {
+        return delegate.getProductionDatabaseName(developmentDbName);
     }
 }

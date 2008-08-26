@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.sendopts.OptionGroups;
 import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
@@ -50,7 +51,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jaroslav Tulach
  */
-public class StreamingTest extends junit.framework.TestCase {
+public class StreamingTest extends NbTestCase {
     static {
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
     }
@@ -64,18 +65,10 @@ public class StreamingTest extends junit.framework.TestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
-        File f = File.createTempFile(getName(), "tmp");
-        f.delete();
-        f.mkdirs();
-        assertTrue("We created a directory", f.isDirectory());
-        
-        File[] arr = f.listFiles();
-        for (int i = 0; i < arr.length; i++) {
-            arr[i].delete();
-        }
-        tmpDir = f;
-        
+        clearWorkDir();
+        tmpDir = getWorkDir();
         
         Lookup l = Lookup.getDefault();
         assertEquals(Lkp.class, l.getClass());
@@ -87,6 +80,7 @@ public class StreamingTest extends junit.framework.TestCase {
         lkp.ic.add(new P());
     }
 
+    @Override
     protected void tearDown() throws Exception {
         Lookup l = Lookup.getDefault();
         assertEquals(Lkp.class, l.getClass());

@@ -143,7 +143,9 @@ public class DateFieldCD extends ComponentDescriptor {
             // code
             createSetterPresenter(),
             // screen
-            new DateFieldDisplayPresenter()
+            new DateFieldDisplayPresenter(),
+            //accept
+            DatabindingItemAcceptPresenter.create(PROP_DATE, ItemCD.PROP_LABEL)
         );
     }
 
@@ -207,7 +209,6 @@ public class DateFieldCD extends ComponentDescriptor {
             }
             super.generateParameterCode (component, section, index);
         }
-
     }
 
     private static class TimeZoneParameter extends MidpParameter {

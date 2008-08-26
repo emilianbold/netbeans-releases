@@ -9,7 +9,7 @@ package org.netbeans.modules.javascript.editing.options;
 import java.util.EnumSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import org.mozilla.javascript.Context;
+import org.mozilla.nb.javascript.Context;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
 import org.netbeans.modules.javascript.editing.spi.JSPreferencesPanel;

@@ -357,7 +357,17 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     public boolean isActiveNoInit() { // BTW used by tests to check if hierarchy is active or not
         return (activity == Activity.ACTIVE);
     }
-    
+
+    public void setInactiveAfterInconsistency() {
+        // Mark the hierarchy inactive to prevent further token changes but do not fire activity change
+        this.activity = Activity.INACTIVE;
+        if (LOG.isLoggable(Level.INFO)) {
+            StringBuilder sb = toStringNoTokens(null);
+            sb.append("Token hierarchy made INACTIVE due to internal INCONSISTENCY");
+            LOG.info(sb.toString());
+        }
+    }
+
     public void ensureReadLocked() {
         if (isMutable() && LOG_LOCK.isLoggable(Level.FINE) &&
                 !LexerSpiPackageAccessor.get().isReadLocked(mutableTextInput)
@@ -663,15 +673,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
 //    
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("TOKEN HIERARCHY"); // NOI18N
-        if (inputSource() != null) {
-            sb.append(" for " + inputSource());
-        }
-        if (!isActive()) {
-            sb.append(" is NOT ACTIVE.");
-            return sb.toString();
-        }
-
+        StringBuilder sb = toStringNoTokens(null);
         sb.append(":\n"); // NOI18N
         LexerUtilsConstants.appendTokenList(sb, rootTokenList);
         if (path2tokenListList != null && path2tokenListList.size() > 0) {
@@ -683,7 +685,24 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         }
         return sb.toString();
     }
-    
+
+    public StringBuilder toStringNoTokens(StringBuilder sb) {
+        if (sb == null)
+            sb = new StringBuilder(200);
+        sb.append("TOKEN HIERARCHY"); // NOI18N
+        if (inputSource() != null) {
+            sb.append(" for " + inputSource());
+        }
+        if (!isActive()) {
+            sb.append(" is NOT ACTIVE.");
+        } else {
+            CharSequence inputSourceText = rootTokenList.inputSourceText();
+            sb.append("\nText: ").append(inputSourceText.getClass());
+            sb.append(", length=").append(inputSourceText.length());
+        }
+        return sb;
+    }
+
     /**
      * Check consistency of the whole token hierarchy.
      * @return string describing the problem or null if the hierarchy is consistent.

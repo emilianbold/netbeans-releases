@@ -68,32 +68,9 @@ public class DebugAction extends NodeAction {
     }
     
     private static void performActionImpl(final GlassfishModule commonSupport) {
-//        Map<String, String> ip = commonSupport.getInstanceProperties();
-//        String title = NbBundle.getMessage(DebugAction.class, "LBL_Debugging", ip.get(GlassfishModule.DISPLAY_NAME_ATTR));
         commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.DEBUG_MODE, true);
         commonSupport.startServer(null);
     }
-
-//    private static void performActionImpl(final ServerInstance si) {
-//        if (si != null) {
-//            RequestProcessor.getDefault().post(new Runnable() {
-//                public void run() {
-//                    String title = NbBundle.getMessage(DebugAction.class, "LBL_Debugging", si.getDisplayName());
-//                    ProgressUI progressUI = new ProgressUI(title, false);
-//                    try {
-//                        progressUI.start();
-//                        si.startDebug(progressUI);
-//                    } catch (ServerException ex) {
-//                        String msg = ex.getLocalizedMessage();
-//                        NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-//                        DialogDisplayer.getDefault().notify(desc);
-//                    } finally {
-//                        progressUI.finish();
-//                    }
-//                }
-//            });
-//        }
-//    }
 
     protected boolean enable(Node[] activatedNodes) {
         boolean result = false;

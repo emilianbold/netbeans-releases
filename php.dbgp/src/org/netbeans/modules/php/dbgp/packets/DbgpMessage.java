@@ -299,7 +299,6 @@ public abstract class DbgpMessage {
             return Integer.parseInt(str);
         }
         catch( NumberFormatException e ) {
-            assert false;
             return -1;
         }
     }

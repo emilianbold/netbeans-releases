@@ -41,8 +41,8 @@ package org.netbeans.modules.ruby.hints.introduce;
 import org.netbeans.modules.ruby.ParseTreeVisitor;
 import java.util.ArrayList;
 import java.util.List;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
 
 /**
  * Finder which determines if the given range in the AST represents a valid range for

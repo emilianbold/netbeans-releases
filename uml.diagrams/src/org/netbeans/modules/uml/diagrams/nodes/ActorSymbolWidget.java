@@ -46,6 +46,7 @@ import java.awt.Rectangle;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.drawingarea.view.CustomizableWidget;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
+import org.openide.util.NbBundle;
 
 /**
  * This widget represents only actor symbol and do not represent Actor element
@@ -57,7 +58,11 @@ public class ActorSymbolWidget extends CustomizableWidget{
     private int width;
 
     public ActorSymbolWidget(Scene scene, String id, String name) {
-        super(scene,id,name);
+        super(scene, id, NbBundle.getMessage(ActorSymbolWidget.class, "LBL_StickFigure"));
+        
+        setBackground(null);
+        setForeground(Color.BLACK);
+        
         setCustomizableResourceTypes(new ResourceType[]{ResourceType.BACKGROUND,ResourceType.FOREGROUND});
     }
     

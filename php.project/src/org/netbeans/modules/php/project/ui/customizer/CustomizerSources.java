@@ -200,11 +200,11 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     }
 
     public String getSourcesFolderName() {
-        return getSourcesFolder().getNameExt();
+        return getSourcesFolder().getName();
     }
 
-    public FileObject getSourcesFolder() {
-        return FileUtil.toFileObject(new File(projectFolderTextField.getText()));
+    public File getSourcesFolder() {
+        return FileUtil.normalizeFile(new File(projectFolderTextField.getText()));
     }
 
     void validateFields(Category category) {

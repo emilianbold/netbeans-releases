@@ -259,10 +259,13 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
         jLabel4.setLabelFor(txtStop);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel4.text")); // NOI18N
 
+        jLabel5.setLabelFor(txtAdminArgs);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel5.text")); // NOI18N
 
+        jLabel6.setLabelFor(txtStartArgs);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel6.text")); // NOI18N
 
+        jLabel7.setLabelFor(txtStopArgs);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(AdminPropertiesPanel.class, "AdminPropertiesPanel.jLabel7.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -305,7 +308,7 @@ public class AdminPropertiesPanel extends javax.swing.JPanel {
                 .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
+                .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 603, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(

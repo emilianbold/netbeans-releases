@@ -95,7 +95,7 @@ public class CSSCompletion implements CodeCompletionHandler {
 
     private static final Logger LOGGER = Logger.getLogger(CSSCompletion.class.getName());
     private final PropertyModel PROPERTIES = PropertyModel.instance();
-    private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"});
+    private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"}); //NOI18N
 
     public CodeCompletionResult complete(CodeCompletionContext context) {
         CompilationInfo info = context.getInfo();
@@ -154,7 +154,7 @@ public class CSSCompletion implements CodeCompletionHandler {
             //the parse tree is likely broken by some text typed, 
             //but we still need to provide the completion in some cases
 
-            if (hasNext && "@".equals(ts.token().text().toString())) {
+            if (hasNext && "@".equals(ts.token().text().toString())) { //NOI18N
                 //complete rules
                 return wrapRAWValues(AT_RULES, CompletionItemKind.VALUE, ts.offset());
             }
@@ -229,7 +229,7 @@ public class CSSCompletion implements CodeCompletionHandler {
 
             SimpleNode property = result[0];
 
-            String expressionText = "";
+            String expressionText = ""; //NOI18N
             if(result[1] != null) {
                 //error in the property value
                 //we need to extract the value from the property node image
@@ -422,7 +422,7 @@ public class CSSCompletion implements CodeCompletionHandler {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         for (Property p : props) {
             //filter out non-public properties
-            if(!p.name().startsWith("-")) {
+            if(!p.name().startsWith("-")) { //NOI18N
                 CSSElement handle = new CssPropertyElement(p);
                 CompletionProposal proposal = createPropertyNameCompletionItem(handle, p.name(), kind, anchor, false);
                 proposals.add(proposal);
@@ -477,7 +477,7 @@ public class CSSCompletion implements CodeCompletionHandler {
         if (diff == 0) {
             if (!ts.movePrevious()) {
                 //beginning of the token sequence, cannot get any prefix
-                return "";
+                return ""; //NOI18N
             }
         } else {
             if (!ts.moveNext()) {
@@ -487,7 +487,7 @@ public class CSSCompletion implements CodeCompletionHandler {
         Token t = ts.token();
 
         if (t.id() == CSSTokenId.COLON) {
-            return "";
+            return ""; //NOI18N
         } else {
             return t.text().subSequence(0, diff == 0 ? t.text().length() : diff).toString().trim();
         }
@@ -513,7 +513,7 @@ public class CSSCompletion implements CodeCompletionHandler {
     }
 
     public String resolveTemplateVariable(String variable, CompilationInfo info, int caretOffset, String name, Map parameters) {
-        return "";
+        return ""; //NOI18N
     }
 
     public Set<String> getApplicableTemplates(CompilationInfo info, int selectionBegin, int selectionEnd) {
@@ -536,9 +536,9 @@ public class CSSCompletion implements CodeCompletionHandler {
             
             String origin = value.origin();
             
-            assert origin != null : "Css value completion item has no origin!";
+            assert origin != null : "Css value completion item has no origin!"; //NOI18N
             
-            if(origin.startsWith("-")) {
+            if(origin.startsWith("-")) { //NOI18N
                 //artificial origin, get real origin from the first ancestor element with an origin
                 Element parent = value;
                 while((parent = parent.parent()) != null) {
@@ -549,7 +549,7 @@ public class CSSCompletion implements CodeCompletionHandler {
                 }    
             }
             
-            if("color".equals(origin)) {
+            if("color".equals(origin)) { //NOI18N
                 return new ColorCompletionItem(element, value.toString(), origin, kind, anchorOffset, addSemicolon);
             }
             
@@ -581,23 +581,23 @@ public class CSSCompletion implements CodeCompletionHandler {
     //TODO add support for non w3c standart colors, CSS3 seems to be more vague in checking the color values
     private synchronized HashMap<String, String> colors() {
         if (colors.isEmpty()) {
-            colors.put("red", "ff0000");
-            colors.put("black", "000000");
-            colors.put("green", "00ff00");
-            colors.put("blue", "0000ff");
-            colors.put("silver", "C0C0C0");
-            colors.put("gray", "808080");
-            colors.put("white", "ffffff");
-            colors.put("maroon", "800000");
-            colors.put("purple", "800080");
-            colors.put("fuchsia", "ff00ff");
-            colors.put("lime", "00ff00");
-            colors.put("olive", "808000");
-            colors.put("orange", "ffa500");
-            colors.put("yellow", "ffff00");
-            colors.put("navy", "000080");
-            colors.put("teal", "008080");
-            colors.put("aqua", "00ffff");
+            colors.put("red", "ff0000"); //NOI18N
+            colors.put("black", "000000"); //NOI18N
+            colors.put("green", "00ff00"); //NOI18N
+            colors.put("blue", "0000ff"); //NOI18N
+            colors.put("silver", "C0C0C0"); //NOI18N
+            colors.put("gray", "808080"); //NOI18N
+            colors.put("white", "ffffff"); //NOI18N
+            colors.put("maroon", "800000"); //NOI18N
+            colors.put("purple", "800080"); //NOI18N
+            colors.put("fuchsia", "ff00ff"); //NOI18N
+            colors.put("lime", "00ff00"); //NOI18N
+            colors.put("olive", "808000"); //NOI18N
+            colors.put("orange", "ffa500"); //NOI18N
+            colors.put("yellow", "ffff00"); //NOI18N
+            colors.put("navy", "000080"); //NOI18N
+            colors.put("teal", "008080"); //NOI18N
+            colors.put("aqua", "00ffff"); //NOI18N
         }
         return colors;
     }
@@ -619,12 +619,12 @@ public class CSSCompletion implements CodeCompletionHandler {
 
         @Override
          public String getInsertPrefix() {
-            return getName() + (addSemicolon ? ";" : "");
+            return getName() + (addSemicolon ? ";" : ""); //NOI18N
         }
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            return "<font color=999999>" + origin + "</font>";
+            return "<font color=999999>" + origin + "</font>"; //NOI18N
         }
          
         @Override
@@ -633,7 +633,7 @@ public class CSSCompletion implements CodeCompletionHandler {
             String initialValue = owningProperty.initialValue();
             if(initialValue != null && initialValue.equals(getName())) {
                 //initial value
-                return "<i>" + super.getLhsHtml(formatter) + "</i>";
+                return "<i>" + super.getLhsHtml(formatter) + "</i>"; //NOI18N
             }
             
             return super.getLhsHtml(formatter);
@@ -670,7 +670,7 @@ public class CSSCompletion implements CodeCompletionHandler {
             g.setColor(transparent);
             g.fillRect(0, 0, COLOR_ICON_SIZE, COLOR_ICON_SIZE);
             
-            g.setColor(Color.decode("0x"+colorCode));
+            g.setColor(Color.decode("0x"+colorCode)); //NOI18N
             g.fillRect(COLOR_ICON_SIZE - COLOR_RECT_SIZE, 
                     COLOR_ICON_SIZE - COLOR_RECT_SIZE - 1, 
                     COLOR_RECT_SIZE - 1, 
@@ -701,7 +701,7 @@ public class CSSCompletion implements CodeCompletionHandler {
 
         @Override
          public String getInsertPrefix() {
-            return super.getInsertPrefix() + ":";
+            return super.getInsertPrefix() + ":"; //NOI18N
         }
         
     }

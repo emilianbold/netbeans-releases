@@ -172,8 +172,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             // Left align table header
             ((DefaultTableCellRenderer)getTableHeader().getDefaultRenderer()).setHorizontalAlignment(SwingConstants.LEFT);
             getColumnModel().getColumn(0).setPreferredWidth(95);
-            getColumnModel().getColumn(0).setMaxWidth(95);
-            getColumnModel().getColumn(0).setResizable(false);
+            getColumnModel().getColumn(0).setMaxWidth(200);
             
             getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             getSelectionModel().addListSelectionListener(new TargetSelectionListener());

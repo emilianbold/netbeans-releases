@@ -1,0 +1,5 @@
+Code completion result for source line:
+$this->|meth_aa();
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     meth_a()                                   cls_A
+METHOD     meth_aa()                                  cls_A

@@ -132,6 +132,7 @@ import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.navigator.SVGNavigatorContent;
 import org.netbeans.modules.mobility.svgcore.palette.SVGPaletteItemDataObject;
 import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGToggleAction;
+import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
@@ -143,7 +144,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGLocatableElement;
-import org.w3c.dom.svg.SVGPoint;
 import org.xml.sax.SAXException;
 
 /**
@@ -375,7 +375,10 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 
         nameChangeL = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (DataObject.PROP_COOKIE.equals(evt.getPropertyName()) || DataObject.PROP_NAME.equals(evt.getPropertyName())) {
+                if (DataObject.PROP_COOKIE.equals(evt.getPropertyName()) 
+                        || DataObject.PROP_NAME.equals(evt.getPropertyName())
+                        || DataObject.PROP_MODIFIED.equals(evt.getPropertyName())) 
+                {
                     updateName();
                 }
 
@@ -590,9 +593,12 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         // update name
         String name = m_svgDataObject.getNodeDelegate().getDisplayName();
         setName(name);
-        // update tooltip
-        FileObject fo = m_svgDataObject.getPrimaryFile();
-        setToolTipText(FileUtil.getFileDisplayName(fo));
+        // update display name and tooltip
+        XmlMultiViewEditorSupport edSup = m_svgDataObject.getCookie(
+                XmlMultiViewEditorSupport.class);
+        if (edSup != null){
+            edSup.updateDisplayName();
+        }
     }
 
     private void addButtonsForActions(JToolBar toolbar, Action[] toolbarActions, GridBagConstraints constrains) {

@@ -51,15 +51,10 @@ public class SakilaSampleProviderTest  extends TestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        assertTrue(isMySQL());
 
         provider = SakilaSampleProvider.getDefault();
         
         dbconn = getDatabaseConnection();
-        ConnectionManager.getDefault().connect(dbconn);
-        assertTrue(dbconn.getJDBCConnection() != null);
-        assertFalse(dbconn.getJDBCConnection().isClosed());
-
     }
         
     /**
@@ -72,7 +67,7 @@ public class SakilaSampleProviderTest  extends TestBase {
 
         // Now that we've created the database, open a new connection directly
         // to that database.  This mimics what happens in the UI
-        setUrl(getUrl() + "/" + DBNAME);
+        setDatabase(DBNAME);
 
         dbconn = refreshDatabaseConnection();
         ConnectionManager.getDefault().connect(dbconn);
@@ -340,5 +335,4 @@ public class SakilaSampleProviderTest  extends TestBase {
             }
         }
     }
-
 }

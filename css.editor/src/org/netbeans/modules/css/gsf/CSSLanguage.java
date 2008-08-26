@@ -74,7 +74,7 @@ public class CSSLanguage extends DefaultLanguageConfig {
 
     @Override
     public String getDisplayName() {
-        return "CSS";
+        return "CSS"; //NOI18N ???
     }
     
     @Override
@@ -92,11 +92,6 @@ public class CSSLanguage extends DefaultLanguageConfig {
     @Override
     public Parser getParser() {
         return new CSSGSFParser();
-    }
-
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
     }
 
     @Override

@@ -590,14 +590,6 @@ public class Resolver3 implements Resolver {
                 }
             }
         }
-        if( result == null ) {
-            result = project.getDummyForUnresolved(nameTokens, file, offset);
-        }
-        
-//        CsmObject curr = null;
-//        for( int i = 0; i < nameTokens.length; i++ ) {
-//            String name = nameTokens[i];
-//        }
         return result;
     }
     

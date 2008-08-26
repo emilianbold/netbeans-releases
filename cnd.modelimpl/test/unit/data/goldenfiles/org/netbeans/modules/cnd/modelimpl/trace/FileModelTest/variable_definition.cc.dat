@@ -11,7 +11,7 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS A (A ) [1:1/0-4:3/40] lcurly=8 SCOPE: $Global$ 
+CLASS A (A ) [1:1/0-4:2/39] lcurly=8 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PUBLIC static var [3:5/22-3:20/37]  TYPE: int TEXT=int  [3:5/22-3:15/32]  INIT: null  SCOPE: A 
@@ -32,7 +32,7 @@ FUNCTION DEFINITION main  [8:1/58-12:2/116] FunctionDDImpl SCOPE: $Global$
         STATEMENT RETURN  [11:5/105-11:14/114] SCOPE: Stmt  [8:20/77-12:2/116] text: 'return 1;'
 
 ========== Dumping model of PROJECT DummyProject
-CLASS A (A ) [1:1/0-4:3/40] lcurly=8 SCOPE: $Global$ 
+CLASS A (A ) [1:1/0-4:2/39] lcurly=8 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PUBLIC static var [3:5/22-3:20/37]  TYPE: int TEXT=int  [3:5/22-3:15/32]  INIT: null  SCOPE: A 

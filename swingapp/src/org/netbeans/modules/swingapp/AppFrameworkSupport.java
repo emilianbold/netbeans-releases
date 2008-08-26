@@ -162,26 +162,31 @@ class AppFrameworkSupport {
      * @param fileInProject some source file contained in the project
      * @return name of the application subclass for given project, or null
      */
-    static String getApplicationClassName(FileObject fileInProject) {
+    static String getApplicationClassName(FileObject fileInProject, boolean searchAllowed) {
         Project project = FileOwnerQuery.getOwner(fileInProject);
         if (project != null) {
             AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
-            return getApplicationClassName(fileInProject, project, ac);
+            return getApplicationClassName(fileInProject, project, ac, searchAllowed);
         } else {
             return null;
         }
+    }
+
+    
+    static String getApplicationClassName(FileObject fileInProject) {
+        return getApplicationClassName(fileInProject, true);
     }
 
     static String getApplicationClassName(Project project) {
         FileObject fileRep = getSourceRoot(project);
         if (fileRep != null) {
             AuxiliaryConfiguration ac = ProjectUtils.getAuxiliaryConfiguration(project);
-            return getApplicationClassName(fileRep, project, ac);
+            return getApplicationClassName(fileRep, project, ac, true);
         }
         return null;
     }
 
-    private static String getApplicationClassName(FileObject fileInProject, Project project, AuxiliaryConfiguration ac) {
+    private static String getApplicationClassName(FileObject fileInProject, Project project, AuxiliaryConfiguration ac, boolean allowSearch) {
         String appClassName = null;
         org.w3c.dom.Element appEl = ac.getConfigurationFragment(SWINGAPP_ELEMENT, SWINGAPP_NS, true);
         boolean storedInProject = (appEl != null);
@@ -206,7 +211,7 @@ class AppFrameworkSupport {
         if (appClassName == null) {
             if (appClassMap.containsKey(fileInProject)) {
                 appClassName = appClassMap.get(fileInProject);
-            } else {
+            } else if (allowSearch) {
                 appClassName = findApplicationClass(fileInProject);
                 searched = true;
             }

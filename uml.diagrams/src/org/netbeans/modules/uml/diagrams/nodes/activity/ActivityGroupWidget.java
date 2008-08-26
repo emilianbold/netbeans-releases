@@ -110,6 +110,7 @@ public class ActivityGroupWidget extends ContainerNode //UMLNodeWidget
                 initContainedElements();           
         }
         setFont(getCurrentView().getFont());
+        super.initializeNode(presentation);
     }
 
     public  DefaultContextPaletteModel initializeContextPalette()
@@ -139,6 +140,7 @@ public class ActivityGroupWidget extends ContainerNode //UMLNodeWidget
         mainView.setCheckClipping(true);
         
         Widget nameLayer = new Widget(scene);
+        nameLayer.setForeground(null);
         nameLayer.setLayout(
                 LayoutFactory.createVerticalFlowLayout(
                 LayoutFactory.SerialAlignment.CENTER, 0));
@@ -147,6 +149,7 @@ public class ActivityGroupWidget extends ContainerNode //UMLNodeWidget
         groupKindWidget = new UMLLabelWidget(scene,
                 this.getWidgetID()+".groupKind",  //NO I18N
                 bundle.getString("LBL_groupKind"));
+        groupKindWidget.setForeground(null);
  
         groupKindWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
         setGroupKind(element);
@@ -342,6 +345,7 @@ public class ActivityGroupWidget extends ContainerNode //UMLNodeWidget
         relationshipD.discoverCommonRelations(new ArrayList<IElement>(group.getNodeContents()));
     }
     
+    @Override
     public void save(NodeWriter nodeWriter)
     {
         setNodeWriterValues(nodeWriter, this);
@@ -353,6 +357,7 @@ public class ActivityGroupWidget extends ContainerNode //UMLNodeWidget
         nodeWriter.endGraphNode();
     }
 
+    @Override
     public void saveChildren(Widget widget, NodeWriter nodeWriter)
     {
         if (widget == null || nodeWriter == null)

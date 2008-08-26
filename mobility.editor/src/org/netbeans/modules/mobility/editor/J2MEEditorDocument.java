@@ -87,8 +87,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.java.JavaDocument;
-import org.netbeans.modules.editor.java.JavaKit;
+import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.mobility.editor.hints.DisableHint;
 import org.netbeans.modules.mobility.editor.hints.InlineIncludeHint;
 import org.netbeans.modules.mobility.editor.hints.ReplaceOldSyntaxHint;
@@ -97,7 +96,6 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
-import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -112,7 +110,7 @@ import org.openide.util.NbBundle;
  *
  * Document type which is aware of editable colored code blocks
  */
-public class J2MEEditorDocument extends JavaDocument {
+public class J2MEEditorDocument extends NbEditorDocument {
     
     public static final String PREPROCESSOR_LINE_LIST = "preprocessor.line.list"; //NOI18N
     
@@ -153,11 +151,6 @@ public class J2MEEditorDocument extends JavaDocument {
         };
         LR.addLookupListener(LL);
         LL.resultChanged(null);
-    }
-
-    @Deprecated
-    public J2MEEditorDocument(Class kitClass) {
-        this(JavaKit.JAVA_MIME_TYPE);       
     }
     
     public J2MEEditorDocument(String mimeType){

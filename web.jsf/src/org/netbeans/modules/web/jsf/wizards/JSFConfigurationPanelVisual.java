@@ -105,7 +105,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         }
     }
 
-    private void initLibraries() {
+    void initLibraries() {
         if (libsInitialized) {
             return;
         }

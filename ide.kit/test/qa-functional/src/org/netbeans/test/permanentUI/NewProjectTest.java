@@ -203,14 +203,16 @@ public class NewProjectTest extends JellyTestCase{
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue);                      
     }
-    
-    public void testNewProjectsUML(){
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
-        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        assertResults = oneCategoryTest("UML", npwo);
-        npwo.cancel();
-        assertTrue(assertResults.assertString, assertResults.assertValue);                      
-    }
+
+
+//UML was removed from daily builds    
+//    public void testNewProjectsUML(){
+//        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+//        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+//        assertResults = oneCategoryTest("UML", npwo);
+//        npwo.cancel();
+//        assertTrue(assertResults.assertString, assertResults.assertValue);
+//    }
 
     public void testNewProjectsSOA(){
         ComparationReturnValues assertResults = new ComparationReturnValues(true,"");

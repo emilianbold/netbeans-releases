@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -3270,8 +3270,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     results.add(JavaCompletionItem.createOverrideMethodItem(ee, type, anchorOffset, false));
                 }
             }
-            if (prefix == null || prefix.startsWith("get") || prefix.startsWith("set") || prefix.startsWith("is") ||
-                    "get".startsWith(prefix) || "set".startsWith(prefix) || "is".startsWith(prefix)) {
+            if (prefix == null || startsWith(env, prefix, "get") || startsWith(env, prefix, "set") || startsWith(env, prefix, "is") ||
+                    startsWith(env, "get", prefix) || startsWith(env, "set", prefix) || startsWith(env, "is", prefix)) {
                 List<? extends Element> members = controller.getElements().getAllMembers(te);
                 Map<String, List<ExecutableElement>> methods = new HashMap<String, List<ExecutableElement>>();
                 for (ExecutableElement method : ElementFilter.methodsIn(members)) {
@@ -3288,10 +3288,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                         String nameBase = Character.toUpperCase(name.charAt(0)) + name.subSequence(1, name.length()).toString();
                         String setterName = "set" + nameBase; //NOI18N
                         String getterName = (variableElement.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + nameBase; //NOI18N
-                        if ((prefix == null || getterName.startsWith(prefix)) && !GeneratorUtils.hasGetter(controller, variableElement, methods)) {
+                        if ((prefix == null || startsWith(env, getterName, prefix)) && !GeneratorUtils.hasGetter(controller, variableElement, methods)) {
                             results.add(JavaCompletionItem.createGetterSetterMethodItem(variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, false));
                         }
-                        if ((prefix == null || setterName.startsWith(prefix)) && !(variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, variableElement, methods))) {
+                        if ((prefix == null || startsWith(env, setterName, prefix)) && !(variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, variableElement, methods))) {
                             results.add(JavaCompletionItem.createGetterSetterMethodItem(variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, true));                        
                         }
                     }

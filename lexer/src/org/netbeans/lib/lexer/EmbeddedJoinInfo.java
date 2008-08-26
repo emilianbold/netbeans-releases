@@ -105,18 +105,23 @@ public final class EmbeddedJoinInfo {
         this.joinTokenLastPartShift = joinTokenLastPartShift;
     }
 
-    public StringBuilder dumpInfo(StringBuilder sb) {
+    public StringBuilder dumpInfo(StringBuilder sb, EmbeddedTokenList<?> etl) {
         if (sb == null)
             sb = new StringBuilder(70);
-        sb.append("jti=").append(joinTokenIndex());
-        sb.append(", tli=").append(tokenListIndex());
+        sb.append("<").append(joinTokenIndex()).append(",");
+        if (etl != null) {
+            sb.append(joinTokenIndex() + etl.joinTokenCount());
+        } else {
+            sb.append("?");
+        }
+        sb.append(">, tli=").append(tokenListIndex());
         sb.append(", lps=").append(joinTokenLastPartShift());
         return sb;
     }
 
     @Override
     public String toString() {
-        return dumpInfo(null).toString();
+        return dumpInfo(null, null).toString();
     }
 
 }

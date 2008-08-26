@@ -46,6 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.nodes.Sheet;
@@ -77,12 +78,18 @@ public class RunProfileNodeProvider implements CustomizerNodeProvider {
 	    super(name, displayName, children);
 	}
 
+        @Override
 	public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
 	    RunProfile runProfile = (RunProfile) configuration.getAuxObject(RunProfile.PROFILE_ID);
-	    return runProfile != null ? runProfile.getSheet() : null;
+            boolean isRemote = false;
+            if (configuration instanceof MakeConfiguration) {
+                isRemote = !((MakeConfiguration) configuration).getDevelopmentHost().isLocalhost();
+            }
+	    return runProfile != null ? runProfile.getSheet(isRemote) : null;
 	    //return configurationDescriptor.getSheet(project, configuration);
 	}
         
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx("ProjectPropsRunning"); // NOI18N
         }

@@ -8,7 +8,7 @@
 --OWNER:
     FUNCTION_DEFINITION Module()  [47:1/2207-50:2/2288] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'Module', tokenID=identifier, offset=2215 [47:9/2215-47:15/2221]
 --OWNER:
@@ -32,7 +32,7 @@
 --OWNER:
     FUNCTION_DEFINITION Module(const char*,const char*,int,int,int)  [52:1/2290-58:2/2521] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'Module', tokenID=identifier, offset=2298 [52:9/2298-52:15/2304]
 --OWNER:
@@ -134,7 +134,7 @@
 --OWNER:
     FUNCTION_DEFINITION Module(const Module&)  [61:1/2542-67:2/2747] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'Module', tokenID=identifier, offset=2550 [61:9/2550-61:15/2556]
 --OWNER:
@@ -146,7 +146,7 @@
 --OWNER:
     TYPE const &Module TEXT=const Module&  [61:16/2557-61:29/2570] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'obj', tokenID=identifier, offset=2571 [61:30/2571-61:33/2574]
 --OWNER:
@@ -248,19 +248,19 @@
 --OWNER:
     TYPE &Module TEXT=Module&  [69:1/2749-69:8/2756] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'Module', tokenID=identifier, offset=2757 [69:9/2757-69:15/2763]
 --OWNER:
     FUNCTION_DEFINITION operator =(const Module&)  [69:1/2749-77:2/2989] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'Module', tokenID=identifier, offset=2782 [69:34/2782-69:40/2788]
 --OWNER:
     TYPE const &Module TEXT=const Module&  [69:28/2776-69:41/2789] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'obj', tokenID=identifier, offset=2790 [69:42/2790-69:45/2793]
 --OWNER:
@@ -362,7 +362,7 @@
 --OWNER:
     FUNCTION_DEFINITION ~Module()  [79:1/2991-80:2/3012] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'Module', tokenID=identifier, offset=3000 [79:10/3000-79:16/3006]
 --OWNER:
@@ -374,7 +374,7 @@
 --OWNER:
     FUNCTION_DEFINITION SetDescription(const char*)  [82:1/3014-84:2/3109] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'SetDescription', tokenID=identifier, offset=3027 [82:14/3027-82:28/3041]
 --OWNER:
@@ -404,7 +404,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetDescription() const  [86:1/3111-88:2/3189] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'GetDescription', tokenID=identifier, offset=3131 [86:21/3131-86:35/3145]
 --OWNER:
@@ -428,7 +428,7 @@
 --OWNER:
     FUNCTION_DEFINITION SetVendor(const char*)  [90:1/3191-92:2/3266] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'SetVendor', tokenID=identifier, offset=3204 [90:14/3204-90:23/3213]
 --OWNER:
@@ -458,7 +458,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetVendor() const  [94:1/3268-96:2/3336] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'GetVendor', tokenID=identifier, offset=3288 [94:21/3288-94:30/3297]
 --OWNER:
@@ -482,7 +482,7 @@
 --OWNER:
     FUNCTION_DEFINITION SetType(int)  [98:1/3338-100:2/3397] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'SetType', tokenID=identifier, offset=3351 [98:14/3351-98:21/3358]
 --OWNER:
@@ -512,7 +512,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetTypeID() const  [102:1/3399-104:2/3449] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'GetTypeID', tokenID=identifier, offset=3411 [102:13/3411-102:22/3420]
 --OWNER:
@@ -530,7 +530,7 @@
 --OWNER:
     FUNCTION_DEFINITION SetCategory(int)  [106:1/3451-108:2/3526] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'SetCategory', tokenID=identifier, offset=3464 [106:14/3464-106:25/3475]
 --OWNER:
@@ -560,7 +560,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetCategoryID() const  [110:1/3528-112:2/3586] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'GetCategoryID', tokenID=identifier, offset=3540 [110:13/3540-110:26/3553]
 --OWNER:
@@ -578,7 +578,7 @@
 --OWNER:
     FUNCTION_DEFINITION SetUnits(int)  [114:1/3588-116:2/3651] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'SetUnits', tokenID=identifier, offset=3601 [114:14/3601-114:22/3609]
 --OWNER:
@@ -608,7 +608,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetUnits() const  [118:1/3653-120:2/3703] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'GetUnits', tokenID=identifier, offset=3665 [118:13/3665-118:21/3673]
 --OWNER:
@@ -626,7 +626,7 @@
 --OWNER:
     FUNCTION_DEFINITION SetSupportMetric(int)  [122:1/3705-124:2/3786] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'SetSupportMetric', tokenID=identifier, offset=3718 [122:14/3718-122:30/3734]
 --OWNER:
@@ -656,7 +656,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetSupportMetric() const  [126:1/3788-128:2/3854] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'GetSupportMetric', tokenID=identifier, offset=3800 [126:13/3800-126:29/3816]
 --OWNER:
@@ -692,7 +692,7 @@
 --OWNER:
     TYPE const &Module TEXT=const Module&  [130:39/3894-130:52/3907] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    CLASS Module [51:1/2205-92:3/3421] ReferencesTestCase/module.h
+    CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================
 'module', tokenID=identifier, offset=3908 [130:53/3908-130:59/3914]
 --OWNER:

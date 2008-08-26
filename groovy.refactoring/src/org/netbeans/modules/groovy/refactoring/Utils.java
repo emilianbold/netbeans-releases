@@ -58,6 +58,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
@@ -128,8 +129,20 @@ public class Utils {
         }
     }
 
+    public static boolean isInGroovyProject(FileObject f) {
+        Project project = FileOwnerQuery.getOwner(f);
+        if (project != null) {
+            GroovyFeature groovyFeature = project.getLookup().lookup(GroovyFeature.class);
+            if (groovyFeature != null) {
+                return groovyFeature.isGroovyEnabled();
+            }
+        }
+        return false;
+    }
+
     public static boolean isGroovyFile(FileObject f) {
-        return GroovyTokenId.GROOVY_MIME_TYPE.equals(f.getMIMEType());
+//        return GroovyTokenId.GROOVY_MIME_TYPE.equals(f.getMIMEType());
+        return "groovy".equals(f.getExt()); // NOI18N
     }
 
     public static boolean isGspFile(FileObject f) {

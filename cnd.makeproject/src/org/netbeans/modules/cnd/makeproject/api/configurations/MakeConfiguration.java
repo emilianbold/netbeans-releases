@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -369,7 +370,7 @@ public class MakeConfiguration extends Configuration {
     // Cloning
     @Override
     public Object clone() {
-        MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue());
+        MakeConfiguration clone = new MakeConfiguration(getBaseDir(), getName(), getConfigurationType().getValue(), getDevelopmentHost().getName());
         super.cloneConf(clone);
         clone.setCloneOf(this);
 
@@ -579,9 +580,14 @@ public class MakeConfiguration extends Configuration {
         if (getCompilerSet().getCompilerSet() == null) {
             return ret;
         }
-        ret += getCompilerSet().getCompilerSet().getName() + "-"; // NOI18N
-        ret += Platforms.getPlatform(getPlatform().getValue()).getName();
-        return ret;
+        return getVariant(getCompilerSet().getCompilerSet(), getPlatform().getValue());
+//        ret += getCompilerSet().getCompilerSet().getName() + "-"; // NOI18N
+//        ret += Platforms.getPlatform(getPlatform().getValue()).getName();
+//        return ret;
+    }
+    
+    public static String getVariant(CompilerSet compilerSet, int platform) {
+        return compilerSet.getName() + "-" + Platforms.getPlatform(platform).getName(); // NOI18N
     }
 
     public Set/*<Project>*/ getSubProjects() {
@@ -652,7 +658,7 @@ public class MakeConfiguration extends Configuration {
         }
         return output;
     }
-
+    
     public String getAbsoluteOutputValue() {
         String output = getOutputValue();
 
@@ -663,6 +669,14 @@ public class MakeConfiguration extends Configuration {
             output = FilePathAdaptor.normalize(output);
             return output;
         }
+    }
+    
+    public String expandMacros(String val) {
+        // Substitute macros
+        val = IpeUtils.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
+        val = IpeUtils.expandMacro(val, "${OUTPUT_BASENAME}", IpeUtils.getBaseName(getOutputValue())); // NOI18N
+        val = IpeUtils.expandMacro(val, "${PLATFORM}", getVariant()); // NOI18N
+        return val;
     }
 //
 //    private String[] getCompilerSetDisplayNames() {

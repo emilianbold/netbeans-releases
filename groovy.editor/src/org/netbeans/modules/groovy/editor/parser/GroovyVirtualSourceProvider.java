@@ -92,16 +92,18 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                 // source is probably broken and there is no AST
                 // let's generate empty Java stub with simple name equal to file name
                 FileObject fo = FileUtil.toFileObject(file);
-                String pkg = FileUtil.getRelativePath(rootFO, fo.getParent());
-                if (pkg != null) {
-                    pkg = pkg.replace('/', '.');
-                    StringBuilder sb = new StringBuilder();
-                    if (!pkg.equals("")) { // NOI18N
-                        sb.append("package " + pkg + ";"); // NOI18N
+                if (fo != null) {
+                    String pkg = FileUtil.getRelativePath(rootFO, fo.getParent());
+                    if (pkg != null) {
+                        pkg = pkg.replace('/', '.');
+                        StringBuilder sb = new StringBuilder();
+                        if (!pkg.equals("")) { // NOI18N
+                            sb.append("package " + pkg + ";"); // NOI18N
+                        }
+                        String name = fo.getName();
+                        sb.append("public class " + name + "{}"); // NOI18N
+                        result.add(file, pkg, name, sb.toString());
                     }
-                    String name = fo.getName();
-                    sb.append("public class " + name + "{}"); // NOI18N
-                    result.add(file, pkg, name, sb.toString());
                 }
             } else {                                
                 for (ClassNode classNode : classNodes) {
@@ -124,21 +126,23 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
     static List<ClassNode> getClassNodes(File file) {
         final List<ClassNode> resultList = new ArrayList<ClassNode>();
         FileObject fo = FileUtil.toFileObject(file);
-        try {
-            SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
-                public void run(GroovyParserResult result) throws Exception {
-                    AstRootElement astRootElement = result.getRootElement();
-                    if (astRootElement != null) {
-                        ModuleNode moduleNode = astRootElement.getModuleNode();
-                        if (moduleNode != null) {
-                            resultList.addAll(moduleNode.getClasses());
+        if (fo != null) {
+            try {
+                SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
+                    public void run(GroovyParserResult result) throws Exception {
+                        AstRootElement astRootElement = result.getRootElement();
+                        if (astRootElement != null) {
+                            ModuleNode moduleNode = astRootElement.getModuleNode();
+                            if (moduleNode != null) {
+                                resultList.addAll(moduleNode.getClasses());
+                            }
                         }
                     }
-                }
-                public void cancel() {}
-            }, false);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+                    public void cancel() {}
+                }, false);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         return resultList;

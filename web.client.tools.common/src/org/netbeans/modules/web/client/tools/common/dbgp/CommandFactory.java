@@ -160,8 +160,8 @@ public class CommandFactory {
         return new Context.ContextNamesCommand(proxy.getTransactionId(), stackDepth);
     }
     
-    public Source.SourceCommand sourceCommand(URI uri) {
-        return new Source.SourceCommand(proxy.getTransactionId(), uri.toString());
+    public Source.SourceCommand sourceCommand(String uri) {
+        return new Source.SourceCommand(proxy.getTransactionId(), uri);
     }
     
     public Eval.EvalCommand evalCommand(String data, int stackDepth) {

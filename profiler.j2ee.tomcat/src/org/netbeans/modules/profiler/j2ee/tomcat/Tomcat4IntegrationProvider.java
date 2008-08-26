@@ -53,10 +53,6 @@ public class Tomcat4IntegrationProvider extends AbstractTomcatIntegrationProvide
         return "Tomcat 4.x"; // NOI18N
     }
 
-    public boolean supportsJVM(TargetPlatformEnum jvm) {
-        return true;
-    }
-
     protected int getAttachWizardPriority() {
         return 12;
     }

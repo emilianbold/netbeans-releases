@@ -241,44 +241,42 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
             usrInclude = null;
             dirPrefix = "";
             if (doc != null) {
-                doc.runAtomic(new Runnable() {
-
-                    public void run() {
-                        try {
-                            Token<CppTokenId> tok = CndTokenUtilities.getOffsetTokenCheckPrev(doc, caretOffset);
+                doc.readLock();
+                try {
+                    Token<CppTokenId> tok = CndTokenUtilities.getOffsetTokenCheckPrev(doc, caretOffset);
+                    if (tok != null) {
+                        switch (tok.id()) {
+                            case PREPROCESSOR_SYS_INCLUDE:
+                                usrInclude = Boolean.FALSE;
+                                queryAnchorOffset = tok.offset(null);
+                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                                break;
+                            case PREPROCESSOR_USER_INCLUDE:
+                                usrInclude = Boolean.TRUE;
+                                queryAnchorOffset = tok.offset(null);
+                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                                break;
+                        }
+                        if (queryAnchorOffset < 0 && CppTokenId.WHITESPACE_CATEGORY.equals(tok.id().primaryCategory())) { // not inside "" or <>
+                            tok = CndTokenUtilities.shiftToNonWhiteBwd(doc, caretOffset);
                             if (tok != null) {
                                 switch (tok.id()) {
-                                    case PREPROCESSOR_SYS_INCLUDE:
-                                        usrInclude = Boolean.FALSE;
-                                        queryAnchorOffset = tok.offset(null);
-                                        filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                                    case PREPROCESSOR_INCLUDE:
+                                    case PREPROCESSOR_INCLUDE_NEXT:
+                                        // after #include or #include_next => init query offset
+                                        usrInclude = null;
+                                        queryAnchorOffset = caretOffset;
+                                        filterPrefix = null;
                                         break;
-                                    case PREPROCESSOR_USER_INCLUDE:
-                                        usrInclude = Boolean.TRUE;
-                                        queryAnchorOffset = tok.offset(null);
-                                        filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-                                        break;
-                                }
-                                if (queryAnchorOffset < 0 && CppTokenId.WHITESPACE_CATEGORY.equals(tok.id().primaryCategory())) { // not inside "" or <>
-                                    tok = CndTokenUtilities.shiftToNonWhiteBwd(doc, caretOffset);
-                                    if (tok != null) {
-                                        switch (tok.id()) {
-                                            case PREPROCESSOR_INCLUDE:
-                                            case PREPROCESSOR_INCLUDE_NEXT:
-                                                // after #include or #include_next => init query offset
-                                                usrInclude = null;
-                                                queryAnchorOffset = caretOffset;
-                                                filterPrefix = null;
-                                                break;
-                                        }
-                                    }
                                 }
                             }
-                        } catch (BadLocationException ex) {
-                            // skip
                         }
                     }
-                });
+                } catch (BadLocationException ex) {
+                    // skip
+                } finally {
+                    doc.readUnlock();
+                }
             }
             fixFilter();
             if (TRACE) {

@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
@@ -172,7 +173,7 @@ public class TraceXRef extends TraceModel {
                 CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(object, true);
                 CsmObject decl = decDef[0];
                 CsmObject def = decDef[1];                
-                Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), CsmReferenceKind.ALL);
+                Collection<CsmReference> refs = xRefRepository.getReferences(decl, getProject(), CsmReferenceKind.ALL, null);
                 if (super.isShowTime()) {
                     time = System.currentTimeMillis() - time;
                 }            
@@ -378,11 +379,12 @@ public class TraceXRef extends TraceModel {
             this.reportUnresolved = reportUnresolved;
         }
         
-        public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
+        public void visit(CsmReferenceContext context) {
+            CsmReference ref = context.getReference();
             if (canceled.get()) {
                 return;
             }
-            XRefResultSet.ContextEntry entry = createLightWeightEntry(ref, prev, parent, printErr, reportUnresolved);
+            XRefResultSet.ContextEntry entry = createLightWeightEntry(context, printErr, reportUnresolved);
             if (entry != null) {
                 bag.addEntry(XRefResultSet.ContextScope.UNRESOLVED, entry);
                 if (entry == XRefResultSet.ContextEntry.UNRESOLVED || entry == XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED) {
@@ -410,7 +412,8 @@ public class TraceXRef extends TraceModel {
             CsmFileReferences.getDefault().accept(
                     scope, 
                     new CsmFileReferences.Visitor() {
-                        public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
+                        public void visit(CsmReferenceContext context) {
+                            CsmReference ref = context.getReference();
                             XRefResultSet.ContextEntry entry = createEntry(objectsUsedInScope, params, ref, funContext, printOut, printErr);
                             if (entry != null) {
                                 bag.addEntry(funScope, entry);
@@ -432,18 +435,23 @@ public class TraceXRef extends TraceModel {
         }
     }
     
-    private static XRefResultSet.ContextEntry createLightWeightEntry(CsmReference ref, CsmReference prev, CsmReference parent, OutputWriter printErr, boolean reportUnresolved) {
+    private static XRefResultSet.ContextEntry createLightWeightEntry(CsmReferenceContext context, OutputWriter printErr, boolean reportUnresolved) {
         XRefResultSet.ContextEntry entry;
+        CsmReference ref = context.getReference();
         CsmObject target = ref.getReferencedObject();
         if (target == null) {
             String kind = "UNRESOVED"; //NOI18N
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
             boolean important = true;
-            if (CsmFileReferences.isTemplateBased(ref, prev, parent)) {
+            if (CsmFileReferences.isAfterUnresolved(context)) {
+                entry = XRefResultSet.ContextEntry.UNRESOLVED_AFTER_UNRESOLVED;
+                kind = "UNRESOLVED_AFTER_UNRESOLVED"; //NOI18N
+                important = false;
+            } else if (CsmFileReferences.isTemplateBased(context)) {
                 entry = XRefResultSet.ContextEntry.UNRESOLVED_TEMPLATE_BASED;
                 kind = "UNRESOLVED_TEMPLATE_BASED"; //NOI18N
                 important = false;
-            } else if (CsmFileReferences.isMacroBased(ref, prev, parent)) {
+            } else if (CsmFileReferences.isMacroBased(context)) {
                 entry = XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED;
                 kind = "UNRESOLVED_MACRO_BASED"; //NOI18N
             }

@@ -148,6 +148,6 @@ public class XMLFormatterTest extends NbTestCase {
     }
     
     private BaseDocument createEmptyBaseDocument(){
-        return new BaseDocument(XMLKit.class, false);
+        return new BaseDocument(true, "text/xml"); //NOI18N
     }
 }

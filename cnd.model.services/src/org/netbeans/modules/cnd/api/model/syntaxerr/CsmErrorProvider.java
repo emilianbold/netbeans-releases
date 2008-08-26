@@ -39,14 +39,15 @@
 
 package org.netbeans.modules.cnd.api.model.syntaxerr;
 
+import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
@@ -54,7 +55,7 @@ import org.openide.util.RequestProcessor;
  * An abstract error provider.
  * @author Vladimir Kvashin
  */
-public abstract class CsmErrorProvider {
+public abstract class CsmErrorProvider implements NamedEntity {
 
     //
     // Interface part
@@ -80,8 +81,25 @@ public abstract class CsmErrorProvider {
         void done();
     }
 
-    public abstract void getErrors(Request request, Response response);
+    public final void getErrors(Request request, Response response) {
+        if (validate(request)) {
+            doGetErrors(request, response);
+        }
+        response.done();
+    }
 
+    protected boolean validate(CsmErrorProvider.Request request) {
+        return NamedEntityOptions.instance().isEnabled(this) && !request.isCancelled();
+    }
+
+    protected abstract void doGetErrors(Request request, Response response);
+
+    public static boolean disableAsLibraryHeaderFile(CsmFile file) {
+        // in release mode we skip library files, because it's very irritating
+        // for user to see errors in system libraries
+        return CndUtils.isReleaseMode() && (file != null) && file.isHeaderFile() && 
+                (file.getProject() != null) && file.getProject().isArtificial();
+    }
     //
     // Implementation part
     //
@@ -100,16 +118,22 @@ public abstract class CsmErrorProvider {
         protected abstract void getErrorsImpl(Request request, Response response);
 
         @Override
-        public void getErrors(Request request, Response response) {
-            if (ENABLE) {
-                if (! isPartial(request.getFile())) {
-                    getErrorsImpl(request, response);
-                }
-            }
-            response.done();
+        protected boolean validate(CsmErrorProvider.Request request) {
+            // all real providers should call super
+            return ENABLE;
         }
 
-    }
+        @Override
+        public void doGetErrors(Request request, Response response) {
+            if (! isPartial(request.getFile())) {
+                getErrorsImpl(request, response);
+            }
+        }
+
+        public String getName() {
+            throw new UnsupportedOperationException("Not supported.");
+        }
+   }
 
     private static class SynchronousMerger extends BaseMerger {
         
@@ -135,7 +159,9 @@ public abstract class CsmErrorProvider {
                 }
                 RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        provider.getErrors(request, response);
+                        if (!request.isCancelled()){
+                            provider.getErrors(request, response);
+                        }
                     }
                 });
                 tasks.add(task);
@@ -183,4 +209,5 @@ public abstract class CsmErrorProvider {
         }
 	return false;
     }
+
 }

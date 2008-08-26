@@ -559,7 +559,7 @@ public final class ExecutionDescriptor {
             this.errConvertorFactory = descriptor.errConvertorFactory;
             this.outProcessorFactory = descriptor.outProcessorFactory;
             this.errProcessorFactory = descriptor.errProcessorFactory;
-            this.input = descriptor.input;
+            this.inputOutput = descriptor.inputOutput;
             this.rerunCondition = descriptor.rerunCondition;
             this.optionsPath = descriptor.optionsPath;
         }

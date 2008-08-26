@@ -47,10 +47,10 @@ import java.util.regex.Pattern;
  */
 public class Uri implements CssPropertyValueAcceptor {
 
-    private final Pattern PATTERN = Pattern.compile("[uU][rR][lLiI](.*)", Pattern.CASE_INSENSITIVE);
+    private final Pattern PATTERN = Pattern.compile("[uU][rR][lLiI](.*)", Pattern.CASE_INSENSITIVE); //NOI18N
     
     public String id() {
-        return "uri";
+        return "uri"; //NOI18N
     }
 
     public boolean accepts(String token) {

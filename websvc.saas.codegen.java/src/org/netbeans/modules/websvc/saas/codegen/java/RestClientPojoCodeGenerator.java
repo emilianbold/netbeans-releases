@@ -215,7 +215,7 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
     protected void addJaxbLib() throws IOException {
         JavaUtil.addJaxbLib(getProject());
     }
-
+        
     @Override
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
@@ -224,20 +224,23 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
         String indent = "        ";
         String indent2 = "             ";
-        List<ParameterInfo> filterParams = getServiceMethodParameters();
-        paramUse += Util.getHeaderOrParameterUsage(filterParams);
-        paramDecl += getHeaderOrParameterDeclaration(filterParams, indent2);
+        List<ParameterInfo> params = getServiceMethodParameters();
+        clearVariablePatterns();
+        updateVariableNames(params);
+        List<ParameterInfo> renamedParams = renameParameterNames(params);
+        paramUse += Util.getHeaderOrParameterUsage(renamedParams);
+        paramDecl += getHeaderOrParameterDeclaration(renamedParams);
 
-        String methodBody = indent + "try {\n";
+        String methodBody = "\n"+indent + "try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += indent2 + REST_RESPONSE + " result = " + getBean().getSaasServiceName() +
+        methodBody += indent2 + REST_RESPONSE + " "+getResultPattern()+" = " + getBean().getSaasServiceName() +
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
         methodBody += Util.createPrintStatement(
                 getBean().getOutputWrapperPackageName(),
                 getBean().getOutputWrapperName(),
                 getDropFileType(),
                 getBean().getHttpMethod(),
-                getBean().canGenerateJAXBUnmarshaller(), indent2);
+                getBean().canGenerateJAXBUnmarshaller(), getResultPattern(), indent2);
         methodBody += indent + "} catch (Exception ex) {\n";
         methodBody += indent2 + "ex.printStackTrace();\n";
         methodBody += indent + "}\n";
@@ -334,7 +337,7 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
     }
 
     protected List<ParameterInfo> getServiceMethodParameters() {
-        return Util.getJaxRsMethodParameters(getBean());
+        return Util.getRestClientMethodParameters(getBean());
     }
 
     protected List<ParameterInfo> getAuthenticatorMethodParameters() {
@@ -377,7 +380,7 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
                 code = "\nprivate String call" + getBean().getName() + "Service() {\n"; // NOI18n
 
                 code += getCustomMethodBody() + "\n";
-                code += "return result;\n";
+                code += "return "+getResultPattern()+";\n";
                 code += "}\n";
             }
             insert(code, true);

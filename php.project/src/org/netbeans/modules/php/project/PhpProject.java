@@ -44,6 +44,7 @@ import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import javax.swing.Icon;
@@ -61,18 +62,23 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -142,14 +148,62 @@ public class PhpProject implements Project, AntProjectListener {
 
     public FileObject getSourcesDirectory() {
         if (sourcesDirectory == null) {
-            // get the first source root
-            //  in fact, there should *always* be only 1 source root but see #141200, #141204 or #141229
-            FileObject[] sourceObjects = Utils.getSourceObjects(this);
-            assert sourceObjects != null && sourceObjects.length > 0;
-            sourcesDirectory = sourceObjects[0];
+            sourcesDirectory = resolveSourcesDirectory();
+            assert sourcesDirectory != null : "Sources directory cannot be null";
         }
         assert sourcesDirectory != null;
         return sourcesDirectory;
+    }
+
+    private FileObject resolveSourcesDirectory() {
+        // get the first source root
+        //  in fact, there should *always* be only 1 source root but see #141200, #141204 or #141229
+        FileObject[] sourceObjects = Utils.getSourceObjects(this);
+        if (sourceObjects.length > 0) {
+            return sourceObjects[0];
+        }
+        // #144371 - source folder probably deleted => so:
+        //  1. try to restore it - if it fails, then
+        //  2. set it to the project directory (and save it)
+        String projectName = getName();
+        File srcDir = FileUtil.normalizeFile(new File(helper.resolvePath(eval.getProperty(PhpProjectProperties.SRC_DIR))));
+        if (srcDir.mkdirs()) {
+            // original sources restored
+            informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderRestored", srcDir.getAbsolutePath()));
+            return FileUtil.toFileObject(srcDir);
+        }
+        // save new sources directory
+        setSourcesToProjectDirectory();
+        informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderSetToProjectDirectory", srcDir.getAbsolutePath()));
+        return helper.getProjectDirectory();
+    }
+
+    private void informUser(String title, String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                message,
+                title,
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.INFORMATION_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION));
+    }
+
+    private void setSourcesToProjectDirectory() {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
+                    EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    projectProperties.setProperty(PhpProjectProperties.SRC_DIR, "."); // NOI18N
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                    return null;
+                }
+            });
+            ProjectManager.getDefault().saveProject(this);
+        } catch (MutexException e) {
+            Exceptions.printStackTrace((IOException) e.getException());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public FileObject getWebRootDirectory() {
@@ -261,7 +315,7 @@ public class PhpProject implements Project, AntProjectListener {
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
                 getHelper().createSharabilityQuery(getEvaluator(),
-                    new String[] {"${" + PhpProjectProperties.SRC_DIR + "}"} , new String[] {}), // NOI18N                
+                    new String[] {"${" + PhpProjectProperties.SRC_DIR + "}"} , new String[] {}), // NOI18N
                 new PhpProjectOperations(this) ,
                 new PhpProjectEncodingQueryImpl(getEvaluator()),
                 new PhpTemplates(),

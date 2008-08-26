@@ -48,10 +48,14 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -63,7 +67,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmClassForwardDeclaration> 
                                          implements CsmClassForwardDeclaration, CsmTemplate {
     private final CharSequence name;
-    private final CharSequence[] nameParts;
+    private CharSequence[] nameParts;
 
     private TemplateDescriptor templateDescriptor = null;
     
@@ -72,7 +76,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
-        this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, this);
+        this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, null);
     }
 
     public CsmScope getScope() {
@@ -125,7 +129,11 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     }
     
     private CsmObject resolve(Resolver resolver) {
-        return ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASSIFIER);
+        CsmObject result = ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASSIFIER);
+        if (result == null) {
+            result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(nameParts, getContainingFile(), getStartOffset());
+        }
+        return result;
     }
 
     public Collection<CsmScopeElement> getScopeElements() {
@@ -133,6 +141,49 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
         // but we do not return them as scope elements
         return Collections.emptyList();
     }
+
+    public void init(AST ast, CsmScope scope) {
+        // we now know the scope - let's modify nameParts accordingly
+        if (CsmKindUtilities.isQualified(scope)) {
+            CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
+            if (scopeQName != null && scopeQName.length() > 0) {
+                List<CharSequence> l = new ArrayList<CharSequence>();
+                for (StringTokenizer stringTokenizer = new StringTokenizer(scopeQName.toString()); stringTokenizer.hasMoreTokens();) {
+                    l.add(stringTokenizer.nextToken());
+                }
+                for (int i = 0; i < nameParts.length; i++) {
+                    l.add(nameParts[i]);
+                }
+                CharSequence[] newNameParts = new CharSequence[l.size()];
+                l.toArray(newNameParts);
+                nameParts = newNameParts;
+                RepositoryUtils.put(this);
+            }
+        }
+        // create fake class we refer to
+        createForwardClassIfNeed(ast, scope);
+    }
+
+    /**
+     * Creates a fake class this forward declaration refers to
+     */
+    protected CsmClass createForwardClassIfNeed(AST ast, CsmScope scope) {
+        if (!isTemplate()) { // FIXUP until completion/xref can not distinguishing specializations correctly
+            return ForwardClass.create(name.toString(), getContainingFile(), ast, scope);
+        }
+        return null;
+    }
+
+    @Override
+    public void dispose() {
+        // nobody disposes the fake forward class => we should take care of this
+        CsmClass cls = getCsmClass();
+        if (cls instanceof ForwardClass) {
+            ((ForwardClass) cls).dispose();
+        }
+        super.dispose();
+    }
+
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent

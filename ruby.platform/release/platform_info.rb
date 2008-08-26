@@ -29,5 +29,5 @@ rescue LoadError
 end
 $stdout.printf "gem_home=#{Gem.dir}\n" 
 $stdout.printf "gem_path=#{Gem.path.join(":")}\n" 
-$stdout.printf "gem_version=#{Gem::RubyGemsVersion} (#{Gem::RubyGemsPackageVersion})\n" 
+$stdout.printf "gem_version=#{Gem::RubyGemsVersion}\n" 
 $stdout.printf "\n" 

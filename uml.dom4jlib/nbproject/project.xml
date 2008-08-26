@@ -56,9 +56,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.uml.parser.java</friend>
                 <friend>org.netbeans.modules.uml.project</friend>
                 <friend>org.netbeans.modules.uml.reporting</friend>
-                <friend>org.netbeans.modules.uml.requirements</friend>
-                <friend>org.netbeans.modules.uml.requirements.doorsprovider</friend>
-                <friend>org.netbeans.modules.uml.requirements.xmlrequirements</friend>
                 <package>com.sun.msv.datatype</package>
                 <package>com.sun.msv.datatype.xsd</package>
                 <package>com.sun.msv.datatype.xsd.datetime</package>

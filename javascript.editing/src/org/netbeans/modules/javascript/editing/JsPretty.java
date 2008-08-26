@@ -46,8 +46,8 @@ import java.util.LinkedList;
 import java.util.Stack;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -79,14 +79,14 @@ public class JsPretty {
     private final int continuationIndentSize;
     private final int tabSize;
     
-    public JsPretty(CompilationInfo info, BaseDocument document, int begin, int end, CodeStyle codeStyle) {
+    public JsPretty(CompilationInfo info, BaseDocument document, int begin, int end, int indentSize, int continuationIndentSize) {
         this.info = info;
         this.doc = document;
         this.begin = begin;
         this.end = end;
         this.ts = LexUtilities.getPositionedSequence(doc, 0, false);
-        this.indentSize = codeStyle.getIndentSize();
-        this.continuationIndentSize = codeStyle.getContinuationIndentSize();
+        this.indentSize = indentSize;
+        this.continuationIndentSize = continuationIndentSize;
         //Preferences prefs = MimeLookup.getLookup(MimePath.get(JsTokenId.JAVASCRIPT_MIME_TYPE)).lookup(Preferences.class);
         // Tab settings are still global...
         Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);

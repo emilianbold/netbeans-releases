@@ -1,0 +1,5 @@
+Code completion result for source line:
+parent::|protectedParentMethod();
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     protectedParentMethod()                    ParentClass
+METHOD     publicParentMethod()                       ParentClass

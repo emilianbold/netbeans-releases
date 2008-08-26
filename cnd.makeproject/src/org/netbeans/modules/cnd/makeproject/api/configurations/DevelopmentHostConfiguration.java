@@ -42,7 +42,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,8 +78,15 @@ public class DevelopmentHostConfiguration {
         return names[value];
     }
 
-    public String getDisplayName() {
-        return names[value];
+    public String getDisplayName(boolean displayIfNotFound) {
+        String out = names[value];
+        if (!isLocalhost() && displayIfNotFound) {
+            CompilerSetManager csm = CompilerSetManager.getDefault(out);
+            if (csm.isUninitialized()) {
+                out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
+            }
+        }
+        return out;
     }
 
     public int getValue() {
@@ -166,7 +175,7 @@ public class DevelopmentHostConfiguration {
 
     public String[] getServerNames() {
         if (getServerList() != null) {
-            String[] nu = serverList.getServerNames();
+            String[] nu = getServerList().getServerNames();
             return nu;
         }
         return new String[]{CompilerSetManager.LOCALHOST};

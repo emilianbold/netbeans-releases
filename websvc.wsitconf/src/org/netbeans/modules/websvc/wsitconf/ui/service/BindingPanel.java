@@ -333,7 +333,7 @@ public class BindingPanel extends SectionInnerPanel {
             boolean addr = AddressingModelHelper.isAddressingEnabled(binding);
             if (addrChBox.isSelected() != addr) {
                 if (addrChBox.isSelected()) { 
-                    AddressingModelHelper.getInstance(getUserExpectedConfigVersion()).enableAddressing(binding);
+                    AddressingModelHelper.getInstance(getUserExpectedConfigVersion()).enableAddressing(binding, true);
                 } else {
                     AddressingModelHelper.disableAddressing(binding);
                 }
@@ -560,7 +560,7 @@ public class BindingPanel extends SectionInnerPanel {
             trustButton.setEnabled(secSelected && trustStoreConfigRequired && !defaults);
             kerberosCfgButton.setEnabled(secSelected && kerberosConfigRequired && !defaults);
 
-            addrChBox.setEnabled(!relSelected && !secSelected && !mtomChBox.isSelected());
+            addrChBox.setEnabled(!relSelected && !secSelected);
 
         } else { // no wsit fun, there's access manager security selected
             profileComboLabel.setEnabled(false);

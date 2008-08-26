@@ -228,6 +228,7 @@ public final class MidpCustomCodePresenterSupport {
             super(PARAM_TIMEOUT);
         }
 
+        @Override
         public void generateParameterCode(DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue value = component.readProperty(SplashScreenCD.PROP_TIMEOUT);
             if (value.getKind() == PropertyValue.Kind.VALUE) {
@@ -246,6 +247,7 @@ public final class MidpCustomCodePresenterSupport {
             super(PARAM_SVG_TIMEOUT);
         }
 
+        @Override
         public void generateParameterCode(DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue value = component.readProperty(SVGSplashScreenCD.PROP_TIMEOUT);
             if (value.getKind() == PropertyValue.Kind.VALUE) {
@@ -260,10 +262,12 @@ public final class MidpCustomCodePresenterSupport {
 
     private static final class WaitScreenCommandParameter extends DisplayableCode.CommandParameter {
 
+        @Override
         public int getParameterPriority() {
             return super.getParameterPriority() + 1;
         }
 
+        @Override
         public boolean isRequiredToBeSet(DesignComponent component, int index) {
             DescriptorRegistry descriptorRegistry = component.getDocument().getDescriptorRegistry();
             List<PropertyValue> array = component.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
@@ -281,10 +285,12 @@ public final class MidpCustomCodePresenterSupport {
 
     private static final class SplashScreenCommandParameter extends DisplayableCode.CommandParameter {
 
+        @Override
         public int getParameterPriority() {
             return super.getParameterPriority() + 1;
         }
 
+        @Override
         public boolean isRequiredToBeSet(DesignComponent component, int index) {
             DescriptorRegistry descriptorRegistry = component.getDocument().getDescriptorRegistry();
             List<PropertyValue> array = component.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
@@ -299,10 +305,12 @@ public final class MidpCustomCodePresenterSupport {
 
     private static final class SVGWaitScreenCommandParameter extends DisplayableCode.CommandParameter {
 
+        @Override
         public int getParameterPriority() {
             return super.getParameterPriority() + 1;
         }
 
+        @Override
         public boolean isRequiredToBeSet(DesignComponent component, int index) {
             DescriptorRegistry descriptorRegistry = component.getDocument().getDescriptorRegistry();
             List<PropertyValue> array = component.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
@@ -320,10 +328,12 @@ public final class MidpCustomCodePresenterSupport {
 
     private static final class SVGSplashScreenCommandParameter extends DisplayableCode.CommandParameter {
 
+        @Override
         public int getParameterPriority() {
             return super.getParameterPriority() + 1;
         }
 
+        @Override
         public boolean isRequiredToBeSet(DesignComponent component, int index) {
             DescriptorRegistry descriptorRegistry = component.getDocument().getDescriptorRegistry();
             List<PropertyValue> array = component.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
@@ -382,6 +392,7 @@ public final class MidpCustomCodePresenterSupport {
 
     private static final class SVGMenuActionCodeClassLevelPresenter extends CodeClassLevelPresenter.Adapter {
 
+        @Override
         protected void generateClassBodyCode(StyledDocument document) {
             DesignComponent menu = getComponent();
             List<PropertyValue> array = menu.readProperty(SVGMenuCD.PROP_ELEMENTS).getArray();

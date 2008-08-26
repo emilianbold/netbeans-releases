@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.api.model.util;
 
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmClassifierBasedTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -92,6 +93,10 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
  * @author Vladimir Voskresensky
  */
 public class CsmKindUtilities {
+
+    public static boolean isInstantiation(CsmObject obj) {
+        return obj instanceof CsmInstantiation;
+    }
 
     private CsmKindUtilities() {
         
@@ -157,6 +162,11 @@ public class CsmKindUtilities {
         return (obj instanceof CsmTemplateParameter);
     }
 
+    public static boolean isClassifierBasedTemplateParameter(CsmObject obj) {
+        return (obj instanceof CsmClassifierBasedTemplateParameter);
+    }
+
+    
     public static boolean isFunctionPointerType(CsmObject obj) {
         return (obj instanceof CsmFunctionPointerType);
     }

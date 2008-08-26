@@ -63,7 +63,7 @@ public class GspDataLoaderBeanInfo extends SimpleBeanInfo {
     @Override
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage("org/netbeans/modules/groovy/gsp/resources/gsp16.png");
+            return Utilities.loadImage(GspDataNode.IMAGE_ICON_BASE);
         } else {
             return null;
         }

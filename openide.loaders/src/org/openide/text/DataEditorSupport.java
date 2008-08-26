@@ -687,33 +687,6 @@ public class DataEditorSupport extends CloneableEditorSupport {
         public InputStream inputStream() throws IOException {
             final FileObject fo = getFileImpl ();
             if (!warned && fo.getSize () > 1024 * 1024) {
-                class ME extends org.openide.util.UserQuestionException {
-                    static final long serialVersionUID = 1L;
-                    
-                    private long size;
-                    
-                    public ME (long size) {
-                        super ("The file is too big. " + size + " bytes.");
-                        this.size = size;
-                    }
-                    
-                    @Override
-                    public String getLocalizedMessage () {
-                        Object[] arr = {
-                            fo.getPath (),
-                            fo.getNameExt (),
-                            new Long (size), // bytes
-                            new Long (size / 1024 + 1), // kilobytes
-                            new Long (size / (1024 * 1024)), // megabytes
-                            new Long (size / (1024 * 1024 * 1024)), // gigabytes
-                        };
-                        return NbBundle.getMessage(DataObject.class, "MSG_ObjectIsTooBig", arr);
-                    }
-                    
-                    public void confirmed () {
-                        warned = true;
-                    }
-                }
                 throw new ME (fo.getSize ());
             }
             InputStream is = getFileImpl ().getInputStream ();
@@ -864,6 +837,34 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 }
             }
         }
+
+        class ME extends org.openide.util.UserQuestionException {
+            static final long serialVersionUID = 1L;
+
+            private long size;
+
+            public ME (long size) {
+                super ("The file is too big. " + size + " bytes.");
+                this.size = size;
+            }
+
+            @Override
+            public String getLocalizedMessage () {
+                Object[] arr = {
+                    getFileImpl().getPath (),
+                    getFileImpl().getNameExt (),
+                    new Long (size), // bytes
+                    new Long (size / 1024 + 1), // kilobytes
+                    new Long (size / (1024 * 1024)), // megabytes
+                    new Long (size / (1024 * 1024 * 1024)), // gigabytes
+                };
+                return NbBundle.getMessage(DataObject.class, "MSG_ObjectIsTooBig", arr);
+            }
+
+            public void confirmed () {
+                warned = true;
+            }
+        } // end of ME
     } // end of Env
     
     /** Listener on file object that notifies the Env object

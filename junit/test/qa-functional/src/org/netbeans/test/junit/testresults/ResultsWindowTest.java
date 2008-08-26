@@ -33,9 +33,7 @@ public class ResultsWindowTest extends JunitTestCase {
      */
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(ResultsWindowTest.class).addTest(
-            "testResultWindowOpened",
-            "testFilterButtonEnabled",
-            "testFilterButtonEnabled").enableModules(".*").clusters(".*"));
+            "testResultWindowOpened").enableModules(".*").clusters(".*"));
     }
     
     /** Creates a new instance of ResultsWindowTest */
@@ -54,7 +52,7 @@ public class ResultsWindowTest extends JunitTestCase {
         Utilities.takeANap(5000);
         jpmo.pushMenu(Utilities.RUN_FILE);
         Utilities.takeANap(9000);
-        ResultWindowOperator rwo = new ResultWindowOperator();
+        ResultWindowOperator rwo = ResultWindowOperator.invoke();
         assertTrue("Junit Output window should be visible", rwo.isVisible());
         rwo.close(); //close it
         assertFalse("Junit Output window is visible," +
@@ -70,7 +68,7 @@ public class ResultsWindowTest extends JunitTestCase {
         JPopupMenuOperator jpmo = n.callPopup();
         jpmo.pushMenu(Utilities.RUN_FILE);
         Utilities.takeANap(4000);
-        ResultWindowOperator rwo = new ResultWindowOperator();
+        ResultWindowOperator rwo = ResultWindowOperator.invoke();
         assertTrue("Filter button should eb enabled",
                 rwo.isFilterButtonEnabled());
         

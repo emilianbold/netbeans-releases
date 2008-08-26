@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  */
 public class SQLHistoryAction extends SQLExecutionBaseAction {
     private static final String ICON_PATH = "org/netbeans/modules/db/sql/editor/resources/sql_history_16.png"; // NOI18N
-    public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
+    private static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
 
     protected String getIconBase() {
         return ICON_PATH;
@@ -63,15 +63,16 @@ public class SQLHistoryAction extends SQLExecutionBaseAction {
     }
 
     protected void actionPerformed(SQLExecution sqlExecution) {
-        FileObject databaseDir = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
-        if (databaseDir == null || databaseDir.getChildren().length == 0) {    
+        FileObject historyRoot = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
+        if (historyRoot == null || historyRoot.getChildren().length == 0) {    
             notifyNoSQLExecuted();
         } else {
+            historyRoot.refresh(true);
             sqlExecution.showHistory();
         }
     }
     
-    public static void notifyNoSQLExecuted() {
+    private static void notifyNoSQLExecuted() {
         String message = NbBundle.getMessage(SQLExecutionBaseAction.class, "LBL_NoSQLExecuted");
         NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
         DialogDisplayer.getDefault().notify(desc);

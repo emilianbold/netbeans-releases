@@ -118,6 +118,7 @@ public class InvocationWidget extends ActivityNodeWidget
             setCurrentView(mainView);
             setFont(getCurrentView().getFont());
         }
+        super.initializeNode(presentation);
     }
 
 

@@ -258,7 +258,7 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
             String[] a11y_desc = new String[]{
                 NbBundle.getMessage(FiltersMultiViewElement.class,"ACSD_filterName"),
                 NbBundle.getMessage(FiltersMultiViewElement.class,"ACSD_filterClass"),
-                NbBundle.getMessage(FiltersMultiViewElement.class,"ACSD_description")
+                NbBundle.getMessage(FiltersMultiViewElement.class,"ACSD_filterDescription")
             };
             boolean[] buttons = new boolean[]{false,true,false};
             SimpleDialogPanel.DialogDescriptor descriptor = new SimpleDialogPanel.DialogDescriptor(labels);

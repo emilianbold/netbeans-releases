@@ -260,37 +260,42 @@ final class FileAssociationsModel {
             return;
         }
 
-        Document document = XMLUtil.createDocument("MIME-resolver", null, "-//NetBeans//DTD MIME Resolver 1.0//EN", "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd");  //NOI18N
-        for (String extension : extensionToMimeUser.keySet()) {
-            Element fileElement = document.createElement("file");  //NOI18N
-            Element extElement = document.createElement("ext");  //NOI18N
-            Element resolverElement = document.createElement("resolver");  //NOI18N
-            extElement.setAttribute("name", extension);  //NOI18N
-            resolverElement.setAttribute("mime", extensionToMimeUser.get(extension));  //NOI18N
-            fileElement.appendChild(extElement);
-            fileElement.appendChild(resolverElement);
-            document.getDocumentElement().appendChild(fileElement);
-        }
+        FileUtil.runAtomicAction(new Runnable() {
 
-        OutputStream os = null;
-        try {
-            FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-            userDefinedResolverFO = defaultFS.findResource(MIME_RESOLVERS_PATH).createData(USER_DEFINED + ".xml");  //NOI18N
-            userDefinedResolverFO.setAttribute(USER_DEFINED, Boolean.TRUE);
-            userDefinedResolverFO.setAttribute("position", USER_DEFINED_POSITION);  //NOI18N
-            os = userDefinedResolverFO.getOutputStream();
-            XMLUtil.write(document, os, "UTF-8"); //NOI18N
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Cannot write resolver " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
-        } finally {
-            if (os != null) {
+            public void run() {
+                Document document = XMLUtil.createDocument("MIME-resolver", null, "-//NetBeans//DTD MIME Resolver 1.0//EN", "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd");  //NOI18N
+                for (String extension : extensionToMimeUser.keySet()) {
+                    Element fileElement = document.createElement("file");  //NOI18N
+                    Element extElement = document.createElement("ext");  //NOI18N
+                    Element resolverElement = document.createElement("resolver");  //NOI18N
+                    extElement.setAttribute("name", extension);  //NOI18N
+                    resolverElement.setAttribute("mime", extensionToMimeUser.get(extension));  //NOI18N
+                    fileElement.appendChild(extElement);
+                    fileElement.appendChild(resolverElement);
+                    document.getDocumentElement().appendChild(fileElement);
+                }
+
+                OutputStream os = null;
                 try {
-                    os.close();
+                    FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
+                    userDefinedResolverFO = defaultFS.findResource(MIME_RESOLVERS_PATH).createData(USER_DEFINED + ".xml");  //NOI18N
+                    userDefinedResolverFO.setAttribute(USER_DEFINED, Boolean.TRUE);
+                    userDefinedResolverFO.setAttribute("position", USER_DEFINED_POSITION);  //NOI18N
+                    os = userDefinedResolverFO.getOutputStream();
+                    XMLUtil.write(document, os, "UTF-8"); //NOI18N
                 } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, "Cannot close OutputStreamof file " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
+                    LOGGER.log(Level.SEVERE, "Cannot write resolver " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
+                } finally {
+                    if (os != null) {
+                        try {
+                            os.close();
+                        } catch (IOException e) {
+                            LOGGER.log(Level.SEVERE, "Cannot close OutputStreamof file " + FileUtil.toFile(userDefinedResolverFO), e);  //NOI18N
+                        }
+                    }
                 }
             }
-        }
+        });
     }
 
     private void init() {

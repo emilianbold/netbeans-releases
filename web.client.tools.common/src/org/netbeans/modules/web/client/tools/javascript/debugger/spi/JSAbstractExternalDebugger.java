@@ -55,8 +55,8 @@ import org.netbeans.modules.web.client.tools.common.dbgp.DebuggerServer;
 import org.netbeans.modules.web.client.tools.common.dbgp.Feature;
 import org.netbeans.modules.web.client.tools.common.dbgp.HttpMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.Message;
-import org.netbeans.modules.web.client.tools.common.dbgp.ResponseMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.SourcesMessage;
+import org.netbeans.modules.web.client.tools.common.dbgp.Status;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status.StatusResponse;
 import org.netbeans.modules.web.client.tools.common.dbgp.StreamMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.UnsufficientValueException;
@@ -111,10 +111,17 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         proxy.startDebugging();
 
         //Start the suspension point handler thread
+        startSuspensionThread();
+    }
+    
+    protected void startSuspensionThread() {
         suspensionPointHandler = new SuspensionPointHandler(proxy, getID());
-        httpMessageHandler = new HttpMessageHandler(proxy, getID());
         suspensionPointHandler.start();
-        httpMessageHandler.start();
+    }
+    
+    protected void startHttpMonitorThread() {
+        httpMessageHandler = new HttpMessageHandler(proxy, getID());
+        httpMessageHandler.start();              
     }
 
     protected abstract void launchImpl(int port);
@@ -180,17 +187,8 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
                 proxy.stopDebugging();
             }
 
-            if (suspensionPointHandler != null) {
-                suspensionPointHandler.interrupt();
-                suspensionPointHandler = null;
-            }
-            
-            if (httpMessageHandler != null) {
-                httpMessageHandler.interrupt();
-                httpMessageHandler = null;
-            }
-            
-            setDebuggerState(JSDebuggerState.DISCONNECTED_USER);
+            suspensionPointHandler = null;
+            httpMessageHandler = null;
         }
     }
     
@@ -270,15 +268,11 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         return DbgpUtils.getJSProperties(callStackFrame, proxy.getProperty(fullName, callStackFrame.getDepth()));
     }
     
-    protected InputStream getInputStreamForURLImpl(URL url) {
-        if (proxy != null && url != null) {
-            try {
-                byte[] bytes = proxy.getSource(url.toURI());
-                if (bytes != null) {
-                    return new ByteArrayInputStream(bytes);
-                }
-            } catch (URISyntaxException use) {
-                Log.getLogger().log(Level.INFO, use.getMessage(), use);
+    protected InputStream getInputStreamForURLImpl(String uri) {
+        if (proxy != null && uri != null) {
+            byte[] bytes = proxy.getSource(uri);
+            if (bytes != null) {
+                return new ByteArrayInputStream(bytes);
             }
         }
         return null;
@@ -311,6 +305,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
 
     protected class HttpMessageHandler extends Thread {
         DebuggerProxy proxy;
+        private boolean stopped = false;
 
         HttpMessageHandler(DebuggerProxy proxy, String id) {
             super("Http Message Handler");  //NOI18N
@@ -321,7 +316,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         @Override
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
-            while (proxy.isHttpQueueActive()) {
+            while (!stopped && proxy.isHttpQueueActive()) {
                 Message message = getNextMessage();
                 if (message != null) {
                     handle(message);
@@ -339,8 +334,11 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
             if (message instanceof HttpMessage) {
                 handleHttpMessage((HttpMessage) message);
                 return;
-            } else if (message instanceof ResponseMessage) {
-                return;
+            } else if (message instanceof Status.StatusResponse) {
+                Status.StatusResponse msg = (Status.StatusResponse)message;
+                if (msg.getState().equals(Status.State.STOPPED)) {
+                    stopped = true;
+                }
             } else {
                 Logger.getLogger(this.getName()).info("Something Seems Wrong");
             }
@@ -351,6 +349,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
     protected class SuspensionPointHandler extends Thread {
 
         DebuggerProxy proxy;
+        private boolean stopped = false;
 
         SuspensionPointHandler(DebuggerProxy proxy, String id) {
             super("Suspension point handler");  //NOI18N
@@ -361,7 +360,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         @Override
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
-            while (proxy.isSuspensionQueueActive()) {
+            while (!stopped && proxy.isSuspensionQueueActive()) {
                 Message message = getNextMessage();
                 if (message != null) {
                     handle(message);
@@ -384,7 +383,13 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
                 return;
             } else if (message instanceof StreamMessage) {
                 handleStreamMessage((StreamMessage) message);
-            } 
+            } else if (message instanceof Status.StatusResponse) {
+                Status.StatusResponse msg = (Status.StatusResponse)message;
+                if (msg.getState().equals(Status.State.STOPPED)) {
+                    stopped = true;
+                }
+            }
+            
             // State oriented
             JSDebuggerState messageDebuggerState = DbgpUtils.getDebuggerState(message);
             if(messageDebuggerState != null) {

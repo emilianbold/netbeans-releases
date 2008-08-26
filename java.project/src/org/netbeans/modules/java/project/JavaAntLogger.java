@@ -85,6 +85,7 @@ public final class JavaAntLogger extends AntLogger {
      * <li>line number
      * </ol>
      */
+    // should be consistent with o.apache.tools.ant.module.STACK_TRACE
     private static final Pattern STACK_TRACE = Pattern.compile(
     "(?:\t|\\[catch\\] )at ((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*)[a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z_$<][a-zA-Z0-9_$>]*\\(([a-zA-Z_$][a-zA-Z0-9_$]*\\.java):([0-9]+)\\)"); // NOI18N
     

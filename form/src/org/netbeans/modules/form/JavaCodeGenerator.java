@@ -244,6 +244,15 @@ class JavaCodeGenerator extends CodeGenerator {
             }
             else canGenerate = false;
 
+            if (formEditorSupport.getGuardedSectionManager() == null) {
+                // Issue 143655 - opening of big file canceled
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        formEditorSupport.close();
+                    }
+                });
+                return;
+            }
             SimpleSection initComponentsSection = formEditorSupport.getInitComponentSection();
             SimpleSection variablesSection = formEditorSupport.getVariablesSection();
 

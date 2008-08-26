@@ -41,6 +41,7 @@
 package org.netbeans.modules.java.debug;
 
 import com.sun.source.tree.Tree;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
@@ -50,10 +51,14 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementScanner6;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -86,21 +91,41 @@ public class ElementNode extends AbstractNode implements OffsetProvider {
     }
 
     public int getStart() {
-        Tree tree = info.getTrees().getTree(element);
-        
-        if (tree != null)
-            return (int)info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tree);
-        else
-            return -1;
+        final int[] result = new int[] {-1};
+
+        try {
+            JavaSource.create(info.getClasspathInfo()).runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController parameter) throws Exception {
+                    Tree tree = info.getTrees().getTree(element);
+                    if (tree != null) {
+                        result[0] = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tree);
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result[0];
     }
     
     public int getEnd() {
-        Tree tree = info.getTrees().getTree(element);
-        
-        if (tree != null)
-            return (int)info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tree);
-        else
-            return -1;
+        final int[] result = new int[] {-1};
+
+        try {
+            JavaSource.create(info.getClasspathInfo()).runUserActionTask(new Task<CompilationController>() {
+                public void run(CompilationController parameter) throws Exception {
+                    Tree tree = info.getTrees().getTree(element);
+                    if (tree != null) {
+                        result[0] = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tree);
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result[0];
     }
 
     public int getPreferredPosition() {

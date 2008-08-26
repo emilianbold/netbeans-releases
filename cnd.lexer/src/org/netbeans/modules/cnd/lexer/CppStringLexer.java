@@ -157,7 +157,42 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
 
                                 ch = read();
                             }
-
+                        case 'x': // NOI18N
+                        {
+                            int len = 0;
+                            while (true) {
+                                switch (read()) {
+                                    case '0':
+                                    case '1':
+                                    case '2':
+                                    case '3':
+                                    case '4':
+                                    case '5':
+                                    case '6':
+                                    case '7':
+                                    case '8':
+                                    case '9':
+                                    case 'a':
+                                    case 'b':
+                                    case 'c':
+                                    case 'd':
+                                    case 'e':
+                                    case 'f':
+                                    case 'A':
+                                    case 'B':
+                                    case 'C':
+                                    case 'D':
+                                    case 'E':
+                                    case 'F':
+                                        len++;
+                                        break;
+                                    default:
+                                        input.backup(1);
+                                        // if float then before mandatory binary exponent => invalid
+                                        return token(len > 0 ? CppStringTokenId.HEX_ESCAPE : CppStringTokenId.HEX_ESCAPE_INVALID);
+                                }
+                            } // end of while(true)      
+                        }
                         case '0': case '1': case '2': case '3': //NOI18N
                             switch (read()) {
                                 case '0': case '1': case '2': case '3': //NOI18N

@@ -49,6 +49,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,7 +72,6 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
@@ -98,6 +98,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     private Map<String, FileObject> paths;
     private final AtomicBoolean requiresModelUpdate = new AtomicBoolean(false);
     private DesignComponentWrapper wrapper;
+    private WeakReference<DesignDocument> documentReferences;
 
     public ImageEditorElement() {
         paths = new HashMap<String, FileObject>();
@@ -122,11 +123,14 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
 
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         this.wrapper = wrapper;
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            project = ProjectUtils.getProject(document);
+        
+        if (documentReferences == null || documentReferences.get() == null) {
+            return;
         }
-
+        final DesignDocument document = documentReferences.get();
+        
+        project = ProjectUtils.getProject(document);
+  
         if (wrapper == null) {
             // UI stuff
             setText(null);
@@ -331,9 +335,18 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
 
         return relativePath;
     }
+    
+    public void init(DesignDocument document) {
+        documentReferences = new WeakReference<DesignDocument>(document);
+    }
 
     public void run() {
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
+        if (documentReferences == null || documentReferences.get() == null) {
+            return;
+        }
+        
+        final DesignDocument document = documentReferences.get();
+        
         if (document != null) {
             updateModel(document);
         }

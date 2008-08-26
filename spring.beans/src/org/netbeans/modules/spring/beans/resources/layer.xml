@@ -164,7 +164,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Lookup">
                 <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.createNonWeb"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.standard"/>
                 </file>
             </folder>
         </folder>
@@ -176,11 +176,10 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Lookup">
                 <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.createNonWeb"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.simple"/>
                 </file>
             </folder>
         </folder>
-
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
             <folder name="Customizer">
                 <file name="org.netbeans.modules.spring.beans.ui.customizer.CustomizerCategoryProvider.instance">
@@ -189,7 +188,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Lookup">
                 <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.createNonWeb"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.standard"/>
                 </file>
             </folder>
         </folder>
@@ -201,7 +200,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Lookup">
                 <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.createNonWeb"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.standard"/>
                 </file>
             </folder>
         </folder>
@@ -213,7 +212,7 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="Lookup">
                 <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.createWeb"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.web"/>
                 </file>
             </folder>
         </folder>
@@ -231,7 +230,7 @@ made subject to such option by the copyright holder.
         <folder name="Edit">
             <file name="org-netbeans-modules-spring-beans-jumpto-type-GoToBean.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.spring.beans.jumpto.GoToBeanAction"/>
-            </file>            
+            </file>
         </folder>
     </folder>
     <folder name="Keymaps">

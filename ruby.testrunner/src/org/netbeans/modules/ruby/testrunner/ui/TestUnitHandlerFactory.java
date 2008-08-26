@@ -229,10 +229,8 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            String timeInSeconds = matcher.group(1);
-            Double elapsedTimeMillis = Double.parseDouble(timeInSeconds) * 1000;
             Report result = session.getReport();
-            result.elapsedTimeMillis = elapsedTimeMillis.intValue();
+            result.elapsedTimeMillis = toMillis(matcher.group(1));
             manager.displayReport(session, result);
         }
     }

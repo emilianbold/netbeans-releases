@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
+import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -70,8 +71,8 @@ public class ModelUtils {
 
     /*package*/ static List<CsmReference> collect(final CsmFile csmFile, final ReferenceCollector collector) {
         CsmFileReferences.getDefault().accept(csmFile, new CsmFileReferences.Visitor() {
-                public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
-                    collector.visit(ref, csmFile);
+                public void visit(CsmReferenceContext context) {
+                    collector.visit(context.getReference(), csmFile);
                 }
         });
         return collector.getReferences();

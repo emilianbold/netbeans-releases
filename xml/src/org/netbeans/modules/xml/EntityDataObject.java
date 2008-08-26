@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.xml;
 
+import java.io.IOException;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -84,7 +85,7 @@ public final class EntityDataObject extends MultiDataObject implements XMLDataOb
         CookieSet set = getCookieSet();
         set.add (cookieManager = new DataObjectCookieManager (this, set));
         
-        TextEditorSupport.TextEditorSupportFactory editorFactory =
+        final TextEditorSupport.TextEditorSupportFactory editorFactory =
             new TextEditorSupport.TextEditorSupportFactory (this, MIME_TYPE);
         editorFactory.registerCookies (set);
 
@@ -96,6 +97,13 @@ public final class EntityDataObject extends MultiDataObject implements XMLDataOb
         set.add(new CheckXMLSupport(in, CheckXMLSupport.CHECK_ENTITY_MODE));
         
 //         new CookieManager (this, set, EntityCookieFactoryCreator.class);
+        //enable "Save As"
+        set.assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs(FileObject folder, String fileName) throws IOException {
+                editorFactory.createEditor().saveAs( folder, fileName );
+            }
+        });
+        
     }
 
     @Override

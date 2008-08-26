@@ -47,7 +47,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.Document;
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;

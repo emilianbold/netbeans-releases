@@ -58,6 +58,10 @@ public abstract class TestRecognizerHandler {
     protected Matcher matcher;
 
     public TestRecognizerHandler(String regex) {
+        // handle newline chars at the end -- see #143508
+        if (!regex.endsWith(".*")) { //NOI18N
+            regex += ".*";  //NOI18N
+        }
         this.pattern = Pattern.compile(regex, Pattern.DOTALL);
     }
 

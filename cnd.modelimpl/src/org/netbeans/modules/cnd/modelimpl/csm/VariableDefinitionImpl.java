@@ -47,6 +47,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -58,6 +59,8 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -67,30 +70,32 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
  * @author Alexander Simon
  */
-public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefinition> implements CsmVariableDefinition {
+public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefinition> implements CsmVariableDefinition, CsmTemplate {
     
     private CsmUID<CsmVariable> declarationUID;
     private CharSequence qualifiedName;
     private final CharSequence[] classOrNspNames;
+    private TemplateDescriptor templateDescriptor;
 
     /** Creates a new instance of VariableDefinitionImpl */
     public VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, String name) {
         super(ast, file, type, getLastname(name), false);
+        templateDescriptor = createTemplateDescriptor(ast, null, null);
         classOrNspNames = getClassOrNspNames(ast);
         registerInProject();
     }
-    
+
     private static String getLastname(String name){
         int i = name.lastIndexOf("::"); // NOI18N
         if (i >=0){
@@ -226,9 +231,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 	if( cnn != null ) {
 	    CsmObject obj = ResolverFactory.createResolver(this).resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
 	    if( obj instanceof CsmClass ) {
-		if( !( obj instanceof Unresolved.UnresolvedClass) ) {
-		    return (CsmClass) obj;
-		}
+                return (CsmClass) obj;
 	    }
 	    else if( obj instanceof CsmNamespace ) {
 		return (CsmNamespace) obj;
@@ -271,32 +274,40 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         }
         return null;
     }
+
+    public CharSequence getDisplayName() {
+        return (templateDescriptor != null) ? CharSequenceKey.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
+    }
     
+    public boolean isTemplate() {
+        return templateDescriptor != null;
+    }
+
+    public List<CsmTemplateParameter> getTemplateParameters() {
+        return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
+    }    
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);    
-        
         PersistentUtils.writeUTF(this.qualifiedName, output);
-        
         PersistentUtils.writeStrings(this.classOrNspNames, output);
-        
+        PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
     }  
     
     public VariableDefinitionImpl(DataInput input) throws IOException {
         super(input);
-        
         this.qualifiedName = PersistentUtils.readUTF(input);
-        
         if(this.qualifiedName != null) {    
             this.qualifiedName = QualifiedNameCache.getManager().getString(this.qualifiedName);
         }
-
         this.classOrNspNames = PersistentUtils.readStrings(input, NameCache.getManager());
-        
+        this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-    }     
+    }
+
 }

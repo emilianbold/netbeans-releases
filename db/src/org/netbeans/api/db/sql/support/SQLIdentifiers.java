@@ -95,6 +95,56 @@ public final class SQLIdentifiers {
          */
         public abstract String quoteIfNeeded(String identifier);
 
+        /**
+         * Quotes an SQL identifier, even if the {@link #quoteIfNeeded} method
+         * would not have quoted it.
+         *
+         * @param identifier a SQL identifier. Can not be null.
+         *
+         * @return the quoted identifier.
+         *
+         * @since 1.29
+         */
+        public abstract String quoteAlways(String identifier);
+
+        /**
+         * Unquotes an identifier if it is quoted.
+         *
+         * @param identifier a SQL identifier. Can not be null.
+         *
+         * @return the unquoted identifier.
+         *
+         * @since 1.29
+         */
+        public String unquote(String identifier) {
+            Parameters.notNull("identifier", identifier);
+
+            int start = 0;
+            while (identifier.regionMatches(start, quoteString, 0, quoteString.length())) {
+                start += quoteString.length();
+            }
+            int end = identifier.length();
+            if (end > start) {
+                for (;;) {
+                    int offset = end - quoteString.length();
+                    if (identifier.regionMatches(offset, quoteString, 0, quoteString.length())) {
+                        end = offset;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            String result = "";
+            if (start < end) {
+                result = identifier.substring(start, end);
+            }
+            return result;
+        }
+
+        public String getQuoteString() {
+            return quoteString;
+        }
+
         boolean alreadyQuoted(String identifier) {
             return (identifier.startsWith(quoteString) && identifier.endsWith(quoteString));
         }
@@ -128,6 +178,16 @@ public final class SQLIdentifiers {
             Parameters.notNull("identifier", identifier);
 
             if ( needToQuote(identifier) ) {
+                return doQuote(identifier);
+            }
+
+            return identifier;
+        }
+
+        public final String quoteAlways(String identifier) {
+            Parameters.notNull("identifier", identifier);
+
+            if ( !alreadyQuoted(identifier) ) {
                 return doQuote(identifier);
             }
 

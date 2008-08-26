@@ -53,7 +53,7 @@ public class RemoteCommandProvider implements CommandProvider {
 
     public int run(String hkey, String cmd, Map<String, String> env) {
         support = new RemoteCommandSupport(hkey, cmd, env);
-        return support.getExitStatus();
+        return support.run();
     }
     
     @Override

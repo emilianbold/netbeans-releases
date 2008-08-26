@@ -56,18 +56,17 @@ import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.EditAction;
-import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.web.NewJspFileNameStepOperator;
 import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
@@ -81,13 +80,14 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.openide.util.Exceptions;
 
 /** End-to-end scenario test based on
  * http://qa.netbeans.org/modules/webapps/promo-f/frameworks/struts-user-scenario.html.
  *
  * @author Jiri Skrivanek
  */
-public class EndToEndTest extends JellyTestCase {
+public class EndToEndTest extends J2eeTestCase {
     
     public static final String PROJECT_NAME = "StrutsWebApplication";
     
@@ -98,6 +98,14 @@ public class EndToEndTest extends JellyTestCase {
     
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EndToEndTest.class);
+        conf = addServerTests(Server.GLASSFISH,conf,"testSetupStrutsProject","testCreateLoginPage","testCreateLoginBean",
+                "testCreateLoginAction","testCreateSecurityManager","testCreateForward","testCreateShopPage",
+                "testCreateLogoutPage","testCreateForwardInclude","testRunApplication");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
+        
+        /*
         return NbModuleSuite.create(
             NbModuleSuite.createConfiguration(EndToEndTest.class)
             .addTest("testSetupStrutsProject")
@@ -113,6 +121,7 @@ public class EndToEndTest extends JellyTestCase {
             .enableModules(".*")
             .clusters(".*")
         );
+        */
     }
     
     /** Called before every test case. */
@@ -204,7 +213,7 @@ public class EndToEndTest extends JellyTestCase {
         EditorOperator loginEditorOper = new EditorOperator("login.jsp");
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("Bundle.properties"));
-        String sourceCode = properties.getProperty("login");
+        String sourceCode = properties.getProperty("LBL_STRUTS_WELCOME_PAGE");
         // wait for text to be displayed
         loginEditorOper.txtEditorPane().waitText("JSP Page", -1);
         loginEditorOper.replace(loginEditorOper.getText(), sourceCode);
@@ -288,9 +297,15 @@ public class EndToEndTest extends JellyTestCase {
     /** Call "Add Forward" action in struts-config.xml and fill in the dialog values. */
     public void testCreateForward() {
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
+        strutsConfigEditor.select(18);
         ActionNoBlock addForwardAction = new ActionNoBlock(null, "Struts|Add Forward");
         addForwardAction.setComparator(new DefaultStringComparator(true, true));
         addForwardAction.perform(strutsConfigEditor);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         NbDialogOperator addForwardOper = new NbDialogOperator("Add Forward");
         JTextFieldOperator txtForwardName = new JTextFieldOperator(
                 (JTextField)new JLabelOperator(addForwardOper, "Forward Name:").getLabelFor());
@@ -355,6 +370,11 @@ public class EndToEndTest extends JellyTestCase {
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         ActionNoBlock addForwardAction = new ActionNoBlock(null, "Struts|Add Forward/Include");
         addForwardAction.perform(strutsConfigEditor);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         NbDialogOperator addForwardOper = new NbDialogOperator("Add Forward/Include Action");
         // set Action Path
         new JTextFieldOperator(addForwardOper, "/").setText("/Logout");
@@ -382,24 +402,17 @@ public class EndToEndTest extends JellyTestCase {
         new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
         // confirm properties dialog
         propertiesDialogOper.ok();
-
+        
         try {
             // "Run Project"
             String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
             new Action(null, runProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
-            waitText(PROJECT_NAME, 240000, "Login page");
+            waitText(PROJECT_NAME, 360000, "Struts Welcome Page");
         } finally {
             // log messages from output
             getLog("RunOutput").print(new OutputTabOperator(PROJECT_NAME).getText());
             getLog("ServerLog").print(new OutputTabOperator("GlassFish").getText());
-            // stop server
-            try {
-                J2eeServerNode serverNode = new J2eeServerNode("GlassFish");
-                serverNode.stop();
-            } catch (JemmyException e) {
-                // ignore it
-            }
-        }
+          }
     }
     
     /** Opens URL connection and waits for given text. It thows TimeoutExpiredException

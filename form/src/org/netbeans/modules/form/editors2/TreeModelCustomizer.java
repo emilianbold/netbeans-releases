@@ -140,7 +140,6 @@ public class TreeModelCustomizer extends javax.swing.JPanel {
         label.setLabelFor(textArea);
         org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(TreeModelCustomizer.class, "TreeModelCustomizer.label.text")); // NOI18N
 
-        warningLabel.setFont(warningLabel.getFont().deriveFont(warningLabel.getFont().getSize()-2f));
         warningLabel.setLabelFor(tree);
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(TreeModelCustomizer.class, "TreeModelCustomizer.warningLabel.text")); // NOI18N
 
@@ -162,7 +161,7 @@ public class TreeModelCustomizer extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(label)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
+                .add(splitPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(warningLabel)
                 .addContainerGap())

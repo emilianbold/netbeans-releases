@@ -78,28 +78,38 @@ public class TokenListChange<T extends TokenId> {
         change.matchIndex = tokenList.tokenCountCurrent(); // All tokens removed
         return change;
     }
-    
-    private final TokenChangeInfo<T> tokenChangeInfo;
+
+    private final TokenChangeInfo<T> tokenChangeInfo; // 12 bytes (8-super + 4)
     
     /**
      * The list may store either tokens or branches as well.
      */
-    private List<TokenOrEmbedding<T>> addedTokenOrEmbeddings;
+    private List<TokenOrEmbedding<T>> addedTokenOrEmbeddings; // 16 bytes
 
-    private LAState laState;
+    private LAState laState; // 20 bytes
     
-    int removedEndOffset;
+    int removedEndOffset; // 24 bytes
     
-    protected int matchIndex;
+    protected int matchIndex; // 28 bytes
     
-    protected int matchOffset;
+    protected int matchOffset; // 32 bytes
     
-    protected int addedEndOffset;
+    protected int addedEndOffset; // 36 bytes
+
+    boolean parentChangeIsBoundsChange; // 40 bytes
     
     public TokenListChange(MutableTokenList<T> tokenList) {
         tokenChangeInfo = new TokenChangeInfo<T>(tokenList);
     }
-    
+
+    public void setParentChangeIsBoundsChange(boolean parentChangeIsBoundsChange) {
+        this.parentChangeIsBoundsChange = parentChangeIsBoundsChange;
+    }
+
+    public boolean parentChangeIsBoundsChange() {
+        return parentChangeIsBoundsChange;
+    }
+
     public TokenChangeInfo<T> tokenChangeInfo() {
         return tokenChangeInfo;
     }

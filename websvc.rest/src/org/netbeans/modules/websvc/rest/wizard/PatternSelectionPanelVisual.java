@@ -219,6 +219,7 @@ private void standAlonePatternSelected(java.awt.event.ActionEvent evt) {//GEN-FI
     // End of variables declaration//GEN-END:variables
     
     public boolean valid(WizardDescriptor wizard) {
+        AbstractPanel.clearErrorMessage(wizard);
         return true;
     }
     

@@ -118,7 +118,7 @@ public final class CssModel {
      */
     public static CssModel get(Document doc) {
         if (doc == null) {
-            throw new NullPointerException("Passed null document!");
+            throw new NullPointerException("Passed null document!"); //NOI18N
         }
         CssModel model = (CssModel) doc.getProperty(CssModel.class);
         if (model == null) {
@@ -173,7 +173,7 @@ public final class CssModel {
                         return;
                     }
 
-                    ParserResult presult = info.getEmbeddedResults("text/x-css").iterator().next();
+                    ParserResult presult = info.getEmbeddedResults("text/x-css").iterator().next(); //NOI18N
                     SimpleNode root = ((CSSParserResult) presult).root();
 
 
@@ -196,7 +196,7 @@ public final class CssModel {
                 }
 
                 public void run(CompilationInfo ci) throws Exception {
-                    ParserResult presult = ci.getEmbeddedResults("text/x-css").iterator().next();
+                    ParserResult presult = ci.getEmbeddedResults("text/x-css").iterator().next(); //NOI18N
                     result.add(presult);
                 }
             }, true);
@@ -343,9 +343,9 @@ public final class CssModel {
             SimpleNodeUtil.visitChildren(root, styleRuleVisitor);
 
             if (LOG) {
-                LOGGER.fine("CssModel parse tree:");
+                LOGGER.fine("CssModel parse tree:"); //NOI18N
                 root.dump("");
-                LOGGER.fine("CssModel structure:");
+                LOGGER.fine("CssModel structure:"); //NOI18N
                 for(CssRule rule : newRules) {
                     LOGGER.fine(rule.toString());
                 }

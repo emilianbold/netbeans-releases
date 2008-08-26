@@ -85,9 +85,12 @@ public class RubyUtils {
         String mimeType = f.getMIMEType();
         return "text/x-yaml".equals(mimeType) || RubyInstallation.RHTML_MIME_TYPE.equals(mimeType); // NOI18N
     }
-    
-    public static boolean isRubyOrRhtmlFile(FileObject f) {
-        return isRubyFile(f) || isRhtmlFile(f);
+
+    public static boolean canContainRuby(FileObject f) {
+        String mimeType = f.getMIMEType();
+        return  RubyInstallation.RUBY_MIME_TYPE.equals(mimeType) ||
+                "text/x-yaml".equals(mimeType) ||  // NOI18N
+                RubyInstallation.RHTML_MIME_TYPE.equals(mimeType);
     }
     
     public static String camelToUnderlinedName(String name) {

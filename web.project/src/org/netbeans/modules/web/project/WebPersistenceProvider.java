@@ -68,6 +68,7 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Provides persistence location and scope delegating to this project's WebModule.
@@ -104,7 +105,15 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
 
     public FileObject createLocation() throws IOException {
         // the folder should have been created when the project was generated
-        return project.getWebModule().getPersistenceXmlDir();
+        FileObject location = project.getWebModule().getPersistenceXmlDir();
+        
+        if(location == null) {
+            // But possibly the folder got deleted by the user
+            // or missing for whatever reason (see issue 134870)
+            location = FileUtil.createFolder(project.getWebModule().getPersistenceXmlDirAsFile());
+            
+        }
+        return location;
     }
 
     public PersistenceScope findPersistenceScope(FileObject fo) {

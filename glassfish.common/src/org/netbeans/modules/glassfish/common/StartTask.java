@@ -46,6 +46,7 @@ package org.netbeans.modules.glassfish.common;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,8 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.Recognizer;
+import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.openide.ErrorManager;
@@ -72,6 +75,7 @@ import org.xml.sax.SAXException;
  */
 public class StartTask extends BasicTask<OperationState> {
 
+    private List<Recognizer> recognizers;
     private FileObject jdkHome = null;
     private List<String> jvmArgs = null;
 
@@ -80,17 +84,20 @@ public class StartTask extends BasicTask<OperationState> {
      * @param dm 
      * @param startServer 
      */
-    public StartTask(Map<String, String> properties, OperationStateListener... stateListener) {
-        super(properties, stateListener);
+    public StartTask(Map<String, String> properties, List<Recognizer> recognizers,
+            OperationStateListener... stateListener) {
+        this(properties, recognizers, null, null, stateListener);
     }
     
     /**
      * 
      */
-    public StartTask(Map<String, String> properties, FileObject jdkRoot, String[] jvmArgs, OperationStateListener... stateListener) {
+    public StartTask(Map<String, String> properties, List<Recognizer> recognizers,
+            FileObject jdkRoot, String[] jvmArgs, OperationStateListener... stateListener) {
         super(properties, stateListener);
+        this.recognizers = recognizers;
         this.jdkHome = jdkRoot;
-        this.jvmArgs = Arrays.asList(jvmArgs);
+        this.jvmArgs = (jvmArgs != null) ? Arrays.asList(jvmArgs) : null;
     }
     
     /**
@@ -135,7 +142,7 @@ public class StartTask extends BasicTask<OperationState> {
         // create a logger to the server's output stream so that a user
         // can observe the progress
         LogViewMgr logger = LogViewMgr.getInstance(ip.get(GlassfishModule.URL_ATTR));
-        logger.readInputStreams(serverProcess.getInputStream(), serverProcess.getErrorStream());
+        logger.readInputStreams(recognizers, serverProcess.getInputStream(), serverProcess.getErrorStream());
 
         // Waiting for server to start
         while(System.currentTimeMillis() - start < START_TIMEOUT) {

@@ -57,77 +57,77 @@ import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
  * @author Jan Lahoda
  */
 public class CreateElementTest extends HintsTestBase {
-    
+
     /** Creates a new instance of CreateElementTest */
     public CreateElementTest(String name) {
         super(name);
     }
-    
+
     public void testBinaryOperator() throws Exception {
         Set<String> golden = new HashSet<String>(Arrays.asList(
             "CreateFieldFix:p:org.netbeans.test.java.hints.BinaryOperator:int:[private, static]",
             "AddParameterOrLocalFix:p:int:true",
             "AddParameterOrLocalFix:p:int:false"
         ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.BinaryOperator", 218, golden);
         performTestAnalysisTest("org.netbeans.test.java.hints.BinaryOperator", 255, golden);
         performTestAnalysisTest("org.netbeans.test.java.hints.BinaryOperator", 294, golden);
         performTestAnalysisTest("org.netbeans.test.java.hints.BinaryOperator", 333, golden);
     }
-    
+
     public void testEnhancedForLoop() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.EnhancedForLoop", 186, new HashSet<String>(Arrays.asList(
             "CreateFieldFix:u:org.netbeans.test.java.hints.EnhancedForLoop:java.lang.Iterable<java.lang.String>:[private, static]",
             "AddParameterOrLocalFix:u:java.lang.Iterable<java.lang.String>:true",
             "AddParameterOrLocalFix:u:java.lang.Iterable<java.lang.String>:false"
         )));
-        
+
 //        performTestAnalysisTest("org.netbeans.test.java.hints.EnhancedForLoop", 244, new HashSet<String>(Arrays.asList(
 //                "CreateFieldFix:u:org.netbeans.test.java.hints.EnhancedForLoop:java.lang.Iterable<java.util.List<? extends java.lang.String>>:[private, static]",
 //                "AddParameterOrLocalFix:u:java.lang.Iterable<java.util.List<? extends java.lang.String>>:true",
 //                "AddParameterOrLocalFix:u:java.lang.Iterable<java.util.List<? extends java.lang.String>>:false"
 //        )));
     }
-    
+
     public void testArrayAccess() throws Exception {
         Set<String> simpleGoldenWithLocal = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:x:org.netbeans.test.java.hints.ArrayAccess:int[]:[private, static]",
                 "AddParameterOrLocalFix:x:int[]:true",
                 "AddParameterOrLocalFix:x:int[]:false"
                 ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.ArrayAccess", 170, simpleGoldenWithLocal);
         performTestAnalysisTest("org.netbeans.test.java.hints.ArrayAccess", 188, simpleGoldenWithLocal);
-        
+
         Set<String> simpleGoldenWithoutLocal = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:x:org.netbeans.test.java.hints.ArrayAccess:int[]:[private]"
                 ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.ArrayAccess", 262, simpleGoldenWithoutLocal);
         performTestAnalysisTest("org.netbeans.test.java.hints.ArrayAccess", 283, simpleGoldenWithoutLocal);
-        
+
         Set<String> indexGoldenWithLocal = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:u:org.netbeans.test.java.hints.ArrayAccess:int:[private, static]",
                 "AddParameterOrLocalFix:u:int:true",
                 "AddParameterOrLocalFix:u:int:false"
                 ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.ArrayAccess", 335, indexGoldenWithLocal);
         performTestAnalysisTest("org.netbeans.test.java.hints.ArrayAccess", 377, indexGoldenWithLocal);
-        
+
         Set<String> indexGoldenWithoutLocal = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:u:org.netbeans.test.java.hints.ArrayAccess:int:[private]"
                 ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.ArrayAccess", 359, indexGoldenWithoutLocal);
         performTestAnalysisTest("org.netbeans.test.java.hints.ArrayAccess", 401, indexGoldenWithoutLocal);
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.ArrayAccess", 442, new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:s:org.netbeans.test.java.hints.ArrayAccess:java.lang.Object[][]:[private]"
         )));
     }
-    
+
     public void testAssignment() throws Exception {
         Set<String> golden = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:x:org.netbeans.test.java.hints.Assignment:int:[private, static]",
@@ -137,83 +137,83 @@ public class CreateElementTest extends HintsTestBase {
         performTestAnalysisTest("org.netbeans.test.java.hints.Assignment", 174, golden);
         performTestAnalysisTest("org.netbeans.test.java.hints.Assignment", 186, golden);
     }
-    
+
     public void testVariableDeclaration() throws Exception {
         Set<String> golden = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:x:org.netbeans.test.java.hints.VariableDeclaration:int:[private, static]",
                 "AddParameterOrLocalFix:x:int:true",
                 "AddParameterOrLocalFix:x:int:false"
                 ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.VariableDeclaration", 186, golden);
     }
-    
+
     public void testAssert() throws Exception {
         Set<String> goldenC = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:c:org.netbeans.test.java.hints.Assert:boolean:[private, static]",
                 "AddParameterOrLocalFix:c:boolean:true",
                 "AddParameterOrLocalFix:c:boolean:false"
                 ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.Assert", 159, goldenC);
-        
+
         Set<String> goldenS = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:s:org.netbeans.test.java.hints.Assert:java.lang.Object:[private, static]",
                 "AddParameterOrLocalFix:s:java.lang.Object:true",
                 "AddParameterOrLocalFix:s:java.lang.Object:false"
                 ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.Assert", 163, goldenS);
     }
-    
+
     public void testParenthesis() throws Exception {
         Set<String> goldenC = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:x:org.netbeans.test.java.hints.Parenthesis:int[][]:[private]"
         ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.Parenthesis", 203, goldenC);
     }
-    
+
     public void testIfAndLoops() throws Exception {
         Set<String> simple = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:a:org.netbeans.test.java.hints.IfAndLoops:boolean:[private, static]",
                 "AddParameterOrLocalFix:a:boolean:true",
                 "AddParameterOrLocalFix:a:boolean:false"
         ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.IfAndLoops", 194, simple);
         performTestAnalysisTest("org.netbeans.test.java.hints.IfAndLoops", 247, simple);
         performTestAnalysisTest("org.netbeans.test.java.hints.IfAndLoops", 309, simple);
         performTestAnalysisTest("org.netbeans.test.java.hints.IfAndLoops", 368, simple);
-        
+
         Set<String> complex = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:a:org.netbeans.test.java.hints.IfAndLoops:boolean[]:[private]"
         ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.IfAndLoops", 214, complex);
         performTestAnalysisTest("org.netbeans.test.java.hints.IfAndLoops", 270, complex);
         performTestAnalysisTest("org.netbeans.test.java.hints.IfAndLoops", 336, complex);
         performTestAnalysisTest("org.netbeans.test.java.hints.IfAndLoops", 395, complex);
     }
-    
+
     public void testTarget() throws Exception {
         Set<String> simple = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:a:org.netbeans.test.java.hints.Target:int:[private, static]",
                 "AddParameterOrLocalFix:a:int:true",
                 "AddParameterOrLocalFix:a:int:false"
         ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.Target", 186, simple);
-        
+
         Set<String> complex = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:a:org.netbeans.test.java.hints.Target:int:[private]"
         ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.Target", 203, complex);
         performTestAnalysisTest("org.netbeans.test.java.hints.Target", 224, complex);
         performTestAnalysisTest("org.netbeans.test.java.hints.Target", 252, complex);
     }
-    
+
     public void testMemberSelect() throws Exception {
         Set<String> simpleWithStatic = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:a:org.netbeans.test.java.hints.MemberSelect:int:[private, static]"
@@ -221,14 +221,14 @@ public class CreateElementTest extends HintsTestBase {
         Set<String> simple = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:a:org.netbeans.test.java.hints.MemberSelect:int:[private]"
         ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.MemberSelect", 236, simpleWithStatic);
         performTestAnalysisTest("org.netbeans.test.java.hints.MemberSelect", 268, simpleWithStatic);
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.MemberSelect", 290, simple);
         performTestAnalysisTest("org.netbeans.test.java.hints.MemberSelect", 311, simple);
     }
-    
+
     public void testSimple() throws Exception {
         Set<String> simpleJLOWithLocal = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:e:org.netbeans.test.java.hints.Simple:java.lang.Object:[private, static]",
@@ -246,33 +246,33 @@ public class CreateElementTest extends HintsTestBase {
         Set<String> simpleJLE = new HashSet<String>(Arrays.asList(
                 "CreateFieldFix:e:org.netbeans.test.java.hints.Simple:java.lang.Exception:[private]"
         ));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.Simple", 192, simpleJLEWithLocal);
         performTestAnalysisTest("org.netbeans.test.java.hints.Simple", 211, simpleJLE);
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.Simple", 245, simpleJLOWithLocal);
         performTestAnalysisTest("org.netbeans.test.java.hints.Simple", 275, simpleJLO);
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.Simple", 302, simpleJLOWithLocal);
         performTestAnalysisTest("org.netbeans.test.java.hints.Simple", 342, simpleJLO);
     }
-    
+
     public void testUnary() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.Simple", 382, Collections.singleton("CreateFieldFix:i:org.netbeans.test.java.hints.Simple:int:[private]"));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.Simple", 398, Collections.singleton("CreateFieldFix:b:org.netbeans.test.java.hints.Simple:byte:[private]"));
         performTestAnalysisTest("org.netbeans.test.java.hints.Simple", 409, Collections.singleton("CreateFieldFix:b:org.netbeans.test.java.hints.Simple:byte:[private]"));
-        
+
         performTestAnalysisTest("org.netbeans.test.java.hints.Simple", 415, Collections.singleton("CreateFieldFix:l:org.netbeans.test.java.hints.Simple:int:[private]"));
     }
-    
+
     public void testTypevarsAndEnums() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.TypevarsAndErrors", 221, Collections.<String>emptySet());
         performTestAnalysisTest("org.netbeans.test.java.hints.TypevarsAndErrors", 243, Collections.<String>emptySet());
         performTestAnalysisTest("org.netbeans.test.java.hints.TypevarsAndErrors", 265, Collections.<String>emptySet());
         performTestAnalysisTest("org.netbeans.test.java.hints.TypevarsAndErrors", 287, Collections.<String>emptySet());
     }
-    
+
     public void testReturn() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.Return", 164, new HashSet<String>(Arrays.asList(
                 "AddParameterOrLocalFix:l:int:false",
@@ -291,13 +291,13 @@ public class CreateElementTest extends HintsTestBase {
         )));
         performTestAnalysisTest("org.netbeans.test.java.hints.Return", 340, Collections.<String>emptySet());
     }
-    
+
     public void test92419() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.Bug92419", 123, new HashSet<String>(Arrays.asList(
                 "CreateClass:org.netbeans.test.java.hints.XXXX:[]:CLASS"
         )));
     }
-    
+
     public void testConditionalExpression() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.CondExpression", 203, new HashSet<String>(Arrays.asList(
                 "AddParameterOrLocalFix:b:boolean:false",
@@ -320,7 +320,7 @@ public class CreateElementTest extends HintsTestBase {
                 "CreateFieldFix:d:org.netbeans.test.java.hints.CondExpression:java.lang.CharSequence:[private]"
         )));
     }
-    
+
     public void testArrayInitializer() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.ArrayInitializer", 210, new HashSet<String>(Arrays.asList(
                 "AddParameterOrLocalFix:f:java.io.File:false",
@@ -338,7 +338,7 @@ public class CreateElementTest extends HintsTestBase {
                 "CreateFieldFix:i:org.netbeans.test.java.hints.ArrayInitializer:int:[private]"
         )));
     }
-    
+
     public void test105415() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.Bug105415", 138, Collections.<String>emptySet());
     }
@@ -350,7 +350,7 @@ public class CreateElementTest extends HintsTestBase {
                 "CreateFieldFix:xxx:org.netbeans.test.java.hints.Bug112846:double[]:[private]"
         )));
     }
-    
+
     public void test111048() throws Exception {
 	// do not offer to create method in non-writable file/class
 	performTestAnalysisTest("org.netbeans.test.java.hints.Bug111048", 202, Collections.<String>emptySet());
@@ -365,7 +365,7 @@ public class CreateElementTest extends HintsTestBase {
 		"CreateFieldFix:fieldOrClass:org.netbeans.test.java.hints.bb:java.lang.Object:[static]"
         )));
     }
-    
+
     public void test117431() throws Exception {
         //do not offer same hint more times for a same unknown variable
         performTestAnalysisTest("org.netbeans.test.java.hints.Bug117431", 155, new HashSet<String>(Arrays.asList(
@@ -380,7 +380,7 @@ public class CreateElementTest extends HintsTestBase {
                 "AddParameterOrLocalFix:kk:int:false"
         )));
     }
-    
+
     public void testMethodArgument() throws Exception {
         //do not offer same hint more times for a same unknown variable
         performTestAnalysisTest("org.netbeans.test.java.hints.MethodArgument", 217, new HashSet<String>(Arrays.asList(
@@ -389,7 +389,7 @@ public class CreateElementTest extends HintsTestBase {
                 "AddParameterOrLocalFix:xx:int:false"
         )));
     }
-    
+
     public void testConstructorArgument() throws Exception {
         //do not offer same hint more times for a same unknown variable
         performTestAnalysisTest("org.netbeans.test.java.hints.ConstructorArgument", 181, new HashSet<String>(Arrays.asList(
@@ -398,19 +398,26 @@ public class CreateElementTest extends HintsTestBase {
                 "AddParameterOrLocalFix:xx:int:false"
         )));
     }
-    
+
+    public void testEnumConstant() throws Exception {
+        //test hint creating a new enum constant
+        performTestAnalysisTest("org.netbeans.test.java.hints.EnumConstant", 118, new HashSet<String>(Arrays.asList(
+                "CreateEnumConstant:D:org.netbeans.test.java.hints.EnumConstant.Name:org.netbeans.test.java.hints.EnumConstant.Name"
+                )));
+    }
+
     protected void performTestAnalysisTest(String className, int offset, Set<String> golden) throws Exception {
         prepareTest(className);
-        
+
         DataObject od = DataObject.find(info.getFileObject());
         EditorCookie ec = (EditorCookie) od.getLookup().lookup(EditorCookie.class);
-        
+
         Document doc = ec.openDocument();
-        
+
         CreateElement ce = new CreateElement();
         List<Fix> fixes = ce.analyze(info, offset);
         Set<String> real = new HashSet<String>();
-        
+
         for (Fix f : fixes) {
             if (f instanceof CreateFieldFix) {
                 real.add(((CreateFieldFix) f).toDebugString(info));
@@ -428,21 +435,26 @@ public class CreateElementTest extends HintsTestBase {
 		real.add(((CreateClassFix) f).toDebugString(info));
 		continue;
 	    }
-	    
+
+            if (f instanceof CreateEnumConstant) {
+                real.add(((CreateEnumConstant) f).toDebugString(info));
+                continue;
+            }
+
             fail("Fix of incorrect type: " + f.getClass());
         }
-        
+
         assertEquals(golden, real);
     }
-    
+
     @Override
     protected String testDataExtension() {
         return "org/netbeans/test/java/hints/CreateElementTest/";
     }
-    
+
     @Override
     protected boolean createCaches() {
         return false;
     }
-    
+
 }

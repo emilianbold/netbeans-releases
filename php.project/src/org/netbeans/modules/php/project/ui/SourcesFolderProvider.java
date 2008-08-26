@@ -39,17 +39,17 @@
 
 package org.netbeans.modules.php.project.ui;
 
-import org.openide.filesystems.FileObject;
+import java.io.File;
 
 /**
  * @author Tomas Mysik
  */
 public interface SourcesFolderProvider {
     /**
-     * Get the name of the folder for sources.
-     * @return the name of the folder for sources.
+     * Get the folder for sources.
+     * @return the folder for sources.
      */
-    FileObject getSourcesFolder();
+    File getSourcesFolder();
     /**
      * Get the name of the folder for sources.
      * @return the name of the folder for sources.

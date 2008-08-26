@@ -45,7 +45,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 

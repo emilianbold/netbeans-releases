@@ -36,31 +36,37 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.codegen.CodeMultiGuardedLevelPresenter;
+import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
+import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeDescriptor;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.midp.codegen.CodeClassInitHeaderFooterPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodePresenterSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
+import org.netbeans.modules.vmd.midp.components.handlers.ExitMidletEventHandlerCD;
+import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 
 /**
  *
  * @author avk
  */
-public class SVGButtonCD extends ComponentDescriptor{
-    
-    public static final TypeID TYPEID = new TypeID (TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGButton"); 
+public class SVGButtonCD extends ComponentDescriptor {
 
-    public TypeDescriptor getTypeDescriptor () {
-        return new TypeDescriptor (SVGComponentCD.TYPEID, TYPEID, true, false);
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGButton"); //NOI18N
+
+    public TypeDescriptor getTypeDescriptor() {
+        return new TypeDescriptor(SVGComponentCD.TYPEID, TYPEID, true, false);
     }
 
     @Override
@@ -70,16 +76,69 @@ public class SVGButtonCD extends ComponentDescriptor{
 
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        return Arrays.asList (
-                );
+        return null;
     }
 
-    protected List<? extends Presenter> createPresenters () {
+    protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 //code
                 MidpCustomCodePresenterSupport.createSVGComponentCodePresenter(TYPEID),
-                MidpCodePresenterSupport.createAddImportPresenter()
+                MidpCodePresenterSupport.createAddImportPresenter(),
+                new SVGCodeFooter()               
         );
     }
 
+    private class SVGCodeFooter extends CodeClassInitHeaderFooterPresenter {
+
+        @Override
+        public void generateClassInitializationHeader(MultiGuardedSection section) {
+        }
+
+        @Override
+        public void generateClassInitializationFooter(MultiGuardedSection section) {
+            DesignComponent svgForm = getComponent().getParentComponent();
+            DesignComponent eventHandler = null;
+            for (DesignComponent component : svgForm.getComponents()) {
+                if (!component.getType().equals(SVGButtonEventSourceCD.TYPEID)) {
+                    continue;
+                }
+                if (component.readProperty(SVGButtonEventSourceCD.PROP_SVGBUTTON).getComponent() != getComponent()) {
+                    continue;
+                }
+                eventHandler = component.readProperty(EventSourceCD.PROP_EVENT_HANDLER).getComponent();
+                System.out.println(eventHandler);
+                if (eventHandler != null) {
+                    break;
+                }
+            }
+            if (eventHandler == null) {
+                return;
+            }
+            section.getWriter().write(CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ".addActionListener(new SVGActionListener() {\n"); //NOI18N
+            section.getWriter().write("public void actionPerformed(SVGComponent svgComponent) {\n");// NOI18N                
+            if (eventHandler.getType() != ExitMidletEventHandlerCD.TYPEID) {
+                section.getWriter().commit();
+                section.switchToEditable(getComponent().getComponentID() + "beforeSwitch"); //NOI18N
+                section.getWriter().write("//Some action before switch\n"); // NOI18N
+                section.getWriter().commit();
+                section.switchToGuarded();
+                CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode(section, eventHandler);
+                section.getWriter().commit();
+                section.switchToEditable(getComponent().getComponentID() + "afterSwitch"); //NOI18N
+                section.getWriter().write("//Some action after switch\n"); // NOI18N
+                section.getWriter().commit();
+                section.switchToGuarded();
+            } else {
+                section.getWriter().commit();
+                section.switchToEditable(getComponent().getComponentID() + "beforeSwitch"); //NOI18N
+                section.getWriter().write("//Some action before exit Midlet\n"); // NOI18N
+                section.getWriter().commit();
+                section.switchToGuarded();
+                CodeMultiGuardedLevelPresenter.generateMultiGuardedSectionCode(section, eventHandler);
+            }
+            section.getWriter().write("}\n"); // NOI18N
+            section.getWriter().write("});\n"); //NOI18N
+        }
+    }
+    
 }

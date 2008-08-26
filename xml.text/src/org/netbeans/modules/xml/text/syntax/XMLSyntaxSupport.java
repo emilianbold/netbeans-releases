@@ -667,17 +667,23 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
     
     /**
      * No completion inside PI, CDATA, comment section.
-     * 
+     * True only inside PI or CDATA section, false otherwise.
      * @param target
      */
     public boolean noCompletion(JTextComponent target) {
-        BaseDocument document = (BaseDocument)target.getDocument();
+        if(target == null || target.getCaret() == null)
+            return false;
         int offset = target.getCaret().getDot();
+        if(offset < 0)
+            return false;            
         //no completion inside CDATA or comment section
+        BaseDocument document = (BaseDocument)target.getDocument();
         ((AbstractDocument)document).readLock();
         try {
             TokenHierarchy th = TokenHierarchy.get(document);
             TokenSequence ts = th.tokenSequence();
+            if(ts == null)
+                return false;
             ts.move(offset);
             Token token = ts.token();
             if(token == null) {

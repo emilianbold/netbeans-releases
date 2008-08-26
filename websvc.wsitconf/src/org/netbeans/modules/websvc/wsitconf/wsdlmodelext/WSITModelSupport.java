@@ -715,6 +715,7 @@ public class WSITModelSupport {
         if (b == null) return;
         
         // First store the values
+        boolean addr = AddressingModelHelper.isAddressingEnabled(b);
 
         // Transport
         boolean mtom = TransportModelHelper.isMtomEnabled(b);
@@ -777,7 +778,7 @@ public class WSITModelSupport {
 
         // --------------------
         
-        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, true);
+        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, addr);
         
         // Then apply them with the new values
 
@@ -826,7 +827,7 @@ public class WSITModelSupport {
             }
         }
 
-        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, true); // this is needed so that the values are not lost
+        PolicyModelHelper.getInstance(targetCfgVersion).createPolicy(b, false); // this is needed so that the values are not lost
         
     }
     

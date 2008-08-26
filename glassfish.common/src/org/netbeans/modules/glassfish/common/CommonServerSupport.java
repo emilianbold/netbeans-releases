@@ -48,6 +48,7 @@ import java.net.Socket;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -65,12 +66,15 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
+import org.netbeans.modules.glassfish.spi.Recognizer;
+import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 
@@ -82,6 +86,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
 
     public static final String URI_PREFIX = "deployer:gfv3";
     
+    private final transient Lookup lookup;
     private final Map<String, String> properties =
             Collections.synchronizedMap(new HashMap<String, String>(37));
     
@@ -91,8 +96,11 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     private ChangeSupport changeSupport = new ChangeSupport(this);
     
     private FileObject instanceFO;
+
+    private volatile boolean startedByIde = false;
     
-    CommonServerSupport(Map<String, String> ip) {
+    CommonServerSupport(Lookup lookup, Map<String, String> ip) {
+        this.lookup = lookup;
         String hostName = updateString(ip, GlassfishModule.HOSTNAME_ATTR, GlassfishInstance.DEFAULT_HOST_NAME);
         String glassfishRoot = updateString(ip, GlassfishModule.GLASSFISH_FOLDER_ATTR, "");
         int httpPort = updateInt(ip, GlassfishModule.HTTPPORT_ATTR, GlassfishInstance.DEFAULT_HTTP_PORT);
@@ -238,6 +246,10 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             changeSupport.fireChange();
         }
     }
+
+    boolean isStartedByIde() {
+        return startedByIde;
+    }
     
     // ------------------------------------------------------------------------
     // GlassfishModule interface implementation
@@ -254,6 +266,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                 if(newState == OperationState.RUNNING) {
                     setServerState(ServerState.STARTING);
                 } else if(newState == OperationState.COMPLETED) {
+                    startedByIde = true;
                     setServerState(ServerState.RUNNING);
                 } else if(newState == OperationState.FAILED) {
                     setServerState(ServerState.STOPPED);
@@ -261,7 +274,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             }
         };
         FutureTask<OperationState> task = new FutureTask<OperationState>(
-                new StartTask(properties, startServerListener, stateListener));
+                new StartTask(properties, getRecognizers(), startServerListener, stateListener));
         RequestProcessor.getDefault().post(task);
         return task;
     }
@@ -274,6 +287,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                 if(newState == OperationState.RUNNING) {
                     setServerState(ServerState.STARTING);
                 } else if(newState == OperationState.COMPLETED) {
+                    startedByIde = true;
                     setServerState(ServerState.RUNNING);
                 } else if(newState == OperationState.FAILED) {
                     setServerState(ServerState.STOPPED);
@@ -281,11 +295,26 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             }
         };
         FutureTask<OperationState> task = new FutureTask<OperationState>(
-                new StartTask(properties, jdkRoot, jvmArgs, startServerListener, stateListener));
+                new StartTask(properties, getRecognizers(), jdkRoot, jvmArgs, startServerListener, stateListener));
         RequestProcessor.getDefault().post(task);
         return task;
     }
-
+    
+    private List<Recognizer> getRecognizers() {
+        List<Recognizer> recognizers;
+        Collection<? extends RecognizerCookie> cookies = lookup.lookupAll(RecognizerCookie.class);
+        if(!cookies.isEmpty()) {
+            recognizers = new LinkedList<Recognizer>();
+            for(RecognizerCookie cookie: cookies) {
+                recognizers.addAll(cookie.getRecognizers());
+            }
+            recognizers = Collections.unmodifiableList(recognizers);
+        } else {
+            recognizers = Collections.emptyList();
+        }
+        return recognizers;
+    }
+    
     public Future<OperationState> stopServer(final OperationStateListener stateListener) {
         Logger.getLogger("glassfish").log(Level.FINEST, 
                 "CSS.stopServer called on thread \"" + Thread.currentThread().getName() + "\"");
@@ -558,5 +587,5 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             });
         }
     }
-    
+
 }

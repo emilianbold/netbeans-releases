@@ -114,6 +114,7 @@ public class MakeArtifact {
 		else {
 		    assert false;// FIXUP: error
 		}
+                output = makeConfiguration.expandMacros(output);
     }
     
     public String getProjectLocation() {
@@ -202,7 +203,7 @@ public class MakeArtifact {
     public String getOutput() {
 	return output;
     }
-
+    
     @Override
     public String toString() {
         String ret = getConfigurationName();

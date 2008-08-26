@@ -1503,7 +1503,7 @@ public class XMLDocumentModelTest extends TestBase {
         |
         +----text
          */
-        doc = new BaseDocument(XMLKit.class, false);
+        doc = new BaseDocument(true, "text/xml"); //NOI18N
         doc.putProperty("mimeType", "text/xml");
 
         doc.insertString(0, "<?xml version='1.0'?><root><a><c/></a><b>text</b></root>", null);
@@ -1521,7 +1521,7 @@ public class XMLDocumentModelTest extends TestBase {
         |
         +---text
          */
-        doc = new BaseDocument(XMLKit.class, false);
+        doc = new BaseDocument(true, "text/xml"); //NOI18N
         doc.putProperty("mimeType", "text/xml");
 
         doc.insertString(0, "<?xml version='1.0'?><root attrname=\"value\">text</root>", null);
@@ -1540,7 +1540,7 @@ public class XMLDocumentModelTest extends TestBase {
         +---<tree id="1">
         +---<tree id="2">
          */
-        doc = new BaseDocument(XMLKit.class, false);
+        doc = new BaseDocument(true, "text/xml"); //NOI18N
         doc.putProperty("mimeType", "text/xml");
 
         doc.insertString(0, "<?xml version=\"1.0\"?><wood><tree id=\"1\"/><tree id=\"2\"/></wood>", null);
@@ -1561,7 +1561,7 @@ public class XMLDocumentModelTest extends TestBase {
         +-- <tree id="3">                           |
         +-- <tree id="4">
          */
-        doc = new BaseDocument(XMLKit.class, false);
+        doc = new BaseDocument(true, "text/xml"); //NOI18N
         doc.putProperty("mimeType", "text/xml");
 
         doc.insertString(0, "<?xml version=\"1.0\"?><tree id=\"1\"><tree id=\"2\"><tree id=\"3\"></tree><tree id=\"4\"></tree></tree></tree>", null);
@@ -1585,7 +1585,7 @@ public class XMLDocumentModelTest extends TestBase {
         |
         +----text
          */
-        doc = new BaseDocument(XMLKit.class, false);
+        doc = new BaseDocument(true, "text/xml"); //NOI18N
         doc.putProperty("mimeType", "text/xml");
 
         doc.insertString(0, "<?xml version='1.0'?>   <root>   <a>   <c/>   </a>   <b>text</b>   </root>", null);
@@ -1600,7 +1600,7 @@ public class XMLDocumentModelTest extends TestBase {
         |
         +--<root>X</root>
          */
-        doc = new BaseDocument(XMLKit.class, false);
+        doc = new BaseDocument(true, "text/xml"); //NOI18N
         doc.putProperty("mimeType", "text/xml");
 
         doc.insertString(0, "<root>X</root>", null);

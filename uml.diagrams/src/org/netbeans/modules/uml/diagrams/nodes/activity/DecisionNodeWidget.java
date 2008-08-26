@@ -83,6 +83,7 @@ public class DecisionNodeWidget extends ControlNodeWidget
             polygonWidget.setOpaque(true);
             setCurrentView(polygonWidget);
         }
+        super.initializeNode(presentation);
     }
 
     public String getWidgetID()

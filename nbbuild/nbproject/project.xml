@@ -219,7 +219,7 @@ made subject to such option by the copyright holder.
             <compilation-unit>
                 <package-root>test/unit/src</package-root>
                 <unit-tests/>
-                <classpath mode="compile">../libs.junit4/external/junit-4.1.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar</classpath>
+                <classpath mode="compile">../libs.junit4/external/junit-4.5.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar</classpath>
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
                 <built-to>build/test/unit/classes</built-to>
                 <source-level>1.5</source-level>
@@ -235,7 +235,7 @@ made subject to such option by the copyright holder.
             <compilation-unit>
                 <package-root>testdist/test</package-root>
                 <unit-tests/>
-                <classpath mode="compile">../libs.junit4/external/junit-4.1.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:build/testdistclasses</classpath>
+                <classpath mode="compile">../libs.junit4/external/junit-4.5.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:build/testdistclasses</classpath>
                 <classpath mode="boot">${nbjdk.bootclasspath}</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>

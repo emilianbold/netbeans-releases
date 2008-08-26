@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
+import org.netbeans.modules.vmd.midp.components.databinding.DataSetAbstractCD;
 import org.openide.util.NbBundle;
 
 /**
@@ -135,7 +136,8 @@ public class StringItemCD extends ComponentDescriptor {
             new StringItemDisplayPresenter(),
             // accept
             new MidpAcceptProducerKindPresenter().addType(FontCD.TYPEID, PROP_FONT),
-            new MidpAcceptTrensferableKindPresenter().addType(FontCD.TYPEID, PROP_FONT)
+            new MidpAcceptTrensferableKindPresenter().addType(FontCD.TYPEID, PROP_FONT),
+            DatabindingItemAcceptPresenter.create(PROP_TEXT, ItemCD.PROP_LABEL)
        );   
     }
     

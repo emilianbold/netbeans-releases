@@ -69,10 +69,12 @@ final class DelegateActionMap extends ActionMap {
         this.delegate = delegate;
     }
 
+    @Override
     public int size() {
         return keys().length;
     }
 
+    @Override
     public Action get(Object key) {
         javax.swing.ActionMap m;
 
@@ -113,10 +115,12 @@ final class DelegateActionMap extends ActionMap {
         return (owner == getComponent()) ? found : null;
     }
 
+    @Override
     public Object[] allKeys() {
         return keys(true);
     }
 
+    @Override
     public Object[] keys() {
         return keys(false);
     }
@@ -156,34 +160,41 @@ final class DelegateActionMap extends ActionMap {
     // 
     // Not implemented
     //
+    @Override
     public void remove(Object key) {
         if (delegate != null) {
             delegate.remove(key);
         }
     }
 
+    @Override
     public void setParent(ActionMap map) {
         if (delegate != null) {
             delegate.setParent(map);
+            org.netbeans.modules.openide.windows.GlobalActionContextImpl.blickActionMap(new ActionMap());
         }
     }
 
+    @Override
     public void clear() {
         if (delegate != null) {
             delegate.clear();
         }
     }
 
+    @Override
     public void put(Object key, Action action) {
         if (delegate != null) {
             delegate.put(key, action);
         }
     }
 
+    @Override
     public ActionMap getParent() {
         return (delegate == null) ? null : delegate.getParent();
     }
 
+    @Override
     public String toString() {
         return super.toString() + " for " + this.getComponent();
     }
