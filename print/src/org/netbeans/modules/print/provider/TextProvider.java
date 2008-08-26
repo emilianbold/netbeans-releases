@@ -74,13 +74,13 @@ public final class TextProvider extends ComponentProvider {
 
   @Override
   protected JComponent getComponent() {
-    JTextComponent text = getTextComponent();
+    JTextComponent component = getTextComponent();
 
-    if (text == null) {
+    if (component == null) {
       return null;
     }
     if (Config.getDefault().isAsEditor()) {
-      return text;
+      return component;
     }
     Document document = myEditor.getDocument();
 
@@ -91,8 +91,8 @@ public final class TextProvider extends ComponentProvider {
     int end;
 
     if (Config.getDefault().isSelection()) {
-      start = text.getSelectionStart();
-      end = text.getSelectionEnd();
+      start = component.getSelectionStart();
+      end = component.getSelectionEnd();
     }
     else {
       start = 0;
@@ -107,7 +107,7 @@ public final class TextProvider extends ComponentProvider {
     }
     else {
       try {
-        return new ComponentDocument(text.getText(start, length));
+        return new ComponentDocument(component.getText(start, length));
       }
       catch (BadLocationException e) {
         return null;
