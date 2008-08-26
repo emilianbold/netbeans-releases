@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -236,13 +235,17 @@ public class SelectImpl extends CsmSelect {
 
     @Override
     public Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter) {
-        if (cls instanceof ClassImpl){
-            return ((ClassImpl)cls).getMembers(filter);
+        if (cls instanceof FilterableMembers){
+            return ((FilterableMembers)cls).getMembers(filter);
         }
         return cls.getMembers().iterator();
     }
 
     private static interface Filter extends CsmFilter, UIDFilter {
+    }
+    
+    public static interface FilterableMembers {
+        Iterator<CsmMember> getMembers(CsmFilter filter);
     }
     
     @SuppressWarnings("unchecked")
