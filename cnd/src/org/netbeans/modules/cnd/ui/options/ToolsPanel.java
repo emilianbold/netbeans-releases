@@ -161,6 +161,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
 
     private void initialize() {
+        if (instance == null) {
+            instance = this;
+        }
         changingCompilerSet = true;
         if (model == null) {
             model = new GlobalToolsPanelModel();
@@ -339,6 +342,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
         }
         CompilerSetManager.setDefaults(allCSMs);
+        copiedManagers.clear();
     }
 
     private void setSelectedAsDefault() {
@@ -650,6 +654,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     public void cancel() {
         serverUpdateCache = null;
         changed = false;
+        instance = null; // remove the global instance
     }
 
     public static ToolsPanel getToolsPanel() {
@@ -657,13 +662,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
 
     public synchronized CompilerSetManager getCompilerSetManagerCopy(String hKey) {
-        CompilerSetManager out = copiedManagers.get(hkey);
+        CompilerSetManager out = copiedManagers.get(hKey);
         if (out == null) {
             out = CompilerSetManager.getDefault(hKey).deepCopy();
             if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
                 out.remove(out.getCompilerSets().get(0));
             }
-            copiedManagers.put(hkey, out);
+            copiedManagers.put(hKey, out);
         }
         return out;
     }
@@ -747,8 +752,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             }
             if (!isRemoteHostSelected() && new File(tfBaseDirectory.getText()).exists()) {
                 updateToolsControls(true, true, false);
-            }
-            else {
+            } else {
                 updateToolsControls(false, isRemoteHostSelected(), false);
             }
 
@@ -1663,7 +1667,7 @@ private boolean selectCompiler(JTextField tf, Tool tool) {
 }
 
 private boolean selectTool(JTextField tf) {
-    String seed = tfBaseDirectory.getText();
+    String seed = tf.getText();
     FileChooser fileChooser = new FileChooser(getString("SELECT_TOOL_TITLE"), null, JFileChooser.FILES_ONLY, null, seed, false);
     int ret = fileChooser.showOpenDialog(this);
     if (ret == JFileChooser.CANCEL_OPTION) {

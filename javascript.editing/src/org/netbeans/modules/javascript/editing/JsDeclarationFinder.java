@@ -49,8 +49,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Node.StringNode;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Node.StringNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -318,8 +318,8 @@ public class JsDeclarationFinder implements DeclarationFinder {
         //   be easier: prune the result set down
         // If I have the fqn, I can also call RubyIndex.getRDocLocation to pick the
         // best candidate
-        if (callNode != null && (callNode.getType() == org.mozilla.javascript.Token.CALL ||
-                callNode.getType() == org.mozilla.javascript.Token.NEW)) {
+        if (callNode != null && (callNode.getType() == org.mozilla.nb.javascript.Token.CALL ||
+                callNode.getType() == org.mozilla.nb.javascript.Token.NEW)) {
             // It's a call, so prefer method/constructor elements
             String fqn = JsTypeAnalyzer.getCallFqn(info, callNode, true);
             if (fqn != null && fqn.length() > 0 && fqn.indexOf('.') != -1) {

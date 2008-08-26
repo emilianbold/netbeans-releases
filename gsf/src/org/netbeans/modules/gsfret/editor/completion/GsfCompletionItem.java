@@ -131,9 +131,26 @@ public abstract class GsfCompletionItem implements CompletionItem {
 
         @Override
         public boolean instantSubstitution(JTextComponent component) {
-//            ElementKind kind = item.getKind();
-//            return !(kind == ElementKind.CLASS || kind == ElementKind.MODULE);
-            return false;
+            ElementKind kind = item.getKind();
+            if (kind == ElementKind.PARAMETER || kind == ElementKind.CLASS || kind == ElementKind.MODULE) {
+                // These types of elements aren't ever instant substituted in Java - use same behavior here
+                return false;
+            }
+
+            if (component != null) {
+                try {
+                    int caretOffset = component.getSelectionEnd();
+                    if (caretOffset > substitutionOffset) {
+                        String text = component.getDocument().getText(substitutionOffset, caretOffset - substitutionOffset);
+                        if (!getInsertPrefix().toString().startsWith(text)) {
+                            return false;
+                        }
+                    }
+                }
+                catch (BadLocationException ble) {}
+            }
+            defaultAction(component);
+            return true;
         }
         
         public CharSequence getSortText() {

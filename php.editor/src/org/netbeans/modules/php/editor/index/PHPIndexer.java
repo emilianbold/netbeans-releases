@@ -212,7 +212,7 @@ public class PHPIndexer implements Indexer {
         // php runtime files. Go to the php.project/tools, modify and run
         // preindex.sh script. Also change the number of license in
         // php.project/external/preindexed-php-license.txt
-        return "0.4.9"; // NOI18N
+        return "0.5.0"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -298,8 +298,12 @@ public class PHPIndexer implements Indexer {
                         if (argExpression instanceof Scalar) {
                             Scalar scalar = (Scalar) argExpression;
                             String rawInclude = scalar.getStringValue();
-                            String incl = PHPIndex.resolveRelativeURL(processedFileAbsPath , PHPIndex.dequote(rawInclude));
-                            includes.append(incl + ";"); //NOI18N
+                            
+                            // check if the string is really quoted
+                            if (isQuotedString(rawInclude)) {
+                                String incl = PHPIndex.resolveRelativeURL(processedFileAbsPath, dequote(rawInclude));
+                                includes.append(incl + ";"); //NOI18N
+                            }
                         }
                     }
                     
@@ -474,12 +478,10 @@ public class PHPIndexer implements Indexer {
 
                             if (paramExpr instanceof Scalar) {
                                 String constName = ((Scalar) paramExpr).getStringValue();
-                                char firstChar = constName.charAt(0);
                                 
                                 // check if const name is really quoted
-                                if (firstChar == constName.charAt(constName.length() - 1) 
-                                        && firstChar == '\'' || firstChar == '\"') {
-                                    String defineVal = PHPIndex.dequote(constName);
+                                if (isQuotedString(constName)) {
+                                    String defineVal = dequote(constName);
                                     StringBuilder signature = new StringBuilder();
                                     signature.append(defineVal.toLowerCase());
                                     signature.append(';');
@@ -562,7 +564,7 @@ public class PHPIndexer implements Indexer {
                         String parts[] = tag.getValue().split("\\s+", 2); //NOI18N
 
                         if (parts.length > 0) {
-                            String type = parts[0];
+                            String type = parts[0].split("\\;", 2)[0];
                             return type;
                         }
 
@@ -573,6 +575,20 @@ public class PHPIndexer implements Indexer {
 
             return null;
         }
+    }
+    
+    static boolean isQuotedString(String txt) {
+        if (txt.length() < 2) {
+            return false;
+        }
+        
+        char firstChar = txt.charAt(0);
+        return firstChar == txt.charAt(txt.length() - 1) && firstChar == '\'' || firstChar == '\"';
+    }
+    
+    static String dequote(String string){
+        assert isQuotedString(string);
+        return string.substring(1, string.length() - 1);
     }
     
     public File getPreindexedData() {

@@ -22,10 +22,6 @@ config/Preferences/org/netbeans/modules/welcome.properties
 var/cache/index
 var/cache/index/0.11
 
-# issue 144348
-var/filehistory
-var/filehistory/storage
-
 # issue 144293
 build.properties
 config/org-netbeans-api-project-libraries

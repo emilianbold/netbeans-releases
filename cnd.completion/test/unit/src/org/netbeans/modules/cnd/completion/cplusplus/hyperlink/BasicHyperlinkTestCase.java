@@ -386,6 +386,52 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ144154.cc", 57, 52, "IZ144154.cc", 31, 5);
     }
 
+    public void testIZ144360() throws Exception {
+        // IZ#144360 : unable to resolve typedef-ed class member in loki
+        performTest("IZ144360.cc", 12, 22, "IZ144360.cc", 12, 9);
+        performTest("IZ144360.cc", 13, 9, "IZ144360.cc", 12, 9);
+        performTest("IZ144360.cc", 13, 15, "IZ144360.cc", 7, 9);
+    }
+
+    public void testIZ140795() throws Exception {
+        // IZ#140795 : Usage of enumerators of nested enums
+        // of the template specializations are unresolved
+        performTest("IZ140795.cc", 8, 30, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 9, 29, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 10, 30, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 11, 34, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 12, 36, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 13, 37, "IZ140795.cc", 4, 16);
+        performTest("IZ140795.cc", 14, 43, "IZ140795.cc", 4, 16);
+    }
+
+    public void testIZ140757() throws Exception {
+        // IZ#140757 : Template parameter in the definition of the static
+        // template class field is highlighted as an error
+        performTest("IZ140757.cc", 17, 12, "IZ140757.cc", 17, 5);
+        performTest("IZ140757.cc", 18, 29, "IZ140757.cc", 18, 5);
+        performTest("IZ140757.cc", 19, 29, "IZ140757.cc", 19, 5);
+        performTest("IZ140757.cc", 20, 36, "IZ140757.cc", 20, 5);
+        performTest("IZ140757.cc", 21, 12, "IZ140757.cc", 21, 5);
+        performTest("IZ140757.cc", 23, 27, "IZ140757.cc", 17, 5);
+        performTest("IZ140757.cc", 23, 30, "IZ140757.cc", 18, 5);
+        performTest("IZ140757.cc", 23, 33, "IZ140757.cc", 19, 5);
+        performTest("IZ140757.cc", 23, 36, "IZ140757.cc", 20, 5);
+        performTest("IZ140757.cc", 23, 39, "IZ140757.cc", 21, 5);
+        performTest("IZ140757.cc", 24, 22, "IZ140757.cc", 17, 5);
+        performTest("IZ140757.cc", 24, 25, "IZ140757.cc", 18, 5);
+        performTest("IZ140757.cc", 24, 28, "IZ140757.cc", 19, 5);
+        performTest("IZ140757.cc", 24, 31, "IZ140757.cc", 20, 5);
+        performTest("IZ140757.cc", 24, 34, "IZ140757.cc", 21, 5);
+    }
+
+    public void testIZ144363() throws Exception {
+        // IZ#144363 : typename in for-loop leads to unresolved identifier error
+        performTest("IZ144363.cc", 17, 48, "IZ144363.cc", 17, 13);
+        performTest("IZ144363.cc", 18, 15, "IZ144363.cc", 17, 13);
+        performTest("IZ144363.cc", 20, 43, "IZ144363.cc", 9, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

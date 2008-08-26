@@ -334,8 +334,9 @@ public class CsmBaseUtilities {
         }
         if (CsmKindUtilities.isClassForwardDeclaration(orig)){
             CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
-            if (fd.getCsmClass()!= null){
-                return fd.getCsmClass();
+            CsmClass csmClass = fd.getCsmClass();
+            if (csmClass != null){
+                return csmClass;
             }
         }
         CsmClassifier out = orig;

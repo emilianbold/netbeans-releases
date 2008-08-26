@@ -166,7 +166,7 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         }
         // if failed => ask declarations handler
         if (csmItem == null && declarationsProvider.isValidToken(jumpToken)) {
-            csmItem = declarationsProvider.findTargetObject(null, doc, jumpToken, offset);
+            csmItem = (CsmOffsetable) declarationsProvider.findTargetObject(doc, jumpToken, offset, true);
         }
         return csmItem;
     }

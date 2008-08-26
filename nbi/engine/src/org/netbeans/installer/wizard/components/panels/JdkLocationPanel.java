@@ -116,6 +116,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     
     @Override
     public void initialize() {
+        super.initialize();
+        
         minimumVersion = Version.getVersion(
                 getProperty(MINIMUM_JDK_VERSION_PROPERTY));
         maximumVersion = Version.getVersion(

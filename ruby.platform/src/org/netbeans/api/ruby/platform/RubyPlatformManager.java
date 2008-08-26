@@ -143,6 +143,11 @@ public final class RubyPlatformManager {
             }
         }
 
+        RubyPlatform defaultPlatform = findDefaultPlatform();
+        if (defaultPlatform != null) {
+            getPlatformsInternal().add(defaultPlatform);
+        }
+
         for (File ruby : rubies) {
             try {
                 if (getPlatformByFile(ruby) == null) {
@@ -154,7 +159,12 @@ public final class RubyPlatformManager {
             }
         }
         RubyPreferences.setFirstPlatformTouch(false);
-        
+    }
+
+    private static RubyPlatform findDefaultPlatform() {
+        String path = RubyInstallation.getInstance().getJRuby();
+        return path == null ? null
+                : new RubyPlatform(PLATFORM_ID_DEFAULT, path, Info.forDefaultPlatform());
     }
 
     private static void firePlatformsChanged() {
@@ -164,6 +174,7 @@ public final class RubyPlatformManager {
             // do nothing, vetoing not implemented yet
         }
     }
+    
     private static File findPlatform(final String dir, final String ruby) {
         File f = null;
         if (Utilities.isWindows()) {
@@ -194,7 +205,8 @@ public final class RubyPlatformManager {
         if (platforms == null) {
             platforms = new HashSet<RubyPlatform>();
 
-            // Test and preindexing hook
+            // Currently used by $NB_SRC/o.jruby/UPDATE.zsh preindexing hook.
+            // Also see o.jruby/INDICES.txt.
             String hardcodedRuby = System.getProperty("ruby.interpreter");
             if (hardcodedRuby != null) {
                 Info info = new Info("User-specified Ruby", "0.1"); // NOI18N
@@ -271,9 +283,9 @@ public final class RubyPlatformManager {
                 }
             }
             if (!foundDefault) {
-                String loc = RubyInstallation.getInstance().getJRuby();
-                if (loc != null) {
-                    platforms.add(new RubyPlatform(PLATFORM_ID_DEFAULT, loc, Info.forDefaultPlatform()));
+                RubyPlatform defaultPlatform = findDefaultPlatform();
+                if (defaultPlatform != null) {
+                    platforms.add(defaultPlatform);
                 }
             }
             RequestProcessor.getDefault().post(new Runnable() {
@@ -296,7 +308,9 @@ public final class RubyPlatformManager {
     /** Typically bundled JRuby. */
     public static RubyPlatform getDefaultPlatform() {
         RubyPlatform defaultPlatform = RubyPlatformManager.getPlatformByID(PLATFORM_ID_DEFAULT);
-        assert defaultPlatform != null : "Cannot find default platform";
+        if (defaultPlatform == null) {
+            LOGGER.fine("Default platform is not installed");
+        }
         return defaultPlatform;
     }
 

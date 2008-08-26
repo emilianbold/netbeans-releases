@@ -60,8 +60,6 @@
       <tocitem text="Accessing Local Files Through a Proxy" target="bypass.proxy" />
       <tocitem text="Changing the Default Web Browser" target="webbrowser.default" />
       <tocitem text="Configuring a Web Browser" target="webbrowser.config" />
-
-      <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
     </tocitem>
 
    </tocitem>
@@ -129,9 +127,6 @@
 
     <tocitem text="Configuring the IDE's Workspace">
       <tocitem text="Managing IDE Windows" target="workspace.window.managing"/>
-      <tocitem text="Customizing Menus in the IDE" target="configure.menucustomize" />
-      <tocitem text="Customizing the Display of Commands in a Menu" target="configure.menucommands" />
-      <tocitem text="Customizing the Contextual Menu for an Object" target="configure.menucontextual" />
       <tocitem text="Customizing Toolbars in the IDE" target="configure.tbcustomize" />
       <tocitem text="Customizing the Display of Commands in a Toolbar" target="configure.tbcommands" />
     </tocitem>

@@ -163,7 +163,10 @@ class DataViewUI extends JPanel {
 
     void setTotalCount(int count) {
         if(count < 0){
-            totalRowsLabel.setText(NbBundle.getMessage(DataViewUI.class, "LBL_not_available"));
+            int pageSize = dataView.getDataViewPageContext().getPageSize();
+            int totalRows = dataView.getDataViewPageContext().getCurrentRows().size();
+            String NA = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");
+            totalRowsLabel.setText(totalRows < pageSize ? totalRows + "" : NA);
         } else {
             totalRowsLabel.setText(count + " " + dataView.getDataViewPageContext().pageOf());
         }

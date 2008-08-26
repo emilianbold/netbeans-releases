@@ -63,6 +63,7 @@ public class CssAnalyser {
 
     private static final String UNKNOWN_PROPERTY = "unknown_property";
     private static final String INVALID_PROPERTY_VALUE = "invalid_property_value";
+    
     private CSSParserResult result;
 
     public CssAnalyser(CSSParserResult result) {
@@ -129,6 +130,6 @@ public class CssAnalyser {
     }
 
     public static boolean isVendorSpecificProperty(String propertyName) {
-        return propertyName.startsWith("_") || propertyName.startsWith("-");
+        return propertyName.startsWith("_") || propertyName.startsWith("-"); //NOI18N
     }
 }

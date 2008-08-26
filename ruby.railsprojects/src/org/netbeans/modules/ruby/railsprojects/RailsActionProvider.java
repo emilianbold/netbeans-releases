@@ -55,11 +55,9 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
@@ -135,9 +133,6 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     
     // Commands available from Ruby project
     private static final String[] supportedActions = {
-        COMMAND_BUILD, 
-        COMMAND_CLEAN, 
-        COMMAND_REBUILD,
         COMMAND_AUTOTEST,
         COMMAND_RDOC,
         COMMAND_RAILS_CONSOLE,
@@ -206,8 +201,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             return false;
         }
         
-        // 001_whatever.rb
-        return file.getName().matches("\\d\\d\\d_.*"); // NOI18N
+        return MigrateAction.getMigrationVersion(file.getName()) != null;
     }
     
     private FileObject getCurrentFile(Lookup context) {
@@ -358,7 +352,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             
             if (isMigrationFile(file)) {
                 String name = file.getName();
-                String version = Integer.toString(Integer.parseInt(name.substring(0, 3)));
+                Long version = MigrateAction.getMigrationVersion(name);
                 RakeRunner runner = new RakeRunner(project);
                 runner.setPWD(FileUtil.toFile(project.getProjectDirectory()));
                 runner.setFileLocator(new RailsFileLocator(context, project));
@@ -469,42 +463,6 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
 
             runServer(path, debugCommand || debugSingleCommand);
             return;
-        } else if (COMMAND_BUILD.equals(command)) {
-            if (!RubyPlatform.hasValidRake(project, true)) {
-                return;
-            }
-            
-            // Save all files first
-            LifecycleManager.getDefault().saveAll();
-
-            // TODO - use RakeSupport
-
-            RailsFileLocator fileLocator = new RailsFileLocator(context, project);
-            String displayName = NbBundle.getMessage(RailsActionProvider.class, "Rake");
-
-            ProjectInformation info = ProjectUtils.getInformation(project);
-            if (info != null) {
-                displayName = info.getDisplayName();
-            }
-            
-            File pwd = FileUtil.toFile(project.getProjectDirectory());
-
-            String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
-  
-            new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, RubyPlatform.gemManagerFor(project).getRake()).
-                    fileLocator(fileLocator).
-                    classPath(classPath).
-                    addStandardRecognizers().
-                    appendJdkToPath(RubyPlatform.platformFor(project).isJRuby()).
-                    addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
-                    project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
-                    ).
-                    run();
-            return;
-//        } else if (COMMAND_CLEAN.equals(command)) {
-//            executeTask(new File(RubyInstallation.getInstance().getRake()),
-//                        "Rake", "clean", context, null, null); // TODO - internationalize
-//            return;
         }
         
         if (COMMAND_RDOC.equals(command)) {
@@ -735,6 +693,9 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     
     
     public boolean isActionEnabled( String command, Lookup context ) {
+        if (getPlatform() == null) {
+            return false;
+        }
         // We don't require files to be in the source roots to be executable/debuggable;
         // for example, in Rails you may want to switch to the Files view and execute
         // some of the files in scripts/, even though these are not considered sources

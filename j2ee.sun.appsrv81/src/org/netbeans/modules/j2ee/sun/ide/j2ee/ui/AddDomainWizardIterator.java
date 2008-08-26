@@ -107,7 +107,9 @@ public class AddDomainWizardIterator implements
     final static String ADMIN_JMX_PORT = "admin_jmx_port";                      //NOI18N
     final static String SIP_PORT = "sip_port";                                  //NOI18N
     final static String SIP_SSL_PORT = "sip_ssl_port";                          //NOI18N
-    final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;        // NOI18N
+    final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;
+    final static String PROP_WARNING_MESSAGE = WizardDescriptor.PROP_WARNING_MESSAGE;
+    final static String PROP_INFO_MESSAGE = WizardDescriptor.PROP_INFO_MESSAGE;
     final static String TYPE = "type";                                          //NOI18N
     final static String PROP_DISPLAY_NAME = "ServInstWizard_displayName";       // NOI18N
 

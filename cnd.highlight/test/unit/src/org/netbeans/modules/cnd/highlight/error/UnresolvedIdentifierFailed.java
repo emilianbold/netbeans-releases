@@ -51,7 +51,7 @@ public class UnresolvedIdentifierFailed extends BaseTestSuite {
 
     public UnresolvedIdentifierFailed() {
         super("Error Highlighting Failed Code Model");
-	this.addTestSuite(UnresolvedIdentifierTestCase.Failed.class);
+	this.addTestSuite(UnresolvedIdentifierTest.Failed.class);
     }
 
     public static Test suite() {

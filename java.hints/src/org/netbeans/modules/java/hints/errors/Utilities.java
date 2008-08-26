@@ -376,4 +376,26 @@ public class Utilities {
         
         return to;
     }
+
+    /**
+     * Convert typemirror of an anonymous class to supertype/iface
+     * 
+     * @return typemirror of supertype/iface, initial tm if not anonymous
+     */
+    public static TypeMirror convertIfAnonymous(TypeMirror tm) {
+        //anonymous class?
+        Set<ElementKind> fm = EnumSet.of(ElementKind.METHOD, ElementKind.FIELD);
+        if (tm instanceof DeclaredType) {
+            Element el = ((DeclaredType) tm).asElement();
+            if (el.getSimpleName().length() == 0 || fm.contains(el.getEnclosingElement().getKind())) {
+                List<? extends TypeMirror> interfaces = ((TypeElement) el).getInterfaces();
+                if (interfaces.isEmpty()) {
+                    tm = ((TypeElement) el).getSuperclass();
+                } else {
+                    tm = interfaces.get(0);
+                }
+            }
+        }
+        return tm;
+    }
 }

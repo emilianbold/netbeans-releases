@@ -288,7 +288,7 @@ public class CLIOptions extends CLIHandler {
             if (_homeDir != null) {
                 File homeDirF = FileUtil.normalizeFile(new File(_homeDir));
                 if ((userDirF.getAbsolutePath() + File.separatorChar).startsWith(homeDirF.getParentFile().getAbsolutePath() + File.separatorChar)) {
-                    System.err.println(NbBundle.getMessage(CLIOptions.class, "ERR_user_directory_is_inside_home"));
+                    System.err.println(NbBundle.getMessage(CLIOptions.class, "ERR_user_dir_is_inside_home", userDirF, homeDirF.getParentFile()));
                     TopLogging.exit(1);
                 }
             }

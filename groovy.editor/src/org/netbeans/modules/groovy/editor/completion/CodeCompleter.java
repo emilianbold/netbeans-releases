@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.groovy.editor.completion;
 
+import javax.lang.model.element.ElementKind;
 import org.netbeans.modules.groovy.editor.*;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
@@ -313,14 +314,14 @@ public class CodeCompleter implements CodeCompletionHandler {
         if (active != null) {
             if ((active.id() == GroovyTokenId.WHITESPACE && difference == 0) ||
                 active.id().primaryCategory().equals("separator")) {
-                LOG.log(Level.FINEST, "ts.movePrevious()");
+                LOG.log(Level.FINEST, "ts.movePrevious() - 1");
                 ts.movePrevious();
             } else if (active.id() == GroovyTokenId.NLS ) {
                 ts.movePrevious();
                 if(((Token<? extends GroovyTokenId>) ts.token()).id() == GroovyTokenId.DOT) {
                     ts.moveNext();
                 } else {
-                    LOG.log(Level.FINEST, "ts.movePrevious()");
+                    LOG.log(Level.FINEST, "ts.movePrevious() - 2");
                 }
                
             }
@@ -360,6 +361,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                 break;
             } else if (t.id().primaryCategory().equals("keyword")) {
                 beforeLiteral = t;
+                break;
             }
         }
 
@@ -374,6 +376,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                 break;
             } else if (t.id().primaryCategory().equals("keyword")) {
                 afterLiteral = t;
+                break;
             }
         }
 
@@ -1026,7 +1029,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                 }
             
             if (field.getName().startsWith(fieldName)) {
-                proposals.add(new FieldItem(field.getName(), anchor + anchorShift, request, javax.lang.model.element.ElementKind.FIELD, fieldTypeAsString));
+                proposals.add(new FieldItem(field.getName(), anchor + anchorShift, request, ElementKind.FIELD, fieldTypeAsString));
             }
 
         }
@@ -1249,7 +1252,19 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
     }
-
+    
+    void addIfNotInTypeHolderList(List<TypeHolder> result, TypeHolder newEntry) {
+            
+            for (TypeHolder typeHolder : result) {
+                if(typeHolder.getName().equals(newEntry.getName())){
+                    return;
+                }
+            }
+                
+            LOG.log(Level.FINEST, "Adding Name to list : {0}", newEntry.getName()); // NOI18N
+            result.add(newEntry);
+                
+    }
 
     // this was: Utilities.nextName()
     private static String camelCaseHunch(CharSequence name) {
@@ -1618,6 +1633,16 @@ public class CodeCompleter implements CodeCompletionHandler {
             return false;
         }
 
+        // are we dealing with a class xyz implements | { 
+        // kind of completion?
+        
+        boolean onlyInterfaces = false;
+        
+        if (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) {
+            LOG.log(Level.FINEST, "Completing only interfaces after implements keyword.");
+            onlyInterfaces = true;
+        }
+        
         // get the JavaSource for our file.
 
         final JavaSource javaSource = getJavaSourceFromRequest(request);
@@ -1626,8 +1651,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         if (packageRequest.basePackage.length() > 0 || request.behindImport) {
             if (!(request.behindImport && packageRequest.basePackage.length() == 0)) {
-                List<String> stringTypelist;
-                stringTypelist = getElementListForPackageAsString(javaSource, packageRequest.basePackage);
+                List<TypeHolder> stringTypelist;
+                stringTypelist = getElementListForPackageAsTypeHolder(javaSource, packageRequest.basePackage);
 
                 if (stringTypelist == null) {
                     LOG.log(Level.FINEST, "Typelist is null for package : {0}", packageRequest.basePackage);
@@ -1636,8 +1661,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 
                 LOG.log(Level.FINEST, "Number of types found:  {0}", stringTypelist.size());
 
-                for (String elementString : stringTypelist) {
-                    addToProposalUsingFilter(proposals, request, elementString);
+                for (TypeHolder singleType : stringTypelist) {
+                    addToProposalUsingFilter(proposals, request, singleType, onlyInterfaces);
                 }
             }
 
@@ -1679,18 +1704,27 @@ public class CodeCompleter implements CodeCompletionHandler {
                 } else {
                     LOG.log(Level.FINEST, "Found this number of classes : {0} ", classes.size());
                     
-                    List<String> typelist = new ArrayList<String>();
+                    List<TypeHolder> typelist = new ArrayList<TypeHolder>();
                     
                     for (IndexedClass indexedClass : classes) {
                         LOG.log(Level.FINEST, "FQN classname from index : {0} ", indexedClass.getName());
                         
                         // remove duplicates
-                        addIfNotIn(typelist, indexedClass.getName());
+                        
+                        ElementKind ek;
+                        
+                        if(indexedClass.getKind() == org.netbeans.modules.gsf.api.ElementKind.CLASS){
+                            ek = ElementKind.CLASS;
+                        } else {
+                            ek = ElementKind.INTERFACE;
+                        }
+                        
+                        addIfNotInTypeHolderList(typelist, new TypeHolder(indexedClass.getName(), ek));
                     }
                     
-                    for (String type : typelist) {
+                    for (TypeHolder type : typelist) {
                         // now finally add to proposals
-                        addToProposalUsingFilter(proposals, request, type);
+                        addToProposalUsingFilter(proposals, request, type, onlyInterfaces);
                     }
                         
                 }
@@ -1710,7 +1744,17 @@ public class CodeCompleter implements CodeCompletionHandler {
             if (imports != null) {
                 for (ImportNode importNode : imports) {
                     LOG.log(Level.FINEST, "From getImports() : {0} ", importNode.getClassName());
-                    addToProposalUsingFilter(proposals, request, importNode.getClassName());
+                    
+                    ElementKind ek;
+
+                    if (importNode.getClass().isInterface()) {
+                        ek = ElementKind.INTERFACE;
+                    } else {
+                        ek = ElementKind.CLASS;
+                    }
+                    
+                    
+                    addToProposalUsingFilter(proposals, request, new TypeHolder(importNode.getClassName(), ek), onlyInterfaces);
                 }
             }
 
@@ -1740,34 +1784,27 @@ public class CodeCompleter implements CodeCompletionHandler {
         // prefix
 
         for (String singlePackage : defaultImports) {
-            List<String> stringTypelist;
+            List<TypeHolder> typeList;
 
-            stringTypelist = getElementListForPackageAsString(javaSource, singlePackage);
+            typeList = getElementListForPackageAsTypeHolder(javaSource, singlePackage);
 
-            if (stringTypelist == null) {
+            if (typeList == null) {
                 LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
                 continue;
             }
 
-            LOG.log(Level.FINEST, "Number of types found:  {0}", stringTypelist.size());
+            LOG.log(Level.FINEST, "Number of types found:  {0}", typeList.size());
 
-            for (String elementString : stringTypelist) {
+            for (TypeHolder element : typeList) {
                 // LOG.log(Level.FINEST, "Single Type : {0}", element.toString());
-                addToProposalUsingFilter(proposals, request, elementString);
+                addToProposalUsingFilter(proposals, request, element, onlyInterfaces);
             }
         }
 
         // Adding two single classes per hand
 
-        List<String> mathPack = new ArrayList<String>();
-
-        mathPack.add("java.math.BigDecimal");
-        mathPack.add("java.math.BigInteger");
-
-        for (String type : mathPack) {
-            addToProposalUsingFilter(proposals, request, type);
-        }
-
+        addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigDecimal", ElementKind.CLASS), onlyInterfaces);
+        addToProposalUsingFilter(proposals, request, new TypeHolder("java.math.BigInteger", ElementKind.CLASS), onlyInterfaces);
 
         return true;
     }
@@ -1780,14 +1817,20 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param request
      * @param fqn
      */
-    void addToProposalUsingFilter(List<CompletionProposal> proposals, CompletionRequest request, String fqn) {
+    void addToProposalUsingFilter(List<CompletionProposal> proposals, CompletionRequest request, TypeHolder type, boolean onlyInterfaces) {
 
-        String typeName = NbUtilities.stripPackage(fqn);
+        if((onlyInterfaces == true ) && (type.getKind() != ElementKind.INTERFACE)) {
+            return;
+        }
+        
+        String typeName = NbUtilities.stripPackage(type.getName());
 
         if (typeName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
-            LOG.log(Level.FINEST, "Filter, Adding Type : {0}", fqn);
-            proposals.add(new TypeItem(typeName, anchor, request, javax.lang.model.element.ElementKind.CLASS));
+            // LOG.log(Level.FINEST, "Filter, Adding Type : {0}", type.getName());
+            proposals.add(new TypeItem(typeName, anchor, request, type.getKind()));
         }
+        
+        
         return;
     }
 
@@ -1820,10 +1863,32 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
     
     
-    List<String> getElementListForPackageAsString(final JavaSource javaSource, final String pkg) {
+    class TypeHolder {
+        String name;
+        ElementKind kind;
+
+        public TypeHolder(String name, ElementKind kind) {
+            this.name = name;
+            this.kind = kind;
+        }
+
+        public ElementKind getKind() {
+            return kind;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        
+    }
+    
+    
+    
+    List<TypeHolder> getElementListForPackageAsTypeHolder(final JavaSource javaSource, final String pkg) {
         LOG.log(Level.FINEST, "getElementListForPackageAsString(), Package :  {0}", pkg);
         
-        final List<String> result = new ArrayList<String>();
+        final List<TypeHolder> result = new ArrayList<TypeHolder>();
 
         if (javaSource != null) {
             
@@ -1845,7 +1910,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                                 typelist = packageElement.getEnclosedElements();
                                 
                                 for (Element element : typelist) {
-                                    result.add(element.toString());
+                                    result.add(new TypeHolder(element.toString(), element.getKind()));
                                 }
                             }
 
@@ -1878,7 +1943,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
 
                 for (Element encl : enclosed) {
-                    if (encl.getKind() == javax.lang.model.element.ElementKind.METHOD) {
+                    if (encl.getKind() == ElementKind.METHOD) {
                         LOG.log(Level.FINEST, "Found this method on type :  {0}", encl.getSimpleName());
                         methodlist.add(encl);
                     }
@@ -2175,7 +2240,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
                                 for (Element element : typelist) {
                                     // only look for classes rather than enums or interfaces
-                                    if (element.getKind() == javax.lang.model.element.ElementKind.CLASS) {
+                                    if (element.getKind() == ElementKind.CLASS) {
                                         javax.lang.model.element.TypeElement te = (javax.lang.model.element.TypeElement) element;
 
                                         List<? extends javax.lang.model.element.Element> enclosed = te.getEnclosedElements();
@@ -2186,7 +2251,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                                         String constructorName = te.getSimpleName().toString();
 
                                         for (Element encl : enclosed) {
-                                            if (encl.getKind() == javax.lang.model.element.ElementKind.CONSTRUCTOR) {
+                                            if (encl.getKind() == ElementKind.CONSTRUCTOR) {
 
                                                 if (constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
 

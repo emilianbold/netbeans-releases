@@ -102,12 +102,14 @@ public class SVGFormCD extends ComponentDescriptor {
     public static final String PROP_RESET_ANIMATION_WHEN_STOPPED = "resetAnimationWhenStopped"; //NOI18N
 
     public static final String PROP_OLD_START_ANIM_IMMEDIATELY = "startAnimationImmideately"; //NOI18N
+    public static final String PROP_COMPONENTS = "components"; //NOI18N
     
-     private static final Comparator NAME_COMPERATOR = new EventComperator();
+    private static final Comparator NAME_COMPERATOR = new EventComperator();
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
+    
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(CanvasCD.TYPEID, TYPEID, true, true);
@@ -129,7 +131,8 @@ public class SVGFormCD extends ComponentDescriptor {
                 new PropertyDescriptor(PROP_SVG_IMAGE, SVGImageCD.TYPEID, PropertyValue.createNull(), true, true, Versionable.FOREVER),
                 new PropertyDescriptor(PROP_START_ANIM_IMMEDIATELY, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), false, true, Versionable.FOREVER),
                 new PropertyDescriptor(PROP_TIME_INCREMENT, MidpTypes.TYPEID_FLOAT, MidpTypes.createFloatValue(0.1f), false, true, Versionable.FOREVER),
-                new PropertyDescriptor(PROP_RESET_ANIMATION_WHEN_STOPPED, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), false, true, Versionable.FOREVER)
+                new PropertyDescriptor(PROP_RESET_ANIMATION_WHEN_STOPPED, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), false, true, Versionable.FOREVER),
+                new PropertyDescriptor(PROP_COMPONENTS, SVGComponentCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(SVGComponentCD.TYPEID), true, true, MidpVersionable.MIDP)
                 );
     }
     @Override
@@ -164,14 +167,13 @@ public class SVGFormCD extends ComponentDescriptor {
                 .addSetters(MidpSetter.createSetter("setResetAnimationWhenStopped", MidpVersionable.MIDP_2).addParameters(PROP_RESET_ANIMATION_WHEN_STOPPED)); //NOI18N
     }
     
-    
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // properties
-                createPropertiesPresenter (),
+                createPropertiesPresenter(),
                 //accept
-                new SVGFileAcceptPresenter (),
-                new MidpAcceptProducerKindPresenter ().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
+                new SVGFileAcceptPresenter(),
+                new MidpAcceptProducerKindPresenter().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
                 new SVGImageAcceptTrensferableKindPresenter().addType(SVGImageCD.TYPEID, PROP_SVG_IMAGE),
                 // code
                 MidpCodePresenterSupport.createAddImportPresenter(),
@@ -182,8 +184,6 @@ public class SVGFormCD extends ComponentDescriptor {
                 },
                 createSetterPresenter(),
                 new SVGFormPresenterCodeClassInitHeaderFooterPresenter(),
-                // delete
-                DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SVG_IMAGE),
                 // screen
                 new SVGPlayerDisplayPresenter (false),
                 //actions
@@ -191,8 +191,25 @@ public class SVGFormCD extends ComponentDescriptor {
                 //other
                 new SVGFormFileChangePresneter(),
                 //flow
-                new SVGButtonEventSourceOrder()        
-                );
+                new SVGButtonEventSourceOrder(),   
+                //delete
+                new DeleteDependencyPresenter() {
+                    @Override
+                    protected boolean requiresToLive(Collection<DesignComponent> componentsToDelete) {
+                        return false;
+                    }
+
+                    @Override
+                    protected void componentsDeleting(Collection<DesignComponent> componentsToDelete) {
+                        DesignComponent svgImage = getComponent().readProperty(PROP_SVG_IMAGE).getComponent();
+                        if (svgImage == null || !componentsToDelete.contains(svgImage)) {
+                            return;
+                        }   
+                        SVGFormSupport.removeAllSVGFormComponents(getComponent());
+                        getComponent().resetToDefault(PROP_SVG_IMAGE);
+                    }
+                } 
+             );
     }
     
     private class SVGFormPresenterCodeClassInitHeaderFooterPresenter extends CodeClassInitHeaderFooterPresenter {
@@ -204,28 +221,28 @@ public class SVGFormCD extends ComponentDescriptor {
 
         @Override
         public void generateClassInitializationFooter(MultiGuardedSection section) {
-            Collection<DesignComponent> components = getComponent().getComponents();
-            for (DesignComponent component : components) {
-                if (component.getType() == SVGButtonCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGCheckBoxCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGComboBoxCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGLabelCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGListCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGSpinnerCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGListCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGRadioButtonCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGTextFieldCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGSliderCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
+            Collection<PropertyValue> components = getComponent().readProperty(PROP_COMPONENTS).getArray();
+            for (PropertyValue value : components) {
+                if (value.getType() == SVGButtonCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGCheckBoxCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGComboBoxCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGLabelCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGListCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGSpinnerCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGListCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGRadioButtonCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGTextFieldCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGSliderCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
                 }
             }
         }
@@ -237,10 +254,9 @@ public class SVGFormCD extends ComponentDescriptor {
 
     }
     
-    class SVGButtonEventSourceOrder extends FlowPinOrderPresenter {
+    final class SVGButtonEventSourceOrder extends FlowPinOrderPresenter {
         
         static final String CATEGORY_ID = "SVGButton"; //NOI18N
-        
         
         @Override
         public String getCategoryID() {
@@ -249,7 +265,7 @@ public class SVGFormCD extends ComponentDescriptor {
 
         @Override
         public String getCategoryDisplayName() {
-            return null; 
+            return NbBundle.getMessage (SVGFormCD.class, "DISP_FlowCategory_SVGButtons"); // NOI18N; 
         }
 
         @Override
@@ -272,7 +288,12 @@ public class SVGFormCD extends ComponentDescriptor {
         public int compare(FlowPinDescriptor d1, FlowPinDescriptor d2) {
             String name1 = InfoPresenter.getDisplayName(d1.getRepresentedComponent());
             String name2 = InfoPresenter.getDisplayName(d2.getRepresentedComponent());
-            
+            if (name1 == null) {
+                name1 = ""; //NOI18N
+            }
+            if (name2 == null) {
+                name2 =""; //NOI18N
+            }
             return name1.compareTo(name2);
         }
    

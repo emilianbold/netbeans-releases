@@ -99,14 +99,14 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testRenamedTemplateParameters() throws Exception {
         // IZ 138903 : incorrect parsing of template function
-        performTest("templateParameters.h", 89, 18, "templateParameters.h", 82, 1); 
-        performTest("templateParameters.h", 89, 23, "templateParameters.h", 83, 1); 
-        performTest("templateParameters.h", 89, 39, "templateParameters.h", 84, 1); 
-        performTest("templateParameters.h", 89, 43, "templateParameters.h", 85, 1); 
-        performTest("templateParameters.h", 89, 47, "templateParameters.h", 86, 1); 
-        performTest("templateParameters.h", 90, 6, "templateParameters.h", 82, 1); 
+        performTest("templateParameters.h", 89, 18, "templateParameters.h", 82, 1);
+        performTest("templateParameters.h", 89, 23, "templateParameters.h", 83, 1);
+        performTest("templateParameters.h", 89, 39, "templateParameters.h", 84, 1);
+        performTest("templateParameters.h", 89, 43, "templateParameters.h", 85, 1);
+        performTest("templateParameters.h", 89, 47, "templateParameters.h", 86, 1);
+        performTest("templateParameters.h", 90, 6, "templateParameters.h", 82, 1);
     }
-    
+
     public void testSameName() throws Exception {
         performTest("main.cc", 53, 10, "main.cc", 51, 1); //sameValue(  in sameValue(sameValue - 1);
         performTest("main.cc", 53, 20, "main.cc", 51, 16); //sameValue-1  in sameValue(sameValue - 1);
@@ -458,18 +458,49 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#141105 Code model can not resolve type for vector[i]
         performTest("IZ141105_std_vector.cc", 20, 11, "IZ141105_std_vector.cc", 3, 5);
     }
-    
+
     public void testTemplateParameterPriority() throws Exception {
         // IZ#144050 : inner type should have priority over global one
-        performTest("templateParameters.h", 96, 5, "templateParameters.h", 95, 11); 
+        performTest("templateParameters.h", 96, 5, "templateParameters.h", 95, 11);
     }
 
     public void testInnerTypePriority() throws Exception {
         // IZ#144050 : inner type should have priority over global one
-        performTest("IZ144050.cc", 8, 43, "IZ144050.cc", 8, 5); 
-        performTest("IZ144050.cc", 12, 24, "IZ144050.cc", 8, 5); 
+        performTest("IZ144050.cc", 8, 43, "IZ144050.cc", 8, 5);
+        performTest("IZ144050.cc", 12, 24, "IZ144050.cc", 8, 5);
     }
 
+    public void testIZ144062() throws Exception {
+        // IZ#144062 : inner class members are not resolved
+        performTest("IZ144062.cc", 3, 13, "IZ144062.cc", 3, 5);
+        performTest("IZ144062.cc", 4, 14, "IZ144062.cc", 4, 9);
+        performTest("IZ144062.cc", 5, 20, "IZ144062.cc", 5, 9);
+        performTest("IZ144062.cc", 6, 20, "IZ144062.cc", 6, 9);
+        performTest("IZ144062.cc", 8, 17, "IZ144062.cc", 8, 13);
+        performTest("IZ144062.cc", 9, 18, "IZ144062.cc", 9, 13);
+        performTest("IZ144062.cc", 10, 11, "IZ144062.cc", 10, 11);
+        performTest("IZ144062.cc", 11, 15, "IZ144062.cc", 11, 9);
+        performTest("IZ144062.cc", 11, 22, "IZ144062.cc", 11, 18);
+        performTest("IZ144062.cc", 12, 17, "IZ144062.cc", 12, 13);
+        performTest("IZ144062.cc", 12, 21, "IZ144062.cc", 11, 18);
+        performTest("IZ144062.cc", 14, 8, "IZ144062.cc", 14, 7);
+        performTest("IZ144062.cc", 15, 16, "IZ144062.cc", 15, 5);
+        performTest("IZ144062.cc", 15, 18, "IZ144062.cc", 15, 18);
+    }
+
+    public void testIZ144679() throws Exception {
+        // IZ#144679 : IDE highlights static constants in class as wrong code
+        performTest("IZ144679.cc", 11, 21, "IZ144679.cc", 10, 1);
+        performTest("IZ144679.cc", 12, 22, "IZ144679.cc", 11, 1);
+    }
+
+    public void testIZ145077() throws Exception {
+        // IZ#145077: Internal C++ compiler cannot resolve inner classes
+        performTest("iz145077.cc", 128, 17, "iz145077.cc", 47, 9);
+        performTest("iz145077.cc", 43, 50, "iz145077.cc", 33, 9);
+        performTest("iz145077.cc", 44, 60, "iz145077.cc", 112, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

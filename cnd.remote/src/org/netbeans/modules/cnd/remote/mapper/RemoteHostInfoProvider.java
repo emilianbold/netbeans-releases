@@ -40,13 +40,16 @@ package org.netbeans.modules.cnd.remote.mapper;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.server.RemoteServerSetup;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 
 /**
  *
  * @author gordonp
+ * @author Sergey Grinev
  */
 public class RemoteHostInfoProvider extends HostInfoProvider {
 
@@ -54,11 +57,10 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
 
         private final String hkey;
         private String home = null;
-        
         private PathMap mapper;
         private Map<String, String> envCache = null;
-
         private Boolean isCshShell;
+        private Integer platform;
 
         private RemoteHostInfo(String hkey) {
             this.hkey = hkey;
@@ -100,15 +102,42 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
         }
 
         public boolean isCshShell() {
-            if (isCshShell == null ) {
+            if (isCshShell == null) {
                 //N.B.: this is only place where RemoteCommandSupport should take PATH= !!
                 RemoteCommandSupport support = new RemoteCommandSupport(hkey, "PATH=/bin:/usr/bin export"); // NOI18N
                 support.setPreserveCommand(true); // to avoid endless loop
-                isCshShell = new Boolean(support.run() != 0 );
+                isCshShell = new Boolean(support.run() != 0);
             }
             return isCshShell.booleanValue();
         }
 
+        public int getPlatform() {
+            if (platform == null) {
+                RemoteCommandSupport support = new RemoteCommandSupport(hkey, "uname -s"); //NOI18N
+                int result;
+                if (support.run() == 0) {
+                    result = recognizePlatform(support.toString());
+                } else {
+                    result = PlatformTypes.PLATFORM_GENERIC;
+                }
+                platform = new Integer(result);
+            }
+            return platform.intValue();
+        }
+
+        private static int recognizePlatform(String platform) {
+            if (platform.startsWith("Windows")) { // NOI18N
+                return PlatformTypes.PLATFORM_WINDOWS;
+            } else if (platform.startsWith("Linux")) { // NOI18N
+                return PlatformTypes.PLATFORM_LINUX;
+            } else if (platform.startsWith("SunOS")) { // NOI18N
+                return platform.contains("86") ? PlatformTypes.PLATFORM_SOLARIS_INTEL : PlatformTypes.PLATFORM_SOLARIS_SPARC; // NOI18N
+            } else if (platform.toLowerCase().startsWith("mac")) { // NOI18N
+                return PlatformTypes.PLATFORM_MACOSX;
+            } else {
+                return PlatformTypes.PLATFORM_GENERIC;
+            }
+        }
     }
     private final static Map<String, RemoteHostInfo> hkey2hostInfo = new HashMap<String, RemoteHostInfo>();
 
@@ -127,8 +156,17 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
     }
 
     @Override
-    public  Map<String, String> getEnv(String hkey) {
+    public Map<String, String> getEnv(String hkey) {
         return getHostInfo(hkey).getEnv();
+    }
+
+    @Override
+    public String getLibDir(String key) {
+        String home = getHostInfo(key).getHome();
+        if (home == null) {
+            return null;
+        }
+        return home + "/" + RemoteServerSetup.REMOTE_LIB_DIR;
     }
 
     @Override
@@ -136,5 +174,10 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
         RemoteCommandSupport support = new RemoteCommandSupport(key,
                 "/usr/bin/test -d \"" + path + "\" -o -f \"" + path + "\""); // NOI18N
         return support.run() == 0;
+    }
+
+    @Override
+    public int getPlatform(String hkey) {
+        return getHostInfo(hkey).getPlatform();
     }
 }

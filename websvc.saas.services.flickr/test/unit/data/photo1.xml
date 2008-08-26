@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <photo id="1253576" secret="81b96be690" server="1" farm="1"
+	page="1" pages="3" perpage="10" total="27">
+        <person nsid="33939862@N00" username="Dementation" favedate="1166689690"/>
+        <person nsid="49485425@N00" username="indigenous_prodigy" favedate="1166573724"/>
+        <person nsid="46834205@N00" username="smaaz" favedate="1161874052"/>
+        <person nsid="95626108@N00" username="chrome Foxpuppy" favedate="1160528154"/>
+        <person nsid="44991966@N00" username="getnoid" favedate="1159828789"/>
+        <person nsid="92544710@N00" username="miss_rogue" favedate="1158034266"/>
+        <person nsid="50944224@N00" username="Infollatus" favedate="1155317436"/>
+        <person nsid="80544408@N00" username="DafyddLlyr" favedate="1148511763"/>
+        <person nsid="31154299@N00" username="c r i s" favedate="1143085224"/>
+        <person nsid="54309070@N00" username="Shinayaker" favedate="1142584219"/>
+    </photo>
+</rsp>

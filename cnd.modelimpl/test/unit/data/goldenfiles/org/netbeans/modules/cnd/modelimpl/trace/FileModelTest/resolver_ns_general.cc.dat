@@ -13,15 +13,15 @@ Macros:
     <no macros>
 NAMESPACE DEFINITOIN rng [1:1/0-36:2/675] SCOPE: resolver_ns_general.cc
     NAMESPACE DEFINITOIN A [3:5/21-6:6/71] SCOPE: resolver_ns_general.cc
-        STRUCT AA (rng::A::AA ) [4:9/43-5:11/65] lcurly=53 SCOPE: A 
+        STRUCT AA (rng::A::AA ) [4:9/43-5:10/64] lcurly=53 SCOPE: A 
             BASE CLASSES:
             MEMBERS:
     NAMESPACE DEFINITOIN C [7:5/76-20:6/344] SCOPE: resolver_ns_general.cc
         VARIABLE c [8:9/98-8:32/121]  TYPE: const int TEXT=const int  [8:9/98-8:25/114]  INIT: text='5'  SCOPE: C 
-        STRUCT CC (rng::C::CC ) [9:9/130-18:11/337] lcurly=140 SCOPE: C 
+        STRUCT CC (rng::C::CC ) [9:9/130-18:10/336] lcurly=140 SCOPE: C 
             BASE CLASSES:
             MEMBERS:
-                CLASS CCC (rng::C::CC::CCC ) [11:13/155-15:15/279] lcurly=165 SCOPE: CC 
+                CLASS CCC (rng::C::CC::CCC ) [11:13/155-15:14/278] lcurly=165 SCOPE: CC 
                     BASE CLASSES:
                     MEMBERS:
                         FIELD PRIVATE a [12:17/183-12:23/189]  TYPE: int TEXT=int  [12:17/183-12:20/186]  INIT: null  SCOPE: CCC 
@@ -42,14 +42,14 @@ NAMESPACE DEFINITOIN rng [1:1/0-36:2/675] SCOPE: resolver_ns_general.cc
     ALIAS B null  [22:5/350-22:20/365] SCOPE: null
     USING NAMESPACE. A  [24:5/394-24:22/411]; REF NS: null SCOPE: null
     USING DECL. C::CC  [25:5/437-25:16/448]; REF DECL: null  SCOPE: rng 
-    CLASS ZZ (rng::ZZ ) [27:5/483-31:7/639] lcurly=492 SCOPE: rng 
+    CLASS ZZ (rng::ZZ ) [27:5/483-31:6/638] lcurly=492 SCOPE: rng 
         BASE CLASSES:
         MEMBERS:
             FIELD PRIVATE a [28:9/502-28:14/507]  TYPE: rng::A::AA TEXT=AA  [28:9/502-28:11/504]  INIT: null  SCOPE: ZZ 
             FIELD PRIVATE b [29:9/548-29:17/556]  TYPE: $unresolved$::B::AA TEXT=B::AA  [29:9/548-29:14/553]  INIT: null  SCOPE: ZZ 
             FIELD PRIVATE c [30:9/595-30:14/600]  TYPE: $unresolved$::CC TEXT=CC  [30:9/595-30:11/597]  INIT: null  SCOPE: ZZ 
     VARIABLE z [33:5/645-33:10/650]  TYPE: rng::ZZ TEXT=ZZ  [33:5/645-33:7/647]  INIT: null  SCOPE: rng 
-    USING DECL. rng::C::CC  [35:5/656-35:21/672]; REF DECL: rng::C::CC  [9:9/130-18:11/337] SCOPE: rng 
+    USING DECL. rng::C::CC  [35:5/656-35:21/672]; REF DECL: rng::C::CC  [9:9/130-18:10/336] SCOPE: rng 
 NAMESPACE DEFINITOIN rng [39:1/678-49:2/831] SCOPE: resolver_ns_general.cc
     FUNCTION DEFINITION foo  [40:5/698-43:6/756] FunctionDefinitionImpl SCOPE: resolver_ns_general.cc
         SIGNATURE foo()
@@ -79,27 +79,27 @@ NAMESPACE DEFINITIONS for rng (rng)
 NAMESPACE rng (rng) 
     USING NAMESPACE. A  [24:5/394-24:22/411]; REF NS: null SCOPE: null
     USING DECL. C::CC  [25:5/437-25:16/448]; REF DECL: null  SCOPE: rng 
-    CLASS ZZ (rng::ZZ ) [27:5/483-31:7/639] lcurly=492 SCOPE: rng 
+    CLASS ZZ (rng::ZZ ) [27:5/483-31:6/638] lcurly=492 SCOPE: rng 
         BASE CLASSES:
         MEMBERS:
             FIELD PRIVATE a [28:9/502-28:14/507]  TYPE: rng::A::AA TEXT=AA  [28:9/502-28:11/504]  INIT: null  SCOPE: ZZ 
             FIELD PRIVATE b [29:9/548-29:17/556]  TYPE: $unresolved$::B::AA TEXT=B::AA  [29:9/548-29:14/553]  INIT: null  SCOPE: ZZ 
             FIELD PRIVATE c [30:9/595-30:14/600]  TYPE: $unresolved$::CC TEXT=CC  [30:9/595-30:11/597]  INIT: null  SCOPE: ZZ 
     VARIABLE z [33:5/645-33:10/650]  TYPE: rng::ZZ TEXT=ZZ  [33:5/645-33:7/647]  INIT: null  SCOPE: rng 
-    USING DECL. rng::C::CC  [35:5/656-35:21/672]; REF DECL: rng::C::CC  [9:9/130-18:11/337] SCOPE: rng 
+    USING DECL. rng::C::CC  [35:5/656-35:21/672]; REF DECL: rng::C::CC  [9:9/130-18:10/336] SCOPE: rng 
     NAMESPACE DEFINITIONS for A (rng::A) 
         resolver_ns_general.cc  [3:5/21-6:6/71]
     NAMESPACE A (rng::A) 
-        STRUCT AA (rng::A::AA ) [4:9/43-5:11/65] lcurly=53 SCOPE: A 
+        STRUCT AA (rng::A::AA ) [4:9/43-5:10/64] lcurly=53 SCOPE: A 
             BASE CLASSES:
             MEMBERS:
     NAMESPACE DEFINITIONS for C (rng::C) 
         resolver_ns_general.cc  [7:5/76-20:6/344]
     NAMESPACE C (rng::C) 
-        STRUCT CC (rng::C::CC ) [9:9/130-18:11/337] lcurly=140 SCOPE: C 
+        STRUCT CC (rng::C::CC ) [9:9/130-18:10/336] lcurly=140 SCOPE: C 
             BASE CLASSES:
             MEMBERS:
-                CLASS CCC (rng::C::CC::CCC ) [11:13/155-15:15/279] lcurly=165 SCOPE: CC 
+                CLASS CCC (rng::C::CC::CCC ) [11:13/155-15:14/278] lcurly=165 SCOPE: CC 
                     BASE CLASSES:
                     MEMBERS:
                         FIELD PRIVATE a [12:17/183-12:23/189]  TYPE: int TEXT=int  [12:17/183-12:20/186]  INIT: null  SCOPE: CCC 

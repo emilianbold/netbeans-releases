@@ -38,7 +38,7 @@
 --OWNER:
     TYPE $unresolved$::list TEXT=list<Customer>  [53:5/2281-53:19/2295] ReferencesTestCase/quote.cc
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'customers', tokenID=identifier, offset=2296 [53:20/2296-53:29/2305]
 --OWNER:
@@ -98,7 +98,7 @@
 --OWNER:
     TYPE $unresolved$::list::iterator TEXT=list<Customer>::iterator  [59:13/2504-59:37/2528] ReferencesTestCase/quote.cc
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'iterator', tokenID=identifier, offset=2520 [59:29/2520-59:37/2528]
 --OWNER:
@@ -200,7 +200,7 @@
 --OWNER:
     STMT EXPRESSION text='customers.push_back(Customer("John", 10))'
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'customers', tokenID=identifier, offset=2883 [71:9/2883-71:18/2892]
 --OWNER:
@@ -218,7 +218,7 @@
 --OWNER:
     STMT EXPRESSION text='customers.push_back(Customer("Mike", 0))'
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'customers', tokenID=identifier, offset=2933 [72:9/2933-72:18/2942]
 --OWNER:
@@ -236,7 +236,7 @@
 --OWNER:
     STMT EXPRESSION text='customers.push_back(Customer("Peter", 13))'
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'customers', tokenID=identifier, offset=2985 [73:9/2985-73:18/2994]
 --OWNER:
@@ -254,7 +254,7 @@
 --OWNER:
     STMT EXPRESSION text='customers.push_back(Customer("Ann", 11))'
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'customers', tokenID=identifier, offset=3035 [74:9/3035-74:18/3044]
 --OWNER:
@@ -272,7 +272,7 @@
 --OWNER:
     STMT EXPRESSION text='customers.push_back(Customer("Tom", 9))'
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'getDiscountFor', tokenID=identifier, offset=3091 [77:9/3091-77:23/3105]
 --OWNER:
@@ -302,7 +302,7 @@
 --OWNER:
     TYPE $unresolved$::list::iterator TEXT=list<Customer>::iterator  [78:13/3133-78:37/3157] ReferencesTestCase/quote.cc
 --RESOLVED TO:
-    CLASS Customer [49:1/2191-60:3/2476] ReferencesTestCase/customer.h
+    CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================
 'iterator', tokenID=identifier, offset=3149 [78:29/3149-78:37/3157]
 --OWNER:
@@ -896,7 +896,7 @@
 --OWNER:
     TYPE System TEXT=System  [145:5/5055-145:11/5061] ReferencesTestCase/quote.cc
 --RESOLVED TO:
-    CLASS System [52:1/2246-68:3/2616] ReferencesTestCase/system.h
+    CLASS System [52:1/2246-68:2/2615] ReferencesTestCase/system.h
 ==============================================================
 'MySystem', tokenID=identifier, offset=5062 [145:12/5062-145:20/5070]
 --OWNER:
@@ -980,7 +980,7 @@
 --OWNER:
     STMT EXPRESSION text='type = Cpu::HIGH'
 --RESOLVED TO:
-    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:2/2556] ReferencesTestCase/cpu.h
 ==============================================================
 'HIGH', tokenID=identifier, offset=5519 [158:25/5519-158:29/5523]
 --OWNER:
@@ -998,7 +998,7 @@
 --OWNER:
     STMT EXPRESSION text='type = Cpu::MEDIUM'
 --RESOLVED TO:
-    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:2/2556] ReferencesTestCase/cpu.h
 ==============================================================
 'MEDIUM', tokenID=identifier, offset=5619 [163:25/5619-163:31/5625]
 --OWNER:
@@ -1022,7 +1022,7 @@
 --OWNER:
     TYPE Cpu TEXT=Cpu  [169:5/5712-169:8/5715] ReferencesTestCase/quote.cc
 --RESOLVED TO:
-    CLASS Cpu [47:1/2160-59:3/2557] ReferencesTestCase/cpu.h
+    CLASS Cpu [47:1/2160-59:2/2556] ReferencesTestCase/cpu.h
 ==============================================================
 'MyCpu', tokenID=identifier, offset=5716 [169:9/5716-169:14/5721]
 --OWNER:
@@ -1088,7 +1088,7 @@
 --OWNER:
     STMT EXPRESSION text='type = Disk::RAID'
 --RESOLVED TO:
-    CLASS Disk [46:1/2156-57:3/2535] ReferencesTestCase/disk.h
+    CLASS Disk [46:1/2156-57:2/2534] ReferencesTestCase/disk.h
 ==============================================================
 'RAID', tokenID=identifier, offset=6118 [180:26/6118-180:30/6122]
 --OWNER:
@@ -1106,7 +1106,7 @@
 --OWNER:
     STMT EXPRESSION text='type = Disk::SINGLE'
 --RESOLVED TO:
-    CLASS Disk [46:1/2156-57:3/2535] ReferencesTestCase/disk.h
+    CLASS Disk [46:1/2156-57:2/2534] ReferencesTestCase/disk.h
 ==============================================================
 'SINGLE', tokenID=identifier, offset=6219 [185:26/6219-185:32/6225]
 --OWNER:
@@ -1130,7 +1130,7 @@
 --OWNER:
     TYPE Disk TEXT=Disk  [191:5/6309-191:9/6313] ReferencesTestCase/quote.cc
 --RESOLVED TO:
-    CLASS Disk [46:1/2156-57:3/2535] ReferencesTestCase/disk.h
+    CLASS Disk [46:1/2156-57:2/2534] ReferencesTestCase/disk.h
 ==============================================================
 'MyDisk', tokenID=identifier, offset=6314 [191:10/6314-191:16/6320]
 --OWNER:
@@ -1196,7 +1196,7 @@
 --OWNER:
     STMT EXPRESSION text='type = Memory::FAST'
 --RESOLVED TO:
-    CLASS Memory [46:1/2160-57:3/2513] ReferencesTestCase/memory.h
+    CLASS Memory [46:1/2160-57:2/2512] ReferencesTestCase/memory.h
 ==============================================================
 'FAST', tokenID=identifier, offset=6726 [201:28/6726-201:32/6730]
 --OWNER:
@@ -1214,7 +1214,7 @@
 --OWNER:
     STMT EXPRESSION text='type = Memory::ULTRA'
 --RESOLVED TO:
-    CLASS Memory [46:1/2160-57:3/2513] ReferencesTestCase/memory.h
+    CLASS Memory [46:1/2160-57:2/2512] ReferencesTestCase/memory.h
 ==============================================================
 'ULTRA', tokenID=identifier, offset=6812 [205:28/6812-205:33/6817]
 --OWNER:
@@ -1232,7 +1232,7 @@
 --OWNER:
     STMT EXPRESSION text='type = Memory::STANDARD'
 --RESOLVED TO:
-    CLASS Memory [46:1/2160-57:3/2513] ReferencesTestCase/memory.h
+    CLASS Memory [46:1/2160-57:2/2512] ReferencesTestCase/memory.h
 ==============================================================
 'STANDARD', tokenID=identifier, offset=6916 [210:28/6916-210:36/6924]
 --OWNER:
@@ -1256,7 +1256,7 @@
 --OWNER:
     TYPE Memory TEXT=Memory  [216:5/7015-216:11/7021] ReferencesTestCase/quote.cc
 --RESOLVED TO:
-    CLASS Memory [46:1/2160-57:3/2513] ReferencesTestCase/memory.h
+    CLASS Memory [46:1/2160-57:2/2512] ReferencesTestCase/memory.h
 ==============================================================
 'MyMemory', tokenID=identifier, offset=7022 [216:12/7022-216:20/7030]
 --OWNER:
