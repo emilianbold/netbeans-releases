@@ -123,7 +123,6 @@ public class AddNewBpelProcess extends PerformanceTestCase {
     
     @Override
     public void close(){
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     /**
@@ -140,6 +139,7 @@ public class AddNewBpelProcess extends PerformanceTestCase {
             .addTest("measureTime")
             .enableModules(".*")
             .clusters(".*")
+            .reuseUserDir(true)
         );    
     }
 }
