@@ -250,6 +250,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
                 });                        
         jLabel3.setVisible(false);
         libraryLocation.setVisible(false);
+        createButton.setEnabled(LibraryTypeRegistry.getDefault().getLibraryTypeProviders().length>0);
     }
 
     private void nameChanged () {
