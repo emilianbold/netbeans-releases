@@ -57,6 +57,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
+import org.netbeans.modules.php.project.connections.RemoteSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -345,6 +346,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
                 //When the encoding is not supported by JVM do not set it as default
             }
         }
+
+        // reset timestamp of the last upload
+        RemoteSettings.resetLastUpload(project);
 
         // UI log
         logUsage(helper.getProjectDirectory(), project.getSourcesDirectory(), getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
