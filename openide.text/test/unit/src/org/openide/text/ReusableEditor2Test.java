@@ -72,6 +72,11 @@ public class ReusableEditor2Test extends NbTestCase {
         super(testName);
     }
             
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
+
 
     /**
      * Prepares few editors at the test dispoition.
