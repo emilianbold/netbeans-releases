@@ -579,25 +579,17 @@ public abstract class TreeView extends JScrollPane {
     /** Expands all paths.
     */
     public void expandAll() {
+        int i = 0;
+        int j;
 
-        // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
-        // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
-        VisualizerNode.runSafe(new Runnable() {
+        do {
+            do {
+                j = tree.getRowCount();
+                tree.expandRow(i);
+            } while (j != tree.getRowCount());
 
-            public void run() {
-                int i = 0;
-                int j;
-
-                do {
-                    do {
-                        j = tree.getRowCount();
-                        tree.expandRow(i);
-                    } while (j != tree.getRowCount());
-
-                    i++;
-                } while (i < tree.getRowCount());
-            }
-        });
+            i++;
+        } while (i < tree.getRowCount());
     }
 
     //
