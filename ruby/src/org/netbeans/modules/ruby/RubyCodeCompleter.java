@@ -3013,7 +3013,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                 element = com;
             }
 
-            node = AstUtilities.getForeignNode(com, null);
+            node = AstUtilities.getForeignNode(com, (Node[])null);
 
             if (node == null) {
                 return null;

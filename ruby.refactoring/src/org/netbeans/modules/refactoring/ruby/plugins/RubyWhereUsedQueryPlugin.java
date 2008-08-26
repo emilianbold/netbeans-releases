@@ -291,6 +291,9 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
     
     //@Override
     protected Problem fastCheckParameters(CompilationController info) {
+        if (targetName == null) {
+            return new Problem(true, "Cannot determine target name. Please file a bug with detailed information on how to reproduce (preferably including the current source file and the cursor position)");
+        }
         if (searchHandle.getKind() == ElementKind.METHOD) {
             return checkParametersForMethod(isFindOverridingMethods(), isFindUsages());
         } 
@@ -432,7 +435,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 // Look in these files for the given classes
                 //findSubClass(root);
                 for (IndexedClass clz : subclasses) {
-                    RubyElementCtx matchCtx = new RubyElementCtx(clz, compiler);
+                    RubyElementCtx matchCtx = new RubyElementCtx(clz);
                     elements.add(refactoring, WhereUsedElement.create(matchCtx));
                 }
             } else if (isFindUsages()) {
