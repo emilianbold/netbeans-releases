@@ -123,7 +123,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      */
     private VersioningSystem localHistory;
 
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning");
+    static final Logger LOG = Logger.getLogger("org.netbeans.modules.versioning");
 
     /**
      * What folders are managed by local history. 
