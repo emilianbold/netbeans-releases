@@ -322,6 +322,11 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test140758_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue140758.php", "echo $_SERVER[\"^", false);
     }
+    
+    public void testSanitizedCode() throws Exception {
+        checkCompletion("testfiles/sanitize/curly04.php", "$baba = $param^", false);
+    }
+    
     public void testVarAssignment_1() throws Exception {
         checkCompletion("testfiles/completion/lib/varAssignment.php", "$clsVarA1=$clsVarA->^", false);
     }
