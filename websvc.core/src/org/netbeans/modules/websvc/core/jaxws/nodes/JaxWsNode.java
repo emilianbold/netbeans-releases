@@ -55,6 +55,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
@@ -73,7 +75,10 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -355,29 +360,39 @@ public class JaxWsNode extends AbstractNode implements
      */
     public String getWebServiceURL() {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        InstanceProperties instanceProperties = provider.getInstanceProperties();
-        if (instanceProperties == null) {
+        Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
+        String serverInstanceID = provider.getServerInstanceID();
+        if (serverInstanceID == null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class, "MSG_MissingServer"), NotifyDescriptor.ERROR_MESSAGE));
             return "";
         }
-        // getting port
-        String portNumber = instanceProperties.getProperty(InstanceProperties.HTTP_PORT_NUMBER);
-        if (portNumber == null || portNumber.equals("")) {
-            portNumber = "8080"; //NOI18N
-        }
-
-        // getting hostName
-        String serverUrl = instanceProperties.getProperty(InstanceProperties.URL_ATTR);
+        // getting port and host name
+        ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
+        String portNumber = "8080"; //NOI18N
         String hostName = "localhost"; //NOI18N
-        if (serverUrl != null && serverUrl.indexOf("::") > 0) {
-            //NOI18N
-            int index1 = serverUrl.indexOf("::"); //NOI18N
-            int index2 = serverUrl.lastIndexOf(":"); //NOI18N
-            if (index2 > index1 + 2) {
-                hostName = serverUrl.substring(index1 + 2, index2);
+        try {
+            ServerInstance.Descriptor instanceDescriptor = serverInstance.getDescriptor();
+            if (instanceDescriptor != null) {
+                int port = instanceDescriptor.getHttpPort();
+                portNumber = port==0 ? "8080" : String.valueOf(port); //NOI18N
+                String hstName = instanceDescriptor.getHostname();
+                if (hstName != null) hostName = hstName;
+            } else {
+                // using the old way to obtain port name and host name
+                // should be removed if ServerInstance.Descriptor is implemented in server plugins
+                InstanceProperties instanceProperties = provider.getInstanceProperties();
+                if (instanceProperties == null) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsNode.class, "MSG_MissingServer"), NotifyDescriptor.ERROR_MESSAGE));
+                    return "";
+                } else {
+                    portNumber = getPortNumber(instanceProperties);
+                    hostName = getHostName(instanceProperties);
+                }                
             }
+        } catch (InstanceRemovedException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "Removed ServerInstance", ex); //NOI18N
         }
-
+        
         String contextRoot = null;
         Object moduleType = provider.getJ2eeModule().getModuleType();
         // need to compute from annotations
@@ -888,5 +903,38 @@ public class JaxWsNode extends AbstractNode implements
                 }
             }
         }
+    }
+    
+    /** Old way to obtain port number from server instance (using instance properties)
+     * 
+     * @param instanceProperties
+     * @return port number
+     */
+    private String getPortNumber(InstanceProperties instanceProperties) {
+        String portNumber = instanceProperties.getProperty(InstanceProperties.HTTP_PORT_NUMBER);
+        if (portNumber == null || portNumber.equals("")) { //NOI18N
+            return "8080"; //NOI18N
+        } else {
+            return portNumber;
+        }        
+    }
+    
+    /** Old way to obtain host name from server instance (using instance properties)
+     * 
+     * @param instanceProperties
+     * @return host name
+     */
+    private String getHostName(InstanceProperties instanceProperties) {
+        String serverUrl = instanceProperties.getProperty(InstanceProperties.URL_ATTR);
+        String hostName = "localhost"; //NOI18N
+        if (serverUrl != null && serverUrl.indexOf("::") > 0) { //NOI18N
+            //NOI18N
+            int index1 = serverUrl.indexOf("::"); //NOI18N
+            int index2 = serverUrl.lastIndexOf(":"); //NOI18N
+            if (index2 > index1 + 2) {
+                hostName = serverUrl.substring(index1 + 2, index2);
+            }
+        }
+        return hostName;
     }
 }
