@@ -41,6 +41,9 @@
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -48,10 +51,8 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,7 @@ import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.model.PropertyValueSupport;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.support.ArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
@@ -79,8 +81,6 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.Proper
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorMessageAwareness;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormSupport;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
@@ -112,6 +112,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private PropertyEditorMessageAwareness messageAwareness;
     private WeakReference<DesignDocument> documentReferences;
     private Map<String, String> pathMap;
+    private JPopupMenu menu;
 
     public SVGFormEditorElement() {
         paths = new HashMap<String, FileObject>();
@@ -121,6 +122,10 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         imageView = new SVGImageComponent();
         previewPanel.add(imageView, BorderLayout.CENTER);
         jTable1.setModel(new Model());
+        menu = new JPopupMenu();
+        menu.add(new MoveAction("Move Up", 1)); //TODO
+        menu.add(new MoveAction("Move down", -1)); //TODO
+        jTable1.addMouseListener(new PopupListener());
         pathMap = new HashMap<String, String>();
     }
 
@@ -140,20 +145,30 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     public List<String> getPropertyValueNames() {
         return Arrays.asList(SVGImageCD.PROP_RESOURCE_PATH);
     }
-
-    @Override
-    public void preResetToDefaultValue(final DesignComponent component) {
-        if (component.getType() != SVGFormCD.TYPEID) {
-            return;
+    
+     @Override
+    public boolean isResetToDefaultAutomatically(final DesignComponent component) {
+        if (component == null ) {
+            return super.isResetToDefaultAutomatically(component);
         }
-        component.getDocument().getTransactionManager().writeAccess(new Runnable() {
+        final boolean[] isAutomatic = new boolean[]{true};
+        component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
-                Collection<DesignComponent> svgComponents = new ArrayList<DesignComponent>(component.getComponents());
-                component.resetToDefault(SVGFormCD.PROP_COMPONENTS);
-                component.getDocument().deleteComponents(svgComponents);
+                DescriptorRegistry registry = component.getDocument().getDescriptorRegistry();
+                if (registry.isInHierarchy(SVGFormCD.TYPEID, component.getType())) {
+                    isAutomatic[0] = false;
+                }
             }
         });
+        
+        return isAutomatic[0];
+    }
+    
+    
+    @Override
+    public void preResetToDefaultValue(final DesignComponent component) {
+        nullValueSet(component);
         super.preResetToDefaultValue(component);
     }
 
@@ -255,18 +270,39 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         if (parseIt[0]) {
             parseSVGImageItems(svgImageFileObject[0], parentComponent);
         }
+        orderSVGComponentsArray(parentComponent);
     }
 
-    @Override
-    public  void nullValueSet(final DesignComponent svgForm) {
+    private void orderSVGComponentsArray(final DesignComponent svgForm) {
+        final TableModel model = jTable1.getModel();
+        final List<PropertyValue> orderdList = new ArrayList<PropertyValue>(model.getRowCount());
         svgForm.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
             public void run() {
-                SVGFormSupport.removeAllSVGFormComponents(svgForm);
+                for (int i = 0; i < model.getRowCount(); i++) {
+                    String id = (String) model.getValueAt(i, 1);
+                    for (DesignComponent component : SVGFormSupport.getSVGFormComponents(svgForm)) {
+                        if (component.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue().equals(id)) {
+                            orderdList.add(i, PropertyValue.createComponentReference(component));
+                        }
+                    }
+                }
+                svgForm.writeProperty(SVGFormCD.PROP_COMPONENTS, PropertyValue.createArray(SVGComponentCD.TYPEID, orderdList));
             }
         });
     }
     
+    @Override
+    public void nullValueSet(final DesignComponent svgForm) {
+        svgForm.getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+            public void run() {
+                SVGFormSupport.removeAllSVGFormComponents(svgForm);
+                svgForm.resetToDefault(SVGFormCD.PROP_SVG_IMAGE);
+            }
+        });
+    }
+   
     private void parseSVGImageItems(FileObject imageFO, final DesignComponent parentComponent) {
         if (imageFO == null) {
             nullValueSet(parentComponent);
@@ -562,6 +598,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jButton1 = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanelImageFile = new javax.swing.JPanel();
         pathLabel = new javax.swing.JLabel();
@@ -577,6 +614,8 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         jPanelSVGComponents = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+
+        jButton1.setText(org.openide.util.NbBundle.getMessage(SVGFormEditorElement.class, "SVGFormEditorElement.jButton1.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(pathLabel, org.openide.util.NbBundle.getMessage(SVGFormEditorElement.class, "ImageEditorElement.pathLabel.text")); // NOI18N
         pathLabel.setEnabled(false);
@@ -622,20 +661,20 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         jPanelImageFile.setLayout(jPanelImageFileLayout);
         jPanelImageFileLayout.setHorizontalGroup(
             jPanelImageFileLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 367, Short.MAX_VALUE)
+            .add(0, 408, Short.MAX_VALUE)
             .add(jPanelImageFileLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(jPanelImageFileLayout.createSequentialGroup()
                     .addContainerGap()
                     .add(jPanelImageFileLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                         .add(jPanelImageFileLayout.createSequentialGroup()
                             .add(pathLabel)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 298, Short.MAX_VALUE))
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 324, Short.MAX_VALUE))
                         .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanelImageFileLayout.createSequentialGroup()
                             .add(jPanelImageFileLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                 .add(jPanelImageFileLayout.createSequentialGroup()
                                     .add(previewLabel)
                                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
+                                    .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
                                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                     .add(jPanelImageFileLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                         .add(jPanelImageFileLayout.createSequentialGroup()
@@ -647,14 +686,14 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                                                 .add(widthTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 92, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                                 .add(heightTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 92, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                                         .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 146, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                                .add(pathTextComboBox, 0, 321, Short.MAX_VALUE))
+                                .add(pathTextComboBox, 0, 360, Short.MAX_VALUE))
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(chooserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .addContainerGap()))
         );
         jPanelImageFileLayout.setVerticalGroup(
             jPanelImageFileLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 200, Short.MAX_VALUE)
+            .add(0, 223, Short.MAX_VALUE)
             .add(jPanelImageFileLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(jPanelImageFileLayout.createSequentialGroup()
                     .addContainerGap()
@@ -677,7 +716,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                             .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                         .add(previewLabel)
-                        .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE))
+                        .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE))
                     .addContainerGap()))
         );
 
@@ -702,11 +741,11 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         jPanelSVGComponents.setLayout(jPanelSVGComponentsLayout);
         jPanelSVGComponentsLayout.setHorizontalGroup(
             jPanelSVGComponentsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 367, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
         );
         jPanelSVGComponentsLayout.setVerticalGroup(
             jPanelSVGComponentsLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(SVGFormEditorElement.class, "SVGFormEditorElement.jPanelSVGComponents.TabConstraints.tabTitle"), jPanelSVGComponents); // NOI18N
@@ -715,21 +754,21 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 388, Short.MAX_VALUE)
+            .add(0, 445, Short.MAX_VALUE)
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(layout.createSequentialGroup()
-                    .add(0, 8, Short.MAX_VALUE)
+                    .add(0, 16, Short.MAX_VALUE)
                     .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(0, 8, Short.MAX_VALUE)))
+                    .add(0, 16, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 241, Short.MAX_VALUE)
+            .add(0, 282, Short.MAX_VALUE)
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(layout.createSequentialGroup()
-                    .add(0, 6, Short.MAX_VALUE)
+                    .add(0, 16, Short.MAX_VALUE)
                     .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(0, 7, Short.MAX_VALUE)))
+                    .add(0, 16, Short.MAX_VALUE)))
         );
 
         jTabbedPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGFormEditorElement.class, "ACSN_TabbedPane")); // NOI18N
@@ -761,11 +800,12 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
             fireElementChanged(componentID, SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
             updatePreview();
         }
-    }                                                
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooserButton;
     private javax.swing.JLabel heightLabel;
     private javax.swing.JTextField heightTextField;
+    private javax.swing.JButton jButton1;
     private javax.swing.JPanel jPanelImageFile;
     private javax.swing.JPanel jPanelSVGComponents;
     private javax.swing.JScrollPane jScrollPane1;
@@ -779,15 +819,14 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private javax.swing.JLabel widthLabel;
     private javax.swing.JTextField widthTextField;
     // End of variables declaration//GEN-END:variables
-
     private void updateSVGModelTable(InputStream inputStrem) {
-        
+
         if (inputStrem != null) {
             jTable1.setModel(new Model(inputStrem));
         } else {
             jTable1.setModel(new Model());
         }
-        
+
     }
     // End of variables declaration
     private class Model implements TableModel {
@@ -797,17 +836,17 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         private String[][] values;
 
         public Model(InputStream inputStream) {
-          this.values = SVGFormImageParser.getComponentsInformation(inputStream);
+            this.values = SVGFormImageParser.getComponentsInformation(inputStream);
         }
-        
+
         public Model() {
             this.values = null;
         }
 
-
         public int getRowCount() {
-            if (values == null)
+            if (values == null) {
                 return 0;
+            }
             return values.length;
         }
 
@@ -839,12 +878,67 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         }
 
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            this.values[rowIndex][columnIndex] = (String) aValue;
         }
 
         public void addTableModelListener(TableModelListener l) {
         }
 
         public void removeTableModelListener(TableModelListener l) {
+        }
+    }
+
+    private class MoveAction extends AbstractAction {
+
+        private int step;
+
+        public MoveAction(String name, int step) {
+            super(name);
+            this.step = step;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (step < 0) {
+                if (jTable1.getSelectedRow() < jTable1.getRowCount() - 1) {
+                    moveValue(step);
+                }
+            } else {
+                if (jTable1.getSelectedRow() > 0) {
+                    moveValue(step);
+                }
+            }
+        }
+
+        private void moveValue(int step) {
+            TableModel model = jTable1.getModel();
+            int selectedRow = jTable1.getSelectedRow();
+            String typeToMoveUp = (String) model.getValueAt(selectedRow, 0);
+            String idToMoveUp = (String) model.getValueAt(selectedRow, 1);
+            String typeToMoveDown = (String) model.getValueAt(selectedRow - step, 0);
+            String idToMoveDown = (String) model.getValueAt(selectedRow - step, 1);
+            model.setValueAt(typeToMoveUp, selectedRow - step, 0);
+            model.setValueAt(idToMoveUp, selectedRow - step, 1);
+            model.setValueAt(typeToMoveDown, selectedRow, 0);
+            model.setValueAt(idToMoveDown, selectedRow, 1);
+            jTable1.getSelectionModel().setSelectionInterval(selectedRow - step, selectedRow - step);
+            jTabbedPane1.repaint();
+        }
+    }
+
+    private class PopupListener extends MouseAdapter {
+
+        public void mousePressed(MouseEvent e) {
+            showPopup(e);
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            showPopup(e);
+        }
+
+        private void showPopup(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                menu.show(e.getComponent(), e.getX(), e.getY());
+            }
         }
     }
 }

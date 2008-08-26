@@ -40,6 +40,7 @@ package org.netbeans.modules.vmd.midpnb.components.svg.parsers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
@@ -233,7 +234,7 @@ public class SVGFormImageParser extends SVGComponentImageParser {
      * @param svgInputStream - SVG image
      * @return Array of svg id components with SVGCOmponent ID
      */
-    public static final String[][] getComponentsInformation(final InputStream svgInputStream) {
+    public static final String[][] getComponentsInformation(InputStream svgInputStream) {
         SVGFormComponent[] components = getFormComponents(svgInputStream);
         String[][] values = new String[components.length][2];
         for (int i = 0; i < components.length; i++) {
@@ -243,6 +244,8 @@ public class SVGFormImageParser extends SVGComponentImageParser {
 
         return values;
     }
+    
+    
 
     
 }
