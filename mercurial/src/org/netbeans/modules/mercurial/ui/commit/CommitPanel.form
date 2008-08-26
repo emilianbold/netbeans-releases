@@ -72,7 +72,7 @@
               <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
               <Component id="filesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="filesPanel" pref="175" max="32767" attributes="0"/>
+              <Component id="filesPanel" pref="164" max="32767" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="progressPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -143,7 +143,7 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="175" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="164" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>

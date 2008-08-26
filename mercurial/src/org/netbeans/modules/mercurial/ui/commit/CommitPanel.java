@@ -56,6 +56,7 @@ import java.util.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Cursor;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -93,11 +94,15 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
             }
         });
         
-        List<String> messages = Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
-        if (messages.size() > 0) {
-            messageTextArea.setText(messages.get(0));
-        }
-        messageTextArea.selectAll();
+        final List<String> messages = Utils.getStringList(HgModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (messages.size() > 0) {
+                    messageTextArea.setText(messages.get(0));
+                }
+                messageTextArea.selectAll();
+            }
+        });
     }
 
     public void removeNotify() {
