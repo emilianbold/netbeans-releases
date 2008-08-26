@@ -200,7 +200,6 @@ public class RubyPlatformCustomizer extends JPanel {
         browseGemHome.setEnabled(gemsInstalled);
         gemHomeValue.setForeground(color);
         gemToolValue.setForeground(color);
-        removeButton.setEnabled(!plaf.isDefault());
         removeGemPath.setEnabled(gemPathList.getSelectedValue() != null);
 
         refreshDebugger();
