@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,51 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.xml.schema.completion;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import org.netbeans.editor.BaseDocument;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+package org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints.customizer;
+
+import javax.swing.JComponent;
+import org.netbeans.spi.debugger.ui.BreakpointType;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Samaresh
+ * @author joelle
  */
-public class Util {
-    
-    private Util() {
+public class NbJSURIBreakpointType extends BreakpointType {
+    private final static String CATEGORY_NAME = NbBundle.getMessage(NBJSFileObjectBreakpointType.class, "LBL_CategoryName");
+    private final static String TYPE_DISPLAY_NAME = NbBundle.getMessage(NBJSFileObjectBreakpointType.class, "LBL_URLBreakpointType");
+    @Override
+    public String getCategoryDisplayName() {
+        return CATEGORY_NAME;
     }
-    
-    public static FileObject getResourceAsFileObject(String path) throws Exception {        
-        URL url = Util.class.getResource(path);        
-        File file = new File(url.toURI());
-        file = FileUtil.normalizeFile(file);
-        FileObject fileObj = FileUtil.toFileObject(file);
-        return fileObj;
+
+    @Override
+    public String getTypeDisplayName() {
+        return TYPE_DISPLAY_NAME;
     }
-    
-    public static BaseDocument getResourceAsDocument(String path) throws Exception {
-        InputStream in = Util.class.getResourceAsStream(path);
-        BaseDocument sd = new BaseDocument(true, "text/xml"); //NOI18N
-        BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
-        StringBuffer sbuf = new StringBuffer();
-        try {
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                sbuf.append(line);
-                sbuf.append(System.getProperty("line.separator"));
-            }
-        } finally {
-            br.close();
-        }
-        sd.insertString(0,sbuf.toString(),null);
-        return sd;
+
+    @Override
+    public JComponent getCustomizer() {
+        return NbJSBreakpointCustomizer.getCustomizerPanel(null);
     }
-    
+
+    @Override
+    public boolean isDefault() {
+        return false;
+    }
+
 }

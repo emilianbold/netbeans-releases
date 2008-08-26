@@ -45,8 +45,11 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.mysql.spi.sample.SampleProvider;
 import org.netbeans.modules.db.mysql.util.Utils;
+import org.openide.util.NbBundle;
 
 /**
  * A utility class for creating sample databases 
@@ -118,6 +121,14 @@ public class SampleManager {
         if (provider == null) {
                 throw new DatabaseException(Utils.getMessage("MSG_NoSuchSample", sampleName));
         }
-        provider.create(sampleName, dbconn);
+        
+        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(
+                SampleManager.class, "MSG_CreatingSampleDBProgressLabel", sampleName));
+        ph.start();
+        try {
+            provider.create(sampleName, dbconn);
+        } finally {
+            ph.finish();
+        }
     }
 }
