@@ -223,6 +223,7 @@
                         <xsd:attribute name="pages" type="xsd:int"/>
                         <xsd:attribute name="perpage" type="xsd:int"/>
                         <xsd:attribute name="total" type="xsd:int"/>
+                        <xsd:attribute name="per_page" type="xsd:int"/>
                     </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="prevphoto" minOccurs="0">
