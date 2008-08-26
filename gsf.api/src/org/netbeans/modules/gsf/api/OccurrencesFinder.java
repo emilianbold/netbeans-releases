@@ -47,6 +47,11 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
 /**
  * A CancellableTask responsible for computing the set of highlights matching
  * occurrences of the same program element as the one under the caret.
+ *
+ * @todo This should not be a stateful interface; there should be a single
+ *   compute-occurrences-for-position method.  See
+ *   http://www.netbeans.org/issues/show_bug.cgi?id=144160
+ *   for the kinds of bugs that can result from this.
  * 
  * @author Tor Norbye
  */
