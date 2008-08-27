@@ -228,17 +228,30 @@ public class MavenSourcesImpl implements Sources {
         if (JavaProjectConstants.SOURCES_TYPE_RESOURCES.equals(str)) {
             URI[] uris = project.getResources(false);
             if (uris.length > 0) {
-                File root = new File(uris[0]);
-                
-                FileObject fo=null;
-                try {
-                    fo = FileUtil.createFolder(root);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                List<URI> virtuals = new ArrayList<URI>();
+                List<SourceGroup> existing = new ArrayList<SourceGroup>();
+                for (URI u : uris) {
+                    FileObject fo = FileUtilities.convertURItoFileObject(u);
+                    if (fo == null) {
+                        virtuals.add(u);
+                    } else {
+                        existing.add(GenericSources.group(project, fo, "resources",  //NOI18N
+                            NbBundle.getMessage(MavenSourcesImpl.class, "SG_Project_Resources"), null, null));
+                    }
+                }
+                if (existing.size() == 0) {
+                    File root = new File(virtuals.get(0));
+                    FileObject fo=null;
+                    try {
+                        fo = FileUtil.createFolder(root);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    existing.add(GenericSources.group(project, fo, "resources",  //NOI18N
+                        NbBundle.getMessage(MavenSourcesImpl.class, "SG_Project_Resources"), null, null));
                 }
                 //TODO we should probably add includes/excludes to source groups.
-                return new SourceGroup[] { GenericSources.group(project, fo, "resources",  //NOI18N
-                        NbBundle.getMessage(MavenSourcesImpl.class, "SG_Project_Resources"), null, null) };
+                return existing.toArray(new SourceGroup[0]);
             }
         }
 //        logger.warn("unknown source type=" + str);
