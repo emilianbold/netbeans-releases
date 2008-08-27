@@ -1557,12 +1557,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         if (textLimitLine instanceof Integer) {
             ret = ((Integer)textLimitLine).intValue();
         }
-        System.out.println(getDocument () + " : " + getDocument().getProperty("title"));
-        if (getDocument().getProperty("title") != null &&
-            ((String) getDocument().getProperty("title")).indexOf("Main") >= 0
-        ) {
-            return 10;
-        }
         return ret;
     }
 
