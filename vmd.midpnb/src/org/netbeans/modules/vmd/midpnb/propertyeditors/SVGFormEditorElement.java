@@ -267,7 +267,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
             }
         });
 
-        if (parseIt[0]) {
+        if (parseIt[0] != null && parseIt[0]) {
             parseSVGImageItems(svgImageFileObject[0], parentComponent);
         }
         orderSVGComponentsArray(parentComponent);
