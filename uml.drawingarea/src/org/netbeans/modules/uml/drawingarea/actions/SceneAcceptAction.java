@@ -168,9 +168,7 @@ public class SceneAcceptAction extends WidgetAction.Adapter
         
         return retVal;
     }
-    
-    
-    
+
     public ConnectorState isAcceptable(Widget widget, Point point, Transferable transferable)
     {
         ConnectorState retVal = ConnectorState.REJECT;
@@ -326,6 +324,14 @@ public class SceneAcceptAction extends WidgetAction.Adapter
         return sceneNamespace;
     }
 
+    public void addWidget(Point point, 
+                           DesignerScene scene,
+                           IPresentationElement presentation) 
+                           throws UnsupportedFlavorException, IOException 
+    {
+            addWidget(point, scene, this.paletteItem, presentation);
+    }
+    
     private void addWidget(Point point, 
                            DesignerScene scene,
                            PaletteItem item, 
@@ -367,6 +373,16 @@ public class SceneAcceptAction extends WidgetAction.Adapter
         }
     }
 
+    public IPresentationElement createModelElement (DesignerScene scene)
+    {
+         IPresentationElement presentation = null;
+        if ( this.paletteItem !=  null)
+        {
+            presentation = createModelElement(this.paletteItem, scene);
+        }
+         return presentation;
+    }
+    
     private IPresentationElement createModelElement(PaletteItem item,DesignerScene scene)
     {
         INamedElement element = item.createModelElement(getNamespace());
@@ -456,6 +472,7 @@ public class SceneAcceptAction extends WidgetAction.Adapter
         return moved(widget, event.getPoint());
     }
     
+    @Override
     public State drop(Widget widget, WidgetDropTargetDropEvent event)
     {
         State ret = State.REJECTED;
@@ -481,7 +498,6 @@ public class SceneAcceptAction extends WidgetAction.Adapter
             {
                 clearPalette(scene);
                 scene.removeBackgroundWidget();
-                return ret;
             }
         }
         return ret;
