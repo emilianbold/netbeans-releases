@@ -307,13 +307,15 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     
     /*package-local*/ void disposeProject(final ProjectBase prj, boolean cleanRepository) {
         assert prj != null;
-        CharSequence name = prj.getName();
-        if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("dispose project " + name);
-        prj.setDisposed();
-        ListenersImpl.getImpl().fireProjectClosed(prj);
-        ParserThreadManager.instance().waitEmptyProjectQueue(prj);
-        prj.dispose(cleanRepository);
-        if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("project closed " + name);
+        if (prj != null) {
+            CharSequence name = prj.getName();
+            if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("dispose project " + name);
+            prj.setDisposed();
+            ListenersImpl.getImpl().fireProjectClosed(prj);
+            ParserThreadManager.instance().waitEmptyProjectQueue(prj);
+            prj.dispose(cleanRepository);
+            if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("project closed " + name);
+        }
     }
     
     public Collection<CsmProject> projects() {
@@ -325,7 +327,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         for (CsmUID<CsmProject> uid : vals) {
             ProjectBase prj = (ProjectBase)UIDCsmConverter.UIDtoProject(uid);
             assert prj != null : "null project for UID " + uid;
-            out.add(prj);
+            if (prj != null) {
+                out.add(prj);
+            }
         }
         return out;
     }

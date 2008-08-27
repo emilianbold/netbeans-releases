@@ -311,9 +311,14 @@ public class UnitTab extends javax.swing.JPanel {
         }
     }
     
+    private Collection<Unit> oldUnits = Collections.emptySet ();
     
     public void refreshState () {
         final Collection<Unit> units = model.getMarkedUnits ();
+        if (oldUnits.equals (units)) {
+            return ;
+        }
+        oldUnits = units;
         popupActionsSupport.tableDataChanged ();
         
         if (units.size () == 0) {
@@ -322,19 +327,29 @@ public class UnitTab extends javax.swing.JPanel {
             setSelectionInfo (null, units.size ());
         }
         getDefaultAction ().setEnabled (units.size () > 0);
-        if (getDownloadSizeTask != null && ! getDownloadSizeTask.isFinished ()) {
-            getDownloadSizeTask.cancel ();
+        boolean alreadyScheduled = false;
+        if (getDownloadSizeTask != null) {
+            if (getDownloadSizeTask.getDelay () > 0) {
+                getDownloadSizeTask.schedule (1000);
+                alreadyScheduled = true;
+            } else if (! getDownloadSizeTask.isFinished ()) {
+                getDownloadSizeTask.cancel ();
+            }
         }
-        if (units.size () > 0) {
+        if (units.size () > 0 && ! alreadyScheduled) {
             getDownloadSizeTask = DOWNLOAD_SIZE_PROCESSOR.post (new Runnable () {
                 public void run () {
                     int downloadSize = model.getDownloadSize ();
                     if (Thread.interrupted ()) {
                         return ;
                     }
-                    setSelectionInfo (Utilities.getDownloadSizeAsString (downloadSize), units.size ());
+                    if (model.getMarkedUnits ().size () == 0) {
+                        cleanSelectionInfo ();
+                    } else {
+                        setSelectionInfo (Utilities.getDownloadSizeAsString (downloadSize), model.getMarkedUnits ().size ());
+                    }
                 }
-            });
+            }, 150);
         }
     }
     

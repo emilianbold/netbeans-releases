@@ -100,8 +100,9 @@ public class DatabaseNodeTest extends TestCase {
         Vector children = rootInfo.getChildren();
         assertTrue(children.size() == 2);
 
-        assertTrue(children.get(0) instanceof DriverListNodeInfo);
-        assertTrue(children.get(1) instanceof ConnectionNodeInfo);
+        // These aren't sorted, and this is the order they come in
+        assertTrue(children.get(0) instanceof ConnectionNodeInfo);
+        assertTrue(children.get(1) instanceof DriverListNodeInfo);
     }
     
     private void checkConnection(DatabaseNodeInfo rootInfo, 

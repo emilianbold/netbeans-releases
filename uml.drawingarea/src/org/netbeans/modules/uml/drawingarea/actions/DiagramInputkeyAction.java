@@ -74,6 +74,10 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
         {
             onCancelAction();
         }
+        else if(DiagramKeyMapConstants.CONTEXT_PALETTE_FOCUS.equals(command))
+        {
+            switchFocusToContextPallet();
+        }
     }
 
     private void onCancelAction()
@@ -142,6 +146,21 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
             }
         }
     }  // end onCancelAction
+
+    private void switchFocusToContextPallet()
+    {
+//        if (component instanceof UMLDiagramTopComponent)
+//        {
+//            UMLDiagramTopComponent umlTopComp = (UMLDiagramTopComponent)component;
+//            DesignerScene scene = umlTopComp.getScene();
+//        }
+        DesignerScene scene = component.getLookup().lookup(DesignerScene.class);
+        if(scene != null)
+        {
+            ContextPaletteManager manager = scene.getContextPaletteManager();
+            manager.requestFocus();
+        }
+    }
     
 }
 
