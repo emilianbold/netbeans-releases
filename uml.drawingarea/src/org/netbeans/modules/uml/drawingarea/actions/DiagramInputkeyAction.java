@@ -222,7 +222,8 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                 {
                     // clear selection on the palette and 
                     // request diagram top component to be in focus and active
-                    sceneAcceptAction.clearPalette(scene);
+                    if(sceneAcceptAction != null)
+                        sceneAcceptAction.clearPalette(scene);
                     scene.getTopComponent().requestActive();
                 }
             }
