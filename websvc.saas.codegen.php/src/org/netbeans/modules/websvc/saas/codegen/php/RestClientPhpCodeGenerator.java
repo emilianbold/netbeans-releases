@@ -217,16 +217,19 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         methodBody += "        " + pathParamsCode;
         methodBody += "        " + queryParamsCode;
 
+        HttpMethodType httpMethod = getBean().getHttpMethod();
+        String queryParams = (httpMethod == HttpMethodType.POST) ? "null" : "$" + Constants.QUERY_PARAMS;
+        
         methodBody += "$conn = new " + Constants.REST_CONNECTION + "(\"" + getBean().getUrl() + "\"";
-        methodBody += ", " + (pathParamsCode.trim().equals("") ? "array()" : "$" + Constants.PATH_PARAMS);
-        methodBody += ", " + (queryParamsCode.trim().equals("") ? "array()" : "$"+Constants.QUERY_PARAMS);
+        methodBody += ", " + (pathParamsCode.trim().equals("") ? "null" : "$" + Constants.PATH_PARAMS);
+        methodBody += ", " + (queryParamsCode.trim().equals("") ? "null" : queryParams);
         methodBody += ");\n";
 
         //Insert authentication code after new "+Constants.REST_CONNECTION+"() call
         methodBody += "             " +
                 getAuthenticationGenerator().getPostAuthenticationCode() + "\n";
 
-        HttpMethodType httpMethod = getBean().getHttpMethod();
+        
         if (getBean().getHeaderParameters() != null && getBean().getHeaderParameters().size() > 0) {
             methodBody += "        " + getHeaderOrParameterDefinition(getBean().getHeaderParameters(), Constants.HEADER_PARAMS, false, httpMethod);
             methodBody += INDENT+"$conn->setHeaders($" +Constants.HEADER_PARAMS+");\n";
