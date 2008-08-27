@@ -79,6 +79,9 @@ import org.openide.util.Exceptions;
  */
 public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
 
+    private DebuggerServer server;
+    private boolean startCanceled = false;
+    
     protected String ID;
     protected DebuggerProxy proxy;
     protected SuspensionPointHandler suspensionPointHandler;
@@ -89,14 +92,15 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
     }
     
     @Override
-    protected void startDebuggingImpl() {
-        DebuggerServer server = new DebuggerServer(getID());
+    protected boolean startDebuggingImpl() {
+        server = new DebuggerServer(getID());
         int port = -1;
         try {
             port = server.createSocket();
         } catch (IOException ioe) {
             Log.getLogger().log(Level.SEVERE, "Unable to create server socket", ioe);
-            return;
+            server = null;
+            return false;
         }
 
         launchImpl(port);
@@ -105,13 +109,31 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
             //Wait for debugger engine to connect back
             proxy = server.getDebuggerProxy();
         } catch (IOException ioe) {
-            Log.getLogger().log(Level.SEVERE, "Unable to get the debugger proxy", ioe); //NOI18N
-            return;
+            synchronized (server) {
+                if (!startCanceled) {
+                    Log.getLogger().log(Level.SEVERE, "Unable to get the debugger proxy", ioe); //NOI18N
+                }
+                server = null;
+            }
+            return false;
         }
+        
+        server = null;
         proxy.startDebugging();
 
         //Start the suspension point handler thread
         startSuspensionThread();
+        
+        return true;
+    }
+    
+    protected void cancelStartDebuggingImpl() {
+        if (server != null) {
+            synchronized (server) {
+                server.cancelGetDebuggerProxy();
+                startCanceled = true;
+            }
+        }
     }
     
     protected void startSuspensionThread() {

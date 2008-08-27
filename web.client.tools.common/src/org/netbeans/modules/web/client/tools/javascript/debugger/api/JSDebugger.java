@@ -59,7 +59,8 @@ public interface JSDebugger {
     void addPropertyChangeListener(PropertyChangeListener l);
     void removePropertyChangeListener(PropertyChangeListener l);
 
-    void startDebugging();
+    boolean startDebugging();
+    void cancelStartDebugging();
 
     String getID();
 
