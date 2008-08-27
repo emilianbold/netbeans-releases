@@ -105,10 +105,14 @@ public final class BookmarkList {
         BookmarksPersistence.loadBookmarks (this);
         
         DataObject dataObject = NbEditorUtilities.getDataObject (document);
-        Observable observable = dataObject.getCookie (Observable.class);
-        if (!observedObservables.contains (observable)) {
-            observable.addPropertyChangeListener (documentModifiedListener);
-            observedObservables.add (observable);
+        if (dataObject != null) {
+            Observable observable = dataObject.getCookie (Observable.class);
+            if (observable != null) {
+                if (!observedObservables.contains (observable)) {
+                    observable.addPropertyChangeListener (documentModifiedListener);
+                    observedObservables.add (observable);
+                }
+            }
         }
     }
 
