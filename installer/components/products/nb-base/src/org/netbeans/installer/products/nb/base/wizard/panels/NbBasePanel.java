@@ -129,43 +129,39 @@ public class NbBasePanel extends DestinationPanel {
         Version preferred = (preferredVersion != null) ? Version.getVersion(preferredVersion) : null;
         boolean jreAllowed = !"false".equals(jreAllowedStr); // if nothing defined - then true
 
-        final Object objectContext = getWizard().getContext().get(Product.class);
-        if (objectContext != null && objectContext instanceof Product) {
-            Product nbbaseProduct = (Product) objectContext;
-            if (nbbaseProduct.getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY) != null) {
-                min = Version.getVersion(nbbaseProduct.getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
-            }
-            if (nbbaseProduct.getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY) != null) {
-                max = Version.getVersion(nbbaseProduct.getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
-            }
-            if (nbbaseProduct.getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY) != null) {
-                preferred = Version.getVersion(nbbaseProduct.getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY));
-            }
-            if (nbbaseProduct.getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY) != null) {
-                jreAllowed = !"false".equals(nbbaseProduct.getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY));
-            }
+        if (getWizard().getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY) != null) {
+            min = Version.getVersion(getWizard().getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
+        }
+        if (getWizard().getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY) != null) {
+            max = Version.getVersion(getWizard().getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
+        }
+        if (getWizard().getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY) != null) {
+            preferred = Version.getVersion(getWizard().getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY));
+        }
+        if (getWizard().getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY) != null) {
+            jreAllowed = !"false".equals(getWizard().getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY));
+        }
+        
+        for (Product product : Registry.getInstance().getProductsToInstall()) {
+            if (product.getUid().startsWith("nb-")) {
+                jreAllowed &= !"false".equals(product.getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY));
 
-            for (Product product : Registry.getInstance().getProductsToInstall()) {
-                if (product.getUid().startsWith("nb-")) {
-                    jreAllowed &= !"false".equals(product.getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY));
-
-                    String minVersionString = product.getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY);
-                    if (minVersionString != null) {
-                        Version depMinVersion = Version.getVersion(minVersionString);
-                        if (min == null || depMinVersion.newerThan(min)) {
-                            min = depMinVersion;
-                        }
+                String minVersionString = product.getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY);
+                if (minVersionString != null) {
+                    Version depMinVersion = Version.getVersion(minVersionString);
+                    if (min == null || depMinVersion.newerThan(min)) {
+                        min = depMinVersion;
                     }
-                    String maxVersionString = product.getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY);
-                    if (maxVersionString != null) {
-                        Version depMaxVersion = Version.getVersion(maxVersionString);
-                        if (min == null || depMaxVersion.olderThan(max)) {
-                            max = depMaxVersion;
-                        }
-                    }
-                // do not check preferred version of the dependent nb product :
-                // it is not clear how to handle that
                 }
+                String maxVersionString = product.getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY);
+                if (maxVersionString != null) {
+                    Version depMaxVersion = Version.getVersion(maxVersionString);
+                    if (min == null || depMaxVersion.olderThan(max)) {
+                        max = depMaxVersion;
+                    }
+                }
+            // do not check preferred version of the dependent nb product :
+            // it is not clear how to handle that
             }
         }
 
