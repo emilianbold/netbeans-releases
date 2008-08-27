@@ -322,7 +322,6 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
     }
     
     private ClassTree refactorInnerClass(ClassTree newInnerClass) {
-        Thread.dumpStack();
         String referenceName = refactoring.getReferenceName();
         VariableTree variable = null;
         if (referenceName != null) {
