@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd;
+package org.netbeans.modules.cnd.utils;
 
 /**
  * MIME names.
