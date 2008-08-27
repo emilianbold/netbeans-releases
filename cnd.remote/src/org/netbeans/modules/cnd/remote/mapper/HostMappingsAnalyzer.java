@@ -85,6 +85,10 @@ public class HostMappingsAnalyzer {
                 Map<String, String> map = provider.findMappings(secondPI.getHkey(), firstPI.getHkey());
                 mappingsFirst2Second.putAll(map);
             }
+            if (provider.isApplicable(firstPI, secondPI)) {
+                Map<String, String> map = provider.findMappings(firstPI.getHkey(), secondPI.getHkey());
+                mappingsFirst2Second.putAll(map);
+            }
         }
 
         return mappingsFirst2Second;

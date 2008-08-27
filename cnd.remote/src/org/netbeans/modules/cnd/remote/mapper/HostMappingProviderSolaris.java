@@ -42,8 +42,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
@@ -58,13 +61,22 @@ public class HostMappingProviderSolaris implements HostMappingProvider {
 
     public Map<String, String> findMappings(String hkey, String otherHkey) {
         Map<String, String> mappings = new HashMap<String, String>();
-        if (!RemoteUtils.isLocalhost(hkey)) {
+        boolean localhost = RemoteUtils.isLocalhost(hkey);
+        String hostName = localhost ? getLocalHostName() : RemoteUtils.getHostName(hkey);
+        if (hostName != null) {
             RunFacade runner = RunFacade.getInstance(hkey);
             if (runner.run("/usr/sbin/share")) { //NOI18N
-                mappings.putAll(parseOutput(hkey, new StringReader(runner.getOutput())));
+                List<String> paths = parseOutput(hkey, new StringReader(runner.getOutput()));
+                for (String path : paths) {
+                    assert path!=null && path.length() > 0 && path.charAt(0) == '/';
+                    String netPath = NET + hostName + path;
+                    if (localhost) {
+                        mappings.put(path, netPath);
+                    } else {
+                        mappings.put(netPath, path);
+                    }
+                }
             }
-        } else {
-            //TODO
         }
         return mappings;
     }
@@ -72,7 +84,6 @@ public class HostMappingProviderSolaris implements HostMappingProvider {
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
         return hostPlatform.isUnix();
     }
-
     private static final String NET = "/net/";
 
     /**
@@ -82,23 +93,40 @@ public class HostMappingProviderSolaris implements HostMappingProvider {
      * @param outputReader
      * @return
      */
-    // 
-    static Map<String, String> parseOutput(String hkey, Reader outputReader) {
-        Map<String, String> mappings = new HashMap<String, String>();
+    static List<String> parseOutput(String hkey, Reader outputReader) {
+        List<String> paths = new ArrayList<String>();
         try {
             BufferedReader reader = new BufferedReader(outputReader);
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 String[] values = line.split(" +");
-                if (values.length > 2) {
+                if (values.length > 1) {
                     String path = values[1];
                     if (HostInfoProvider.getDefault().fileExists(hkey, path)) {
-                        mappings.put( NET + RemoteUtils.getHostName(hkey) + path, path); // NOI18N
+                        paths.add(path); // NOI18N
                     }
                 }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return mappings;
+        return paths;
+    }
+
+    private static String getLocalHostName() {
+        String hostName = null;
+        RunFacade runner = RunFacade.getInstance(CompilerSetManager.LOCALHOST);
+        if (runner.run("uname -a")) { //NOI18N
+            String result = runner.getOutput();
+            if (result != null) {
+                String[] values = result.split(" +");
+                if (values.length > 1) {
+                    hostName = values[1];
+                //TODO: validation?
+                //TODO: add smth for Windows and move to HostInfoProv or RemoteUtils?
+                //TODO: hkey should be responsible about this instead of being speechless String with @ inside :/
+                }
+            }
+        }
+        return hostName;
     }
 }
