@@ -88,7 +88,6 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     protected Problem preCheck(CompilationController info) throws IOException {
         // fire operation start on the registered progress listeners (4 steps)
-        Thread.dumpStack();
         fireProgressListenerStart(refactoring.PRE_CHECK, 4);
         Problem preCheckProblem = null;
         info.toPhase(JavaSource.Phase.RESOLVED);
@@ -178,7 +177,6 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
 
     @Override
     public Problem fastCheckParameters() {
-        Thread.dumpStack();
         Problem result = null;
         
         String newName = refactoring.getClassName();
@@ -210,7 +208,6 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        Thread.dumpStack();
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
         final InnerToOuterTransformer innerToOuter = new InnerToOuterTransformer(refactoring);
