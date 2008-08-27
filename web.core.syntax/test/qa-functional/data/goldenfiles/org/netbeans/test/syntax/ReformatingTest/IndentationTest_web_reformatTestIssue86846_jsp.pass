@@ -4,7 +4,7 @@
     }
 %>
 <%
-            if (start) {
-                start();
-            }
+        if (start) {
+            start();
+        }
 %>

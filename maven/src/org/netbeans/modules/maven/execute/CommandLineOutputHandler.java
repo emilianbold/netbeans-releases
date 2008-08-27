@@ -128,14 +128,14 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                 }
                 if (skipLF) {
                     skipLF = false;
-                    if (char1[0] == '\n') {
+                    if (char1[0] == '\n') { //NOI18N
                         continue;
                     }
                 }
-                if (char1[0] == '\n') {
+                if (char1[0] == '\n') { //NOI18N
                     return buf.toString();
                 }
-                if (char1[0] == '\r') {
+                if (char1[0] == '\r') { //NOI18N
                     skipLF = true;
                     return buf.toString();
                 }
@@ -157,17 +157,18 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
 
                 }
             }
-            return "&^#INCOMPLINE:" + buf.toString();
+            return "&^#INCOMPLINE:" + buf.toString(); //NOI18N
 
         }
 
         public void run() {
+            CommandLineOutputHandler.this.processStart(getEventId(PRJ_EXECUTE,null), stdOut);
             try {
 
                 String line = readLine();
                 while (line != null) {
-                    if (line.startsWith("&^#INCOMPLINE:")) {
-                        stdOut.print(line.substring("&^#INCOMPLINE:".length()));
+                    if (line.startsWith("&^#INCOMPLINE:")) { //NOI18N
+                        stdOut.print(line.substring("&^#INCOMPLINE:".length())); //NOI18N
                         line = readLine();
                         continue;
                     }
@@ -181,7 +182,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                     }
                     Matcher match = startPattern.matcher(line);
                     if (match.matches()) {
-                        String tag = match.group(1) + ":" + match.group(2); //NOi18N
+                        String tag = match.group(1) + ":" + match.group(2); //NOI18N
                         if (currentTag != null) {
                             CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, currentTag), stdOut);
                         }
@@ -202,6 +203,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
             } catch (IOException ex) {
                 ex.printStackTrace();
             } finally {
+                CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);
                 try {
                     str.close();
                 } catch (IOException ex) {

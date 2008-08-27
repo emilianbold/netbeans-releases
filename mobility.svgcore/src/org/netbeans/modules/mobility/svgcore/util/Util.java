@@ -268,7 +268,6 @@ public class Util {
         
         private void updateProgress() throws IOException {
             double current = ((double)alreadyRead / (double)expectedSize) * 100.0;
-            Logger.getLogger(this.getClass().getName()).warning("XXXXXXXXXXXXX "+current +"% = "+alreadyRead + " of "+expectedSize );
             if (current >= MAX_WORKUNITS) {
                 current = 295;
             }
