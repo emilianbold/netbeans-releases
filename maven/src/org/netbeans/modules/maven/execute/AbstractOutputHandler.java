@@ -62,7 +62,7 @@ import org.openide.windows.OutputWriter;
  * @author mkleint
  */
 public abstract class AbstractOutputHandler {
-    private static final String PRJ_EXECUTE = "project-execute"; //NOI18N
+    protected static final String PRJ_EXECUTE = "project-execute"; //NOI18N
     
     protected HashMap<String, Set> processors;
     protected Set currentProcessors;
