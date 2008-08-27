@@ -468,7 +468,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private String convertFile(FileObject fo, String relPath, boolean needCopy) {
         String relativePath;
         FileObject sourceFolder = getSourceFolder();
-        String sourcePath = sourceFolder.getPath();
+        String sourcePath = FileUtil.toFile(sourceFolder).getAbsolutePath();
 
         File file = FileUtil.toFile(fo);
         if (file == null) {
@@ -479,7 +479,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
             if (fullPath.contains(sourcePath)) {
                 // file is inside sources
                 fullPath = fo.getPath();
-                int i = fullPath.indexOf(sourcePath) + sourcePath.length();
+                int i = fullPath.indexOf(sourcePath) + sourcePath.length() + 1;
                 relativePath = fullPath.substring(i);
             } else if (needCopy) {
                 // somewhere outside sources - need to copy (export image)
