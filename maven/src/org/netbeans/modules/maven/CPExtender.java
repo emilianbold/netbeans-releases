@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -301,7 +303,21 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
     public SourceGroup[] getExtensibleSourceGroups() {
         Sources s = this.project.getLookup().lookup(Sources.class);
         assert s != null;
-        return s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        List<SourceGroup> grps = new ArrayList<SourceGroup>();
+        SourceGroup[] java = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (java != null) {
+            grps.addAll(Arrays.asList(java));
+        }
+        SourceGroup[] res = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (res != null) {
+            grps.addAll(Arrays.asList(res));
+        }
+        SourceGroup[] web = s.getSourceGroups("doc_root");
+        if (web != null) {
+            grps.addAll(Arrays.asList(web));
+        }
+        
+        return grps.toArray(new SourceGroup[0]);
     }
     
     public String[] getExtensibleClassPathTypes(SourceGroup arg0) {
@@ -323,6 +339,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
             try {
                 WriterUtils.writePomModel(pom, model);
                 NbMavenProject.fireMavenProjectReload(project);
+                project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -355,6 +372,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
             try {
                 WriterUtils.writePomModel(pom, model);
                 NbMavenProject.fireMavenProjectReload(project);
+                project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
