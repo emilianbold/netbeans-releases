@@ -60,7 +60,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.editor.*;
 
 import org.netbeans.modules.editor.*;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /**
 * Fortran editor kit with appropriate document

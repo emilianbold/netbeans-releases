@@ -492,6 +492,9 @@ public class Resolver3 implements Resolver {
             }
             if( result == null  && needNamespaces()) {
                 result = findNamespace(nameTokens[0]);
+                if (result == null && getContainingNamespace() != null) {
+                    result = findNamespace(getContainingNamespace().getQualifiedName() + "::" + nameTokens[0]); // NOI18N
+                }
             }
             if( result == null && needClassifiers()) {
                 containingNS = getContainingNamespace();

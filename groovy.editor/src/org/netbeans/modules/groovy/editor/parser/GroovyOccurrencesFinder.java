@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.groovy.editor.AstUtilities.FakeASTNode;
 import org.netbeans.modules.groovy.editor.VariableScopeVisitor;
+import org.openide.filesystems.FileObject;
 
 /**
  * The (call-)proctocol for OccurrencesFinder is always:
@@ -72,6 +73,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
+    private FileObject file;
     private final Logger LOG = Logger.getLogger(GroovyOccurrencesFinder.class.getName());
 
     public GroovyOccurrencesFinder() {
@@ -102,6 +104,13 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         resume();
         if (isCancelled()) {
             return;
+        }
+
+        FileObject currentFile = info.getFileObject();
+        if (currentFile != file) {
+            // Ensure that we don't reuse results from a different file
+            occurrences = null;
+            file = currentFile;
         }
 
         ModuleNode rootNode = AstUtilities.getRoot(info);

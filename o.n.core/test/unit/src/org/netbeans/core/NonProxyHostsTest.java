@@ -47,8 +47,8 @@ import java.net.URI;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.NbPreferences;
 
 /** Tests Detect OS nonProxyHosts settings.
@@ -56,6 +56,7 @@ import org.openide.util.NbPreferences;
  * @author Jiri Rechtacek
  * @see http://www.netbeans.org/issues/show_bug.cgi?id=77053
  */
+@RandomlyFails // NB-Core-Build #1247, 1248
 public class NonProxyHostsTest extends NbTestCase {
     private static String SYSTEM_PROXY_HOST = "system.cache.org";
     private static String SYSTEM_PROXY_PORT = "777";
@@ -77,10 +78,6 @@ public class NonProxyHostsTest extends NbTestCase {
     
     public NonProxyHostsTest (String name) {
         super (name);
-    }
-    
-    public static void main(String[] args) {
-        TestRunner.run (new NbTestSuite (NonProxyHostsTest.class));
     }
     
     @Override

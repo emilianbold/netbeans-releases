@@ -127,9 +127,6 @@
 
     <tocitem text="Configuring the IDE's Workspace">
       <tocitem text="Managing IDE Windows" target="workspace.window.managing"/>
-      <tocitem text="Customizing Menus in the IDE" target="configure.menucustomize" />
-      <tocitem text="Customizing the Display of Commands in a Menu" target="configure.menucommands" />
-      <tocitem text="Customizing the Contextual Menu for an Object" target="configure.menucontextual" />
       <tocitem text="Customizing Toolbars in the IDE" target="configure.tbcustomize" />
       <tocitem text="Customizing the Display of Commands in a Toolbar" target="configure.tbcommands" />
     </tocitem>
