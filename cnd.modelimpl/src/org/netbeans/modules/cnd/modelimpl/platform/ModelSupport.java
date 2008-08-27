@@ -390,19 +390,6 @@ public class ModelSupport implements PropertyChangeListener {
         openedProjects.remove(project);
     }    
     
-    private void removeProject(Project project) {
-        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.removeProject: " + toString(project)); // NOI18N
-	ModelImpl model = theModel;
-	if( model == null ) {
-	    return;
-	}
-        NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
-        if (nativeProject != null) {
-            model.removeProject(nativeProject);
-        }
-        openedProjects.remove(project);
-    }
-    
     public static FileBuffer getFileBuffer(File file) {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if( fo != null ) {
