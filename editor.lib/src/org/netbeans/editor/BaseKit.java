@@ -104,6 +104,13 @@ import org.openide.util.WeakSet;
 
 public class BaseKit extends DefaultEditorKit {
 
+    /**
+     * Flag indicating that the JTextComponent.paste() is in progress.
+     * Checked in BaseDocument.read() to ignore clearing of the regions
+     * for trailing-whitespace-removal.
+     */
+    static ThreadLocal<Boolean> IN_PASTE = new ThreadLocal<Boolean>();
+
     private static final Logger LOG = Logger.getLogger(BaseKit.class.getName());
     
     /** split the current line at cursor position */
@@ -1689,7 +1696,12 @@ public class BaseKit extends DefaultEditorKit {
                         try {
                             Caret caret = target.getCaret();
                             int startOffset = target.getSelectionStart();
-                            target.paste();
+                            IN_PASTE.set(true);
+                            try {
+                                target.paste();
+                            } finally {
+                                IN_PASTE.set(false);
+                            }
                             int endOffset = caret.getDot();
                             if (formatted) {
                                 formatter.reformat(doc, startOffset, endOffset);

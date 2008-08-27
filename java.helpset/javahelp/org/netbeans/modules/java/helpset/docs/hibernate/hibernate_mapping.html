@@ -23,12 +23,14 @@
         <ul>
             <li><strong>Hibernate Mapping Files.</strong>
             This wizard generates a single mapping file for a specified class.
-            After you create the mapping file you need to edit the file 
+            After you create the mapping file you need to edit the mapping file 
             in the XML editor to map the fields in the class to the corresponding columns in the table.
             You can use the IDE's code completion feature to help you edit the mapping file. </li>
             <li><strong>POJOs and Hibernate Mapping Files from Database.</strong> 
             If you use this wizard you can set the option for the IDE to automatically generate 
-            Hibernate mapping files for the tables you select in the wizard.</li>
+            Hibernate mapping files for the tables you select in the wizard.
+            The wizard automatically modifies the Hibernate configuration file
+            to specify the Hibernate mapping files.</li>
         </ul>
          
 
@@ -37,21 +39,23 @@
             <ol>
                <li>Right-click the package node containing the class to be mapped and choose New &gt; Other to open the New File wizard.</li>
                <li>Select Hibernate from the Categories list and Hibernate Mapping File from the File Types list. Click Next.</li>
-               <li>Type <i>&lt;CLASS_NAME&gt;</i>.hbm for the file name. Click Next.</li>
-               <li>Specify the Class to Map.
-               <p>You can click the button to locate the file.</p></li>
+               <li>Type <i>&lt;CLASS_NAME&gt;</i>.hbm for the file name, where <i>&lt;CLASS_NAME&gt;</i>
+               is the name of the class that you want to map. Click Next.</li>
+               <li>Specify the Class that you want to map to a table.
+               <p>You can click the button to locate the class.</p></li>
                <li>Choose the corresponding database table from the dropdown list.
                Click Finish.</li>
             </ol>
         
-            <p>When you click Finish, the mapping file is created in the same source package as the class it maps
-            and the file opens in the Source Editor.</p>
+            <p>When you click Finish, the mapping file is created in the source package you specified 
+            and the file opens in the Source Editor.
+            The Hibernate configuration file is modified to specify the mapping file.</p>
         
         <dl>
         <dt><a name="seealso">See Also</a></dt>
         <dd><a href="hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
         <dd><a href="hibernate_cfgedit.html">Editing the Hibernate Configuration File</a> </dd>
-        <dd><a href="hibernate_support.html">Adding Hibernate Support to a Project</a></dd>
+        <dd><a href="hibernate_addsupport.html">Adding Hibernate Support to a Project</a></dd>
         <dd><a href="hibernate_about.html">About Hibernate Support</a> </dd>
         </dl>
         

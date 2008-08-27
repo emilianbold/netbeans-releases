@@ -50,9 +50,11 @@ import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
+import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities.DefaultTaskEvaluator;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
@@ -229,9 +231,17 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
 
     public void customize(Project project, RakeTask task, ExecutionDescriptor taskDescriptor, boolean debug) {
-        if (!task.getTask().equals("spec")) { //NOI18N
+        boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.SPEC_TASKS, task, new DefaultTaskEvaluator() {
+
+            public boolean isDefault(RakeTask task) {
+                return "spec".equals(task.getTask()); //NOI18N
+            }
+        });
+          
+        if (!useRunner) {
             return;
         }
+
         TestExecutionManager.getInstance().reset();
         String path = getMediatorScript().getAbsolutePath();
         if (Utilities.isWindows()) {
