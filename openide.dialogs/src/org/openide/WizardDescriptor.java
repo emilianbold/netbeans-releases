@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -298,6 +298,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /** a component with wait cursor */
     private Component waitingComponent;
     private boolean changeStateInProgress = false;
+    private boolean currentPanelWasChangedWhileStoreSettings = false;
 
     /** Whether wizard panel will be constructed from <CODE>WizardDescriptor.getProperty()</CODE>/
      * <CODE>(JComponent)Panel.getComponent()</CODE> client properties or returned
@@ -1282,7 +1283,11 @@ public class WizardDescriptor extends DialogDescriptor {
             //Bugfix #25820: make sure that storeSettings
             //is called before propertyChange.
             if (data.current != null) {
+                Panel old = data.current;
                 data.current.storeSettings(data.getSettings(this));
+                if (! old.equals (data.current)) {
+                    currentPanelWasChangedWhileStoreSettings = true;
+                }
             }
         }
 
@@ -1344,10 +1349,16 @@ public class WizardDescriptor extends DialogDescriptor {
 
                 try {
                     // try validation current panel
-                    v.validate();
+                    if (currentPanelWasChangedWhileStoreSettings) {
+                        err.log (Level.FINE, "validationPeformer interupt because currentPanelWasChangedWhileStoreSettings"); // NOI18N
+                        currentPanelWasChangedWhileStoreSettings = false;
+                    } else {
+                        v.validate();
+                        err.log (Level.FINE, "validation passed successfully."); // NOI18N
+                    }
                     validationRuns = false;
 
-                    // validation succesfull
+                    // validation was successful
                     if (SwingUtilities.isEventDispatchThread ()) {
                         err.log (Level.FINE, "Runs onValidPerformer directly in EDT."); // NOI18N
                         onValidPerformer.run();

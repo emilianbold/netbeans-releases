@@ -53,7 +53,7 @@ import org.netbeans.modules.vmd.api.model.PresenterEvent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.mobility.svgcore.util.Util;

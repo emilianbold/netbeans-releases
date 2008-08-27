@@ -46,11 +46,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
@@ -579,9 +581,14 @@ public class MakeConfiguration extends Configuration {
         if (getCompilerSet().getCompilerSet() == null) {
             return ret;
         }
-        ret += getCompilerSet().getCompilerSet().getName() + "-"; // NOI18N
-        ret += Platforms.getPlatform(getPlatform().getValue()).getName();
-        return ret;
+        return getVariant(getCompilerSet().getCompilerSet(), getPlatform().getValue());
+//        ret += getCompilerSet().getCompilerSet().getName() + "-"; // NOI18N
+//        ret += Platforms.getPlatform(getPlatform().getValue()).getName();
+//        return ret;
+    }
+    
+    public static String getVariant(CompilerSet compilerSet, int platform) {
+        return compilerSet.getName() + "-" + Platforms.getPlatform(platform).getName(); // NOI18N
     }
 
     public Set/*<Project>*/ getSubProjects() {

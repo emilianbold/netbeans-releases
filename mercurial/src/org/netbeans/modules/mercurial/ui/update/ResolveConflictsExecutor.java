@@ -95,13 +95,17 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
             FileObject fo = FileUtil.toFileObject(file);
             handleMergeFor(file, fo, fo.lock(), merge);
         } catch (FileAlreadyLockedException e) {
-            Set components = TopComponent.getRegistry().getOpened();
-            for (Iterator i = components.iterator(); i.hasNext();) {
-                TopComponent tc = (TopComponent) i.next();
-                if (tc.getClientProperty(ResolveConflictsExecutor.class.getName()) != null) {
-                    tc.requestActive();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    Set components = TopComponent.getRegistry().getOpened();
+                    for (Iterator i = components.iterator(); i.hasNext();) {
+                        TopComponent tc = (TopComponent) i.next();
+                        if (tc.getClientProperty(ResolveConflictsExecutor.class.getName()) != null) {
+                            tc.requestActive();
+                        }
+                    }
                 }
-            }
+            });
         } catch (IOException ioex) {
             org.openide.ErrorManager.getDefault().notify(ioex);
         }

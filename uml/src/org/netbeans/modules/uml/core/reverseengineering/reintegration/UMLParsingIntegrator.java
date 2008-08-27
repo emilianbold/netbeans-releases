@@ -1179,9 +1179,15 @@ public class UMLParsingIntegrator
                             proxyMan.refresh(presentation,true);
                         }
                     }
-                    
+
 //                    proxyMan.broadcastToAllOpenDiagrams(elementAction);
                     m_ItemsToSink.clear();
+
+                    for(IPresentationElement pe : m_PresElemsToSink) 
+                    {
+                        proxyMan.refresh(pe, true);
+                    }
+                    m_PresElemsToSink.clear();
                 }
             }
         }
@@ -1231,6 +1237,21 @@ public class UMLParsingIntegrator
         m_ItemsToSink.add(node);
     }
     
+    private void addPresElemsToResync(IElement elem) 
+    {
+        if (elem != null) 
+        {
+            List<IPresentationElement> presentations = elem.getPresentationElements();
+            if (presentations != null) 
+            {
+                for(IPresentationElement presentation : presentations)
+                {
+                    m_PresElemsToSink.add(presentation);
+                }
+            }
+        }
+    }
+
     public void handlePresentationElements(Node childInDestinationNamespace, Node elementBeingInjected)
     {
         if (childInDestinationNamespace != null && elementBeingInjected != null)
@@ -3335,7 +3356,8 @@ public class UMLParsingIntegrator
             Collection<IImplementation> impls = oldImpls.values();
             for(IImplementation impl : impls) 
             {
-                impl.delete();
+                addPresElemsToResync(impl);
+                impl.delete();     
             }
         }
         catch (Exception e)
@@ -3480,6 +3502,7 @@ public class UMLParsingIntegrator
             Collection<IGeneralization> gens  = oldGens.values();
             for(IGeneralization gen : gens) 
             {
+                addPresElemsToResync(gen);
                 gen.delete();
             }
         }
@@ -4901,6 +4924,7 @@ public class UMLParsingIntegrator
                                 }
                                 else 
                                 {
+                                    addPresElemsToResync(otherEnd.getAssociation());
                                     otherEnd.getAssociation().delete();
                                 }
                             }
@@ -4953,6 +4977,7 @@ public class UMLParsingIntegrator
                                         if (otherEnd != null) 
                                         {
                                             oldAssociations.remove(attrName);
+                                            addPresElemsToResync(otherEnd.getAssociation());
                                             otherEnd.getAssociation().delete();
                                         }
                                         establishAssociation(
@@ -5020,6 +5045,7 @@ public class UMLParsingIntegrator
             {
                 if (anEnd != null) 
                 {
+                    addPresElemsToResync(anEnd.getAssociation());
                     anEnd.getAssociation().delete();
                 }
             }
@@ -8389,6 +8415,7 @@ public class UMLParsingIntegrator
     private boolean logEnabled = false;
     private ITaskSupervisor supervisor;
     private ETList < Node > m_ItemsToSink = new ETArrayList < Node > ();
+    private List<IPresentationElement> m_PresElemsToSink = new ArrayList<IPresentationElement> ();
     private Document m_FragDocument = null;
     private IElementLocator m_Locator = null;
     private IRelationFactory m_Factory = null;

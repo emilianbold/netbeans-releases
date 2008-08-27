@@ -81,7 +81,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -91,6 +90,7 @@ import org.openide.util.Utilities;
  * XXX - Rename to JavaFileObjects
  *
  * @author Petr Hrebejk
+ * @author Tomas Zezula
  */
 public class FileObjects {
     
@@ -628,8 +628,8 @@ public class FileObjects {
     
     
     public static String getRelativePath (final File root, final File fo) {
-        final String rootPath = FileUtil.normalizeFile (root).getPath ();
-        final String foPath = FileUtil.normalizeFile (fo).getPath();
+        final String rootPath = root.getAbsolutePath();
+        final String foPath = fo.getAbsolutePath();
         assert foPath.startsWith(rootPath) : String.format("getRelativePath(%s, %s)", rootPath, foPath);
         int index = rootPath.length();
         if (rootPath.charAt(index - 1) != File.separatorChar) {

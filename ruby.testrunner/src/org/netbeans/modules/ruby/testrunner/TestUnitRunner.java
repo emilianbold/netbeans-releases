@@ -129,6 +129,10 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
 
     }
 
+    static void addTestUnitRunnerToEnv(Map<String, String> env) {
+        env.put(NB_TEST_RUNNER, getScript(RUNNER_SCRIPT_NAME).getAbsolutePath());
+    }
+    
     public void runAllTests(Project project, boolean debug) {
         List<String> additionalArgs = new ArrayList<String>();
         RubyBaseProject baseProject = project.getLookup().lookup(RubyBaseProject.class);
@@ -185,7 +189,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
                 debug ? SessionType.DEBUG : SessionType.TEST);
 
         Map<String, String> env = new HashMap<String, String>(1);
-        env.put(NB_TEST_RUNNER, getScript(RUNNER_SCRIPT_NAME).getAbsolutePath());
+        addTestUnitRunnerToEnv(env);
         taskDescriptor.addAdditionalEnv(env);
         taskDescriptor.addOutputRecognizer(recognizer);
     }

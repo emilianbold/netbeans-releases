@@ -171,10 +171,10 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             DebuggerListener listener = new DebuggerListener(deb);
             debuggerToListener.put(deb, listener);
             if (debuggingView != null) {
-                        debuggingView.updateSessionsComboBox();
-                    }
+                debuggingView.updateSessionsComboBox();
             }
         }
+    }
 
     @Override
     public synchronized void engineRemoved(DebuggerEngine engine) {
@@ -186,10 +186,10 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             }
             debuggerToListener.remove(listener);
             if (debuggingView != null) {
-                        debuggingView.updateSessionsComboBox();
-                    }
+                debuggingView.updateSessionsComboBox();
             }
         }
+    }
     
     // **************************************************************************
     // inner classes

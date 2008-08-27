@@ -273,7 +273,7 @@ public abstract class CopySupport {
 	}
 
 	private boolean isCopyAllowed(FileObject fo,boolean forDelete) {
-	     if (getConfig().isInvalidModifier() || !isProjectFolder(fo)) {
+	     if (getConfig().isInvalidModifier() || !isProjectFolder(fo) || isNbProjectMetadata(fo)) {
                  return false;
              }
              if (!forDelete) {
@@ -288,6 +288,21 @@ public abstract class CopySupport {
              }
              return true;
 	}
+
+        private boolean isNbProjectMetadata(FileObject fo) {
+            final String metadataName = "nbproject";//NOI18N
+            if (fo.getPath().indexOf(metadataName) != -1) {
+                while(fo != null) {
+                    if (fo.isFolder()) {
+                        if (metadataName.equals(fo.getNameExt())) {
+                            return true;
+                        }
+                    }
+                    fo = fo.getParent();
+                }
+            }
+            return false;
+        }
 
 	private void prepareForCopy(FileObject source) {
 	    if (isCopyAllowed(source,false)) {

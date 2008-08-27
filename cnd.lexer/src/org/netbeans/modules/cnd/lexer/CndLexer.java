@@ -385,7 +385,13 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                                         break;
                                     case 'l':
                                     case 'L': // 0x1234l or 0x1234L
-                                        return token(CppTokenId.LONG_LITERAL);
+                                        c = read(true);
+                                        if (c == 'l' || c == 'L') {
+                                            return token(CppTokenId.LONG_LONG_LITERAL);
+                                        } else {
+                                            backup(1);
+                                            return token(CppTokenId.LONG_LITERAL);
+                                        }
                                     case 'p':
                                     case 'P': // binary exponent
                                         return finishFloatExponent();
@@ -428,7 +434,6 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                         return token(CppTokenId.BACK_SLASH);
                     case '$':
                         return token(CppTokenId.DOLLAR);
-
                     case '\r':
                         consumeNewline();
                         return token(CppTokenId.NEW_LINE);
@@ -593,10 +598,13 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                     break;
                 case 'l':
                 case 'L': // 0l or 0L
-                    return token(CppTokenId.LONG_LITERAL);
-//                case 'd':
-//                case 'D':
-//                    return token(CppTokenId.DOUBLE_LITERAL);
+                    c = read(true);
+                    if (c == 'l' || c == 'L') {
+                        return token(CppTokenId.LONG_LONG_LITERAL);
+                    } else {
+                        backup(1);
+                        return token(CppTokenId.LONG_LITERAL);
+                    }
                 case 'f':
                 case 'F':
                     return token(CppTokenId.FLOAT_LITERAL);

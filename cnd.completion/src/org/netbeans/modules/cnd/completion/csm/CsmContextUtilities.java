@@ -503,8 +503,27 @@ public class CsmContextUtilities {
             }
         }
         return clazz;
-    }    
-    
+    }
+
+    /**
+     * Finds class containing offset in its body.
+     *
+     * @param context
+     * @param offset
+     * @return
+     */
+    public static CsmClass getClass(CsmContext context, int offset) {
+        CsmClass result = null;
+        for (Iterator it = context.iterator(); it.hasNext();) {
+            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
+            CsmScope scope = elem.getScope();
+            if (CsmKindUtilities.isClass(scope) && ((CsmClass)scope).getLeftBracketOffset() < offset) {
+                result = (CsmClass)scope;
+            }
+        }
+        return result;
+    }
+
     public static CsmFunction getFunction(CsmContext context) {
         CsmFunction fun = null;
         for (Iterator it = context.iterator(); it.hasNext();) {

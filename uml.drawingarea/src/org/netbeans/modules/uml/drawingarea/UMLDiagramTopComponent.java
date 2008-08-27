@@ -53,6 +53,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseWheelListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -898,6 +899,24 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
                 diagramView = scene.getView();
             }
             diagramView.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+            
+            // If the scene component has a mouse wheel listener then the 
+            // native JScrollPane scroll wheel behavior will not occur.  So
+            // Since we do any special mouse wheel behavior, remove all mouse
+            // wheel listeners (there should only be one) so the JScrollPane will
+            // handle the events.
+            //
+            // Why is it important to have the native mouse wheel behavior?  The 
+            // Swing mouse wheel implmentation only handles the vertical wheel
+            // behavior.  However newer mouse technology include horizontal 
+            // mouse wheel behaviors as well.  In fact the Mac mouse touch pad
+            // also implements the horizontal mouse scroll behavior.  In fact
+            // the Mac JScrollPanel has also implemented the horizontal scroll
+            // behavior.
+            for(MouseWheelListener listener : diagramView.getMouseWheelListeners())
+            {
+                diagramView.removeMouseWheelListener(listener);
+            }
             
             view.add(diagramView, new Integer(1));
             

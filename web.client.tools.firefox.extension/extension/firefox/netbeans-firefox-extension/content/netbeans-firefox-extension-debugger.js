@@ -1454,11 +1454,16 @@
         var lines = currentFirebugContext.sourceCache.load(fileName);
         var accumulatedText = "";
         var matched = false;
+        var seeFunction;
         
         for (var i = 0; i < 2 && script.baseLineNumber-1-i >= 0; i++) {
             accumulatedText = lines[script.baseLineNumber - 1 - i] + accumulatedText;
             var functionPos = accumulatedText.lastIndexOf('function');
             if (functionPos >= 0) {
+                if (seeFunction) {
+                    return 'anonymous';
+                }
+                seeFunction = true;
                 accumulatedText = accumulatedText.substring(0, functionPos);
             }
             

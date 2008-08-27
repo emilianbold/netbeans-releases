@@ -121,7 +121,7 @@ public class HighlightProvider  {
     
     private void addAnnotations(final BaseDocument doc, final CsmFile file, final DataObject dao, Interrupter interrupter) {
 
-        CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
+        CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
         final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
         if (TRACE_ANNOTATIONS) System.err.printf("\nSetting annotations for %s\n", file);
 
@@ -153,7 +153,7 @@ public class HighlightProvider  {
         };
         removeAnnotations(doc);
         CsmErrorProvider.getDefault().getErrors(new RequestImpl(file,interrupter), response);
-        CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
+        CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
         
     }
     

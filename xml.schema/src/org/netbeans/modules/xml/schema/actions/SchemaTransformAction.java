@@ -133,7 +133,7 @@ public class SchemaTransformAction extends CookieAction {
     }
     
     private boolean isDocumentOpen(Node[] nodes) {
-        if(nodes == null || nodes.length == 0)
+        if(nodes == null || nodes.length != 1)
             return false;
         SchemaDataObject sDO = nodes[0].getLookup().lookup(
                 SchemaDataObject.class);

@@ -169,7 +169,7 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
         Preferences prefs = NbPreferences.forModule(RubyFormatterTest.class);
         prefs.put(FmtOptions.indentSize, Integer.toString(preferences.getIndentation()));
         prefs.put(FmtOptions.continuationIndentSize, Integer.toString(preferences.getHangingIndentation()));
-        CodeStyle codeStyle = CodeStyle.getTestStyle(prefs);
+        CodeStyle codeStyle = CodeStyle.get(prefs);
         
         RubyFormatter formatter = new RubyFormatter(codeStyle, 80);
         

@@ -251,6 +251,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(PACK_ELEMENT)) {
             currentPackagingConfiguration = ((MakeConfiguration)currentConf).getPackagingConfiguration();
             currentPackagingConfiguration.getFiles().getValue().clear();
+            //currentPackagingConfiguration.getHeader().getValue().clear();
+        } else if (element.equals(PACK_INFOS_LIST_ELEMENT)) {
+            currentPackagingConfiguration.getHeader().getValue().clear();
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration)currentConf).getArchiverConfiguration();
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
@@ -281,7 +284,6 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String bc = getString(atts.getValue("BC"));        // NOI18N
             String cc = getString(atts.getValue("CC"));        // NOI18N
             String op = getString(atts.getValue("OP"));        // NOI18N
-            op = ((MakeConfiguration)currentConf).expandMacros(op); // if it is a sample, $(PLATFORM} is stored in output
 
             LibraryItem.ProjectItem projectItem = new LibraryItem.ProjectItem(new MakeArtifact(
                     pl,
@@ -313,7 +315,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String name = atts.getValue(NAME_ATTR); // NOI18N
             String value = atts.getValue(VALUE_ATTR); // NOI18N
             String mandatory = atts.getValue(MANDATORY_ATTR); // NOI18N
-            InfoElement infoElement = new InfoElement(name, value, mandatory.equals(TRUE_VALUE));
+            InfoElement infoElement = new InfoElement(name, value, mandatory.equals(TRUE_VALUE), false);
             if (currentPackagingConfiguration != null)
                 currentPackagingConfiguration.getHeader().add(infoElement);
         }

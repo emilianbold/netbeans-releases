@@ -1408,6 +1408,17 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             }
             return active;
         }
+        
+        @Override
+        protected void checkSelection() {
+            super.checkSelection();
+            int i = getSelectedIndex();
+            if (i < 0) {
+                return;
+            }
+            Configuration conf = (Configuration)getListData().get(i);
+            getDefaultButton().setEnabled(!conf.isDefault());
+        }
     }
     
     /** Look up i18n strings here */

@@ -198,7 +198,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         return null;
     }
 
-    private static File getMediatorScript() {
+    static File getMediatorScript() {
         File mediatorScript = InstalledFileLocator.getDefault().locate(
                 RSPEC_MEDIATOR_SCRIPT, "org.netbeans.modules.ruby.testrunner", false);  // NOI18N
 

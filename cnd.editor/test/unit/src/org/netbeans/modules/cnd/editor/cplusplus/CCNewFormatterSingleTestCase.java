@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
 
 /**
@@ -67,8 +66,4 @@ public class CCNewFormatterSingleTestCase extends CCFormatterBaseUnitTestCase {
             fail(e.getMessage());
 	}
     }
-
-//What about []:
-//        if (lens[sym] != 0) work[offs[lens[sym]]++] = (unsigned short)sym;
-//
 }

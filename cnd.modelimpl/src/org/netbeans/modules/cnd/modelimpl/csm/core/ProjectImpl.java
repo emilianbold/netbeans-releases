@@ -361,22 +361,22 @@ public final class ProjectImpl extends ProjectBase {
     private RequestProcessor.Task task = null;
     private final static int DELAY = 1001;
 
-    public void schedule(final FileBuffer buf, final FileImpl file) {
-        if (task==null) {
-            task = RequestProcessor.getDefault().create(new Runnable() {
-                public void run() {
-                    try {
-                        addToQueue(buf, file);
-                    } catch (AssertionError ex) {
-                        DiagnosticExceptoins.register(ex);
-                    } catch (Exception ex) {
-                        DiagnosticExceptoins.register(ex);
-                    }
-                }
-            }, true);
-            task.setPriority(Thread.MIN_PRIORITY);
+    public synchronized void schedule(final FileBuffer buf, final FileImpl file) {
+        if (task != null) {
+            task.cancel();
         }
-        task.cancel();
+        task = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                try {
+                    addToQueue(buf, file);
+                } catch (AssertionError ex) {
+                    DiagnosticExceptoins.register(ex);
+                } catch (Exception ex) {
+                    DiagnosticExceptoins.register(ex);
+                }
+            }
+        }, true);
+        task.setPriority(Thread.MIN_PRIORITY);
         task.schedule(DELAY);
     }
 

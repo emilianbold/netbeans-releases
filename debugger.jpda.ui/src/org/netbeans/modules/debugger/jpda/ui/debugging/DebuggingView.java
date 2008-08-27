@@ -530,24 +530,28 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     }
     
     void updateSessionsComboBox() {
-        sessionComboBox.removeActionListener(sessionsComboListener);
-        sessionComboBox.removePopupMenuListener(sessionsComboListener);
-        ComboBoxModel model = sessionComboBox.getModel();
-        sessionComboBox.removeAllItems();
-        DebuggerManager dm = DebuggerManager.getDebuggerManager();
-        Session[] sessions = dm.getSessions();
-        for (int x = 0; x < sessions.length; x++) {
-            if (isJPDASession(sessions[x])) {
-                sessionComboBox.addItem(new SessionItem(sessions[x]));
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                sessionComboBox.removeActionListener(sessionsComboListener);
+                sessionComboBox.removePopupMenuListener(sessionsComboListener);
+                ComboBoxModel model = sessionComboBox.getModel();
+                sessionComboBox.removeAllItems();
+                DebuggerManager dm = DebuggerManager.getDebuggerManager();
+                Session[] sessions = dm.getSessions();
+                for (int x = 0; x < sessions.length; x++) {
+                    if (isJPDASession(sessions[x])) {
+                        sessionComboBox.addItem(new SessionItem(sessions[x]));
+                    }
+                }
+                if (model.getSize() == 0) {
+                    sessionComboBox.addItem(new SessionItem(null));
+                }
+                sessionComboBox.setSelectedItem(new SessionItem(dm.getCurrentSession()));
+                sessionComboBox.setVisible(model.getSize() > 1);
+                sessionComboBox.addActionListener(sessionsComboListener);
+                sessionComboBox.addPopupMenuListener(sessionsComboListener);
             }
-        }
-        if (model.getSize() == 0) {
-            sessionComboBox.addItem(new SessionItem(null));
-        }
-        sessionComboBox.setSelectedItem(new SessionItem(dm.getCurrentSession()));
-        sessionComboBox.setVisible(model.getSize() > 1);
-        sessionComboBox.addActionListener(sessionsComboListener);
-        sessionComboBox.addPopupMenuListener(sessionsComboListener);
+        });
     }
     
     // **************************************************************************

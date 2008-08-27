@@ -60,7 +60,6 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.autoupdate.services.Trampoline;
@@ -72,6 +71,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -134,27 +134,23 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     
     public synchronized static Map<String, UpdateItem> getUpdateItems (URL url, AutoupdateCatalogProvider provider) {
         Map<String, UpdateItem> items = new HashMap<String, UpdateItem> ();
+        URI base;
         try {
-            URI base = null;
             if (provider != null) {
-                try {
-                    base = provider.getUpdateCenterURL ().toURI ();
-                } catch (URISyntaxException ex) {
-                    ERR.log (Level.INFO, null, ex);
-                }
+                base = provider.getUpdateCenterURL().toURI();
             } else {
-                base = url.toURI ();
+                base = url.toURI();
             }
-            SAXParser saxParser = SAXParserFactory.newInstance ().newSAXParser ();
-            saxParser.parse (getInputSource (url, provider), new AutoupdateCatalogParser (items, provider, base));
+            try {
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                factory.setValidating(true);
+                SAXParser saxParser = factory.newSAXParser();
+                saxParser.parse(getInputSource(url, provider, base), new AutoupdateCatalogParser(items, provider, base));
+            } catch (Exception ex) {
+                ERR.log(Level.INFO, "Failed to parse " + base, ex);
+            }
         } catch (URISyntaxException ex) {
-            ERR.log (Level.INFO, "Problems while parsing " + url, ex);
-        } catch (SAXException ex) {
-            ERR.log (Level.INFO, "Problems while parsing " + url, ex);
-        } catch (IOException ex) {
-            ERR.log (Level.INFO, "Problems while parsing " + url, ex);
-        } catch (ParserConfigurationException ex) {
-            ERR.log (Level.INFO, "Problems while parsing " + url, ex);
+            ERR.log(Level.INFO, null, ex);
         }
         return items;
     }
@@ -173,18 +169,21 @@ public class AutoupdateCatalogParser extends DefaultHandler {
         return res;
     }
     
-    private static InputStream getInputSource (URL toParse, AutoupdateCatalogProvider p) {
-        InputStream is = null;
+    private static InputSource getInputSource(URL toParse, AutoupdateCatalogProvider p, URI base) {
         try {
+            InputStream is;
             if (isGzip (p)) {
                 is = new BufferedInputStream (new GZIPInputStream (toParse.openStream ()));
             } else {
                 is = new BufferedInputStream (toParse.openStream ());
             }
+            InputSource src = new InputSource(is);
+            src.setSystemId(base.toString());
+            return src;
         } catch (IOException ex) {
             ERR.log (Level.SEVERE, null, ex);
+            return new InputSource();
         }
-        return is;
     }
     
     private Stack<String> currentGroup = new Stack<String> ();
@@ -237,8 +236,6 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                     }
                     provider.setNotification (notification);
                 }
-                lines.clear ();
-                bufferInitSize = 0;
                 currentNotificationUrl.pop ();
                 break;
             case module_notification :
@@ -251,8 +248,6 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                         buf.append (line);
                     }
                     md.appendNotification (buf.toString ());
-                    lines.clear ();
-                    bufferInitSize = 0;
                 }
                 break;
             case external_package :
@@ -277,8 +272,6 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                         ERR.info ("Unpaired license " + currentLicense.peek () + " without any module.");
                     }
 
-                    lines.clear ();
-                    bufferInitSize = 0;
                 }
                 
                 currentLicense.pop ();
@@ -300,6 +293,8 @@ public class AutoupdateCatalogParser extends DefaultHandler {
 
     @Override
     public void startElement (String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        lines.clear();
+        bufferInitSize = 0;
         switch (ELEMENTS.valueOf (qName)) {
             case module_updates :
                 try {
@@ -363,14 +358,32 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                 ERR.info ("Not supported yet.");
                 break;
             case license :
-                assert lines.isEmpty (): "No other license is processing at start of new license.";
                 currentLicense.push (attributes.getValue (LICENSE_ATTR_NAME));
                 break;
             default:
                 ERR.warning ("Unknown element " + qName);
         }
     }
-    
+
+    @Override
+    public void warning(SAXParseException e) throws SAXException {
+        parseError(e);
+    }
+
+    @Override
+    public void error(SAXParseException e) throws SAXException {
+        parseError(e);
+    }
+
+    @Override
+    public void fatalError(SAXParseException e) throws SAXException {
+        parseError(e);
+    }
+
+    private void parseError(SAXParseException e) {
+        ERR.warning(e.getSystemId() + ":" + e.getLineNumber() + ":" + e.getColumnNumber() + ": " + e.getLocalizedMessage());
+    }
+
     @Override
     public InputSource resolveEntity (String publicId, String systemId) throws IOException, SAXException {
         return entityResolver.resolveEntity (publicId, systemId);

@@ -151,7 +151,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         TreeModel original,
         Object node
     ) throws UnknownTypeException {
-        return getChildren(original, node, 0, Integer.MAX_VALUE).length;
+        return Integer.MAX_VALUE;
     }
     
     /**

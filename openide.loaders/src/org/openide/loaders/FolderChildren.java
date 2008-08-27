@@ -320,5 +320,6 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     }
 
     public void fileRenamed(FileRenameEvent fe) {
+        refreshChildren(0);
     }
 }

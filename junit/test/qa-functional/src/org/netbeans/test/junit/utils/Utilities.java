@@ -206,4 +206,23 @@ public class Utilities {
     public static void takeANap(long waitTimeout) {
         new org.netbeans.jemmy.EventTool().waitNoEvent(waitTimeout);
     }
+    
+    public static String pathToProject(String projectName) {
+        String pathToNbProjects = "";
+        try {
+            String userHome =  System.getProperty("user.home") != null ? System.getProperty("user.home") : "";
+            String system = System.getProperty("os.name") != null ? System.getProperty("os.name") : "";
+            if (system.indexOf("Windows") == -1) {
+                //unix
+                pathToNbProjects = userHome + File.separator + "NetBeansProjects" + File.separator + projectName;
+            } else {
+                //windows
+                pathToNbProjects = userHome + File.separator + "My Documents" + File.separator + "NetBeansProjects" + File.separator + projectName;
+            } 
+            Utilities.deleteDirectory(new File(pathToNbProjects));
+        } catch (Exception e) {
+            System.out.println("Exception: " + e.getMessage());
+        }
+        return pathToNbProjects;
+    }
 }

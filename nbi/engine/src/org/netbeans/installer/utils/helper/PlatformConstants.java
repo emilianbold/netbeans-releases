@@ -56,8 +56,15 @@ public final class PlatformConstants {
     
     public static final String OS_FAMILY_MACOSX = 
             "macosx";
+    
     public static final String OS_FAMILY_UNIX = 
             "unix";
+    
+    public static final String OS_FAMILY_FREEBSD = 
+            "freebsd";
+    
+    public static final String OS_FAMILY_BSD = 
+            "bsd";
     
     public static final String HARDWARE_X86 = 
             "x86";

@@ -417,11 +417,16 @@ public class RetoucheUtils {
                 if (classPath == null) {
                     return null;
                 }
-                URL sourceRoot = URLMapper.findURL(classPath.findOwnerRoot(fo), URLMapper.INTERNAL);
-                dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
-                //for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JsProject.SOURCES_TYPE_Js)) {
-                for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
-                    dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+                FileObject ownerRoot = classPath.findOwnerRoot(fo);
+                if (ownerRoot != null) {
+                    URL sourceRoot = URLMapper.findURL(ownerRoot, URLMapper.INTERNAL);
+                    dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+                    //for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JsProject.SOURCES_TYPE_Js)) {
+                    for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
+                        dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
+                    }
+                } else {
+                    dependentRoots.add(URLMapper.findURL(fo.getParent(), URLMapper.INTERNAL));
                 }
             } else {
                 for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {

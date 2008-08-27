@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -83,6 +83,7 @@ public class NonProxyHostsTest extends NbTestCase {
         TestRunner.run (new NbTestSuite (NonProxyHostsTest.class));
     }
     
+    @Override
     protected void setUp () throws Exception {
         super.setUp ();
         System.setProperty ("netbeans.system_http_proxy", SYSTEM_PROXY_HOST + ":" + SYSTEM_PROXY_PORT);
@@ -91,7 +92,7 @@ public class NonProxyHostsTest extends NbTestCase {
         System.setProperty ("http.nonProxyHosts", "*.netbeans.org");
         ProxySelector.setDefault (new NbProxySelector ());
         selector = ProxySelector.getDefault ();
-        proxyPreferences  = NbPreferences.root ().node ("/org/netbeans/core");;
+        proxyPreferences  = NbPreferences.root ().node ("/org/netbeans/core");
         proxyPreferences.addPreferenceChangeListener (new PreferenceChangeListener () {
             public void preferenceChange (PreferenceChangeEvent arg0) {
                 isWaiting = false;
@@ -128,6 +129,7 @@ public class NonProxyHostsTest extends NbTestCase {
         assertEquals ("Connect " + SOCKS_TO_EXTERNAL + " DIRECT.", "[DIRECT]", selector.select (SOCKS_TO_EXTERNAL).toString ());
     }
     
+    @RandomlyFails
     public void testManualProxySettins () {
         proxyPreferences.put (ProxySettings.NOT_PROXY_HOSTS, "localhost|" + "*.netbeans.org");
         proxyPreferences.putInt ("proxyType", ProxySettings.MANUAL_SET_PROXY);
@@ -147,6 +149,7 @@ public class NonProxyHostsTest extends NbTestCase {
                 "SOCKS @ my.webcache:8080", selector.select (SOCKS_TO_EXTERNAL).get (0).toString ());
     }
     
+    @RandomlyFails
     public void testSystemProxySettings () {
         proxyPreferences.putInt ("proxyType", ProxySettings.AUTO_DETECT_PROXY);
         while (isWaiting);

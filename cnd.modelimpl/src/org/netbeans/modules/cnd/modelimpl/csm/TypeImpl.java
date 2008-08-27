@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeClassifierProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -65,7 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  *
  * @author Vladimir Kvashin
  */
-public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeClassifierProvider {
+public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierProvider, SafeTemplateBasedProvider {
 
     private final byte pointerDepth;
     private final boolean reference;
@@ -73,7 +75,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     private final boolean _const;
     CharSequence classifierText;
 
-    final List<CsmType> instantiationParams = new ArrayList();
+    final List<CsmType> instantiationParams = new ArrayList<CsmType>();
 
     // FIX for lazy resolver calls
     CharSequence[] qname = null;
@@ -182,9 +184,22 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     }
 
     public boolean isTemplateBased() {
+        return isTemplateBased(new HashSet<CsmType>());
+    }
+
+    public boolean isTemplateBased(Set<CsmType> visited) {
         CsmClassifier classifier = getClassifier();
         if (CsmKindUtilities.isTypedef(classifier)) {
-            return ((CsmTypedef)classifier).getType().isTemplateBased();
+            if (visited.contains(this)) {
+                return false;
+            }
+            visited.add(this);
+            CsmType type = ((CsmTypedef)classifier).getType();
+            if (type instanceof SafeTemplateBasedProvider) {
+                return ((SafeTemplateBasedProvider)type).isTemplateBased(visited);
+            } else {
+                return type.isTemplateBased();
+            }
         }
         return false;
     }
@@ -211,10 +226,49 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
     public String getCanonicalText() {
         CharSequence text = getClassifierText();
         if (isInstantiationOrSpecialization()) {
-            text = text.toString() + getInstantiationText(this);
+            text = text.toString() + getInstantiationCanonicalText();
         }
 	return decorateText(text, this, true, null).toString();
     }
+    
+    private CharSequence getInstantiationCanonicalText() {
+        StringBuilder sb = new StringBuilder();
+        if ( ! instantiationParams.isEmpty()) {
+            sb.append('<');
+            boolean first = true;
+            for (CsmType param : instantiationParams) {
+                if (first) {
+                    first = false;
+                } else {
+                    sb.append(',');
+                }
+                sb.append(getCanonicalText(param));
+            }
+            sb.append('>');
+        }
+	return sb;
+    }
+    
+    private CharSequence getCanonicalText(CsmType type) {
+        CharSequence canonicalText = null;
+        if (type instanceof CsmTemplateParameterType) {
+            CsmTemplateParameterType parType = (CsmTemplateParameterType) type;
+            CsmTemplateParameter par = parType.getParameter();
+            if (CsmKindUtilities.isClassifierBasedTemplateParameter(par)) {
+                CsmType defType = (CsmType) par.getDefaultValue();
+                if (defType == null) {
+                    canonicalText = TemplateUtils.TYPENAME_STRING;
+                } else {
+                    canonicalText = getCanonicalText(defType);
+                }
+            }
+        }
+        if (canonicalText == null) {
+            canonicalText = type.getCanonicalText().toString();
+        }
+        return canonicalText;
+    }
+    
 
     // package
     CharSequence getOwnText() {
@@ -353,7 +407,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, Resolver.SafeCl
                 if (i > 0) {
                     sb.append(',');
                 }
-                sb.append(type.getCanonicalText());
+                CharSequence canonicalText = getCanonicalText(type);
+                sb.append(canonicalText);
             }
             sb.append('>');
             specializationQname[last] = sb.toString();

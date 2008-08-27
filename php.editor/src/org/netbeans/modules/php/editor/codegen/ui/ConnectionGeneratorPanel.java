@@ -63,6 +63,7 @@ public class ConnectionGeneratorPanel extends javax.swing.JPanel {
         DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(ConnectionGeneratorPanel.class, "MSG_SelectConnection"));
         panel.initialize(desc);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+        dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConnectionGeneratorPanel.class, "ACSD_SelectConnection"));
         dialog.setVisible(true);
         dialog.dispose();
         if (desc.getValue() == DialogDescriptor.OK_OPTION) {

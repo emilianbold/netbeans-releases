@@ -48,6 +48,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 
 /**
  * Implements 
@@ -63,11 +64,20 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     
     @Override
     protected void init(CsmScope scope, AST ast) {
+        // does not call super.init(), but copies super.init() with some changes:
+        // it needs to initialize qualifiedNameSuffix
+        // after rendering, but before calling initQualifiedName() and register()
+        
+	initScope(scope, ast);
+        RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
+        render(ast);
+        
 	AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
 	assert qIdToken != null;
-	qualifiedNameSuffix = TemplateUtils.getSpecializationSuffix(qIdToken);
-	super.init(scope, ast);
-	// super.register(); // super.init() has already registered me
+	qualifiedNameSuffix = TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters());
+        initQualifiedName(scope, ast);
+        
+        register(getScope(), false);
     }
     
     public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file) {

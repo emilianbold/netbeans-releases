@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.runprofiles;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.ListenableIntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -504,7 +506,7 @@ public class RunProfile implements ConfigurationAuxObject {
         this.consoleType = consoleType;
     }
     
-    public int getDefaultConsoleType() {
+    public static int getDefaultConsoleType() {
         return CONSOLE_TYPE_EXTERNAL;
     }
     
@@ -651,13 +653,13 @@ public class RunProfile implements ConfigurationAuxObject {
         return p;
     }
     
-    public Sheet getSheet() {
-        return createSheet();
+    public Sheet getSheet(boolean isRemote) {
+        return createSheet(isRemote);
     }
     
-    private Sheet createSheet() {
+    private Sheet createSheet(boolean isRemote) {
         Sheet sheet = new Sheet();
-        
+
         Sheet.Set set = new Sheet.Set();
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralName"));
@@ -666,13 +668,36 @@ public class RunProfile implements ConfigurationAuxObject {
         set.put(new RunDirectoryNodeProp());
         set.put(new EnvNodeProp());
         set.put(new BuildFirstNodeProp());
-        set.put(new IntNodeProp(getConsoleType(), true, null,
-                getString("ConsoleType_LBL"), getString("ConsoleType_HINT"))); // NOI18N
-        set.put(new IntNodeProp(getTerminalType(), true, null,
-                getString("TerminalType_LBL"), getString("TerminalType_HINT"))); // NOI18N
+        ListenableIntNodeProp consoleTypeNP = new ListenableIntNodeProp(getConsoleType(), true, null,
+                getString("ConsoleType_LBL"), getString("ConsoleType_HINT")); // NOI18N
+        set.put(consoleTypeNP);
+        final IntNodeProp terminalTypeNP = new IntNodeProp(getTerminalType(), true, null,
+                getString("TerminalType_LBL"), getString("TerminalType_HINT")); // NOI18N
+        set.put(terminalTypeNP);
+        if (isRemote) {
+            terminalTypeNP.setCanWrite(false);
+            consoleTypeNP.setCanWrite(false);
+        } else {
+
+            consoleTypeNP.addPropertyChangeListener(new PropertyChangeListener() {
+
+                public void propertyChange(PropertyChangeEvent evt) {
+                    String value = (String) evt.getNewValue();
+                    updateTerminalTypeState(terminalTypeNP, value);
+                }
+            });
+            // because IntNodeProb has "setValue(String)" and "Integer getValue()"...
+            updateTerminalTypeState(terminalTypeNP, consoleTypeNames[(Integer) consoleTypeNP.getValue()]);
+        }
         sheet.put(set);
-        
+
+
         return sheet;
+    }
+
+    private static void updateTerminalTypeState(IntNodeProp terminalTypeNP, String value) {
+        terminalTypeNP.setCanWrite( consoleTypeNames[CONSOLE_TYPE_EXTERNAL].equals(value) ||
+                consoleTypeNames[CONSOLE_TYPE_DEFAULT].equals(value) && getDefaultConsoleType() == CONSOLE_TYPE_EXTERNAL) ;
     }
     
     private static String getString(String s) {

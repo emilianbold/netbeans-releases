@@ -80,9 +80,10 @@ public class RefactorRenameDialog extends PerformanceTestCase {
     
     @Override
     public void initialize() {
-        String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";
+        String BUNDLE = "org.netbeans.modules.refactoring.java.ui.Bundle";
         TITLE = Bundle.getStringTrimmed(BUNDLE,"LBL_Rename");  // "Rename"
-        ACTION = Bundle.getStringTrimmed(BUNDLE,"LBL_Action") + "|" + Bundle.getStringTrimmed(BUNDLE,"LBL_RenameAction"); // "Refactor|Rename..."
+        BUNDLE = "org.netbeans.modules.refactoring.spi.impl.Bundle";
+        ACTION = Bundle.getStringTrimmed(BUNDLE,"Menu/Refactoring") + "|" + Bundle.getStringTrimmed(BUNDLE,"LBL_RenameAction"); // "Refactor|Rename..."
         testNode = new Node(new SourcePackagesNode("jEdit")," org.gjt.sp.jedit|jEdit.java");
     }
     
@@ -92,6 +93,7 @@ public class RefactorRenameDialog extends PerformanceTestCase {
     
     public ComponentOperator open() {
         // invoke Refactor | Rename from the popup menu
+System.err.println("XXX="+testNode);
         testNode.performPopupAction(ACTION);
         return new NbDialogOperator(TITLE);
     }

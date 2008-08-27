@@ -64,9 +64,6 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     private WizardDescriptor wizard;
     private transient Set listeners = new HashSet(1);
     
-    
-    
-    
     public AddServerLocationPanel(JBInstantiatingIterator instantiatingIterator){
         this.instantiatingIterator = instantiatingIterator;
     }
@@ -127,10 +124,13 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     }
     
     public void readSettings(Object settings) {
-        if (wizard == null)
-            wizard = (WizardDescriptor)settings;
+        if (wizard == null) {
+            wizard = (WizardDescriptor) settings;
+        }
     }
     
     public void storeSettings(Object settings) {
+        instantiatingIterator.setInstallLocation(
+                ((AddServerLocationVisualPanel) getComponent()).getInstallLocation());
     }
 }

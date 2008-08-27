@@ -1,0 +1,12 @@
+select | from "accounting"."invoice", "accounting"."customer" "foo"
+
+--
+customers*
+  customer
+    customer_id
+accounting
+  invoice
+    invoice_id
+    customer_id
+  customer
+    customer_id

@@ -90,7 +90,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     
     public boolean canAccept(SaasMethod method, Document doc) {
         if (SaasBean.canAccept(method, WadlSaasMethod.class, getDropFileType()) &&
-                Util.isPhp(doc)) {
+                PhpUtil.isPhp(doc)) {
             return true;
         }
         return false;
@@ -397,7 +397,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
             Document saasServiceDoc = Util.getDocument(saasServiceFile);
             int start = PhpUtil.findText(saasServiceDoc, "}", false);
             int end = start;
-            insert(code, start, end, saasServiceDoc);
+            insert(code, start, end, saasServiceDoc, true);
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());
         }
@@ -576,6 +576,6 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         int len = doc.getLength();
         String content = doc.getText(0, len);
         content = content.replace(searchText, replaceText);
-        insert(content, 0, len, doc);
+        insert(content, 0, len, doc, true);
     }
 }

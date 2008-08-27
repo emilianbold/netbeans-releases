@@ -299,7 +299,7 @@ public class CLIOptions extends CLIHandler {
             File systemDirFile = new File(userDirF, NbRepository.CONFIG_FOLDER);
             makedir (systemDirFile);
             systemDir = systemDirFile.getAbsolutePath ();
-            makedir(new File(userDirF, DIR_MODULES)); // NOI18N
+    //        makedir(new File(userDirF, DIR_MODULES)); // NOI18N
         }
         return userDir;
     }

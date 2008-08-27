@@ -41,6 +41,7 @@
 package org.netbeans.modules.print.ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -221,28 +222,25 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     c.weightx = 1.0;
     c.gridx = 0;
 
-    // border
-    panel.add(createSeparator(i18n("LBL_Border")), c); // NOI18N
-    panel.add(getBorderPanel(), c);
-
-    // header & footer
-    panel.add(createSeparator(i18n("LBL_Header_Footer")), c); // NOI18N
-    panel.add(getTitlePanel(), c);
-
-    // text
-    panel.add(createSeparator(i18n("LBL_Text")), c); // NOI18N
-    panel.add(getTextPanel(), c);
-
-    // zoom
-    panel.add(createSeparator(i18n("LBL_Zoom")), c); // NOI18N
-    panel.add(getZoomPanel(), c);
+    createSection(getBorderSection(), "LBL_Border", panel, c); // NOI18N
+    createSection(getTitleSection(), "LBL_Header_Footer", panel, c); // NOI18N
+    createSection(getTextSection(), "LBL_Text", panel, c); // NOI18N
+    createSection(getZoomSection(), "LBL_Zoom", panel, c); // NOI18N
 
     updateControl();
 
     return panel;
   }
 
-  private JPanel getBorderPanel() {
+  private void createSection(JPanel section, String key, JPanel panel, GridBagConstraints c) {
+    c.insets = new Insets(TINY_SIZE, 0, 0, 0);
+    panel.add(createSeparator(i18n(key)), c);
+    c.insets = new Insets(0, 0, 0, 0);
+    panel.add(section, c);
+    c.insets = new Insets(0, 0, 0, 0);
+  }
+
+  private JPanel getBorderSection() {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.WEST;
@@ -274,7 +272,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     return panel;
   }
 
-  private JPanel getTitlePanel() {
+  private JPanel getTitleSection() {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
 
@@ -430,24 +428,27 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
   private void setMacroPanel(JPanel panel, GridBagConstraints c) {
     JPanel p = new JPanel(new GridBagLayout());
 
-    // []
+    // macros
     c.gridy++;
     c.insets = new Insets(0, 0, 0, 0);
     c.anchor = GridBagConstraints.CENTER;
     panel.add(createLabel(i18n("LBL_Insert_Macros")), c); // NOI18N
 
     // buttons
+    c.anchor = GridBagConstraints.CENTER;
+
     for (Macro macro : Macro.values()) {
       JButton button = macro.getButton(this);
       button.setEnabled(false);
+      setWidth(button, MACROS_WIDTH);
       p.add(button, c);
     }
-
-    // macros
+    //
     c.weightx = 1.0;
     c.insets = new Insets(LARGE_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     c.gridwidth = 1 + 1 + 1;
     panel.add(p, c);
+    c.gridwidth = 1;
   }
 
   public void pressed(Macro macro) {
@@ -487,7 +488,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     return null;
   }
 
-  private JPanel getTextPanel() {
+  private JPanel getTextSection() {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     c.anchor = GridBagConstraints.WEST;
@@ -617,6 +618,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     myLineSpacingLabel = createLabel(i18n("LBL_Line_Spacing")); // NOI18N
     panel.add(myLineSpacingLabel, c);
 
+    c.fill = GridBagConstraints.BOTH;
     c.anchor = GridBagConstraints.WEST;
     c.insets = new Insets(0, LARGE_SIZE, TINY_SIZE, 0);
     double value = Config.getDefault().getLineSpacing();
@@ -630,12 +632,13 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
       SPACING_MAX,
       SPACING_STEP
     ));
-    setSize(myLineSpacing, myTextColor.getPreferredSize());
+    Dimension size = new Dimension(myLineSpacing.getPreferredSize().width, myTextColor.getPreferredSize().height);
+    setSize(myLineSpacing, size);
     myLineSpacingLabel.setLabelFor(myLineSpacing);
     panel.add(myLineSpacing, c);
   }
 
-  private JPanel getZoomPanel() {
+  private JPanel getZoomSection() {
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     ButtonGroup group = new ButtonGroup();
@@ -962,7 +965,8 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
   private DialogDescriptor myDescriptor;
 
   private static final int TEXT_WIDTH = 30;
-  private static final int FIELD_WIDTH = 90;
+  private static final int FIELD_WIDTH = 136;
+  private static final int MACROS_WIDTH = 41;
   private static final int MAX_PAGE_NUBER = 32;
   private static final int MAX_HEADER_LENGTH = 100;
   private static final int MAX_FOOTER_LENGTH = 100;

@@ -43,9 +43,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.db.sql.editor.StringUtils;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
@@ -57,6 +59,7 @@ import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 public class SQLStatementAnalyzer {
 
     private final TokenSequence<SQLTokenId> seq;
+    private final Quoter quoter;
 
     private final List<List<String>> selectValues = new ArrayList<List<String>>();
     private final List<FromTable> fromTables = new ArrayList<FromTable>();
@@ -64,21 +67,22 @@ public class SQLStatementAnalyzer {
 
     private State state = State.START;
 
-    public static SQLStatement analyze(TokenSequence<SQLTokenId> seq) {
+    public static SQLStatement analyze(TokenSequence<SQLTokenId> seq, Quoter quoter) {
         seq.moveStart();
         if (!seq.moveNext()) {
             return new SQLStatement(0, 0, Collections.<List<String>>emptyList(), null, Collections.<SQLStatement>emptyList());
         }
         int startOffset = seq.offset();
-        SQLStatementAnalyzer sa = new SQLStatementAnalyzer(seq);
+        SQLStatementAnalyzer sa = new SQLStatementAnalyzer(seq, quoter);
         sa.parse();
         // Return a non-null FromClause iff there was a FROM clause in the statement.
         FromClause fromClause = (sa.state.isAfter(State.FROM)) ? sa.createFromClause() : null;
         return new SQLStatement(startOffset, seq.offset() + seq.token().length(), Collections.unmodifiableList(sa.selectValues), fromClause, Collections.unmodifiableList(sa.subqueries));
     }
 
-    private SQLStatementAnalyzer(TokenSequence<SQLTokenId> seq) {
+    private SQLStatementAnalyzer(TokenSequence<SQLTokenId> seq, Quoter quoter) {
         this.seq = seq;
+        this.quoter = quoter;
     }
 
     private FromClause createFromClause() {
@@ -125,7 +129,10 @@ public class SQLStatementAnalyzer {
                     switch (seq.token().id()) {
                         case IDENTIFIER:
                             if (afterFromTableKeyword) {
-                                fromTables.add(parseFromTable());
+                                FromTable fromTable = parseFromTable();
+                                if (fromTable != null) {
+                                    fromTables.add(fromTable);
+                                }
                                 afterFromTableKeyword = false;
                             }
                             break;
@@ -147,7 +154,7 @@ public class SQLStatementAnalyzer {
 
     private List<String> analyzeSelectValue() {
         List<String> parts = new ArrayList<String>();
-        parts.add(seq.token().text().toString());
+        parts.add(getUnquotedIdentifier());
         boolean afterDot = false;
         main: for (;;) {
             if (!nextToken()) {
@@ -161,11 +168,11 @@ public class SQLStatementAnalyzer {
                 case IDENTIFIER:
                     if (afterDot) {
                         afterDot = false;
-                        parts.add(seq.token().text().toString());
+                        parts.add(getUnquotedIdentifier());
                     } else {
                         // Alias like "foo.bar baz".
                         parts.clear();
-                        parts.add(seq.token().text().toString());
+                        parts.add(getUnquotedIdentifier());
                     }
                     break;
                 case LPAREN:
@@ -194,7 +201,7 @@ public class SQLStatementAnalyzer {
 
     private FromTable parseFromTable() {
         List<String> parts = new ArrayList<String>();
-        parts.add(seq.token().text().toString());
+        parts.add(getUnquotedIdentifier());
         boolean afterDot = false;
         String alias = null;
         main: while (nextToken()) {
@@ -205,9 +212,9 @@ public class SQLStatementAnalyzer {
                 case IDENTIFIER:
                     if (afterDot && alias == null) {
                         afterDot = false;
-                        parts.add(seq.token().text().toString());
+                        parts.add(getUnquotedIdentifier());
                     } else {
-                        alias = seq.token().text().toString();
+                        alias = getUnquotedIdentifier();
                     }
                     break;
                 case KEYWORD:
@@ -223,7 +230,21 @@ public class SQLStatementAnalyzer {
                     break main;
             }
         }
-        return new FromTable(new QualIdent(parts), alias);
+        // Remove empty quoted identifiers, like in '"FOO".""."BAR"'.
+        // Actually, the example above would obviously be an invalid identifier,
+        // but safer and simpler to be forgiving.
+        for (Iterator<String> i = parts.iterator(); i.hasNext();) {
+            if (i.next().length() == 0) {
+                i.remove();
+            }
+        }
+        if (alias != null && alias.length() == 0) {
+            alias = null;
+        }
+        if (!parts.isEmpty()) {
+            return new FromTable(new QualIdent(parts), alias);
+        }
+        return null;
     }
 
     private boolean nextToken() {
@@ -250,7 +271,7 @@ public class SQLStatementAnalyzer {
                     case RPAREN:
                         if (--parLevel == 0) {
                             TokenSequence<SQLTokenId> subSeq = seq.subSequence(startOffset, seq.offset());
-                            subqueries.add(SQLStatementAnalyzer.analyze(subSeq));
+                            subqueries.add(SQLStatementAnalyzer.analyze(subSeq, quoter));
                             break main;
                         }
                         break;
@@ -272,6 +293,10 @@ public class SQLStatementAnalyzer {
         return StringUtils.textEqualsIgnoreCase("WHERE", keyword) || // NOI18N
                StringUtils.textEqualsIgnoreCase("HAVING", keyword) || // NOI18N
                StringUtils.textEqualsIgnoreCase("ORDER", keyword); // NOI18N
+    }
+
+    private String getUnquotedIdentifier() {
+        return quoter.unquote(seq.token().text().toString());
     }
 
     private enum State {

@@ -293,7 +293,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                         if (specialization) { 
                             // we need to initialize classTemplateSuffix in this case
                             // to avoid mixing different specialization (IZ92138)
-                            this.classTemplateSuffix = TemplateUtils.getSpecializationSuffix(qIdToken);
+                            this.classTemplateSuffix = TemplateUtils.getSpecializationSuffix(qIdToken, null);
                         }     
                         // but there is still a chance to have template-method of template-class
                         // e.g.: template<class A> template<class B> C<A>::C(B b) {}
@@ -326,12 +326,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                         // malformed template specification
                         templateSuffix = "<>"; //NOI18N
                     } else {
-                        templateSuffix = TemplateUtils.getSpecializationSuffix(qIdToken);
+                        templateSuffix = TemplateUtils.getSpecializationSuffix(qIdToken, null);
                     }
                 } else {
                     // 3b. no specialization, plain and simple template-method
                     StringBuilder sb  = new StringBuilder();
-                    TemplateUtils.addSpecializationSuffix(templateNode.getFirstChild(), sb);
+                    TemplateUtils.addSpecializationSuffix(templateNode.getFirstChild(), sb, null);
                     templateSuffix = '<' + sb.toString() + '>';
                 }                
                 if(templateParams != null) {

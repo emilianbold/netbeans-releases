@@ -59,7 +59,7 @@ import java.io.InputStream;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
 

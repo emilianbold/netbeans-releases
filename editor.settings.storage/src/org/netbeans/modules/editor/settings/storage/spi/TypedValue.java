@@ -99,4 +99,9 @@ public final class TypedValue {
         hash = 37 * hash + (javaType != null ? javaType.hashCode() : 0);
         return hash;
     }
+
+    public @Override String toString() {
+        return super.toString() + "['" + value + "', " + javaType;
+    }
+    
 } // End of TypedValue class

@@ -695,6 +695,10 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         }
         if (!isActive()) {
             sb.append(" is NOT ACTIVE.");
+        } else {
+            CharSequence inputSourceText = rootTokenList.inputSourceText();
+            sb.append("\nText: ").append(inputSourceText.getClass());
+            sb.append(", length=").append(inputSourceText.length());
         }
         return sb;
     }

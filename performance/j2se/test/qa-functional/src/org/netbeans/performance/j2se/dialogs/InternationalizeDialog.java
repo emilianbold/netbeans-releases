@@ -68,14 +68,14 @@ public class InternationalizeDialog extends PerformanceTestCase {
     public InternationalizeDialog(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 1500;
+        WAIT_AFTER_OPEN = 2000;
     }
     
     /** Creates a new instance of InternationalizeDialog */
     public InternationalizeDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 1500;
+        WAIT_AFTER_OPEN = 2000;
     }
     
     public void testInternationalizeDialog() {

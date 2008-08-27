@@ -53,7 +53,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -61,8 +60,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.Lookup;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 
@@ -71,16 +69,15 @@ import static org.netbeans.modules.java.ui.FmtOptions.*;
  * @author  phrebejk
  */
 public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener, KeyListener {
-    
-    private static Controller controller;
-        
+
+    private SpacesCategorySupport scs;
     private DefaultTreeModel model;
   
     private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();    
     private JCheckBox renderer = new JCheckBox();
     
     /** Creates new form FmtSpaces */
-    public FmtSpaces() {
+    private FmtSpaces() {
         initComponents();
         model = createModel();
         cfgTree.setModel(model);
@@ -101,10 +98,12 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         }
     }
     
-    public static OptionsPanelController getController() {
-        if (controller == null )
-            controller =  new Controller();
-        return controller;
+    public static PreferencesCustomizer.Factory getController() {
+        return new PreferencesCustomizer.Factory() {
+            public PreferencesCustomizer create(Preferences preferences) {
+                return new SpacesCategorySupport(preferences, new FmtSpaces());
+            }
+        };
     }
     
     /** This method is called from within the constructor to
@@ -289,7 +288,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
          
         
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("root", true); // NOI18N
-        DefaultTreeModel model = new DefaultTreeModel( root );
+        DefaultTreeModel dtm = new DefaultTreeModel( root );
         
         
         for( Item item : categories ) {
@@ -301,7 +300,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
             }
         }
         
-        return model;
+        return dtm;
     }
     
     private boolean toggle(TreePath treePath) {
@@ -312,7 +311,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
         Object o = ((DefaultMutableTreeNode)treePath.getLastPathComponent()).getUserObject();
 
-        DefaultTreeModel model = (DefaultTreeModel)cfgTree.getModel();
+        DefaultTreeModel dtm = (DefaultTreeModel)cfgTree.getModel();
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
 
         if ( o instanceof Item ) {
@@ -323,9 +322,9 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
             }
             
             item.value = !item.value;            
-            model.nodeChanged(node); 
-            model.nodeChanged(node.getParent());
-            controller.changed();
+            dtm.nodeChanged(node);
+            dtm.nodeChanged(node.getParent());
+            scs.notifyChanged();
         }
         
         return false;
@@ -353,17 +352,16 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         
     }
     
-    private static class Controller extends FmtOptions.CategorySupport {
+    private static final class SpacesCategorySupport extends FmtOptions.CategorySupport {
 
-        private FmtSpaces panel;
-        
-        public Controller() {
-            super(new FmtSpaces(), 
+        public SpacesCategorySupport(Preferences preferences, FmtSpaces panel) {
+            super(preferences, "spaces", panel, //NOI18N
                   NbBundle.getMessage( FmtSpaces.class ,"SAMPLE_Spaces"), // NOI18N
                   new String[] {FmtOptions.placeCatchOnNewLine, Boolean.FALSE.toString()},
                   new String[] {FmtOptions.placeElseOnNewLine, Boolean.FALSE.toString()},
                   new String[] {FmtOptions.placeWhileOnNewLine, Boolean.FALSE.toString()},
                   new String[] {FmtOptions.placeFinallyOnNewLine, Boolean.FALSE.toString()} );
+            panel.scs = this;
         }
 
         @Override
@@ -372,23 +370,23 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         }
 
         @Override
-        public void update() {
+        protected void loadFrom(Preferences preferences) {
             for (Item item : getAllItems()) {
                 boolean df = FmtOptions.getDefaultAsBoolean(item.id);
                 item.value = preferences.getBoolean(item.id, df);
             }
         }
 
-        @Override
-        public void applyChanges() {
-            storeTo(preferences);            
-        }
-
-        @Override
-        public JComponent getComponent(Lookup masterLookup) {
-            panel = (FmtSpaces)super.getComponent(masterLookup);
-            return panel;
-        }
+//        @Override
+//        public void applyChanges() {
+//            storeTo(preferences);
+//        }
+//
+//        @Override
+//        public JComponent getComponent(Lookup masterLookup) {
+//            panel = (FmtSpaces)super.getComponent(masterLookup);
+//            return panel;
+//        }
 
         @Override
         protected void storeTo(Preferences preferences) {
@@ -403,7 +401,7 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
         
         private List<Item> getAllItems() {
             List<Item> result = new LinkedList<FmtSpaces.Item>();
-            DefaultMutableTreeNode root = (DefaultMutableTreeNode) panel.model.getRoot();
+            DefaultMutableTreeNode root = (DefaultMutableTreeNode) ((FmtSpaces) panel).model.getRoot();
             Enumeration children = root.depthFirstEnumeration();
             while( children.hasMoreElements() ) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) children.nextElement();

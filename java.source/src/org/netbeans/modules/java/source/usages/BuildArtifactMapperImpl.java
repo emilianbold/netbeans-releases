@@ -66,6 +66,7 @@ import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupport;
@@ -144,6 +145,13 @@ public class BuildArtifactMapperImpl {
         
         if (targetFolder == null) {
             return false;
+        }
+        
+        try {
+            SourceUtils.waitScanFinished();
+        } catch (InterruptedException e) {
+            //Not Important
+            Exceptions.printStackTrace(e);            
         }
         
         File tagFile = new File(targetFolder, TAG_FILE_NAME);

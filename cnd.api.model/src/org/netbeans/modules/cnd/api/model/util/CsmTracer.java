@@ -272,6 +272,10 @@ public class CsmTracer {
 	if( type == null ) {
 	    sb.append(NULL_TEXT); // NOI18N
 	} else {
+            if(type.isTemplateBased()) {
+                // Do nothing. Only test for stack overflow
+                // See IZ#144276: StackOverflowError on typedef C::C C;
+            }
 	    if( type.isConst() ) {
 		sb.append("const "); // NOI18N
 	    }

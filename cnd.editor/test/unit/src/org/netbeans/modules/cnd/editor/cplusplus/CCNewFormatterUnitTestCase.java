@@ -4601,7 +4601,7 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "}\n"
                 );
         reformat();
-        assertDocumentText("Wrong type cast fotmatting",
+        assertDocumentText("Wrong type cast formatting",
                 "int i = ( int ) 'a';\n"+
                 "\n" +
                 "void *\n" +
@@ -4641,4 +4641,60 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 );
     }
     
+    public void testQtExtension() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "#define Q_OBJECT\n" +
+                "#define signals private\n" +
+                "#define slots\n" +
+                "\n" +
+                "class PrettyPopupMenu\n" +
+                "{\n" +
+                "};\n" +
+                "\n" +
+                "class Menu : public PrettyPopupMenu\n" +
+                "{\n" +
+                "    Q_OBJECT\n" +
+                "\n" +
+                "signals:\n" +
+                "    void test();\n" +
+                "\n" +
+                "public slots:\n" +
+                "    void slotActivated(int index);\n" +
+                "\n" +
+                "private slots:\n" +
+                "    void slotAboutToShow();\n" +
+                "\n" +
+                "private:\n" +
+                "    Menu();\n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Wrong QT formatting",
+                "#define Q_OBJECT\n" +
+                "#define signals private\n" +
+                "#define slots\n" +
+                "\n" +
+                "class PrettyPopupMenu\n" +
+                "{\n" +
+                "};\n" +
+                "\n" +
+                "class Menu : public PrettyPopupMenu\n" +
+                "{\n" +
+                "    Q_OBJECT\n" +
+                "\n" +
+                "signals:\n" +
+                "    void test();\n" +
+                "\n" +
+                "public slots:\n" +
+                "    void slotActivated(int index);\n" +
+                "\n" +
+                "private slots:\n" +
+                "    void slotAboutToShow();\n" +
+                "\n" +
+                "private:\n" +
+                "    Menu();\n" +
+                "};\n"
+                );
+    }
 }

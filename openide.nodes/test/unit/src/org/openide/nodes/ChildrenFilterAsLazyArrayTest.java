@@ -54,8 +54,7 @@ public class ChildrenFilterAsLazyArrayTest extends ChildrenArrayTest {
     @Override
     protected Children.Array createChildren () {
         // the demonstrate issue #141356, uncomment and use next line with Keys(true)
-        //Node orig = new AbstractNode (new ChildrenKeysTest.Keys (true));
-        Node orig = new AbstractNode (new ChildrenKeysTest.Keys (false));
+        Node orig = new AbstractNode (new ChildrenKeysTest.Keys (true));
         return new FilterNode.Children (orig);
     }
     

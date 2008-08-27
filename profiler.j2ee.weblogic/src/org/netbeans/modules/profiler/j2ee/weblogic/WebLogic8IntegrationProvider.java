@@ -69,10 +69,6 @@ public class WebLogic8IntegrationProvider extends WebLogicIntegrationProvider {
         return WEBLOGIC_81_STRING;
     }
 
-    public boolean supportsJVM(TargetPlatformEnum jvm) {
-        return true;
-    }
-
     protected int getAttachWizardPriority() {
         return 41;
     }

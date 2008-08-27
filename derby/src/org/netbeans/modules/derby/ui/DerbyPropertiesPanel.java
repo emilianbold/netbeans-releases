@@ -127,7 +127,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         }
         
         initComponents();
-        jTextPane1.setBackground(getBackground());
+        derbyInstallInfo.setBackground(getBackground());
         messageLabel.setBackground(getBackground());
         derbySystemHomeTextField.getDocument().addDocumentListener(docListener);
         derbySystemHomeTextField.setText(DerbyOptions.getDefault().getSystemHome());
@@ -209,7 +209,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
         installLabel = new javax.swing.JLabel();
         derbyInstall = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
-        jTextPane1 = new javax.swing.JTextPane();
+        derbyInstallInfo = new javax.swing.JTextPane();
         messageLabel = new javax.swing.JTextPane();
 
         derbySystemHomeLabel.setLabelFor(derbySystemHomeTextField);
@@ -222,6 +222,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             }
         });
 
+        installLabel.setLabelFor(derbyInstall);
         org.openide.awt.Mnemonics.setLocalizedText(installLabel, org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "LBL_Install")); // NOI18N
 
         derbyInstall.addActionListener(new java.awt.event.ActionListener() {
@@ -237,9 +238,9 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             }
         });
 
-        jTextPane1.setEditable(false);
-        jTextPane1.setText(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "LBL_InstallationInfo")); // NOI18N
-        jTextPane1.setAutoscrolls(false);
+        derbyInstallInfo.setEditable(false);
+        derbyInstallInfo.setText(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "LBL_InstallationInfo")); // NOI18N
+        derbyInstallInfo.setAutoscrolls(false);
 
         messageLabel.setEditable(false);
         messageLabel.setForeground(nbErrorForeground);
@@ -253,13 +254,13 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
-                    .add(jTextPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)
+                    .add(derbyInstallInfo, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 493, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(derbySystemHomeLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(derbySystemHomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+                        .add(derbySystemHomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseButton))
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
@@ -274,7 +275,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jTextPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(derbyInstallInfo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 57, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(installLabel)
@@ -290,8 +291,12 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
+        derbySystemHomeTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSN_CreateDatabasePanel_databaseLocationTextField")); // NOI18N
         derbySystemHomeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSD_DerbySystemHomePanel_derbySystemHomeTextField")); // NOI18N
         browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSD_DerbySystemHomePanel_browseButton")); // NOI18N
+        derbyInstall.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSD_DerbySystemHomePanel_derbySystemHomeTextField")); // NOI18N
+        derbyInstallInfo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSN_DerbySystemHomePanel_derbyInstallInfoTextField")); // NOI18N
+        messageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DerbyPropertiesPanel.class, "ACSN_DerbySystemHomePanel_messageLabel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
@@ -335,11 +340,11 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JButton browseButton;
     public javax.swing.JTextField derbyInstall;
+    public javax.swing.JTextPane derbyInstallInfo;
     public javax.swing.JLabel derbySystemHomeLabel;
     public javax.swing.JTextField derbySystemHomeTextField;
     public javax.swing.JLabel installLabel;
     public javax.swing.JButton jButton1;
-    public javax.swing.JTextPane jTextPane1;
     public javax.swing.JTextPane messageLabel;
     // End of variables declaration//GEN-END:variables
     

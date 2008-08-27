@@ -248,6 +248,8 @@ public final class Product extends RegistryNode implements StatusInterface {
                         ERROR_CANNOT_WRAP_FOR_MACOS_KEY), e);
             }
         }
+        
+        if(dataUris.size()>0) {
         LogManager.log("... extracting files from the data archives");
         // extract each of the defined installation data files
         unjarProgress.setPercentage(Progress.COMPLETE % dataUris.size());
@@ -310,6 +312,11 @@ public final class Product extends RegistryNode implements StatusInterface {
                         e);
             }
         }
+        } else {
+            LogManager.log("... no data archives assigned to this product");
+            unjarProgress.setPercentage(Progress.COMPLETE);
+        }
+
         LogManager.log("... saving legal artifacts if required");
         // create legal/docs artifacts
         progress.setDetail(StringUtils.format(MESSAGE_LEGAL_ARTIFACTS_STRING));
@@ -671,7 +678,7 @@ public final class Product extends RegistryNode implements StatusInterface {
     
     public void downloadData(final Progress progress) throws DownloadException {
         final CompositeProgress overallProgress = new CompositeProgress();
-        
+        if(dataUris.size()>0) {
         final int percentageChunk = Progress.COMPLETE / dataUris.size();
         final int percentageLeak  = Progress.COMPLETE % dataUris.size();
         
@@ -687,6 +694,10 @@ public final class Product extends RegistryNode implements StatusInterface {
                     uri.getRemote(),
                     currentProgress);
             uri.setLocal(cache.toURI());
+        }
+        } else {
+            overallProgress.setPercentage(Progress.COMPLETE);
+            overallProgress.synchronizeTo(progress);
         }
     }
     

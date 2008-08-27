@@ -111,6 +111,7 @@ public class HQLEditorController {
                 public void run() {
                     Thread.currentThread().setContextClassLoader(customClassLoader);
                     HQLExecutor queryExecutor = new HQLExecutor();
+                    HQLResult hqlResult = new HQLResult();
                     try {
                         // Parse POJOs from HQL
                         // Check and if required compile POJO files mentioned in HQL
@@ -118,14 +119,15 @@ public class HQLEditorController {
 
                         ph.progress(50);
                         ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"));
-                        HQLResult r = queryExecutor.execute(hql, sessionFactory, maxRowCount, ph);
+                        hqlResult = queryExecutor.execute(hql, sessionFactory, maxRowCount, ph);
                         ph.progress(80);
                         ph.setDisplayName(NbBundle.getMessage(HQLEditorTopComponent.class, "queryExecutionProcessResults"));
-                        editorTopComponent.setResult(r, customClassLoader);
-                    } catch (Exception e) {
-                        Exceptions.printStackTrace(e);
-                    }
 
+                    } catch (Exception e) {
+                        logger.log(Level.INFO, "Problem in executing HQL", e);
+                        hqlResult.getExceptions().add(e);
+                    }
+                    editorTopComponent.setResult(hqlResult, customClassLoader);
                 }
             };
             t.setContextClassLoader(customClassLoader);
@@ -147,7 +149,7 @@ public class HQLEditorController {
     public SessionFactory getHibernateSessionFactoryForThisContext(FileObject configFileObject,
             List<FileObject> mappingFOList,
             List<Class> annotatedClassList,
-            CustomClassLoader customClassLoader) {
+            CustomClassLoader customClassLoader) throws Exception {
 
         AnnotationConfiguration customConfiguration = null;
         try {
@@ -169,7 +171,7 @@ public class HQLEditorController {
             Iterator mappingIterator = sessionFactoryElement.elementIterator("mapping"); //NOI18N
             while (mappingIterator.hasNext()) {
                 org.dom4j.Element node = (org.dom4j.Element) mappingIterator.next();
-                logger.info("Removing mapping element ..  " + node);
+                logger.fine("Removing mapping element ..  " + node);
                 node.getParent().remove(node);
             }
 
@@ -191,9 +193,10 @@ public class HQLEditorController {
             customConfiguration.configure(getW3CDocument(document));
             return customConfiguration.buildSessionFactory();
         } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+            logger.log(Level.INFO, "Problem in constructing custom configuration", e);
+            throw e;
         }
-        return null;
+
     }
 
     private org.w3c.dom.Document getW3CDocument(org.dom4j.Document document) {
@@ -206,7 +209,7 @@ public class HQLEditorController {
     }
 
     public SessionFactory processAndConstructSessionFactory(String hql, FileObject configFileObject,
-            CustomClassLoader customClassLoader, Project project) {
+            CustomClassLoader customClassLoader, Project project) throws Exception {
         HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
 
         StringTokenizer hqlTokenizer = new StringTokenizer(hql, " \n\r\f\t(),"); //NOI18N
@@ -314,7 +317,6 @@ public class HQLEditorController {
             }
         }
         return AnnotationAccessType.METHOD_TYPE;
-    //TODO Support java collection types.
     }
 
     private void getRelatedPOJOClassesByMethodType(Class clazz, List<String> annotatedPOJOClassNameList, List<Class> relatedPOJOClasses,
@@ -341,7 +343,7 @@ public class HQLEditorController {
                     } else if (java.util.Map.class.isAssignableFrom(relatedPOJOClass)) {
                         logger.info("Accessor method return type is java.util.Map");
                     }
-                    
+
                     if (annotatedPOJOClassNameList.contains(relatedPOJOClass.getName())) {
                         logger.info("Related POJO Class " + relatedPOJOClass.getName());
                         if (relatedPOJOClasses.contains(relatedPOJOClass)) {

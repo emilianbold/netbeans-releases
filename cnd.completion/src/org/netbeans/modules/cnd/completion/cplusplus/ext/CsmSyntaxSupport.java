@@ -410,6 +410,11 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                 boolean bestMatch = !acceptMoreParameters;
                 int matched = 0;
                 for (int j = 0; accept && j < parmTypeCnt; j++) {
+                    if (methodParms[j] == null) {
+                        System.err.println("Null parameter "+j+" in function "+m.getUID()); //NOI18N
+                        bestMatch = false;
+                        continue;
+                    }
                     CsmType mpt = methodParms[j].getType();
                     CsmType t = (CsmType)parmTypeList.get(j);
                     if (t != null) {

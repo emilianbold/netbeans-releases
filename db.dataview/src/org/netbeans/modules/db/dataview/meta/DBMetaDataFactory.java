@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -192,7 +193,6 @@ public final class DBMetaDataFactory {
             rs = dbmeta.getPrimaryKeys(setToNullIfEmpty(tcatalog), setToNullIfEmpty(tschema), tname);
             return new DBPrimaryKey(rs);
         } catch (SQLException e) {
-            Exceptions.printStackTrace(e);
             return null;
         } finally {
             DataViewUtils.closeResources(rs);
@@ -214,7 +214,7 @@ public final class DBMetaDataFactory {
     }
 
     public synchronized Collection<DBTable> generateDBTables(ResultSet rs, String sql, boolean isSelect) throws SQLException {
-        Map<String, DBTable> tables = new HashMap<String, DBTable>();
+        Map<String, DBTable> tables = new LinkedHashMap<String, DBTable>();
         String noTableName = "UNKNOWN"; // NOI18N
         // get table column information
         ResultSetMetaData rsMeta = rs.getMetaData();

@@ -480,6 +480,9 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                     caret.setDot(cursorPosition);
                 }
             }
+            ActionMap p = getActionMap().getParent();
+            getActionMap().setParent(null);
+            getActionMap().setParent(p);
             //#134910: If editor TopComponent is already activated request focus
             //to it again to get focus to correct subcomponent eg. QuietEditorPane which
             //is added above.

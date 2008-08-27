@@ -1252,7 +1252,8 @@ abstract class EntrySupport {
 
         @Override
         void setEntries(Collection<? extends Entry> newEntries) {
-            assert entries.size() == entryToInfo.size();
+            assert entries.size() == entryToInfo.size() : "Entries: " + entries.size() 
+                    + "; vis. entries: " + visibleEntries.size() + "; Infos: " + entryToInfo.size();
 
             if (!mustNotifySetEnties && !inited) {
                 entries = new ArrayList<Entry>(newEntries);

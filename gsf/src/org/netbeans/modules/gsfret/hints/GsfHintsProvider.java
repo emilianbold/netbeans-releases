@@ -200,6 +200,9 @@ public final class GsfHintsProvider implements CancellableTask<CompilationInfo> 
         int lineNumber = NbDocument.findLineNumber(sdoc, startOffset);
         int lineOffset = NbDocument.findLineOffset(sdoc, lineNumber);
         String text = DataLoadersBridge.getDefault().getLine(doc, lineNumber);
+        if (text == null) {
+            return new Position[2];
+        }
         
         boolean rangePrepared = false;
         

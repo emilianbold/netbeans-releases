@@ -40,16 +40,13 @@
 package org.netbeans.modules.db.sql.history;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -57,12 +54,13 @@ import org.openide.util.NbPreferences;
  * @author John Baker
  */
 public class SQLHistoryModelImpl implements SQLHistoryModel {    
-    public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
-    public static final String SQL_HISTORY_FILE_NAME = "sql_history";  // NOI18N
-    public static final String SAVE_STATEMENTS_MAX_LIMIT_ENTERED = "10000"; // NOI18N
-    public static final int SAVE_STATEMENTS_EMPTY = 0; // NOI18N
-    public static final String SAVE_STATEMENTS_CLEARED = ""; // NOI18N  
-    public static final Logger LOGGER = Logger.getLogger(SQLHistoryModelImpl.class.getName());
+    private static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
+    private static final String SQL_HISTORY_FILE_NAME = "sql_history";  // NOI18N
+    private static final String SAVE_STATEMENTS_MAX_LIMIT_ENTERED = "10000"; // NOI18N
+    private static final int SAVE_STATEMENTS_EMPTY = 0; // NOI18N
+    private static final String SAVE_STATEMENTS_CLEARED = ""; // NOI18N  
+    private static final Logger LOGGER = Logger.getLogger(SQLHistoryModelImpl.class.getName());
+    private static final FileObject USERDIR = Repository.getDefault().getDefaultFileSystem().getRoot();
 
     List<SQLHistory> _sqlHistoryList = new ArrayList<SQLHistory>();
     
@@ -78,17 +76,18 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public List<SQLHistory> getSQLHistoryList() {
-        final FileObject USERDIR = Repository.getDefault().getDefaultFileSystem().getRoot();
-
+    public List<SQLHistory> getSQLHistoryList() throws SQLHistoryException {
         List<SQLHistory> retrievedSQL = new ArrayList<SQLHistory>();
         _sqlHistoryList.clear();
         try {
             boolean isRewriteSQLRequired = false;
-            FileObject root = USERDIR.getFileObject(SQL_HISTORY_FOLDER);
-            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N            
+            FileObject historyRoot = USERDIR.getFileObject(SQL_HISTORY_FOLDER);
+            if (historyRoot == null) {
+                return new ArrayList<SQLHistory>();
+            }
+            String historyFilePath = FileUtil.getFileDisplayName(historyRoot) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N            
             // Read persisted SQL from  file            
-            retrievedSQL = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
+            retrievedSQL = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyRoot);
             // Remove duplicates
             if (!isSQLUnique(retrievedSQL)) {
                 retrievedSQL = removeDuplicates(retrievedSQL);
@@ -107,17 +106,15 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
             }
             if (isRewriteSQLRequired) {
                 // Remove all elements from sql_history.xml
-                SQLHistoryPersistenceManager.getInstance().updateSQLSaved(SAVE_STATEMENTS_EMPTY, root);
+                SQLHistoryPersistenceManager.getInstance().updateSQLSaved(SAVE_STATEMENTS_EMPTY, historyRoot);
                 // Write new list;  reversing list is required for persisting the SQL
                 Collections.reverse(retrievedSQL);
-                SQLHistoryPersistenceManager.getInstance().create(root, retrievedSQL);
+                SQLHistoryPersistenceManager.getInstance().create(historyRoot, retrievedSQL);
                 // return list to the expected order for viewing
                 Collections.reverse(retrievedSQL);
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            throw new SQLHistoryException();
         }
         return retrievedSQL;
     }

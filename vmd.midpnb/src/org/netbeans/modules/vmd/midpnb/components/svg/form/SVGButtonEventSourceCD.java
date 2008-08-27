@@ -77,7 +77,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
-import org.netbeans.modules.vmd.midp.flow.FlowListElementPinOrderPresenter;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD.SVGButtonEventSourceOrder;
 import org.openide.util.Exceptions;
 
 /**
@@ -88,6 +88,8 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#SVGButtonEventEventSource"); // NOI18
     public static final String PROP_SVGBUTTON = "svgButton"; //NOI18N
+    
+   
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(EventSourceCD.TYPEID, TYPEID, true, false);
@@ -168,7 +170,7 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
         }
 
         protected String getOrder() {
-            return FlowListElementPinOrderPresenter.CATEGORY_ID;
+            return SVGButtonEventSourceOrder.CATEGORY_ID;
         }
 
         @Override
@@ -185,12 +187,14 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
         protected DesignEventFilter getEventFilter() {
             return super.getEventFilter().addParentFilter(getComponent(), 1, false);
         }
+        
+        
     };
 
     private static String getButtonName(DesignComponent component) {
         DesignComponent svgButton = component.readProperty(PROP_SVGBUTTON).getComponent();
         if (svgButton == null) {
-            return "ERROR";
+            return "ERROR"; //NOI18N
         }
         return (String) svgButton.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
     }
@@ -258,9 +262,8 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
 
         @Override
         protected void presenterChanged(PresenterEvent event) {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
         
     }
-    
+  
 }

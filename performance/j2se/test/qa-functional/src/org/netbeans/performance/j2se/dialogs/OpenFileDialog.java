@@ -84,7 +84,7 @@ public class OpenFileDialog extends PerformanceTestCase {
     
     @Override
     public void initialize() {
-        MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/File") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.openfile.Bundle","LBL_openFile");
+        MENU = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/File") + "|" + Bundle.getStringTrimmed("org.netbeans.modules.openfile.Bundle","LBL_openFile");
     }
     
     public ComponentOperator open() {

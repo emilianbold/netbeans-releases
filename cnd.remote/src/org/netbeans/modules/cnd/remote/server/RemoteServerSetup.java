@@ -82,12 +82,12 @@ public class RemoteServerSetup {
         // Binary setup map
         // TODO: this should be done in gdb module (see IZ 144053)
         binarySetupMap = new HashMap<String, String>();
-        binarySetupMap.put(".netbeans/6.5/cnd2/lib/GdbHelper-Linux-x86.so", "bin/GdbHelper-Linux-x86.so"); // NOI18N
-        binarySetupMap.put(".netbeans/6.5/cnd2/lib/GdbHelper-SunOS-x86.so", "bin/GdbHelper-SunOS-x86.so"); // NOI18N
-        binarySetupMap.put(".netbeans/6.5/cnd2/lib/GdbHelper-SunOS-sparc.so", "bin/GdbHelper-SunOS-sparc.so"); // NOI18N
-        binarySetupMap.put(".netbeans/6.5/cnd2/lib/unbuffer-Linux-x86.so", "bin/unbuffer-Linux-x86.so"); // NOI18N
-        binarySetupMap.put(".netbeans/6.5/cnd2/lib/unbuffer-SunOS-x86.so", "bin/unbuffer-SunOS-x86.so"); // NOI18N
-        binarySetupMap.put(".netbeans/6.5/cnd2/lib/unbuffer-SunOS-sparc.so", "bin/unbuffer-SunOS-sparc.so"); // NOI18N
+        binarySetupMap.put(REMOTE_LIB_DIR + "GdbHelper-Linux-x86.so", "bin/GdbHelper-Linux-x86.so"); // NOI18N
+        binarySetupMap.put(REMOTE_LIB_DIR + "GdbHelper-SunOS-x86.so", "bin/GdbHelper-SunOS-x86.so"); // NOI18N
+        binarySetupMap.put(REMOTE_LIB_DIR + "GdbHelper-SunOS-sparc.so", "bin/GdbHelper-SunOS-sparc.so"); // NOI18N
+        binarySetupMap.put(REMOTE_LIB_DIR + "unbuffer-Linux-x86.so", "bin/unbuffer-Linux-x86.so"); // NOI18N
+        binarySetupMap.put(REMOTE_LIB_DIR + "unbuffer-SunOS-x86.so", "bin/unbuffer-SunOS-x86.so"); // NOI18N
+        binarySetupMap.put(REMOTE_LIB_DIR + "unbuffer-SunOS-sparc.so", "bin/unbuffer-SunOS-sparc.so"); // NOI18N
         
         updateMap = new HashMap<String, List<String>>();
     }

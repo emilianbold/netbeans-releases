@@ -157,8 +157,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
         private final BaseDocument doc;
         private final ReferenceContextBuilder contextBuilder;
         private CppTokenId derefToken;
-        private boolean inAttribute;
-        private int parenthesisDepth;
+        private BlockConsumer blockConsumer;
         
         ReferencesProcessor(CsmFile csmFile, BaseDocument doc,
              boolean skipPreprocDirectives, boolean needAfterDereferenceUsages,
@@ -173,15 +172,9 @@ public class FileReferencesImpl extends CsmFileReferences  {
 
         @Override
         public boolean token(Token<CppTokenId> token, int tokenOffset) {
-            if (inAttribute) {
-                switch (token.id()) {
-                    case LPAREN:
-                        ++parenthesisDepth;
-                        break;
-                    case RPAREN:
-                        --parenthesisDepth;
-                        inAttribute = 0 < parenthesisDepth;
-                        break;
+            if (blockConsumer != null) {
+                if (blockConsumer.isLastToken(token)) {
+                    blockConsumer = null;
                 }
                 return false;
             }
@@ -230,8 +223,16 @@ public class FileReferencesImpl extends CsmFileReferences  {
                     derefToken = null;
                     break;
                 case __ATTRIBUTE__:
-                    inAttribute = true;
-                    parenthesisDepth = 0;
+                case _DECLSPEC:
+                case __DECLSPEC:
+                case ASM:
+                case __ASM:
+                case __ASM__:
+                    blockConsumer = new BlockConsumer(CppTokenId.LPAREN, CppTokenId.RPAREN);
+                    derefToken = null;
+                    break;
+                case _ASM:
+                    blockConsumer = new BlockConsumer(CppTokenId.LBRACE, CppTokenId.RBRACE);
                     derefToken = null;
                     break;
                 case WHITESPACE:
@@ -366,5 +367,27 @@ public class FileReferencesImpl extends CsmFileReferences  {
             }
         }
         return false;
+    }
+    
+    private static class BlockConsumer {
+        private final CppTokenId openBracket;
+        private final CppTokenId closeBracket;
+        private int depth;
+        public BlockConsumer(CppTokenId openBracket, CppTokenId closeBracket) {
+            this.openBracket = openBracket;
+            this.closeBracket = closeBracket;
+            depth = 0;
+        }
+        
+        public boolean isLastToken(Token<CppTokenId> token) {
+            boolean stop = false;
+            if (token.id() == openBracket) {
+                ++depth;
+            } else if (token.id() == closeBracket) {
+                --depth;
+                stop = depth <= 0;
+            }
+            return stop;
+        }
     }
 }

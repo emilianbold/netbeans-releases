@@ -411,6 +411,10 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
     private void initializeMacOS() {
         if (SystemUtils.isMacOS()) {
             final Application application = Application.getApplication();
+            if(application == null) {
+                // e.g. running OpenJDK port via X11 on Mac OS X
+                return;
+            }
             application.removeAboutMenuItem();
             application.removePreferencesMenuItem();
             application.addApplicationListener(new ApplicationAdapter() {

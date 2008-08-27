@@ -74,6 +74,9 @@ public class UnresolvedIdentifierTestCase extends ErrorHighlightingBaseTestCase 
         performStaticTest("typedef_templ.cpp");
     }
 
+    public void testSkipSomeInstructionsBlock() throws Exception {
+        performStaticTest("skipBlocks.cpp");
+    }    
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

@@ -22,10 +22,10 @@ CLASS ClassWithIncludedBody (ClassWithIncludedBody ) [2:1/1-12:3/188] lcurly=29 
 CLASS ClassWithIncludedBody (ClassWithIncludedBody ) [2:1/1-12:3/188] lcurly=29 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-FUNCTION foo [2:1/11-2:12/22] FunctionImpl SCOPE: $Global$ 
+FUNCTION class_body_included_foo [2:1/11-2:32/42] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
-    SIGNATURE foo()
-    UNIQUE NAME F:foo()
+    SIGNATURE class_body_included_foo()
+    UNIQUE NAME F:class_body_included_foo()
     PARAMETERS:
     RETURNS void TEXT=void  [2:1/11-2:5/15]
 

@@ -103,6 +103,9 @@ public class SQLSyntax extends Syntax {
                         case '/':
                             state = ISA_SLASH;
                             break;
+                        case '#':
+                            state = ISI_LINE_COMMENT;
+                            break;
                         case '=':
                         case '>':
                         case '<':
@@ -172,9 +175,6 @@ public class SQLSyntax extends Syntax {
                 //if we are currently in a string literal
                 case ISI_STRING:
                     switch (actChar) { 
-                        case '\n':
-                            state = INIT;
-                            return SQLTokenContext.INCOMPLETE_STRING;
                         case '\'': // NOI18N
                             offset++;
                             state = INIT;
@@ -334,7 +334,7 @@ public class SQLSyntax extends Syntax {
                 // stay in block-comment state
                 return SQLTokenContext.BLOCK_COMMENT; 
             case ISI_STRING:
-                return SQLTokenContext.STRING; // hold the state
+                return SQLTokenContext.INCOMPLETE_STRING;
             case ISA_ZERO:
             case ISI_INT:
                 state = INIT;

@@ -78,7 +78,8 @@ public final class Unresolved implements Disposable {
 	
         public UnresolvedClass(String name) {
             super(name, unresolvedFile, null);
-	    init(unresolvedNamespace, null);
+            initScope(unresolvedNamespace, null);
+            initQualifiedName(unresolvedNamespace, null);
         }
 	
 	public void register() {

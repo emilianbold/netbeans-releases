@@ -68,6 +68,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.IStateVertex;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.IterateSelectAction;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
@@ -76,11 +77,13 @@ import org.netbeans.modules.uml.drawingarea.actions.MoveControlPointAction;
 import org.netbeans.modules.uml.drawingarea.actions.NavigateLinkAction;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.SwingPaletteManager;
+import org.netbeans.modules.uml.drawingarea.support.ValidDropTargets;
 import org.netbeans.modules.uml.drawingarea.view.AlignWithMoveStrategyProvider;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.GraphSceneNodeAlignCollector;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.ui.support.diagramsupport.IDiagramTypesManager;
 import org.openide.util.Lookup;
 
 
@@ -179,7 +182,26 @@ public class DefaultDiagramEngine extends  DiagramEngine {
     }
 
     public boolean isDropPossible(INamedElement node) {
-        return true;
+        boolean okToDrop = true;
+        try
+        {
+            IDiagramTypesManager pManager = DiagramTypesManager.instance();
+            if (node != null && pManager != null)
+            {
+                String sElementType = node.getElementType();
+                String diagramKindName = getScene().getDiagram().getDiagramKindAsString();
+                String sShortDisplayName = pManager.getShortDiagramTypeName(diagramKindName);
+
+                // Make sure our diagram type is in the ok-to-drop list, or ALL is in the list.
+                okToDrop = ValidDropTargets.instance().isValidDropTarget(sElementType, sShortDisplayName);
+            }
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            okToDrop = false;
+        }
+
+        return okToDrop;
     }
 
     public INamedElement processDrop(INamedElement elementToDrop) {

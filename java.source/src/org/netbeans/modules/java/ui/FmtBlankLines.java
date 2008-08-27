@@ -44,7 +44,7 @@ package org.netbeans.modules.java.ui;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
-import org.netbeans.spi.options.OptionsPanelController;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 
 /**
  *
@@ -70,8 +70,8 @@ public class FmtBlankLines extends javax.swing.JPanel {
         
     }
     
-    public static OptionsPanelController getController() {
-        return new CategorySupport(new FmtBlankLines(), 
+    public static PreferencesCustomizer.Factory getController() {
+        return new CategorySupport.Factory("blank-lines", FmtBlankLines.class, //NOI18N
                  org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "SAMPLE_BlankLines")); // NOI18N
     }
     

@@ -508,16 +508,6 @@ public final class GemManager {
      *
      * @param errors list to which the errors, which happen during gems
      *        reload, will be accumulated
-     */
-    public void getAllGems(List<String> errors) {
-        reloadIfNeeded(errors);
-    }
-
-    /**
-     * <em>WARNING:</em> Slow! Synchronous gem execution.
-     *
-     * @param errors list to which the errors, which happen during gems
-     *        reload, will be accumulated
      * @return list of the installed gems. Returns an empty list if they could
      *         not be read, never null.
      */

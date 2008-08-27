@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.imageio.stream.FileImageOutputStream;
+import javax.swing.SwingUtilities;
 import org.dom4j.Node;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.eventframework.IEventPayload;
@@ -228,7 +229,7 @@ public class UIDiagram extends Diagram {
     /**
      * Saves the diagram as a graphic
      */
-    public IGraphicExportDetails saveAsGraphic(String sFilename, int nKind, double scale) {
+    public IGraphicExportDetails saveAsGraphic(final String sFilename, int nKind, final double scale) {
         
         IGraphicExportDetails retVal = new GraphicExportDetails();
         retVal.setFrameBoundingRect(new ETRect(scene.getLocation().x, scene.getLocation().y,
@@ -279,14 +280,22 @@ public class UIDiagram extends Diagram {
 //        }
         
         retVal.setMapLocations(locations);        
-        try
+                 
+        SwingUtilities.invokeLater(new Runnable()
         {
-            FileImageOutputStream fo = new FileImageOutputStream(new File(sFilename));
-            DiagramImageWriter.write(scene, fo, scale);
-        } catch (Exception e)
-        {
-            Logger.getLogger("UML").severe("unable to create diagram image file: " + e.getMessage());
-        }
+            public void run()
+            {
+                try
+                {
+                    FileImageOutputStream fo = new FileImageOutputStream(new File(sFilename));
+                    DiagramImageWriter.write(scene, fo, scale);
+                } catch (Exception e)
+                {
+                    Logger.getLogger("UML").severe("unable to create diagram image file: " + e.getMessage());
+                }
+            }
+        });
+            
         return retVal;
     }
     

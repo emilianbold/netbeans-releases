@@ -85,15 +85,15 @@ public class RandomlyFailsTest extends TestCase {
         public void testUnreliable() {runs.add(50);}
     }
 
-    public static class Six {
+    public static class Six extends TestCase {
         public static Test suite() {return new NbTestSuite(Four.class);}
     }
 
-    public static class Seven {
+    public static class Seven extends TestCase {
         public static Test suite() {return new NbTestSuite(Five.class);}
     }
 
-    public static class Eight {
+    public static class Eight extends TestCase {
         public static Test suite() {
             NbTestSuite suite = new NbTestSuite();
             suite.addTestSuite(Four.class);

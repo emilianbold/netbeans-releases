@@ -11,13 +11,13 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS OrderedStatic<L,T,Loki::NullType> (OrderedStatic<L,T,Loki::NullType> ) [1:1/0-19:7/626] lcurly=148 SCOPE: $Global$ 
+CLASS OrderedStatic<class,class,Loki::NullType> (OrderedStatic<class,class,Loki::NullType> ) [1:1/0-19:7/626] lcurly=148 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=$unresolved$::Private::OrderedStaticBase VISIBILITY==PUBLIC virtual==false text='public Private::OrderedStaticBase<T>'
     MEMBERS:
         FUNCTION DEFINITION OrderedStatic  [5:9/170-9:10/391] ConstructorDDImpl SCOPE: OrderedStatic 
             SIGNATURE OrderedStatic()
-            UNIQUE NAME f:OrderedStatic<L,T,Loki::NullType>::OrderedStatic()
+            UNIQUE NAME f:OrderedStatic<class,class,Loki::NullType>::OrderedStatic()
             DECLARATION: OrderedStatic  [5:9/170-9:10/391]
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
@@ -26,23 +26,23 @@ CLASS OrderedStatic<L,T,Loki::NullType> (OrderedStatic<L,T,Loki::NullType> ) [1:
                                 (L,this,&Private::OrderedStaticCreatorFunc::createObject)'
         FUNCTION DEFINITION createObject  [11:9/401-14:10/504] MethodDDImpl SCOPE: OrderedStatic 
             SIGNATURE createObject()
-            UNIQUE NAME f:OrderedStatic<L,T,Loki::NullType>::createObject()
+            UNIQUE NAME f:OrderedStatic<class,class,Loki::NullType>::createObject()
             DECLARATION: createObject  [11:9/401-14:10/504]
             PARAMETERS:
-            RETURNS OrderedStatic<L,T,Loki::NullType>::C TEXT=C  [11:9/401-11:10/402]
+            RETURNS OrderedStatic<class,class,Loki::NullType>::C TEXT=C  [11:9/401-11:10/402]
             STATEMENT COMPOUND  [12:9/426-14:10/504] SCOPE: createObject 
                 STATEMENT EXPRESSION  [13:13/440-13:66/493] SCOPE: Stmt  [12:9/426-14:10/504] text: 'Private::OrderedStaticBase<T>::SetLongevity(new C<T>)'
         FUNCTION OrderedStatic [17:9/527-17:45/563] ConstructorImpl SCOPE: OrderedStatic 
             DEFINITION: null
             SIGNATURE OrderedStatic(const OrderedStatic&)
-            UNIQUE NAME F:OrderedStatic<L,T,Loki::NullType>::OrderedStatic(const OrderedStatic&)
+            UNIQUE NAME F:OrderedStatic<class,class,Loki::NullType>::OrderedStatic(const OrderedStatic&)
             PARAMETERS:
                  [17:23/541-17:43/561]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [17:23/541-17:28/546]  INIT: null  SCOPE: OrderedStatic 
             RETURNS <*no_classifier*> TEXT=  [null-null]
         FUNCTION operator = [18:9/572-18:56/619] MethodImpl SCOPE: OrderedStatic 
             DEFINITION: null
             SIGNATURE operator =(const OrderedStatic&)
-            UNIQUE NAME F:OrderedStatic<L,T,Loki::NullType>::operator =(const OrderedStatic&)
+            UNIQUE NAME F:OrderedStatic<class,class,Loki::NullType>::operator =(const OrderedStatic&)
             PARAMETERS:
                  [18:34/597-18:54/617]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [18:34/597-18:39/602]  INIT: null  SCOPE: operator = 
             RETURNS &$unresolved$::OrderedStatic TEXT=OrderedStatic&  [18:9/572-18:23/586]
@@ -95,13 +95,13 @@ TYPEDEF null_tl  [60:1/1510-60:40/1549] TYPE: $unresolved$::MakeTypelist::Result
 TYPEDEF ClassList  [62:1/1551-66:19/1612] TYPE: $unresolved$::Loki::Seq::Type TEXT=Loki::Seq::Type  [62:9/1559-66:8/1601] SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
-CLASS OrderedStatic<L,T,Loki::NullType> (OrderedStatic<L,T,Loki::NullType> ) [1:1/0-19:7/626] lcurly=148 SCOPE: $Global$ 
+CLASS OrderedStatic<class,class,Loki::NullType> (OrderedStatic<class,class,Loki::NullType> ) [1:1/0-19:7/626] lcurly=148 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=$unresolved$::Private::OrderedStaticBase VISIBILITY==PUBLIC virtual==false text='public Private::OrderedStaticBase<T>'
     MEMBERS:
         FUNCTION DEFINITION OrderedStatic  [5:9/170-9:10/391] ConstructorDDImpl SCOPE: OrderedStatic 
             SIGNATURE OrderedStatic()
-            UNIQUE NAME f:OrderedStatic<L,T,Loki::NullType>::OrderedStatic()
+            UNIQUE NAME f:OrderedStatic<class,class,Loki::NullType>::OrderedStatic()
             DECLARATION: OrderedStatic  [5:9/170-9:10/391]
             PARAMETERS:
             RETURNS <*no_classifier*> TEXT=  [null-null]
@@ -110,23 +110,23 @@ CLASS OrderedStatic<L,T,Loki::NullType> (OrderedStatic<L,T,Loki::NullType> ) [1:
                                 (L,this,&Private::OrderedStaticCreatorFunc::createObject)'
         FUNCTION DEFINITION createObject  [11:9/401-14:10/504] MethodDDImpl SCOPE: OrderedStatic 
             SIGNATURE createObject()
-            UNIQUE NAME f:OrderedStatic<L,T,Loki::NullType>::createObject()
+            UNIQUE NAME f:OrderedStatic<class,class,Loki::NullType>::createObject()
             DECLARATION: createObject  [11:9/401-14:10/504]
             PARAMETERS:
-            RETURNS OrderedStatic<L,T,Loki::NullType>::C TEXT=C  [11:9/401-11:10/402]
+            RETURNS OrderedStatic<class,class,Loki::NullType>::C TEXT=C  [11:9/401-11:10/402]
             STATEMENT COMPOUND  [12:9/426-14:10/504] SCOPE: createObject 
                 STATEMENT EXPRESSION  [13:13/440-13:66/493] SCOPE: Stmt  [12:9/426-14:10/504] text: 'Private::OrderedStaticBase<T>::SetLongevity(new C<T>)'
         FUNCTION OrderedStatic [17:9/527-17:45/563] ConstructorImpl SCOPE: OrderedStatic 
             DEFINITION: null
             SIGNATURE OrderedStatic(const OrderedStatic&)
-            UNIQUE NAME F:OrderedStatic<L,T,Loki::NullType>::OrderedStatic(const OrderedStatic&)
+            UNIQUE NAME F:OrderedStatic<class,class,Loki::NullType>::OrderedStatic(const OrderedStatic&)
             PARAMETERS:
                  [17:23/541-17:43/561]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [17:23/541-17:28/546]  INIT: null  SCOPE: OrderedStatic 
             RETURNS <*no_classifier*> TEXT=  [null-null]
         FUNCTION operator = [18:9/572-18:56/619] MethodImpl SCOPE: OrderedStatic 
             DEFINITION: null
             SIGNATURE operator =(const OrderedStatic&)
-            UNIQUE NAME F:OrderedStatic<L,T,Loki::NullType>::operator =(const OrderedStatic&)
+            UNIQUE NAME F:OrderedStatic<class,class,Loki::NullType>::operator =(const OrderedStatic&)
             PARAMETERS:
                  [18:34/597-18:54/617]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [18:34/597-18:39/602]  INIT: null  SCOPE: operator = 
             RETURNS &$unresolved$::OrderedStatic TEXT=OrderedStatic&  [18:9/572-18:23/586]

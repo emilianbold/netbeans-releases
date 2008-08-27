@@ -160,10 +160,12 @@ public final class UpdateWithDependenciesAction extends SystemAction {
         }
 
         SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
-        Iterator it = deps.getSubprojects().iterator();
-        while (it.hasNext()) {
-            Project subProject = (Project) it.next();
-            addUpdateContexts(contexts, subProject, updatedProjects);  // RESURSION
+        if(deps != null) {
+            Iterator it = deps.getSubprojects().iterator();
+            while (it.hasNext()) {
+                Project subProject = (Project) it.next();
+                addUpdateContexts(contexts, subProject, updatedProjects);  // RESURSION
+            }
         }
     }
 

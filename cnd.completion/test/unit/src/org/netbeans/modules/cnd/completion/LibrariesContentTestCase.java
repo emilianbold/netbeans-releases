@@ -80,4 +80,10 @@ public class LibrariesContentTestCase extends CompletionBaseTestCase {
         super.performTest("src/main.cc", 6, 5, "AAA::f");
         super.performTest("src/main.cc", 6, 5, "BBB::f");
     }
+    
+    public void testMergeOfLibrariesNamespaces() throws Exception {
+        super.performTest("src/main.cc", 6, 5, "common::decl_from");
+        super.performTest("src/include_sys2_file.h", 5, 5, "common::decl_from");
+        super.performTest("src/include_sys1_file.h", 5, 5, "common::decl_from");
+    }
 }

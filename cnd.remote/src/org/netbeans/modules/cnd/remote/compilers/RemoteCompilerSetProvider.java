@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.remote.support.RemoteScriptSupport;
 import org.netbeans.modules.cnd.remote.support.SystemIncludesUtils;
 import org.netbeans.modules.cnd.remote.support.managers.CompilerSetScriptManager;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -92,7 +93,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
         return manager.getNextCompilerSetData();
     }
 
-    public void loadCompilerSetData(List<CompilerSet> sets) {
-        SystemIncludesUtils.load(hkey, sets);
+    public RequestProcessor.Task loadCompilerSetData(List<CompilerSet> sets) {
+        return SystemIncludesUtils.load(hkey, sets);
     }
 }

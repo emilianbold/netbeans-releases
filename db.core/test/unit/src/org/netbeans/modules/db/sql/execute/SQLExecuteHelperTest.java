@@ -55,9 +55,14 @@ public class SQLExecuteHelperTest extends NbTestCase {
 
     public void testSplit() {
         // removing line comments
-        assertSplit("select --line\n from dual", "select  from dual");
-        assertSplit("select ----line\n from dual", "select  from dual");
+        assertSplit("select --line\n from dual", "select \n from dual");
+        assertSplit("select ----line\n from dual", "select \n from dual");
         assertSplit("select --line from dual", "select");
+        assertSplit("-- This should be ignored \nselect from dual", "select from dual");
+        assertSplit("select #line\n from dual", "select \n from dual");
+        assertSplit("select ##line\n from dual", "select \n from dual");
+        assertSplit("select #line from dual", "select");
+        assertSplit("# This should be ignored \nselect from dual", "select from dual");
         
         // removing block comments
         assertSplit("select /* block */ from dual", "select  from dual");
@@ -66,14 +71,22 @@ public class SQLExecuteHelperTest extends NbTestCase {
         assertSplit("select /* block from dual", "select");
         assertSplit("select a - b / c from dual", "select a - b / c from dual");
         assertSplit("select 'foo /* bar */ -- baz' from dual", "select 'foo /* bar */ -- baz' from dual");
+        assertSplit("select 'foo /* bar */ # baz' from dual", "select 'foo /* bar */ # baz' from dual");
+
+        assertSplit("This is a test; #comment\n#A full comment line\nAnother test;",
+                new String[]{"This is a test", "Another test"});
+
         
         // ; in comments should not be considered a statement separator
-        assertSplit("select --comment; \n foo", "select  foo");
+        assertSplit("select --comment; \n foo", "select \n foo");
         assertSplit("select /* ; */ foo", "select  foo");
 
         // splitting
         assertSplit(" ;; ; ", new String[0]);
         assertSplit("/* comment */ select foo; /* comment */ select bar -- comment", new String[] { "select foo", "select bar" });
+
+        // newlines in strings
+        assertSplit("select 'foo\nbar';", new String[] { "select 'foo\nbar'" });
         
         // test changing the delimiter
         assertSplit("select delimiter foo; " +

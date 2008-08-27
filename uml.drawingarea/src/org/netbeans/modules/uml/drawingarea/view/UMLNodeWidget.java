@@ -524,7 +524,8 @@ public abstract class UMLNodeWidget extends Widget
     
     public IPresentationElement getObject()
     {
-//        return (IPresentationElement)scene.findObject(this);
+        if (pe == null)          
+            pe = (IPresentationElement)scene.findObject(this);
         return pe;
     }
     

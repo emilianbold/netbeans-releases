@@ -68,7 +68,6 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -130,71 +129,10 @@ public class Util {
     public static final String APUT = AT + Constants.PUT_ANNOTATION;      //NOI18N
     public static final String ADELETE = AT + Constants.DELETE_ANNOTATION;      //NOI18N
     public static final String SCANNING_IN_PROGRESS = "ScanningInProgress";//NOI18N
-    private static final String BUILD_XML_PATH = "build.xml"; // NOI18N
-    private static final String JAXB_LIB = "jaxb21";     //NOI18N
-
-    /*
-     * Check if the primary file of d is a REST Resource
-     */
-    public static boolean isRestJavaFile(DataObject d) {
-        try {
-            if (!isJava(d)) {
-                return false;
-            }
-            EditorCookie ec = d.getCookie(EditorCookie.class);
-            if (ec == null) {
-                return false;
-            }
-            javax.swing.text.Document doc = ec.getDocument();
-            if (doc != null) {
-                String docText = doc.getText(0, doc.getLength());
-
-                return (docText.indexOf(APATH) != -1) ||
-                        (docText.indexOf(AGET) != -1) ||
-                        (docText.indexOf(APOST) != -1) ||
-                        (docText.indexOf(APUT) != -1) ||
-                        (docText.indexOf(ADELETE) != -1);
-            }
-        } catch (BadLocationException ex) {
-        }
-        return false;
-    }
-
-    public static boolean isServlet(DataObject d) {
-        try {
-            if (!isJava(d)) {
-                return false;
-            }
-            EditorCookie ec = d.getCookie(EditorCookie.class);
-            if (ec == null) {
-                return false;
-            }
-            javax.swing.text.Document doc = ec.getDocument();
-            if (doc != null) {
-                String docText = doc.getText(0, doc.getLength());
-
-                return (docText.indexOf("extends HttpServlet") != -1);
-            }
-        } catch (BadLocationException ex) {
-        }
-        return false;
-    }
-
-    public static boolean isJsp(DataObject d) {
-        if (d != null && "jsp".equals(d.getPrimaryFile().getExt())) //NOI18N
-        {
-            return true;
-        }
-        return false;
-    }
-
-    public static boolean isJava(DataObject d) {
-        if (d != null && "java".equals(d.getPrimaryFile().getExt())) //NOI18N
-        {
-            return true;
-        }
-        return false;
-    }
+    public static final String BUILD_XML_PATH = "build.xml"; // NOI18N
+    public static final String VAR_NAMES_RESULT = "result";
+    public static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
+    public static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; //NOI18N;
     
     public static boolean isJsp(Document doc) {
         if(doc == null)
@@ -216,16 +154,6 @@ public class Util {
         return false;
     }
     
-    public static boolean isPhp(Document doc) {
-        if(doc == null)
-            return false;
-        Object mimeType = doc.getProperty("mimeType"); //NOI18N
-        if (mimeType != null && ("text/x-php5".equals(mimeType))) { //NOI18N
-            return true;
-        }
-        return false;
-    }
-
     /*
      * Changes the text of a JLabel in component from oldLabel to newLabel
      */
@@ -306,25 +234,6 @@ public class Util {
             return ""; // NOI18N
         }
     }
-
-    /**
-     * Returns the SourceGroup of the passesd project which contains the
-     * fully-qualified class name.
-     */
-//    public static SourceGroup getClassSourceGroup(Project project, String fqClassName) {
-//        String classFile = fqClassName.replace('.', '/') + "." + Constants.JAVA_EXT; // NOI18N
-//        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-//
-//        for (SourceGroup sourceGroup : sourceGroups) {
-//            FileObject classFO = sourceGroup.getRootFolder().getFileObject(classFile);
-//            if (classFO != null) {
-//                return sourceGroup;
-//            }
-//        }
-//        return null;
-//    }
-    static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
-    static final String WIZARD_PANEL_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; //NOI18N;
 
     public static String lowerFirstChar(String name) {
         if (name.length() == 0) {
@@ -409,24 +318,6 @@ public class Util {
         return types;
     }
 
-//    public static SourceGroup[] getSourceGroups(Project project) {
-//        SourceGroup[] sourceGroups = null;
-//
-//        Sources sources = ProjectUtils.getSources(project);
-//        SourceGroup[] docRoot = sources.getSourceGroups(TYPE_DOC_ROOT);
-//        SourceGroup[] srcRoots = SourceGroupSupport.getJavaSourceGroups(project);
-//
-//        if (docRoot != null && srcRoots != null) {
-//            sourceGroups = new SourceGroup[docRoot.length + srcRoots.length];
-//            System.arraycopy(docRoot, 0, sourceGroups, 0, docRoot.length);
-//            System.arraycopy(srcRoots, 0, sourceGroups, docRoot.length, srcRoots.length);
-//        }
-//
-//        if (sourceGroups == null || sourceGroups.length == 0) {
-//            sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-//        }
-//        return sourceGroups;
-//    }
     private static Map<String, Class> primitiveTypes;
     private static Map<String, Class> primitiveClassTypes;
     
@@ -616,46 +507,6 @@ public class Util {
         sortedKeys.addAll(keys);
         return sortedKeys;
     }
-
-//    public static void showMethod(FileObject source, String methodName) throws IOException {
-//        try {
-//            DataObject dataObj = DataObject.find(source);
-//            if (!isJava(dataObj)) {
-//                return;
-//            }
-//            JavaSource javaSource = JavaSource.forFileObject(source);
-//
-//            // Force a save to make sure to make sure the line position in
-//            // the editor is in sync with the java source.
-//            SaveCookie sc = (SaveCookie) dataObj.getCookie(SaveCookie.class);
-//
-//            if (sc != null) {
-//                sc.save();
-//            }
-//
-//            LineCookie lc = (LineCookie) dataObj.getCookie(LineCookie.class);
-//
-//            if (lc != null) {
-//                Util.checkScanning(false);
-//                final long[] position = JavaSourceHelper.getPosition(javaSource, methodName);
-//                final Line line = lc.getLineSet().getOriginal((int) position[0]);
-//
-//                SwingUtilities.invokeLater(new Runnable() {
-//
-//                    public void run() {
-//                        line.show(Line.SHOW_SHOW, (int) position[1]);
-//                    }
-//                });
-//            }
-//        } catch (Exception de) {
-//            if (de instanceof IOException && de.getMessage().equals(Util.SCANNING_IN_PROGRESS)) {
-//                throw new IOException(Util.SCANNING_IN_PROGRESS);
-//            } else {
-//                de.printStackTrace();
-//                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
-//            }
-//        }
-//    }
 
     public static Method getValueOfMethod(Class type) {
         try {
@@ -1186,131 +1037,6 @@ public class Util {
         return paramVal;
     }
 
-//    public static void createSessionKeyAuthorizationClassesForWeb(
-//            SaasBean bean, Project project,
-//            String groupName, String saasServicePackageName, FileObject targetFolder,
-//            JavaSource loginJS, FileObject loginFile,
-//            JavaSource callbackJS, FileObject callbackFile,
-//            final String[] parameters, final Object[] paramTypes, boolean isUseTemplates) throws IOException {
-//        createSessionKeyAuthorizationClassesForWeb(bean, project, groupName, 
-//                saasServicePackageName, targetFolder, loginJS, loginFile, 
-//                callbackJS, callbackFile, parameters, paramTypes, isUseTemplates, false);
-//    }
-    
-//    public static void createSessionKeyAuthorizationClassesForWeb(
-//            SaasBean bean, Project project,
-//            String groupName, String saasServicePackageName, FileObject targetFolder,
-//            JavaSource loginJS, FileObject loginFile,
-//            JavaSource callbackJS, FileObject callbackFile,
-//            final String[] parameters, final Object[] paramTypes, boolean isUseTemplates,
-//            boolean skipWebDescEntry) throws IOException {
-//        SaasAuthenticationType authType = bean.getAuthenticationType();
-//        if (authType == SaasAuthenticationType.SESSION_KEY ||
-//                authType == SaasAuthenticationType.HTTP_BASIC) {
-//            if (!isUseTemplates) {
-//                String fileId = Util.upperFirstChar(Constants.LOGIN);// NoI18n
-//                String methodName = "processRequest";// NoI18n
-//                String authFileName = groupName + fileId;
-//                loginJS = JavaSourceHelper.createJavaSource(
-//                        SaasClientCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + "." + Constants.JAVA_EXT,
-//                        targetFolder, saasServicePackageName, authFileName);// NOI18n
-//                Set<FileObject> files = new HashSet<FileObject>(loginJS.getFileObjects());
-//                if (files != null && files.size() > 0) {
-//                    loginFile = files.iterator().next();
-//                }
-//
-//                if (!JavaSourceHelper.isContainsMethod(loginJS, methodName, parameters, paramTypes)) {
-//                    addServletMethod(bean, groupName, methodName, loginJS,
-//                            parameters, paramTypes,
-//                            "{ \n" + getServletLoginBody(bean, groupName) + "\n }");
-//                }
-//
-//                fileId = Util.upperFirstChar(Constants.CALLBACK);// NOI18n
-//                authFileName = groupName + fileId;
-//                callbackJS = JavaSourceHelper.createJavaSource(
-//                        SaasClientCodeGenerator.TEMPLATES_SAAS + authType.getClassIdentifier() + fileId + "." + Constants.JAVA_EXT,
-//                        targetFolder, saasServicePackageName, authFileName);// NOI18n
-//                files = new HashSet<FileObject>(callbackJS.getFileObjects());
-//                if (files != null && files.size() > 0) {
-//                    callbackFile = files.iterator().next();
-//                }
-//
-//                if (!JavaSourceHelper.isContainsMethod(callbackJS, methodName, parameters, paramTypes)) {
-//                    addServletMethod(bean, groupName, methodName, callbackJS,
-//                            parameters, paramTypes,
-//                            "{ \n" + getServletCallbackBody(bean, groupName) + "\n }");
-//                }
-//            } else {
-//                UseTemplates useTemplates = null;
-//                if (bean.getAuthentication() instanceof SessionKeyAuthentication) {
-//                    SessionKeyAuthentication sessionKey = (SessionKeyAuthentication) bean.getAuthentication();
-//                    useTemplates = sessionKey.getUseTemplates();
-//                } else if (bean.getAuthentication() instanceof HttpBasicAuthentication) {
-//                    HttpBasicAuthentication httpBasic = (HttpBasicAuthentication) bean.getAuthentication();
-//                    useTemplates = httpBasic.getUseTemplates();
-//                }
-//                if (useTemplates != null) {
-//                    for (Template template : useTemplates.getTemplates()) {
-//                        String id = template.getId();
-//                        String type = template.getType() == null ? "" : template.getType();
-//                        String templateUrl = template.getUrl();
-//                        if (templateUrl == null || templateUrl.trim().equals("")) {
-//                            throw new IOException("Authentication template is empty.");
-//                        }
-//                        String fileName = null;
-//                        if (type.equals(Constants.LOGIN)) {
-//                            fileName = bean.getSaasName() + Util.upperFirstChar(Constants.LOGIN);
-//                        } else if (type.equals(Constants.CALLBACK)) {
-//                            fileName = bean.getSaasName() + Util.upperFirstChar(Constants.CALLBACK);
-//                        } else if (type.equals(Constants.AUTH)) {
-//                            continue;
-//                        }
-//                        FileObject fObj = null;
-//                        if (templateUrl.endsWith("." + Constants.JAVA_EXT)) {
-//                            JavaSource source = JavaSourceHelper.createJavaSource(templateUrl, targetFolder,
-//                                    bean.getSaasServicePackageName(), fileName);
-//                            Set<FileObject> files = new HashSet<FileObject>(source.getFileObjects());
-//                            if (files != null && files.size() > 0) {
-//                                fObj = files.iterator().next();
-//                            }
-//                        } else {
-//                            if (fileName != null) {
-//                                fObj = targetFolder.getFileObject(fileName);
-//                                if (fObj == null) {
-//                                    DataObject d = Util.createDataObjectFromTemplate(templateUrl, targetFolder,
-//                                            fileName);
-//                                    if (d != null) {
-//                                        fObj = d.getPrimaryFile();
-//                                    }
-//                                }
-//                            }
-//                        }
-//                        if (fObj != null) {
-//                            if (type.equals(Constants.LOGIN)) {
-//                                loginFile = fObj;
-//                            } else if (type.equals(Constants.CALLBACK)) {
-//                                callbackFile = fObj;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            //Make entry into web.xml for login and callback servlets
-//            if(!skipWebDescEntry) {
-//                if (loginFile != null && callbackFile != null) {
-//                    Map<String, String> filesMap = new HashMap<String, String>();
-//                    filesMap.put(loginFile.getName(), saasServicePackageName + "." + loginFile.getName());
-//                    filesMap.put(callbackFile.getName(), saasServicePackageName + "." + callbackFile.getName());
-//                    addAuthorizationClassesToWebDescriptor(project, filesMap);
-//                } else {
-//                    Logger.getLogger(Util.class.getName()).log(Level.INFO, "Cannot add login and callback servlets" +
-//                            "to web descriptor");
-//                }
-//            }
-//        }
-//    }
-
     public static String getServletLoginBody(SaasBean bean,
             String groupName) throws IOException {
         String methodBody = "";
@@ -1495,26 +1221,33 @@ public class Util {
                 NotifyDescriptor.Message.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notify(desc);
     }
-
+    
     public static String createPrintStatement(String pkg, String typeName,
             DropFileType dropFileType, HttpMethodType methodType,
             boolean canGenerateJaxb, String indent) {
+        return createPrintStatement(pkg, typeName, dropFileType, methodType,
+            canGenerateJaxb, VAR_NAMES_RESULT, indent);
+    }
+    
+    public static String createPrintStatement(String pkg, String typeName,
+            DropFileType dropFileType, HttpMethodType methodType,
+            boolean canGenerateJaxb, String resultVarName, String indent) {
         String methodBody = "";
         String commentStr = "//";
         if (canGenerateJaxb) {
             if (!isPrimitive(typeName)) {
                 String resultClass = pkg + "." + Util.camelize(typeName, false);
-                methodBody += indent + resultClass + " resultObj = " +
-                    "result.getDataAsObject(" + resultClass + ".class);\n";
+                methodBody += indent + resultClass + " "+resultVarName+"Obj = " +
+                    resultVarName+".getDataAsObject(" + resultClass + ".class);\n";
             } else {
                 String resultClass = Util.camelize(typeName, false);
-                methodBody += indent + resultClass + " resultObj = " +
-                    "result.getDataAsObject(" + resultClass + ".class, " + "\"" + pkg + "\");\n";
+                methodBody += indent + resultClass + " "+resultVarName+"Obj = " +
+                    resultVarName+".getDataAsObject(" + resultClass + ".class, " + "\"" + pkg + "\");\n";
             }
         }
         methodBody += indent + "//TODO - Uncomment the print Statement below to print result.\n";
         methodBody += indent + commentStr + dropFileType.getPrintWriterType() +
-                ".println(\"The SaasService returned: \"+result.getDataAsString());\n";
+                ".println(\"The SaasService returned: \"+"+resultVarName+".getDataAsString());\n";
 
         return methodBody;
     }
@@ -1645,7 +1378,7 @@ public class Util {
         return types.toArray(new String[types.size()]);
     }
     
-    public static List<ParameterInfo> getJaxRsMethodParameters(RestClientSaasBean bean) {
+    public static List<ParameterInfo> getRestClientMethodParameters(RestClientSaasBean bean) {
         List<ParameterInfo> params = bean.filterParametersByAuth(bean.filterParameters(
                 new ParamFilter[]{ParamFilter.FIXED}));
         HttpMethodType httpMethod = bean.getHttpMethod();

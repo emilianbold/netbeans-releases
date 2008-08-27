@@ -42,9 +42,12 @@ package org.netbeans.modules.db.sql.analyzer;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import junit.framework.TestCase;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.modules.db.explorer.test.api.SQLIdentifiersTestUtilities;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 
 /**
@@ -101,6 +104,17 @@ public class SQLStatementAnalyzerTest extends TestCase {
         assertNotNull(statement.getFromClause());
     }
 
+    public void testUnquote() throws Exception {
+        SQLStatement statement = doAnalyze("select * from \"foo\".\"bar\"");
+        assertEquals(Collections.singleton(new QualIdent("foo", "bar")), statement.getFromClause().getUnaliasedTableNames());
+
+        statement = doAnalyze("select * from \"foo\".\"\" inner join \"baz\"");
+        assertEquals(new HashSet<QualIdent>(Arrays.asList(new QualIdent("foo"), new QualIdent("baz"))), statement.getFromClause().getUnaliasedTableNames());
+
+        statement = doAnalyze("select * from \"\"");
+        assertTrue(statement.getFromClause().getUnaliasedTableNames().isEmpty());
+    }
+
     public void testSubqueries() throws Exception {
         String sql = "select * from foo where exists (select id from bar where bar.id = foo.id and (select count(id) from baz where bar.id = baz.id) = 1) order by xyz";
         int firstSubStart = sql.indexOf("(select") + 1;
@@ -128,9 +142,13 @@ public class SQLStatementAnalyzerTest extends TestCase {
         assertEquals(0, subquery.getSubqueries().size());
     }
 
-    private static SQLStatement doAnalyze(String sql) throws IOException {
+    private static SQLStatement doAnalyze(String sql, Quoter quoter) {
         TokenHierarchy<String> hi = TokenHierarchy.create(sql, SQLTokenId.language());
-        return SQLStatementAnalyzer.analyze(hi.tokenSequence(SQLTokenId.language()));
+        return SQLStatementAnalyzer.analyze(hi.tokenSequence(SQLTokenId.language()), quoter);
+    }
+
+    private static SQLStatement doAnalyze(String sql) throws IOException {
+        return doAnalyze(sql, SQLIdentifiersTestUtilities.createNonASCIIQuoter("\""));
     }
 
     public static void assertCanAnalyze(String sql) throws IOException {

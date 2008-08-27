@@ -79,6 +79,7 @@ public class ToggleShowInteractionBounary extends SceneNodeAction
     {
         SequenceDiagramEngine engine=(SequenceDiagramEngine) scene.getEngine();
         engine.setSettingValue(SequenceDiagramEngine.SHOW_INTERACTION_BOUNDARY, engine.getSettingValue(SequenceDiagramEngine.SHOW_INTERACTION_BOUNDARY)==Boolean.FALSE);
+        scene.validate();
     }
 
     

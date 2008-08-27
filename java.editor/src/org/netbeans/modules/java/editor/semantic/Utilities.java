@@ -46,6 +46,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -273,6 +274,9 @@ public class Utilities {
         }
         if (class2Kind.get(IdentifierTree.class).contains(leaf.getKind())) {
             return findIdentifierSpanImpl(info, (IdentifierTree) leaf, info.getCompilationUnit(), info.getTrees().getSourcePositions());
+        }
+        if (class2Kind.get(ParameterizedTypeTree.class).contains(leaf.getKind())) {
+            return findIdentifierSpanImpl(info, new TreePath(decl, ((ParameterizedTypeTree) leaf).getType()));
         }
         throw new IllegalArgumentException("Only MethodDecl, VariableDecl, MemberSelectTree, IdentifierTree and ClassDecl are accepted by this method. Got: " + leaf.getKind());
     }

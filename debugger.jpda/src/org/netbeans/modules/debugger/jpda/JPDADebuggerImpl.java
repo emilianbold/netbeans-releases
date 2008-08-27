@@ -910,7 +910,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                             this
                         );
                 } catch (InternalException e) {
-                    throw new InvalidExpressionException (e.getLocalizedMessage());
+                    InvalidExpressionException ieex = new InvalidExpressionException (e.getLocalizedMessage());
+                    ieex.initCause(e);
+                    throw ieex;
                 }
             } catch (InvalidExpressionException ieex) {
                 if (ieex.getTargetException() instanceof UnsupportedOperationException) {

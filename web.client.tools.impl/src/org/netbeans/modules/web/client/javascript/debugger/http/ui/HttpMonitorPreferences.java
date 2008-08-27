@@ -67,7 +67,7 @@ public class HttpMonitorPreferences {
     private static boolean SHOW_XHR_DEFAULT = true;
     private static boolean SHOW_FLASH_DEFAULT = true;
 
-    private static int DEFAULT_METHOD_COLUMN_WIDTH = 4;
+    public static int DEFAULT_METHOD_COLUMN_WIDTH = 5;
 
 
     private static HttpMonitorPreferences INSTANCE = null;
@@ -92,13 +92,13 @@ public class HttpMonitorPreferences {
                  PROP_FILTER_FLASH.equals(pref));
     }
 
-    public int getMethodColumnWidth() {
-        return getPreferences().getInt(PROP_METHOD_COLUMN_WIDTH, DEFAULT_METHOD_COLUMN_WIDTH);
-    }
-
-    public void setMethodColumnWidth(int value){
-        getPreferences().putInt(PROP_METHOD_COLUMN_WIDTH, value);
-    }
+//    public int getMethodColumnWidth() {
+//        return getPreferences().getInt(PROP_METHOD_COLUMN_WIDTH, DEFAULT_METHOD_COLUMN_WIDTH);
+//    }
+//
+//    public void setMethodColumnWidth(int value){
+//        getPreferences().putInt(PROP_METHOD_COLUMN_WIDTH, value);
+//    }
 
     /**
      * @return the SHOW_HTML

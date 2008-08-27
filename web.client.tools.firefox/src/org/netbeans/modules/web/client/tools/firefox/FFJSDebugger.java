@@ -38,13 +38,8 @@
  */
 package org.netbeans.modules.web.client.tools.firefox;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.logging.Level;
 
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
 import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
@@ -73,6 +68,12 @@ public class FFJSDebugger extends JSAbstractExternalDebugger {
             Exceptions.printStackTrace(ex);
         }        
     }
+    
+    @Override
+    protected void startDebuggingImpl() {
+        super.startDebuggingImpl();
+        startHttpMonitorThread();
+    }    
 
     public String getID() {
         if (ID == null) {

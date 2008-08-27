@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.MockServices;
@@ -83,6 +84,7 @@ public class ProjectsRootNodePreferredOpen2Test extends ProjectsRootNodePreferre
     protected void setUp() throws Exception {
         super.setUp();
         log = Log.enable("", Level.WARNING);
+        Logger.getLogger("org.netbeans.ui").setLevel(Level.OFF);
     }
 
     @Override

@@ -480,6 +480,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     * @exception ClassNotFoundException if the class cannot be found
     */
     private Class findClass (String name, ClassLoader customLoader) throws ClassNotFoundException {
+        ClassLoader loader = null;
         try {
             Class c;
             try {
@@ -487,7 +488,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
                     c = customLoader.loadClass(name);
                 } else {
                     // to save the space with wasting classloaders, try the system first
-                    ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                    loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
                     if (loader == null) {
                         loader = getClass ().getClassLoader ();
                     }
@@ -499,6 +500,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
             }
             return c;
         } catch (ClassNotFoundException ex) {
+            Exceptions.attachMessage(ex, "ClassLoader: " + loader); // NOI18N
             throw ex;
         } catch (RuntimeException ex) {
             throw ex;

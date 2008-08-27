@@ -41,11 +41,16 @@
 
 package org.netbeans.test.ide;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashSet;
+import java.util.Set;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
 
 /**
  * Overall sanity check suite for IDE before commit.<br>
@@ -76,7 +81,7 @@ public class IDECommitValidationTest extends JellyTestCase {
         super(name);
     }
     
-    public static Test suite() {
+    public static Test suite() throws IOException {
         
         boolean blacklistEnabled = initBlacklistedClassesHandler();
         
@@ -84,10 +89,26 @@ public class IDECommitValidationTest extends JellyTestCase {
             IDEValidation.class
         ).clusters(".*").enableModules(".*");
 
+        Set<String> allowedFiles = new HashSet<String>();
+        InputStream is = IDECommitValidationTest.class.getResourceAsStream("allowed-file-writes.txt");
+        BufferedReader r = new BufferedReader(new InputStreamReader(is));
+        for (;;) {
+            String line = r.readLine();
+            if (line == null) {
+                break;
+            }
+            if (line.startsWith("#")) {
+                continue;
+            }
+            allowedFiles.add(line);
+        }
+
+        CountingSecurityManager.initialize(null, allowedFiles);
         
         if (blacklistEnabled) {
             conf = conf.addTest("testBlacklistedClassesHandler");
         }
+        conf = conf.addTest("testWriteAccess");
         conf = conf.addTest("testInitGC");
         conf = conf.addTest("testMainMenu");
         conf = conf.addTest("testHelp");

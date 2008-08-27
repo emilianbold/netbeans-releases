@@ -1845,7 +1845,9 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                         break;
 
                     case LONG_LITERAL:
+                    case LONG_LONG_LITERAL:
                     case UNSIGNED_LONG_LITERAL:
+                    case UNSIGNED_LONG_LONG_LITERAL:
                         constExp = createTokenExp(CONSTANT);
                         constExp.setType("long"); // NOI18N
                         break;
@@ -1949,9 +1951,11 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
             }
             case GENERIC_TYPE_OPEN:
             {
-                CsmCompletionExpression kwdExp = createTokenExp(TYPE);
-                kwdExp.setType(kwdType);
-                pushExp(kwdExp);
+                if (!"typename".equals(kwdType)) { // NOI18N
+                    CsmCompletionExpression kwdExp = createTokenExp(TYPE);
+                    kwdExp.setType(kwdType);
+                    pushExp(kwdExp);
+                }
                 errorState = false;
                 break;
             }
