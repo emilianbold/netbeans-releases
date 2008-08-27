@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui.logicalview;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.php.project.PhpProject;
@@ -247,6 +248,17 @@ public class SrcNode extends FilterNode {
                 } else {
                     //else put at the tail
                     actions.add(toAdd[i]);
+                }
+            }
+            //#143782 find usages on php file has no sense
+            for (Iterator<Action> it = actions.iterator(); it.hasNext();) {
+                Action action = it.next();
+                //hard code string WhereUsedAction chosen not need to depend on refactoring
+                //just for this minority issue
+                if (action != null &&
+                        action.getClass().getName().indexOf("WhereUsedAction") != -1) {//NOI18N
+                    it.remove();
+                    break;
                 }
             }
             return actions.toArray(new Action[actions.size()]);

@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.php.project.ui.wizards;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -155,12 +152,15 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
 
         projectFolderTextArea.setBackground(UIManager.getDefaults().getColor("Label.background"));
         projectFolderTextArea.setEditable(false);
+        projectFolderTextArea.setForeground(UIManager.getDefaults().getColor("Label.disabledForeground"));
         projectFolderTextArea.setLineWrap(true);
         projectFolderTextArea.setText(NbBundle.getMessage(ProjectFolder.class, "TXT_MetadataInfo")); // NOI18N
+        projectFolderTextArea.setToolTipText(NbBundle.getMessage(ProjectFolder.class, "TXT_MetadataInfo")); // NOI18N
         projectFolderTextArea.setWrapStyleWord(true);
         projectFolderTextArea.setBorder(null);
         projectFolderTextArea.setDisabledTextColor(UIManager.getDefaults().getColor("Label.disabledForeground"));
         projectFolderTextArea.setEnabled(false);
+        projectFolderTextArea.setOpaque(false);
         projectFolderScrollPane.setViewportView(projectFolderTextArea);
 
         projectFolderTextArea.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextArea.AccessibleContext.accessibleName")); // NOI18N

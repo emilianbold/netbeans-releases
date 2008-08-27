@@ -279,6 +279,9 @@ public class JsWhereUsedQueryPlugin extends JsRefactoringPlugin {
     
     //@Override
     protected Problem fastCheckParameters(CompilationController info) {
+        if (targetName == null) {
+            return new Problem(true, "Cannot determine target name. Please file a bug with detailed information on how to reproduce (preferably including the current source file and the cursor position)");
+        }
         if (searchHandle.getKind() == ElementKind.METHOD) {
             return checkParametersForMethod(isFindOverridingMethods(), isFindUsages());
         } 

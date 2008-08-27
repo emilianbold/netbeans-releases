@@ -1,0 +1,5 @@
+Code completion result for source line:
+$baba = $param|;
+(QueryType=COMPLETION, NameKind=PREFIX)
+VARIABLE   ? $param                                   curly04.php
+VARIABLE   ? $param2                                  curly04.php
