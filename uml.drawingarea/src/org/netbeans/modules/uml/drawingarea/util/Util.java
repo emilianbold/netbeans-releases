@@ -197,6 +197,33 @@ public class Util
         return retVal;
     }
     
+    /**
+     * First checks if the widget is in the viewable area.  If the widget is
+     * not in the viewable area, then center the widget.
+     * 
+     * @param widget The widget to make vieable.
+     */
+    public static void makeSureWidgetIsVisible(Widget widget)
+    {
+        
+        Scene contextScene = widget.getScene();
+                
+        Rectangle visibleRect = contextScene.getView().getVisibleRect();
+        Rectangle sceneRect = widget.convertLocalToScene(widget.getBounds());
+        Rectangle viewWidgetRect = contextScene.convertSceneToView(sceneRect);
+
+        if(visibleRect.contains(viewWidgetRect) == false)
+        {
+            Util.centerWidget(widget);
+        }
+    }
+    
+    /**
+     * Tries to move the scene viewable area so that the the widget is in the 
+     * center of the view.  
+     * 
+     * @param widget The widget to be centered.
+     */
     public static void centerWidget(Widget widget)
     {
         Scene scene = widget.getScene();
