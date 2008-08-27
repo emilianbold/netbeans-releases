@@ -56,6 +56,7 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.MouseInputAdapter;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -129,7 +130,7 @@ public class PaletteButton extends ContextPaletteButton
     
     protected Border getFocusBorder()
     {
-        return BorderFactory.createLineBorder(Color.BLUE, 1);
+        return BorderFactory.createLineBorder(UIManager.getColor("List.selectionBackground"), 1);
     }
     
     protected Border getNonFocusedBorder()

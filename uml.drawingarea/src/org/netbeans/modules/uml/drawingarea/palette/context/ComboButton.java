@@ -60,6 +60,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -71,11 +72,11 @@ public class ComboButton extends ContextPaletteButton
 {
     private static final Border RIGHT_POPOUT_BORDER = BorderFactory.createEmptyBorder(1, 4, 1, 1);
     private static final Border RIGHT_POPOUT_FOCUSBORDER = 
-            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.BLUE, 1),
+            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(UIManager.getColor("List.selectionBackground"), 1),
                                                BorderFactory.createEmptyBorder(0, 2, 0, 0));
     private static final Border LEFT_POPOUT_BORDER = BorderFactory.createEmptyBorder(1, 1, 1, 4);
     private static final Border LEFT_POPOUT_FOCUSBORDER = 
-            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.RED, 1),
+            BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(UIManager.getColor("List.selectionBackground"), 1),
                                                BorderFactory.createEmptyBorder(0, 0, 0, 3));
     
     private Widget associatedWidget = null;
