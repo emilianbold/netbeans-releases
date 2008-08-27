@@ -38,25 +38,26 @@
  */
 package org.netbeans.modules.cnd.remote.mapper;
 
+import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class HostMappingProviderSolaris extends HostMappingProviderUnixAbstract {
+public class HostMappingProviderLinux extends HostMappingProviderUnixAbstract {
 
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
-        return hostPlatform.isSolaris();
+        return hostPlatform.isLinux();
     }
 
     @Override
     protected String getShareCommand() {
-        return "/usr/sbin/share"; // NOI18N
+        return "cat /etc/exports"; // NOI18N
     }
 
     @Override
     protected String fetchPath(String[] values) {
-        return values.length > 1 ? values[1] : null;
+        return values.length > 0 ? values[0] : null;
     }
 }
