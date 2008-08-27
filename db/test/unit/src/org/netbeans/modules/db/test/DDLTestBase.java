@@ -129,7 +129,6 @@ public class DDLTestBase extends DBTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        createSchema();
 
         spec = (Specification)getSpecification();
         drvSpec = getDriverSpecification();

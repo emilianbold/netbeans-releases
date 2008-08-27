@@ -104,6 +104,7 @@ public abstract class DBTestBase extends TestBase {
         super.setUp();
         getProperties();
         createDBProvider();
+        createSchema();
     }
         
     protected DBProvider getDBProvider() {
@@ -247,7 +248,7 @@ public abstract class DBTestBase extends TestBase {
     }
     
     protected final void setSchema() throws Exception {
-        if (isMySQL()) {
+        if (isMySQL() && ! dbUrl.contains(getSchema())) {
             // Not sure why, but we need a connection directly to this database
             removeConnection();
             dbUrl = dbUrl + getSchema();
