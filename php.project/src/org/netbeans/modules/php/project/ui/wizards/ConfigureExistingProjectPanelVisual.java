@@ -40,9 +40,6 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -116,46 +113,7 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
         separator = new JSeparator();
         projectFolderPanel = new JPanel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return sourcesTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return sourcesTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return encodingComboBox;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  sourcesTextField){
-                    return sourcesBrowseButton;
-                }
-                if(aComponent ==  sourcesBrowseButton){
-                    return projectNameTextField;
-                }
-                if(aComponent ==  projectNameTextField){
-                    return encodingComboBox;
-                }
-                return sourcesTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  sourcesBrowseButton){
-                    return sourcesTextField;
-                }
-                if(aComponent ==  projectNameTextField){
-                    return sourcesBrowseButton;
-                }
-                if(aComponent ==  encodingComboBox){
-                    return projectNameTextField;
-                }
-                return encodingComboBox;//end getComponentBefore
-
-            }}
-        
-        );
+        setFocusTraversalPolicy(null);
 
         sourcesLabel.setLabelFor(sourcesTextField);
 
@@ -207,7 +165,7 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(sourcesLabel, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE)
+                    .add(sourcesLabel)
                     .add(sourcesBrowseButton)
                     .add(sourcesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)

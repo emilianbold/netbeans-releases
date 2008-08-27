@@ -58,7 +58,7 @@ public class JaxRpcLookupProvider implements LookupProvider {
     public Lookup createAdditionalLookup(Lookup baseContext) {
         final Project prj = baseContext.lookup(Project.class);
 
-        return Lookups.fixed(new Object[]{new JaxRpcArtifactsClassPathProvider(prj)});
+        return Lookups.fixed(new Object[]{new JaxRpcArtifactsClassPathProvider(prj), new JaxRpcSourceForBinaryQuery()});
     }
 
 }

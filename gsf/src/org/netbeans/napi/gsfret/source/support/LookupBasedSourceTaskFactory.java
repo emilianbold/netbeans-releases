@@ -40,12 +40,11 @@
  */
 package org.netbeans.napi.gsfret.source.support;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import javax.swing.event.ChangeEvent;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source.Priority;
 import org.netbeans.napi.gsfret.source.SourceTaskFactory;
@@ -119,7 +118,7 @@ public abstract class LookupBasedSourceTaskFactory extends SourceTaskFactory {
     }
 
     private synchronized void updateCurrentFiles() {
-        Set<FileObject> newCurrentFiles = new HashSet();
+        Set<FileObject> newCurrentFiles = new HashSet<FileObject>();
 
         newCurrentFiles.addAll(fileObjectResult.allInstances());
 
@@ -135,9 +134,13 @@ public abstract class LookupBasedSourceTaskFactory extends SourceTaskFactory {
             }
         }
 
-        currentFiles = new ArrayList<FileObject>(newCurrentFiles);
-        
-        lookupContentChanged();
+        //List<FileObject> newCurrentFilesFiltered = OpenedEditors.filterSupportedMIMETypes(new LinkedList<FileObject>(newCurrentFiles), supportedMimeTypes);
+        List<FileObject> newCurrentFilesFiltered = OpenedEditors.filterSupportedMIMETypes(new LinkedList<FileObject>(newCurrentFiles), new String[0]);
+
+        if (!currentFiles.equals(newCurrentFilesFiltered)) {
+            currentFiles = newCurrentFilesFiltered;
+            lookupContentChanged();
+        }
     }
     
     /**@inheritDoc*/

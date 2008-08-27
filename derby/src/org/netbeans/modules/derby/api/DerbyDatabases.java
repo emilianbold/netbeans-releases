@@ -317,7 +317,7 @@ public final class DerbyDatabases {
      *
      * <p>Not public because used in tests.</p>
      */
-    static void extractSampleDatabase(String databaseName) throws IOException{
+    static synchronized void extractSampleDatabase(String databaseName) throws IOException{
         File systemHomeFile = ensureSystemHome();
         File sourceFO = InstalledFileLocator.getDefault().locate("modules/ext/derbysampledb.zip", null, false); // NOI18N
         FileObject systemHomeFO = FileUtil.toFileObject(systemHomeFile);

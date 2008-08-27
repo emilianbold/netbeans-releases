@@ -41,6 +41,9 @@
     <component class="org.netbeans.installer.products.nb.base.wizard.panels.NbBasePanel">
         <properties>
             <property name="preferred.jdk.version.macosx">1.5.0.7.0</property>
+            <property name="minimum.jdk.version.aix">1.5.0</property>
+            <property name="minimum.jdk.version.linux-ppc">1.5.0</property>
+            <property name="minimum.jdk.version.linux-ppc64">1.5.0</property>
         </properties>
     </component>
 </wizard>
