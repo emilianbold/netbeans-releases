@@ -242,6 +242,17 @@ public class SwingPaletteManager implements ContextPaletteManager
                 paletteWidget.requestFocusInWindow();
             }
         }
+        
+        // Need to make sure that the attached Widget is visible.
+        if(paletteWidget != null)
+        {
+            ContextPaletteModel model = paletteWidget.getModel();
+            if(model != null)
+            {
+                Widget context = model.getContext();
+                context.getScene().getView();
+            }
+        }
     }
 
     ///////////////////////////////////////////////////////////////
