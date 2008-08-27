@@ -113,10 +113,11 @@ public class HostMappingsAnalyzer {
         //providers
         pairedProviders = new ArrayList<HostMappingProvider>();
         singularProviders = new ArrayList<HostMappingProvider>();
-        // should it be Lookup?
+        // TODO: should it be Lookup?
         pairedProviders.add(new HostMappingProviderWindows());
         pairedProviders.add(new HostMappingProviderSamba());
-
+        // TODO: this kind of API is st...range 
         singularProviders.add(new HostMappingProviderSolaris());
+        singularProviders.add(new HostMappingProviderLinux());
     }
 }
