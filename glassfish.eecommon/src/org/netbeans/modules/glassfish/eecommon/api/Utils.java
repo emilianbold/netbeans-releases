@@ -39,6 +39,18 @@
 
 package org.netbeans.modules.glassfish.eecommon.api;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.glassfish.eecommon.api.config.J2eeModuleHelper;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
+import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.openide.filesystems.FileObject;
+
 /**
  * Utility class for common procedures
  *
@@ -104,4 +116,68 @@ public final class Utils {
         return result;
     }
 
+    public static String computeModuleID(J2eeModule module, File dir, String fallbackExt) {
+        String moduleID = null;
+        J2eeModuleHelper j2eeModuleHelper = J2eeModuleHelper.getJ2eeModuleHelper(module.getModuleType());
+        if(j2eeModuleHelper != null) {
+            RootInterface rootDD = j2eeModuleHelper.getStandardRootDD(module);
+            if(rootDD != null) {
+                try {
+                    moduleID = rootDD.getDisplayName(null);
+                } catch (VersionNotSupportedException ex) {
+                    // ignore, handle as null below.
+                }
+            }
+        }
+
+        if (null == moduleID || moduleID.trim().length() < 1) {
+            FileObject fo = null;
+            try {
+                fo = module.getContentDirectory();
+                moduleID = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fo)).getName();
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish.eecommon").log(Level.FINER, null, ex);
+            }
+        }
+        if (null == moduleID || moduleID.trim().length() < 1) {
+            moduleID = simplifyModuleID(dir.getParentFile().getParentFile().getName(), fallbackExt);
+        } else {
+            moduleID = simplifyModuleID(moduleID, fallbackExt);
+        }
+
+        return moduleID;
+    }
+    
+    private static String simplifyModuleID(String candidateID, String fallbackExt) {
+        String moduleID = null;
+
+        if (candidateID == null) {
+            moduleID = "_default_" + fallbackExt;
+        } else if (candidateID.equals("")) {
+            moduleID = "_default_" + fallbackExt;
+        }
+
+        if (null == moduleID) {
+            moduleID = candidateID.replace(' ', '_');
+            if (moduleID.startsWith("/")) {
+                moduleID = moduleID.substring(1);
+            }
+
+            // This moduleID will be later used to construct file path,
+            // replace the illegal characters in file name
+            //  \ / : * ? " < > | with _
+            moduleID = moduleID.replace('\\', '_').replace('/', '_');
+            moduleID = moduleID.replace(':', '_').replace('*', '_');
+            moduleID = moduleID.replace('?', '_').replace('"', '_');
+            moduleID = moduleID.replace('<', '_').replace('>', '_');
+            moduleID = moduleID.replace('|', '_');
+
+            // This moduleID will also be used to construct an ObjectName
+            // to register the module, so replace additional special
+            // characters , =  used in property parsing with -
+            moduleID = moduleID.replace(',', '_').replace('=', '_');
+        }
+        
+        return moduleID;
+    }
 }

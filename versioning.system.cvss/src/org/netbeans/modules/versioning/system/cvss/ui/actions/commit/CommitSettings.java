@@ -66,6 +66,7 @@ import java.io.File;
 import java.io.StringWriter;
 import java.io.FileReader;
 import java.io.IOException;
+import javax.swing.SwingUtilities;
 
 /**
  * Customization of commits.
@@ -135,8 +136,12 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         CvsModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
-        taMessage.selectAll();
-        taMessage.requestFocus();  // #67106
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                taMessage.selectAll();
+                taMessage.requestFocus();  // #67106
+            }
+        });
     }
 
     public void removeNotify() {
@@ -359,12 +364,12 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
     }// </editor-fold>//GEN-END:initComponents
 
     private void loadTemplateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadTemplateButtonActionPerformed
-        loadTemplate(false);
-    }//GEN-LAST:event_loadTemplateButtonActionPerformed
+        loadTemplate(false);//GEN-LAST:event_loadTemplateButtonActionPerformed
+    }                                                  
 
     private void recentMessagesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recentMessagesButtonActionPerformed
-        onBrowseRecentMessages();
-    }//GEN-LAST:event_recentMessagesButtonActionPerformed
+        onBrowseRecentMessages();//GEN-LAST:event_recentMessagesButtonActionPerformed
+    }                                                    
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

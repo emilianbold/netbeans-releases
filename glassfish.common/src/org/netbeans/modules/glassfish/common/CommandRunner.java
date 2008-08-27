@@ -400,15 +400,12 @@ public class CommandRunner extends BasicTask<OperationState> {
         builder.append("http://"); // NOI18N
         builder.append(ip.get(GlassfishModule.HOSTNAME_ATTR));
         builder.append(":"); // NOI18N
-        if("true".equals(System.getProperty("glassfish.useadminport"))) {
-            builder.append(ip.get(GlassfishModule.ADMINPORT_ATTR));
-        } else {
-            builder.append(ip.get(GlassfishModule.HTTPPORT_ATTR));
-        }
-        builder.append("/__asadmin/");
+        boolean useAdminPort = !"false".equals(System.getProperty("glassfish.useadminport")); // NOI18N
+        builder.append(ip.get(useAdminPort ? GlassfishModule.ADMINPORT_ATTR : GlassfishModule.HTTPPORT_ATTR));
+        builder.append("/__asadmin/"); // NOI18N
         builder.append(cmd);
         String commandUrl = builder.toString();
-        return encodeSpaces ? commandUrl.replaceAll(" ", "%20") : commandUrl;
+        return encodeSpaces ? commandUrl.replaceAll(" ", "%20") : commandUrl; // NOI18N
     }
     
     private void handleSend(HttpURLConnection hconn) throws IOException {

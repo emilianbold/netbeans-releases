@@ -159,8 +159,8 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             return DUMMY_POSITION;
         }
         
-        public String getText() {
-            return include.getIncludeName().toString();
+        public CharSequence getText() {
+            return include.getIncludeName();
         }
         
     }

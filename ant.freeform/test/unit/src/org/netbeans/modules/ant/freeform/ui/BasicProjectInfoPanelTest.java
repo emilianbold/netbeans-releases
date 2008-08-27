@@ -131,7 +131,7 @@ public class BasicProjectInfoPanelTest extends TestBase {
         error = MessageFormat.format(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_9"),
                 new Object[] {"Simple Freeform Project"});
                 
-        assertEquals("do not allow creation (#55533)", error, panel.getError());
+        assertEquals("do not allow creation (#55533)", error, panel.getError()[0]);
     }
     
     public void testGetError2() throws Exception {
@@ -150,7 +150,7 @@ public class BasicProjectInfoPanelTest extends TestBase {
         error = MessageFormat.format(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_9"),
                 new Object[] {"Simple Freeform Project"});
                 
-        assertEquals("do not allow creation (#55533)", error, panel.getError());
+        assertEquals("do not allow creation (#55533)", error, panel.getError()[0]);
     }
     
     public void testGetError3() throws Exception {
@@ -169,7 +169,7 @@ public class BasicProjectInfoPanelTest extends TestBase {
         error = MessageFormat.format(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_BasicProjectInfoPanel_Error_10"),
                 new Object[] {"Simple Freeform Project"});
                 
-        assertEquals("do not allow creation (#55533)", error, panel.getError());
+        assertEquals("do not allow creation (#55533)", error, panel.getError()[0]);
     }
 
     protected boolean runInEQ() {

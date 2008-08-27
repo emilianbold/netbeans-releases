@@ -52,6 +52,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -62,6 +63,7 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
+    private FileObject file;
 
     public JsOccurrenceFinder() {
     }
@@ -91,6 +93,13 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
 
         if (isCancelled()) {
             return;
+        }
+
+        FileObject currentFile = info.getFileObject();
+        if (currentFile != file) {
+            // Ensure that we don't reuse results from a different file
+            occurrences = null;
+            file = currentFile;
         }
 
         JsParseResult rpr = AstUtilities.getParseResult(info);

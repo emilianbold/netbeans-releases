@@ -44,9 +44,9 @@ package org.netbeans.performance.visualweb;
 
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.visualweb.actions.CSSRuleAdd;
 import org.netbeans.performance.visualweb.actions.ComponentAdd;
-import org.netbeans.performance.visualweb.actions.CreateWebPackFiles;
 import org.netbeans.performance.visualweb.actions.CreateWebPackProject;
 import org.netbeans.performance.visualweb.actions.OpenBeanFiles;
 import org.netbeans.performance.visualweb.actions.OpenNavigationPage;
@@ -64,6 +64,7 @@ import org.netbeans.performance.visualweb.windows.DatabaseTableDrop;
  */
 public class VWPMeasureActionsTest  {
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Actions suite");
         System.setProperty("suitename", "org.netbeans.performance.visualweb.VWPMeasureActionsTest");

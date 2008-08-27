@@ -180,6 +180,7 @@ public class GsfDataLoader extends UniFileLoader {
                 MapFormat f = new MapFormat(m);
                 f.setLeftBrace( "__" ); //NOI18N
                 f.setRightBrace( "__" ); //NOI18N
+                f.setExactMatch(false);
 
                 return f;
             }

@@ -1028,7 +1028,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
 
         if (candidate != null) {
             IndexedElement com = candidate;
-            Node node = AstUtilities.getForeignNode(com, null);
+            Node node = AstUtilities.getForeignNode(com, (Node[])null);
 
             DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
                 node.getPosition().getStartOffset(), com);
@@ -1072,7 +1072,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
                 return DeclarationLocation.NONE;
             }
 
-            Node node = AstUtilities.getForeignNode(candidate, null);
+            Node node = AstUtilities.getForeignNode(candidate, (Node[])null);
             int nodeOffset = node != null ? node.getPosition().getStartOffset() : 0;
 
             DeclarationLocation loc = new DeclarationLocation(
@@ -1397,7 +1397,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
         
         while (!classes.isEmpty()) {
             IndexedClass clz = findBestClassMatchHelper(classes, path, reference, index);
-            Node node = AstUtilities.getForeignNode(clz, null);
+            Node node = AstUtilities.getForeignNode(clz, (Node[])null);
 
             if (node != null) {
                 return clz;
@@ -1578,7 +1578,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
         while (!methods.isEmpty()) {
             IndexedMethod method =
                 findBestMethodMatchHelper(name, methods, doc, astOffset, lexOffset, path, call, index);
-            Node node = AstUtilities.getForeignNode(method, null);
+            Node node = AstUtilities.getForeignNode(method, (Node[])null);
 
             if (node != null) {
                 return method;
@@ -2077,7 +2077,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             // How do we choose one?
             // For now, just pick the first one
             
-            Node node = AstUtilities.getForeignNode(field, null);
+            Node node = AstUtilities.getForeignNode(field, (Node[])null);
 
             if (node != null) {
                 return new DeclarationLocation(field.getFile().getFileObject(),
@@ -2319,7 +2319,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
         }
 
         public DeclarationLocation getLocation() {
-            Node node = AstUtilities.getForeignNode(element, null);
+            Node node = AstUtilities.getForeignNode(element, (Node[])null);
             int lineOffset = node != null ? node.getPosition().getStartOffset() : -1;
             DeclarationLocation loc = new DeclarationLocation(element.getFileObject(),
                 lineOffset, element);

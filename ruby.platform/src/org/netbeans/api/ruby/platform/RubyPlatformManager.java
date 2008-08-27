@@ -205,7 +205,8 @@ public final class RubyPlatformManager {
         if (platforms == null) {
             platforms = new HashSet<RubyPlatform>();
 
-            // Test and preindexing hook
+            // Currently used by $NB_SRC/o.jruby/UPDATE.zsh preindexing hook.
+            // Also see o.jruby/INDICES.txt.
             String hardcodedRuby = System.getProperty("ruby.interpreter");
             if (hardcodedRuby != null) {
                 Info info = new Info("User-specified Ruby", "0.1"); // NOI18N
