@@ -219,9 +219,17 @@ public class AutoupdateCheckScheduler {
                 if (container.canBeAdded (element.getUpdateUnit (), element) && ! somePendingElements) {
                     OperationInfo<InstallSupport> operationInfo = container.add (element);
                     if (operationInfo == null) {
+                        updates.add (element);
                         continue;
                     }
                     Collection<UpdateElement> reqs = new HashSet<UpdateElement> (operationInfo.getRequiredElements ());
+                    Collection<String> brokenDeps = operationInfo.getBrokenDependencies ();
+                    if (! brokenDeps.isEmpty ()) {
+                        err.log (Level.WARNING, "Plugin " + operationInfo + // NOI18N
+                                " cannot be installed because some dependencies cannot be satisfied: " + brokenDeps); // NOI18N
+                        someBrokenDependencies = true;
+                        break;
+                    }
                     for (UpdateElement tmpEl : reqs) {
                        if (tmpEl.getUpdateUnit ().isPending ()) {
                            err.log (Level.WARNING, "Plugin " + operationInfo.getUpdateElement () + // NOI18N
@@ -236,22 +244,9 @@ public class AutoupdateCheckScheduler {
                 }
             }
         }
-        if (! somePendingElements && container.listInvalid ().isEmpty ()) {
-            for (OperationInfo<InstallSupport> operationInfo : container.listAll ()) {
-                Collection<String> brokenDeps = new HashSet<String> ();
-                brokenDeps = operationInfo.getBrokenDependencies ();
-                if (! brokenDeps.isEmpty ()) {
-                    err.log (Level.WARNING, "Plugin " + operationInfo + // NOI18N
-                            " cannot be installed because some dependencies cannot be satisfied: " + brokenDeps); // NOI18N
-                    someBrokenDependencies = true;
-                    break;
-                }
-            }
-        } else {
-            if (! somePendingElements) {
-                err.log (Level.WARNING, "Plugins " + updates + // NOI18N
-                        " cannot be installed, Install Container contains invalid elements " + container.listInvalid ()); // NOI18N
-            }
+        if (! somePendingElements && ! container.listInvalid ().isEmpty ()) {
+            err.log (Level.WARNING, "Plugins " + updates + // NOI18N
+                    " cannot be installed, Install Container contains invalid elements " + container.listInvalid ()); // NOI18N
         }
         if (! somePendingElements && someBrokenDependencies) {
             // 2. if some problem then try one by one
@@ -268,6 +263,7 @@ public class AutoupdateCheckScheduler {
                     if (oc.canBeAdded (unit, element)) {
                         OperationInfo<InstallSupport> operationInfo = oc.add (element);
                         if (operationInfo == null) {
+                            updates.add (element);
                             continue;
                         }
                         boolean skip = false;
