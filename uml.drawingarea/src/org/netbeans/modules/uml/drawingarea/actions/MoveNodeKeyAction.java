@@ -41,6 +41,7 @@ package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Set;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.State;
@@ -49,6 +50,7 @@ import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
+import org.netbeans.modules.uml.drawingarea.view.AlignWithMoveStrategyProvider;
 import org.openide.util.Utilities;
 
 /**
@@ -75,50 +77,25 @@ public class MoveNodeKeyAction extends WidgetAction.Adapter
             
         if(controlKeyPressed == true)
         {
-//            Point location = widget.getLocation();
 
             boolean update = false;
             if(event.getKeyCode() == KeyEvent.VK_UP)
             {
-//                location.y -= 10;
-//                update = true;
                 updateSelectedWidgets(widget.getScene(), 0, -10);
             }
             else if(event.getKeyCode() == KeyEvent.VK_DOWN)
             {
-//                location.y += 10;
-//                update = true;
                 updateSelectedWidgets(widget.getScene(), 0, 10);
             }
             else if(event.getKeyCode() == KeyEvent.VK_LEFT)
             {
-//                location.x -= 10;
-//                update = true;
                 updateSelectedWidgets(widget.getScene(), -10, 0);
             }
             else if(event.getKeyCode() == KeyEvent.VK_RIGHT)
             {
-//                location.x += 10;
-//                update = true;
                 updateSelectedWidgets(widget.getScene(), 10, 0);
 
             }
-
-//            if(update == true)
-//            {
-//                ContextPaletteManager manager = widget.getScene().getLookup().lookup(ContextPaletteManager.class);
-//                if(manager != null)
-//                {
-//                    manager.cancelPalette();
-//                }
-//
-//                widget.setPreferredLocation(location);
-//
-//                if(manager != null)
-//                {
-//                    manager.selectionChanged(null);
-//                }
-//            }
         }
         
         return retVal;
@@ -137,18 +114,27 @@ public class MoveNodeKeyAction extends WidgetAction.Adapter
             GraphScene gScene = (GraphScene) scene;
             Set selected = gScene.getSelectedObjects();
             
+            ArrayList < Widget > selectedWidgets = new ArrayList < Widget >();
             for(Object curSelected : selected)
             {
                 Widget widget = gScene.findWidget(curSelected);
-                if(widget != null)
+                if((widget != null) && (gScene.isNode(curSelected) == true))
                 {
-                    Point location = widget.getLocation();
+                    Point location = widget.getPreferredLocation();
+                    if(location == null)
+                    {
+                        location = widget.getLocation();
+                    }
+                    
                     location.x += dx;
                     location.y += dy;
                     
                     widget.setPreferredLocation(location);
+                    selectedWidgets.add(widget);
                 }
             }
+            
+            AlignWithMoveStrategyProvider.adjustControlPoints(selectedWidgets, dx, dy);
         }
         
         if(manager != null)
