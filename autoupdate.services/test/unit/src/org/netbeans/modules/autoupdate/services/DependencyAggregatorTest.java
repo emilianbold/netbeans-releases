@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,23 +31,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.test;
+package org.netbeans.modules.autoupdate.services;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
+import static org.junit.Assert.*;
+import org.openide.modules.Dependency;
 
 /**
- * Common ancestor for all test classes.
  *
- * This currently does nothing but keeping it here in case we do want to
- * add common functionality.
- *
- * @author Andrei Badea
+ * @author Jirka Rechtacek
  */
-public abstract class TestBase extends NbTestCase {
-    public TestBase(String name) {
-        super(name);
+public class DependencyAggregatorTest extends NbTestCase {
+
+    public DependencyAggregatorTest (String testName) {
+        super (testName);
     }
 
+    private Dependency dep1;
+    private Dependency dep2;
+    
+    @Before @Override
+    public void setUp() {
+        dep1 = Dependency.create (Dependency.TYPE_MODULE, "org.yourorghere.module.a > 1.0").iterator ().next ();
+        dep2 = Dependency.create (Dependency.TYPE_MODULE, "org.yourorghere.module.a > 1.1").iterator ().next ();
+    }
+
+    @After @Override
+    public void tearDown() {
+    }
+
+    /**
+     * Test of getAggregator method, of class DependencyWrapper.
+     */
+    @Test
+    public void testGetDependencyDecorator () {
+        DependencyAggregator dec1 = DependencyAggregator.getAggregator (dep1);
+        DependencyAggregator dec2 = DependencyAggregator.getAggregator (dep2);
+        assertEquals ("Both DependencyDecorator are equal", dec2, dec1);
+    }
 }
