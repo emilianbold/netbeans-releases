@@ -65,13 +65,13 @@ public class SanitizeSource extends ParserTestBase {
     }
     
     public void testSanitizeClass() throws Exception {
-        performTest("sanitize001");
-        performTest("sanitize002");
-        performTest("sanitize004");
+        performTest("sanitize/sanitize001");
+        performTest("sanitize/sanitize002");
+        performTest("sanitize/sanitize004");
     }
 
     public void testSanitizeTopContext() throws Exception {
-        performTest("sanitize003");
+        performTest("sanitize/sanitize003");
     }
 
     public void testMissingEndCurly() throws Exception {
@@ -112,6 +112,11 @@ public class SanitizeSource extends ParserTestBase {
     public void testMissingEndCurly8() throws Exception {
         // non finished class
         performTest("sanitize/curly08");
+    }
+
+    public void testMissingEndCurly9() throws Exception {
+        // non finished class
+        performTest("sanitize/sanitize005");
     }
     
     public void testUnfinishedVar() throws Exception {
