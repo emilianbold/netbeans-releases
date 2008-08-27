@@ -46,6 +46,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -80,6 +81,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
         List<JPDAThread> threads = getThreads();
         int threadsCount = threads.size();
         if (threadsCount < 1) {
+            Toolkit.getDefaultToolkit().beep();
             return;
         }
         
@@ -191,6 +193,9 @@ public final class ThreadsHistoryAction extends AbstractAction {
     
     private List<JPDAThread> getThreads() {
         ThreadsListener threadsListener = ThreadsListener.getDefault();
+        if (threadsListener == null) {
+            return Collections.emptyList();
+        }
         List<JPDAThread> history = threadsListener.getCurrentThreadsHistory();
         List<JPDAThread> allThreads = threadsListener.getThreads();
         Set<JPDAThread> hitsSet = new HashSet<JPDAThread>();

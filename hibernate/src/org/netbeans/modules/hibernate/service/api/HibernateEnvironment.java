@@ -158,6 +158,15 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
     List<String> getDatabaseTables(FileObject mappingFile);
 
     FileObject getLocation();
+    
+    /**
+     * Prepares and returns a custom classloader for this project.
+     * The classloader is capable of loading project classes and resources.
+     * 
+     * @param classpaths, custom classpaths that are registered along with project based classpath.
+     * @return classloader which is a URLClassLoader instance.
+     */
+    ClassLoader getProjectClassLoader(URL[] classpaths);
 
     /**
      * Returns the NetBeans project to which this HibernateEnvironment instance is bound.
