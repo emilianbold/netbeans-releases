@@ -70,7 +70,7 @@ import javax.swing.text.BadLocationException;
  * to look can be obtained from {@link MatcherContext#getSearchLookahead}.
  * 
  * <p>While there can only be one original area, the area in the document where
- * the the search start, the matcher may report multiple areas matching the
+ * the search start, the matcher may report multiple areas matching the
  * original one. Typically, though, there will only be one matching area too.
  * 
  * <p>In the situation when the matcher reported an original area, but was unable
