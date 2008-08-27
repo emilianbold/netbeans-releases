@@ -97,7 +97,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             HibernateEnvironment hibernateEnv = (HibernateEnvironment) project.getLookup().lookup(HibernateEnvironment.class);
             // Check for unsupported projects. #142296
             if (hibernateEnv == null) {
-                logger.info("Unsupported project " + project + ". Existing config wizard.");
+                logger.info("Unsupported project " + project + ". Exiting config wizard.");
                 panels = new WizardDescriptor.Panel[]{
                             WizardErrorPanel.getWizardErrorWizardPanel()
                 };

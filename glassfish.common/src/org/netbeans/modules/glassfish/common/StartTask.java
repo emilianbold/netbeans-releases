@@ -439,7 +439,7 @@ public class StartTask extends BasicTask<OperationState> {
                 Matcher matcher = pattern.matcher(value);
                 boolean result = matcher.find();
                 if(result) {
-                    StringBuffer sb = new StringBuffer();
+                    StringBuffer sb = new StringBuffer(value.length()*2);
                     do {
                         String key = matcher.group(1);
                         String replacement = varMap.get(key);

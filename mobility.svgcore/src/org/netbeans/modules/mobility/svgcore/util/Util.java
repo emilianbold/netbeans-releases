@@ -54,6 +54,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.EventListener;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import javax.microedition.m2g.SVGImage;
 import javax.microedition.m2g.ScalableImage;
@@ -234,6 +235,7 @@ public class Util {
         private ProgressHandle handle;
         private long expectedSize;
         private long alreadyRead;
+        private int lastProgress;
         
         // **
         // * Creates a <code>BufferedInputStream</code>
@@ -247,6 +249,7 @@ public class Util {
             super(in);
             this.handle = handle;
             this.expectedSize = expectedSize;
+            this.lastProgress = 0;
         }
      
         public synchronized int read() throws IOException {
@@ -265,13 +268,13 @@ public class Util {
         
         private void updateProgress() throws IOException {
             double current = ((double)alreadyRead / (double)expectedSize) * 100.0;
-            if (current > (double)expectedSize){
-                current = (double)expectedSize;
-            }
             if (current >= MAX_WORKUNITS) {
                 current = 295;
             }
-            handle.progress((int)current);  
+            if (lastProgress < (int)current){
+                lastProgress = (int)current;
+            }
+            handle.progress(lastProgress);  
         }
     }
     

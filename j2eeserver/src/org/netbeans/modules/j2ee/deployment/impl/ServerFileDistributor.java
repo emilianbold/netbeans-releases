@@ -430,6 +430,7 @@ public class ServerFileDistributor extends ServerProgress {
                 }
                 if (targetFO.equals(sourceFO)) {
                     // do not write a file onto itself...
+                    mc.record(dest, relativePath);
                     return;
                 }
                 destFolder = targetFO.getParent();

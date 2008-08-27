@@ -71,7 +71,6 @@ import org.netbeans.modules.hibernate.hqleditor.HQLEditorController;
 import org.netbeans.modules.hibernate.hqleditor.HQLResult;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
-import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -163,9 +162,9 @@ public final class HQLEditorTopComponent extends TopComponent {
                     }
                     ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
                     try {
-                        CustomClassLoader ccl = new CustomClassLoader(
-                                env.getProjectClassPath(selectedConfigObject).toArray(new URL[]{}),
-                                getClass().getClassLoader());
+                        ClassLoader ccl = env.getProjectClassLoader(
+                                env.getProjectClassPath(selectedConfigObject).toArray(new URL[]{})
+                                );
 
                         Thread.currentThread().setContextClassLoader(ccl);
                         SessionFactory sessionFactory =
@@ -301,7 +300,7 @@ public final class HQLEditorTopComponent extends TopComponent {
 
     }
 
-    public void setResult(HQLResult result, CustomClassLoader ccl) {
+    public void setResult(HQLResult result, ClassLoader ccl) {
         Thread.currentThread().setContextClassLoader(ccl);
         if (result.getExceptions().size() == 0) {
             // logger.info(r.getQueryResults().toString());
