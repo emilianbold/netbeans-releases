@@ -50,6 +50,7 @@ import org.netbeans.modules.db.test.DBTestBase;
  * @author Andrei Badea
  */
 public class DatabaseConnectionTest extends DBTestBase {
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         Util.clearConnections();
@@ -124,5 +125,20 @@ public class DatabaseConnectionTest extends DBTestBase {
         
         ConnectionManager.getDefault().removeConnection(dbconn);
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
-    }    
+    }
+
+    public void testGetJDBCConnectionWithTest() throws Exception {
+        DatabaseConnection dbconn = getDatabaseConnection(false);
+        ConnectionManager.getDefault().disconnect(dbconn);
+        assertNull(dbconn.getJDBCConnection(true));
+        
+        ConnectionManager.getDefault().connect(dbconn);
+        assertNotNull(dbconn.getJDBCConnection(true));
+        assertNotNull(dbconn.getJDBCConnection(false));
+
+        dbconn.getJDBCConnection(true).close();
+        assertNotNull(dbconn.getJDBCConnection(false));
+        assertNull(dbconn.getJDBCConnection(true));
+        assertNull(dbconn.getJDBCConnection(false));
+    }
 }

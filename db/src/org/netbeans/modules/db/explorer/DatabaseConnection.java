@@ -214,6 +214,41 @@ public class DatabaseConnection implements DBConnection {
         return useDriver;
     }
 
+    public Connection getJDBCConnection(boolean test) {
+        if (test) {
+            if (! test()) {
+                try {
+                    this.disconnect();
+                } catch (DatabaseException e) {
+                    LOGGER.log(Level.FINE, null, e);
+                }
+
+                return null;
+            }
+        }
+
+        return getJDBCConnection();
+    }
+
+    private boolean test() {
+        try {
+            Connection conn = getJDBCConnection();
+            if (conn == null || conn.isClosed()) {
+                return false;
+            }
+
+            // Send a command to the server, if it fails we know the connection is invalid.
+            conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+        } catch (SQLException e) {
+            LOGGER.log(Level.INFO, NbBundle.getMessage(DatabaseConnection.class,
+                    "MSG_TestFailed", this.getName(), e.getMessage()));
+            LOGGER.log(Level.FINE, null, e);
+            return false;
+        }
+        return true;
+
+    }
+
      private Collection getOpenConnections() {
          if (openConnectionServices == null) {
              openConnectionServices = openConnectionLookupResult.allInstances();
