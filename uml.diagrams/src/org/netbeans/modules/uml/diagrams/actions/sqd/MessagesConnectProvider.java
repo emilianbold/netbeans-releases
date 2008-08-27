@@ -268,9 +268,9 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
                     if(targetWidget instanceof LifelineWidget)
                     {
                         LifelineWidget tmp=(LifelineWidget) targetWidget;
-                        if(tmp.isCreated())
+                        if(tmp.isCreated() || targetWidget==sourceWidget)
                         {
-                            //can't draw second create messsage
+                            //can't draw second create messsage or create message to self
                             retVal=ConnectorState.REJECT;
                         }
                         else

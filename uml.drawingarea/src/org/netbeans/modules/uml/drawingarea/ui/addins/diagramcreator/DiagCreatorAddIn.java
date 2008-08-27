@@ -127,6 +127,7 @@ import org.netbeans.modules.uml.core.metamodel.common.commonstatemachines.ITrans
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationship;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
+import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
 import org.netbeans.modules.uml.drawingarea.UIDiagram;
 
 /**
@@ -686,7 +687,10 @@ public class DiagCreatorAddIn implements IDiagCreatorAddIn, IAcceleratorListener
              List<INamedElement> children = classifier.getOwnedElements();
              for(INamedElement child : children)
              {
-                 if (child instanceof IClassifier)
+                 // using IClassifier is not exclusive enought because it will 
+                 // pick up ISourceFileArtifacts as well.  
+                 if ((child instanceof IClassifier) && 
+                     !(child instanceof ISourceFileArtifact))
                  {
                      retObj.add((IClassifier) child);
                  }

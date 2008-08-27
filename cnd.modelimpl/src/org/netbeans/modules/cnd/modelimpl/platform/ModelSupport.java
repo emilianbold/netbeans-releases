@@ -60,7 +60,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;

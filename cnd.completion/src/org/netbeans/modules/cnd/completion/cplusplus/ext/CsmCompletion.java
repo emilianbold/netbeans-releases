@@ -726,11 +726,11 @@ abstract public class CsmCompletion {
             return false;
         }
 
-        public String getText() {
+        public CharSequence getText() {
             return format(true);
         }
 	
-	public String getCanonicalText() {
+	public CharSequence getCanonicalText() {
 	    return getText();
 	}
 
