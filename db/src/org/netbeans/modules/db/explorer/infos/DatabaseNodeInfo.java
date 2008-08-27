@@ -715,7 +715,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     }
     
     // For debugging
-    private void printChildren(String message, Vector children) {
+    public void printChildren(String message, Vector children) {
         System.out.println("");
         System.out.println(message);
         for ( Object child : children ) {
@@ -726,6 +726,8 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
             } else {
                 childstr.append(": " + child.toString());
             }
+
+            childstr.append(": " + child.hashCode());
             
             System.out.println(childstr.toString());            
         }
@@ -735,11 +737,11 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     public void addChild(DatabaseNodeInfo child) throws DatabaseException {
         addChild(child, true);
     }
-    
+
     public void addChild(DatabaseNodeInfo child, boolean notify)
             throws DatabaseException {
         getChildren().add(child);
-        
+
         if ( notify ) {
             notifyChange();
         }
