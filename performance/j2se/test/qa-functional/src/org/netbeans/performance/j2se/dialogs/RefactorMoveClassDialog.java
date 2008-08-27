@@ -47,6 +47,8 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jellytools.ProjectsTabOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -57,7 +59,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  */
 public class RefactorMoveClassDialog extends PerformanceTestCase {
 
-    private static Node testNode;
+    private static Node testNode, prNode;
     private String TITLE, ACTION;
     
     public static final String suiteName="UI Responsiveness J2SE Dialogs";    
@@ -67,14 +69,14 @@ public class RefactorMoveClassDialog extends PerformanceTestCase {
     public RefactorMoveClassDialog(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=60000;
+        WAIT_AFTER_OPEN=2000;
     }
     
     /** Creates a new instance of RefactorRenameDialog */
     public RefactorMoveClassDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=60000;
+        WAIT_AFTER_OPEN=2000;
     }
     
     public void testRefactorMoveClassDialog() {
@@ -83,16 +85,18 @@ public class RefactorMoveClassDialog extends PerformanceTestCase {
     
     @Override
     public void initialize() {
-        String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";
+        String BUNDLE = "org.netbeans.modules.refactoring.java.ui.Bundle";
         TITLE = Bundle.getStringTrimmed(BUNDLE,"LBL_MoveClass");  // "Move Class"
-        ACTION = Bundle.getStringTrimmed(BUNDLE,"LBL_Action") + "|" + Bundle.getStringTrimmed(BUNDLE,"LBL_MoveClassAction"); // "Refactor|Move Class..."
+        BUNDLE = "org.netbeans.modules.refactoring.spi.impl.Bundle";
+        ACTION = Bundle.getStringTrimmed(BUNDLE,"Menu/Refactoring") + "|" + Bundle.getStringTrimmed(BUNDLE,"LBL_MoveAction"); // "Refactor|Move Class..."
+        prNode=new ProjectsTabOperator().getProjectRootNode("jEdit");
         testNode = new Node(new SourcePackagesNode("jEdit"),"org.gjt.sp.jedit|jEdit.java");
     }
     
     public void prepare() {
         // do nothing
     }
-    
+
     public ComponentOperator open() {
         // invoke Refactor | Move Class from the popup menu
         testNode.performPopupAction(ACTION);

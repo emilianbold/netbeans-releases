@@ -49,7 +49,7 @@ import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.editor.ext.html.parser.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Error;

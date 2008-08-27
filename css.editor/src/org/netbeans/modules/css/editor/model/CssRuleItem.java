@@ -83,7 +83,7 @@ public final class CssRuleItem {
     }
 
     public String toString() {
-        return "CssRuleItem[" + key + "; " + value + "]";
+        return "CssRuleItem[" + key + "; " + value + "]"; //NOI18N
     }
 
     /** Gets offset of the key - value separator in the css rule item.
@@ -138,7 +138,7 @@ public final class CssRuleItem {
         }
 
         public String toString() {
-            return "Item[" + name + "; " + offset.getOffset() + "]";
+            return "Item[" + name + "; " + offset.getOffset() + "]"; //NOI18N
         }
 
         public boolean equals(Object o) {

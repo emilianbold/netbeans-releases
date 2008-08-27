@@ -111,6 +111,7 @@ public class StateWidget extends UMLNodeWidget
             state = (State) presentation.getFirstSubject();
             setCurrentView(createStateView(state));
         }
+        super.initializeNode(presentation);
     }
 
     private void initStateWidget()
@@ -162,6 +163,7 @@ public class StateWidget extends UMLNodeWidget
                 loc("LBL_Transitions"), getWidgetID() + "." + "transition", "Transition Label");
         transitionLabel.setAlignment(LabelWidget.Alignment.CENTER);
         transitionLabel.setBorder(BorderFactory.createEmptyBorder(5));
+        transitionLabel.setForeground(null);
         detailWidget.addChild(transitionLabel);
 
         updateDetails();

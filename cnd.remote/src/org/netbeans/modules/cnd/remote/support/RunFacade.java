@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.openide.util.Exceptions;
 
@@ -63,7 +65,6 @@ public abstract class RunFacade {
     }
 
     protected abstract int doRun(String command);
-
     protected String output = null;
 
     public String getOutput() {
@@ -77,9 +78,18 @@ public abstract class RunFacade {
             int exitValue = -1;
             try {
                 Process process = Runtime.getRuntime().exec(command);
-                InputStream outputStream = process.getInputStream();
-                if (outputStream != null) {
-                    output = outputStream.toString();
+                InputStream is = process.getInputStream();
+                if (is != null) {
+                    StringBuilder out = new StringBuilder();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (line != null) {
+                            out.append(line).append('\n');
+                        }
+                    }
+                    output = out.toString();
                 }
                 process.waitFor();
                 exitValue = process.exitValue();
@@ -103,8 +113,9 @@ public abstract class RunFacade {
         @Override
         public int doRun(String command) {
             RemoteCommandSupport support = new RemoteCommandSupport(hkey, command);
+            int result = support.run();
             output = support.toString();
-            return support.getExitStatus();
+            return result;
         }
     }
 }

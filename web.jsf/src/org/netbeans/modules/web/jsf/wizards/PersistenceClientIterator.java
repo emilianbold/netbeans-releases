@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -80,9 +79,13 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
-import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
@@ -98,6 +101,8 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
 
     static final String[] UTIL_CLASS_NAMES = {"JsfCrudELResolver", "JsfUtil", "PagingInfo"};
     static final String UTIL_FOLDER_NAME = "util"; //NOI18N
+    
+    private transient WebModuleExtender wme;
     
     public Set instantiate(TemplateWizard wizard) throws IOException
     {
@@ -121,6 +126,13 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             catch (InvalidPersistenceXmlException e) {
                 throw new IOException(e.toString());
             }
+        }
+        
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        JSFFrameworkProvider fp = new JSFFrameworkProvider();
+        if (!fp.isInWebModule(wm)) {    //add jsf if not already present
+            updateWebModuleExtender(project, wm, fp);
+            wme.extend(wm);
         }
         
         final JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
@@ -190,7 +202,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     }
     
     private static int getProgressStepCount(boolean ajaxify) {
-        int count = UTIL_CLASS_NAMES.length + 2;
+        int count = UTIL_CLASS_NAMES.length + 2;    //2 "pre" messages (see generateJsfControllers) before generating util classes and controller/converter classes
         if (ajaxify) {
             count++;
         }
@@ -304,6 +316,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
 
     public void initialize(TemplateWizard wizard) {
         index = 0;
+        wme = null;
         // obtaining target folder
         Project project = Templates.getProject( wizard );
         DataFolder targetFolder=null;
@@ -318,17 +331,51 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         WizardDescriptor.Panel secondPanel = new ValidationPanel(
                 new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
                         new HelpCtx("framework_jsf_fromentity"), wizard)); // NOI18N
-        WizardDescriptor.Panel thirdPanel = new PersistenceClientSetupPanel(project, wizard);
+        PersistenceClientSetupPanel thirdPanel = new PersistenceClientSetupPanel(project, wizard);
 //        WizardDescriptor.Panel javaPanel = JavaTemplates.createPackageChooser(project, sourceGroups, secondPanel);
 //        panels = new WizardDescriptor.Panel[] { javaPanel };
-        panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
-        String names[] = new String[] {
-            NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
-            NbBundle.getMessage(PersistenceClientIterator.class, "LBL_JSFPagesAndClasses")
-        };
+         
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        JSFFrameworkProvider fp = new JSFFrameworkProvider();
+        String[] names;
+        if (fp.isInWebModule(wm)) {
+            panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
+            names = new String[] {
+                NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
+                NbBundle.getMessage(PersistenceClientIterator.class, "LBL_JSFPagesAndClasses")
+            };
+        }
+        else {
+            updateWebModuleExtender(project, wm, fp);
+            
+            JSFConfigurationWizardPanel jsfWizPanel = new JSFConfigurationWizardPanel(wme);
+            
+            thirdPanel.setFinishPanel(false);
+            panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel, jsfWizPanel };
+            names = new String[] {
+                NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
+                NbBundle.getMessage(PersistenceClientIterator.class, "LBL_JSFPagesAndClasses"),
+                NbBundle.getMessage(PersistenceClientIterator.class, "LBL_JSF_Config_CRUD"),
+            };
+        }
         wizard.putProperty("NewFileWizard_Title", 
             NbBundle.getMessage(PersistenceClientIterator.class, "Templates/Persistence/JsfFromDB"));
         Wizards.mergeSteps(wizard, panels, names);
+    }
+    
+    private void updateWebModuleExtender(Project project, WebModule wm, JSFFrameworkProvider fp) {
+        if (wme == null) {
+            ExtenderController ec = ExtenderController.create();
+            String j2eeLevel = wm.getJ2eePlatformVersion();
+            ec.getProperties().setProperty("j2eeLevel", j2eeLevel);
+            J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
+            if (moduleProvider != null) {
+                String serverInstanceID = moduleProvider.getServerInstanceID();
+                ec.getProperties().setProperty("serverInstanceID", serverInstanceID);
+            }
+            wme = fp.createWebModuleExtender(wm, ec);
+        }
+        wme.update();
     }
 
     private String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {
@@ -351,6 +398,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     
     public void uninitialize(TemplateWizard wiz) {
         panels = null;
+        wme = null;
     }
 
     public WizardDescriptor.Panel current() {

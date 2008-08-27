@@ -90,7 +90,7 @@ final class NetBeansOrgEntry extends AbstractEntryWithSources {
     }
     
     public File getDestDir() {
-        return new File(nball, ModuleList.DEST_DIR_IN_NETBEANS_ORG);
+        return ModuleList.findNetBeansOrgDestDir(nball);
     }
     
     public String getCodeNameBase() {

@@ -42,6 +42,7 @@ package org.netbeans.modules.projectimport.eclipse;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportAppRunParams;
+import org.netbeans.modules.projectimport.eclipse.gui.ImportJavaCParams;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportJavaVersion;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportMultipleRootsJavaProjectFromWS;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportProjectWithTransitiveDeps;
@@ -49,6 +50,7 @@ import org.netbeans.modules.projectimport.eclipse.gui.ImporterMenu;
 import org.netbeans.modules.projectimport.eclipse.gui.ImporterWizard;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleJavaProjectFromWS;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleWebProjectFromWS;
+import org.netbeans.modules.projectimport.eclipse.gui.ImportSourceFilters;
 
 /**
  *
@@ -65,6 +67,8 @@ public class ImporterTest {
                 addTest(ImportJavaVersion.class).
                 addTest(ImportProjectWithTransitiveDeps.class).
                 addTest(ImportAppRunParams.class).
+                addTest(ImportJavaCParams.class).
+                addTest(ImportSourceFilters.class).
                 enableModules(".*").clusters(".*").
                 gui(true).reuseUserDir(true));
     }

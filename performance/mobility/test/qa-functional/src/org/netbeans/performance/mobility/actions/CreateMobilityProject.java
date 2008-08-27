@@ -83,7 +83,7 @@ public class CreateMobilityProject extends PerformanceTestCase {
     }
 
     public void testCreateMobilityProject() {
-        category = "Mobility"; // NOI18N
+        category = "Java ME"; // NOI18N
         project = "Mobile Application"; // NOI18N
         project_type = "MobileApp";
         index = 1;
@@ -91,7 +91,7 @@ public class CreateMobilityProject extends PerformanceTestCase {
     }
 
     public void testCreateMobilityLibrary() {
-        category = "Mobility"; // NOI18N
+        category = "Java ME"; // NOI18N
         project = "Mobile Class Library"; // NOI18N
         project_type = "MobileLib";
         index = 1;

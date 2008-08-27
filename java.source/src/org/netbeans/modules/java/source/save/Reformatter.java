@@ -54,7 +54,6 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
@@ -90,7 +89,7 @@ public class Reformatter implements ReformatTask {
                 return;
             }
         }
-        CodeStyle cs = CodeStyle.getDefault(FileOwnerQuery.getOwner(controller.getFileObject()));
+        CodeStyle cs = CodeStyle.getDefault(doc);
         for (Context.Region region : context.indentRegions())
             reformatImpl(region, cs);
     }

@@ -96,7 +96,10 @@ public class JSFELCompletionProvider implements CompletionProvider{
                 JSFELExpression elExpr = new JSFELExpression (wm, sup);
                 ArrayList complItems = new ArrayList();
 
-                switch (elExpr.parse(offset)){
+                int elParseType = elExpr.parse(offset);
+                int anchor = offset - elExpr.getReplace().length();
+                
+                switch (elParseType){
                     case JSFELExpression.EL_START:
                         String replace = elExpr.getReplace();
 
@@ -105,7 +108,7 @@ public class JSFELCompletionProvider implements CompletionProvider{
                         for (ManagedBean bean : beans) {
                             String beanName = bean.getManagedBeanName();
                             if ((beanName != null) && beanName.startsWith(replace)){
-                                complItems.add(new JSFResultItem.JSFBean(beanName, bean.getManagedBeanClass()));
+                                complItems.add(new JSFResultItem.JSFBean(beanName, anchor, bean.getManagedBeanClass()));
                             }
                         }
                         // check bundles properties
@@ -113,23 +116,23 @@ public class JSFELCompletionProvider implements CompletionProvider{
                         for (ResourceBundle bundle : bundles) {
                             String var = bundle.getVar();
                             if ((var != null) && var.startsWith(replace)) {
-                                complItems.add(new JSFResultItem.JSFResourceBundle(var, bundle.getBaseName()));
+                                complItems.add(new JSFResultItem.JSFResourceBundle(var, anchor, bundle.getBaseName()));
                             }
                         }
                         break;
                     case JSFELExpression.EL_JSF_BEAN:
-                        List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass());
+                        List<CompletionItem> items = elExpr.getPropertyCompletionItems(elExpr.getObjectClass(), anchor);
                         complItems.addAll(items);
-                        items = elExpr.getListenerMethodCompletionItems(elExpr.getObjectClass());
+                        items = elExpr.getListenerMethodCompletionItems(elExpr.getObjectClass(), anchor);
                         complItems.addAll(items);
                         break;
                     case JSFELExpression.EL_JSF_RESOURCE_BUNDLE:
-                        List<CompletionItem> bitems = elExpr.getPropertyKeys(elExpr.bundleName, elExpr.getReplace());
+                        List<CompletionItem> bitems = elExpr.getPropertyKeys(elExpr.bundleName, anchor, elExpr.getReplace());
                         complItems.addAll(bitems);
                         break;
                 }
-                for (int i = 0; i < complItems.size(); i++)
-                    ((JspCompletionItem.JspResultItem)complItems.get(i)).setSubstituteOffset(offset - elExpr.getReplace().length());
+//                for (int i = 0; i < complItems.size(); i++)
+//                    ((JspCompletionItem.JspResultItem)complItems.get(i)).setSubstituteOffset(offset - elExpr.getReplace().length());
                 resultSet.addAllItems(complItems);
             }
             resultSet.finish();

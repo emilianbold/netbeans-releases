@@ -55,6 +55,11 @@ import org.netbeans.api.project.Sources;
 public class GroovySources {
 
     /**
+     * Location of Groovy file icon (16x16)
+     */
+    public static final String GROOVY_FILE_ICON_16x16 = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png"; // NOI18N
+
+    /**
      * Groovy package root sources type.
      * @see org.netbeans.api.project.Sources
      */

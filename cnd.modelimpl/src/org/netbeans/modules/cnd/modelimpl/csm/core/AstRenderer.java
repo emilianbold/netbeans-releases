@@ -104,12 +104,12 @@ public class AstRenderer {
                     break;
                 }
                 case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
-		    if (isFuncLikeVariable(token)) {
-			if( renderFuncLikeVariable(token, currentNamespace, container)) {
+                    if (isFuncLikeVariable(token, false)) {
+                        if (renderFuncLikeVariable(token, currentNamespace, container, !isFuncLikeVariable(token, true))) {
                             break;
-			}
-		    }
-		    //nobreak!
+                        }
+                    }
+                //nobreak!
                 case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                 case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
                 case CPPTokenTypes.CSM_USER_TYPE_CAST:
@@ -249,7 +249,9 @@ public class AstRenderer {
         if( typedefs != null ) {
             for (int i = 0; i < typedefs.length; i++) {
                 // It could be important to register in project before add as member...
-                file.getProjectImpl().registerDeclaration(typedefs[i]);
+//                if (!isRenderingLocalContext()) {
+                    file.getProjectImpl().registerDeclaration(typedefs[i]);
+//                }
                 if (container != null) {
                     container.addDeclaration(typedefs[i]);
                 }
@@ -268,11 +270,11 @@ public class AstRenderer {
      * At the moment of rendering, we check whether this is a variable of a function
      * @return true if it's a variable, otherwise false (it's a function)
      */
-    private boolean isFuncLikeVariable(AST ast) {
+    private boolean isFuncLikeVariable(AST ast, boolean findVariablesForParams) {
 	AST astParmList = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_PARMLIST);
 	if( astParmList != null ) {
             for( AST node = astParmList.getFirstChild(); node != null; node = node.getNextSibling() ) {
-                if( ! isRefToVariable(node) ) {
+                if( ! isRefToVariable(node, findVariablesForParams) ) {
                     return false;
                 }
             }
@@ -280,14 +282,15 @@ public class AstRenderer {
 	}
 	return false;
     }
-
+           
     /**
      * Determines whether the given parameter can actually be a reference to a variable,
      * not a parameter
      * @param node an AST node that corresponds to parameter
+     * @param findVariable indicates that we should find param variable or just check that it looks like id
      * @return true if might be just a reference to a variable, otherwise false
      */
-    private boolean isRefToVariable(AST node) {
+    private boolean isRefToVariable(AST node, boolean findVariable) {
 
 	if( node.getType() != CPPTokenTypes.CSM_PARAMETER_DECLARATION ) { // paranoja
 	    return false;
@@ -326,8 +329,21 @@ public class AstRenderer {
 	if(name == null) {
 	    return false;
 	}
+      
+        StringBuilder varName = new StringBuilder(name.getText());
+        while (name.getNextSibling() != null) {
+            name = name.getNextSibling();
+            varName.append(name.getText());
+        }
 
-	return findVariable( name.getText(), csmAST.getOffset());
+        if(findVariable) {
+            return findVariable(varName, csmAST.getOffset());
+        } else {
+            if (name.getNextSibling() != null) {
+                return isScopedId(name);
+            }
+            return true;
+        }
     }
     
     /**
@@ -369,6 +385,11 @@ public class AstRenderer {
                         return true;
                     }
                     break;
+                case VARIABLE_DEFINITION:
+                    if( CharSequenceKey.Comparator.compare(name, ((CsmVariable) decl).getQualifiedName()) == 0 ) {
+                        return true;
+                    }
+                    break;
                 case NAMESPACE_DEFINITION:
                     CsmNamespaceDefinition nd = (CsmNamespaceDefinition) decl;
                     if( nd.getStartOffset() <= offset && nd.getEndOffset() >= offset ) {
@@ -381,14 +402,19 @@ public class AstRenderer {
         }
         return false;
     }
+
+    protected boolean isRenderingLocalContext() {
+        return false;
+    }
     
     /**
      * In the case of the "function-like variable" - construct like
      * int a(b) 
      * renders the AST to create the variable
      */
-    private boolean renderFuncLikeVariable(AST token, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
+    private boolean renderFuncLikeVariable(AST token, NamespaceImpl currentNamespace, MutableDeclarationsContainer container, boolean fakeRegistration) {
 	if( token != null ) {
+            AST ast = token;
 	    token = token.getFirstChild();
 	    switch( token.getType() ) {
 	    	case CPPTokenTypes.CSM_TYPE_BUILTIN:
@@ -406,14 +432,27 @@ public class AstRenderer {
                             type = TypeFactory.createType(typeToken, file, null, 0);
                         }
                         String name = next.getText();
-                        VariableImpl var = createVariable(next, file, type, name, false, currentNamespace, container, null);
-			if( currentNamespace != null ) {
-			    currentNamespace.addDeclaration(var);
-			}
-			if( container != null ) {
-			    container.addDeclaration(var);
-			}
-			return true;
+                        
+                        if(!fakeRegistration) {
+                            VariableImpl var = createVariable(next, file, type, name, false, currentNamespace, container, null);
+                            if (currentNamespace != null) {
+                                currentNamespace.addDeclaration(var);
+                            }
+                            if (container != null) {
+                                container.addDeclaration(var);
+                            }
+                            return true;
+                        } else {                        
+                            if (isScopedId(next)) {
+                                try {
+                                    FunctionImplEx fi = new FunctionImplEx(ast, file, currentNamespace, false, true);
+                                    file.onFakeRegisration(fi);
+                                } catch (AstRendererException e) {
+                                    DiagnosticExceptoins.register(e);
+                                }
+                                return true;
+                            }
+                        }
 		    }
 		    break;
 		
@@ -722,13 +761,14 @@ public class AstRenderer {
                 if( container != null ) {
                     container.addDeclaration(cfdi);
                 }
+                cfdi.init(ast, currentNamespace);
                 return true;
         }
                 
         return false;
     }
 
-    public static boolean renderForwardMemberDeclaration(
+    public boolean renderForwardMemberDeclaration(
             AST ast, 
             NamespaceImpl currentNamespace, MutableDeclarationsContainer container, 
             FileImpl file) {
@@ -751,11 +791,12 @@ public class AstRenderer {
         }
         if (child.getType() == CPPTokenTypes.LITERAL_template) {
             child = child.getNextSibling();
-            if( child == null ) {
-                return false;
-            }
         }
-        
+        child = getFirstSiblingSkipQualifiers(child);
+        if (child == null) {
+            return false;
+        }
+
         switch( child.getType() ) {
             case CPPTokenTypes.CSM_TYPE_COMPOUND:
             case CPPTokenTypes.CSM_TYPE_BUILTIN:
@@ -763,6 +804,7 @@ public class AstRenderer {
                 if (child != null){
                     if (child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION){
                         //static variable definition
+                        return renderVariable(ast, null, container);
                     } else {
                         //method forward declaratin
                         try {
@@ -972,16 +1014,20 @@ public class AstRenderer {
     public boolean renderVariable(AST ast, MutableDeclarationsContainer namespaceContainer, MutableDeclarationsContainer container2) {
         boolean _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         AST typeAST = ast.getFirstChild();
-        AST tokType = getFirstChildSkipQualifiers(ast);
+        AST tokType = typeAST;
+        if (tokType != null && tokType.getType() == CPPTokenTypes.LITERAL_template) {
+            typeAST = tokType = tokType.getNextSibling();
+        }
+        tokType = getFirstSiblingSkipQualifiers(tokType);
         if( tokType == null ) {
             return false;
         }
         boolean isThisReference = false;
         if (tokType != null &&
-            tokType.getType() == CPPTokenTypes.LITERAL_struct ||
+            (tokType.getType() == CPPTokenTypes.LITERAL_struct ||
             tokType.getType() == CPPTokenTypes.LITERAL_union ||
             tokType.getType() == CPPTokenTypes.LITERAL_enum ||
-            tokType.getType() == CPPTokenTypes.LITERAL_class){
+            tokType.getType() == CPPTokenTypes.LITERAL_class)) {
             // This is struct/class word for reference on containing struct/class
             tokType = tokType.getNextSibling();
             typeAST = tokType;

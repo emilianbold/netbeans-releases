@@ -76,7 +76,7 @@ public class XMLGeneratorTest extends TestCase {
                  
     protected static BaseDocument getResourceAsDocument(String path) throws Exception {
         InputStream in = XMLGeneratorTest.class.getResourceAsStream(path);
-        BaseDocument sd = new BaseDocument(BaseKit.class, false);
+        BaseDocument sd = new BaseDocument(true, "text/xml"); //NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
         StringBuffer sbuf = new StringBuffer();
         try {

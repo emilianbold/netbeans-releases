@@ -48,7 +48,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -76,6 +75,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.db.sql.history.SQLHistory;
+import org.netbeans.modules.db.sql.history.SQLHistoryException;
 import org.netbeans.modules.db.sql.history.SQLHistoryModel;
 import org.netbeans.modules.db.sql.history.SQLHistoryModelImpl;
 import org.netbeans.modules.db.sql.history.SQLHistoryPersistenceManager;
@@ -85,8 +85,6 @@ import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -100,6 +98,8 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     public static final int SAVE_STATEMENTS_MAX_LIMIT = 10000; 
     public static final int TABLE_DATA_WIDTH_SQL = 125;
     public static final Logger LOGGER = Logger.getLogger(SQLHistoryPanel.class.getName());
+    private static final FileObject USERDIR = Repository.getDefault().getDefaultFileSystem().getRoot();
+    private static final FileObject historyRoot = USERDIR.getFileObject(SQL_HISTORY_FOLDER);
     private static Object[][] data;
     private List<String> currentUrlList;
     private Object[] comboData;
@@ -110,23 +110,22 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     /** Creates new form SQLHistoryPanel */
     public SQLHistoryPanel(final JEditorPane editorPane) {
         this.editorPane = editorPane;
-        final Task task = RequestProcessor.getDefault().create(new Runnable() {
-            public void run() {
-                view = new SQLHistoryView(new SQLHistoryModelImpl());
-            }
-        });
-        task.run();
+        view = new SQLHistoryView(new SQLHistoryModelImpl());
         initSQLHistoryTableData();
         initComponents();
-        connectionUrlComboBox.addActionListener((HistoryTableModel) sqlHistoryTable.getModel());
-        searchTextField.getDocument().addDocumentListener((HistoryTableModel) sqlHistoryTable.getModel());
-        sqlHistoryTable.getColumnModel().getColumn(0).setHeaderValue(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_SQLTableTitle"));
-        sqlHistoryTable.getColumnModel().getColumn(1).setHeaderValue(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_DateTableTitle"));
-        // Initialize data for the Url combo box
-        currentUrlList = new ArrayList<String>();
-        initConnectionUrlComboBox();
+        initComponentData();
+        setupSQLSaveLimit();
+        // Adjust table column width
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                adjustColumnPreferredWidths(sqlHistoryTable);
+                sqlHistoryTable.revalidate();
+            }
+        });
+    }
+    
+    private void setupSQLSaveLimit() {
         // SQL statments save limit
-        inputWarningLabel.setVisible(false);
         String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""); // NOI18N
         if (savedLimit != null) {
             sqlLimitTextField.setText(savedLimit);
@@ -137,20 +136,15 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         if (savedLimit.equals(SAVE_STATEMENTS_CLEARED)) {
             savedLimit = SAVE_STATEMENTS_MAX_LIMIT_ENTERED;
         }
-        SQLHistoryPersistenceManager.getInstance().updateSQLSaved(Integer.parseInt(savedLimit), Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER));
-        // Check SQL statements limit
-        verifySQLLimit();
-        // Adjust table column width
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                adjustColumnPreferredWidths(sqlHistoryTable);
-                sqlHistoryTable.revalidate();
-            }
-        });
     }
 
-    private void initConnectionUrlComboBox() {
+    private void initComponentData() {
+        searchTextField.getDocument().addDocumentListener((HistoryTableModel) sqlHistoryTable.getModel());
+        sqlHistoryTable.getColumnModel().getColumn(0).setHeaderValue(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_SQLTableTitle"));
+        sqlHistoryTable.getColumnModel().getColumn(1).setHeaderValue(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_DateTableTitle"));
         // Initialize sql column data
+        connectionUrlComboBox.addActionListener((HistoryTableModel) sqlHistoryTable.getModel());
+        currentUrlList = new ArrayList<String>();
         List<String> urlList = view.getUrlList();
         String defaultUrlItem = NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem");
         urlList.add(defaultUrlItem);
@@ -259,7 +253,9 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         });
 
         inputWarningLabel.setForeground(java.awt.Color.red);
-        inputWarningLabel.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_TextInputWarningLabel")); // NOI18N
+        inputWarningLabel.setFocusable(false);
+        inputWarningLabel.setRequestFocusEnabled(false);
+        inputWarningLabel.setVerifyInputWhenFocusTarget(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -269,26 +265,24 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(connectionUrlComboBox, 0, 208, Short.MAX_VALUE)
-                                .add(18, 18, 18)
-                                .add(jLabel2)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(searchTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(insertSQLButton))
-                    .add(layout.createSequentialGroup()
                         .add(sqlLimitLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(sqlLimitTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 62, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(sqlLimitButton)
                         .add(18, 18, 18)
-                        .add(inputWarningLabel)))
+                        .add(inputWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(connectionUrlComboBox, 0, 208, Short.MAX_VALUE)
+                        .add(18, 18, 18)
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(searchTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(insertSQLButton)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -304,13 +298,13 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(insertSQLButton)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(sqlLimitLabel)
                             .add(sqlLimitTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(sqlLimitButton)
-                            .add(inputWarningLabel))))
+                            .add(inputWarningLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
 
@@ -351,24 +345,35 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     verifySQLLimit();
 }//GEN-LAST:event_sqlLimitButtonActionPerformed
 
-private void verifySQLLimit() {
-    String limit = sqlLimitTextField.getText();
-    int iLimit = 0;
-    SQLHistoryPersistenceManager sqlPersistanceManager = SQLHistoryPersistenceManager.getInstance();
-    inputWarningLabel.setVisible(false);
-    if (limit.equals(SAVE_STATEMENTS_CLEARED)) { 
+    private void verifySQLLimit() {
+        String enteredLimit = sqlLimitTextField.getText();
+        int iLimit = 0;
+        if (enteredLimit.equals(SAVE_STATEMENTS_CLEARED)) {
+            updateSaveLimitUponClear(iLimit);
+            inputWarningLabel.setText(""); // NOI18N
+        } else { // user enters a value to limit the number of SQL statements to save
+            updateSaveLimitUponReset(enteredLimit);
+        }
+    }
+
+    private void updateSaveLimitUponClear(int iLimit) {
         iLimit = SAVE_STATEMENTS_MAX_LIMIT;
-        view.setSQLHistoryList(sqlPersistanceManager.updateSQLSaved(iLimit, Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER)));
+        try {
+            view.setSQLHistoryList(SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, historyRoot));
+        } catch (SQLHistoryException ex) {
+            handleSQLHistoryException();
+        }
         ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null);
         NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
         sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED);
-    } else { // user enters a value to limit the number of SQL statements to save
+    }
+    
+    private void updateSaveLimitUponReset(String enteredLimit) {
         try {
-            iLimit = Integer.parseInt(limit);
+            int iLimit = Integer.parseInt(enteredLimit);
             String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", SAVE_STATEMENTS_CLEARED); // NOI18N
             if (iLimit < 0 || iLimit > SAVE_STATEMENTS_MAX_LIMIT) {
                 sqlLimitButton.setEnabled(true);
-                inputWarningLabel.setVisible(true);
                 inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_NumberInputWarningLabel"));
                 // reset user's input
                 if (savedLimit != null) {
@@ -378,13 +383,15 @@ private void verifySQLLimit() {
                     sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); 
                 }
             } else {
-                SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER));
+                inputWarningLabel.setText(""); // NOI18N
+                SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, historyRoot);
                 ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null);
                 view.updateConnectionUrl();
                 NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
             }
+        } catch (SQLHistoryException ex) {
+            handleSQLHistoryException();
         } catch (NumberFormatException ne) {
-            inputWarningLabel.setVisible(true);
             inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_TextInputWarningLabel"));
             // reset user's input
             String savedLimit = NbPreferences.forModule(SQLHistoryPanel.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""); // NOI18N
@@ -393,9 +400,15 @@ private void verifySQLLimit() {
             } else {
                 sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); 
             }
-        }
+        }        
     }
-}
+    
+    private void handleSQLHistoryException() {
+        inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ErrorParsingSQLHistory"));
+        LOGGER.log(Level.WARNING, NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ErrorParsingSQLHistory"));
+        SQLHistoryPersistenceManager.getInstance().removeHistoryFile(historyRoot);
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox connectionUrlComboBox;
     private javax.swing.JLabel inputWarningLabel;
@@ -411,17 +424,25 @@ private void verifySQLLimit() {
     // End of variables declaration//GEN-END:variables
     private class SQLHistoryView {
         private SQLHistoryModel model;
-        List<SQLHistory> sqlHistoryList;
-        List<SQLHistory> currentSQLHistoryList;
+        List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
+        List<SQLHistory> currentSQLHistoryList  = new ArrayList<SQLHistory>();
         public static final String MATCH_EMPTY = ""; // NOI18N
         public static final String NO_MATCH = ""; // NOI18N
 
         public SQLHistoryView(SQLHistoryModel model) {
             this.model = model;
-            this.sqlHistoryList = model.getSQLHistoryList();
-            this.currentSQLHistoryList = model.getSQLHistoryList();
+            init();
         }
         
+        private void init() {
+            try {
+                this.sqlHistoryList = model.getSQLHistoryList();
+                this.currentSQLHistoryList = model.getSQLHistoryList();
+            } catch (SQLHistoryException ex) {
+                // ignore for now since this exception will be caught later
+            }
+        }
+
         public void setCurrentSQLHistoryList(List<SQLHistory> sqlHistoryList) {
             currentSQLHistoryList = sqlHistoryList;
         }
@@ -525,14 +546,13 @@ private void verifySQLLimit() {
         public void updateConnectionUrl() {
             // Initialize combo box data
             currentUrlList.clear();
-            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
-            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
+            String historyFilePath = FileUtil.getFileDisplayName(historyRoot) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
             try {
-                sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyRoot);
             } catch (ClassNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (SQLHistoryException ex) {
+                handleSQLHistoryException();
             }
             // Set default item in the combo box
             String defaultSelectedItem = NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem");
@@ -694,15 +714,13 @@ private void verifySQLLimit() {
             String url;
             // Retrieve persisted data
             List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
-            FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER);
-            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
+            String historyFilePath = FileUtil.getFileDisplayName(historyRoot) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
             try {
-                sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);
+                sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyRoot);
                 view.setCurrentSQLHistoryList(sqlHistoryList);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            } catch (SQLHistoryException ex) {
+                handleSQLHistoryException();
             } catch (ClassNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
             }
             // Get the connection url from the combo box
             if (sqlHistoryList.size() > 0) {

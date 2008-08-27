@@ -129,6 +129,11 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         RefactoringPanel.checkEventThread();
         this.rui = rui;
         initComponents();
+
+        // #143551 
+        HelpCtx helpCtx = getHelpCtx();
+        help.setEnabled(helpCtx != null && helpCtx != HelpCtx.DEFAULT_HELP);
+
         innerPanel.setBorder(null);
         label.setText(" ");//NOI18N
         this.customComponent = rui.getPanel(this);

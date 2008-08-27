@@ -55,12 +55,15 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 //import javax.swing.text.html.parser.Element;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -126,13 +129,18 @@ public class MakeSampleProjectGenerator {
             //changeXmlFileByTagName(doc, "executablePath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
-            if (Utilities.isWindows()) {
+            String host = CompilerSetManager.getDefault().getDefaultDevelopmentHost();
+            CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(host);
+            int platform = compilerSetManager.getPlatform();
+            CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
+            String variant = MakeConfiguration.getVariant(compilerSet, platform);
+            if (platform == Platform.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "dll", "X-LIBSUFFIX-X"); // NOI18N
             }
-            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (platform == Platform.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dylib", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
@@ -143,6 +151,7 @@ public class MakeSampleProjectGenerator {
                 changeXmlFileByTagName(doc, "output", "so", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "so", "X-LIBSUFFIX-X"); // NOI18N
+                changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
             }
             //saveXml(doc, prjLoc, "nbproject/projectDescriptor.xml"); // NOI18N
             saveXml(doc, prjLoc, PROJECT_CONFIGURATION_FILE);

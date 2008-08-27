@@ -86,6 +86,7 @@ class MutableJoinTokenList<T extends TokenId> extends JoinTokenList<T> implement
     }
 
     public void replaceTokens(TokenListChange<T> change, TokenHierarchyEventInfo eventInfo, boolean modInside) {
+        base.incrementExtraModCount();
         ((JoinTokenListChange<T>) change).replaceTokens(eventInfo);
     }
 

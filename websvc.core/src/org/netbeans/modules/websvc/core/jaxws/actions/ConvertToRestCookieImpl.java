@@ -70,6 +70,7 @@ public class ConvertToRestCookieImpl implements ConvertToRestCookie {
             FileObject fo = node.getLookup().lookup(FileObject.class);
             JAXWSSupport support = JAXWSSupport.getJAXWSSupport(fo);
             Service service = node.getLookup().lookup(Service.class);
+            String packageName = getPackageName(service.getImplementationClass());
             String wsdlFileName = service.getLocalWsdlFile();
             URL wsdlURL = null;
             if (wsdlFileName != null) {  //fromWsdl
@@ -80,11 +81,16 @@ public class ConvertToRestCookieImpl implements ConvertToRestCookie {
               wsdlURL = new URL(node.getWsdlURL() );
 
             }
-            RestResourceGenerator generator = new RestResourceGenerator(fo.getParent(), wsdlURL);
+            RestResourceGenerator generator = new RestResourceGenerator(fo.getParent(), wsdlURL, packageName);
             generator.generate();
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ex);
         }
+    }
+
+    private String getPackageName(String implementationClass){
+        int index = implementationClass.lastIndexOf(".");
+        return implementationClass.substring(0, index);
     }
 
     private void invokeWsGen(String serviceName, Project project) {

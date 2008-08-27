@@ -104,12 +104,10 @@ public final class RubyProject extends RubyBaseProject {
             new RubyActionProvider( this, this.updateHelper ),
             new RubyLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
-            // new RubyCustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             projectOpenedHook,
             new RubySources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new RubySharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
-            new RubyFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new RecommendedTemplatesImpl (this.updateHelper),
             this, // never cast an externally obtained Project to RubyProject - use lookup instead
             new RubyProjectOperations(this),

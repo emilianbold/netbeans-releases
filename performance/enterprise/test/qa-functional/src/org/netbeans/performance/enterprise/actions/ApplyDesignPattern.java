@@ -100,10 +100,10 @@ public class ApplyDesignPattern  extends PerformanceTestCase {
     public ComponentOperator open() {
         log(":: open");
         
-//        String applyDesignPattern
-//                = org.netbeans.jellytools.Bundle.getStringTrimmed(
-//                "org.netbeans.modules.uml.designpattern.Bundle", "IDS_POPUP_APPLY2");
-        String applyDesignPattern = "Apply Design Pattern...";
+        // "Apply Design Pattern...";
+        String applyDesignPattern
+                = org.netbeans.jellytools.Bundle.getStringTrimmed(
+                "org.netbeans.modules.xml.schema.abe.wizard.Bundle", "TITLE_SchemaTransform");
         schemaNode.callPopup().pushMenuNoBlock(applyDesignPattern);
         
         applyDesignPattern = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.xml.schema.abe.wizard.Bundle", "TITLE_SchemaTransform");

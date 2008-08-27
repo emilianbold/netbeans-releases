@@ -40,12 +40,16 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.j2ee;
 
+import java.io.IOException;
 import javax.swing.text.Document;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.java.SoapClientPojoCodeGenerator;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
-import org.netbeans.modules.websvc.saas.codegen.util.Util;
+import org.netbeans.modules.websvc.saas.codegen.j2ee.support.J2eeUtil;
+import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 
@@ -64,9 +68,18 @@ public class SoapClientServletCodeGenerator extends SoapClientPojoCodeGenerator 
     @Override
     public boolean canAccept(SaasMethod method, Document doc) {
         if (SaasBean.canAccept(method, WsdlSaasMethod.class, getDropFileType()) &&
-                Util.isServlet(NbEditorUtilities.getDataObject(doc))) {
+                J2eeUtil.isServlet(NbEditorUtilities.getDataObject(doc))) {
             return true;
         }
         return false;
+    }
+    
+    @Override
+    public void init(SaasMethod m, Document doc) throws IOException {
+        super.init(m, doc);
+        WsdlSaasMethod wsm = (WsdlSaasMethod) m;
+        Project p = FileOwnerQuery.getOwner(NbEditorUtilities.getFileObject(doc));
+        SaasBean bean = new SoapClientSaasBean(wsm, p, J2eeUtil.toJaxwsOperationInfos(wsm, p));
+        setBean(bean);
     }
 }

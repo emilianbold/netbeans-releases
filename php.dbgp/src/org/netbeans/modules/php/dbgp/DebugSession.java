@@ -99,6 +99,15 @@ public class DebugSession implements Runnable {
             getSocket().close();
         } catch (IOException e) {
             log(e);
+        } finally {
+            getBridge().setSuspended(false);
+            getBridge().hideAnnotations();
+            StartActionProviderImpl.getInstance().removeSession(this);
+            getBridge().getBreakpointModel().setCurrentStack(null, this);
+            getBridge().getCallStackModel().clearModel();
+            getBridge().getThreadsModel().update();
+            getBridge().getVariablesModel().clearModel();
+            getBridge().getWatchesModel().clearModel();
         }
     }
 
@@ -156,14 +165,6 @@ public class DebugSession implements Runnable {
 
     public void stop() {
         isStopped.set(true);
-        getBridge().setSuspended(false);
-        getBridge().hideAnnotations();
-        StartActionProviderImpl.getInstance().removeSession(this);
-        getBridge().getBreakpointModel().setCurrentStack(null, this);
-        getBridge().getCallStackModel().clearModel();
-        getBridge().getThreadsModel().update();
-        getBridge().getVariablesModel().clearModel();
-        getBridge().getWatchesModel().clearModel();
     }
 
     public void setId(InitMessage message) {

@@ -41,6 +41,7 @@
 
 package org.netbeans.lib.lexer;
 
+import java.util.logging.Level;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.CharPreprocessor;
@@ -62,9 +63,6 @@ import org.netbeans.spi.lexer.LexerInput;
  */
 
 public final class CharPreprocessorOperation implements CharProvider {
-    
-    /** Flag for additional correctness checks (may degrade performance). */
-    private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
     
     /**
      * Parent char provider from which the characters are read.
@@ -419,8 +417,9 @@ public final class CharPreprocessorOperation implements CharProvider {
         lookaheadIndex -= tokenLength;
         parent.consumeTokenLength();
 
-        if (testing)
+        if (TokenList.LOG.isLoggable(Level.FINE)) {
             consistencyCheck();
+        }
     }
     
     /**

@@ -46,5 +46,15 @@ package org.netbeans.modules.glassfish.spi;
  * @author vkraemer
  */
 public interface ProfilerCookie {
+    /**
+     * This is a conduit for data that the we need to get from the profiler that
+     * is buried in org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler
+     * as org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings
+     * 
+     * @return a two element array. Object[0] is a FileObject that is the root
+     * directory of the JDK to use for running the app server. Object[0] is a
+     * String[] of extra arguments that need to be used to start the JVM in
+     * profiled mode.
+     */
     public Object[] getData();
 }

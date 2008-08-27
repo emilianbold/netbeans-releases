@@ -68,7 +68,8 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance, R
     
     public InheritanceImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
-        visibility = CsmVisibility.PRIVATE;
+        visibility = ((CsmDeclaration)scope).getKind() == CsmDeclaration.Kind.STRUCT?
+                CsmVisibility.PUBLIC: CsmVisibility.PRIVATE;
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_private:

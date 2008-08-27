@@ -90,7 +90,7 @@ public class ConditionDeclarationImpl extends OffsetableBase implements CsmCondi
     }
 
     public CsmScope getScope() {
-        return declaration.getScope();
+        return (declaration == null) ? getContainingFile() : declaration.getScope();
     }
     
 }

@@ -109,8 +109,8 @@ public final class FilterSnapshotTokenList<T extends TokenId> implements TokenLi
         return tokenList.replaceFlyToken(index, flyToken, offset);
     }
 
-    public int tokenOffsetByIndex(int index) {
-        return tokenOffsetDiff + tokenList.tokenOffsetByIndex(index);
+    public int tokenOffset(int index) {
+        return tokenOffsetDiff + tokenList.tokenOffset(index);
     }
 
     public int modCount() {

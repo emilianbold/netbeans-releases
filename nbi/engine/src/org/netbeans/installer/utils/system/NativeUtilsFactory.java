@@ -48,7 +48,7 @@ public class NativeUtilsFactory {
             return new LinuxNativeUtils();
         } else if (osName.contains("SunOS") || osName.contains("Solaris")) {
             return new SolarisNativeUtils();
-        } else if (osName.contains("Mac OS X")) {
+        } else if (osName.contains("Mac OS X") || osName.contains("Darwin")) {
             return new MacOsNativeUtils();
         } else {
             return new UnixNativeUtils();            

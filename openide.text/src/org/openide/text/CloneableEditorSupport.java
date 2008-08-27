@@ -520,7 +520,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             switch (documentStatus) {
             case DOCUMENT_NO:
                 documentStatus = DOCUMENT_LOADING;
-
+                
                 return prepareDocument(false);
 
             default:
@@ -772,6 +772,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
             return openDocumentImpl();
         }
+    }
+
+    Throwable getPrepareDocumentRuntimeException () {
+        return prepareDocumentRuntimeException;
     }
 
     /** Get the document. This method may be called before the document initialization
@@ -2272,6 +2276,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         final Task t = prepareDocument();
         e.ensureVisible();
         class Selector implements TaskListener, Runnable {
+            private boolean documentLocked = false;
+
             public void taskFinished(org.openide.util.Task t2) {
                 javax.swing.SwingUtilities.invokeLater(this);
                 t2.removeTaskListener(this);
@@ -2291,38 +2297,39 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     return; // already closed or error loading
                 }
 
-                Caret caret = ePane.getCaret();
+                if (!documentLocked) {
+                    documentLocked = true;
+                    doc.render(this);
+                } else {
+                    Caret caret = ePane.getCaret();
 
-                if (caret == null) {
-                    return;
-                }
+                    if (caret == null) {
+                        return;
+                    }
 
-                int offset;
+                    int offset;
 
-                if (column >= 0) {
                     javax.swing.text.Element el = NbDocument.findLineRootElement(doc);
                     el = el.getElement(el.getElementIndex(pos.getOffset()));
-                    offset = el.getStartOffset() + column;
+                    offset = el.getStartOffset() + Math.max(0, column);
 
                     if (offset > el.getEndOffset()) {
-                        offset = el.getEndOffset();
+                        offset = Math.max(el.getStartOffset(), el.getEndOffset() - 1);
                     }
-                } else {
-                    offset = Math.min(pos.getOffset(), doc.getLength());
-                }
 
-                caret.setDot(offset);
+                    caret.setDot(offset);
 
-                try { // scroll to show reasonable part of the document
-                    Rectangle r = ePane.modelToView(offset);
-                    if (r != null) {
-                        r.height *= 5; 
-                        ePane.scrollRectToVisible(r);
+                    try { // scroll to show reasonable part of the document
+                        Rectangle r = ePane.modelToView(offset);
+                        if (r != null) {
+                            r.height *= 5;
+                            ePane.scrollRectToVisible(r);
+                        }
+                    } catch (BadLocationException ex) {
+                        ERR.log(Level.WARNING, "Can't scroll to text: pos.getOffset=" + pos.getOffset() //NOI18N
+                            + ", column=" + column + ", offset=" + offset //NOI18N
+                            + ", doc.getLength=" + doc.getLength(), ex); //NOI18N
                     }
-                } catch (BadLocationException ex) {
-                    ERR.log(Level.WARNING, "Can't scroll to text: pos.getOffset=" + pos.getOffset() //NOI18N
-                        + ", column=" + column + ", offset=" + offset //NOI18N
-                        + ", doc.getLength=" + doc.getLength(), ex); //NOI18N
                 }
             }
         }
@@ -3121,7 +3128,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     /** Special runtime exception that holds the original I/O failure.
      */
-    private static final class DelegateIOExc extends IllegalStateException {
+    static final class DelegateIOExc extends IllegalStateException {
         public DelegateIOExc(IOException ex) {
             super(ex.getMessage());
             initCause(ex);

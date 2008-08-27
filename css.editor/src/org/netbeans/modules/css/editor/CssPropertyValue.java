@@ -161,14 +161,14 @@ public class CssPropertyValue {
         //To eliminate these duplicities it seems to be safe to arbitrary remove the elements
         //which toString() is equals and keep just one of them.
         
-        log("\nEliminated duplicate alternatives:\n");
+        log("\nEliminated duplicate alternatives:\n");//NOI18N
         HashMap<String, Element> dupes = new HashMap<String, Element>();
         for(Element e : alternatives()) {
             if(dupes.put(e.toString(), e) != null) {
-                log(e.path() + "\n");
+                log(e.path() + "\n");//NOI18N
             }
         }
-        log("-----------------\n");
+        log("-----------------\n");//NOI18N
         
         alternatives().retainAll(dupes.values());
         
@@ -261,7 +261,7 @@ public class CssPropertyValue {
                     }
                     
                 } else if (ge.isSequence()) {
-                    log("<S> " + ge.path() + "\n");
+                    log("<S> " + ge.path() + "\n");//NOI18N
                     //sequence - alternatives are all elements after last resolved element
                     Element firstUnresolved = null;
                     
@@ -269,7 +269,7 @@ public class CssPropertyValue {
                     
                     for (Element e : ge.elements()) {
                         ResolveContext rt = resolveElement(e, resolved);
-                        log("trying " + e.path() + " (MIN=" + e.getMinimumOccurances() + "; MAX=" + e.getMaximumOccurances() + "; resolved=" + rt.resolveType() + "; alts=" + rt.alternatives().size() + ")\n");
+                        log("trying " + e.path() + " (MIN=" + e.getMinimumOccurances() + "; MAX=" + e.getMaximumOccurances() + "; resolved=" + rt.resolveType() + "; alts=" + rt.alternatives().size() + ")\n"); //NOI18N
                         if(rt.resolveType() == ResolveType.UNRESOLVED) {
                             localAlts.addAll(rt.alternatives());
                             if(e.getMinimumOccurances() > 0) {
@@ -292,7 +292,7 @@ public class CssPropertyValue {
                             
                             firstUnresolved = e;
                             
-                            log("break on " + e.path() + "\n");
+                            log("break on " + e.path() + "\n");//NOI18N
                             
                             //break the group elements loop
                             break;
@@ -314,7 +314,7 @@ public class CssPropertyValue {
                         resolveType = ResolveType.PARTIALLY_RESOLVED_SEQUENCE;
                     }
                     
-                    log("sequence " + resolveType + "\n");
+                    log("sequence " + resolveType + "\n");//NOI18N
                     
                     //break the big multiplicity loop since if sequence is just 
                     //partially resolved next loop cannot be run
@@ -323,7 +323,7 @@ public class CssPropertyValue {
                     }
                     
                 } else {
-                    assert true : "Invalid type of GroupElement " + ge + ". Fix the code!";
+                    assert true : "Invalid type of GroupElement " + ge + ". Fix the code!";//NOI18N
                 }
             }
 
@@ -421,10 +421,10 @@ public class CssPropertyValue {
                 sb =
                         new StringBuffer();
 
-            } else if (sb.toString().equalsIgnoreCase("url") && c == '(') {
+            } else if (sb.toString().equalsIgnoreCase("url") && c == '(') { //NOI18N 
                 //store separate tokens: URL + ( + ..... + )
                 stack.add(0, sb.toString());
-                stack.add(0, "" + c);
+                stack.add(0, "" + c); //NOI18N
 
                 sb = new StringBuffer();
                 //make one token until ) found
@@ -441,7 +441,7 @@ public class CssPropertyValue {
                 }
                 
                 stack.add(0, sb.toString());
-                stack.add(0, "" + c); //add the quotation mark into the value
+                stack.add(0, "" + c); //add the quotation mark into the value  //NOI18N
                 sb = new StringBuffer();        
                 
             } else if (c == ' ' || c == '\t' || c == '\n') {
@@ -467,7 +467,7 @@ public class CssPropertyValue {
                         stack.add(0, sb.toString());
                     }
 
-                    stack.add(0, "" + c);
+                    stack.add(0, "" + c); //NOI18N
 
                     sb =
                             new StringBuffer();
@@ -486,7 +486,7 @@ public class CssPropertyValue {
     }
 
     private boolean resolve(Element e, Stack<String> input, List<ResolvedToken> consumed) {
-        log.append(e.path() + "\n");
+        log.append(e.path() + "\n"); //NOI18N
         boolean itemResolved = false;
 
         if (input.isEmpty()) {
@@ -518,7 +518,7 @@ public class CssPropertyValue {
                                     break loop;
                                 } else {
                                     //remember we resolved something under this element so we do not enter it again
-                                    log.append("sg resolved in " + member.path() + "\n");
+                                    log.append("sg resolved in " + member.path() + "\n"); //NOI18N
                                     elementsToProcess.remove(member);
                                     //start resolving the group from the beginning
                                     break;
@@ -556,19 +556,19 @@ public class CssPropertyValue {
                         //consumed
                         input.pop();
                         consumed.add(new ResolvedToken(token, e));
-                        log.append("eaten UNIT '" + token + "'\n");
+                        log.append("eaten UNIT '" + token + "'\n"); //NOI18N
                         return true;
                     }
 
                 } else {
-                    Logger.global.warning("ERROR - no acceptor for unit property value " + ve.value());
+                    Logger.global.warning("ERROR - no acceptor for unit property value " + ve.value()); //NOI18N
                 }
 
             } else if (token.equalsIgnoreCase(ve.value())) {
                 //consumed
                 input.pop();
                 consumed.add(new ResolvedToken(token, e));
-                log.append("eaten '" + token + "'\n");
+                log.append("eaten '" + token + "'\n"); //NOI18N
                 return true;
             }
 

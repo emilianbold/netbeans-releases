@@ -46,6 +46,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.openide.util.NbBundle;
@@ -164,4 +166,18 @@ public final class EarProjectUtil {
         }
         USG_LOGGER.log(logRecord);
     }        
+    
+    /**
+     * Check whether the project is Java EE module (e.g. EJB but not EAR).
+     * @param project project to check, can be <code>null</code>.
+     * @return <code>true</code> if the project is Java EE module, <code>false</code> otherwise.
+     */
+    public static boolean isJavaEEModule(Project project) {
+        if (project != null
+                && project.getLookup().lookup(J2eeModuleProvider.class) != null
+                && project.getLookup().lookup(J2eeApplicationProvider.class) == null) {
+            return true;
+        }
+        return false;
+    }
 }

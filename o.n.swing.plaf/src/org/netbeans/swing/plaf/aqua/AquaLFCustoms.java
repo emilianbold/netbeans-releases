@@ -49,6 +49,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.plaf.FontUIResource;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 
 /** Default system-provided customizer for Windows XP LF
@@ -107,7 +108,12 @@ public final class AquaLFCustoms extends LFCustoms {
 
         Border empty = BorderFactory.createEmptyBorder();
 
-        Image explorerIcon = UIUtils.loadImage(
+        Image explorerIcon = null;
+        Icon treeIcon = UIManager.getIcon("Tree.closedIcon"); //NOI18N
+        if( null != treeIcon )
+            explorerIcon = icon2Image(treeIcon);
+        else
+            explorerIcon = UIUtils.loadImage(
             "org/netbeans/swing/plaf/resources/osx-folder.png"); //NOI18N
 
         Border lowerBorder = new AquaRoundedLowerBorder();
@@ -164,5 +170,12 @@ public final class AquaLFCustoms extends LFCustoms {
         return result;
     }
     
+    private static final Image icon2Image(Icon icon) {
+        Image image = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
+        Graphics g = image.getGraphics();
+        icon.paintIcon(new JLabel(), g, 0, 0);
+        g.dispose();
+        return image;
+    }
     
 }

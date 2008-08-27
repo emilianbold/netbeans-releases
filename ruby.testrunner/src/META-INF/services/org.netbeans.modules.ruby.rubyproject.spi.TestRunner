@@ -1,2 +1,3 @@
 org.netbeans.modules.ruby.testrunner.TestUnitRunner
 org.netbeans.modules.ruby.testrunner.RspecRunner
+org.netbeans.modules.ruby.testrunner.AutotestRunner

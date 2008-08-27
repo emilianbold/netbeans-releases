@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
@@ -82,7 +83,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
- * Code generator for REST services wrapping WSDL-based web service.
+ * Code generator for REST services wrapping WSDL-based web {10}.
  *
  * @author ayubkhan
  */
@@ -92,6 +93,8 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     public static final String WS_BINDING_PROVIDER = "com.sun.xml.ws.developer.WSBindingProvider";
     public static final String HEADERS = "com.sun.xml.ws.api.message.Headers";
     public static final String SET_HEADER_PARAMS = "setHeaderParameters";
+    public static final String VAR_NAMES_SERVICE = "service";
+    public static final String VAR_NAMES_PORT = "port";
     
     public SoapClientPojoCodeGenerator() {
         setDropFileType(Constants.DropFileType.JAVA_CLIENT);
@@ -109,9 +112,11 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     @Override
     public void init(SaasMethod m, Document doc) throws IOException {
         super.init(m, doc);
-        setBean(new SoapClientSaasBean((WsdlSaasMethod) m, 
-                FileOwnerQuery.getOwner(NbEditorUtilities.getFileObject(doc))));
-        super.init(m, doc);
+        WsdlSaasMethod wsm = (WsdlSaasMethod) m;
+        Project p = FileOwnerQuery.getOwner(NbEditorUtilities.getFileObject(doc));
+        SaasBean bean = new SoapClientSaasBean(wsm, p, JavaUtil.toJaxwsOperationInfos(wsm, p));
+        setBean(bean);
+        clearVariablePatterns();
     }
 
     @Override
@@ -152,7 +157,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
             } else {
                 code = "\nprivate String call"+getBean().getName()+"Service() {\n";
                 code += getCustomMethodBody()+"\n";
-                code += "return result;\n";
+                code += "return "+getResultPattern()+";\n";
                 code += "}\n";
             }
             insert(code, true);
@@ -163,8 +168,11 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     
     @Override
     protected String getCustomMethodBody() throws IOException {
-        String methodBody = INDENT + "try {\n";
-        for (ParameterInfo param : getBean().getQueryParameters()) {
+        String methodBody = "\n"+INDENT + "try {\n";
+        List<ParameterInfo> params = getBean().getQueryParameters();
+        updateVariableNames(params);
+        List<ParameterInfo> renamedParams = renameParameterNames(params);
+        for (ParameterInfo param : renamedParams) {
             String name = param.getName();
             methodBody += INDENT_2 + param.getType().getName() + " " + name + " = "+
                     resolveInitValue(param)+"\n";
@@ -188,9 +196,10 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
         String portJavaName = info.getPort().getJavaName();
         String operationJavaName = info.getOperation().getJavaName();
         String portGetterMethod = info.getPort().getPortGetter();
-        String serviceFieldName = "service"; //NOI18N
+        String serviceFieldName = findNewName(serviceJavaName+" "+VAR_NAMES_SERVICE, VAR_NAMES_SERVICE); //NOI18N
         String returnTypeName = info.getOperation().getReturnTypeName();
         List<WSParameter> outArguments = info.getOutputParameters();
+        updateVariableNamesForWS(outArguments);
         String responseType = "Object"; //NOI18N
         String callbackHandlerName = "javax.xml.ws.AsyncHandler"; //NOI18N
         String argumentInitializationPart = "";
@@ -205,14 +214,15 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
                     responseType = resolveResponseType(argumentTypeName);
                     callbackHandlerName = argumentTypeName;
                 }
-                String argumentName = outArguments.get(i).getName();
+                String argumentName = findNewName(getVariableDecl(outArguments.get(i)), outArguments.get(i).getName());
                 argumentBuffer1.append(INDENT_2 + argumentTypeName + " " + argumentName + 
                         " = " + resolveInitValue(argumentTypeName) + "\n"); //NOI18N
             }
 
             List<WSParameter> parameters = info.getOperation().getParameters();
+            updateVariableNamesForWS(parameters);
             for (int i = 0; i < parameters.size(); i++) {
-                String argument = parameters.get(i).getName();
+                String argument = findNewName(getVariableDecl(parameters.get(i)), parameters.get(i).getName());
                 argumentBuffer2.append(i > 0 ? ", " + argument : argument); //NOI18N
             }
             argumentInitializationPart = (argumentBuffer1.length() > 0 ? "\t" + 
@@ -235,7 +245,6 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
         final String[] serviceFName = {serviceFieldName};
         final boolean[] generateWsRefInjection = {false};
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
-            //FIXME - Refactor
             private Kind VARIABLE;
 
             public void run(CompilationController controller) throws IOException {
@@ -300,10 +309,10 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     // {6} = java method arguments (e.g. "int x, int y")
     // {7} = service field name
     private static final String JAVA_SERVICE_DEF = "   {0} {7} = new {0}();\n"; //NOI18N
-    private static final String JAVA_PORT_DEF = "   {1} port = {7}.{2}();\n"; //NOI18N
-    private static final String JAVA_RESULT = "   {3}" + "   // TODO process result here\n" + "   {4} result = port.{5}({6});\n"; //NOI18N
-    private static final String JAVA_VOID = "   {3}" + "   port.{5}({6});\n"; //NOI18N
-    private static final String JAVA_OUT = "   {8}.println(\"Result = \"+result);\n"; //NOI18N
+    private static final String JAVA_PORT_DEF = "   {1} {11} = {7}.{2}();\n"; //NOI18N
+    private static final String JAVA_RESULT = "   {3}" + "   // TODO process result here\n" + "   {4} {9} = {11}.{5}({6});\n"; //NOI18N
+    private static final String JAVA_VOID = "   {3}" + "   {11}.{5}({6});\n"; //NOI18N
+    private static final String JAVA_OUT = "   {8}.println(\"Result = \"+{9});\n"; //NOI18N
     // {0} = service java name (as variable, e.g. "AddNumbersService")
     // {1} = port java name (e.g. "AddNumbersPort")
     // {2} = port getter method (e.g. "getAddNumbersPort")
@@ -311,7 +320,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     // {4} = java result type (e.g. "int")
     // {5} = operation java method name (e.g. "add")
     // {6} = java method arguments (e.g. "int x, int y")
-    private static final String JAVA_STATIC_STUB_ASYNC_POLLING = "\ntry '{' // Call Web Service Operation(async. polling)\n" + "   {0} service = new {0}();\n" + "   {1} port = service.{2}();\n" + "   {3}" + "   // TODO process asynchronous response here\n" + "   {4} resp = port.{5}({6});\n" + "   while(!resp.isDone()) '{'\n" + "       // do something\n" + "       Thread.sleep(100);\n" + "   '}'\n" + "   System.out.println(\"Result = \"+resp.get());\n" + "'}' catch (Exception ex) '{'\n" + "   // TODO handle custom exceptions here\n" + "'}'\n"; //NOI18N
+    private static final String JAVA_STATIC_STUB_ASYNC_POLLING = "\ntry '{' // Call Web Service Operation(async. polling)\n" + "   {0} {10} = new {0}();\n" + "   {1} {11} = {10}.{2}();\n" + "   {3}" + "   // TODO process asynchronous response here\n" + "   {4} {9} = {11}.{5}({6});\n" + "   while(!{9}.isDone()) '{'\n" + "       // do something\n" + "       Thread.sleep(100);\n" + "   '}'\n" + "   System.out.println(\"Result = \"+{9}.get());\n" + "'}' catch (Exception ex) '{'\n" + "   // TODO handle custom exceptions here\n" + "'}'\n"; //NOI18N
     // {0} = service java name (as variable, e.g. "AddNumbersService")
     // {1} = port java name (e.g. "AddNumbersPort")
     // {2} = port getter method (e.g. "getAddNumbersPort")
@@ -320,7 +329,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     // {5} = operation java method name (e.g. "add")
     // {6} = java method arguments (e.g. "int x, int y")
     // {7} = response type (e.g. FooResponse)
-    private static final String JAVA_STATIC_STUB_ASYNC_CALLBACK = "\ntry '{' // Call Web Service Operation(async. callback)\n" + "   {0} service = new {0}();\n" + "   {1} port = service.{2}();\n" + "   {3}" + "       public void handleResponse(javax.xml.ws.Response<{7}> response) '{'\n" + "           try '{'\n" + "               // TODO process asynchronous response here\n" + "               System.out.println(\"Result = \"+ response.get());\n" + "           '}' catch(Exception ex) '{'\n" + "               // TODO handle exception\n" + "           '}'\n" + "       '}'\n" + "   '}';\n" + "   {4} result = port.{5}({6});\n" + "   while(!result.isDone()) '{'\n" + "       // do something\n" + "       Thread.sleep(100);\n" + "   '}'\n" + "'}' catch (Exception ex) '{'\n" + "   // TODO handle custom exceptions here\n" + "'}'\n"; //NOI18N
+    private static final String JAVA_STATIC_STUB_ASYNC_CALLBACK = "\ntry '{' // Call Web Service Operation(async. callback)\n" + "   {0} {10} = new {0}();\n" + "   {1} {11} = {10}.{2}();\n" + "   {3}" + "       public void handleResponse(javax.xml.ws.Response<{7}> {9}Resp) '{'\n" + "           try '{'\n" + "               // TODO process asynchronous response here\n" + "               System.out.println(\"Result = \"+ {9}Resp.get());\n" + "           '}' catch(Exception ex) '{'\n" + "               // TODO handle exception\n" + "           '}'\n" + "       '}'\n" + "   '}';\n" + "   {4} {9} = {11}.{5}({6});\n" + "   while(!{9}.isDone()) '{'\n" + "       // do something\n" + "       Thread.sleep(100);\n" + "   '}'\n" + "'}' catch (Exception ex) '{'\n" + "   // TODO handle custom exceptions here\n" + "'}'\n"; //NOI18N
 
     /**
      * Determines the initialization value of a variable of type "type"
@@ -441,7 +450,12 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
 
         String invocationBody = INDENT_2;
         String setHeaderParams = getBean().getHeaderParameters().size() > 0 ? SET_HEADER_PARAMS_CALL : "" ;
-        Object[] args = new Object[]{serviceJavaName, portJavaName, portGetterMethod, argumentInitializationPart, returnTypeName, operationJavaName, argumentDeclarationPart, serviceFieldName, printerName};
+        Object[] args = new Object[]{
+            serviceJavaName, portJavaName, portGetterMethod, 
+            argumentInitializationPart, returnTypeName, operationJavaName, 
+            argumentDeclarationPart, serviceFieldName, printerName, 
+            getResultPattern(), findNewName(serviceJavaName+" "+VAR_NAMES_SERVICE, VAR_NAMES_SERVICE), 
+                findNewName(portJavaName+" "+VAR_NAMES_PORT, VAR_NAMES_PORT)};
         switch (operation.getOperationType()) {
             case WSOperation.TYPE_NORMAL:
                 {
@@ -504,7 +518,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
             bodyText += "\"" + pinfo.getName()+"\"), \""+pinfo.getDefaultValue()+"\")";
         }
         bodyText += ");";
-        String[] parameters = new String[] { "port" };
+        String[] parameters = new String[] { findNewName(portJavaType+" "+VAR_NAMES_PORT, VAR_NAMES_PORT) };
         Object[] paramTypes = new Object[] { portJavaType };
         String[] paramAnnotations = new String[0];
         Object[] paramAnnotationAttrs = new String[0];

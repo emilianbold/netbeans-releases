@@ -46,12 +46,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.jruby.ast.ConstDeclNode;
-import org.jruby.ast.ConstNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.SymbolNode;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.ConstDeclNode;
+import org.jruby.nb.ast.ConstNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.SymbolNode;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Modifier;

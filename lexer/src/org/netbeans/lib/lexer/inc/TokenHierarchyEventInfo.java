@@ -194,9 +194,8 @@ public final class TokenHierarchyEventInfo {
     public String modificationDescription(boolean detail) {
         StringBuilder sb = new StringBuilder(originalText().length() + 300);
         if (removedLength() > 0) {
-            sb.append("TEXT REMOVED <").append(modOffset()).append(","). // NOI18N
-                    append(modOffset() + removedLength()).append('>');
-            sb.append(':').append(removedLength());
+            sb.append("TEXT REMOVED at ").append(modOffset()).append(" len="). // NOI18N
+                    append(removedLength());
             if (removedText() != null) {
                 sb.append(" \"");
                 CharSequenceUtilities.debugText(sb, removedText());
@@ -205,8 +204,7 @@ public final class TokenHierarchyEventInfo {
             sb.append('\n');
         }
         if (insertedLength() > 0) {
-            sb.append("TEXT INSERTED <").append(modOffset()).append(","). // NOI18N
-                    append(modOffset() + insertedLength()).append(">:"). // NOI18N
+            sb.append("TEXT INSERTED at ").append(modOffset()).append(" len="). // NOI18N
                     append(insertedLength()).append(" \""); // NOI18N
             CharSequenceUtilities.debugText(sb, insertedText());
             sb.append("\"\n");

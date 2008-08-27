@@ -44,7 +44,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.db.sql.history.SQLHistory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -61,7 +60,7 @@ import org.openide.util.Exceptions;
  */
 public class SQLHistoryManagerTest extends NbTestCase {
     public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
-    public static final String SQL_HISTORY_FILE_NAME = "sql_history";  // NOI18N
+    public static final String SQL_HISTORY_FILE_NAME = "sql_history.xml";  // NOI18N
     /** Default constructor.
      * @param testName name of particular test case
      */
@@ -90,11 +89,18 @@ public class SQLHistoryManagerTest extends NbTestCase {
     }
 
     /** Called before every test case. */
+    @Override
     public void setUp() {       
     }
 
     /** Called after every test case. */
+    @Override
     public void tearDown() {
+        try {
+            clearWorkDir();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public void testUpdateListRemoveEqualNumber() {
@@ -105,11 +111,14 @@ public class SQLHistoryManagerTest extends NbTestCase {
             SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
             // Save SQL
             SQLHistoryManager.getInstance().save(root);
-            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + "Databases" + File.separator + "SQLHISTORY";
-            FileObject historyFileObject = FileUtil.toFileObject(new File(historyFilePath));
+            String historyFileRootPath = FileUtil.getFileDisplayName(root) + File.separator + "Databases" + File.separator + "SQLHISTORY";
+            FileObject historyFileObject = FileUtil.toFileObject(new File(historyFileRootPath));
+            String historyFilePath = historyFileRootPath + File.separator + SQL_HISTORY_FILE_NAME;
             // Limit to 2 SQL statements
             SQLHistoryManager.getInstance().updateList(2, historyFilePath , historyFileObject);
             assertEquals(0, SQLHistoryManager.getInstance().getSQLHistory().size());
+        } catch (SQLHistoryException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ParseException ex) {
@@ -134,6 +143,8 @@ public class SQLHistoryManagerTest extends NbTestCase {
             // Limit to 3 SQL statements
             SQLHistoryPersistenceManager.getInstance().updateSQLSaved(3, historyFileObject);
             assertEquals(3, SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyFileObject).size());
+        } catch (SQLHistoryException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ClassNotFoundException ex) {
@@ -159,6 +170,8 @@ public class SQLHistoryManagerTest extends NbTestCase {
             // Limit to 1 SQL statement
             SQLHistoryManager.getInstance().updateList(1, historyFilePath , historyFileObject);
             assertEquals(1, SQLHistoryManager.getInstance().getSQLHistory().size());      
+        } catch (SQLHistoryException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ParseException ex) {
@@ -183,6 +196,8 @@ public class SQLHistoryManagerTest extends NbTestCase {
             SQLHistoryManager.getInstance().updateList(0, historyFilePath, historyFileObject);
             SQLHistoryPersistenceManager.getInstance().updateSQLSaved(0, historyFileObject);
             assertEquals(0, SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyFileObject).size());                        
+        } catch (SQLHistoryException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ClassNotFoundException ex) {

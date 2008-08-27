@@ -51,7 +51,6 @@ import java.util.Collections;
 import java.util.ResourceBundle;
 import java.util.Vector;
 import java.util.Enumeration;
-import java.util.StringTokenizer;
 import java.awt.event.KeyAdapter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -84,8 +83,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.windows.TopComponent;
 
-import org.netbeans.modules.cnd.loaders.CndDataObject;
-import org.netbeans.modules.cnd.loaders.HDataObject;
 import org.netbeans.modules.cnd.loaders.FortranDataObject;
 
 
@@ -124,15 +121,6 @@ public class NavigationView extends ChoiceView {
      */
     // Common to all language
     private static int CLUSTER_FILE = 0;
-    // C and C++
-    private static int CLUSTER_CC_MACRO = 1;
-    private static int CLUSTER_CC_TYPEDEF = 2;
-    private static int CLUSTER_CC_ENUM = 3;
-    private static int CLUSTER_CC_OTHER = 4;
-    private static int CLUSTER_CC_VARMEM = 5;
-    private static int CLUSTER_CC_FUNCMETHOD = 6;
-    private static int CLUSTER_CC_CLASSSTRUCTUNION = 7;
-    private static int CLUSTER_CC_NAMESPACE = 8;
     // Fortran
     private static int CLUSTER_FORTRAN_PROGRAM = 1;
     private static int CLUSTER_FORTRAN_LABEL = 2;
@@ -411,16 +399,22 @@ public class NavigationView extends ChoiceView {
             return;
         }
         
-        DataObject dataObject = (DataObject)activeNode.getCookie(DataObject.class);
+        DataObject dataObject = activeNode.getCookie(DataObject.class);
         if (dataObject == null)
             return; // Should not happen...
-        if (!(dataObject instanceof CndDataObject) && !(dataObject instanceof HDataObject))
+        if (!(dataObject instanceof FortranDataObject)) {
             return; // Should not happen...
+        }
         
         if (sourceObject == null || sourceObject != dataObject) {
             sourceObject = dataObject;
 	    cppEditorSupport = null;
-	    updateChildren(FileUtil.toFile(sourceObject.getPrimaryFile()).getPath());
+            File file = FileUtil.toFile(sourceObject.getPrimaryFile());
+            if (file != null) {
+                updateChildren(file.getPath());
+            } else {
+                sourceObject = null;
+            }
         }
     }
     
@@ -510,25 +504,6 @@ public class NavigationView extends ChoiceView {
 	    //lineNumberIndex.add(new IndexLineNumber(index++, 1));
         }
 
-	private int findCCScopeCluster(String scope, int scopeKind) {
-	    int cluster = 0;
-	    if (scope != null) {
-		if (scopeKind == CtagsTokenEvent.SCOPE_NAMESPACE)
-		    cluster = CLUSTER_CC_NAMESPACE;
-		else if (scopeKind == CtagsTokenEvent.SCOPE_CLASS)
-		    cluster = CLUSTER_CC_CLASSSTRUCTUNION;
-		else if (scopeKind == CtagsTokenEvent.SCOPE_STRUCT)
-		    cluster = CLUSTER_CC_CLASSSTRUCTUNION;
-		else if (scopeKind == CtagsTokenEvent.SCOPE_UNION)
-		    cluster = CLUSTER_CC_CLASSSTRUCTUNION;
-		else {
-		    // ERROR ...
-		    System.err.println("Illegal scopeKind " + scopeKind); // NOI18N
-		}
-	    }
-	    return cluster;
-	}
-
 	private int findFortranScopeCluster(String scope, int scopeKind) {
 	    int cluster = 0;
 	    if (scope != null) {
@@ -604,51 +579,11 @@ public class NavigationView extends ChoiceView {
 		    node = new OtherNode(sourceObject, name, lineno, kind, scope, scopeCluster, CLUSTER_FORTRAN_OTHER);
 		    break;
 		}
-    
-		nodes.add(node);
-	    }
-	    else {
-		int scopeCluster = findCCScopeCluster(scope, scopeKind);
-		switch (ctagsTokenEvent.getKind()) {
-		case 'c':
-		case 's':
-		case 'u':
-		    node = new ClassStructUnionNode(sourceObject, name, lineno, kind, scope, scopeCluster, CLUSTER_CC_CLASSSTRUCTUNION);
-		    scopeList.add(scope != null ? (scope + "::" + name) : name); // NOI18N
-		    break;
-		case 'n':
-		    node = new NamespaceNode(sourceObject, name, lineno, kind, scope, scopeCluster,  CLUSTER_CC_NAMESPACE);
-		    scopeList.add(scope != null ? (scope + "::" + name) : name); // NOI18N
-		    break;
-		case 'f':
-		    node = new FuncMethodNode(sourceObject, name, lineno, kind, scope, scopeCluster,  CLUSTER_CC_FUNCMETHOD);
-		    break;
-		case 'd':
-		    node = new MacroNode(sourceObject, name, lineno, kind, scope, scopeCluster,  CLUSTER_CC_MACRO);
-		    break;
-		case 't':
-		    node = new TypedefNode(sourceObject, name, lineno, kind, scope, scopeCluster,  CLUSTER_CC_TYPEDEF);
-		    break;
-		case 'v':
-		case 'm':
-		    node = new VarMemNode(sourceObject, name, lineno, kind, scope, scopeCluster,  CLUSTER_CC_VARMEM);
-		    break;
-		case 'e':
-		case 'g':
-		    node = new EnumNode(sourceObject, name, lineno, kind, scope, scopeCluster,  CLUSTER_CC_ENUM);
-		    break;
-		default:
-		    node = new OtherNode(sourceObject, name, lineno, kind, scope, scopeCluster,  CLUSTER_CC_OTHER);
-		    break;
-		}
-    
 		nodes.add(node);
 	    }
         }
         
         ViewNode[] getNodes() {
-	    if (!(sourceObject instanceof FortranDataObject))
-		fixupMissingScopes();
 	    Collections.sort(nodes, new NodesComparator());
 	    return (ViewNode[])nodes.toArray(new ViewNode[nodes.size()]);
         }
@@ -660,36 +595,6 @@ public class NavigationView extends ChoiceView {
 	    }
 	    Collections.sort(lineNumberIndex, new IndexLineNumberComparator());
 	    return lineNumberIndex;
-	}
-
-	private void fixupMissingScopes() {
-	    ViewNode[] nodesSoFar = (ViewNode[])nodes.toArray(new ViewNode[nodes.size()]);
-	    for (int i = 0; i < nodesSoFar.length; i++) {
-		ViewNode vn = nodesSoFar[i];
-		if (vn.getCluster() == CLUSTER_CC_CLASSSTRUCTUNION || vn.getCluster() == CLUSTER_CC_NAMESPACE)
-		    continue;
-		String scope = vn.getScope();
-		if (scope != null && !checkInScopeList(scope)) {
-		    StringTokenizer st = new StringTokenizer(scope, "::"); // NOI18N
-		    String className;
-		    String nameScope = null;
-		    while (st.hasMoreTokens()) {
-			className = st.nextToken();
-			if (!checkInScopeList(className)) {
-			    if (vn.getScopeCluster() == CtagsTokenEvent.SCOPE_NAMESPACE)
-				nodes.add(new NamespaceNode(vn.getDataObject(), className, vn.getLineNo(), vn.getKind(), nameScope, vn.getScopeCluster(), CLUSTER_CC_NAMESPACE));
-			    else 
-				nodes.add(new ClassStructUnionNode(vn.getDataObject(), className, vn.getLineNo(), vn.getKind(), nameScope, vn.getScopeCluster(), CLUSTER_CC_CLASSSTRUCTUNION));
-			    if (nameScope != null)
-				nameScope = nameScope + "::" + className; // NOI18N
-			    else
-				nameScope = className;
-			    scopeList.add(nameScope);
-			}
-		    }
-		    scopeList.add(scope);
-		}
-	    }
 	}
     }
     

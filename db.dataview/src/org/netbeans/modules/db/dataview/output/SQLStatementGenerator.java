@@ -103,10 +103,10 @@ class SQLStatementGenerator {
             colNames += dbcol.getQualifiedName();
         }
 
-        colNames += ") "; // NOI18N
+        colNames += ")"; // NOI18N
         String tableName = tblMeta.getFullyQualifiedName(0);
         insertSql.append(tableName + colNames + " Values(" + values + ")"); // NOI18N
-        rawInsertSql.append(tableName.trim() + "\n\t" + colNames + "\nVALUES\n\t (" + rawvalues + ")"); // NOI18N
+        rawInsertSql.append(tableName.trim() + "\n\t" + colNames + " \nVALUES \n\t(" + rawvalues + ")"); // NOI18N
 
         return new String[]{insertSql.toString(), rawInsertSql.toString()};
     }
@@ -161,7 +161,7 @@ class SQLStatementGenerator {
         int count = 0;
         for (DBColumn col : columns) {
             if (count++ > 0) {
-                sql.append(",");
+                sql.append(", ");
             }
 
             Integer typeInt = new Integer(col.getJdbcType());
@@ -173,7 +173,7 @@ class SQLStatementGenerator {
             if (precision > 0 && DataViewUtils.isPrecisionRequired(col.getJdbcType(), isdb2)) {
                 sql.append("(").append(precision);
                 if (scale > 0 && DataViewUtils.isScaleRequired(col.getJdbcType())) {
-                    sql.append(",").append(scale).append(") ");
+                    sql.append(", ").append(scale).append(")");
                 } else {
                     sql.append(")");
                 }
@@ -199,7 +199,7 @@ class SQLStatementGenerator {
             for (String col : pk.getColumnNames()) {
                 sql.append(table.getQuoter().quoteIfNeeded(col));
                 if (count++ > 0) {
-                    sql.append(",");
+                    sql.append(", ");
                 }
             }
             sql.append(")");

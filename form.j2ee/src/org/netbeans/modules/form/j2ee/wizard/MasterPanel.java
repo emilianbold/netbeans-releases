@@ -55,7 +55,10 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.j2ee.J2EEUtils;
+import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -600,6 +603,12 @@ public class MasterPanel implements WizardDescriptor.Panel {
                         showMsg("MSG_MasterTestPackage"); // NOI18N
                         valid = false;
                     }
+                }
+                Project project = FileOwnerQuery.getOwner(fob);
+                if (project.getLookup().lookup(PersistenceLocationProvider.class) == null) {
+                    // For example module project
+                    showMsg("MSG_MasterNoProvider"); // NOI18N
+                    valid = false;
                 }
             } catch (IOException ioex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ioex.getMessage(), ioex);

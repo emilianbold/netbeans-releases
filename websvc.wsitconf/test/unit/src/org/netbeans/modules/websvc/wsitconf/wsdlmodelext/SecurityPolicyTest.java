@@ -74,129 +74,131 @@ public class SecurityPolicyTest extends TestCase {
     public void testSecurityPolicy() throws Exception {
         TestCatalogModel.getDefault().setDocumentPooling(true);
         WSDLModel model = TestUtil.loadWSDLModel("../wsdlmodelext/resources/policy.xml");
-        
-        model.startTransaction();
 
+        File f = new File("SecurityPolicyTest.wsdl");
+        if (f.exists()) {
+            f.delete();
+        }
+        
         Definitions d = model.getDefinitions();
         Binding b = (Binding) d.getBindings().toArray()[0];
-        
-        ConfigVersion cfgVersion = PolicyModelHelper.getConfigVersion(b);
 
-        assertFalse("WSS10 enabled indicated on empty WSDL", SecurityPolicyModelHelper.isWss10(b));
-        assertFalse("WSS11 enabled indicated on empty WSDL", SecurityPolicyModelHelper.isWss11(b));
-        assertFalse("Trust10 enabled indicated on empty WSDL", SecurityPolicyModelHelper.isTrust(b, cfgVersion));
+        for (ConfigVersion cfgV : ConfigVersion.values()) {
 
-        assertFalse("Enabled indicated on empty WSDL", SecurityPolicyModelHelper.isEncryptSignature(b));
-        assertFalse("Enabled indicated on empty WSDL", SecurityPolicyModelHelper.isRequireSignatureConfirmation(b));
-        assertFalse("Enabled indicated on empty WSDL", SecurityPolicyModelHelper.isSignEntireHeadersAndBody(b));
+            assertFalse("WSS10 enabled indicated on empty WSDL", SecurityPolicyModelHelper.isWss10(b));
+            assertFalse("WSS11 enabled indicated on empty WSDL", SecurityPolicyModelHelper.isWss11(b));
+            assertFalse("Trust10 enabled indicated on empty WSDL", SecurityPolicyModelHelper.isTrust(b, cfgV));
 
-        assertFalse("Enabled indicated on empty WSDL", SecurityPolicyModelHelper.isEncryptBeforeSigning(b));
-        
-        SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(cfgVersion);
-        
-        //WSS10
-        WssElement wss = spmh.enableWss(b, false);
-        assertTrue("WSS10 Not enabled correctly", SecurityPolicyModelHelper.isWss10(b));
+            assertFalse("Enabled indicated on empty WSDL", SecurityPolicyModelHelper.isEncryptSignature(b));
+            assertFalse("Enabled indicated on empty WSDL", SecurityPolicyModelHelper.isRequireSignatureConfirmation(b));
+            assertFalse("Enabled indicated on empty WSDL", SecurityPolicyModelHelper.isSignEntireHeadersAndBody(b));
 
-        spmh.disableWss(b);
-        assertFalse("WSS10 enabled indicated", SecurityPolicyModelHelper.isWss10(b));
-        
-        //WSS11
-        wss = spmh.enableWss(b, true);
-        assertTrue("WSS11 Not enabled correctly", SecurityPolicyModelHelper.isWss11(b));
+            assertFalse("Enabled indicated on empty WSDL", SecurityPolicyModelHelper.isEncryptBeforeSigning(b));
 
-        spmh.disableWss(b);
-        assertFalse("WSS11 enabled indicated", SecurityPolicyModelHelper.isWss11(b));
+            SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(cfgV);
 
-        //TRUST10
-        TrustElement trust = spmh.enableTrust(b, cfgVersion);
-        assertTrue("Trust10 Not enabled correctly", SecurityPolicyModelHelper.isTrust(b, cfgVersion));
+            //WSS10
+            WssElement wss = spmh.enableWss(b, false);
+            assertTrue("WSS10 Not enabled correctly", SecurityPolicyModelHelper.isWss10(b));
 
-        spmh.disableTrust(b);
-        assertFalse("Trust10 enabled indicated", SecurityPolicyModelHelper.isTrust(b, cfgVersion));
+            spmh.disableWss(b);
+            assertFalse("WSS10 enabled indicated", SecurityPolicyModelHelper.isWss10(b));
 
-        spmh.setSecurityBindingType(b, ComboConstants.SYMMETRIC);
-        
-            WSDLComponent bindingType = SecurityPolicyModelHelper.getSecurityBindingTypeElement(b);
-            
-            // Encrypt Signature
-            spmh.enableEncryptSignature(bindingType, true);
-            assertTrue("Not enabled correctly", SecurityPolicyModelHelper.isEncryptSignature(b));
-            spmh.enableEncryptSignature(bindingType, false);
-            assertFalse("enabled indicated", SecurityPolicyModelHelper.isEncryptSignature(b));
+            //WSS11
+            wss = spmh.enableWss(b, true);
+            assertTrue("WSS11 Not enabled correctly", SecurityPolicyModelHelper.isWss11(b));
 
-            // Sign Entire Headers And Body
-            spmh.enableSignEntireHeadersAndBody(bindingType, true);
-            assertTrue("Not enabled correctly", SecurityPolicyModelHelper.isSignEntireHeadersAndBody(b));
-            spmh.enableSignEntireHeadersAndBody(bindingType, false);
-            assertFalse("enabled indicated", SecurityPolicyModelHelper.isSignEntireHeadersAndBody(b));
+            spmh.disableWss(b);
+            assertFalse("WSS11 enabled indicated", SecurityPolicyModelHelper.isWss11(b));
 
-            // Encrypt Before Signing
-            spmh.enableEncryptBeforeSigning(bindingType, true);
-            assertTrue("Not enabled correctly", SecurityPolicyModelHelper.isEncryptBeforeSigning(b));
-            spmh.enableEncryptBeforeSigning(bindingType, false);
-            assertFalse("enabled indicated", SecurityPolicyModelHelper.isEncryptBeforeSigning(b));
+            //TRUST10
+            TrustElement trust = spmh.enableTrust(b, cfgV);
+            assertTrue("Trust10 Not enabled correctly", SecurityPolicyModelHelper.isTrust(b, cfgV));
 
-            // Message Layout
-            spmh.setLayout(bindingType, ComboConstants.STRICT);
-            assertEquals("Message Layout", ComboConstants.STRICT, SecurityPolicyModelHelper.getMessageLayout(b));
-            spmh.setLayout(bindingType, ComboConstants.LAX);
-            assertEquals("Message Layout", ComboConstants.LAX, SecurityPolicyModelHelper.getMessageLayout(b));
-            spmh.setLayout(bindingType, ComboConstants.LAXTSFIRST);
-            assertEquals("Message Layout", ComboConstants.LAXTSFIRST, SecurityPolicyModelHelper.getMessageLayout(b));
-            spmh.setLayout(bindingType, ComboConstants.LAXTSLAST);
-            assertEquals("Message Layout", ComboConstants.LAXTSLAST, SecurityPolicyModelHelper.getMessageLayout(b));
-        
-            AlgoSuiteModelHelper asmh = AlgoSuiteModelHelper.getInstance(cfgVersion);
-            // Algorithm Suite
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC128);
-            assertEquals("Algorithm Suite", ComboConstants.BASIC128, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC192);
-            assertEquals("Algorithm Suite", ComboConstants.BASIC192, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC256);
-            assertEquals("Algorithm Suite", ComboConstants.BASIC256, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.TRIPLEDES);
-            assertEquals("Algorithm Suite", ComboConstants.TRIPLEDES, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC256RSA15);
-            assertEquals("Algorithm Suite", ComboConstants.BASIC256RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC192RSA15);
-            assertEquals("Algorithm Suite", ComboConstants.BASIC192RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC128RSA15);
-            assertEquals("Algorithm Suite", ComboConstants.BASIC128RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.TRIPLEDESRSA15);
-            assertEquals("Algorithm Suite", ComboConstants.TRIPLEDESRSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC256SHA256);
-            assertEquals("Algorithm Suite", ComboConstants.BASIC256SHA256, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+            spmh.disableTrust(b);
+            assertFalse("Trust10 enabled indicated", SecurityPolicyModelHelper.isTrust(b, cfgV));
 
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC192SHA256);
-            assertEquals("Algorithm Suite", ComboConstants.BASIC192SHA256, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC128SHA256);
-            assertEquals("Algorithm Suite", ComboConstants.BASIC128SHA256, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.TRIPLEDESSHA256);
-            assertEquals("Algorithm Suite", ComboConstants.TRIPLEDESSHA256, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC256SHA256RSA15);
-            assertEquals("Algorithm Suite", ComboConstants.BASIC256SHA256RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC192SHA256RSA15);
-            assertEquals("Algorithm Suite", ComboConstants.BASIC192SHA256RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC128SHA256RSA15);
-            assertEquals("Algorithm Suite", ComboConstants.BASIC128SHA256RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            asmh.setAlgorithmSuite(bindingType, ComboConstants.TRIPLEDESSHA256RSA15);
-            assertEquals("Algorithm Suite", ComboConstants.TRIPLEDESSHA256RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            
-        spmh.setSecurityBindingType(b, ComboConstants.ASYMMETRIC);
+            spmh.setSecurityBindingType(b, ComboConstants.SYMMETRIC);
 
-        spmh.setSecurityBindingType(b, ComboConstants.NOSECURITY);
-        
-            // FIRST CHECK DEFAULTS - those should be set when binding is switched to this value
-            assertNull("Default Algorithm Suite", AlgoSuiteModelHelper.getAlgorithmSuite(b));
-            assertNull("Default Message Layout", SecurityPolicyModelHelper.getMessageLayout(b));
-            assertFalse("Default WSS", SecurityPolicyModelHelper.isWss10(b));
-            assertFalse("Default WSS", SecurityPolicyModelHelper.isWss11(b));
-            assertFalse("Default Trust", SecurityPolicyModelHelper.isTrust(b, cfgVersion));
+                WSDLComponent bindingType = SecurityPolicyModelHelper.getSecurityBindingTypeElement(b);
 
-        model.endTransaction();
+                // Encrypt Signature
+                spmh.enableEncryptSignature(bindingType, true);
+                assertTrue("Not enabled correctly", SecurityPolicyModelHelper.isEncryptSignature(b));
+                spmh.enableEncryptSignature(bindingType, false);
+                assertFalse("enabled indicated", SecurityPolicyModelHelper.isEncryptSignature(b));
 
-        TestUtil.dumpToFile(model.getBaseDocument(), new File("C:\\SecurityPolicyService.wsdl"));
+                // Sign Entire Headers And Body
+                spmh.enableSignEntireHeadersAndBody(bindingType, true);
+                assertTrue("Not enabled correctly", SecurityPolicyModelHelper.isSignEntireHeadersAndBody(b));
+                spmh.enableSignEntireHeadersAndBody(bindingType, false);
+                assertFalse("enabled indicated", SecurityPolicyModelHelper.isSignEntireHeadersAndBody(b));
+
+                // Encrypt Before Signing
+                spmh.enableEncryptBeforeSigning(bindingType, true);
+                assertTrue("Not enabled correctly", SecurityPolicyModelHelper.isEncryptBeforeSigning(b));
+                spmh.enableEncryptBeforeSigning(bindingType, false);
+                assertFalse("enabled indicated", SecurityPolicyModelHelper.isEncryptBeforeSigning(b));
+
+                // Message Layout
+                spmh.setLayout(bindingType, ComboConstants.STRICT);
+                assertEquals("Message Layout", ComboConstants.STRICT, SecurityPolicyModelHelper.getMessageLayout(b));
+                spmh.setLayout(bindingType, ComboConstants.LAX);
+                assertEquals("Message Layout", ComboConstants.LAX, SecurityPolicyModelHelper.getMessageLayout(b));
+                spmh.setLayout(bindingType, ComboConstants.LAXTSFIRST);
+                assertEquals("Message Layout", ComboConstants.LAXTSFIRST, SecurityPolicyModelHelper.getMessageLayout(b));
+                spmh.setLayout(bindingType, ComboConstants.LAXTSLAST);
+                assertEquals("Message Layout", ComboConstants.LAXTSLAST, SecurityPolicyModelHelper.getMessageLayout(b));
+
+                AlgoSuiteModelHelper asmh = AlgoSuiteModelHelper.getInstance(cfgV);
+                // Algorithm Suite
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC128);
+                assertEquals("Algorithm Suite", ComboConstants.BASIC128, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC192);
+                assertEquals("Algorithm Suite", ComboConstants.BASIC192, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC256);
+                assertEquals("Algorithm Suite", ComboConstants.BASIC256, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.TRIPLEDES);
+                assertEquals("Algorithm Suite", ComboConstants.TRIPLEDES, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC256RSA15);
+                assertEquals("Algorithm Suite", ComboConstants.BASIC256RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC192RSA15);
+                assertEquals("Algorithm Suite", ComboConstants.BASIC192RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC128RSA15);
+                assertEquals("Algorithm Suite", ComboConstants.BASIC128RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.TRIPLEDESRSA15);
+                assertEquals("Algorithm Suite", ComboConstants.TRIPLEDESRSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC256SHA256);
+                assertEquals("Algorithm Suite", ComboConstants.BASIC256SHA256, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC192SHA256);
+                assertEquals("Algorithm Suite", ComboConstants.BASIC192SHA256, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC128SHA256);
+                assertEquals("Algorithm Suite", ComboConstants.BASIC128SHA256, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.TRIPLEDESSHA256);
+                assertEquals("Algorithm Suite", ComboConstants.TRIPLEDESSHA256, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC256SHA256RSA15);
+                assertEquals("Algorithm Suite", ComboConstants.BASIC256SHA256RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC192SHA256RSA15);
+                assertEquals("Algorithm Suite", ComboConstants.BASIC192SHA256RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.BASIC128SHA256RSA15);
+                assertEquals("Algorithm Suite", ComboConstants.BASIC128SHA256RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                asmh.setAlgorithmSuite(bindingType, ComboConstants.TRIPLEDESSHA256RSA15);
+                assertEquals("Algorithm Suite", ComboConstants.TRIPLEDESSHA256RSA15, AlgoSuiteModelHelper.getAlgorithmSuite(b));
+
+            spmh.setSecurityBindingType(b, ComboConstants.ASYMMETRIC);
+
+            spmh.setSecurityBindingType(b, ComboConstants.NOSECURITY);
+
+                // FIRST CHECK DEFAULTS - those should be set when binding is switched to this value
+                assertNull("Default Algorithm Suite", AlgoSuiteModelHelper.getAlgorithmSuite(b));
+                assertNull("Default Message Layout", SecurityPolicyModelHelper.getMessageLayout(b));
+                assertFalse("Default WSS", SecurityPolicyModelHelper.isWss10(b));
+                assertFalse("Default WSS", SecurityPolicyModelHelper.isWss11(b));
+                assertFalse("Default Trust", SecurityPolicyModelHelper.isTrust(b, cfgV));
+        }
+
+        TestUtil.dumpToFile(model.getBaseDocument(), f);
     }
 
     public String getTestResourcePath() {

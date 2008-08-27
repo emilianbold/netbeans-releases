@@ -60,6 +60,7 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
+import org.netbeans.modules.groovy.support.api.GroovySources;
 
 
 /**
@@ -237,7 +238,6 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
     
     class MethodItem extends GroovyCompletionItem {
 
-        private static final String GROOVY_METHOD = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
         MetaMethod method;
         boolean isGDK;
         AstMethodElement methodElement;
@@ -333,7 +333,7 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             }
 
             if (groovyIcon == null) {
-                groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
+                groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
             }
 
             return groovyIcon;
@@ -357,7 +357,6 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 
     class KeywordItem extends GroovyCompletionItem {
 
-        private static final String GROOVY_KEYWORD = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
         private static final String JAVA_KEYWORD   = "org/netbeans/modules/groovy/editor/resources/duke.png"; //NOI18N
         private final String keyword;
         private final String description;
@@ -397,7 +396,7 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             
             if (isGroovy) {
                 if (groovyIcon == null) {
-                    groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_KEYWORD));
+                    groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
                 }
                 return groovyIcon;
             } else {

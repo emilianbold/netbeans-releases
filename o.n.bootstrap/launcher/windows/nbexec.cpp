@@ -47,6 +47,7 @@
 #include <process.h>
 #include <commdlg.h>
 #include <errno.h>
+#include <winuser.h>
 
 #define PROG_FULLNAME "Error"
 #define IDE_MAIN_CLASS "org/netbeans/Main"
@@ -884,8 +885,19 @@ void parseArgs(int argc, char *argv[]) {
                 arg = *argv;
                 argv++;
                 argc--;
-                if (arg != 0 && findJavaExeInDirectory(arg) != NULL) {
-                    strcpy(jdkhome, arg);
+                if (arg != 0) {
+                    if (findJavaExeInDirectory(arg))
+                        strcpy(jdkhome, arg);
+                    else {
+                        argv[-1] = argv[-2] = "";
+                        char errMsg[1024] = "";
+                        sprintf(errMsg, "Cannot find java.exe in specified jdkhome.\nNeither %s%s nor %s%s exists.\nDo you want to try to use default version?",
+                                arg, "\\jre\\bin\\java.exe",
+                                arg, "\\bin\\java.exe"
+                                );
+                        if (::MessageBox(NULL, errMsg, "Invalid jdkhome specified", MB_ICONQUESTION | MB_YESNO) == IDNO)
+                            exit(255);
+                    }
                 }
             }
             else {

@@ -54,9 +54,6 @@ public class HostMappingProviderSamba implements HostMappingProvider {
 
     public Map<String, String> findMappings(String hkey, String otherHkey) {
         Map<String, String> mappings = new HashMap<String, String>();
-//        if (RemoteUtils.getHostName(hkey) == "eaglet-sr") {
-//            mappings.put("pub", "/export/pub");
-//        }
         RunFacade runner = RunFacade.getInstance(hkey);
         if (runner.run("cat /etc/sfw/smb.conf")) { //NOI18N
             mappings.putAll(parseOutput(new StringReader(runner.getOutput())));

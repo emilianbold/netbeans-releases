@@ -136,10 +136,6 @@ public class GenericWebAppServerIntegrationProvider extends AbstractIntegrationP
         return true;
     }
 
-    public boolean supportsJVM(TargetPlatformEnum jvm) {
-        return true;
-    }
-
     public boolean supportsLocal() {
         return true;
     }

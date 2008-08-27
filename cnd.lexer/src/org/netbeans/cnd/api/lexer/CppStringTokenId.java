@@ -77,6 +77,8 @@ public enum CppStringTokenId implements TokenId {
     BACKSLASH_ESCAPE("\\\\","string-escape"), //NOI18N
     OCTAL_ESCAPE(null, "string-escape"), //NOI18N
     OCTAL_ESCAPE_INVALID(null, "error"), //NOI18N
+    HEX_ESCAPE(null, "string-escape"), //NOI18N
+    HEX_ESCAPE_INVALID(null, "error"), //NOI18N
     UNICODE_ESCAPE(null, "string-escape"), //NOI18N
     UNICODE_ESCAPE_INVALID(null, "error"), //NOI18N
     ESCAPE_SEQUENCE_INVALID(null, "error"); //NOI18N

@@ -68,7 +68,7 @@ public class RspecHandlerFactory {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
-            super(".*%TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+            super(".*%RSPEC_TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
         @Override
@@ -105,7 +105,7 @@ public class RspecHandlerFactory {
     static class TestStartedHandler extends TestRecognizerHandler {
 
         public TestStartedHandler() {
-            super(".*%TEST_STARTED%\\s(.*)"); //NOI18N
+            super(".*%RSPEC_TEST_STARTED%\\s(.*)"); //NOI18N
         }
 
         @Override
@@ -116,7 +116,7 @@ public class RspecHandlerFactory {
     static class TestFinishedHandler extends TestRecognizerHandler {
 
         public TestFinishedHandler() {
-            super(".*%TEST_FINISHED%\\s(.*)\\stime=(.+)"); //NOI18N
+            super(".*%RSPEC_TEST_FINISHED%\\s(.*)\\stime=(.+)"); //NOI18N
         }
 
         @Override
@@ -132,7 +132,7 @@ public class RspecHandlerFactory {
     static class TestPendingHandler extends TestRecognizerHandler {
 
         public TestPendingHandler() {
-            super(".*%TEST_PENDING%\\s(.*)\\stime=(.+)\\smessage=(.*)"); //NOI18N
+            super(".*%RSPEC_TEST_PENDING%\\s(.*)\\stime=(.+)\\smessage=(.*)"); //NOI18N
         }
 
         @Override
@@ -151,7 +151,7 @@ public class RspecHandlerFactory {
     static class SuiteFinishedHandler extends TestRecognizerHandler {
 
         public SuiteFinishedHandler() {
-            super(".*%SUITE_FINISHED%\\s(.+)\\stime=(.+)"); //NOI18N
+            super(".*%RSPEC_SUITE_FINISHED%\\s(.+)\\stime=(.+)"); //NOI18N
         }
 
         @Override
@@ -166,7 +166,7 @@ public class RspecHandlerFactory {
     static class SuiteStartedHandler extends TestRecognizerHandler {
 
         public SuiteStartedHandler() {
-            super(".*%SUITE_STARTED%\\s.*"); //NOI18N
+            super(".*%RSPEC_SUITE_STARTED%\\s.*"); //NOI18N
         }
 
         @Override
@@ -179,7 +179,7 @@ public class RspecHandlerFactory {
         private boolean firstSuite = true;
 
         public SuiteStartingHandler() {
-            super(".*%SUITE_STARTING%\\s(.+)"); //NOI18N
+            super(".*%RSPEC_SUITE_STARTING%\\s(.+)"); //NOI18N
         }
 
         @Override

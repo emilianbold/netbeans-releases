@@ -89,10 +89,10 @@ public class GraphNodeReaderFactory {
             {
                 retVal = new CompositeStateReader(nodeInfo);
             }
-//            else if (elt instanceof IOperation || elt instanceof IAttribute)
-//            {
-//                retVal = new FeatureStateReader(nodeInfo);
-//            }
+            else if (elt instanceof IOperation || elt instanceof IAttribute)
+            {
+                retVal = new FeatureStateReader(nodeInfo);
+            }
             else
             {
                 retVal = new DefaultReader(nodeInfo);

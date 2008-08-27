@@ -43,7 +43,6 @@ package org.netbeans.modules.java.source.builder;
 
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.modules.java.source.query.CommentHandler;
-import org.netbeans.modules.java.source.query.CommentSet;
 
 import com.sun.source.tree.Tree;
 
@@ -52,8 +51,6 @@ import com.sun.tools.javac.util.Context;
 
 import java.util.*;
 
-import static org.netbeans.api.java.source.Comment.Style.*;
-import static com.sun.tools.javac.parser.Token.*;
 
 /**
  * Generate Comments during scanning.
@@ -107,6 +104,9 @@ public class CommentHandlerService implements CommentHandler {
      * appending the new entries to the existing comment lists.
      */
     public void copyComments(Tree fromTree, Tree toTree) {
+        if (fromTree == toTree) {
+            return;
+        }
         synchronized (map) {
             CommentSetImpl from = map.get(fromTree);
             if (from != null) {

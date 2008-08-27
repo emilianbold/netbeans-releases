@@ -50,7 +50,9 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.TreeTableOperator;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.AttachDialogOperator;
@@ -240,6 +242,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
      */
     public void testDebugReload() {
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
+        Utils.cancelClientSideDebuggingMeassage();
         // check breakpoint reached
         // wait status text "Thread main stopped at SampleClass1.java:##"
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
@@ -289,6 +292,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     public void testDebugAfterBreakpoint() {
         // start debugging
         new DebugProjectAction().perform();
+        Utils.cancelClientSideDebuggingMeassage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         // check the first breakpoint reached
@@ -300,6 +304,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         Utils.finishDebugger();
         // start debugger again
         new DebugProjectAction().perform();
+        Utils.cancelClientSideDebuggingMeassage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         stt.waitText("index.jsp:"+line); // NOI18N
@@ -319,6 +324,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
     public void testDebugAndStopServer() {
         // start debugging
         new DebugProjectAction().perform();
+        Utils.cancelClientSideDebuggingMeassage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         // check the first breakpoint reached
@@ -340,6 +346,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         serverNode.stop();
         // start debugger again
         new DebugProjectAction().perform();
+        Utils.cancelClientSideDebuggingMeassage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME);
         stt.waitText("index.jsp:"+line);
@@ -366,8 +373,9 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         EditorOperator eo = new EditorOperator("index.jsp"); // NOI18N
         int line = eo.getLineNumber();
         stt.waitText("index.jsp:"+line);
+        new StopAction().perform();
         
-        new DebugProjectAction().perform();
+        new DebugProjectAction().perform();       
         OutputTabOperator outputOper = new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME);
         // "Cannot perform required operation, since the server is currently in suspended state and thus cannot handle any requests."
         String suspendedMessage = Bundle.getString("org.netbeans.modules.j2ee.deployment.impl.Bundle", "MSG_ServerSuspended");
@@ -377,6 +385,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
         Action runProjectAction = new Action(null, runProjectItem);
         runProjectAction.perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
+        Utils.cancelClientSideDebuggingMeassage();
         outputOper = new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME);
         outputOper.waitText(suspendedMessage);
         outputOper.close();
@@ -416,6 +425,7 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         final int lineJSP = Utils.setBreakpoint(eoPage, "incl/simpleInclude.jsp"); // NOI18N
         // "Debug File"
         new Action(null, new DebugAction().getPopupPath()).perform(pageNode);
+        Utils.cancelClientSideDebuggingMeassage();
         Utils.waitFinished(this, SAMPLE_WEB_PROJECT_NAME, "debug");
         Utils.reloadPage(SAMPLE_WEB_PROJECT_NAME+"/incl/simpleInclude.jsp");
         stt.waitText("simpleInclude.jsp:"+lineJSP); //NOI18N
@@ -433,19 +443,21 @@ public class JSPDebuggingOverallTest extends J2eeTestCase {
         }).waitAction(eoBean);
         // when issue 52506 fixed use proper name
         so.makeCurrent("name");
-        // wait pointer in editor (two annotations there)
+        // wait pointer in editor (three annotations there)
         new Waiter(new Waitable() {
             public Object actionProduced(Object editorOper) {
-                return ((EditorOperator)editorOper).getAnnotations(lineJSP).length == 2 ? Boolean.TRUE : null;
+                return ((EditorOperator)editorOper).getAnnotations(lineJSP).length == 3 ? Boolean.TRUE : null;
             }
             public String getDescription() {
-                return("Wait 2 annotations in editor."); // NOI18N
+                return("Wait 3 annotations in editor."); // NOI18N
             }
         }).waitAction(eoPage);
-        ContainerOperator debugToolbarOper = Utils.getDebugToolbar();
-        so.finishAll();
+        //ContainerOperator debugToolbarOper = Utils.getDebugToolbar();
+        //so.finishAll();
         // wait until Debug toolbar dismiss
-        debugToolbarOper.waitComponentVisible(false);
+        //debugToolbarOper.waitComponentVisible(false);
+        new ContinueAction().perform();
+        Utils.cancelClientSideDebuggingMeassage();
         so.close();
     }
     

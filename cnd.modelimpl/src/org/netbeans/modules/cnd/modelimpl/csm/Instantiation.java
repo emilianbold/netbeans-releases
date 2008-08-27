@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.services.CsmMemberResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
@@ -73,11 +74,20 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         // create mapping map
         if (CsmKindUtilities.isTemplate(declaration)) {
             Iterator<CsmType> typeIter = instType.getInstantiationParams().iterator();
-            for (CsmTemplateParameter param : ((CsmTemplate)declaration).getTemplateParameters()) {
-                if (!typeIter.hasNext()) {
-                    break;
-                }
-                mapping.put(param, typeIter.next());
+            for (CsmTemplateParameter param : ((CsmTemplate) declaration).getTemplateParameters()) {
+                if (typeIter.hasNext()) {
+                    mapping.put(param, typeIter.next());
+                } else {
+                    CsmObject defaultValue = param.getDefaultValue();
+                    if (CsmKindUtilities.isType(defaultValue)) {
+                        CsmType defaultType = (CsmType) defaultValue;
+                        defaultType = TemplateUtils.checkTemplateType(defaultType, ((CsmScope) declaration));
+                        defaultType = Instantiation.createType(defaultType, this);
+                        if (defaultType != null) {
+                            mapping.put(param, defaultType);
+                        }
+                    }
+                }                
             }
         }
     }
@@ -650,13 +660,16 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
     }
     
     private static Type createType(CsmType type, CsmInstantiation instantiation) {
-         if (CsmKindUtilities.isTemplateParameterType(type)) {
-                CsmTemplateParameterType paramType = (CsmTemplateParameterType)type;
-                if (CsmKindUtilities.isTemplateParameterType(instantiation.getMapping().get(paramType.getParameter()))) {
-                    return new TemplateParameterType(type, instantiation);
-                }
-         }
-         return new Type(type, instantiation);
+        if (CsmKindUtilities.isTemplateParameterType(type)) {
+            CsmType instantiatedType = instantiation.getMapping().get(((CsmTemplateParameterType) type).getParameter());
+            if (instantiatedType == null || CsmKindUtilities.isTemplateParameterType(instantiatedType)) {
+                return new TemplateParameterType(type, instantiation);
+            }
+        }
+        if (type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
+            return new NestedType(type, instantiation);
+        }
+        return new Type(type, instantiation);
     }
     
     private static class TemplateParameterType extends Type implements CsmTemplateParameterType {
@@ -674,11 +687,11 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
     }
     
     private static class Type implements CsmType, Resolver.SafeClassifierProvider {
-        private final CsmType originalType;
-        private final CsmInstantiation instantiation;
+        protected final CsmType originalType;
+        protected final CsmInstantiation instantiation;
         protected final CsmType instantiatedType;
-        private final boolean inst;
-        private CsmClassifier resolved;
+        protected final boolean inst;
+        protected CsmClassifier resolved;
 
         private Type(CsmType type, CsmInstantiation instantiation) {
             this.instantiation = instantiation;
@@ -845,7 +858,60 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
             return res;
         }
     }
-    
+
+    private static class NestedType extends Type {
+
+        private final CsmType parentType;
+
+        private NestedType(CsmType type, CsmInstantiation instantiation) {
+            super(type, instantiation);
+
+            if (type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
+                org.netbeans.modules.cnd.modelimpl.csm.NestedType t = (org.netbeans.modules.cnd.modelimpl.csm.NestedType) type;
+
+                CsmType parent = t.getParent();
+                if (parent != null) {
+                    parentType = createType(parent, instantiation);
+                } else {
+                    parentType = null;
+                }
+            } else {
+                parentType = null;
+            }
+        }
+
+        @Override
+        public CsmClassifier getClassifier(Resolver resolver) {
+            if (resolved == null) {
+                if (parentType != null) {
+                    CsmClassifier parentClassifier;
+                    if (parentType instanceof Resolver.SafeClassifierProvider) {
+                        parentClassifier = ((Resolver.SafeClassifierProvider) parentType).getClassifier(resolver);
+                    } else {
+                        parentClassifier = parentType.getClassifier();
+                    }
+                    if (CsmKindUtilities.isValidable(parentClassifier) && ((CsmValidable) parentClassifier).isValid()) {
+                        CsmMemberResolver memberResolver = CsmMemberResolver.getDefault();
+                        if (instantiatedType instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
+                            Iterator<CsmClassifier> iter = memberResolver.getNestedClassifiers(parentClassifier, ((org.netbeans.modules.cnd.modelimpl.csm.NestedType) instantiatedType).getOwnText());
+                            if (iter.hasNext()) {
+                                resolved = iter.next();
+                            }
+                        }
+                    }
+                }
+                if (resolved == null) {
+                    if (instantiatedType instanceof Resolver.SafeClassifierProvider) {
+                        resolved = ((Resolver.SafeClassifierProvider) instantiatedType).getClassifier(resolver);
+                    } else {
+                        resolved = instantiatedType.getClassifier();
+                    }
+                }
+            }
+            return resolved;
+        }
+    }
+
     public final static class InstantiationUID<T extends CsmIdentifiable> implements CsmUID<T>, SelfPersistent {
         private final T ref;
         private InstantiationUID(T ref) {

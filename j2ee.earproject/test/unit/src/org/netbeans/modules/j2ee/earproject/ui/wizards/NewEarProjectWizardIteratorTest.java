@@ -108,7 +108,7 @@ public class NewEarProjectWizardIteratorTest extends NbTestCase {
         super.setUp();
         
         clearWorkDir();
-        TestUtil.initLookup(this, "org/netbeans/modules/web/core/resources/layer.xml");
+        TestUtil.initLookup(this);
         
         FileObject scratch = FileUtil.toFileObject(getWorkDir());
         FileObject defaultPlatformBootRoot = scratch.createFolder(DEFAULT_PLATFORM_ROOT);

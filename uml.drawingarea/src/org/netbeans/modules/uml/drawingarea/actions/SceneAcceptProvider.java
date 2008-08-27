@@ -53,6 +53,7 @@ import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityGroup;
 import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IActivityNode;
@@ -238,20 +239,25 @@ public class SceneAcceptProvider implements AcceptProvider
                 Object sourceEngine = transferData.getDiagramEngine();
                 if (sourceEngine instanceof DiagramEngine)
                 {
-
-                    for (IPresentationElement pre : transferData.getPresentationElements())
+                    ArrayList<IPresentationElement> elements = transferData.getPresentationElements();
+                    ArrayList<IPresentationElement> list = new ArrayList<IPresentationElement>(elements);
+                    
+                    for (IPresentationElement pre : list)
                     {
                         Widget w = ((DiagramEngine) sourceEngine).getScene().findWidget(pre);
 
+                        // remove those contained elements from list; they will be recreated by their container widget
+                        if (isContained(w, elements))
+                            elements.remove(pre);
+                        
                         if (w instanceof ConnectionWidget)
                         {
                             continue;
                         }
-                        if (w!=null)
+                        if (w != null)
                         {
-                           
-                        Xmin = Math.min(Xmin, w.convertLocalToScene(new Point(0, 0)).getX());
-                        Ymin = Math.min(Ymin, w.convertLocalToScene(new Point(0, 0)).getY());
+                            Xmin = Math.min(Xmin, w.convertLocalToScene(new Point(0, 0)).getX());
+                            Ymin = Math.min(Ymin, w.convertLocalToScene(new Point(0, 0)).getY());
                         }
                     }
 
@@ -264,7 +270,6 @@ public class SceneAcceptProvider implements AcceptProvider
                         startingPoint.setLocation(Xmin, Ymin);
                     }
                     HashMap<IPresentationElement, IPresentationElement> duplicates = new HashMap<IPresentationElement, IPresentationElement>();
-                    ArrayList<IPresentationElement> elements = transferData.getPresentationElements();
 
                     // first pass to copy nodes
                     for (IPresentationElement pre : elements)
@@ -348,10 +353,10 @@ public class SceneAcceptProvider implements AcceptProvider
                         Widget original = ((DiagramEngine) sourceEngine).getScene().findWidget(pre);
                         if (transferData.getTransferType() == ADTransferable.CUT)
                         {
+                            DesignerScene scene = ((DiagramEngine) sourceEngine).getScene();
                             // connect the edges to the new widget
                             if (original instanceof UMLNodeWidget)
-                            {
-                                DesignerScene scene = engine.getScene();
+                            {                                
                                 IPresentationElement copy = duplicates.get(pre);
                                 Collection<IPresentationElement> output = scene.findNodeEdges(pre, true, false);
                                 Collection<IPresentationElement> input = scene.findNodeEdges(pre, false, true);
@@ -365,10 +370,10 @@ public class SceneAcceptProvider implements AcceptProvider
                                     if (!elements.contains(edge))
                                         scene.setEdgeTarget(edge, copy);
                                 }
-                                engine.getScene().removeNode(pre);
+                                ((UMLNodeWidget)original).remove();
                             }
                             else if (original instanceof ConnectionWidget)                           
-                                engine.getScene().removeEdge(pre); 
+                                scene.removeEdge(pre); 
                         }
                     }               
                 }
@@ -655,5 +660,21 @@ public class SceneAcceptProvider implements AcceptProvider
                 droppedNodes.add(targetPE);
             }
         }
+    }
+    
+    private boolean isContained(Widget w, List<IPresentationElement> list)
+    {
+        assert w != null && w.getScene() instanceof ObjectScene;
+        
+        ObjectScene scene = (ObjectScene)w.getScene();
+        Widget parent = w.getParentWidget();
+        
+        while (parent != scene)
+        {
+            if (list.contains(scene.findObject(parent)))
+                return true;
+            parent = parent.getParentWidget();
+        }
+        return false;
     }
 }

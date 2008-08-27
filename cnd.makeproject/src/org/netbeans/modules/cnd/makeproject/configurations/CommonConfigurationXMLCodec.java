@@ -73,6 +73,8 @@ import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 
 /**
  * Change History:
+ * V48 - 08.08.22 - NB 6.5
+ *   PACK_TOPDIR_ELEMENT
  * V47 - 08.01.08 - NB 6.5
  *   Packaging persistance:
  *   ADDITIONAL_OPTIONS_ELEMENT
@@ -90,7 +92,6 @@ import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
  *   PACK_FILE_LIST_ELEMENT
  *   PACK_INFOS_LIST_ELEMENT
  *   PACK_INFO_LIST_ELEMENT
- *   
  * V46 - 06.17.08 - NB 6.5
  *   [Remote] Development Server
  * V45 - 01.12-08
@@ -135,7 +136,7 @@ public abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 47;
+    public final static int CURRENT_VERSION = 48;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -272,6 +273,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PACK_FILE_LIST_ELEMENT = "packFileListElem"; // NOI18N
     protected final static String PACK_INFOS_LIST_ELEMENT = "packInfoList"; // NOI18NP
     protected final static String PACK_INFO_LIST_ELEMENT = "packInfoListElem"; // NOI18NP
+    protected final static String PACK_TOPDIR_ELEMENT = "packTopDir"; // NOI18N
 
 
     private ConfigurationDescriptor projectDescriptor;
@@ -347,7 +349,7 @@ public abstract class CommonConfigurationXMLCodec
     
     private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
 	xes.elementOpen(TOOLS_SET_ELEMENT);
-	xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getDisplayName());
+	xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getName());
         xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
         if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault())
             xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
@@ -619,6 +621,8 @@ public abstract class CommonConfigurationXMLCodec
 	    xes.element(COMMANDLINE_TOOL_ELEMENT, packagingConfiguration.getTool().getValue());
 	if (packagingConfiguration.getOptions().getModified())
 	    xes.element(ADDITIONAL_OPTIONS_ELEMENT, packagingConfiguration.getOptions().getValue());
+        if (packagingConfiguration.getTopDir().getModified())
+	    xes.element(PACK_TOPDIR_ELEMENT, packagingConfiguration.getTopDir().getValue());
 	xes.elementOpen(PACK_FILES_LIST_ELEMENT);
         List<FileElement> filesList = packagingConfiguration.getFiles().getValue();
         for (FileElement elem : filesList) {

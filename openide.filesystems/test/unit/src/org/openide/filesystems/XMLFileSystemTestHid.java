@@ -296,6 +296,135 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         
     }
 
+
+    public void testNoInstanceCreatedWithNewValue() throws Exception {
+        Count.cnt = 0;
+        File f = writeFile("layer.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='instanceCreate' newvalue='org.openide.filesystems.Count'/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+        
+        Object clazz = fo.getAttribute("class:instanceCreate");
+        assertEquals("No instance of Count created", 0, Count.cnt);
+        assertEquals("Yet right class guessed", Count.class, clazz);
+        Object instance = fo.getAttribute("instanceCreate");
+        assertEquals("One instance of Count created", 1, Count.cnt);
+        assertNotNull("Returned", instance);
+        assertEquals("Right class", Count.class, instance.getClass());
+    }
+
+    public void testNoInstanceCreatedWithMethodValue1() throws Exception {
+        Count.cnt = 0;
+        File f = writeFile("layer.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='instanceCreate' methodvalue='org.openide.filesystems.Count.create'/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        Object clazz = fo.getAttribute("class:instanceCreate");
+        assertEquals("No instance of Count created", 0, Count.cnt);
+        assertEquals("Yet right class guessed", Count.class, clazz);
+        Object instance = fo.getAttribute("instanceCreate");
+        assertEquals("One instance of Count created", 1, Count.cnt);
+        assertNotNull("Returned", instance);
+        assertEquals("Right class", Count.class, instance.getClass());
+    }
+
+    public void testNoInstanceCreatedWithMethodValue2() throws Exception {
+        Count.cnt = 0;
+        File f = writeFile("layer.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='instanceCreate' methodvalue='org.openide.filesystems.Count.exec'/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        Object clazz = fo.getAttribute("class:instanceCreate");
+        assertEquals("No instance of Count created", 0, Count.cnt);
+        assertEquals("Only Runnable guessed as that is the return type of the method", Runnable.class, clazz);
+        Object instance = fo.getAttribute("instanceCreate");
+        assertEquals("One instance of Count created", 1, Count.cnt);
+        assertNotNull("Returned", instance);
+        assertEquals("Right class", Count.class, instance.getClass());
+    }
+
+    public void testClassBoolean() throws Exception {
+        doPrimitiveTypeTest("boolvalue='true'", Boolean.class);
+    }
+
+    public void testClassByte() throws Exception {
+        doPrimitiveTypeTest("bytevalue='1'", Byte.class);
+    }
+
+    public void testClassInt() throws Exception {
+        doPrimitiveTypeTest("intvalue='1'", Integer.class);
+    }
+
+    public void testClassShort() throws Exception {
+        doPrimitiveTypeTest("shortvalue='1'", Short.class);
+    }
+
+    public void testClassLong() throws Exception {
+        doPrimitiveTypeTest("longvalue='1'", Long.class);
+    }
+    public void testClassDouble() throws Exception {
+        doPrimitiveTypeTest("doublevalue='1.0'", Double.class);
+    }
+    public void testClassFloat() throws Exception {
+        doPrimitiveTypeTest("floatvalue='1.0'", Float.class);
+    }
+    public void testClassString() throws Exception {
+        doPrimitiveTypeTest("stringvalue='1'", String.class);
+    }
+    public void testClassURL() throws Exception {
+        doPrimitiveTypeTest("urlvalue='http://www.netbeans.org'", URL.class);
+    }
+
+    private void doPrimitiveTypeTest(String value, Class<?> expClass) throws Exception {
+        File f = writeFile("layer.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' >" +
+                "  <attr name='instanceCreate' " + value + "/>" +
+                "</file>\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        FileObject fo = xfs.findResource ("TestModule/sample.txt");
+        assertNotNull(fo);
+
+        Object clazz = fo.getAttribute("class:instanceCreate");
+        assertEquals("Only Runnable guessed as that is the return type of the method", expClass, clazz);
+        Object instance = fo.getAttribute("instanceCreate");
+        assertNotNull("Returned", instance);
+        assertEquals("Right class", expClass, instance.getClass());
+    }
     
     
     private File writeFile(String name, String content) throws IOException {

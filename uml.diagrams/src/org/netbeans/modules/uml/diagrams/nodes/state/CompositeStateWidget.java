@@ -143,6 +143,7 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
                 }
             }
         }
+        super.initializeNode(presentation);
     }
 
     private void init()

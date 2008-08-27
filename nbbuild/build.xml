@@ -76,8 +76,6 @@ made subject to such option by the copyright holder.
 
   <target name="-load-build-properties">
     <property file="build.properties"/>
-    <!-- We need absolute path to ${netbeans.dest} -->
-    <property name="netbeans.dest.abs" location="${netbeans.dest}"/>
   </target>
 
   <target name="bootstrap"
@@ -98,13 +96,21 @@ made subject to such option by the copyright holder.
         </classpath>
         <include name="org/netbeans/nbbuild/HgExec.java"/>
         <include name="org/netbeans/nbbuild/ValidateHgConfiguration.java"/>
-        <include name="org/netbeans/nbbuild/extlibs/RegisterExternalHook.java"/>
+        <include name="org/netbeans/nbbuild/extlibs/DeregisterExternalHook.java"/>
+        <include name="org/netbeans/nbbuild/extlibs/DownloadBinaries.java"/>
         <compilerarg line="-Xlint -Xlint:-serial"/>
     </javac>
     <taskdef name="validate-hg-configuration" classname="org.netbeans.nbbuild.ValidateHgConfiguration" classpath="build/antclasses"/>
     <validate-hg-configuration root=".."/>
-    <taskdef name="registerexternalhook" classname="org.netbeans.nbbuild.extlibs.RegisterExternalHook" classpath="build/antclasses"/>
-    <registerexternalhook root=".." hook="antsrc/org/netbeans/nbbuild/extlibs/external.py"/>
+    <taskdef name="deregisterexternalhook" classname="org.netbeans.nbbuild.extlibs.DeregisterExternalHook" classpath="build/antclasses"/>
+    <deregisterexternalhook root=".."/>
+    <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="build/antclasses"/>
+    <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+        <manifest dir="${nb_all}">
+            <include name="*/external/binaries-list"/>
+            <include name="contrib/*/external/binaries-list"/>
+        </manifest>
+    </downloadbinaries>
 
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
     <path id="bootstrap-cp">
@@ -1213,7 +1219,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <!-- possibly after filtering for duplicates or something like this. -->
     <!-- Timeout is ten minutes; should be enough for valid start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP Windows Vista" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes" timeout="600000">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP Windows Vista" executable="${netbeans.dest.dir}/bin/nb.exe" failonerror="yes" timeout="600000">
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
@@ -1221,7 +1227,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
       <arg line="${sanitystart.args}"/>
     </exec>
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes" timeout="600000">
-      <arg value="${netbeans.dest.abs}/bin/netbeans"/>
+      <arg value="${netbeans.dest.dir}/bin/netbeans"/>
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
@@ -1296,7 +1302,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">
 	<isset property="env.NBDISPLAY"/>
     </condition>
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP Windows Vista" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP Windows Vista" executable="${netbeans.dest.dir}/bin/nb.exe" failonerror="yes">
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
@@ -1305,7 +1311,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg line="${tryme.debug.args}" />
     </exec>
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes">
-      <arg value="${netbeans.dest}/bin/netbeans"/>
+      <arg value="${netbeans.dest.dir}/bin/netbeans"/>
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>
@@ -1371,6 +1377,13 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="contrib/*/external/build.xml"/>
       </fileset>
     </subant>
+    <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="nbantext.jar"/>
+    <downloadbinaries cache="${binaries.cache}" server="${binaries.server}" clean="true">
+        <manifest dir="${nb_all}">
+            <include name="*/external/binaries-list"/>
+            <include name="contrib/*/external/binaries-list"/>
+        </manifest>
+    </downloadbinaries>
   </target>
 
   <target name="-real-clean" depends="-cleanall,localclean,-clean-external">
@@ -1671,6 +1684,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </subant>
     <pathconvert property="failed.tests" pathsep="${line.separator}">
         <fileset dir="${build.test.results.dir}">
+            <include name="TEST-*.xml"/>
             <not>
                 <and>
                     <contains text='errors="0"'/>

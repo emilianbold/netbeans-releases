@@ -87,7 +87,7 @@ void DbgpConnection::sendResponse(tstring xmlString) {
     if(xmlResponse != NULL) {
         char *messageData = NULL;
         int messageDataLen;
-        if(stringToBytes(xmlString, &messageData, &messageDataLen)) {
+        if(unicodeToUTF8(xmlString, &messageData, &messageDataLen)) {
             //Format of message: <length of data><null><XML response><null>
             int approxDataLen = messageDataLen + 16;
             char *data = new char[approxDataLen]; //16 bytes for length of data
@@ -101,7 +101,7 @@ void DbgpConnection::sendResponse(tstring xmlString) {
     }
 }
 
-BOOL DbgpConnection::stringToBytes(tstring str, char **ppBytes, int *pBytesLen) {
+BOOL DbgpConnection::unicodeToUTF8(tstring str, char **ppBytes, int *pBytesLen) {
     char *data = NULL;
     int dataLen = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1, data, 0, 0, 0);
     if(dataLen) {
@@ -110,6 +110,20 @@ BOOL DbgpConnection::stringToBytes(tstring str, char **ppBytes, int *pBytesLen) 
         if(dataLen) {
             *ppBytes = data;
             *pBytesLen = dataLen;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+BOOL DbgpConnection::UTF8toUnicode(char *str, TCHAR **ppChars) {
+    TCHAR *out = NULL;
+    int len = MultiByteToWideChar(CP_UTF8, 0, str, -1, out, 0);
+    if(len) {
+        out = new TCHAR[len];
+        len = MultiByteToWideChar(CP_UTF8, 0, str, -1, out, len);
+        if(len) {
+            *ppChars = out;
             return TRUE;
         }
     }
@@ -160,7 +174,7 @@ tstring DbgpConnection::encodeToBase64(tstring value) {
     USES_CONVERSION;
     char *data = NULL;
     int dataLen;
-    if(stringToBytes(value, &data, &dataLen)) {
+    if(unicodeToUTF8(value, &data, &dataLen)) {
         int destLen = Base64EncodeGetRequiredLength(dataLen, ATL_BASE64_FLAG_NOCRLF);
         char *dest = new char[destLen+1];
         if(Base64Encode((BYTE *)data, dataLen, dest, &destLen, ATL_BASE64_FLAG_NOCRLF)) {
@@ -335,32 +349,37 @@ BOOL DbgpConnection::readCommand(char *cmdString) {
     return FALSE;
 }
 
-void DbgpConnection::processCommand(string cmdString, DbgpConnection *pDbgpConnection) {
-    USES_CONVERSION;
+void DbgpConnection::processCommand(char *cmdString, DbgpConnection *pDbgpConnection) {
+    TCHAR *str;
+    if(!UTF8toUnicode(cmdString, &str)) {
+        return;
+    }
+
     //Utils::log(4, _T("Command: %s\n"), cmdString);
-    size_t firstSpacePos = cmdString.find(" ");
-    string command = cmdString.substr(0, firstSpacePos);
-    string args = cmdString.substr(firstSpacePos+1, cmdString.length());
+    tstring cmdStr = str;
+    size_t firstSpacePos = cmdStr.find(_T(" "));
+    tstring command = cmdStr.substr(0, firstSpacePos);
+    tstring args = cmdStr.substr(firstSpacePos+1, cmdStr.length());
 
     //Parse the arguments and prepare a map of argument switch and value
     map<char, tstring> argsMap;
     unsigned int index = 0;
-    const char *data = args.c_str();
+    const TCHAR *data = args.c_str();
     bool argSwitchFound = false;
     int argValueIndex = -1;
     while(index <= args.length()) {
-        char argSwitch;
-        if(data[index] == ' ' || data[index] == '\0'){
+        TCHAR argSwitch;
+        if(data[index] == _T(' ') || data[index] == _T('\0')){
             if(argValueIndex != -1) {
-                string argValue = args.substr(argValueIndex, index-argValueIndex);
-                argsMap.insert(pair<char, tstring>(argSwitch, A2T(argValue.c_str())));
+                tstring argValue = args.substr(argValueIndex, index-argValueIndex);
+                argsMap.insert(pair<char, tstring>(argSwitch, argValue.c_str()));
                 argValueIndex = -1;
             }
-        }else if(data[index] == '-') {
-              if(data[index+2] == ' ') {
+        }else if(data[index] == _T('-')) {
+              if(data[index+2] == _T(' ')) {
                 argSwitchFound = true;
                 argSwitch = data[++index];
-                if(argSwitch == '-' || argSwitch == 'e') {
+                if(argSwitch == _T('-') || argSwitch == _T('e')) {
                     //- arg switch indicates data
                     //no more options are expected after this
                     argValueIndex = index+2;
@@ -378,7 +397,7 @@ void DbgpConnection::processCommand(string cmdString, DbgpConnection *pDbgpConne
         index++;
     }
 
-    CommandResponseIterator iterator = DbgpCommand::commandResponseMap.find(A2T(command.c_str()));
+    CommandResponseIterator iterator = DbgpCommand::commandResponseMap.find(command.c_str());
     DbgpCommand *pDbgpCommand = (DbgpCommand *)iterator->second;
     DbgpResponse *pDbgpResponse = pDbgpCommand->process(pDbgpConnection, argsMap);
     if(pDbgpCommand->needsResponse() && pDbgpResponse != NULL) {

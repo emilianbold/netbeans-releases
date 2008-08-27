@@ -334,6 +334,30 @@ public class FolderChildrenTest extends NbTestCase {
 	assertEquals("All are visbile ", 3, arr.length);
     }
 
+    public void testReorderAfterRename() throws Exception {
+        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
+        FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");
+        FileObject ahoj = bb.createData("Ahoj.txt");
+        bb.createData("Hi.txt");
+
+        DataFolder folder = DataFolder.findFolder (bb);
+
+        Node n = folder.getNodeDelegate();
+        Node[] arr = n.getChildren().getNodes(true);
+        assertEquals("Both are visible", 2, arr.length);
+        assertEquals("Ahoj is 1st", "Ahoj.txt", arr[0].getName());
+        assertEquals("Hi is 2nd", "Hi.txt", arr[1].getName());
+
+
+        DataObject obj = DataObject.find(ahoj);
+        obj.rename("xyz.txt");
+
+        arr = n.getChildren().getNodes(true);
+        assertEquals("All are visbile ", 2, arr.length);
+        assertEquals("Hi is 1st", "Hi.txt", arr[0].getName());
+        assertEquals("xyz is 2nd", "xyz.txt", arr[1].getName());
+    }
+
 
     public static class N1 extends org.openide.nodes.AbstractNode
     implements Node.Cookie {

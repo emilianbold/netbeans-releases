@@ -69,51 +69,51 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         this.itemOffset = itemOffset;
     }
 
-    public Set<String> addSchemas(Catalog catalog, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
+    public Set<String> addSchemas(Catalog catalog, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset) {
         Set<String> result = new TreeSet<String>();
         filterMetadata(catalog.getSchemas(), restrict, prefix, new Handler<Schema>() {
             public void handle(Schema schema) {
                 if (!schema.isSynthetic()) {
                     String schemaName = schema.getName();
-                    items.add(SQLCompletionItem.schema(schemaName, quote(schemaName, quoteString), itemOffset + substitutionOffset));
+                    items.add(SQLCompletionItem.schema(schemaName, doQuote(schemaName, quote), itemOffset + substitutionOffset));
                 }
             }
         });
         return result;
     }
 
-    public void addTables(Schema schema, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
+    public void addTables(Schema schema, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset) {
         filterMetadata(schema.getTables(), restrict, prefix, new Handler<Table>() {
             public void handle(Table table) {
                 String tableName = table.getName();
-                items.add(SQLCompletionItem.table(tableName, quote(tableName, quoteString), itemOffset + substitutionOffset));
+                items.add(SQLCompletionItem.table(tableName, doQuote(tableName, quote), itemOffset + substitutionOffset));
             }
         });
     }
 
-    public void addAliases(List<String> aliases, String prefix, final String quoteString, final int substitutionOffset) {
+    public void addAliases(List<String> aliases, String prefix, final boolean quote, final int substitutionOffset) {
         filterStrings(aliases, null, prefix, new Handler<String>() {
             public void handle(String alias) {
-                items.add(SQLCompletionItem.alias(alias, alias, itemOffset + substitutionOffset));
+                items.add(SQLCompletionItem.alias(alias, doQuote(alias, quote), itemOffset + substitutionOffset));
             }
         });
     }
 
-    public void addColumns(Schema schema, final Table table, String prefix, final String quoteString, final int substitutionOffset) {
+    public void addColumns(Schema schema, final Table table, String prefix, final boolean quote, final int substitutionOffset) {
         final QualIdent qualTableName = schema.isDefault() ? null : new QualIdent(schema.getName(), table.getName());
         filterMetadata(table.getColumns(), null, prefix, new Handler<Column>() {
             public void handle(Column column) {
                 String columnName = column.getName();
                 if (qualTableName != null) {
-                    items.add(SQLCompletionItem.column(qualTableName, columnName, quote(columnName, quoteString), itemOffset + substitutionOffset));
+                    items.add(SQLCompletionItem.column(qualTableName, columnName, doQuote(columnName, quote), itemOffset + substitutionOffset));
                 } else {
-                    items.add(SQLCompletionItem.column(table.getName(), columnName, quote(columnName, quoteString), itemOffset + substitutionOffset));
+                    items.add(SQLCompletionItem.column(table.getName(), columnName, doQuote(columnName, quote), itemOffset + substitutionOffset));
                 }
             }
         });
     }
 
-    public void addColumns(Catalog catalog, QualIdent tableName, String prefix, final String quoteString, final int substitutionOffset) {
+    public void addColumns(Catalog catalog, QualIdent tableName, String prefix, final boolean quote, final int substitutionOffset) {
         Schema schema = null;
         Table table = null;
         if (tableName.isSimple()) {
@@ -133,7 +133,7 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
             table = schema.getTable(tableName.getSimpleName());
         }
         if (table != null) {
-            addColumns(schema, table, prefix, quoteString, substitutionOffset);
+            addColumns(schema, table, prefix, quote, substitutionOffset);
         }
     }
 
@@ -145,9 +145,9 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         return items.iterator();
     }
 
-    private String quote(String identifier, String quoteString) {
-        if (quoteString != null) {
-            return new StringBuilder(identifier.length() + 2).append(quoteString).append(identifier).append(quoteString).toString();
+    private String doQuote(String identifier, boolean always) {
+        if (always) {
+            return quoter.quoteAlways(identifier);
         } else {
             return quoter.quoteIfNeeded(identifier);
         }

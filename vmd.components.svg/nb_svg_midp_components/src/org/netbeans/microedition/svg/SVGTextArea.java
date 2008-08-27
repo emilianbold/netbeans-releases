@@ -300,7 +300,7 @@ public class SVGTextArea extends SVGComponent {
             if ( bBox != null) {
                 width = bBox.getWidth();
             } else {
-                System.out.println("Error: Null BBox #1");
+                //System.out.println("Error: Null BBox #1");
             }
         }
         return width;

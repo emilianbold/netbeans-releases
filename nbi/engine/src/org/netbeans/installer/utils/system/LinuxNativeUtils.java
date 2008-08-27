@@ -129,6 +129,8 @@ public class LinuxNativeUtils extends UnixNativeUtils {
                 Platform.LINUX_PPC;
         } else if (osArch.contains("sparc")) {
             return  Platform.LINUX_SPARC;
+        } else if(osArch.equals("ia64")) {
+            return Platform.LINUX_IA64;
         } else {
             return SystemUtils.isCurrentJava64Bit() ? 
                 Platform.LINUX_X64 : 

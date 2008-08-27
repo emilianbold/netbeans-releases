@@ -42,6 +42,9 @@ package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
+import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
+import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.TestCatalogModel;
 import org.netbeans.modules.websvc.wsitconf.util.TestUtil;
@@ -49,6 +52,7 @@ import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -77,7 +81,22 @@ public class ProfileTest extends NbTestCase {
         Definitions d = model.getDefinitions();
         Binding b = (Binding) d.getBindings().toArray()[0];
 
-        String[] profiles = new String[] {
+        String[] profiles10 = new String[] {
+            "",
+            ComboConstants.PROF_TRANSPORT,
+            ComboConstants.PROF_MSGAUTHSSL,
+            ComboConstants.PROF_SAMLSSL,
+            ComboConstants.PROF_USERNAME,
+            ComboConstants.PROF_MUTUALCERT,
+            ComboConstants.PROF_ENDORSCERT,
+            ComboConstants.PROF_SAMLHOLDER,
+            ComboConstants.PROF_STSISSUED,
+            ComboConstants.PROF_STSISSUEDCERT,
+            ComboConstants.PROF_STSISSUEDENDORSE,
+            ComboConstants.PROF_STSISSUEDSUPPORTING
+        };
+
+        String[] profiles13 = new String[] {
             "",
             ComboConstants.PROF_TRANSPORT,
             ComboConstants.PROF_MSGAUTHSSL,
@@ -93,32 +112,47 @@ public class ProfileTest extends NbTestCase {
             ComboConstants.PROF_STSISSUEDENDORSE,
             ComboConstants.PROF_STSISSUEDSUPPORTING
         };
-        
-        for (int i=1; i<profiles.length; i++) {
-            String profile = profiles[i];
 
-            ConfigVersion cfgVersion = ConfigVersion.CONFIG_1_0;
-            
-            //default profile set
-            ProfilesModelHelper.getInstance(cfgVersion).setSecurityProfile(b, profile, false);
+        for (ConfigVersion cfgV : ConfigVersion.values()) {
+            String[] profileSet = ConfigVersion.CONFIG_1_0.equals(cfgV) ? profiles10 : profiles13;
+            String cfgStr = ConfigVersion.CONFIG_1_0.equals(cfgV) ? "10-" : "13-";
+            for (int i=1; i<profileSet.length; i++) {
+                String profile = profileSet[i];
+                String profFileName = profile.replaceAll(" ", "");
 
-            File profDefaultFile = new File(getWorkDirPath() + File.separator + i + profile + ".wsdl");
-            TestUtil.dumpToFile(model.getBaseDocument(), profDefaultFile);
-//            assertFile(profDefaultFile, TestUtil.getGoldenFile(getDataDir(), "Profile"+ i + "Test", "testDefault"));
+                //default profile set
+                ProfilesModelHelper.getInstance(cfgV).setSecurityProfile(b, profile, false);
+                SecurityProfile readSP = SecurityProfileRegistry.getDefault().getProfile(profile);
+                assertEquals("Security profile set and read don't match", profile, readSP.getDisplayName());
 
-            ProfilesModelHelper.getInstance(cfgVersion).setSecureConversation(b, true);     // enable SC
+                File profWorkDir = new File(getWorkDirPath() + File.separator + profFileName);
+                FileUtil.createFolder(profWorkDir);
+                String fStr = cfgStr + "test";
+                File dumpFile = new File(profWorkDir.getAbsolutePath() + File.separator + fStr);
+                FileUtil.createData(dumpFile);
+                
+                TestUtil.dumpToFile(model.getBaseDocument(), dumpFile);
+                assertFile(dumpFile, TestUtil.getGoldenFile(getDataDir(), profFileName, fStr));
 
-            File profSCFile = new File(getWorkDirPath() + File.separator + i + profile + "-SecureConversation.wsdl");
-            TestUtil.dumpToFile(model.getBaseDocument(), profSCFile);
-//            assertFile(profSCFile, TestUtil.getGoldenFile(getDataDir(), "Profile"+ i + "Test", "testSecureConversation"));            
+                if (readSP instanceof SecureConversationFeature) {
+                    ProfilesModelHelper.getInstance(cfgV).setSecureConversation(b, true);     // enable SC
 
-            ProfilesModelHelper.getInstance(cfgVersion).setSecureConversation(b, false);     // disable SC
+                    dumpFile = new File(profWorkDir.getAbsolutePath() + File.separator + fStr + "SC");
+                    TestUtil.dumpToFile(model.getBaseDocument(), dumpFile);
+                    assertFile(dumpFile, TestUtil.getGoldenFile(getDataDir(), profFileName, fStr + "SC"));
 
-            File profAfterSCFile = new File(getWorkDirPath() + File.separator + i + profile + "-After.wsdl");
-            TestUtil.dumpToFile(model.getBaseDocument(), profAfterSCFile);
-//            assertFile(profAfterSCFile, TestUtil.getGoldenFile(getDataDir(), "Profile"+ i + "Test", "testDefault"));
-            
-            readAndCheck(model, profile);
+                    readSP = SecurityProfileRegistry.getDefault().getProfile(profile);
+                    assertEquals("Security profile with SC set and read don't match", profile, readSP.getDisplayName());
+                    
+                    ProfilesModelHelper.getInstance(cfgV).setSecureConversation(b, false);     // disable SC
+
+                    dumpFile = new File(profWorkDir.getAbsolutePath() + File.separator + fStr + "AfterSC");
+                    TestUtil.dumpToFile(model.getBaseDocument(), dumpFile);
+                    assertFile(dumpFile, TestUtil.getGoldenFile(getDataDir(), profFileName, fStr + "AfterSC"));
+                }
+
+                readAndCheck(model, profile);
+            }
         }
 
     }

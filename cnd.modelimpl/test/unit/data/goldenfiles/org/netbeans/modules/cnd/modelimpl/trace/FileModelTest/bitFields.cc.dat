@@ -11,7 +11,7 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-STRUCT Foo_t_ (Foo_t_ ) [1:1/0-7:9/101] lcurly=22 SCOPE: $Global$ 
+STRUCT Foo_t_ (Foo_t_ ) [1:1/0-7:2/94] lcurly=22 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PUBLIC f [2:3/26-2:11/34]  TYPE: int TEXT=int  [2:3/26-2:6/29]  INIT: null  SCOPE: Foo_t_ 
@@ -22,7 +22,7 @@ STRUCT Foo_t_ (Foo_t_ ) [1:1/0-7:9/101] lcurly=22 SCOPE: $Global$
 TYPEDEF Foo_t  [7:3/95-7:8/100] TYPE: Foo_t_ TEXT=Foo_t_  [1:1/0-7:9/101] SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
-STRUCT Foo_t_ (Foo_t_ ) [1:1/0-7:9/101] lcurly=22 SCOPE: $Global$ 
+STRUCT Foo_t_ (Foo_t_ ) [1:1/0-7:2/94] lcurly=22 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         FIELD PUBLIC f [2:3/26-2:11/34]  TYPE: int TEXT=int  [2:3/26-2:6/29]  INIT: null  SCOPE: Foo_t_ 

@@ -107,9 +107,10 @@ TestSupport.prototype = {
     },
 
     initFromWadl : function () {
-        var wadlData = this.xhr.get(this.wadlURL);
-        if(wadlData != "-1") {
-            this.wdr.updateMenu(wadlData);
+        var wDoc = this.wdr.getWadlDocument(this.wadlURL);
+        if(wDoc != null) {
+            ts.wadlDoc = wDoc;
+            this.wdr.updateMenu(this.wadlURL, ts.wadlDoc);
         } else {
             this.setvisibility('main', 'inherit');
             this.updatepage('content', 'MSG_TEST_RESBEANS_Help');
@@ -124,6 +125,12 @@ TestSupport.prototype = {
         return url + '/' + pathElem;
     },
     
+    trim : function (str) {
+        if(!str || typeof str != 'string')
+           return null;
+        return str.replace(/^[\s]+/,'').replace(/[\s]+$/,'').replace(/[\s]{2,}/,' ');
+    },
+
     setvisibility : function (id, state) {
         try {
             document.getElementById(id).style.visibility = state;
@@ -164,7 +171,6 @@ TestSupport.prototype = {
         if(resource != null && mIndex != -1) {
             var m = this.getElementsByTagName(resource, "method")[mIndex];
             request = this.getElementsByTagName(m, "request");
-            this.addTemplateParams(resource, request);
         }
         var paramRep = this.getParamRep(request, this.currentMethod);
         this.updatepage('paramHook', paramRep);
@@ -282,7 +288,7 @@ TestSupport.prototype = {
         else
             mediaType = this.getDefaultMime();
         this.showBreadCrumbs(uri);
-        
+        var req = this.getDisplayUri(uri);
         var str = '<br/><table border=0><tbody><tr><td valign="top"><span id="j_id14"><label for="methodSel" class="LblLev2Txt_sun4">'+
                             '<span>MSG_TEST_RESBEANS_ChooseMethod: </span></label></span></td>';
         str += "<td><span id=j_id14><select id='methodSel' class=MnuJmp_sun4 name='methodSel' onchange='javascript:ts.changeMethod();'>";
@@ -303,31 +309,12 @@ TestSupport.prototype = {
         str += "<td width=30/>"
         str += "<td><span id=j_id14><a class='Btn2_sun4 Btn1Hov_sun4' onclick='ts.addParam()'>MSG_TEST_RESBEANS_AddParamButton</a>";
         str += "</span></td><td><a class='Btn1_sun4 Btn1Hov_sun4' onclick='ts.testResource()'>MSG_TEST_RESBEANS_TestButton</a></td></tr></tbody></table><br/>";
-        str += this.getFormRep(null, uri, mName, mediaType);
         ts.updatepage('testaction', str);
-        var paramRep = "";
-        var req = this.getDisplayUri(uri);
-        var paths = req.split('/');
-        for(var i in paths) {
-            var path = paths[i];
-            var compositeIds = path.split(',');
-            for(var j in compositeIds) {
-              var compositeId = compositeIds[j];
-              if(compositeId.indexOf('{') > -1) {
-                  var pname = compositeId.substring(1, compositeId.length-1);
-                  paramRep += '<tr><td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
-                  paramRep += '<span>'+pname+': </span></label></span></td>';
-                  paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td></tr>';
-              }
-            }
-        }
+        ts.updatepage('testinput', this.getFormRep(req, uri, mName, mediaType));
+        var paramRep = this.getTemplateParamsRep(req);
         if(paramRep != "") {
-            paramRep = '<tr><td valign="top"><span id="j_id14"><label for="dummy" class="LblLev2Txt_sun4">'+
-                            '<span>MSG_TEST_RESBEANS_Continue:</span></label></span></td>'+
-                            '<td><span id="j_id14"></span></td></tr>' + paramRep;
-            ts.updatepage('pathParamHook', "<table border=0><tbody><tr>"+paramRep+"</tr></tbody></table>");
+            ts.updatepage('pathParamHook', paramRep);
         }
-        var req = uri;
         var disp = this.getDisplayUri(req);
         var uriLink = "<a id='"+req+"' class=Hyp_sun4 href=javascript:ts.doShowContent('"+req+"') >"+this.getDisplayURL(disp, 80)+"</a>";
         this.updatepage('request', '<span class=bld>MSG_TEST_RESBEANS_Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" class=Hyp_sun4 target="_blank"><span>'+this.getDisplayURL(req, 90)+'</span></a>)');
@@ -338,9 +325,15 @@ TestSupport.prototype = {
         this.paramNumber = 1;
         this.showBreadCrumbs(uri);
         var mName = this.wdr.getDefaultMethod();
-        var mediaType = this.wdr.getDefaultMime();    
+        var mediaType = this.wdr.getDefaultMime();   
+        var req = uri;
+        var disp = this.getDisplayUri(req);        
         this.updatepage('testaction', '<br/>'+this.getMethodMimeTypeCombo(r)+'<br/>');
-        this.updatepage('testinput', this.getFormRep(null, uri, mName, mediaType));
+        this.updatepage('testinput', this.getFormRep(disp, uri, mName, mediaType));
+        var paramRep = this.getTemplateParamsRep(disp);
+        if(paramRep != "") {
+            ts.updatepage('pathParamHook', paramRep);
+        }
         var methodNode = document.getElementById("methodSel");
         var options = methodNode.options;
         for(var i=0;i<options.length;i++) {
@@ -349,8 +342,6 @@ TestSupport.prototype = {
             }
         }
         this.changeMethod();    
-        var req = uri;
-        var disp = this.getDisplayUri(req);
         var uriLink = "<a id='"+req+"' class=Hyp_sun4 href=javascript:ts.doShowContent('"+req+"') >"+this.getDisplayURL(disp, 80)+"</a>";
         this.updatepage('request', '<span class=bld>MSG_TEST_RESBEANS_Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" class=Hyp_sun4 target="_blank"><span>'+this.getDisplayURL(req, 90)+'</span></a>)');
     },
@@ -360,7 +351,6 @@ TestSupport.prototype = {
             mName = this.getDefaultMethod();
         if(mediaType == null || mediaType == 'undefined')
             mediaType = this.getDefaultMime();
-        //ts.debug(req + uri + mName + mediaType);
         var str = "<div id='formSubmittal'>";
         str += "<form action='javascript:ts.dummyMethod()' method="+mName+" id='form1' name='form1'>";
         str += "<div id='pathParamHook'></div>";
@@ -368,9 +358,34 @@ TestSupport.prototype = {
         str += "<input name='path' value='"+uri+"' type='hidden'>";
         str += "<input id='methodName' name='methodName' value='"+mName+"' type='hidden'>";
         str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
+        str += "<input id='test' name='test' style='display:none' value='' type='submit' onchange='ts.testResource();'>";
         str += "</form>";
         str += "</div>";
         return str;
+    },
+    
+    getTemplateParamsRep : function (req) {
+        var paramRep = "";
+        var paths = ts.trim(req).split('/');
+        for(var i in paths) {
+          var path = ts.trim(paths[i]);
+          if(path == null)
+            continue;
+          var compositeIds = path.split(',');
+          for(var j in compositeIds) {
+            var compositeId = ts.trim(compositeIds[j]);
+            if(compositeId != null && compositeId.indexOf('{') > -1) {
+                var pname = compositeId.substring(1, compositeId.length-1);
+                paramRep += '<tr><td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
+                paramRep += '<span>'+pname+': </span></label></span></td>';
+                paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td></tr>';
+            }
+          }
+        }
+        if(paramRep != "") {
+            paramRep = "<table border=0><tbody><tr>"+paramRep+"</tr></tbody></table>";
+        }
+        return paramRep;
     },
     
     dummyMethod : function() {
@@ -503,9 +518,6 @@ TestSupport.prototype = {
             for(var i=0;i<req.length;i++) {
                 var params = req[i].childNodes;
                 if(params != null) {
-                    str += '<tr><td valign="top"><span id="j_id14"><label for="dummy" class="LblLev2Txt_sun4">'+
-                            '<span>MSG_TEST_RESBEANS_Continue:</span></label></span></td>'+
-                            '<td><span id="j_id14"></span></td></tr>';
                     for(var j=0;j<params.length;j++) {
                         var param = params[j];
                         if(param.nodeName == null || param.nodeName != 'param')
@@ -735,14 +747,10 @@ TestSupport.prototype = {
         this.updatepage('tabTable', c);
     },
 
-    monitor : function (xmlHttpReq, param) {
-        var nodisp = ' class="nodisp" ';
-        var rawViewStyle = ' ';
-        var headerViewStyle = nodisp;
+    monitor : function (method, xmlHttpReq, param) {
         var rawContent = 'MSG_TEST_RESBEANS_Received:\n<br/>'+this.printPretty(xmlHttpReq.responseText)+'\n<br/>';
         if(param != null && param != undefined)
             rawContent = 'MSG_TEST_RESBEANS_Sent:\n<br/>'+this.printPretty(param) + '\n\n<br/><br/>' + rawContent;
-        var prev = document.getElementById('monitorText');
         var cURL = this.currentValidUrl;
         var params = '';
         if(cURL.indexOf('?') > 0) {
@@ -766,13 +774,15 @@ TestSupport.prototype = {
 
     updateContent : function (content) {
         var showRaw = true;
+        var cErr = 'MSG_TEST_RESBEANS_No_Container';
         if(content != null && content != undefined) {
-            if(content == '')
-                content = 'MSG_TEST_RESBEANS_NoContents'
-            else 
-                content = content.replace(/'/g,"\'");
             try {
-                var cErr = 'MSG_TEST_RESBEANS_No_Container';
+                if(content.indexOf("RequestFailed -->") != -1)
+                    throw "Error: "+content;
+                if(content == '')
+                content = 'MSG_TEST_RESBEANS_NoContents'
+                else
+                    content = content.replace(/'/g,"\'");
                 var tableContent = cErr;
                 if(content.indexOf("<?xml ") != -1 || 
                         content.indexOf('{"') != -1) {
@@ -783,29 +793,7 @@ TestSupport.prototype = {
                     }
                 }
                 var rawContent = content;
-                var tableViewStyle = ' ';
-                var nodisp = ' class="nodisp" ';
-                var rawViewStyle = nodisp;
-                if(showRaw) {
-                    tableViewStyle = nodisp;
-                    rawViewStyle = ' ';
-                }
-                var structure = this.xhr.options(this.currentValidUrl, 'application/vnd.sun.wadl+xml');
-                var subResources = this.getContainerTable(ts.wdr.evaluateWADLUpdate(this.currentValidUrl, structure));
-                if(subResources == null)
-                    subResources = 'MSG_TEST_RESBEANS_No_SubResources';
-                this.updatepage('result', '<br/><span class=bld>MSG_TEST_RESBEANS_Status:</span> '+ this.currentXmlHttpReq.status+' ('+this.currentXmlHttpReq.statusText+')<br/><br/>'+
-                    '<span class=bld>MSG_TEST_RESBEANS_Response:</span> '+
-                    '<div class="Tab1Div_sun4" id="tabTable">'+
-                    '</div>'+
-                    '<div class="tabMain">'+
-                    '<div id="menu_bottom" class="stab tabsbottom"></div>'+
-                    '<div id="headerInfo"'+nodisp+'>'+this.getHeaderAsTable(this.currentXmlHttpReq)+'</div>'+
-                    '<div id="tableContent"'+tableViewStyle+'>'+tableContent+'</div>'+
-                    '<div id="structureInfo"'+nodisp+'>'+subResources+'</div>'+
-                    '<div id="rawContent"'+rawViewStyle+'>'+this.printPretty(rawContent)+'</div>'+ 
-                    '<div id="monitorContent"'+nodisp+'>'+this.currMonitorText+'</div>'+
-                    '</div>');
+                this.updatepage('result', this.createTabs(tableContent, rawContent, showRaw));
                 if(showRaw) {
                     if(content.length > 7 && content.substring(0, 7) == "http://")
                         this.currentValidUrl = content;
@@ -827,11 +815,36 @@ TestSupport.prototype = {
                 }
             } catch( e ) {
                 ts.debug('updateContent() err name: [' + e.name + '] message: [' + e.message+"]");
-                var c = this.createIFrameForUrl(this.currentValidUrl);
-                this.updatepage('result', '<span class=bld>MSG_TEST_RESBEANS_Response:</span> '+c);
-                this.updatepage('resultheaders', '<span class=bld>MSG_TEST_RESBEANS_ResponseHeaders:</span> '+this.getHeaderAsTable(this.currentXmlHttpReq));                    
+                this.updatepage('result', this.createTabs(cErr, content));
+                this.showViews('raw');
             }  
         }
+    },
+    
+    createTabs : function(tableContent, rawContent, showRaw) {
+        var nodisp = ' class="nodisp" ';
+        var tableViewStyle = ' ';
+        var rawViewStyle = nodisp;
+        if(showRaw) {
+            tableViewStyle = nodisp;
+            rawViewStyle = ' ';
+        }
+        var structure = this.xhr.options(this.currentValidUrl, 'application/vnd.sun.wadl+xml');
+        var subResources = this.getContainerTable(ts.wdr.evaluateWADLUpdate(this.currentValidUrl, structure));
+        if(subResources == null)
+            subResources = 'MSG_TEST_RESBEANS_No_SubResources';
+        var tabs = '<br/><span class=bld>MSG_TEST_RESBEANS_Status:</span> '+ this.currentXmlHttpReq.status+' ('+this.currentXmlHttpReq.statusText+')<br/><br/>'+
+                    '<span class=bld>MSG_TEST_RESBEANS_Response:</span> '+
+                    '<div class="Tab1Div_sun4" id="tabTable"></div>'+
+                    '<div class="tabMain">'+
+                    '<div id="menu_bottom" class="stab tabsbottom"></div>'+
+                    '<div id="headerInfo"'+nodisp+'>'+this.getHeaderAsTable(this.currentXmlHttpReq)+'</div>'+
+                    '<div id="tableContent"'+tableViewStyle+'>'+tableContent+'</div>'+
+                    '<div id="structureInfo"'+nodisp+'>'+subResources+'</div>'+
+                    '<div id="rawContent"'+rawViewStyle+'>'+this.printPretty(rawContent)+'</div>'+ 
+                    '<div id="monitorContent"'+nodisp+'>'+this.currMonitorText+'</div>'+
+                    '</div>';
+        return tabs;
     },
     
     printPretty : function(content) {
@@ -859,7 +872,8 @@ TestSupport.prototype = {
                  for (var i = 0; i < node.childNodes.length; ++i) {
                    printIndented(node.childNodes[i], indent+2);
                  }
-                 if(node.childNodes[0].nodeValue == null)
+                 if(node.childNodes[0].nodeValue == null ||
+                     trim(node.childNodes[0].nodeValue) == "")
                     prettyContent += nd + getContent(node, false);
                  else
                     prettyContent += getContent(node, false);
@@ -920,6 +934,12 @@ TestSupport.prototype = {
              c = c.substring(0, len2) + indent + '&nbsp;&nbsp;&nbsp;' + breakLine2(c.substring(len2), len, indent);
          }
          return c;
+       }
+       
+       function trim(str) {
+         if(!str || typeof str != 'string')
+             return null;
+         return str.replace(/^[\s]+/,'').replace(/[\s]+$/,'').replace(/[\s]{2,}/,' ');
        }
     },
 
@@ -1201,21 +1221,54 @@ function WADLParser() {
 }
 
 WADLParser.prototype = {
-    updateMenu : function (rtext) {                                
-        if(rtext == undefined || rtext == "" || rtext.indexOf("HTTP Status") != -1) {   
+    getWadlDocument : function (wadlURL) {
+        var wadlData = ts.xhr.get(wadlURL);
+        if(wadlData == undefined || wadlData == "" || wadlData.indexOf("RequestFailed -->") != -1) {   
             var newUrl = prompt(ts.wadlErr, baseURL);
             if(newUrl != null && baseURL != newUrl) {
                 baseURL = newUrl;
                 ts.wadlURL = ts.concatPath(baseURL, "application.wadl");
                 ts.initFromWadl();
             }
-            return;
+            return null;
         }
+        var wDoc = ts.xhr.loadXml(wadlData);
+        if(wDoc != null) { 
+            var app=wDoc.documentElement;
+            if(app != null) {
+              var resources = ts.getElementsByTagName(app, 'resources')[0];
+              var rChilds = ts.getElementsByTagName(resources, 'resource');
+              if(rChilds != null && rChilds.length > 0) {
+                var wDocArr = [];
+                for(var i=0;i<rChilds.length;i++) {
+                  var r = rChilds[i];
+                  var base = resources.attributes.getNamedItem('base').nodeValue;
+                  var path = r.attributes.getNamedItem('path').nodeValue;
+                  wadlData = ts.xhr.options(ts.concatPath(base, path), 'application/vnd.sun.wadl+xml');
+                  wDocArr.push(ts.xhr.loadXml(wadlData));
+                }
+                if(wDocArr.length > 0) {
+                  wDoc = wDocArr[0];
+                  resources = ts.getElementsByTagName(wDoc.documentElement, 'resources')[0];
+                  for(var i=1;i<wDocArr.length;i++) {
+                    var rs = ts.getElementsByTagName(wDocArr[i].documentElement, 'resources')[0];
+                    rChilds = ts.getElementsByTagName(rs, 'resource');
+                    if(rChilds != null && rChilds.length > 0) {
+                      resources.appendChild(rChilds[0]);
+                    }
+                  }
+                }
+              }
+            }
+        }
+        return wDoc;
+    },
+    
+    updateMenu : function (wUrl, wDoc) {
         ts.setvisibility('main', 'inherit');
-        ts.updatepage('subheader', '<br/><span class=MstLbl_sun4>WADL MSG_TEST_RESBEANS_Wadl: </span><a class=MstLnk_sun4 href=\"'+ts.wadlURL+'\">'+ts.wadlURL+'</a>');
-        ts.wadlDoc = ts.xhr.loadXml(rtext);
-        if(ts.wadlDoc != null) {                
-            this.initTree(ts.wadlDoc);
+        ts.updatepage('subheader', '<br/><span class=MstLbl_sun4>WADL : </span><a class=MstLnk_sun4 href=\"'+wUrl+'\">'+wUrl+'</a>');
+        if(wDoc != null) {                
+            this.initTree(wDoc);
         }
     },
     
@@ -1223,7 +1276,7 @@ WADLParser.prototype = {
         var myTree = this.createTree(wadlDoc);
         var treeString = myTree.toString();
         ts.updatepage('leftSidebar', treeString);
-        this.showCategory('resources');
+        this.showTopCategory();
     },
     
     refreshTree : function (wadlDoc) {
@@ -1238,18 +1291,23 @@ WADLParser.prototype = {
         var rs;
         if(app != null) {
             rs = ts.getElementsByTagName(app, 'resources')[0];
-            ts.projectName = rs.attributes.getNamedItem('base').nodeValue;
-            var begin = ts.projectName.indexOf('/', 7);
-            if(begin != -1)
-                ts.projectName = ts.projectName.substring(begin, ts.projectName.length);
-            var index = ts.projectName.indexOf('/', 1);
-            if(ts.projectName.length > 1 && index != -1)
-                ts.projectName = ts.projectName.substring(1, index);
-            var resources = new category(rs, rs.nodeName, baseURL, ts.projectName);
+            ts.projectName = this.projectNameFromUrl(rs.attributes.getNamedItem('base').nodeValue);
+            var resources = new category(rs, this.getTopCategoryId(), baseURL, ts.projectName);
             myTree.add(resources);
             this.createChildNodes(rs, resources);
         }
         return myTree;
+    },
+    
+    projectNameFromUrl : function (url_) {
+        var url = url_
+        var begin = url.indexOf('/', 7);
+        if(begin != -1)
+            url = url.substring(begin, url.length);
+        var index = url.indexOf('/', 1);
+        if(url.length > 1 && index != -1)
+            url = url.substring(1, index);
+        return url;
     },
 
     createChildNodes : function (/*Node*/ node, parentCat) {
@@ -1271,8 +1329,10 @@ WADLParser.prototype = {
                     var ch = node.childNodes[i];
                     if(ts.wdr.isResource(ch) /*&& !isTemplateResource(ch)*/) {
                         var n = createNode(ch, parentCat);
-                        parentCat.add(n);
-                        createChildNodes2(ch, n);
+                        if(n != null) {
+                          parentCat.add(n);
+                          createChildNodes2(ch, n);
+                        }
                     }
                  } 
              }
@@ -1294,7 +1354,7 @@ WADLParser.prototype = {
              uri = parentCat.uri+'/'+pathElem;
          var cName = ts.wdr.trimSeperator(pathVal);
          if(ts.wdr.hasResource(n)) {
-            return new category(n, pathVal, uri, cName);
+            return new category(n, ts.wdr.getUniqueCategoryId(pathVal), uri, cName);
          } else {
             var methods = ts.getElementsByTagName(n, 'method');
             if(methods != null && methods.length > 0) {
@@ -1302,10 +1362,10 @@ WADLParser.prototype = {
             } else {
                 var n2 = ts.wdr.findResource(baseURL+pathVal);
                 if(n2 == null) {
-                    return new item(n, pathVal, uri, cName);
+                    return null;
                 } else {
                     if(ts.wdr.hasResource(n2)) {
-                        var cat = new category(n, pathVal+'_1', uri, cName);
+                        var cat = new category(n, ts.wdr.getUniqueCategoryId(pathVal+'_1'), uri, cName);
                         createChildNodes2(n2, cat);
                         return cat;
                     } else {
@@ -1342,13 +1402,22 @@ WADLParser.prototype = {
          if(node.childNodes != null && node.childNodes.length > 0) {
              for (var i = 0; i < node.childNodes.length; ++i) {
                 var ch = node.childNodes[i];
-                if(this.isResource(ch) /*&& !isTemplateResource(ch)*/) {
+                if(this.isResource(ch) /*&& !isTemplateResource(ch)*/ && 
+                      this.hasMethod(ch)) {
                     return true;
                 }
              } 
          }
      }
      return false;
+   },
+   
+   hasMethod : function (/*Node*/ n) {
+       var methods = ts.getElementsByTagName(n, 'method');
+       if(methods != null && methods.length > 0) {
+           return true;
+       }
+       return false;
    },
     
     prependSeperator : function (cName) {
@@ -1446,6 +1515,10 @@ WADLParser.prototype = {
         }
     },
     
+    showTopCategory : function (){
+        this.showCategory(this.getTopCategoryId());
+    },
+    
     showCategory : function (category){
         var categoryChildNodes = document.getElementById(category).style;
         if(categoryChildNodes.display=="block")
@@ -1454,10 +1527,18 @@ WADLParser.prototype = {
             categoryChildNodes.display="block";
         ts.toggleCategory(category);
     },
+    
+    getTopCategoryId : function (){
+        return 'resources' + '_0';
+    },
 
+    getUniqueCategoryId : function (category){
+        return category + '_' + ts.allcat.length;
+    },
+    
     updateTree : function (catId){
-        if(catId == 'resources') {//return if top level
-            this.showCategory('resources');
+        if(catId == this.getTopCategoryId()) {//return if top level
+            this.showTopCategory();
             return;
         }
         var myTree = this.createTree(ts.wadlDoc);
@@ -1471,7 +1552,7 @@ WADLParser.prototype = {
     refreshCategory : function(){
         var catId = currentCategory;
         ts.updatepage(catId, childrenContent);
-        this.showCategory('resources');
+        this.showTopCategory();
         this.showCategory(catId);
     },
 
@@ -1811,101 +1892,47 @@ XHR.prototype = {
         return xmlHttpReq;
     },
 
-    get : function(url, mime) {
-        var xmlHttpReq = this.connect('GET', url, mime, 0, false);
+    httpRequest : function(method, url, mime, content, monitor) {
+        var len = 0;
+        if(content != undefined && content != null)
+            len = content.length;
+        var xmlHttpReq = this.connect(method, url, mime, len, false);
         try {
-            xmlHttpReq.send(null);
-            if (this.isResponseReady(xmlHttpReq, '', true)) {
+            xmlHttpReq.send(content);
+            if (this.isResponseReady(method, xmlHttpReq, content, monitor)) {
               var rtext = xmlHttpReq.responseText;
               if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
-                  var err = 'Get MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
-                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
-                  ts.debug('Failed XHR(GET, '+url+'): '+err);
+                  var err = method+' MSG_TEST_RESBEANS_RequestFailed RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n<br/>'+
+                      'MSG_TEST_RESBEANS_Response: {<br/>' + xmlHttpReq.responseText + "<br/>}";
+                  ts.debug('Failed XHR('+method+', '+url+'): '+err);
                   return err;
               }
               return rtext;           
             }
         } catch( e ) {
-           ts.debug('get(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
+           ts.debug('httpRetrieve(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
         }
         return '-1';
     },
-
-    post : function(url, mime, content) {
-        var xmlHttpReq = this.connect('POST', url, mime, content.length, false);
-        try {
-            xmlHttpReq.send(content);
-            if (this.isResponseReady(xmlHttpReq, content, true)) {
-                var status = xmlHttpReq.status;
-                if(status != 201) {
-                  var err = 'Post MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
-                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
-                  ts.debug('Failed XHR(POST, '+url+'): '+err);
-                  return err;
-                }
-            }
-        } catch( e ) {
-          ts.debug('post(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
-        }
-        return 'Post succeeded for: '+url+'. Server returned: '+xmlHttpReq.responseText;
-    },
-
-    put : function(url, mime, content) {
-        var xmlHttpReq = this.connect('PUT', url, mime, content.length, false);
-        try {
-            xmlHttpReq.send(content);
-            if (this.isResponseReady(xmlHttpReq, content, true)) {
-              var status = xmlHttpReq.status;
-              if(status != 204) {
-                  var err = 'Put MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
-                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
-                  ts.debug('Failed XHR(PUT, '+url+'): '+err);
-                  return err;
-              }
-            }
-        } catch( e ) {
-          ts.debug('put(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
-        }
-        return 'Put succeeded for: '+url+'. Server returned: '+xmlHttpReq.responseText;
-    },
-
-    delete_ : function(url) {
-        var xmlHttpReq = this.connect('DELETE', url, 'application/xml', 0, false);
-        try {
-            xmlHttpReq.send(null);  
-            if (this.isResponseReady(xmlHttpReq, '', true)) {
-              var status = xmlHttpReq.status;
-              if(status != 204) {
-                  var err = 'Delete MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
-                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
-                  ts.debug('Failed XHR(DELETE, '+url+'): '+err);
-                  return err;
-              }
-            }
-        } catch( e ) {
-          ts.debug('delete(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
-        }
-        return 'Delete succeeded for: '+url+'. Server returned: '+xmlHttpReq.responseText;
+    
+    get : function(url, mime) {
+        return this.httpRequest('GET', url, mime, null, true);
     },
     
     options : function(url, mime) {
-        var xmlHttpReq = this.connect('OPTIONS', url, mime, 0, false);
-        try {
-            xmlHttpReq.send(null);
-            if (this.isResponseReady(xmlHttpReq, '', false)) {
-              var rtext = xmlHttpReq.responseText;
-              if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
-                  var err = 'Options MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
-                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
-                  ts.debug('Failed XHR(GET, '+url+'): '+err);
-                  return err;
-              }
-              return rtext;           
-            }
-        } catch( e ) {
-           ts.debug('get(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
-        }
-        return '-1';
+        return this.httpRequest('OPTIONS', url, mime, null, false);
+    },
+
+    post : function(url, mime, content) {
+        return this.httpRequest('POST', url, mime, content, true);
+    },
+
+    put : function(url, mime, content) {
+        return this.httpRequest('PUT', url, mime, content, true);
+    },
+
+    delete_ : function(url) {
+        return this.httpRequest('DELETE', url, 'application/xml', true);
     },
     
     loadXml : function(xmlStr) {
@@ -1926,11 +1953,11 @@ XHR.prototype = {
         return doc2;
     },
     
-    isResponseReady : function (xmlHttpReq, param, monitor) {
+    isResponseReady : function (method, xmlHttpReq, param, monitor) {
         if (xmlHttpReq.readyState == 4) {
             if(monitor) {
                 ts.currentXmlHttpReq = xmlHttpReq;
-                ts.monitor(xmlHttpReq, param);
+                ts.monitor(method, xmlHttpReq, param);
             }
             return true;
         } else

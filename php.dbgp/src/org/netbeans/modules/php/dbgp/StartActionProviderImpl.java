@@ -270,51 +270,48 @@ public class StartActionProviderImpl {
             if ( !createServer() ) {
                 return;
             }
+            Socket sessionSocket = null;
             while( !isStopped()){
-                Socket sessionSocket = null;
-                
-                try {
-                    setAcceptingState(true);
-                    sessionSocket = myServer.accept();
-                } catch ( SocketException e ){
-                    /*
-                     *  This can be result of inaccurate closing socket from
-                     *  other thread. Just log with inforamtion severity. 
-                     */  
-                    logInforamtion(e);
-                } catch( SocketTimeoutException e ){
-                    // skip this exception, it's normal
-                } catch( IOException e ){
-                    log( e );
-                } finally {
-                    setAcceptingState(false);
+                if (sessionSocket == null) {
+                    try {
+                        setAcceptingState(true);
+                        sessionSocket = myServer.accept();
+                    } catch ( SocketException e ){
+                        /*
+                         *  This can be result of inaccurate closing socket from
+                         *  other thread. Just log with inforamtion severity.
+                         */
+                        log(e);
+                    } catch( SocketTimeoutException e ){
+                        // skip this exception, it's normal
+                        log(e);
+                    } catch( IOException e ){
+                        log(e );
+                    } finally {
+                        setAcceptingState(false);
+                    }
                 }
                 if (!isStopped.get() && sessionSocket != null) {
-                    /*DebugSession session = 
-                        new DebugSession(  );
-                    session.start(sessionSocket);
-                     */ 
                     DebugSession session = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, DebugSession.class);
-                    assert session != null;
-                    session.start(sessionSocket);
-                    setupCurrentSession( session );
-                    break;
+                    if (session != null) {
+                        session.start(sessionSocket);
+                        setupCurrentSession( session );
+                        sessionSocket = null;
+                        break;
+                    } else {
+                        log(new AssertionError(sessionSocket));//NOI18N
+                    }
                 }
             }
             
             closeSocket();
         }
 
-        private void log( Exception exception ){
+        private void log( Throwable exception ){
             Logger.getLogger( StartActionProviderImpl.class.getName() ).log( 
                     Level.FINE, null, exception );
         }
-        
-        private void logInforamtion( SocketException e ){
-            Logger.getLogger( StartActionProviderImpl.class.getName() ).log( 
-                    Level.FINE, null, e );
-        }
-        
+                
         private boolean createServer() {
             synchronized (StartActionProviderImpl.this) {
                 try {

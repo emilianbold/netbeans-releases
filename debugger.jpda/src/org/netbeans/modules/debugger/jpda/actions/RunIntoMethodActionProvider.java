@@ -41,6 +41,7 @@
 package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.Location;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
@@ -93,14 +94,12 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                                                     ActionsManagerListener {
 
     private JPDADebuggerImpl debugger;
-    private Session session;
     private ActionsManager lastActionsManager;
     private SourcePath sourcePath;
     
     public RunIntoMethodActionProvider(ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
                 (null, JPDADebugger.class);
-        session = lookupProvider.lookupFirst(null, Session.class);
         sourcePath = lookupProvider.lookupFirst(null, SourcePath.class);
         debugger.addPropertyChangeListener (JPDADebuggerImpl.PROP_STATE, this);
         EditorContextBridge.getContext().addPropertyChangeListener (this);
@@ -200,16 +199,17 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                 }
             });
             DebuggerManager.getDebuggerManager().addBreakpoint(cbrkp);
-            resume();
+            resume(debugger);
         }
     }
     
-    private void resume() {
+    private static void resume(JPDADebugger debugger) {
         if (debugger.getSuspend() == JPDADebugger.SUSPEND_EVENT_THREAD) {
             debugger.getCurrentThread().resume();
             //((JPDADebuggerImpl) debugger).resumeCurrentThread();
         } else {
             //((JPDADebuggerImpl) debugger).resume();
+            Session session = ((JPDADebuggerImpl) debugger).getSession();
             session.getEngineForLanguage ("Java").getActionsManager ().doAction (
                 ActionsManager.ACTION_CONTINUE
             );
@@ -253,13 +253,23 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         if (bpLocation == null) {
             bpLocation = locations.get(0);
         }
+        doAction(debugger, methodName, bpLocation);
+    }
+
+    static void doAction(final JPDADebuggerImpl debugger, final String methodName, Location bpLocation) {
         final VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return ;
         final int line = bpLocation.lineNumber("Java");
         CallStackFrameImpl csf = (CallStackFrameImpl) debugger.getCurrentCallStackFrame();
-        if (csf != null && csf.getStackFrame().location().equals(bpLocation)) {
+        boolean areWeOnTheLocation;
+        try {
+            areWeOnTheLocation = csf != null && csf.getStackFrame().location().equals(bpLocation);
+        } catch (InvalidStackFrameException e) {
+            areWeOnTheLocation = false;
+        }
+        if (areWeOnTheLocation) {
             // We're on the line from which the method is called
-            traceLineForMethod(methodName, line);
+            traceLineForMethod(debugger, methodName, line);
         } else {
             // Submit the breakpoint to get to the point from which the method is called
             final BreakpointRequest brReq = vm.eventRequestManager().createBreakpointRequest(bpLocation);
@@ -270,7 +280,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                         fine("Calling location reached, tracing for "+methodName+"()");
                     vm.eventRequestManager().deleteEventRequest(brReq);
                     debugger.getOperator().unregister(brReq);
-                    traceLineForMethod(methodName, line);
+                    traceLineForMethod(debugger, methodName, line);
                     return true;
                 }
                 
@@ -279,10 +289,10 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             brReq.setSuspendPolicy(debugger.getSuspend());
             brReq.enable();
         }
-        resume();
+        resume(debugger);
     }
     
-    private void traceLineForMethod(final String method, final int methodLine) {
+    private static void traceLineForMethod(final JPDADebugger debugger, final String method, final int methodLine) {
         final int depth = debugger.getCurrentThread().getStackDepth();
         final JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_INTO);
         step.setHidden(true);

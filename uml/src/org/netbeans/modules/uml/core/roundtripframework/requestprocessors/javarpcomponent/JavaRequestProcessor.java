@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.uml.core.roundtripframework.requestprocessors.javarpcomponent;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dialog;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicity;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
@@ -101,6 +104,9 @@ import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogResultKind;
 import org.netbeans.modules.uml.ui.support.commondialogs.IQuestionDialog;
 import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
 import org.netbeans.modules.uml.util.DummyCorePreference;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbPreferences;
 
 /**
@@ -1538,30 +1544,20 @@ public class JavaRequestProcessor implements IJavaRequestProcessor
                         checkWithUser = true;
                 }
                 
-                if ( checkWithUser )
+                if (checkWithUser) 
                 {
-                    IQuestionDialog pDiag = new SwingQuestionDialogImpl();
-                    if ( pDiag != null )
+                    String message = RPMessages.getString("IDS_JRT_PACKAGE_DELETE");
+                    String title = RPMessages.getString("IDS_JRT_PACKAGE_DELETE_TITLE");
+
+                    DialogDescriptor dialogDescriptor = new DialogDescriptor(message, title, true,
+                            NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.YES_OPTION, null);
+                    Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
+                    dialog.getAccessibleContext().setAccessibleDescription(title);
+                    dialog.setVisible(true);
+                    if (dialogDescriptor.getValue() == DialogDescriptor.NO_OPTION) 
                     {
-                        
-                        String message = RPMessages.getString("IDS_JRT_PACKAGE_DELETE");
-                        String title = RPMessages.getString("IDS_JRT_PACKAGE_DELETE_TITLE");
-                        
-                        int defaultresult = SimpleQuestionDialogResultKind.SQDRK_RESULT_YES;
-                        QuestionResponse result = pDiag.displaySimpleQuestionDialogWithCheckbox(
-                                SimpleQuestionDialogKind.SQDK_YESNO,
-                                ErrorDialogIconKind.EDIK_ICONWARNING,
-                                message,
-                                "",
-                                title,
-                                defaultresult,
-                                false);
-                        
-                        if ( result.getResult() == SimpleQuestionDialogResultKind.SQDRK_RESULT_NO )
-                        {
-                            // DENIED BY USER
-                            cell.setContinue(false);
-                        }
+                        // DENIED BY USER
+                        cell.setContinue(false);
                     }
                 }
             }

@@ -43,15 +43,17 @@ package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
-import org.netbeans.lib.ddl.impl.CreateView;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
@@ -59,6 +61,10 @@ import org.netbeans.modules.db.explorer.*;
 import org.openide.awt.Mnemonics;
 
 public class AddViewDialog {
+
+    private static final Logger LOGGER = Logger.getLogger(AddIndexDialog.class.getName());
+
+    private final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
     boolean result = false;
     Dialog dialog = null;
     JTextField namefld;
@@ -66,7 +72,6 @@ public class AddViewDialog {
 
     public AddViewDialog(final Specification spec, final DatabaseNodeInfo info) {
         try {
-            ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
             JPanel pane = new JPanel();
             pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
             GridBagLayout layout = new GridBagLayout();
@@ -151,8 +156,14 @@ public class AddViewDialog {
                                 dialog.setVisible(false);
                                 dialog.dispose();
                             }
-                        } catch (Exception e) {
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                        } catch (InvocationTargetException e) {
+                            Throwable cause = e.getCause();
+                            if (cause instanceof DDLException) {
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                            } else {
+                                LOGGER.log(Level.INFO, null, cause);
+                                DbUtilities.reportError(bundle.getString("ERR_UnableToCreateView"), e.getMessage());
+                            }
                         }
                     }
                 }

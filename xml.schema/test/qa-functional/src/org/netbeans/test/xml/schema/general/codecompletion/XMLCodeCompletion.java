@@ -50,7 +50,7 @@ import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jellytools.MainWindowOperator;
 import java.awt.event.KeyEvent;
 //import java.awt.Robot;
@@ -74,8 +74,11 @@ public class XMLCodeCompletion extends GeneralXMLTest {
     protected CompletionJListOperator GetCompletion( )
     {
       CompletionJListOperator comp = null;
+      int iRedo = 5;
       while( true )
       {
+        try
+        {
         comp = new CompletionJListOperator( );
         try
         {
@@ -87,7 +90,14 @@ public class XMLCodeCompletion extends GeneralXMLTest {
         {
           return null;
         }
-        try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) {}
+        }
+        catch( JemmyException ex )
+        {
+          System.out.println( "Wait completion timeout." );
+          if( 0 == --iRedo )
+            return null;
+        }
+        Sleep( 100 );//try{ Thread.sleep( 100 ); } catch( InterruptedException ex ) {}
       }
     }
 

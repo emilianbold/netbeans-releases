@@ -41,6 +41,7 @@
 
 package org.netbeans.lib.lexer;
 
+import java.util.logging.Level;
 import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.CharSubSequence;
@@ -58,9 +59,6 @@ import org.netbeans.lib.editor.util.CharSubSequence;
  */
 
 public abstract class PreprocessedTextStorage implements CharSequence {
-    
-    /** Flag for additional correctness checks (may degrade performance). */
-    private static final boolean testing = Boolean.getBoolean("netbeans.debug.lexer.test");
     
     /**
      * Create preprocessed characters storage.
@@ -104,7 +102,7 @@ public abstract class PreprocessedTextStorage implements CharSequence {
                     preprocessedCharsLength, totalRawLengthShift, arr);
         }
 
-        if (testing)
+        if (TokenList.LOG.isLoggable(Level.FINE))
             storage.consistencyCheck();
         return storage;
     }
@@ -181,7 +179,7 @@ public abstract class PreprocessedTextStorage implements CharSequence {
             storage = new IntRawIndex(rawText, preprocessedCharsCopy, preprocessedStartIndex, length, totalRawLengthShift, arr);
         }
         
-        if (testing)
+        if (TokenList.LOG.isLoggable(Level.FINE))
             storage.consistencyCheck();
         return storage;
     }

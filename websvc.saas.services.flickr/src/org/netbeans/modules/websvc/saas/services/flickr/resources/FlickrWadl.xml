@@ -1823,7 +1823,7 @@ A tag, for instance, is considered a limiting agent as are user defined min_date
                         <representation mediaType="text/xml" element="f:rsp"/>
                     </response>
                 </method>
-                <method id="photos_setTags" name="POST">
+                <method id="photos_setTags" name="GET">
                     <doc xml:lang="en">Set the tags for a photo.
                     </doc>
                     <request>

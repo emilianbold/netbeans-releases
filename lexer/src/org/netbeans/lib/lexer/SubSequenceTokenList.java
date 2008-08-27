@@ -157,11 +157,11 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
             : null;
     }
 
-    public int tokenOffsetByIndex(int index) {
+    public int tokenOffset(int index) {
         index += limitStartIndex;
         if (index >= limitEndIndex)
             throw new IndexOutOfBoundsException("index=" + index + " >= limitEndIndex=" + limitEndIndex);
-        return tokenList.tokenOffsetByIndex(index);
+        return tokenList.tokenOffset(index);
     }
 
     public int[] tokenIndex(int offset) {
@@ -231,14 +231,14 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
     
     public int startOffset() {
         if (tokenCountCurrent() > 0 || tokenCount() > 0)
-            return tokenOffsetByIndex(0);
+            return tokenOffset(0);
         return limitStartOffset;
     }
 
     public int endOffset() {
         int cntM1 = tokenCount() - 1;
         if (cntM1 >= 0)
-            return tokenOffsetByIndex(cntM1) + tokenList.tokenOrEmbedding(cntM1).token().length();
+            return tokenOffset(cntM1) + tokenList.tokenOrEmbedding(cntM1).token().length();
         return limitStartOffset;
     }
     

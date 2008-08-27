@@ -172,6 +172,14 @@ public final class Config {
     set(BORDER, value);
   }
 
+  public boolean isSelection() {
+    return get(SELECTION, false);
+  }
+
+  public void setSelection(boolean value) {
+    set(SELECTION, value);
+  }
+
   public boolean isAsEditor() {
     return get(AS_EDITOR, false);
   }
@@ -488,6 +496,7 @@ public final class Config {
   private static final String FOOTER_CENTER_TEXT = EMPTY;
   private static final String FOOTER_RIGHT_TEXT = Macro.MODIFIED_DATE.getName() + "  " + Macro.MODIFIED_TIME.getName(); // NOI18N
 
+  private static final String SELECTION = "print.text.selection"; // NOI18N
   private static final String AS_EDITOR = "print.text.as.editor"; // NOI18N
   private static final String WRAP_LINES = "print.text.wrap.lines"; // NOI18N
   private static final String LINE_NUMBERS = "print.text.line.numbers"; // NOI18N

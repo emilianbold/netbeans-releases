@@ -73,8 +73,10 @@ public class TxTest extends TestCase {
     public void testTx() throws Exception {
         TestCatalogModel.getDefault().setDocumentPooling(true);
         WSDLModel model = TestUtil.loadWSDLModel("../wsdlmodelext/resources/policy.xml");
-        WSDLComponentFactory fact = model.getFactory();
-        
+        File f = new File("TxTest.wsdl");
+        if (f.exists()) {
+            f.delete();
+        }        
         model.startTransaction();
 
         Definitions d = model.getDefinitions();
@@ -96,7 +98,7 @@ public class TxTest extends TestCase {
         
         model.endTransaction();
 
-        TestUtil.dumpToFile(model.getBaseDocument(), new File("C:\\TestService.wsdl"));
+        TestUtil.dumpToFile(model.getBaseDocument(), f);
     }
 
     public String getTestResourcePath() {

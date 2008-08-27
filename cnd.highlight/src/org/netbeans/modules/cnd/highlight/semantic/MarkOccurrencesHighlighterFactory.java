@@ -79,6 +79,13 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
             public boolean isValid() {
                 return !enabled();
             }
+            
+            public void cancel() {
+            }
+
+            public boolean isHighPriority() {
+                return false;
+            }
         };
     }
     

@@ -342,9 +342,11 @@ final class TaskListTopComponent extends TopComponent {
             taskManager.removePropertyChangeListener( TaskManagerImpl.PROP_WORKING_STATUS, changeListener );
             changeListener = null;
         }
-        if( null != progress )
-            progress.finish();
-        progress = null;
+        synchronized( this ) {
+            if( null != progress )
+                progress.finish();
+            progress = null;
+        }
         try {
             FilterRepository.getDefault().save();
         } catch( IOException ioE ) {
@@ -479,9 +481,9 @@ final class TaskListTopComponent extends TopComponent {
                                             return true;
                                         }
                                     });                            
+                            progress.start();
+                            progress.switchToIndeterminate();
                         }
-                        progress.start();
-                        progress.switchToIndeterminate();
                     } else {
                         if( null != progress )
                             progress.finish();

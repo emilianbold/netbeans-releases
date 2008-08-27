@@ -11,7 +11,7 @@ Includes:
     <no includes>
 Macros:
     <no macros>
-CLASS C<typename T> (C ) [2:1/1-8:3/145] lcurly=31 SCOPE: $Global$ 
+CLASS C<typename T> (C ) [2:1/1-8:2/144] lcurly=31 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         TYPEDEF mytype  [4:5/45-4:42/82] TYPE: *$unresolved$::T::iterator TEXT=T::iterator*  [4:22/62-4:34/74] SCOPE: C 
@@ -27,16 +27,16 @@ FUNCTION DEFINITION func  [10:1/147-14:2/213] FunctionDDImpl SCOPE: $Global$
     STATEMENT COMPOUND  [12:1/182-14:2/213] SCOPE: func 
         STATEMENT DECLARATION  [13:5/188-13:28/211] SCOPE: Stmt  [12:1/182-14:2/213]
             VARIABLE t [13:5/188-13:28/211]  TYPE: $unresolved$::T::iterator TEXT=T::iterator  [13:5/188-13:25/208]  INIT: null  SCOPE: Stmt  [12:1/182-14:2/213]
-CLASS A (A ) [16:1/215-22:3/279] lcurly=224 SCOPE: $Global$ 
+CLASS A (A ) [16:1/215-22:2/278] lcurly=224 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        CLASS iterator (A::iterator ) [19:5/238-21:7/276] lcurly=253 SCOPE: A 
+        CLASS iterator (A::iterator ) [19:5/238-21:6/275] lcurly=253 SCOPE: A 
             BASE CLASSES:
             MEMBERS:
                 FIELD PRIVATE i [20:9/263-20:15/269]  TYPE: int TEXT=int  [20:9/263-20:12/266]  INIT: null  SCOPE: iterator 
 
 ========== Dumping model of PROJECT DummyProject
-CLASS C<typename T> (C ) [2:1/1-8:3/145] lcurly=31 SCOPE: $Global$ 
+CLASS C<typename T> (C ) [2:1/1-8:2/144] lcurly=31 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
         TYPEDEF mytype  [4:5/45-4:42/82] TYPE: *$unresolved$::T::iterator TEXT=T::iterator*  [4:22/62-4:34/74] SCOPE: C 
@@ -52,10 +52,10 @@ FUNCTION DEFINITION func  [10:1/147-14:2/213] FunctionDDImpl SCOPE: $Global$
     STATEMENT COMPOUND  [12:1/182-14:2/213] SCOPE: func 
         STATEMENT DECLARATION  [13:5/188-13:28/211] SCOPE: Stmt  [12:1/182-14:2/213]
             VARIABLE t [13:5/188-13:28/211]  TYPE: $unresolved$::T::iterator TEXT=T::iterator  [13:5/188-13:25/208]  INIT: null  SCOPE: Stmt  [12:1/182-14:2/213]
-CLASS A (A ) [16:1/215-22:3/279] lcurly=224 SCOPE: $Global$ 
+CLASS A (A ) [16:1/215-22:2/278] lcurly=224 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        CLASS iterator (A::iterator ) [19:5/238-21:7/276] lcurly=253 SCOPE: A 
+        CLASS iterator (A::iterator ) [19:5/238-21:6/275] lcurly=253 SCOPE: A 
             BASE CLASSES:
             MEMBERS:
                 FIELD PRIVATE i [20:9/263-20:15/269]  TYPE: int TEXT=int  [20:9/263-20:12/266]  INIT: null  SCOPE: iterator 

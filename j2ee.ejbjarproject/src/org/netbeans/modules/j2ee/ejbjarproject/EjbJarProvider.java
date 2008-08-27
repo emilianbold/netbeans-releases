@@ -140,18 +140,23 @@ public final class EjbJarProvider extends J2eeModuleProvider
     }
     
     public FileObject getMetaInf() {
-        FileObject metaInf = getFileObject(EjbJarProjectProperties.META_INF);
+        String value = helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.META_INF);
+
+        return resolveMetaInf(value);
+    }
+
+    FileObject resolveMetaInf(String value) {
+        FileObject metaInf = value != null ? helper.resolveFileObject(value) : null;
         if (metaInf == null) {
             String version = project.getAPIEjbJar().getJ2eePlatformVersion();
             if (needConfigurationFolder(version)) {
-                String relativePath = helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.META_INF);
-                String path = (relativePath != null ? helper.resolvePath(relativePath) : "");
+                String path = (value != null ? helper.resolvePath(value) : "");
                 showErrorMessage(NbBundle.getMessage(EjbJarProvider.class,"MSG_MetaInfCorrupted", project.getName(), path));
             }
         }
         return metaInf;
     }
-    
+
     /** Package-private for unit test only. */
     static boolean needConfigurationFolder(final String version) {
         return ProjectProperties.J2EE_1_3.equals(version) ||

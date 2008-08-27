@@ -54,7 +54,7 @@ import org.netbeans.modules.vmd.midpnb.components.resources.CancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.TableModelCD;
-import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;

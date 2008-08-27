@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.editor.api;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.editor.cplusplus.CKit;
+import org.netbeans.modules.cnd.MIMENames;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.openide.util.NbBundle;
 
@@ -70,30 +70,43 @@ public final class CodeStyle {
             case C:
                 if (INSTANCE_C == null) {
                     INSTANCE_C = create(language);
+                    setSimplePreferences(language, INSTANCE_C);
                 }
                 return INSTANCE_C;
             case CPP:
             default:
                 if (INSTANCE_CPP == null) {
                     INSTANCE_CPP = create(language);
+                    setSimplePreferences(language, INSTANCE_CPP);
                 }
                 return INSTANCE_CPP;
         }
     }
+    
+    private static void setSimplePreferences(Language language, CodeStyle codeStyle){
+        EditorOptions.updateSimplePreferences(language, codeStyle);
+    }
 
     public synchronized static CodeStyle getDefault(Document doc) {
-        if (doc instanceof BaseDocument) {
-            if (CKit.class.equals(((BaseDocument)doc).getKitClass())) {
+        String mimeType = (String)doc.getProperty(BaseDocument.MIME_TYPE_PROP);
+        if (mimeType == null) {
+            System.out.println("Undefined MIME type of document "+doc); // NOI18N
+            //if (doc instanceof BaseDocument) {
+            //    if (CKit.class.equals(((BaseDocument)doc).getKitClass())) {
+            //        return getDefault(Language.C);
+            //    }
+            //}
+        } else {
+            if (mimeType.equals(MIMENames.C_MIME_TYPE)) {
                 return getDefault(Language.C);
             }
         }
         return getDefault(Language.CPP);
     }
-    
+
     private static CodeStyle create(Language language) {
         return new CodeStyle(language, EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language)));
     }
-    
 
     // General indents ------------------------------------------------
     
@@ -105,6 +118,11 @@ public final class CodeStyle {
     public boolean expandTabToSpaces() {
         return getOption(EditorOptions.expandTabToSpaces,
                          EditorOptions.expandTabToSpacesDefault);
+    }
+
+    public int getTabSize() {
+        return getOption(EditorOptions.tabSize,
+                         EditorOptions.tabSizeDefault);
     }
 
     public int getFormatStatementContinuationIndent() {
@@ -135,10 +153,6 @@ public final class CodeStyle {
     public boolean sharpAtStartLine(){
         return getOption(EditorOptions.sharpAtStartLine,
                          EditorOptions.sharpAtStartLineDefault);
-    }
-
-    public int getGlobalTabSize() {
-        return EditorOptions.getGlobalTabSize(language);
     }
 
     // indents ------------------------------------------------

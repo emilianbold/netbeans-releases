@@ -174,7 +174,7 @@ public class ControllerView extends Widget
             
             int r = (int) Math.ceil(radius);
             Graphics2D g = getGraphics();
-            g.setColor(getForeground());
+            g.setColor(Color.BLACK);
             
             int midX = bounds.x + (int)(bounds.width / 2);
             int midY = bounds.y + (int)(bounds.height / 2);

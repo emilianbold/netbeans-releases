@@ -1,0 +1,224 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE template_fun_spec.cc
+Includes:
+<stdio.h> <FAILED inclusion> [1:1/0-1:19/18]
+Macros:
+    <no macros>
+CLASS pair<typename K,typename V=K> (pair ) [3:1/20-6:2/98] lcurly=68 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FIELD PRIVATE first [4:5/74-4:13/82]  TYPE: pair::K TEXT=K  [4:5/74-4:6/75]  INIT: null  SCOPE: pair 
+        FIELD PRIVATE second [5:5/87-5:14/96]  TYPE: pair::V TEXT=V  [5:5/87-5:6/88]  INIT: null  SCOPE: pair 
+FUNCTION func [9:1/130-9:41/170] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: func  [35:1/896-37:2/958]
+    SIGNATURE func<class>(T)
+    UNIQUE NAME F:func<class>(T)
+    PARAMETERS:
+        p [9:36/165-9:39/168]  TYPE: func::T TEXT=T  [9:36/165-9:37/166]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [9:19/148-9:30/159]
+FUNCTION func [12:1/213-12:42/254] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: func  [40:1/1001-42:2/1067]
+    SIGNATURE func<class>(T*)
+    UNIQUE NAME F:func<class>(T*)
+    PARAMETERS:
+        p [12:36/248-12:40/252]  TYPE: *func::T TEXT=T*  [12:36/248-12:38/250]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [12:19/231-12:30/242]
+FUNCTION func [15:1/297-15:49/345] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: func  [45:1/1110-47:2/1180]
+    SIGNATURE func<class>(pair<class,class>)
+    UNIQUE NAME F:func<class>(pair<class,class>)
+    PARAMETERS:
+        p [15:36/332-15:47/343]  TYPE: pair TEXT=pair<T,T>  [15:36/332-15:45/341]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [15:19/315-15:30/326]
+FUNCTION func [18:1/385-18:37/421] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: func  [50:1/1220-52:2/1278]
+    SIGNATURE func(char)
+    UNIQUE NAME F:func(char)
+    PARAMETERS:
+        p [18:29/413-18:35/419]  TYPE: char TEXT=char  [18:29/413-18:33/417]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [18:12/396-18:23/407]
+FUNCTION func [21:1/461-21:47/507] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: func  [55:1/1319-57:2/1400]
+    SIGNATURE func(pair<char,char>)
+    UNIQUE NAME F:func(pair<char,char>)
+    PARAMETERS:
+         [21:29/489-21:45/505]  TYPE: pair TEXT=pair<char,char>  [21:29/489-21:45/505]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [21:12/472-21:23/483]
+FUNCTION DEFINITION main  [23:1/509-32:2/866] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE main(int,char**)
+    UNIQUE NAME f:main(int,char**)
+    DECLARATION: main  [23:1/509-32:2/866]
+    PARAMETERS:
+        argc [23:10/518-23:18/526]  TYPE: int TEXT=int  [23:10/518-23:13/521]  INIT: null  SCOPE: main 
+        argv [23:20/528-23:31/539]  TYPE: **char TEXT=char**  [23:20/528-23:26/534]  INIT: null  SCOPE: main 
+    RETURNS int TEXT=int  [23:1/509-23:4/512]
+    STATEMENT COMPOUND  [23:33/541-32:2/866] SCOPE: main 
+        STATEMENT EXPRESSION  [24:5/547-24:31/573] SCOPE: Stmt  [23:33/541-32:2/866] text: 'printf("%s\n", func(argc))'
+        STATEMENT EXPRESSION  [25:5/596-25:31/622] SCOPE: Stmt  [23:33/541-32:2/866] text: 'printf("%s\n", func(argv))'
+        STATEMENT EXPRESSION  [26:5/648-26:30/673] SCOPE: Stmt  [23:33/541-32:2/866] text: 'printf("%s\n", func('c'))'
+        STATEMENT DECLARATION  [27:5/697-27:25/717] SCOPE: Stmt  [23:33/541-32:2/866]
+            VARIABLE pc [27:5/697-27:25/717]  TYPE: pair TEXT=pair<char,char>  [27:5/697-27:21/713]  INIT: null  SCOPE: Stmt  [23:33/541-32:2/866]
+        STATEMENT EXPRESSION  [28:5/722-28:29/746] SCOPE: Stmt  [23:33/541-32:2/866] text: 'printf("%s\n", func(pc))'
+        STATEMENT DECLARATION  [29:5/783-29:23/801] SCOPE: Stmt  [23:33/541-32:2/866]
+            VARIABLE pi [29:5/783-29:23/801]  TYPE: pair TEXT=pair<int,int>  [29:5/783-29:19/797]  INIT: null  SCOPE: Stmt  [23:33/541-32:2/866]
+        STATEMENT EXPRESSION  [30:5/806-30:29/830] SCOPE: Stmt  [23:33/541-32:2/866] text: 'printf("%s\n", func(pi))'
+        STATEMENT RETURN  [31:5/855-31:14/864] SCOPE: Stmt  [23:33/541-32:2/866] text: 'return 0;'
+FUNCTION DEFINITION func  [35:1/896-37:2/958] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE func<class>(T)
+    UNIQUE NAME f:func<class>(T)
+    DECLARATION: func  [9:1/130-9:41/170]
+    PARAMETERS:
+        p [35:36/931-35:39/934]  TYPE: func::T TEXT=T  [35:36/931-35:37/932]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [35:19/914-35:30/925]
+    STATEMENT COMPOUND  [35:41/936-37:2/958] SCOPE: func 
+        STATEMENT RETURN  [36:5/942-36:19/956] SCOPE: Stmt  [35:41/936-37:2/958] text: 'return "base";'
+FUNCTION DEFINITION func  [40:1/1001-42:2/1067] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE func<class>(T*)
+    UNIQUE NAME f:func<class>(T*)
+    DECLARATION: func  [12:1/213-12:42/254]
+    PARAMETERS:
+        p [40:36/1036-40:40/1040]  TYPE: *func::T TEXT=T*  [40:36/1036-40:38/1038]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [40:19/1019-40:30/1030]
+    STATEMENT COMPOUND  [40:42/1042-42:2/1067] SCOPE: func 
+        STATEMENT RETURN  [41:5/1048-41:22/1065] SCOPE: Stmt  [40:42/1042-42:2/1067] text: 'return "pointer";'
+FUNCTION DEFINITION func  [45:1/1110-47:2/1180] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE func<class>(pair<class,class>)
+    UNIQUE NAME f:func<class>(pair<class,class>)
+    DECLARATION: func  [15:1/297-15:49/345]
+    PARAMETERS:
+        p [45:36/1145-45:47/1156]  TYPE: pair TEXT=pair<T,T>  [45:36/1145-45:45/1154]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [45:19/1128-45:30/1139]
+    STATEMENT COMPOUND  [45:49/1158-47:2/1180] SCOPE: func 
+        STATEMENT RETURN  [46:5/1164-46:19/1178] SCOPE: Stmt  [45:49/1158-47:2/1180] text: 'return "pair";'
+FUNCTION DEFINITION func  [50:1/1220-52:2/1278] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE func(char)
+    UNIQUE NAME f:func(char)
+    DECLARATION: func  [18:1/385-18:37/421]
+    PARAMETERS:
+        p [50:29/1248-50:35/1254]  TYPE: char TEXT=char  [50:29/1248-50:33/1252]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [50:12/1231-50:23/1242]
+    STATEMENT COMPOUND  [50:37/1256-52:2/1278] SCOPE: func 
+        STATEMENT RETURN  [51:5/1262-51:19/1276] SCOPE: Stmt  [50:37/1256-52:2/1278] text: 'return "char";'
+FUNCTION DEFINITION func  [55:1/1319-57:2/1400] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE func(pair<char,char>)
+    UNIQUE NAME f:func(pair<char,char>)
+    DECLARATION: func  [21:1/461-21:47/507]
+    PARAMETERS:
+        p [55:29/1347-55:46/1364]  TYPE: pair TEXT=pair<char,char>  [55:29/1347-55:44/1362]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [55:12/1330-55:23/1341]
+    STATEMENT COMPOUND  [55:48/1366-57:2/1400] SCOPE: func 
+        STATEMENT RETURN  [56:5/1372-56:31/1398] SCOPE: Stmt  [55:48/1366-57:2/1400] text: 'return "pair<char, char>";'
+
+========== Dumping model of PROJECT DummyProject
+CLASS pair<typename K,typename V=K> (pair ) [3:1/20-6:2/98] lcurly=68 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FIELD PRIVATE first [4:5/74-4:13/82]  TYPE: pair::K TEXT=K  [4:5/74-4:6/75]  INIT: null  SCOPE: pair 
+        FIELD PRIVATE second [5:5/87-5:14/96]  TYPE: pair::V TEXT=V  [5:5/87-5:6/88]  INIT: null  SCOPE: pair 
+FUNCTION func [9:1/130-9:41/170] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: func  [35:1/896-37:2/958]
+    SIGNATURE func<class>(T)
+    UNIQUE NAME F:func<class>(T)
+    PARAMETERS:
+        p [9:36/165-9:39/168]  TYPE: func::T TEXT=T  [9:36/165-9:37/166]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [9:19/148-9:30/159]
+FUNCTION func [12:1/213-12:42/254] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: func  [40:1/1001-42:2/1067]
+    SIGNATURE func<class>(T*)
+    UNIQUE NAME F:func<class>(T*)
+    PARAMETERS:
+        p [12:36/248-12:40/252]  TYPE: *func::T TEXT=T*  [12:36/248-12:38/250]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [12:19/231-12:30/242]
+FUNCTION func [15:1/297-15:49/345] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: func  [45:1/1110-47:2/1180]
+    SIGNATURE func<class>(pair<class,class>)
+    UNIQUE NAME F:func<class>(pair<class,class>)
+    PARAMETERS:
+        p [15:36/332-15:47/343]  TYPE: pair TEXT=pair<T,T>  [15:36/332-15:45/341]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [15:19/315-15:30/326]
+FUNCTION func [18:1/385-18:37/421] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: func  [50:1/1220-52:2/1278]
+    SIGNATURE func(char)
+    UNIQUE NAME F:func(char)
+    PARAMETERS:
+        p [18:29/413-18:35/419]  TYPE: char TEXT=char  [18:29/413-18:33/417]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [18:12/396-18:23/407]
+FUNCTION func [21:1/461-21:47/507] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: func  [55:1/1319-57:2/1400]
+    SIGNATURE func(pair<char,char>)
+    UNIQUE NAME F:func(pair<char,char>)
+    PARAMETERS:
+         [21:29/489-21:45/505]  TYPE: pair TEXT=pair<char,char>  [21:29/489-21:45/505]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [21:12/472-21:23/483]
+FUNCTION DEFINITION main  [23:1/509-32:2/866] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE main(int,char**)
+    UNIQUE NAME f:main(int,char**)
+    DECLARATION: main  [23:1/509-32:2/866]
+    PARAMETERS:
+        argc [23:10/518-23:18/526]  TYPE: int TEXT=int  [23:10/518-23:13/521]  INIT: null  SCOPE: main 
+        argv [23:20/528-23:31/539]  TYPE: **char TEXT=char**  [23:20/528-23:26/534]  INIT: null  SCOPE: main 
+    RETURNS int TEXT=int  [23:1/509-23:4/512]
+    STATEMENT COMPOUND  [23:33/541-32:2/866] SCOPE: main 
+        STATEMENT EXPRESSION  [24:5/547-24:31/573] SCOPE: Stmt  [23:33/541-32:2/866] text: 'printf("%s\n", func(argc))'
+        STATEMENT EXPRESSION  [25:5/596-25:31/622] SCOPE: Stmt  [23:33/541-32:2/866] text: 'printf("%s\n", func(argv))'
+        STATEMENT EXPRESSION  [26:5/648-26:30/673] SCOPE: Stmt  [23:33/541-32:2/866] text: 'printf("%s\n", func('c'))'
+        STATEMENT DECLARATION  [27:5/697-27:25/717] SCOPE: Stmt  [23:33/541-32:2/866]
+            VARIABLE pc [27:5/697-27:25/717]  TYPE: pair TEXT=pair<char,char>  [27:5/697-27:21/713]  INIT: null  SCOPE: Stmt  [23:33/541-32:2/866]
+        STATEMENT EXPRESSION  [28:5/722-28:29/746] SCOPE: Stmt  [23:33/541-32:2/866] text: 'printf("%s\n", func(pc))'
+        STATEMENT DECLARATION  [29:5/783-29:23/801] SCOPE: Stmt  [23:33/541-32:2/866]
+            VARIABLE pi [29:5/783-29:23/801]  TYPE: pair TEXT=pair<int,int>  [29:5/783-29:19/797]  INIT: null  SCOPE: Stmt  [23:33/541-32:2/866]
+        STATEMENT EXPRESSION  [30:5/806-30:29/830] SCOPE: Stmt  [23:33/541-32:2/866] text: 'printf("%s\n", func(pi))'
+        STATEMENT RETURN  [31:5/855-31:14/864] SCOPE: Stmt  [23:33/541-32:2/866] text: 'return 0;'
+FUNCTION DEFINITION func  [35:1/896-37:2/958] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE func<class>(T)
+    UNIQUE NAME f:func<class>(T)
+    DECLARATION: func  [9:1/130-9:41/170]
+    PARAMETERS:
+        p [35:36/931-35:39/934]  TYPE: func::T TEXT=T  [35:36/931-35:37/932]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [35:19/914-35:30/925]
+    STATEMENT COMPOUND  [35:41/936-37:2/958] SCOPE: func 
+        STATEMENT RETURN  [36:5/942-36:19/956] SCOPE: Stmt  [35:41/936-37:2/958] text: 'return "base";'
+FUNCTION DEFINITION func  [40:1/1001-42:2/1067] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE func<class>(T*)
+    UNIQUE NAME f:func<class>(T*)
+    DECLARATION: func  [12:1/213-12:42/254]
+    PARAMETERS:
+        p [40:36/1036-40:40/1040]  TYPE: *func::T TEXT=T*  [40:36/1036-40:38/1038]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [40:19/1019-40:30/1030]
+    STATEMENT COMPOUND  [40:42/1042-42:2/1067] SCOPE: func 
+        STATEMENT RETURN  [41:5/1048-41:22/1065] SCOPE: Stmt  [40:42/1042-42:2/1067] text: 'return "pointer";'
+FUNCTION DEFINITION func  [45:1/1110-47:2/1180] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE func<class>(pair<class,class>)
+    UNIQUE NAME f:func<class>(pair<class,class>)
+    DECLARATION: func  [15:1/297-15:49/345]
+    PARAMETERS:
+        p [45:36/1145-45:47/1156]  TYPE: pair TEXT=pair<T,T>  [45:36/1145-45:45/1154]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [45:19/1128-45:30/1139]
+    STATEMENT COMPOUND  [45:49/1158-47:2/1180] SCOPE: func 
+        STATEMENT RETURN  [46:5/1164-46:19/1178] SCOPE: Stmt  [45:49/1158-47:2/1180] text: 'return "pair";'
+FUNCTION DEFINITION func  [50:1/1220-52:2/1278] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE func(char)
+    UNIQUE NAME f:func(char)
+    DECLARATION: func  [18:1/385-18:37/421]
+    PARAMETERS:
+        p [50:29/1248-50:35/1254]  TYPE: char TEXT=char  [50:29/1248-50:33/1252]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [50:12/1231-50:23/1242]
+    STATEMENT COMPOUND  [50:37/1256-52:2/1278] SCOPE: func 
+        STATEMENT RETURN  [51:5/1262-51:19/1276] SCOPE: Stmt  [50:37/1256-52:2/1278] text: 'return "char";'
+FUNCTION DEFINITION func  [55:1/1319-57:2/1400] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE func(pair<char,char>)
+    UNIQUE NAME f:func(pair<char,char>)
+    DECLARATION: func  [21:1/461-21:47/507]
+    PARAMETERS:
+        p [55:29/1347-55:46/1364]  TYPE: pair TEXT=pair<char,char>  [55:29/1347-55:44/1362]  INIT: null  SCOPE: func 
+    RETURNS const *char TEXT=const char*  [55:12/1330-55:23/1341]
+    STATEMENT COMPOUND  [55:48/1366-57:2/1400] SCOPE: func 
+        STATEMENT RETURN  [56:5/1372-56:31/1398] SCOPE: Stmt  [55:48/1366-57:2/1400] text: 'return "pair<char, char>";'
+

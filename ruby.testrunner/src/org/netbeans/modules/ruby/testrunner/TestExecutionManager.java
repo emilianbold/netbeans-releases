@@ -162,5 +162,12 @@ public final class TestExecutionManager {
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
     }
-    
+
+    /**
+     * Refreshes the current session, i.e. clears all currently
+     * computed test statuses.
+     */
+    public synchronized void refresh() {
+        recognizer.refreshSession();
+    }
 }

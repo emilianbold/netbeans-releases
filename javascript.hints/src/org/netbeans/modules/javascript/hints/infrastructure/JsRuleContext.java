@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.javascript.hints.infrastructure;
 
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.modules.javascript.editing.AstPath;
 
 /**

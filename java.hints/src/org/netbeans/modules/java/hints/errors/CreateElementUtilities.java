@@ -330,17 +330,7 @@ public final class CreateElementUtilities {
             type = info.getTrees().getTypeMirror(new TreePath(parent, at.getExpression()));
             
             //anonymous class?
-            Set<ElementKind> fm = EnumSet.of(ElementKind.METHOD, ElementKind.FIELD);
-            if (type instanceof DeclaredType) {
-                Element el = ((DeclaredType) type).asElement();
-                if (el.getSimpleName().length() == 0 || fm.contains(el.getEnclosingElement().getKind())) {
-                    List<? extends TypeMirror> interfaces = ((TypeElement) el).getInterfaces();
-                    if (interfaces.isEmpty())
-                        type = ((TypeElement) el).getSuperclass();
-                    else
-                        type = interfaces.get(0);
-                }
-            }
+            type = org.netbeans.modules.java.hints.errors.Utilities.convertIfAnonymous(type);
             
             if (type.getKind() == TypeKind.EXECUTABLE) {
                 //TODO: does not actualy work, attempt to solve situations like:

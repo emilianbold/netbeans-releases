@@ -116,6 +116,9 @@ public class CreateBundleAction extends WizardAction {
     public static final String ERROR_FAILED_CREATE_BUNDLE_PROPERTY = 
             "error.failed.create.bundle";//NOI18N
     
+    public static final String CUSTOM_DATA_URI_PREFIX_PROPERTY = 
+            "nbi.product.bundled.data.all.location";//NOI18N
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private Progress progress;
@@ -343,13 +346,14 @@ public class CreateBundleAction extends WizardAction {
                     // check for cancel status
                     if (isCanceled()) return;
                     
-                    // transfer the file
-                    putNextEntry(output,
-                            entryPrefix + "/data/data," + (i + 1) + ".jar");
-                    StreamUtils.transferFile(
-                            new File(dataUris.get(i).getLocal()),
-                            output);
-                    
+                    // transfer the file                    
+                    if (System.getProperty(CUSTOM_DATA_URI_PREFIX_PROPERTY) == null) {
+                        putNextEntry(output,
+                                entryPrefix + "/data/data," + (i + 1) + ".jar");
+                        StreamUtils.transferFile(
+                                new File(dataUris.get(i).getLocal()),
+                                output);
+                    }
                     // delete the downloaded file -- we need to delete it only in
                     // case it has been really downloaded, i.e. the local URI is
                     // different from the main remote one and the alternates
@@ -359,8 +363,13 @@ public class CreateBundleAction extends WizardAction {
                     }
                     
                     // correct the local uri, so it gets saved correctly
-                    dataUris.get(i).setLocal(new URI(
-                            uriPrefix + "/data/data," + (i + 1) + ".jar"));
+                    if (System.getProperty(CUSTOM_DATA_URI_PREFIX_PROPERTY) == null) {
+                        dataUris.get(i).setLocal(new URI(
+                                uriPrefix + "/data/data," + (i + 1) + ".jar"));
+                    } else {
+                        String fileName = product.getUid() + "," + product.getVersion() + "," + StringUtils.asString(platforms, "%20") + "," + (i + 1) + ".jar";
+                        dataUris.get(i).setLocal(new URI(System.getProperty(CUSTOM_DATA_URI_PREFIX_PROPERTY) + "/" + fileName));
+                    }
                 }
                 
                 // correct the product's status, so it gets saved correctly in the

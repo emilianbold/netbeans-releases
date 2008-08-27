@@ -79,14 +79,25 @@ final class JavadocCompletionUtils {
      * and <code>&#42;/</code> except
      * indentation prefixes <code>'&#32;&#32;&#32;&#32;*'</code>
      * on each line.
-     * <p>Note: this should be called under a document lock.</p>
+     * <p>Note: the method takes a document lock.</p>
      * 
      * @param doc a document to search
      * @param offset an offset in document
      * @return <code>true</code> if the offset refers to a javadoc content
      */
-    public static boolean isJavadocContext(Document doc, int offset) {
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
+    public static boolean isJavadocContext(final Document doc, final int offset) {
+        final boolean[] result = {false};
+        doc.render(new Runnable() {
+
+            public void run() {
+                result[0] = isJavadocContext(TokenHierarchy.get(doc), offset);
+            }
+        });
+        return result[0];
+    }
+    
+    static boolean isJavadocContext(TokenHierarchy hierarchy, int offset) {
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(hierarchy, offset);
         if (!movedToJavadocToken(ts, offset)) {
             return false;
         }

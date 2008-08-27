@@ -48,10 +48,10 @@ import java.util.List;
  */
 public class Angle extends NumberPostfixAcceptor {
 
-    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"deg", "rad", "grad"});
+    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"deg", "rad", "grad"}); //NOI18N
     
     public String id() {
-        return "angle";
+        return "angle"; //NOI18N
     }
 
     public List<String> postfixes() {

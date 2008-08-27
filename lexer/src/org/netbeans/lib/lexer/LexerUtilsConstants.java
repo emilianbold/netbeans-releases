@@ -256,7 +256,7 @@ public final class LexerUtilsConstants {
         }
 
         // tokenCount surely >0
-        int prevTokenOffset = tokenList.tokenOffsetByIndex(tokenCount - 1);
+        int prevTokenOffset = tokenList.tokenOffset(tokenCount - 1);
         if (offset > prevTokenOffset) { // may need to create further tokens if they do not exist
             // Force token list to create subsequent tokens
             // Cannot subtract offset by each token's length because
@@ -269,7 +269,7 @@ public final class LexerUtilsConstants {
                     if (t.isFlyweight()) { // need to use previous tokenLength
                         prevTokenOffset += tokenLength;
                     } else { // non-flyweight token - retrieve offset
-                        prevTokenOffset = tokenList.tokenOffsetByIndex(tokenCount);
+                        prevTokenOffset = tokenList.tokenOffset(tokenCount);
                     }
                     tokenLength = t.length();
                     tokenCount++;
@@ -306,7 +306,7 @@ public final class LexerUtilsConstants {
         int midStartOffset = -1;
         while (low <= high) {
             mid = (low + high) >>> 1;
-            midStartOffset = tokenList.tokenOffsetByIndex(mid);
+            midStartOffset = tokenList.tokenOffset(mid);
             
             if (midStartOffset < offset) {
                 low = mid + 1;
@@ -329,10 +329,10 @@ public final class LexerUtilsConstants {
                     high++;
                     midStartOffset += t.length();
                 } else if (mid != high) {
-                    midStartOffset = tokenList.tokenOffsetByIndex(high);
+                    midStartOffset = tokenList.tokenOffset(high);
                 }
             } else if (mid != high) {
-                midStartOffset = tokenList.tokenOffsetByIndex(high);
+                midStartOffset = tokenList.tokenOffset(high);
             }
         } else { // high == -1 => mid == 0
             if (tokenCount == 0) { // Need to return -1
@@ -471,7 +471,7 @@ public final class LexerUtilsConstants {
             sb.append(state);
         }
     }
-    
+
     public static String checkConsistencyTokenList(TokenList<?> tokenList, boolean checkEmbedded) {
         int tokenCountCurrent = tokenList.tokenCountCurrent();
         boolean continuous = tokenList.isContinuous();
@@ -486,6 +486,7 @@ public final class LexerUtilsConstants {
         for (int i = 0; i < tokenCountCurrent; i++) {
             TokenOrEmbedding<?> tokenOrEmbedding = tokenList.tokenOrEmbedding(i);
             if (tokenOrEmbedding == null) {
+                tokenOrEmbedding = tokenList.tokenOrEmbedding(i); // Repeat operation (place bkpt here for debugging)
                 return dumpContext("Null token", tokenList, i); // NOI18N
             }
             AbstractToken<?> token = tokenOrEmbedding.token();
@@ -553,8 +554,8 @@ public final class LexerUtilsConstants {
         sb.append(msg);
         sb.append(" at index="); // NOI18N
         sb.append(index);
-        sb.append(" of tokens of language "); // NOI18N
-        sb.append(tokenList.languagePath().innerLanguage().mimeType());
+        sb.append(" of tokens of language-path "); // NOI18N
+        sb.append(tokenList.languagePath().mimePath());
         sb.append(", ").append(tokenList.getClass());
         sb.append('\n');
         LexerUtilsConstants.appendTokenList(sb, tokenList, index, index - 2, index + 3, false, 0, true);

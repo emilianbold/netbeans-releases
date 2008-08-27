@@ -103,6 +103,7 @@
     const CONSTANTS_FILTER    = new RegExp("^[A-Z][A-Z_]*$");
     const JAVA_OBJECT_PATTERN = new RegExp("^Java(Array|Member|Object|Package)$");
     const WATCH_SRCIPT = '[Watch-script]';
+    const FUNCTION_ASSIGNMENT_PATTERN = new RegExp("([\\w\\.]+)\\s*[:=]\\s*$");
 
     var topWindow;
     var browser;
@@ -146,6 +147,8 @@
     var port;
     var sessionId;
 
+    var anonymousFunctionMap = [];
+    
     // FirebugDebugger
     const firebugDebugger = {
 
@@ -374,17 +377,9 @@
             {
             },
 
-            // function signature changed between firebug 1.1 and 1.2
-            onStop: function(context, frame /*type*/, type /*rv*/, rv)
+            onStop: function(context, frame, type, rv)
             {
-                if (NetBeans.Utils.isFF2()) {
-                    rv = type;
-                    type = frame;
-                    frame = context.debugFrame;
-                }
-
                 if ( context == currentFirebugContext ) {
-                    // XXX hideDebuggerUI is not used in firebug 1.2; needs to be replaced?
                     context.hideDebuggerUI = true;
                     return netBeansDebugger.onStop(frame, type, rv);
                 }
@@ -397,7 +392,6 @@
                         currentFirebugContext = null;
                     }
                     netBeansDebugger.onResume();
-                    // XXX hideDebuggerUI is not used in firebug 1.2; needs to be replaced?
                     context.hideDebuggerUI = false;
                 }
             },
@@ -912,7 +906,7 @@
             if ( breakpoints[href].length > 0 )
                 hrefs.push(href);
         }
-        fbsClearAllBreakpoints(hrefs.length,hrefs);
+        fbsClearAllBreakpoints(hrefs);
     }
 
     function setBreakpoint(href,line,props)
@@ -1009,14 +1003,13 @@
 
     // 7. run until
     function runUntil(url, lineno) {
-        var src = url;
-        if (NetBeans.Utils.isFF2()) {
-            if (currentFirebugContext) {
-                src = currentFirebugContext.sourceFileMap[href];
-            }
-            if (!src) {
-                src = new FBL.NoScriptSourceFile(currentFirebugContext, href);
-            }
+        var src;
+
+        if (currentFirebugContext) {
+            src = currentFirebugContext.sourceFileMap[url];
+        }
+        if (!src) {
+            src = new FBL.NoScriptSourceFile(currentFirebugContext, url);
         }
 
         Firebug.Debugger.runUntil(currentFirebugContext, src, lineno);
@@ -1429,10 +1422,57 @@
         var functionName = script.functionName;
         if ( !functionName )
             functionName = '';
+        else if (functionName == 'anonymous') {
+            functionName = getAnonymousFunctionName(script);
+            
+        }
         return functionName;
+    }    
+
+    function getAnonymousFunctionName(script) {
+        var fileName = script.fileName;
+        if ((fileName == '[Eval-script]') || fileName == WATCH_SRCIPT || (fileName.substr(0,11) == 'javascript:')) {
+            return 'anonymous';
+        }
+        
+        var key = "key:" + script.tag;
+        if (key in anonymousFunctionMap) {
+            return anonymousFunctionMap[key];
+        }
+        
+        // XXX performance?
+        var lines = currentFirebugContext.sourceCache.load(fileName);
+        var accumulatedText = "";
+        var matched = false;
+        var seeFunction;
+        
+        for (var i = 0; i < 2 && script.baseLineNumber-1-i >= 0; i++) {
+            accumulatedText = lines[script.baseLineNumber - 1 - i] + accumulatedText;
+            var functionPos = accumulatedText.lastIndexOf('function');
+            if (functionPos >= 0) {
+                if (seeFunction) {
+                    return 'anonymous';
+                }
+                seeFunction = true;
+                accumulatedText = accumulatedText.substring(0, functionPos);
+            }
+            
+            if (FUNCTION_ASSIGNMENT_PATTERN.test(accumulatedText)) {
+                matched = true;
+                break;
+            }
+        }
+        
+        if (matched) {
+            var regExpMatch = FUNCTION_ASSIGNMENT_PATTERN.exec(accumulatedText);
+            anonymousFunctionMap[key] = regExpMatch[1];
+            return regExpMatch[1];
+        }
+        
+        
+        return 'anonymous';
     }
-
-
+    
     // Format of the message is:
     // <windows>
     //   <window fileuri="http://..." />
@@ -2310,11 +2350,6 @@
     }
 
     function fbsClearAllBreakpoints(hrefs) {
-        if (NetBeans.Utils.isFF2()) {
-            firebugDebuggerService.clearAllBreakpoints(hrefs.length, hrefs);
-            return;
-        }
-
         var sourceFiles = [];
         var sourceFile;
 
@@ -2335,11 +2370,6 @@
     function fbsSetBreakpointCondition(href, line, condition) {
         line = parseInt(line);
 
-        if (NetBeans.Utils.isFF2()) {
-            firebugDebuggerService.setBreakpointCondition(href, line, condition);
-            return;
-        }
-
         var sourceFile;
         if (currentFirebugContext) {
             sourceFile = currentFirebugContext.sourceFileMap[href];
@@ -2357,9 +2387,6 @@
 
     function fbsSetBreakpoint(href, line, props) {
         line = parseInt(line);
-        if (NetBeans.Utils.isFF2()) {
-            return firebugDebuggerService.setBreakpoint(href, line, props);
-        }
 
         var sourceFile;
         if (currentFirebugContext) {

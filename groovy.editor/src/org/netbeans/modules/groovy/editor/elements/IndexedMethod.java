@@ -71,16 +71,15 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     private boolean inherited; 
     private MethodType methodType = MethodType.METHOD;
     
-    private IndexedMethod(String signature, GroovyIndex index, String fileUrl, String fqn,
-        String clz, String attributes, int flags) {
-        super(index, fileUrl, fqn, clz, attributes, flags);
+    private IndexedMethod(String signature, GroovyIndex index, String fileUrl, String clz, String attributes, int flags) {
+        super(index, fileUrl, clz, attributes, flags);
         this.signature = signature;
     }
 
     public static IndexedMethod create(GroovyIndex index, String signature, String fqn, String clz,
         String fileUrl, String attributes, int flags) {
         IndexedMethod m =
-            new IndexedMethod(signature, index, fileUrl, fqn, clz, attributes, flags);
+            new IndexedMethod(signature, index, fileUrl, clz, attributes, flags);
 
         return m;
     }
@@ -114,7 +113,7 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
 
     @Override
     public String getSignature() {
-        return fqn + "#" + signature;
+        return classFqn + "#" + signature;
     }
 
     public String[] getArgs() {
@@ -185,7 +184,7 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         if (this.signature != other.signature && (this.signature == null || !this.signature.equals(other.signature))) {
             return false;
         }
-        if (this.fqn != other.fqn && (this.fqn == null || !this.fqn.equals(other.fqn))) {
+        if (this.classFqn != other.classFqn && (this.classFqn == null || !this.classFqn.equals(other.classFqn))) {
             return false;
         }
         if (this.flags != other.flags) {
@@ -198,7 +197,7 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     public int hashCode() {
         int hash = 7;
         hash = 53 * hash + (this.signature != null ? this.signature.hashCode() : 0);
-        hash = 53 * hash + (this.fqn != null ? this.fqn.hashCode() : 0);
+        hash = 53 * hash + (this.classFqn != null ? this.classFqn.hashCode() : 0);
         hash = 53 * hash + flags;
         return hash;
     }

@@ -62,7 +62,9 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -88,6 +90,8 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     private boolean libraryWithinProject;
     //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
     private String absolutesRelPath;
+    //RELY: Valid only on original project after the notifyMoving or notifyCopying was called
+    private FileSystem configs;
     
     public J2SEProjectOperations(final J2SEProject project, final J2SEActionProvider actionProvider) {
         assert project != null;
@@ -154,6 +158,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     public void notifyCopying() {
         rememberLibraryLocation();
         readPrivateProperties();
+        rememberConfigurations();
     }
     
     public void notifyCopied(Project original, File originalPath, String nueName) {
@@ -165,9 +170,9 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         fixLibraryLocation(origOperations);
         fixPrivateProperties(origOperations);
         fixDistJarProperty (nueName);
-        project.getReferenceHelper().fixReferences(originalPath);
-        
+        project.getReferenceHelper().fixReferences(originalPath);        
         project.setName(nueName);
+        restoreConfigurations(origOperations);
     }
     
     public void notifyMoving() throws IOException {
@@ -176,7 +181,8 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
                 "MSG_OldProjectMetadata"));
         }
         rememberLibraryLocation();
-        readPrivateProperties ();        
+        readPrivateProperties ();
+        rememberConfigurations();
         notifyDeleting();
     }
             
@@ -191,6 +197,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
         fixDistJarProperty (nueName);
         project.setName(nueName);        
 	project.getReferenceHelper().fixReferences(originalPath);
+        restoreConfigurations(origOperations);
     }
 
     private void fixLibraryLocation(J2SEProjectOperations original) throws IllegalArgumentException {
@@ -285,6 +292,54 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
                     // if absolte path within project, it will get moved/copied..
                     absolutesRelPath = FileUtil.getRelativePath(project.getProjectDirectory(), fo);
                 }
+            }
+        }
+    }
+    
+    private void rememberConfigurations () {
+        FileObject fo = project.getProjectDirectory().getFileObject(J2SEConfigurationProvider.CONFIG_PROPS_PATH);
+        if (fo != null) {
+            //Has configurations
+            try {
+                FileSystem fs = FileUtil.createMemoryFileSystem();
+                FileUtil.copyFile(fo, fs.getRoot(),fo.getName());
+                fo = project.getProjectDirectory().getFileObject("nbproject/private/configs");      //NOI18N
+                if (fo != null && fo.isFolder()) {
+                    FileObject cfgs = fs.getRoot().createFolder("configs");                         //NOI18N
+                    for (FileObject child : fo.getChildren()) {
+                        FileUtil.copyFile(child, cfgs, child.getName());
+                    }
+                }
+                configs = fs;
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+    }
+    
+    private void restoreConfigurations (final J2SEProjectOperations original) {
+        final FileSystem fs = original.configs;
+        original.configs = null;
+        if (fs != null) {
+            try {
+                FileObject fo = fs.getRoot().getFileObject("config.properties");        //NOI18N
+                if (fo != null) {
+                    FileObject privateFolder = FileUtil.createFolder(project.getProjectDirectory(), "nbproject/private");  //NOI18N
+                    if (privateFolder != null) {
+                        FileUtil.copyFile(fo, privateFolder, fo.getName());
+                    }                
+                }
+                fo = fs.getRoot().getFileObject("configs");                             //NOI18N
+                if (fo != null) {
+                    FileObject configsFolder = FileUtil.createFolder(project.getProjectDirectory(), "nbproject/private/configs");  //NOI18N
+                    if (configsFolder != null) {
+                        for (FileObject child : fo.getChildren()) {
+                            FileUtil.copyFile(child, configsFolder, child.getName());
+                        }
+                    }
+                }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
     }

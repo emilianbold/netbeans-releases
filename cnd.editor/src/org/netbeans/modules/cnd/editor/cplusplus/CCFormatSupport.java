@@ -75,6 +75,16 @@ public class CCFormatSupport extends ExtFormatSupport {
     }
 
     @Override
+    public boolean expandTabs() {
+        return codeStyle.expandTabToSpaces();
+    }
+
+    @Override
+    public int getTabSize() {
+        return codeStyle.getTabSize();
+    }
+
+    @Override
     public boolean isComment(TokenItem token, int offset) {
         TokenID tokenID = token.getTokenID();
         return (token.getTokenContextPath() == tokenContextPath

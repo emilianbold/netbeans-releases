@@ -84,11 +84,12 @@ public class NbmAdvancedTestCase extends NbTestCase {
         
         installDir = new File (new File (getWorkDir (), "install"), "testnetbeans");
         new File (installDir, "config").mkdirs ();
-        System.setProperty ("netbeans.home", installDir.toString ());
-        assertEquals (installDir.toString (), System.getProperty ("netbeans.home"));
         
         platformDir = new File (installDir, "platform");
         assertTrue (platformDir.mkdirs ());
+        new File (platformDir, "config").mkdirs ();
+        System.setProperty ("netbeans.home", platformDir.toString ());
+        assertEquals (platformDir.toString (), System.getProperty ("netbeans.home"));
         
         nextDir = new File (installDir, "next");
         assertTrue (nextDir.mkdirs ());

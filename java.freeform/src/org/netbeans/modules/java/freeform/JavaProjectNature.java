@@ -105,7 +105,9 @@ public class JavaProjectNature implements ProjectNature {
                 }
                 public boolean contains(FileObject file) throws IllegalArgumentException {
                     String path = FileUtil.getRelativePath(folder, file);
-                    assert path != null : file + " not in " + folder;
+                    if (path == null) {
+                        throw new IllegalArgumentException(file + " not in " + folder);
+                    }
                     if (file.isFolder()) {
                         path += "/"; // NOI18N
                     }

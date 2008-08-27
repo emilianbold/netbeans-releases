@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
@@ -75,6 +76,7 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
         {
             labelWidget = new MovableLabelWidget(getScene(), this, getObject().getFirstSubject(), getResourcePath(), loc("NodeLabel"));
             labelWidget.setVisible(false);
+            labelWidget.setForeground(null);
             Widget parent = getParentWidget();
             if (parent != null)
                 parent.addChild(parent.getChildren().indexOf(this) + 1, labelWidget);
@@ -98,6 +100,15 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
         }
 
         super.propertyChange(event);
+    }
+
+    @Override
+    protected void notifyForegroundChanged(Color newColor)
+    {
+        super.notifyForegroundChanged(newColor);
+        
+        Widget label = getLabelWidget();
+        label.setForeground(newColor);
     }
 
     

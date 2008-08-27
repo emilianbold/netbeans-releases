@@ -137,7 +137,7 @@ public class CsmContext {
         return context.iterator();
     }
 
-    public int getStartOffset() {
+    public int getOffset() {
         return this.offset;
     }
     
@@ -145,6 +145,7 @@ public class CsmContext {
      * Returns a string representation of the object. 
      * @return  a string representation of the object.
      */
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append("\nlast element is " + csmLastObject); // NOI18N
@@ -199,6 +200,7 @@ public class CsmContext {
          * Returns a string representation of the object. 
          * @return  a string representation of the object.
          */
+        @Override
         public String toString() {
             StringBuilder buf = new StringBuilder();
             buf.append("["); //NOI18N

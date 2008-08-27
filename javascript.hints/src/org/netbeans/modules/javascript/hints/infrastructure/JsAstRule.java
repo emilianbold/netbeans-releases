@@ -47,7 +47,7 @@ import org.netbeans.modules.gsf.api.Rule.AstRule;
 public abstract class JsAstRule implements AstRule {
     /** 
      * Get the ElementKinds this rule should run on.
-     * The integers should correspond to values in {@link org.mozilla.javascript.Token}
+     * The integers should correspond to values in {@link org.mozilla.nb.javascript.Token}
      */
     public abstract Set<Integer> getKinds();
 

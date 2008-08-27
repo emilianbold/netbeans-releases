@@ -50,6 +50,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.CustomClientPojoCodeGenerat
 import org.netbeans.modules.websvc.saas.codegen.model.CustomClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
+import org.netbeans.modules.websvc.saas.codegen.j2ee.support.J2eeUtil;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.CustomSaasMethod;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
@@ -70,7 +71,7 @@ public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenera
     @Override
     public boolean canAccept(SaasMethod method, Document doc) {
         if (SaasBean.canAccept(method, CustomSaasMethod.class, getDropFileType()) &&
-                Util.isServlet(NbEditorUtilities.getDataObject(doc))) {
+                J2eeUtil.isServlet(NbEditorUtilities.getDataObject(doc))) {
             return true;
         }
         return false;
@@ -108,19 +109,20 @@ public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenera
     }
     
     
-    protected String getCustomMethodBody(String paramDecl, String paramUse, String indent2) {
+    protected String getCustomMethodBody(String paramDecl, String paramUse, 
+            String resultVarName, String indent2) {
         String indent = "             ";
-        String methodBody = "";
-        methodBody += indent+"try {\n";
+        String methodBody = "\n";
+        methodBody += indent + "try {\n";
         methodBody += paramDecl + "\n";
-        methodBody +=indent2+REST_RESPONSE+" result = " + getBean().getSaasServiceName() + 
+        methodBody += indent2 + REST_RESPONSE + " "+resultVarName+" = " + getBean().getSaasServiceName() +
                 "." + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
         methodBody += Util.createPrintStatement(
-                getBean().getOutputWrapperPackageName(), 
+                getBean().getOutputWrapperPackageName(),
                 getBean().getOutputWrapperName(),
-                getDropFileType(), 
-                getBean().getHttpMethod(), 
-                getBean().canGenerateJAXBUnmarshaller(), indent2);
+                getDropFileType(),
+                getBean().getHttpMethod(),
+                getBean().canGenerateJAXBUnmarshaller(), resultVarName, indent2);
         methodBody += indent+"} catch (Exception ex) {\n";
         methodBody += indent2+"ex.printStackTrace();\n";
         methodBody += indent+"}\n";

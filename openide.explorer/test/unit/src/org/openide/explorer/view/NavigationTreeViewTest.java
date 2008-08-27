@@ -54,6 +54,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -63,6 +64,7 @@ import org.openide.nodes.Node;
  *
  * @author  Jaroslav Tulach
  */
+@RandomlyFails // NB-Core-Build #1187
 public class NavigationTreeViewTest extends NbTestCase {
     
     private TreeView treeView;

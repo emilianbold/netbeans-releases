@@ -47,6 +47,7 @@
 #include <process.h>
 #include <commdlg.h>
 #include <tchar.h>
+#include <winuser.h>
 
 // #define DEBUG 1
 
@@ -80,7 +81,11 @@ int WINAPI
         
         for (int i = 1; i < argc; i++) {
             char buf[10240];
-            sprintf(buf, "\"%s\" ", argv[i]);
+            char *arg = argv[i];
+            int len = strlen(arg);
+            if (arg[len-1] == '\"')
+                arg[len-1] = '\0';
+            sprintf(buf, "\"%s\" ", arg);
             strcat(cmdline, buf);
         }
 #endif    

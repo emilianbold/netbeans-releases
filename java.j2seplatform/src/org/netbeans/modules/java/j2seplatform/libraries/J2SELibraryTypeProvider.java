@@ -40,9 +40,17 @@
  */
 package org.netbeans.modules.java.j2seplatform.libraries;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.api.project.ProjectManager;
@@ -58,6 +66,8 @@ import java.util.List;
 import java.util.Iterator;
 import java.net.URL;
 import java.net.URI;
+import java.util.HashSet;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -78,6 +88,12 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
         VOLUME_TYPE_JAVADOC,
         VOLUME_TYPE_MAVEN_POM
     };
+    
+    private static final Set<String> VOLUME_TYPES_REQUIRING_FOLDER = new HashSet<String>(Arrays.asList(new String[] {
+        VOLUME_TYPE_CLASSPATH,
+        VOLUME_TYPE_SRC,
+        VOLUME_TYPE_JAVADOC,
+    }));
 
     public String getLibraryType() {
         return LIBRARY_TYPE;
@@ -92,7 +108,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
     }
 
     public LibraryImplementation createLibrary() {
-        return LibrariesSupport.createLibraryImplementation(LIBRARY_TYPE,VOLUME_TYPES);
+        return new J2SELibraryImpl ();
     }
 
 
@@ -203,6 +219,132 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             }
         }
         return modified;
+    }
+    
+    //Like DefaultLibraryTypeProvider but in addition checks '/' on the end of folder URLs.
+    private static class J2SELibraryImpl implements LibraryImplementation {
+        private String description;
+
+        private Map<String,List<URL>> contents;
+
+        // library 'binding name' as given by user
+        private String name;
+
+        private String localizingBundle;
+
+        private List<PropertyChangeListener> listeners;
+
+        /**
+         * Create new LibraryImplementation supporting given <tt>library</tt>.
+         */
+        public J2SELibraryImpl () {
+            this.contents = new HashMap<String,List<URL>>();
+            for (String vtype : VOLUME_TYPES) {
+                this.contents.put(vtype, Collections.<URL>emptyList());
+            }
+        }
+
+
+        public String getType() {
+            return LIBRARY_TYPE;
+        }
+
+        public void setName(final String name) throws UnsupportedOperationException {
+            String oldName = this.name;
+            this.name = name;
+            this.firePropertyChange (PROP_NAME, oldName, this.name);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public List<URL> getContent(String contentType) throws IllegalArgumentException {
+            List<URL> content = contents.get(contentType);
+            if (content == null)
+                throw new IllegalArgumentException ();
+            return Collections.unmodifiableList (content);
+        }
+
+        public void setContent(final String contentType, List<URL> path) throws IllegalArgumentException {
+            if (path == null) {
+                throw new IllegalArgumentException ();
+            }
+            if (this.contents.keySet().contains(contentType)) {
+                if (VOLUME_TYPES_REQUIRING_FOLDER.contains(contentType)) {
+                    path = check (path);
+                }
+                this.contents.put(contentType, new ArrayList<URL>(path));
+                this.firePropertyChange(PROP_CONTENT,null,null);
+            } else {
+                throw new IllegalArgumentException ("Volume '"+contentType+
+                    "' is not support by this library. The only acceptable values are: "+contents.keySet());
+            }
+        }
+
+        private static List<URL> check (final List<? extends URL> resources) {
+            final List<URL> checkedResources = new ArrayList<URL>(resources.size());
+            for (URL u : resources) {
+                final String surl = u.toString();
+                if (!surl.endsWith("/")) {              //NOI18N
+                    try {
+                        u = new URL (surl+'/');         //NOI18N
+                    } catch (MalformedURLException e) {
+                        //Never thrown
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+                checkedResources.add(u);
+            }
+            return checkedResources;
+        }
+
+        public String getDescription () {
+                return this.description;
+        }
+
+        public void setDescription (String text) {
+            String oldDesc = this.description;
+            this.description = text;
+            this.firePropertyChange (PROP_DESCRIPTION, oldDesc, this.description);
+        }
+
+        public String getLocalizingBundle() {
+            return this.localizingBundle;
+        }
+
+        public void setLocalizingBundle(String resourceName) {
+            this.localizingBundle = resourceName;
+        }
+
+        public synchronized void addPropertyChangeListener (PropertyChangeListener l) {
+            if (this.listeners == null)
+                this.listeners = new ArrayList<PropertyChangeListener>();
+            this.listeners.add (l);
+        }
+
+        public synchronized void removePropertyChangeListener (PropertyChangeListener l) {
+            if (this.listeners == null)
+                return;
+            this.listeners.remove (l);
+        }
+
+        public @Override String toString() {
+            return this.getClass().getName()+"[" + name + "]"; // NOI18N
+        }
+
+        private void firePropertyChange (String propName, Object oldValue, Object newValue) {
+            List<PropertyChangeListener> ls;
+            synchronized (this) {
+                if (this.listeners == null)
+                    return;
+                ls = new ArrayList<PropertyChangeListener>(listeners);
+            }
+            PropertyChangeEvent event = new PropertyChangeEvent (this, propName, oldValue, newValue);
+            for (PropertyChangeListener l : ls) {
+                l.propertyChange(event);
+            }
+        }
     }
     
 }

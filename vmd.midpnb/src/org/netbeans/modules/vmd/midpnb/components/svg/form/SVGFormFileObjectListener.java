@@ -52,7 +52,10 @@ import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.support.ArraySupport;
+import org.netbeans.modules.vmd.midp.components.MidpArraySupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
 import org.openide.filesystems.FileAttributeEvent;
@@ -113,7 +116,7 @@ public class SVGFormFileObjectListener implements FileChangeListener {
     public static synchronized void regenerateSVGComponentsStructure(FileObject fo, final DesignComponent svgForm) {
         InputStream is = null;
         try {
-            if (fo.isValid()){
+            if (fo.isValid()) {
                 is = fo.getInputStream();
             }
         } catch (FileNotFoundException ex) {
@@ -129,7 +132,7 @@ public class SVGFormFileObjectListener implements FileChangeListener {
 
             public void run() {
                 DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
-                    
+
                 for (DesignComponent component : svgForm.getComponents()) {
                     if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
                         String id = (String) component.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
@@ -162,11 +165,13 @@ public class SVGFormFileObjectListener implements FileChangeListener {
                 public void run() {
                     DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
                     Collection<DesignComponent> components = new HashSet<DesignComponent>(svgForm.getComponents());
-                    
+
                     for (DesignComponent component : components) {
                         if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
                             String id = (String) component.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
                             if (toDelete.contains(id)) {
+                                ArraySupport.remove(svgForm, SVGFormCD.PROP_COMPONENTS, component);
+                                removeSVGButtonEventSource(component, svgForm);
                                 svgForm.getDocument().deleteComponent(component);
                             }
                         }
@@ -182,35 +187,54 @@ public class SVGFormFileObjectListener implements FileChangeListener {
 
     }
 
-    private static void addComponents(Map<String, String> ids, DesignComponent svgFormComponent) {
-
+    private static void addComponents(Map<String, String> ids, DesignComponent svgForm) {
         for (String id : ids.keySet()) {
             String type = ids.get(id);
             if (MidpTypes.getSimpleClassName(SVGButtonCD.TYPEID).equals(type)) {
-                creeateComponent(SVGButtonCD.TYPEID, svgFormComponent, id);
+                SVGFormImageParser.SVGFormComponent srcSvgComponent = SVGFormImageParser.SVGFormComponent.createSVGButton(id, SVGButtonCD.TYPEID);
+                DesignComponent svgComponent = srcSvgComponent.createComponent(svgForm);
+                svgForm.addComponent(svgComponent);
+                MidpArraySupport.append(svgForm, SVGFormCD.PROP_COMPONENTS, svgComponent);
             } else if (MidpTypes.getSimpleClassName(SVGCheckBoxCD.TYPEID).equals(type)) {
-                creeateComponent(SVGCheckBoxCD.TYPEID, svgFormComponent, id);
+                createComponent(id, SVGCheckBoxCD.TYPEID, svgForm);
             } else if (MidpTypes.getSimpleClassName(SVGComboBoxCD.TYPEID).equals(type)) {
-                creeateComponent(SVGComboBoxCD.TYPEID, svgFormComponent, id);
+                createComponent(id, SVGComboBoxCD.TYPEID, svgForm);
             } else if (MidpTypes.getSimpleClassName(SVGLabelCD.TYPEID).equals(type)) {
-                creeateComponent(SVGLabelCD.TYPEID, svgFormComponent, id);
+                createComponent(id, SVGLabelCD.TYPEID, svgForm);
             } else if (MidpTypes.getSimpleClassName(SVGListCD.TYPEID).equals(type)) {
-                creeateComponent(SVGListCD.TYPEID, svgFormComponent, id);
+                createComponent(id, SVGListCD.TYPEID, svgForm);
             } else if (MidpTypes.getSimpleClassName(SVGRadioButtonCD.TYPEID).equals(type)) {
-                creeateComponent(SVGRadioButtonCD.TYPEID, svgFormComponent, id);
+                createComponent(id, SVGRadioButtonCD.TYPEID, svgForm);
             } else if (MidpTypes.getSimpleClassName(SVGSliderCD.TYPEID).equals(type)) {
-                creeateComponent(SVGSliderCD.TYPEID, svgFormComponent, id);
+                createComponent(id, SVGSliderCD.TYPEID, svgForm);
             } else if (MidpTypes.getSimpleClassName(SVGSpinnerCD.TYPEID).equals(type)) {
-                creeateComponent(SVGSpinnerCD.TYPEID, svgFormComponent, id);
+                createComponent(id, SVGSpinnerCD.TYPEID, svgForm);
             } else if (MidpTypes.getSimpleClassName(SVGTextFieldCD.TYPEID).equals(type)) {
-                creeateComponent(SVGTextFieldCD.TYPEID, svgFormComponent, id);
+                createComponent(id, SVGTextFieldCD.TYPEID, svgForm);
             }
         }
     }
 
-    private static void creeateComponent(TypeID type, DesignComponent svgFormComponent, String id) {
-        DesignComponent svgComponent = svgFormComponent.getDocument().createComponent(type);
-        svgComponent.writeProperty(SVGComponentCD.PROP_ID, MidpTypes.createStringValue(id));
-        svgFormComponent.addComponent(svgComponent);
+    private static void createComponent(String id, TypeID type, DesignComponent svgForm) {
+        SVGFormImageParser.SVGFormComponent srcSvgComponent = SVGFormImageParser.SVGFormComponent.create(id, type);
+        DesignComponent svgComponent = srcSvgComponent.createComponent(svgForm);
+        svgForm.addComponent(svgComponent);
+        MidpArraySupport.append(svgForm, SVGFormCD.PROP_COMPONENTS, svgComponent);
+    }
+
+    private static void removeSVGButtonEventSource(DesignComponent svgButton, DesignComponent svgForm) {
+        if (svgButton.getType() != SVGButtonCD.TYPEID) {
+            return;
+        }
+        Collection<DesignComponent> components = new HashSet(svgForm.getComponents());
+        for (DesignComponent potentialButtonEventSource : components) {
+            if (potentialButtonEventSource.getType() != SVGButtonEventSourceCD.TYPEID) {
+                continue;
+            }
+            PropertyValue value = potentialButtonEventSource.readProperty(SVGButtonEventSourceCD.PROP_SVGBUTTON);
+            if (value != null && value.getComponent() != null && value.getComponent() == svgButton) {
+                potentialButtonEventSource.getDocument().deleteComponent(potentialButtonEventSource);
+            }
+        }
     }
 }

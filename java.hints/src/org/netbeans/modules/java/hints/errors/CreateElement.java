@@ -98,11 +98,11 @@ public final class CreateElement implements ErrorRule<Void> {
     /** Creates a new instance of CreateElement */
     public CreateElement() {
     }
-    
+
     public Set<String> getCodes() {
         return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve")); // NOI18N
     }
-    
+
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         try {
             return analyze(info, offset);
@@ -114,19 +114,19 @@ public final class CreateElement implements ErrorRule<Void> {
             return null;
         }
     }
-    
+
     static List<Fix> analyze(CompilationInfo info, int offset) throws IOException {
         TreePath errorPath = ErrorHintsProvider.findUnresolvedElement(info, offset);
-        
+
         if (errorPath == null) {
             return Collections.<Fix>emptyList();
         }
-        
+
         if (info.getElements().getTypeElement("java.lang.Object") == null) { // NOI18N
             // broken java platform
             return Collections.<Fix>emptyList();
         }
-        
+
         TreePath parent = null;
         TreePath firstClass = null;
         TreePath firstMethod = null;
@@ -135,13 +135,13 @@ public final class CreateElement implements ErrorRule<Void> {
         TreePath newClass = null;
         boolean lookupMethodInvocation = true;
         boolean lookupNCT = true;
-        
+
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
-        
+
         while(path != null) {
             Tree leaf = path.getLeaf();
             Kind leafKind = leaf.getKind();
-            
+
             if (parent != null && parent.getLeaf() == errorPath.getLeaf())
                 parent = path;
             if (leaf == errorPath.getLeaf() && parent == null)
@@ -154,50 +154,50 @@ public final class CreateElement implements ErrorRule<Void> {
             if (   leafKind == Kind.BLOCK && path.getParentPath().getLeaf().getKind() == Kind.CLASS
                 && firstMethod == null && firstClass == null)
                 firstInitializer = path;
-            
+
             if (lookupMethodInvocation && leafKind == Kind.METHOD_INVOCATION) {
                 methodInvocation = path;
             }
-	    
+
             if (lookupNCT && leafKind == Kind.NEW_CLASS) {
                 newClass = path;
             }
-	    
+
             if (leafKind == Kind.MEMBER_SELECT) {
                 lookupMethodInvocation = leaf == errorPath.getLeaf();
             }
-            
+
             if (leafKind != Kind.MEMBER_SELECT && leafKind != Kind.IDENTIFIER) {
                 lookupMethodInvocation = false;
             }
-            
+
             if (leafKind != Kind.MEMBER_SELECT && leafKind != Kind.IDENTIFIER && leafKind != Kind.PARAMETERIZED_TYPE) {
                 lookupNCT = false;
             }
-            
+
             path = path.getParentPath();
         }
-        
+
         if (parent == null || parent.getLeaf() == errorPath.getLeaf() || firstClass == null)
             return Collections.<Fix>emptyList();
-        
+
         Element e = info.getTrees().getElement(errorPath);
-        
+
         if (e == null) {
             return Collections.<Fix>emptyList();
         }
-        
+
         Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
         String simpleName = e.getSimpleName().toString();
         TypeElement source = (TypeElement) info.getTrees().getElement(firstClass);
         TypeElement target = null;
         boolean wasMemberSelect = false;
-        
+
         if (errorPath.getLeaf().getKind() == Kind.MEMBER_SELECT) {
             TreePath exp = new TreePath(errorPath, ((MemberSelectTree) errorPath.getLeaf()).getExpression());
             Element targetElement = info.getTrees().getElement(exp);
             TypeMirror targetType = info.getTrees().getTypeMirror(exp);
-            
+
             if (targetElement != null && targetType != null && targetType.getKind() != TypeKind.ERROR) {
                 switch (targetElement.getKind()) {
                     case CLASS:
@@ -210,7 +210,7 @@ public final class CreateElement implements ErrorRule<Void> {
                         target = (TypeElement) targetElement;
                         modifiers.add(Modifier.STATIC);
                         break;
-                        
+
                     case FIELD:
                     case ENUM_CONSTANT:
                     case LOCAL_VARIABLE:
@@ -223,11 +223,11 @@ public final class CreateElement implements ErrorRule<Void> {
                         break;
                     case METHOD:
                         Element el = info.getTypes().asElement(((ExecutableElement) targetElement).getReturnType());
-                        
+
                         if (el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
                             target = (TypeElement) el;
                         }
-                        
+
                         break;
                     case CONSTRUCTOR:
                         target = (TypeElement) targetElement.getEnclosingElement();
@@ -235,18 +235,18 @@ public final class CreateElement implements ErrorRule<Void> {
                     //TODO: type parameter?
                 }
             }
-            
+
             wasMemberSelect = true;
         } else {
 	    Element enclosingElement = e.getEnclosingElement();
 	    if(enclosingElement != null && enclosingElement.getKind() == ElementKind.ANNOTATION_TYPE) //unresolved element inside annot.
 			target = (TypeElement) enclosingElement;
 	    else
-	    
+
 		if (errorPath.getLeaf().getKind() == Kind.IDENTIFIER) {
 		    //TODO: Handle Annotations
                 target = source;
-                
+
                 if (firstMethod != null) {
                     if (((MethodTree)firstMethod.getLeaf()).getModifiers().getFlags().contains(Modifier.STATIC)) {
                         modifiers.add(Modifier.STATIC);
@@ -262,71 +262,71 @@ public final class CreateElement implements ErrorRule<Void> {
                 }
             }
         }
-        
+
         if (target == null) {
             if (ErrorHintsProvider.ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "target=null"); // NOI18N
                 ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "offset=" + offset); // NOI18N
                 ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "errorTree=" + errorPath.getLeaf()); // NOI18N
             }
-            
+
             return Collections.<Fix>emptyList();
         }
-        
+
         modifiers.addAll(getAccessModifiers(info, source, target));
-        
+
         List<Fix> result = new ArrayList<Fix>();
-        
+
         if (methodInvocation != null) {
             //create method:
             MethodInvocationTree mit = (MethodInvocationTree) methodInvocation.getLeaf();
             //return type:
             Set<ElementKind> fixTypes = EnumSet.noneOf(ElementKind.class);
             List<? extends TypeMirror> types = resolveType(fixTypes, info, methodInvocation.getParentPath(), methodInvocation.getLeaf(), offset, null, null);
-            
+
             if (types == null || types.isEmpty()) {
                 return Collections.<Fix>emptyList();
             }
             result.addAll(prepareCreateMethodFix(info, methodInvocation, modifiers, target, simpleName, mit.getArguments(), types));
         }
-	
+
         if (newClass != null) {
             //create method:
             NewClassTree nct = (NewClassTree) newClass.getLeaf();
             Element clazz = info.getTrees().getElement(new TreePath(newClass, nct.getIdentifier()));
-            
+
             if (clazz == null || clazz.asType().getKind() == TypeKind.ERROR || (!clazz.getKind().isClass() && !clazz.getKind().isInterface())) {
                 //the class does not exist...
                 ExpressionTree ident = nct.getIdentifier();
                 int numTypeArguments = 0;
-                
+
                 if (ident.getKind() == Kind.PARAMETERIZED_TYPE) {
                     numTypeArguments = ((ParameterizedTypeTree) ident).getTypeArguments().size();
                 }
-                
+
                 if (wasMemberSelect) {
                     return prepareCreateInnerClassFix(info, newClass, target, modifiers, simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments);
                 } else {
                     return prepareCreateOuterClassFix(info, newClass, source, EnumSet.noneOf(Modifier.class), simpleName, nct.getArguments(), null, ElementKind.CLASS, numTypeArguments);
                 }
             }
-            
+
             if (nct.getClassBody() != null) {
                 return Collections.<Fix>emptyList();
             }
-            
+
             TypeElement clazzTarget = (TypeElement) clazz;
-            
+
             result.addAll(prepareCreateMethodFix(info, newClass, getAccessModifiers(info, source, clazzTarget), clazzTarget, "<init>", nct.getArguments(), null));
         }
-        
+
         //field like or class (type):
         Set<ElementKind> fixTypes = EnumSet.noneOf(ElementKind.class);
         TypeMirror[] superType = new TypeMirror[1];
         int[] numTypeParameters = new int[1];
         List<? extends TypeMirror> types = resolveType(fixTypes, info, parent, errorPath.getLeaf(), offset, superType, numTypeParameters);
         ElementKind classType = getClassType(fixTypes);
-        
+
         if (classType != null) {
             if (wasMemberSelect) {
                 result.addAll(prepareCreateInnerClassFix(info, null, target, modifiers, simpleName, null, superType[0], classType, numTypeParameters[0]));
@@ -334,7 +334,7 @@ public final class CreateElement implements ErrorRule<Void> {
                 result.addAll(prepareCreateOuterClassFix(info, null, source, EnumSet.noneOf(Modifier.class), simpleName, null, superType[0], classType, numTypeParameters[0]));
             }
         }
-        
+
         if (types == null || types.isEmpty()) {
             return result;
         }
@@ -353,20 +353,23 @@ public final class CreateElement implements ErrorRule<Void> {
 
         if (fixTypes.contains(ElementKind.FIELD) && isTargetWritable(target, info)) { //IZ 111048 -- don't offer anything if target file isn't writable
             Element enclosingElement = e.getEnclosingElement();
-	    if(enclosingElement != null && enclosingElement.getKind() == ElementKind.ANNOTATION_TYPE) {
-                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
-                
+            if (enclosingElement != null && enclosingElement.getKind() == ElementKind.ANNOTATION_TYPE) {
+//                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
+                FileObject targetFile = SourceUtils.getFile(ElementHandle.create(target), info.getClasspathInfo());
                 if (targetFile != null) {
                     result.add(new CreateMethodFix(info, simpleName, modifiers, target, type, types, Collections.<String>emptyList(), targetFile));
                 }
-                
-		return result;
-	    }	
-	    else {
-                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
-                
+
+                return result;
+            } else {
+//                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
+                FileObject targetFile = SourceUtils.getFile(ElementHandle.create(target), info.getClasspathInfo());
                 if (targetFile != null) {
-                    result.add(new CreateFieldFix(info, simpleName, modifiers, target, type, targetFile));
+                    if (target.getKind() == ElementKind.ENUM) {
+                        result.add(new CreateEnumConstant(info, simpleName, modifiers, target, type, targetFile));
+                    } else {
+                        result.add(new CreateFieldFix(info, simpleName, modifiers, target, type, targetFile));
+                    }
                 }
             }
         }
@@ -386,115 +389,118 @@ public final class CreateElement implements ErrorRule<Void> {
                     result.add(new AddParameterOrLocalFix(info, type, simpleName, false, identifierPos));
             }
         }
-        
+
         return result;
     }
-    
+
     private static List<Fix> prepareCreateMethodFix(CompilationInfo info, TreePath invocation, Set<Modifier> modifiers, TypeElement target, String simpleName, List<? extends ExpressionTree> arguments, List<? extends TypeMirror> returnTypes) {
         //create method:
         Pair<List<? extends TypeMirror>, List<String>> formalArguments = resolveArguments(info, invocation, arguments);
-        
+
         //return type:
         //XXX: should reasonably consider all the found type candidates, not only the one:
         TypeMirror returnType = returnTypes != null ? returnTypes.get(0) : null;
-        
+
         //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
         if (formalArguments == null || returnType != null && containsErrorsOrTypevarsRecursively(returnType)) {
             return Collections.<Fix>emptyList();
         }
-	
+
        	//IZ 111048 -- don't offer anything if target file isn't writable
 	if(!isTargetWritable(target, info))
 	    return Collections.<Fix>emptyList();
-        
+
         FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
 
         if (targetFile == null)
             return Collections.<Fix>emptyList();
-        
+
         return Collections.<Fix>singletonList(new CreateMethodFix(info, simpleName, modifiers, target, returnType, formalArguments.getA(), formalArguments.getB(), targetFile));
     }
-    
+
     private static Pair<List<? extends TypeMirror>, List<String>> resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments) {
         List<TypeMirror> argumentTypes = new LinkedList<TypeMirror>();
         List<String>     argumentNames = new LinkedList<String>();
         Set<String>      usedArgumentNames = new HashSet<String>();
-        
+
         for (ExpressionTree arg : realArguments) {
             TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(invocation, arg));
-            
+
+            //anonymous class?
+            tm = Utilities.convertIfAnonymous(tm);
+
             if (tm == null || containsErrorsOrTypevarsRecursively(tm)) {
                 return null;
             }
-            
+
             if (tm.getKind() == TypeKind.NULL) {
                 tm = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
             }
-            
+
             argumentTypes.add(tm);
-            
+
             String proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(arg);
-            
+
             if (proposedName == null) {
                 proposedName = org.netbeans.modules.java.hints.errors.Utilities.getName(tm);
             }
-            
+
             if (proposedName == null) {
                 proposedName = "arg"; // NOI18N
             }
-            
+
             if (usedArgumentNames.contains(proposedName)) {
                 int num = 0;
-                
+
                 while (usedArgumentNames.contains(proposedName + num)) {
                     num++;
                 }
-                
+
                 proposedName = proposedName + num;
             }
-            
+
             usedArgumentNames.add(proposedName);
-            
+
             argumentNames.add(proposedName);
         }
-        
+
         return new Pair<List<? extends TypeMirror>, List<String>>(argumentTypes, argumentNames);
     }
-    
+
     private static List<Fix> prepareCreateOuterClassFix(CompilationInfo info, TreePath invocation, TypeElement source, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
         Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? resolveArguments(info, invocation, realArguments) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
-        
+
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
         }
-        
+
         ClassPath cp = info.getClasspathInfo().getClassPath(PathKind.SOURCE);
         FileObject root = cp.findOwnerRoot(info.getFileObject());
         TypeElement outer = info.getElementUtilities().outermostTypeElement(source);
         PackageElement packageElement = (PackageElement) outer.getEnclosingElement();
-        
+
         return Collections.<Fix>singletonList(new CreateOuterClassFix(info, root, packageElement.getQualifiedName().toString(), simpleName, modifiers, formalArguments.getA(), formalArguments.getB(), superType, kind, numTypeParameters));
     }
-    
+
     private static List<Fix> prepareCreateInnerClassFix(CompilationInfo info, TreePath invocation, TypeElement target, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
         Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? resolveArguments(info, invocation, realArguments) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
-        
+
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
         }
-	
+
 	//IZ 111048 -- don't offer anything if target file isn't writable
 	if (!isTargetWritable(target, info))
 	    return Collections.<Fix>emptyList();
-        
+
         FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
-        
+
         if (targetFile == null)
             return Collections.<Fix>emptyList();
-        
+
         return Collections.<Fix>singletonList(new CreateInnerClassFix(info, simpleName, modifiers, target, formalArguments.getA(), formalArguments.getB(), superType, kind, numTypeParameters, targetFile));
     }
-    
+
     private static ElementKind getClassType(Set<ElementKind> types) {
         if (types.contains(ElementKind.CLASS))
             return ElementKind.CLASS;
@@ -504,26 +510,26 @@ public final class CreateElement implements ErrorRule<Void> {
             return ElementKind.INTERFACE;
         if (types.contains(ElementKind.ENUM))
             return ElementKind.ENUM;
-        
+
         return null;
     }
-    
+
     public void cancel() {
         //XXX: not done yet
     }
-    
+
     public String getId() {
         return CreateElement.class.getName();
     }
-    
+
     public String getDisplayName() {
         return NbBundle.getMessage(CreateElement.class, "LBL_Create_Field");
     }
-    
+
     public String getDescription() {
         return NbBundle.getMessage(CreateElement.class, "DSC_Create_Field");
     }
-    
+
     //XXX: currently we cannot fix:
     //xxx = new ArrayList<Unknown>();
     //=>
@@ -537,12 +543,12 @@ public final class CreateElement implements ErrorRule<Void> {
                 return true;
             case DECLARED:
                 DeclaredType type = (DeclaredType) tm;
-                
+
                 for (TypeMirror t : type.getTypeArguments()) {
                     if (containsErrorsOrTypevarsRecursively(t))
                         return true;
                 }
-                
+
                 return false;
             case ARRAY:
                 return containsErrorsOrTypevarsRecursively(((ArrayType) tm).getComponentType());
@@ -550,11 +556,11 @@ public final class CreateElement implements ErrorRule<Void> {
                 return false;
         }
     }
-    
+
     /**
      * Detects if targets file is non-null and writable
      * @return true if target's file is writable
-     */ 
+     */
     private static boolean isTargetWritable(TypeElement target, CompilationInfo info) {
 	FileObject fo = SourceUtils.getFile(ElementHandle.create(target.getEnclosingElement()), info.getClasspathInfo());
 	if(fo != null && fo.canWrite())
@@ -562,29 +568,29 @@ public final class CreateElement implements ErrorRule<Void> {
 	else
 	    return false;
     }
-    
-    
+
+
     static EnumSet<Modifier> getAccessModifiers(CompilationInfo info, TypeElement source, TypeElement target) {
         if (target.getKind().isInterface()) {
             return EnumSet.of(Modifier.PUBLIC);
         }
-        
+
         TypeElement outterMostSource = info.getElementUtilities().outermostTypeElement(source);
         TypeElement outterMostTarget = info.getElementUtilities().outermostTypeElement(target);
-        
+
         if (outterMostSource.equals(outterMostTarget)) {
             return EnumSet.of(Modifier.PRIVATE);
         }
-        
+
         Element sourcePackage = outterMostSource.getEnclosingElement();
         Element targetPackage = outterMostTarget.getEnclosingElement();
-        
+
         if (sourcePackage.equals(targetPackage)) {
             return EnumSet.noneOf(Modifier.class);
         }
-        
+
         //TODO: protected?
         return EnumSet.of(Modifier.PUBLIC);
     }
-    
+
 }

@@ -41,17 +41,19 @@ package org.netbeans.modules.css.editor.properties;
 import java.util.StringTokenizer;
 
 /**
- *
+ *  I18N note - some messages here are not localized since the code is not used so far
+ * 
+ * 
  * @author marekfukala
  */
 public class Color implements CssPropertyValueAcceptor, CustomErrorMessageProvider {
 
-    private static final String[] COLORS = new String[]{"aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "orange", "purple", "red", "silver", "teal", "white", "yellow]", "inherit"};
+    private static final String[] COLORS = new String[]{"aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "orange", "purple", "red", "silver", "teal", "white", "yellow]", "inherit"}; //NOI18N
 
     private String errorMsg = null;
     
     public String id() {
-        return "color";
+        return "color"; //NOI18N
     }
 
     public boolean accepts(String token) {
@@ -60,7 +62,7 @@ public class Color implements CssPropertyValueAcceptor, CustomErrorMessageProvid
         }
 
         //text hexa values
-        if (token.startsWith("#")) {
+        if (token.startsWith("#")) { //NOI18N
             String number = token.substring(1);
             if (number.length() == 3 || number.length() == 6) {
                 for (int i = 0; i < number.length(); i++) {

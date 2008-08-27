@@ -189,13 +189,8 @@ public class CVSRoot {
             // We already have hostname
             try {
                 int p = Integer.parseInt(props.getProperty("port"));
-                if (p > 0) {
-                    if (method.equals(METHOD_PSERVER)) {
-                        this.port = p;
-                    } else {
-                        throw new IllegalArgumentException("CVSROOT port specification is only valid for gserver, kserver, and pserver connection methods.");
-                    }
-                }
+                if (p > 0)
+                    this.port = p;
                 else
                     throw new IllegalArgumentException("The port is not a positive number.");
             }
@@ -245,7 +240,6 @@ public class CVSRoot {
                     //#67504 it looks like windows drive  => local
                     method = METHOD_LOCAL;
                     repository = cvsroot;
-                    normalize();
                     return;
                 }                
                 colonPosition = cvsroot.indexOf(':');
@@ -412,24 +406,8 @@ public class CVSRoot {
                 this.repository = cvsroot.substring(pathBegin);
             }
         }
-        normalize();
-        if (port != 0 && !method.equals(METHOD_PSERVER)) {
-            throw new IllegalArgumentException("CVSROOT port specification is only valid for gserver, kserver, and pserver connection methods.");
-        }
     }
     
-    /**
-     * Removes trailing slashes from repository.
-     */ 
-    private void normalize() {
-        int i = repository.length();
-        int n = i - 1;
-        while (i > 0 && repository.charAt(--i) == '/');
-        if (i < n) {
-            repository = repository.substring(0, i + 1);
-        }
-    }
-
     /**
      * Test whether this cvsroot describes a local connection or remote connection.
      * The connection is local if and only if the host name is <code>null</code>.

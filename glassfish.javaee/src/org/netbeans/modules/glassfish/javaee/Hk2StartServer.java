@@ -176,7 +176,6 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     }
     
     public ProgressObject startDebugging(Target target) {
- //        RequestProcessor.getDefault().post(new Hk2StartRunnable(dm, this), 0, Thread.NORM_PRIORITY);
         if (ProfilerSupport.getState() == ProfilerSupport.STATE_BLOCKING) {
                 fireHandleProgressEvent(null,new Hk2DeploymentStatus(
                 CommandType.START, StateType.FAILED, ActionType.EXECUTE, 

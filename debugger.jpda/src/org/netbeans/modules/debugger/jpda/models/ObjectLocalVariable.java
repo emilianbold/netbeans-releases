@@ -69,16 +69,29 @@ org.netbeans.api.debugger.jpda.LocalVariable {
     ObjectLocalVariable (
         JPDADebuggerImpl debugger,
         ObjectReference value,
+        String className,
+        LocalVariable local,
+        String genericSignature,
+        CallStackFrameImpl frame
+    ) {
+        this(debugger, value, className, local, genericSignature,
+             local.name () + local.hashCode() + (value instanceof ObjectReference ? "^" : ""),
+             frame);
+    }
+
+    private ObjectLocalVariable (
+        JPDADebuggerImpl debugger,
+        ObjectReference value,
         String className, 
         LocalVariable local, 
         String genericSignature,
+        String id,
         CallStackFrameImpl frame
     ) {
         super (debugger, 
             value, 
             genericSignature, 
-            local.name () + local.hashCode() +
-                (value instanceof ObjectReference ? "^" : ""));
+            id);
         this.local = local;
         if (frame != null) {
             this.thread = frame.getThread();
@@ -137,8 +150,10 @@ org.netbeans.api.debugger.jpda.LocalVariable {
         }
     }
     
+    private int cloneNumber = 1;
+
     public ObjectLocalVariable clone() {
-        ObjectLocalVariable clon = new ObjectLocalVariable(getDebugger(), (ObjectReference) getJDIValue(), className, local, genericSignature, null);
+        ObjectLocalVariable clon = new ObjectLocalVariable(getDebugger(), (ObjectReference) getJDIValue(), className, local, genericSignature, getID() + "_clone"+(cloneNumber++), null);
         clon.depth = this.depth;
         clon.thread = this.thread;
         return clon;

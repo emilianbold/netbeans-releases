@@ -43,9 +43,9 @@ package org.netbeans.modules.ruby;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.types.INameNode;
 
 /**
  *

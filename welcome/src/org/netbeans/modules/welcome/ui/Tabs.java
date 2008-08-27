@@ -88,6 +88,12 @@ class Tabs extends BackgroundPanel implements Constants {
         
         this.leftTab = leftTab;
         this.rightTab = rightTab;
+
+        // vlv: print
+        leftTab.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+        leftTab.putClientProperty("print.name", leftTabTitle); // NOI18N
+        rightTab.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+        rightTab.putClientProperty("print.name", rightTabTitle); // NOI18N
         
         final Tab leftButton = new Tab( leftTabTitle, true );
         final Tab rightButton = new Tab( rightTabTitle, false );

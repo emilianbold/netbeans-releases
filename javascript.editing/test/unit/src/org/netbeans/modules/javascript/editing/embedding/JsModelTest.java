@@ -51,7 +51,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.javascript.editing.AstUtilities;

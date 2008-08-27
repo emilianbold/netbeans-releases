@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -91,10 +92,10 @@ public class HighlightProvider  {
     private HighlightProvider() {
     }
     
-    /* package */ void update(CsmFile file, Document doc, DataObject dao) {
+    /* package */ void update(CsmFile file, Document doc, DataObject dao, Interrupter interrupter) {
         assert doc!=null || file==null;
         if (doc instanceof BaseDocument){
-            addAnnotations((BaseDocument)doc, file, dao);
+            addAnnotations((BaseDocument)doc, file, dao, interrupter);
             Hook theHook = this.hook;
             if( theHook != null ) {
                 theHook.highlightingDone(file.getAbsolutePath().toString());
@@ -118,9 +119,9 @@ public class HighlightProvider  {
         }
     }
     
-    private void addAnnotations(final BaseDocument doc, final CsmFile file, final DataObject dao) {
+    private void addAnnotations(final BaseDocument doc, final CsmFile file, final DataObject dao, Interrupter interrupter) {
 
-        CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
+        CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
         final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
         if (TRACE_ANNOTATIONS) System.err.printf("\nSetting annotations for %s\n", file);
 
@@ -151,8 +152,8 @@ public class HighlightProvider  {
             }
         };
         removeAnnotations(doc);
-        CsmErrorProvider.getDefault().getErrors(new RequestImpl(file), response);
-        CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
+        CsmErrorProvider.getDefault().getErrors(new RequestImpl(file,interrupter), response);
+        CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
         
     }
     
@@ -174,10 +175,11 @@ public class HighlightProvider  {
     static class RequestImpl implements CsmErrorProvider.Request {
 
         private final CsmFile file;
-        private boolean cancelled;
+        private Interrupter interrupter;
 
-        public RequestImpl(CsmFile file) {
+        public RequestImpl(CsmFile file, Interrupter interrupter) {
             this.file = file;
+            this.interrupter = interrupter;
         }
 
         public CsmFile getFile() {
@@ -185,11 +187,7 @@ public class HighlightProvider  {
         }
 
         public boolean isCancelled() {
-            return cancelled;
-        }
-
-        public void setCancelled(boolean cancelled) {
-            this.cancelled = cancelled;
+            return interrupter.cancelled();
         }
     }
     

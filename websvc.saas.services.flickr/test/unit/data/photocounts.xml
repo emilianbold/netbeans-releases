@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <photocounts>
+        <photocount count="4" fromdate="1093566950" todate="1093653350" />
+        <photocount count="0" fromdate="1093653350" todate="1093739750" />
+        <photocount count="0" fromdate="1093739750" todate="1093826150" />
+        <photocount count="2" fromdate="1093826150" todate="1093912550" />
+        <photocount count="0" fromdate="1093912550" todate="1093998950" />
+        <photocount count="0" fromdate="1093998950" todate="1094085350" />
+        <photocount count="0" fromdate="1094085350" todate="1094171750" />
+    </photocounts>
+</rsp>

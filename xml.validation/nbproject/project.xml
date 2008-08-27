@@ -137,6 +137,8 @@
                 <friend>org.netbeans.modules.workflow.editor</friend>
                 <friend>org.netbeans.modules.worklist.editor</friend>
                 <friend>org.netbeans.modules.wlm.editor</friend>
+                <friend>org.netbeans.modules.scheduler.ui</friend>
+                <friend>org.netbeans.modules.dm.di.core</friend>
                 <package>org.netbeans.modules.xml.validation</package>
                 <package>org.netbeans.modules.xml.validation.ui</package>
             </friend-packages>

@@ -61,10 +61,10 @@ class NbRspecMediator < Spec::Runner::ExampleGroupRunner
         next
       end
       example_group_start_time = Time.now
-      puts "%SUITE_STARTING% #{example_group.description}"
+      puts "%RSPEC_SUITE_STARTING% #{example_group.description}"
       success = success & example_group.run
       elapsed_time = Time.now - example_group_start_time
-      puts "%SUITE_FINISHED% #{example_group.description} time=#{elapsed_time}"
+      puts "%RSPEC_SUITE_FINISHED% #{example_group.description} time=#{elapsed_time}"
     end
     @duration = Time.now - overall_start_time
     return success
@@ -93,20 +93,20 @@ class Reporter < Spec::Runner::Reporter
   
   def example_started(example)
     start_timer
-    puts "%TEST_STARTED% #{example.description}"
+    puts "%RSPEC_TEST_STARTED% #{example.description}"
     super
   end
       
   def failure(example, error)
     backtrace_tweaker.tweak_backtrace(error)
-    puts "%TEST_FAILED% #{example.description} time=#{elapsed_time} message=#{error.message} location=#{error.backtrace[0]}"
+    puts "%RSPEC_TEST_FAILED% #{example.description} time=#{elapsed_time} message=#{error.message} location=#{error.backtrace[0]}"
     super
   end
   alias_method :example_failed, :failure
 
   private
   def example_passed(example)
-    puts "%TEST_FINISHED% #{example.description} time=#{elapsed_time}"
+    puts "%RSPEC_TEST_FINISHED% #{example.description} time=#{elapsed_time}"
     super
   end
       
@@ -122,10 +122,10 @@ class Reporter < Spec::Runner::Reporter
     case args[1]
     when String
       # 1.1.4
-      puts "%TEST_PENDING% #{args[0].description} time=#{elapsed_time} message=#{args[1]}"
+      puts "%RSPEC_TEST_PENDING% #{args[0].description} time=#{elapsed_time} message=#{args[1]}"
     else
       # 1.1.3 or older
-      puts "%TEST_PENDING% #{args[1].description} time=#{elapsed_time} message=#{args[2]}"
+      puts "%RSPEC_TEST_PENDING% #{args[1].description} time=#{elapsed_time} message=#{args[2]}"
     end
   end
 

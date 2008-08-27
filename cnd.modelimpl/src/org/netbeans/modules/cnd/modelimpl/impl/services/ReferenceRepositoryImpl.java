@@ -91,7 +91,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     public ReferenceRepositoryImpl() {
     }
     
-    public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds) {
+    public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
         if (!(project instanceof ProjectBase)) {
             return Collections.<CsmReference>emptyList();
         }
@@ -106,20 +106,23 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         List<CsmReference> out;
         Collection<FileImpl> files;
         if (scopeFile instanceof FileImpl) {
-            out = new ArrayList(10);
+            out = new ArrayList<CsmReference>(10);
             CsmOffsetable offs = (CsmOffsetable)scope;
-            out.addAll(getReferences(decl, def, (FileImpl)scopeFile, kinds, unboxInstantiation, offs.getStartOffset(), offs.getEndOffset()));
+            out.addAll(getReferences(decl, def, (FileImpl)scopeFile, kinds, unboxInstantiation, offs.getStartOffset(), offs.getEndOffset(), interrupter));
         } else {
             files = basePrj.getAllFileImpls();
             out = new ArrayList<CsmReference>(files.size() * 10);
             for (FileImpl file : files) {
-                out.addAll(getReferences(decl, def, file, kinds,unboxInstantiation, 0, Integer.MAX_VALUE));
+                if (interrupter != null && interrupter.cancelled()) {
+                    break;
+                }
+                out.addAll(getReferences(decl, def, file, kinds,unboxInstantiation, 0, Integer.MAX_VALUE, interrupter));
             }
         }
         return out;
     }
     
-    public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, Set<CsmReferenceKind> kinds) {
+    public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
         CsmScope scope = getDeclarationScope(target);
         CsmFile scopeFile = CsmKindUtilities.isOffsetable(scope) ? ((CsmOffsetable)scope).getContainingFile() : null;
         if (!(file instanceof FileImpl)) {
@@ -137,23 +140,26 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 start = ((CsmOffsetable)scope).getStartOffset();
                 end = ((CsmOffsetable)scope).getEndOffset();
             }
-            return getReferences(decl, def, (FileImpl)file, kinds, unboxInstantiation, start,end);
+            return getReferences(decl, def, (FileImpl)file, kinds, unboxInstantiation, start,end, interrupter);
         }
     }
     
-    public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, Set<CsmReferenceKind> kinds) {
+    public Map<CsmObject, Collection<CsmReference>> getReferences(CsmObject[] targets, CsmProject project, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
         Map<CsmObject, Collection<CsmReference>> out = new HashMap<CsmObject, Collection<CsmReference>>(targets.length);
         for (CsmObject target : targets) {
-            out.put(target, getReferences(target, project, kinds));
+            if (interrupter != null && interrupter.cancelled()) {
+                break;
+            }
+            out.put(target, getReferences(target, project, kinds, interrupter));
         }
         return out;
     }
     
-    public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds) {
+    public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
         Collection<CsmReference> refs = new LinkedHashSet<CsmReference>(1024);
         // TODO: optimize performance
         for (CsmObject target : targets) {            
-            refs.addAll(getReferences(target, file, kinds));
+            refs.addAll(getReferences(target, file, kinds, interrupter));
         }
         if (!refs.isEmpty() && targets.length > 1) {
             // if only one target, then collection is already sorted
@@ -172,7 +178,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
     // prototype of impl
     
     private Collection<CsmReference> getReferences(CsmObject targetDecl, CsmObject targetDef, FileImpl file, 
-            Set<CsmReferenceKind> kinds, boolean unboxInstantiation, int startOffset, int endOffset) {
+            Set<CsmReferenceKind> kinds, boolean unboxInstantiation, int startOffset, int endOffset, Interrupter interrupter) {
         assert targetDecl != null;
         assert file != null;
         CharSequence name = "";
@@ -205,6 +211,9 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             System.err.println("collecting tokens");
         }
         for (APTToken token : tokens) {
+            if (interrupter != null && interrupter.cancelled()){
+                break;
+            }
             // this is candidate to resolve
             int offset = token.getOffset();
             CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, offset);

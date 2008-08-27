@@ -448,6 +448,11 @@ class DiagramLoader
         if (diaType.length() > 0)
         {
             UIDiagram diagram = (UIDiagram) FactoryRetriever.instance().createType("Diagram", null);
+            String diagramXmiId = diagInfo.getDiagramXMIID();
+            if (diagramXmiId != null && diagramXmiId.trim().length() > 0)
+            {
+                diagram.setXMIID(diagramXmiId);
+            }
             diagram.setName(name);
             if (element instanceof INamespace)
             {
@@ -456,7 +461,7 @@ class DiagramLoader
             diagram.setDiagramKind(diagInfo.getDiagramType());
             scene = new DesignerScene(diagram, this.topComp);
             scene.setEdgesGrouped(groupEdges);
-            
+
             if (scene.getView() == null)
             {
                 scene.createView();
@@ -737,7 +742,14 @@ class DiagramLoader
             Point position = null;
             Dimension size = null;
             String peid = reader.getAttributeValue(null, "xmi.id");
-            NodeInfo parentNodeInfo = graphNodeReaderStack.peek().getNodeInfo();
+            
+            GraphNodeReader nodeReader = graphNodeReaderStack.peek();
+            NodeInfo parentNodeInfo = null;
+            if(nodeReader != null)
+            {
+                parentNodeInfo = nodeReader.getNodeInfo();
+            }
+            
             if (parentNodeInfo == null)
                 return;
             while (reader.hasNext())
@@ -986,7 +998,8 @@ class DiagramLoader
                 break;
             }
         }
-        if (connID != null && !nodeID.equals(""))
+        
+        if (connID != null && nodeID != null && !nodeID.equals(""))
         {
             for (IPresentationElement pE : presEltList)
             {

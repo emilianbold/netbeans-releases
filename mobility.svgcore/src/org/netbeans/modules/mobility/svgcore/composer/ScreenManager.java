@@ -44,13 +44,16 @@ import com.sun.perseus.util.SVGConstants;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.KeyListener;
 import java.util.Stack;
+
 import javax.microedition.m2g.SVGImage;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.mobility.svgcore.view.svg.SVGImagePanel;
@@ -92,7 +95,8 @@ public final class ScreenManager {
     
     void initialize() {
         PerseusController perseus = m_sceneMgr.getPerseusController();
-        m_animatorView = perseus.getAnimatorGUI();
+        m_animatorView =perseus.getAnimatorGUI();
+        
                        
         m_imageContainer = new SVGImagePanel(m_animatorView) {
             protected void paintPanel(Graphics g, int x, int y) {
@@ -250,6 +254,7 @@ public final class ScreenManager {
     
     public void repaint() {
         //TODO FIX: NPE when playing with window cloning
+        m_imageContainer.setTryPaint();
         m_animatorView.invalidate();
         m_topComponent.validate(); 
         m_animatorView.repaint();
@@ -307,4 +312,5 @@ public final class ScreenManager {
             m_changeTicker = 0;
         }
     }
+    
 }

@@ -43,20 +43,14 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -99,7 +93,16 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
     private int rightMarginOverride = -1;
 
     public RubyFormatter() {
-        this.codeStyle = CodeStyle.getDefault(null);
+        // XXX: This is totally wrong. Everything related to formatting is document based.
+        // In general a formatter knows nothing and can do nothing until its given a
+        // document to work with. It would be much better to use some sort of factory
+        // for creating formatter instances as it is in editor.indent or perhaps drop the
+        // o.n.m.gsf.api.Formatter altogether.
+        //
+        // Also indentSize() and hangingIndentSize() should not be here either. They
+        // are settings and as such part of the CodeStyle, which again can only be
+        // determined for a document.
+        this.codeStyle = null;
     }
     
     public RubyFormatter(CodeStyle codeStyle, int rightMarginOverride) {
@@ -114,20 +117,38 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
 
     public void reindent(Document document, int startOffset, int endOffset) {
-        // Make sure we're not reindenting HTML content
-        reindent(document, startOffset, endOffset, null, true);
+        if (codeStyle != null) {
+            // Make sure we're not reindenting HTML content
+            reindent(document, startOffset, endOffset, null, true);
+        } else {
+            RubyFormatter f = new RubyFormatter(CodeStyle.get(document), -1);
+            f.reindent(document, startOffset, endOffset);
+        }
     }
 
     public void reformat(Document document, int startOffset, int endOffset, CompilationInfo info) {
-        reindent(document, startOffset, endOffset, info, false);
+        if (codeStyle != null) {
+            reindent(document, startOffset, endOffset, info, false);
+        } else {
+            RubyFormatter f = new RubyFormatter(CodeStyle.get(document), -1);
+            f.reindent(document, startOffset, endOffset, info, false);
+        }
     }
     
     public int indentSize() {
-        return codeStyle.getIndentSize();
+        if (codeStyle != null) {
+            return codeStyle.getIndentSize();
+        } else {
+            return CodeStyle.get((Document) null).getIndentSize();
+        }
     }
     
     public int hangingIndentSize() {
-        return codeStyle.getContinuationIndentSize();
+        if (codeStyle != null) {
+            return codeStyle.getContinuationIndentSize();
+        } else {
+            return CodeStyle.get((Document) null).getContinuationIndentSize();
+        }
     }
 
     /** Compute the initial balance of brackets at the given offset. */
@@ -480,9 +501,10 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
                 }
             }
 
-            //if (!isEmbeddedDoc) {
-                syncOptions(doc, codeStyle);
-            //}
+// XXX: no longer neccessary
+//            //if (!isEmbeddedDoc) {
+//                syncOptions(doc, codeStyle);
+//            //}
 
             if (endOffset > doc.getLength()) {
                 endOffset = doc.getLength();
@@ -687,7 +709,7 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
         if (rightMargin == -1) {
             CodeStyle style = codeStyle;
             if (style == null) {
-                style = CodeStyle.getDefault(null);
+                style = CodeStyle.get(doc);
             }
 
             rightMargin = style.getRightMargin();
@@ -695,36 +717,37 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
 
         ReflowParagraphAction.reflowComments(doc, start, end, rightMargin);
     }
-    
-    public static void syncCurrentOptions() {
-        JTextComponent pane = EditorRegistry.lastFocusedComponent();
-        if (pane != null && RubyUtils.isRubyDocument(pane.getDocument()) && (pane.getDocument() instanceof BaseDocument)) {
-            CodeStyle codeStyle = CodeStyle.getDefault(null);
-            syncOptions((BaseDocument)pane.getDocument(), codeStyle);
-        }
-    }
 
-    /**
-     * Ensure that the editor-settings for tabs match our code style, since the
-     * primitive "doc.getFormatter().changeRowIndent" calls will be using
-     * those settings
-     */
-    private static void syncOptions(BaseDocument doc, CodeStyle style) {
-        org.netbeans.editor.Formatter formatter = doc.getFormatter();
-        if (formatter.getSpacesPerTab() != style.getIndentSize()) {
-            formatter.setSpacesPerTab(style.getIndentSize());
-        }
-        if (formatter.getTabSize() != style.getTabSize()) {
-            formatter.setTabSize(style.getTabSize());
-        }
-        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
-        int rhs = prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
-        if (rhs != style.getRightMargin()) {
-            JTextComponent pane = EditorRegistry.lastFocusedComponent();
-            if (pane != null && pane.getDocument() == doc) {
-                pane.putClientProperty("TextLimitLine", style.getRightMargin()); // NOI18N
-                pane.repaint();
-            }
-        }
-    }
+// XXX: this is no longer neccessary
+//    public static void syncCurrentOptions() {
+//        JTextComponent pane = EditorRegistry.lastFocusedComponent();
+//        if (pane != null && RubyUtils.isRubyDocument(pane.getDocument()) && (pane.getDocument() instanceof BaseDocument)) {
+//            CodeStyle codeStyle = CodeStyle.getDefault(null);
+//            syncOptions((BaseDocument)pane.getDocument(), codeStyle);
+//        }
+//    }
+//
+//    /**
+//     * Ensure that the editor-settings for tabs match our code style, since the
+//     * primitive "doc.getFormatter().changeRowIndent" calls will be using
+//     * those settings
+//     */
+//    private static void syncOptions(BaseDocument doc, CodeStyle style) {
+//        org.netbeans.editor.Formatter formatter = doc.getFormatter();
+//        if (formatter.getSpacesPerTab() != style.getIndentSize()) {
+//            formatter.setSpacesPerTab(style.getIndentSize());
+//        }
+//        if (formatter.getTabSize() != style.getTabSize()) {
+//            formatter.setTabSize(style.getTabSize());
+//        }
+//        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
+//        int rhs = prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, 80);
+//        if (rhs != style.getRightMargin()) {
+//            JTextComponent pane = EditorRegistry.lastFocusedComponent();
+//            if (pane != null && pane.getDocument() == doc) {
+//                pane.putClientProperty("TextLimitLine", style.getRightMargin()); // NOI18N
+//                pane.repaint();
+//            }
+//        }
+//    }
 }

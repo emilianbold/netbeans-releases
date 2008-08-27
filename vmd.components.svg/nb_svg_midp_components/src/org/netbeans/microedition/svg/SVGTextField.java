@@ -73,7 +73,6 @@ public class SVGTextField extends SVGComponent {
         SVGRect textBox    = myTextElement.getBBox();
         
         if (textBox != null) {
-            System.out.println("Text width: " + textBox.getWidth());
             elemWidth = (int) (outlineBox.getWidth() + 0.5f - (textBox.getX() - outlineBox.getX()) * 2);
         } else {
             elemWidth = 0;
@@ -293,7 +292,7 @@ public class SVGTextField extends SVGComponent {
             if ( bBox != null) {
                 width = bBox.getWidth();
             } else {
-                System.out.println("Error: Null BBox #1");
+                //System.out.println("Error: Null BBox #1");
             }
         }
         return width;

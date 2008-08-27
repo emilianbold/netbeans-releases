@@ -80,7 +80,7 @@ public class RefactorFindUsagesDialog extends PerformanceTestCase {
     
     @Override
     public void initialize() {
-        String BUNDLE = "org.netbeans.modules.refactoring.ui.Bundle";
+        String BUNDLE = "org.netbeans.modules.refactoring.java.ui.Bundle";
         TITLE = Bundle.getStringTrimmed(BUNDLE,"LBL_WhereUsed");  // "Find Usages"
         ACTION = Bundle.getStringTrimmed(BUNDLE,"LBL_WhereUsedAction"); // "Find Usages..."
         testNode = new Node(new SourcePackagesNode("jEdit"),"org.gjt.sp.jedit|jEdit.java");

@@ -62,7 +62,9 @@ public class CompoundFolderChildrenTest extends NbTestCase {
         super(name);
     }
 
+    @Override
     protected void setUp() throws java.lang.Exception {
+        clearWorkDir();
         // Set up the default lookup, repository, etc.
         EditorTestLookup.setLookup(
             new String[] {

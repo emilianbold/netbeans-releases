@@ -1,5 +1,6 @@
 package org.netbeans.test.junit4;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import javax.swing.ListModel;
@@ -21,8 +22,8 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.test.junit.utils.Utilities;
 
 public class CreateProjectTest extends ExtJellyTestCase {
 
@@ -43,6 +44,9 @@ public class CreateProjectTest extends ExtJellyTestCase {
     }
         
     public void testCreateJUnit4Project() {
+        
+        Utilities.deleteDirectory(new File(Utilities.pathToProject(TEST_PROJECT_NAME)));
+        
         // create anagram project
         new Action("File|New Project", null).perform();
         NewProjectWizardOperator newOp = new NewProjectWizardOperator();
@@ -114,10 +118,10 @@ public class CreateProjectTest extends ExtJellyTestCase {
         
         ArrayList<String> lines = new ArrayList<String>();
         lines.add("import org.junit.");
-        lines.add("@Suite.SuiteClasses({MainTest.class})");
+        lines.add("@Suite.SuiteClasses({junit4testproject.MainTest.class})");
         lines.add("@RunWith(Suite.class)");
-        lines.add("public static void tearDownClass() throws Exception");
-        lines.add("@Before");
+//        lines.add("public static void tearDownClass() throws Exception");
+//        lines.add("@Before");
         
         findInCode(lines,new EditorOperator("Junit4testprojectSuite.java"));
     }
@@ -137,5 +141,6 @@ public class CreateProjectTest extends ExtJellyTestCase {
         lines.add("@AfterClass");
         
         findInCode(lines,new EditorOperator("MainTest.java"));
+        Utilities.deleteDirectory(new File(Utilities.pathToProject(TEST_PROJECT_NAME)));
     }
 }

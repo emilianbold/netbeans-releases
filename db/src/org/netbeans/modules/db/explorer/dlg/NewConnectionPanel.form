@@ -19,56 +19,48 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="showUrlCheckBox" alignment="1" max="32767" attributes="1"/>
+                          <Component id="additionalPropsLabel" alignment="1" max="32767" attributes="1"/>
+                          <Component id="templateLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="hostLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="portLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="databaseLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="passwordLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="userLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="instanceLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="serverNameLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="dsnLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="tnsLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="serviceLabel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="sidLabel" alignment="0" pref="119" max="32767" attributes="1"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="urlField" pref="525" max="32767" attributes="1"/>
+                          <Component id="additionalPropsField" pref="525" max="32767" attributes="1"/>
+                          <Component id="templateComboBox" alignment="1" pref="525" max="32767" attributes="1"/>
+                          <Component id="hostField" alignment="1" pref="525" max="32767" attributes="1"/>
+                          <Component id="portField" alignment="1" pref="525" max="32767" attributes="1"/>
+                          <Component id="databaseField" alignment="1" pref="525" max="32767" attributes="1"/>
+                          <Component id="sidField" alignment="1" pref="525" max="32767" attributes="1"/>
+                          <Component id="serviceField" alignment="1" pref="525" max="32767" attributes="1"/>
+                          <Component id="tnsField" alignment="1" pref="525" max="32767" attributes="1"/>
+                          <Component id="dsnField" alignment="1" pref="525" max="32767" attributes="1"/>
+                          <Component id="serverNameField" alignment="1" pref="525" max="32767" attributes="1"/>
+                          <Component id="instanceField" alignment="1" pref="525" max="32767" attributes="1"/>
+                          <Component id="userField" alignment="1" pref="525" max="32767" attributes="1"/>
+                          <Component id="passwordField" alignment="1" pref="525" max="32767" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="hostLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="databaseLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="portLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="templateLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="sidLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="serviceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="tnsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="dsnLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="serverNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="instanceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="dsnField" alignment="1" pref="429" max="32767" attributes="1"/>
-                                  <Component id="templateComboBox" alignment="1" pref="429" max="32767" attributes="1"/>
-                                  <Component id="hostField" alignment="1" pref="429" max="32767" attributes="1"/>
-                                  <Component id="portField" alignment="1" pref="429" max="32767" attributes="1"/>
-                                  <Component id="databaseField" alignment="1" pref="429" max="32767" attributes="1"/>
-                                  <Component id="sidField" alignment="1" pref="429" max="32767" attributes="1"/>
-                                  <Component id="serviceField" alignment="1" pref="429" max="32767" attributes="1"/>
-                                  <Component id="tnsField" alignment="1" pref="429" max="32767" attributes="1"/>
-                                  <Component id="instanceField" alignment="1" pref="429" max="32767" attributes="0"/>
-                                  <Component id="passwordField" alignment="1" pref="429" max="32767" attributes="1"/>
-                                  <Component id="userField" alignment="1" pref="429" max="32767" attributes="1"/>
-                                  <Component id="serverNameField" alignment="1" pref="429" max="32767" attributes="1"/>
-                                  <Component id="urlField" alignment="1" pref="429" max="32767" attributes="1"/>
-                                  <Component id="passwordCheckBox" alignment="0" min="-2" pref="308" max="-2" attributes="1"/>
-                              </Group>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="additionalPropsLabel" min="-2" max="-2" attributes="1"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="additionalPropsField" pref="429" max="32767" attributes="1"/>
+                              <EmptySpace min="21" pref="21" max="21" attributes="0"/>
+                              <Component id="passwordCheckBox" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="errorLabel" pref="552" max="32767" attributes="0"/>
+                      <Component id="errorLabel" pref="651" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="showUrlCheckBox" max="32767" attributes="1"/>
-                      <EmptySpace min="-2" pref="454" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -77,20 +69,20 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="templateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="templateComboBox" linkSize="1" alignment="3" min="-2" pref="27" max="-2" attributes="0"/>
+                  <Component id="templateComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="hostLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="hostField" linkSize="1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="hostField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="portLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="portField" linkSize="1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="portField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -107,7 +99,7 @@
                   <Component id="serviceLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="serviceField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="tnsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="tnsField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -129,213 +121,34 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="userLabel" linkSize="1" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="userField" linkSize="1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="userLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="userField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="passwordField" linkSize="1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="passwordField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
               <Component id="passwordCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="additionalPropsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="additionalPropsField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="showUrlCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="urlField" min="-2" max="-2" attributes="0"/>
-                  <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="showUrlCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="35" max="32767" attributes="0"/>
+              <EmptySpace pref="39" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="templateLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="templateComboBox"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDriverName" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="templateComboBox">
-      <Properties>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionDriverNameComboBoxA11yDesc" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="templateComboBoxItemStateChanged"/>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="templateComboBoxActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JTextField" name="userField">
-      <Properties>
-        <Property name="columns" type="int" value="50"/>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionUserNameTextFieldA11yDesc" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="additionalPropsField">
-      <Properties>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionAdditionalPropertiesA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Specify additional JDBC properties here.  This needs to be in the format expected by this JDBC driver."/>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="additionalPropsFieldActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="serverNameLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="serverNameField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionServerName" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="serverNameField">
-      <Properties>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionServerNameA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Server Name"/>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="The server name for this connection"/>
-      </AccessibilityProperties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="serverNameFieldActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="userLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="userField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionUserName" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="databaseField">
-      <Properties>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionDatabaseNameA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="databaseFieldActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JTextField" name="portField">
-      <Properties>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionPortA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="portFieldActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="portLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="portField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionPort" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="hostLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="hostField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionHost" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="passwordLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="passwordField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionPassword" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="passwordCheckBox">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionRememberPassword" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionRememberPasswordA11yDesc" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-        <Property name="verticalTextPosition" type="int" value="1"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="additionalPropsLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="additionalPropsField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionAdditionalProperties" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="hostField">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="localhost"/>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionHostA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hostFieldActionPerformed"/>
-        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="hostFieldFocusLost"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JPasswordField" name="passwordField">
-      <Properties>
-        <Property name="columns" type="int" value="50"/>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionPasswordTextFieldA11yDesc" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="databaseLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="databaseField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDatabase" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JCheckBox" name="showUrlCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -347,29 +160,6 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showUrlCheckBoxActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JTextField" name="urlField">
-      <Properties>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionJDBCURLA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="urlFieldActionPerformed"/>
-        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="urlFieldFocusLost"/>
-        <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="urlFieldKeyPressed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JLabel" name="urlLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="urlField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDatabaseURL" replaceFormat="NbBundle.getBundle(&quot;org.netbeans.modules.db.resources.Bundle&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-        <Property name="focusable" type="boolean" value="false"/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JLabel" name="errorLabel">
       <Properties>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
@@ -378,31 +168,78 @@
         <Property name="text" type="java.lang.String" value="Error label"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="sidField">
+    <Component class="javax.swing.JComboBox" name="templateComboBox">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="0"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionDriverClassComboBoxA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="templateComboBoxItemStateChanged"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="templateComboBoxActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="hostField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionSIDA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionHostA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="serviceField">
+    <Component class="javax.swing.JLabel" name="templateLabel">
       <Properties>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionServiceNameA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="templateComboBox"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDriverName" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="tnsField">
+    <Component class="javax.swing.JLabel" name="hostLabel">
       <Properties>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionTNSNameA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="hostField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionHost" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="dsnField">
+    <Component class="javax.swing.JLabel" name="portLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="portField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionPort" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="portField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionDSNA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionPortA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="databaseLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="databaseField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDatabase" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="databaseField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionDatabaseNameA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -412,7 +249,14 @@
           <ComponentRef name="sidField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionSID" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionSID" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="sidField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionSIDA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -422,28 +266,48 @@
           <ComponentRef name="serviceField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionServiceName" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionServiceName" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="serviceField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionServiceNameA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="tnsLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="tnsField"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionTNSName" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionTNSName" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JLabel" name="dsnLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDSN" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="instanceField">
+    <Component class="javax.swing.JTextField" name="tnsField">
       <Properties>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionInstanceNameA11yDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionTNSNameA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="serverNameLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="serverNameField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionServerName" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="serverNameField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionServerNameA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -453,7 +317,104 @@
           <ComponentRef name="instanceField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionInstanceName" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionInstanceName" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="instanceField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionInstanceNameA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="userLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="userField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionUserName" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="userField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionUserNameA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="passwordLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="passwordField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionPassword" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JPasswordField" name="passwordField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionPasswordA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="dsnLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="dsnField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionDSN" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="dsnField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionDSNA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="additionalPropsLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="additionalPropsField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionAdditionalProperties" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="additionalPropsField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionAdditionalPropertiesA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="urlField">
+      <Properties>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionJDBCURLA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="urlFieldActionPerformed"/>
+        <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="urlFieldFocusLost"/>
+        <EventHandler event="keyPressed" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="urlFieldKeyPressed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="passwordCheckBox">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="NewConnectionRememberPassword" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/resources/Bundle.properties" key="ACS_NewConnectionRememberPasswordA11yDesc" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

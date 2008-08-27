@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 
 import java.util.List;
 

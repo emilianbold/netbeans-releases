@@ -30,7 +30,6 @@
         <ccCompilerTool>
         </ccCompilerTool>
         <archiverTool>
-          <output>dist/Debug/libhello1lib.a</output>
         </archiverTool>
       </compileType>
       <item path="hello1.cc">
@@ -51,7 +50,6 @@
           <developmentMode>5</developmentMode>
         </ccCompilerTool>
         <archiverTool>
-          <output>dist/Release/libhello1lib.a</output>
         </archiverTool>
       </compileType>
       <item path="hello1.cc">

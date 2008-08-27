@@ -67,7 +67,8 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     private String title;
     private String titleMsg;
     private volatile RequestProcessor.Task task;
-
+    private long startTime;
+    
     public SQLStatementExecutor(DataView parent, String title, String msg) {
         this.title = title;
         this.titleMsg = msg;
@@ -81,6 +82,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
     public void run() {
         assert task != null;
         try {
+            startTime = System.currentTimeMillis();
             ProgressHandle handle = ProgressHandleFactory.createHandle(title, this);
             handle.setDisplayName(titleMsg);
             handle.start();
@@ -131,7 +133,9 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
 
     protected void commitOrRollback(String cmdName) {
         if (!error && commit(conn)) {
-            String infoMsg = cmdName + NbBundle.getMessage(SQLStatementExecutor.class,"MSG_execution_success");
+            long executionTime = System.currentTimeMillis() - startTime;
+            String execTimeStr = SQLExecutionHelper.millisecondsToSeconds(executionTime);
+            String infoMsg = cmdName + " " + NbBundle.getMessage(SQLStatementExecutor.class,"MSG_execution_success", execTimeStr);
             dataView.setInfoStatusText(infoMsg);
             executeOnSucess(); // delegate 
         } else {

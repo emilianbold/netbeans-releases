@@ -79,8 +79,25 @@ public enum TestPlainTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private  static final Language<TestPlainTokenId> language
-    = new LanguageHierarchy<TestPlainTokenId>() {
+    public static final Language<TestPlainTokenId> language
+            = new LH(MIME_TYPE).language();
+
+    public static final Language<TestPlainTokenId> inParensLanguage
+            = new LH("text/x-join-in-parens").language();
+
+    public static final Language<TestPlainTokenId> inBracketsLanguage
+            = new LH("text/x-join-in-brackets").language();
+
+    public static final Language<TestPlainTokenId> inApostrophesLanguage
+            = new LH("text/x-join-in-apostrophes").language();
+
+    private static final class LH extends LanguageHierarchy<TestPlainTokenId> {
+
+        private String mimeType;
+
+        public LH(String mimeType) {
+            this.mimeType = mimeType;
+        }
 
         @Override
         protected Collection<TestPlainTokenId> createTokenIds() {
@@ -100,10 +117,10 @@ public enum TestPlainTokenId implements TokenId {
 
         @Override
         protected String mimeType() {
-            return MIME_TYPE;
+            return mimeType;
         }
         
-    }.language();
+    }
 
     public static Language<TestPlainTokenId> language() {
         return language;

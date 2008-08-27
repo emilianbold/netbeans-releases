@@ -112,11 +112,11 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     private ServerInstance commonInstance;
     
     GlassfishInstance(Map<String, String> ip) {
-        commonSupport = new CommonServerSupport(ip);
-
         ic = new InstanceContent();
         lookup = new AbstractLookup(ic);
         ic.add(this); // Server instance in lookup (to find instance from node lookup)
+
+        commonSupport = new CommonServerSupport(lookup, ip);
         ic.add(commonSupport); // Common action support, e.g start/stop, etc.
 
         updateModuleSupport();
@@ -223,7 +223,17 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     public ServerState getServerState() {
         return commonSupport.getServerState();
     }
-    
+
+    void stopIfStartedByIde() {
+        if(commonSupport.isStartedByIde()) {
+            ServerState state = commonSupport.getServerState();
+            if(state == ServerState.STARTING ||
+                    (state == ServerState.RUNNING && commonSupport.isReallyRunning())) {
+                commonSupport.stopServer(null);
+            }
+        }
+    }
+
     // ------------------------------------------------------------------------
     // ServerInstance interface implementation
     // ------------------------------------------------------------------------
@@ -282,17 +292,18 @@ public class GlassfishInstance implements ServerInstanceImplementation {
 
         // !PW FIXME Stop server, if running & started by IDE
 //        stopIfStartedByIde();
-        
-        try {
-            Future<OperationState> stopServerTask = commonSupport.stopServer(null);
-            OperationState opState = stopServerTask.get(3000, TimeUnit.MILLISECONDS);
-            if(opState != OperationState.COMPLETED) {
-                Logger.getLogger("glassfish").info("Stop server failed...");
+        if(commonSupport.isReallyRunning()) {
+            try {
+                Future<OperationState> stopServerTask = commonSupport.stopServer(null);
+                OperationState opState = stopServerTask.get(3000, TimeUnit.MILLISECONDS);
+                if(opState != OperationState.COMPLETED) {
+                    Logger.getLogger("glassfish").info("Stop server failed...");
+                }
+            } catch(TimeoutException ex) {
+                Logger.getLogger("glassfish").fine("Server " + getDeployerUri() + " timed out sending stop-domain command.");
+            } catch(Exception ex) {
+                Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
-        } catch(TimeoutException ex) {
-            Logger.getLogger("glassfish").fine("Server " + getDeployerUri() + " timed out sending stop-domain command.");
-        } catch(Exception ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
         
         // close the server io window

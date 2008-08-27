@@ -107,6 +107,7 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
                                                   getResourcePath() + ".stereorype",  //NO I18N
                                                   bundle.getString("LBL_stereotype"));
             stereotypeWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
+            stereotypeWidget.setForeground(null);
         }
         stereotypeWidget.removeFromParent();
         return stereotypeWidget;
@@ -139,6 +140,7 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
                     bundle.getString("LBL_name"));
 
             nameWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
+            nameWidget.setForeground(null);
         }
         return nameWidget;
     }
@@ -195,6 +197,7 @@ public abstract class ActivityNodeWidget extends UMLNodeWidget
                                                    getWidgetID() + ".taggedValue", //NO I18N
                                                    bundle.getString("LBL_taggedValue"));
             taggedValueWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
+            taggedValueWidget.setForeground(null);
         }
         taggedValueWidget.removeFromParent();
         return taggedValueWidget;

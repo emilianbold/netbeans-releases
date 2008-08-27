@@ -423,7 +423,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
    public void handleTypedChar(char ch) {
       //something is typed
       int currPos = getCurrentPosition();
-      m_InitialLoc = getCurrentPosition();
+      m_InitialLoc = currPos;
       //System.out.println("handleTypedChar:currPos1="+currPos);
       
       IEditControlField field = getCurrentField();
@@ -640,8 +640,8 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
         boolean selectedText = false;
         m_ControlDown = e.isControlDown();
         m_ShiftDown = e.isShiftDown();
-        m_LastKey = e.getKeyCode();
-        int pos = getCurrentPosition();
+        m_LastKey = keyCode;
+        int pos = m_InitialLoc;
         if (keyCode == KeyEvent.VK_ENTER)
         {
             //Ctrl-Enter create a newline in multi-line editor
@@ -649,7 +649,13 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
             {
                 if( m_IsMultiline)
                 {
+                    IEditControlField ecf = getCurrentField();  
                     m_Field.replaceSelection("\n");
+                   
+                    if (ecf != null)
+                    {
+                        ecf.setText(m_Field.getText());
+                    } 
                 }
                 consumeEvent = true;
                 resetSel = false;

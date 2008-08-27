@@ -47,14 +47,13 @@ import java.awt.FontMetrics;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -68,24 +67,15 @@ import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.EditorKit;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.ruby.RubyFormatter;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.Exceptions;
 
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.netbeans.modules.options.editor.spi.PreviewProvider;
+import org.netbeans.modules.ruby.RubyFormatter;
+import org.netbeans.modules.ruby.RubyMimeResolver;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -104,12 +94,8 @@ public class FmtOptions {
     public static final String reformatComments = "reformatComments"; //NOI18N
     public static final String indentHtml = "indentHtml"; //NOI18N
     
-    public static CodeStyleProducer codeStyleProducer;
-        
     public static Preferences lastValues;
     
-    private static Class<? extends EditorKit> kitClass;
-
     static final String CODE_STYLE_PROFILE = "CodeStyle"; // NOI18N
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     static final String PROJECT_PROFILE = "project"; // NOI18N
@@ -129,61 +115,34 @@ public class FmtOptions {
         return defaults.get(key);
     }
     
-    public static Preferences getPreferences(String profileId) {
-        return NbPreferences.forModule(CodeStyle.class).node(CODE_STYLE_PROFILE).node(profileId);
-    }
-    
-    public static Preferences getPreferences(Project project) {
-        if (project != null) {
-            Preferences root = ProjectUtils.getPreferences(project, IndentUtils.class, true).node(CODE_STYLE_PROFILE);
-            String profile = root.get(usedProfile, DEFAULT_PROFILE);
-            if (PROJECT_PROFILE.equals(profile))
-                return root.node(PROJECT_PROFILE).node(RubyInstallation.RUBY_MIME_TYPE); //NOI18N
-        }
-        return MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
-    }
-
-    public static Class<? extends EditorKit> getKitClass() {
-        if (kitClass == null) {
-            EditorKit kit = MimeLookup.getLookup(MimePath.get(RubyInstallation.RUBY_MIME_TYPE)).lookup(EditorKit.class); //NOI18N
-            kitClass = kit != null ? kit.getClass() : EditorKit.class;
-        }
-        return kitClass;
-    }
-    
     public static String getCurrentProfileId() {
         return DEFAULT_PROFILE;
     }
     
-    public static CodeStyle createCodeStyle(Preferences p) {
-        CodeStyle.getDefault(null);
-        return codeStyleProducer.create(p);
-    }
-
-    public static boolean getGlobalExpandTabToSpaces() {
-        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
-        return prefs.getBoolean(SimpleValueNames.EXPAND_TABS, getDefaultAsBoolean(expandTabToSpaces));
-    }
-    
-    public static int getGlobalTabSize() {
-        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.TAB_SIZE, getDefaultAsInt(tabSize));
-    }
-    
-    public static int getGlobalSpacesPerTab() {
-        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefaultAsInt(spacesPerTab));
-    }
-
-    public static int getGlobalIndentSize() {
-        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
-    }
-
-    public static int getGlobalRightMargin() {
-        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, getDefaultAsInt(rightMargin));
-    }
+//    public static boolean getGlobalExpandTabToSpaces() {
+//        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
+//        return prefs.getBoolean(SimpleValueNames.EXPAND_TABS, getDefaultAsBoolean(expandTabToSpaces));
+//    }
+//
+//    public static int getGlobalTabSize() {
+//        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
+//        return prefs.getInt(SimpleValueNames.TAB_SIZE, getDefaultAsInt(tabSize));
+//    }
+//
+//    public static int getGlobalSpacesPerTab() {
+//        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
+//        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefaultAsInt(spacesPerTab));
+//    }
+//
+//    public static int getGlobalIndentSize() {
+//        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
+//        return prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
+//    }
+//
+//    public static int getGlobalRightMargin() {
+//        Preferences prefs = MimeLookup.getLookup(RubyInstallation.RUBY_MIME_TYPE).lookup(Preferences.class);
+//        return prefs.getInt(SimpleValueNames.TEXT_LIMIT_WIDTH, getDefaultAsInt(rightMargin));
+//    }
     
     public static boolean isInteger(String optionID) {
         String value = defaults.get(optionID);
@@ -211,7 +170,7 @@ public class FmtOptions {
         String defaultValues[][] = {
             { expandTabToSpaces, TRUE}, //NOI18N
             { tabSize, "2"}, //NOI18N
-            { spacesPerTab, "4"}, //NOI18N
+            { spacesPerTab, "2"}, //NOI18N
             { indentSize, "2"}, //NOI18N
             { continuationIndentSize, "2"}, //NOI18N
             { rightMargin, "120"}, //NOI18N
@@ -229,7 +188,7 @@ public class FmtOptions {
     
     // Support section ---------------------------------------------------------
       
-    public static class CategorySupport extends OptionsPanelController implements ActionListener, DocumentListener, HierarchyListener {
+    public static class CategorySupport implements ActionListener, DocumentListener, PreviewProvider, PreferencesCustomizer {
 
         public static final String OPTION_ID = "org.netbeans.modules.ruby.options.FormatingOptions.ID";
                 
@@ -246,33 +205,46 @@ public class FmtOptions {
 //        private static final ComboItem  bracesGeneration[] = new ComboItem[] {
 //                new ComboItem( BracesGenerationStyle.GENERATE.name(), "LBL_bg_GENERATE" ), // NOI18N
 //                new ComboItem( BracesGenerationStyle.LEAVE_ALONE.name(), "LBL_bg_LEAVE_ALONE" ), // NOI18N
-//                new ComboItem( BracesGenerationStyle.ELIMINATE.name(), "LBL_bg_ELIMINATE" ) // NOI18N       
+//                new ComboItem( BracesGenerationStyle.ELIMINATE.name(), "LBL_bg_ELIMINATE" ) // NOI18N
 //            };
-//        
+//
 //        private static final ComboItem  wrap[] = new ComboItem[] {
 //                new ComboItem( WrapStyle.WRAP_ALWAYS.name(), "LBL_wrp_WRAP_ALWAYS" ), // NOI18N
 //                new ComboItem( WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG" ), // NOI18N
 //                new ComboItem( WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER" ) // NOI18N
 //            };
         
-        private String previewText = NbBundle.getMessage(FmtOptions.class, "SAMPLE_Default");
-        private String forcedOptions[][];
+        private final String previewText;
+//        private String forcedOptions[][];
         
-        private boolean changed = false;
-        private boolean loaded = false;
-        private JPanel panel;
-        private List<JComponent> components = new LinkedList<JComponent>();                
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+//        private boolean changed = false;
+//        private boolean loaded = false;
+        private final String id;
+        protected final JPanel panel;
+        private final List<JComponent> components = new LinkedList<JComponent>();                
         private JEditorPane previewPane;
         
-        protected Preferences preferences;
+        private final Preferences preferences;
+        private final Preferences previewPrefs;
     
-        public CategorySupport(JPanel panel, String previewText, String[]... forcedOptions) {
+        protected CategorySupport(Preferences preferences, String id, JPanel panel, String previewText, String[]... forcedOptions) {
+            this.preferences = preferences;
+            this.id = id;
             this.panel = panel;
-            panel.addHierarchyListener(this);
+            this.previewText = previewText != null ? previewText : NbBundle.getMessage(FmtOptions.class, "SAMPLE_Default"); //NOI18N
+
+            // Scan the panel for its components
             scan(panel, components);
-            this.previewText = previewText == null ? this.previewText : previewText;
-            this.forcedOptions = forcedOptions;
+
+            // Initialize the preview preferences
+            Preferences forcedPrefs = new PreviewPreferences();
+            for (String[] option : forcedOptions) {
+                forcedPrefs.put( option[0], option[1]);
+            }
+            this.previewPrefs = new ProxyPreferences(preferences, forcedPrefs);
+
+            // Load and hook up all the components
+            loadFrom(preferences);
             addListeners();
         }
         
@@ -280,116 +252,74 @@ public class FmtOptions {
             scan(ADD_LISTENERS, null);
         }
         
-        public void update() {
-            loaded = true;
+        protected void loadFrom(Preferences preferences) {
+//            loaded = true;
             scan(LOAD, preferences);
-            loaded = false;
-            changed = false;
+//            loaded = false;
         }
-
-        public void applyChanges() {
-            storeTo(preferences);
-            // Apply syncing of textlimit etc. which requires immediate repaint
-            RubyFormatter.syncCurrentOptions();
-        }
-
-        public void cancel() {
-            // Usually does not need to do anything
-        }
-
-        public boolean isValid() {
-            return true; // Should almost always be OK
-        }
-
-        public boolean isChanged() {
-            return changed;
-        }
-
-        public JComponent getComponent(Lookup masterLookup) {
-            this.preferences = masterLookup.lookup(Preferences.class);
-            this.previewPane = masterLookup.lookup(JEditorPane.class);
-            return panel;
-        }
-
-        public HelpCtx getHelpCtx() {
-            return null;
-        }
-
-        public void addPropertyChangeListener(PropertyChangeListener l) {
-            pcs.addPropertyChangeListener(l);
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-            pcs.removePropertyChangeListener(l);
-        }
-        
+//
+//        public void applyChanges() {
+//            storeTo(preferences);
+//        }
+//
         protected void storeTo(Preferences p) {
             scan(STORE, p);
         }
         
-        void changed() {
-            if (loaded)
-                return;
-            if (!changed) {
-                changed = true;
-                pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-            }
-            pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+        protected void notifyChanged() {
+//            if (loaded)
+//                return;
+            storeTo(preferences);
             refreshPreview();
         }
 
         // ActionListener implementation ---------------------------------------
         
         public void actionPerformed(ActionEvent e) {
-            changed();
+            notifyChanged();
         }
         
         // DocumentListener implementation -------------------------------------
         
         public void insertUpdate(DocumentEvent e) {
-            changed();
+            notifyChanged();
         }
 
         public void removeUpdate(DocumentEvent e) {
-            changed();
+            notifyChanged();
         }
 
         public void changedUpdate(DocumentEvent e) {
-            changed();
+            notifyChanged();
         }
-                
-        // HierarchyListener implementation -------------------------------------
-        
-        public void hierarchyChanged(HierarchyEvent e) {
-            if (panel.isShowing()) {
-                refreshPreview();
-            }
-        }
-        
-        // Private methods -----------------------------------------------------
 
-        private void refreshPreview() {
-            Preferences p = new PreviewPreferences();
-            storeTo(p);
-            for (String[] option : forcedOptions) {
-                p.put( option[0], option[1]);
+        // PreviewProvider methods -----------------------------------------------------
+        
+        public JComponent getPreviewComponent() {
+            if (previewPane == null) {
+                previewPane = new JEditorPane();
+                previewPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FmtOptions.class, "AN_Preview")); //NOI18N
+                previewPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FmtOptions.class, "AD_Preview")); //NOI18N
+                previewPane.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
+                previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(RubyMimeResolver.RUBY_MIME_TYPE));
+                previewPane.setEditable(false);
             }
+            return previewPane;
+        }
+
+        public void refreshPreview() {
+            JEditorPane jep = (JEditorPane) getPreviewComponent();
             try {
-                int rm = p.getInt(rightMargin, getDefaultAsInt(rightMargin));
-                previewPane.putClientProperty("TextLimitLine", rm);
+                int rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
+                jep.putClientProperty("TextLimitLine", rm); //NOI18N
             }
             catch( NumberFormatException e ) {
                 // Ignore it
             }
-            try {
-                Class.forName(CodeStyle.class.getName(), true, CodeStyle.class.getClassLoader());
-            } catch (ClassNotFoundException cnfe) {}
-            CodeStyle codeStyle = codeStyleProducer.create(p);
-            
 
             int rm = 30;
             try {
-                rm = p.getInt(rightMargin, getDefaultAsInt(rightMargin));
+                rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
 
                 // Estimate text line in preview pane
                 
@@ -412,30 +342,64 @@ public class FmtOptions {
             catch( NumberFormatException e ) {
                 // Ignore it
             }
+
+            jep.setIgnoreRepaint(true);
+            jep.setText(previewText);
             
-            previewPane.setIgnoreRepaint(true);
-            try {
-                BaseDocument doc = new BaseDocument(null, false);
-                doc.putProperty("mimeType", RubyInstallation.RUBY_MIME_TYPE); // NOI18N
-                doc.putProperty(org.netbeans.api.lexer.Language.class, RubyTokenId.language());
-
-                doc.insertString(0, previewText, null);
-
-                RubyFormatter formatter = new RubyFormatter(codeStyle, rm);
-                formatter.reformat(doc, 0, doc.getLength(), null);
-
-                String formatted = doc.getText(0, doc.getLength());
-                previewPane.setText(formatted);
-            }
-            catch (Exception ex){
-                Exceptions.printStackTrace(ex);
-            }
+            CodeStyle codeStyle = CodeStyle.get(previewPrefs);
+            RubyFormatter formatter = new RubyFormatter(codeStyle, rm);
+            formatter.reformat(jep.getDocument(), 0, jep.getDocument().getLength(), null);
             
-            previewPane.setIgnoreRepaint(false);
-            previewPane.scrollRectToVisible(new Rectangle(0,0,10,10) );
-            previewPane.repaint(100);           
+            jep.setIgnoreRepaint(false);
+            jep.scrollRectToVisible(new Rectangle(0,0,10,10) );
+            jep.repaint(100);
+        }
+
+        // PreferencesCustomizer implementation --------------------------------
+        
+        public JComponent getComponent() {
+            return panel;
+        }
+
+        public String getDisplayName() {
+            return panel.getName();
+        }
+
+        public String getId() {
+            return id;
         }
         
+        public HelpCtx getHelpCtx() {
+            return null;
+        }
+        
+        // PreferencesCustomizer.Factory implementation ------------------------
+
+        public static final class Factory implements PreferencesCustomizer.Factory {
+
+            private final String id;
+            private final Class<? extends JPanel> panelClass;
+            private final String previewText;
+            private final String[][] forcedOptions;
+
+            public Factory(String id, Class<? extends JPanel> panelClass, String previewText, String[]... forcedOptions) {
+                this.id = id;
+                this.panelClass = panelClass;
+                this.previewText = previewText;
+                this.forcedOptions = forcedOptions;
+            }
+
+            public PreferencesCustomizer create(Preferences preferences) {
+                try {
+                    return new CategorySupport(preferences, id, panelClass.newInstance(), previewText, forcedOptions);
+                } catch (Exception e) {
+                    return null;
+                }
+            }
+        } // End of CategorySupport.Factory class
+        
+        // Private methods -----------------------------------------------------
+
         private void performOperation(int operation, JComponent jc, String optionID, Preferences p) {
             switch(operation) {
             case LOAD:
@@ -567,20 +531,20 @@ public class FmtOptions {
             
         private ComboBoxModel createModel( String value ) {
             
-//            // is it braces placement?            
+//            // is it braces placement?
 //            for (ComboItem comboItem : bracePlacement) {
 //                if ( value.equals( comboItem.value) ) {
 //                    return new DefaultComboBoxModel( bracePlacement );
 //                }
 //            }
-//            
+//
 //            // is it braces generation?
 //            for (ComboItem comboItem : bracesGeneration) {
 //                if ( value.equals( comboItem.value) ) {
 //                    return new DefaultComboBoxModel( bracesGeneration );
 //                }
 //            }
-//            
+//
 //            // is it wrap
 //            for (ComboItem comboItem : wrap) {
 //                if ( value.equals( comboItem.value) ) {
@@ -601,7 +565,7 @@ public class FmtOptions {
             }    
             return null;
         }
-        
+
         private static class ComboItem {
             
             String value;
@@ -666,9 +630,61 @@ public class FmtOptions {
         }
     }
 
-    public static interface CodeStyleProducer {
+    // read-only, no subnodes
+    public static final class ProxyPreferences extends AbstractPreferences {
         
-        public CodeStyle create( Preferences preferences );
+        private final Preferences[] delegates;
+
+        public ProxyPreferences(Preferences... delegates) {
+            super(null, ""); // NOI18N
+            this.delegates = delegates;
+        }
+        
+        protected void putSpi(String key, String value) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected String getSpi(String key) {
+            for(Preferences p : delegates) {
+                String value = p.get(key, null);
+                if (value != null) {
+                    return value;
+                }
+            }
+            return null;
+        }
+
+        protected void removeSpi(String key) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected void removeNodeSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected String[] keysSpi() throws BackingStoreException {
+            Set<String> keys = new HashSet<String>();
+            for(Preferences p : delegates) {
+                keys.addAll(Arrays.asList(p.keys()));
+            }
+            return keys.toArray(new String[ keys.size() ]);
+        }
+
+        protected String[] childrenNamesSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected AbstractPreferences childSpi(String name) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected void syncSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        protected void flushSpi() throws BackingStoreException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    } // End of ProxyPreferences class
     
-    }
 }

@@ -90,7 +90,9 @@ implements CloneableEditorSupport.Env {
     private transient VetoableChangeListener vetoL;
     
     private static CloneableEditor143143Test RUNNING;
-
+    
+    private static boolean isWaiting = false;
+    
     private static final Object LOCK = new Object();
     
     public CloneableEditor143143Test(String s) {
@@ -105,6 +107,11 @@ implements CloneableEditorSupport.Env {
     protected boolean runInEQ() {
         return true;
     }
+
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
     
     private Object writeReplace () {
         return new Replace ();
@@ -113,8 +120,19 @@ implements CloneableEditorSupport.Env {
     public void testBlockGetDocument () throws Exception {
         //Start asynchronous loading, it contains wait so document
         //loading is blocked till notifyAll below.
+        synchronized (LOCK) {
+            isWaiting = false;
+        }
         Task prepare = support.prepareDocument();
-        
+        while (true) {
+            Thread.sleep(200);
+            synchronized (LOCK) {
+                if (isWaiting) {
+                    break;
+                }
+            }
+        }
+
         UndoRedo u = support.getUndoRedo();
         //Check that following methods will return even if document is being loaded
         u.getUndoPresentationName();
@@ -233,6 +251,7 @@ implements CloneableEditorSupport.Env {
         protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit)
         throws IOException, BadLocationException {
             synchronized (LOCK) {
+                isWaiting = true;
                 try {
                     LOCK.wait();
                 } catch (InterruptedException ex) {

@@ -2,10 +2,10 @@ References in file quote_nosyshdr/customer.cc
 [2128-2128] <b>Customer</b>::Customer(const string initName, int initDiscount) :
 [2246-2246] int <b>Customer</b>::GetDiscount() const {
 [2309-2309] string <b>Customer</b>::GetName() const {
-[2401-2401] ostream& operator &lt;&lt;(ostream& output, const <b>Customer</b>& customer) {
+[2401-2401] ostream&amp; operator &lt;&lt;(ostream&amp; output, const <b>Customer</b>&amp; customer) {
 References in file quote_nosyshdr/customer.h
 [2197-2197] class <b>Customer</b> {
-[2462-2462] friend ostream& operator&lt;&lt; (ostream&, const <b>Customer</b>&);
+[2462-2462] friend ostream&amp; operator&lt;&lt; (ostream&amp;, const <b>Customer</b>&amp;);
 References in file quote_nosyshdr/quote.cc
 [2286-2286] list&lt;<b>Customer</b>&gt; customers;
 [2509-2509] for(list&lt;<b>Customer</b>&gt;::iterator it = customers.begin(); it != customers.end(); ++it) {

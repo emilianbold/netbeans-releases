@@ -1,0 +1,5 @@
+Code completion result for source line:
+$tst->|publicChildMethod();
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     publicChildMethod()                        ChildClass
+METHOD     publicParentMethod()                       ParentClass

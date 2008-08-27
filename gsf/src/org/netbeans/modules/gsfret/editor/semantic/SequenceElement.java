@@ -92,6 +92,11 @@ class SequenceElement implements Comparable<SequenceElement> {
     public int hashCode() {
         return range.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "SequenceElement(range=" + range + ", lang=" + language + ", color=" + coloring + ")";
+    }
     
     // This class is used only for key comparison when creating subsets
     static class ComparisonItem extends SequenceElement {

@@ -1353,7 +1353,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             boolean pairCompletion = Utilities.pairCharactersCompletion();
             if (inImport || params.isEmpty()) {
-                String add = inImport ? ";" : getCodeStyle(c.getDocument()).spaceBeforeMethodCallParen() ? " (" : "("; //NOI18N
+                String add = inImport ? ";" : CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " (" : "("; //NOI18N
                 if (pairCompletion && !inImport)
                     add += ")"; //NOI18N
                 if (toAdd != null && !add.startsWith(toAdd))
@@ -1418,7 +1418,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (ctm != null) {
                     StringBuilder sb = new StringBuilder();
                     boolean guessArgs = Utilities.guessMethodArguments();
-                    if (getCodeStyle(doc).spaceBeforeMethodCallParen())
+                    if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen())
                     sb.append(' '); //NOI18N
                     sb.append('('); //NOI18N
                     if (text.length() > 1) {
@@ -1902,7 +1902,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             } else {
                 toAdd = null;
             }
-            String text = getCodeStyle(doc).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
+            String text = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
             if (sequence == null) {
                 text += add;
                 add = null;
@@ -2101,7 +2101,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             String add = isAbstract ? "() {}" : Utilities.pairCharactersCompletion() ? "()" : "("; //NOI18N
             if (toAdd != null && !add.startsWith(toAdd))
                 add += toAdd;
-            String text = getCodeStyle(doc).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
+            String text = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen() ? " " : ""; //NOI18N
             if (sequence == null) {
                 text += add;
                 add = null;
@@ -3113,16 +3113,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return null;
     }
     
-    private static CodeStyle getCodeStyle(Document doc) {
-        Object source = doc.getProperty(doc.StreamDescriptionProperty);
-        if (source instanceof DataObject) {
-            DataObject dObj = (DataObject) source;
-            if (dObj != null)
-                return CodeStyle.getDefault(FileOwnerQuery.getOwner(dObj.getPrimaryFile()));
-        }
-        return CodeStyle.getDefault(null);
-    }
-
     static class ParamDesc {
         private String fullTypeName;
         private String typeName;

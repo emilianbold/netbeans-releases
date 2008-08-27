@@ -70,11 +70,10 @@ public class FlowFinalNodeWidget extends ControlNodeWidget
                      DEFAULT_OUTER_RADIUS, getResourcePath(), 
                     bundle.getString("LBL_body")); 
             flowFinalCircle.setUseGradient(useGradient);
-//            flowFinalCircle.setCustomizableResourceTypes(
-//                    new ResourceType [] {ResourceType.BACKGROUND} );
             flowFinalCircle.setOpaque(true);
             setCurrentView(flowFinalCircle);
         }
+        super.initializeNode(presentation);
     }
 
     public String getWidgetID()

@@ -174,7 +174,7 @@ public class MimeLookupPerformanceTest extends NbTestCase {
             checkPopupItemPresence(lookup, RenameAction.class, true);
         }
         gc();
-        assertSize("", size, lookup);
+        assertSize("", size + 20, lookup);
     }
 
     public void testTemplateLookuping() throws IOException{

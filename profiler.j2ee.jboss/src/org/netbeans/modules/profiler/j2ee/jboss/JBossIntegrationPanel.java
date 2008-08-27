@@ -83,10 +83,7 @@ public class JBossIntegrationPanel extends AttachWizardPanel {
                         return false;
                     }
                 }
-
-                ;
-
-                return getContext().getIntegrationProvider().supportsJVM(javaPlatform.getAsEnum());
+                return getContext().getIntegrationProvider().supportsJVM(javaPlatform.getAsEnum(), settings);
             }
         };
 

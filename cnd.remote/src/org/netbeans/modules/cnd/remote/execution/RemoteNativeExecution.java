@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import org.netbeans.modules.cnd.api.execution.NativeExecution;
+import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
 
 /**
@@ -52,7 +53,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteNativeExecutionSupport;
  * @author gordonp
  */
 public class RemoteNativeExecution extends NativeExecution {
-    
+
     /**
      * Execute an executable, a makefile, or a script
      * @param runDir absolute path to directory from where the command should be executed
@@ -78,8 +79,12 @@ public class RemoteNativeExecution extends NativeExecution {
         }
         return support == null ? -1 : support.getExitStatus();
     }
-    
+
     public void stop() {
     }
 
+    @Override
+    protected String getUnbufferPath(String host) {
+        return Unbuffer.getRemotePath(host);
+    }
 }

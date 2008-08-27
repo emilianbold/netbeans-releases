@@ -57,12 +57,12 @@ import org.openide.filesystems.FileObject;
  * A program element coming from the persistent index.
  *
  * @author Tor Norbye
+ * @author Martin Adamek
  */
 public abstract class IndexedElement extends GroovyElement {
     
     protected String fileUrl;
-    protected final String clz;
-    protected final String fqn;
+    protected final String classFqn;
     protected final GroovyIndex index;
     protected final String attributes;
     protected Set<Modifier> modifiers;
@@ -71,14 +71,11 @@ public abstract class IndexedElement extends GroovyElement {
     private Document document;
     private FileObject fileObject;
 
-    protected IndexedElement(GroovyIndex index, String fileUrl, String fqn,
-        String clz, String attributes, int flags) {
+    protected IndexedElement(GroovyIndex index, String fileUrl, String classFqn, String attributes, int flags) {
         this.index = index;
         this.fileUrl = fileUrl;
-        this.fqn = fqn;
         this.attributes = attributes;
-        // XXX Why do methods need to know their clz (since they already have fqn)
-        this.clz = clz;
+        this.classFqn = classFqn;
         this.flags = flags;
     }
 
@@ -88,29 +85,18 @@ public abstract class IndexedElement extends GroovyElement {
         return fileUrl;
     }
 
-    public final String getFqn() {
-        return fqn;
-    }
-
     @Override
     public String toString() {
         return getSignature() + ":" + getFileUrl();
-    }
-
-    public final String getClz() {
-        return clz;
     }
 
     public GroovyIndex getIndex() {
         return index;
     }
 
+    @Override
     public String getIn() {
-        return getClz();
-    }
-
-    public String getFilenameUrl() {
-        return fileUrl;
+        return classFqn;
     }
 
     public Document getDocument() throws IOException {
@@ -133,6 +119,7 @@ public abstract class IndexedElement extends GroovyElement {
         return new DefaultParserFile(getFileObject(), null, platform);
     }
 
+    @Override
     public FileObject getFileObject() {
         if ((fileObject == null) && (fileUrl != null)) {
             fileObject = GroovyIndex.getFileObject(fileUrl);
@@ -146,6 +133,7 @@ public abstract class IndexedElement extends GroovyElement {
         return fileObject;
     }
 
+    @Override
     public final Set<Modifier> getModifiers() {
         if (modifiers == null) {
             Modifier access = Modifier.PRIVATE;

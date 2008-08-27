@@ -44,7 +44,7 @@ package org.netbeans.modules.java.ui;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
-import org.netbeans.spi.options.OptionsPanelController;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 
 
 /**
@@ -75,8 +75,8 @@ public class FmtCodeGeneration extends javax.swing.JPanel {
         
     }
     
-    public static OptionsPanelController getController() {
-        return new CategorySupport(new FmtCodeGeneration(), null);
+    public static PreferencesCustomizer.Factory getController() {
+        return new CategorySupport.Factory("code-generation", FmtCodeGeneration.class, null);
     }
     
     /** This method is called from within the constructor to

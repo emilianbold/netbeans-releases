@@ -44,12 +44,15 @@ package org.netbeans.modules.glassfish.common.ui;
 import java.awt.Component;
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 public class JdbcResourceCustomizer extends BasePanel {
 
     /** Creates new form JdbcResourceCustomizer */
     public JdbcResourceCustomizer() {
         initComponents();
+        String val = NbBundle.getMessage(JdbcResourceCustomizer.class, "MSG_FETCHING_DATA");
+        poolNameCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { val }));
     }
 
     /** This method is called from within the constructor to
@@ -62,17 +65,18 @@ public class JdbcResourceCustomizer extends BasePanel {
     private void initComponents() {
 
         poolNameLabel = new javax.swing.JLabel();
-        poolNameField = new javax.swing.JTextField();
         resourceEnabledCB = new javax.swing.JCheckBox();
+        poolNameCombo = new javax.swing.JComboBox();
 
-        poolNameLabel.setLabelFor(poolNameField);
+        poolNameLabel.setLabelFor(poolNameCombo);
         org.openide.awt.Mnemonics.setLocalizedText(poolNameLabel, org.openide.util.NbBundle.getMessage(JdbcResourceCustomizer.class, "JdbcResourceCustomizer.poolNameLabel.text")); // NOI18N
-
-        poolNameField.setText(org.openide.util.NbBundle.getMessage(JdbcResourceCustomizer.class, "JdbcResourceCustomizer.poolNameField.text")); // NOI18N
-        poolNameField.setName("pool-name"); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(resourceEnabledCB, org.openide.util.NbBundle.getMessage(JdbcResourceCustomizer.class, "JdbcResourceCustomizer.enabled.text")); // NOI18N
         resourceEnabledCB.setName("enabled"); // NOI18N
+
+        poolNameCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "fetching data...." }));
+        poolNameCombo.setActionCommand("resources\\.jdbc-connection-pool\\..*\\.name"); // NOI18N
+        poolNameCombo.setName("pool-name"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -84,8 +88,8 @@ public class JdbcResourceCustomizer extends BasePanel {
                     .add(resourceEnabledCB)
                     .add(layout.createSequentialGroup()
                         .add(poolNameLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(poolNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)))
+                        .add(2, 2, 2)
+                        .add(poolNameCombo, 0, 260, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -94,7 +98,7 @@ public class JdbcResourceCustomizer extends BasePanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(poolNameLabel)
-                    .add(poolNameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(poolNameCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(resourceEnabledCB)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -103,7 +107,7 @@ public class JdbcResourceCustomizer extends BasePanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField poolNameField;
+    private javax.swing.JComboBox poolNameCombo;
     private javax.swing.JLabel poolNameLabel;
     private javax.swing.JCheckBox resourceEnabledCB;
     // End of variables declaration//GEN-END:variables
@@ -113,7 +117,7 @@ public class JdbcResourceCustomizer extends BasePanel {
     }
 
     protected List<Component> getDataComponents() {
-        return Arrays.asList(new Component[] {poolNameField,resourceEnabledCB});
+        return Arrays.asList(new Component[] {poolNameCombo,resourceEnabledCB});
     }
 
 }

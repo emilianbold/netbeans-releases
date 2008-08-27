@@ -137,6 +137,10 @@ public abstract class ProductConfigurationLogic {
     public Map<String, Text> getThirdPartyLicenses() {
         return null;
     }
+
+    public boolean requireLegalArtifactSaving() {
+        return true;
+    }
     
     public Text getThirdPartyLicense() {
         return null;

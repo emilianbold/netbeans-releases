@@ -17,9 +17,12 @@
     
     <key>CFBundleShortVersionString</key>
     <string>@VERSION@</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>org.netbeans.ide</string> 
     
     <key>CFBundleSignature</key>
-    <string>????</string>
+    <string>NETB</string>
     
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>

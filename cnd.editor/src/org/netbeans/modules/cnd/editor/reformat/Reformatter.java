@@ -79,7 +79,7 @@ public class Reformatter implements ReformatTask {
             codeStyle = CodeStyle.getDefault(doc);
         }
 	expandTabToSpaces = codeStyle.expandTabToSpaces();
-        tabSize = codeStyle.getGlobalTabSize();
+        tabSize = codeStyle.getTabSize();
         if (context != null) {
             for (Context.Region region : context.indentRegions()) {
                 reformatImpl(region);

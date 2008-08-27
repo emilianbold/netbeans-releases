@@ -65,6 +65,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -99,6 +100,9 @@ public final class JsfTable implements ActiveEditorDrop {
         boolean accept = jsfTableCustomizer.showDialog();
         if (accept) {
             try {
+                String prefixHtml = JSFPaletteUtilities.findJsfHtmlPrefix(targetComponent);
+                String prefixCore = JSFPaletteUtilities.findJsfCorePrefix(targetComponent);
+                
                 Caret caret = targetComponent.getCaret();
                 int position0 = Math.min(caret.getDot(), caret.getMark());
                 int position1 = Math.max(caret.getDot(), caret.getMark());
@@ -108,11 +112,14 @@ public final class JsfTable implements ActiveEditorDrop {
                 String body = createBody(targetComponent, !containsFView);
                 JSFPaletteUtilities.insert(body, targetComponent);
             } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
                 accept = false;
             } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
                 accept = false;
             }
         }
+        
         return accept;
     }
     

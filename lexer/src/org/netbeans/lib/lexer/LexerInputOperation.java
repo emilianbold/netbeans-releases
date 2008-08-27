@@ -129,6 +129,11 @@ public abstract class LexerInputOperation<T extends TokenId> {
                 lexerInput, tokenFactory, lexerRestartState,
                 languagePath, tokenList.inputAttributes());
         lexer = LexerSpiPackageAccessor.get().createLexer(languageHierarchy, info);
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.INFO, "LexerInputOperation created for " +
+                    tokenList.tokenHierarchyOperation().inputSource(), new Exception()); // NOI18N
+        }
     }
 
     public abstract int read(int offset);
@@ -186,6 +191,10 @@ public abstract class LexerInputOperation<T extends TokenId> {
                 checkLexerInputFinished();
                 return null;
             }
+//            if (LOG.isLoggable(Level.FINE)) {
+//                LOG.fine("NEXT-TOKEN: off=" + tokenStartOffset + ", len=" + tokenLength // NOI18N
+//                        + ", " + token.dumpInfo() + '\n');
+//            }
             // Check if token id of the new token belongs to the language
             Language<T> language = innerLanguageOperation.language();
             // Check that the id belongs to the language
@@ -225,7 +234,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
         // Compare each recognized char with the corresponding char in text
         if (LOG.isLoggable(Level.FINE)) {
             for (int i = 0; i < text.length(); i++) {
-                if (text.charAt(i) != readExisting(i)) {
+                if (text.charAt(i) != readExistingAtIndex(i)) {
                     throw new IllegalArgumentException("Flyweight text in " + // NOI18N
                             "TokenFactory.getFlyweightToken(" + id + ", \"" + // NOI18N
                             CharSequenceUtilities.debugText(text) + "\") " + // NOI18N

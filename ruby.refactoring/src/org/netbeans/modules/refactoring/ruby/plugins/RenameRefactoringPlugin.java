@@ -45,18 +45,18 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.jruby.ast.ClassVarAsgnNode;
-import org.jruby.ast.ClassVarDeclNode;
-import org.jruby.ast.ClassVarNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.GlobalAsgnNode;
-import org.jruby.ast.GlobalVarNode;
-import org.jruby.ast.InstAsgnNode;
-import org.jruby.ast.InstVarNode;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.SymbolNode;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.ClassVarAsgnNode;
+import org.jruby.nb.ast.ClassVarDeclNode;
+import org.jruby.nb.ast.ClassVarNode;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.GlobalAsgnNode;
+import org.jruby.nb.ast.GlobalVarNode;
+import org.jruby.nb.ast.InstAsgnNode;
+import org.jruby.nb.ast.InstVarNode;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.SymbolNode;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Error;
@@ -89,15 +89,15 @@ import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
-import org.jruby.ast.ArgumentNode;
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.DAsgnNode;
-import org.jruby.ast.DVarNode;
-import org.jruby.ast.LocalAsgnNode;
-import org.jruby.ast.LocalVarNode;
-import org.jruby.ast.ModuleNode;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.SClassNode;
+import org.jruby.nb.ast.ArgumentNode;
+import org.jruby.nb.ast.ClassNode;
+import org.jruby.nb.ast.DAsgnNode;
+import org.jruby.nb.ast.DVarNode;
+import org.jruby.nb.ast.LocalAsgnNode;
+import org.jruby.nb.ast.LocalVarNode;
+import org.jruby.nb.ast.ModuleNode;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.SClassNode;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -173,7 +173,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                     
                     public void run(CompilationController co) throws Exception {
                         co.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
-                        org.jruby.ast.Node root = AstUtilities.getRoot(co);
+                        org.jruby.nb.ast.Node root = AstUtilities.getRoot(co);
                         if (root != null) {
                             RubyParseResult rpr = AstUtilities.getParseResult(co);
                             if (rpr != null) {
@@ -184,7 +184,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                                     // In Java, we look for a class with the name corresponding to the file.
                                     // It's not as simple in Ruby.
                                     AstElement element = els.get(0);
-                                    org.jruby.ast.Node node = element.getNode();
+                                    org.jruby.nb.ast.Node node = element.getNode();
                                     treePathHandle = new RubyElementCtx(root, node, element, co.getFileObject(), co);
                                     refactoring.getContext().add(co);
                                 }

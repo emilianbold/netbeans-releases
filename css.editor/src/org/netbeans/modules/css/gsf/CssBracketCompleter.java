@@ -63,8 +63,9 @@ import org.openide.util.Exceptions;
  */
 public class CssBracketCompleter implements KeystrokeHandler {
 
-    private static final char[][] PAIRS = new char[][]{{'{', '}'}, {'"', '"'}, {'\'', '\''}};
+    private static final char[][] PAIRS = new char[][]{{'{', '}'}, {'"', '"'}, {'\'', '\''}}; //NOI18N
     private char justAddedPair;
+    private int justAddedPairOffset = -1;
 
     private int pairIndex(char ch) {
         for (int i = 0; i < PAIRS.length; i++) {
@@ -79,15 +80,17 @@ public class CssBracketCompleter implements KeystrokeHandler {
     public boolean beforeCharInserted(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
         Caret caret = target.getCaret();
 
-        if (justAddedPair == ch) {
+        if (justAddedPair == ch && justAddedPairOffset == dot) {
             //skip
             justAddedPair = 0;
+            justAddedPairOffset = -1;
             caret.setDot(dot + 1);
             return true;
         }
 
         justAddedPair = 0;
-
+        justAddedPairOffset = -1;
+        
         //test if we care about the typed character
         int pairIdx = pairIndex(ch);
         if (pairIdx == -1) {
@@ -149,6 +152,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
         }
 
         justAddedPair = PAIRS[pairIdx][1];
+        justAddedPairOffset = dot + 1;
 
         doc.insertString(dot, String.valueOf(PAIRS[pairIdx][0]), null);
         doc.insertString(dot + 1, String.valueOf(justAddedPair), null);
@@ -162,6 +166,9 @@ public class CssBracketCompleter implements KeystrokeHandler {
     }
 
     public boolean charBackspaced(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
+        justAddedPair = 0;
+        justAddedPairOffset = -1;
+        
         return false;
 
     }
@@ -172,7 +179,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
         }
         String context = doc.getText(dot - 1, 2); //get char before and after
         
-        if ("{}".equals(context)) {
+        if ("{}".equals(context)) { //NOI18N
             final Reformat reformatter = Reformat.get(doc);
             BaseDocument bdoc = (BaseDocument) doc;
 
@@ -183,7 +190,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
                     public void run() {
                         try {
                             //smart indent
-                            doc.insertString(dot, "\n", null);
+                            doc.insertString(dot, "\n", null); //NOI18N
                             //move caret
                             jtc.getCaret().setDot(dot);
                             //and indent the line

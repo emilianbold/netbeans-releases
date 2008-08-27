@@ -125,6 +125,10 @@ public final class NbJSEditorUtil {
     }
 
     public static void openFileObject(FileObject fileObject) {
+        if (fileObject == null) {
+            return;
+        }
+        
         try {
             DataObject dataObject = DataObject.find(fileObject);
             EditorCookie cookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);

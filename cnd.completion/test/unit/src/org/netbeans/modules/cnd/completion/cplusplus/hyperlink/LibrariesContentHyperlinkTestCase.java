@@ -127,4 +127,11 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("src/main.cc", 26, 8, "sys_include/include1.h", 44, 5);
         performTest("src/main.cc", 27, 8, "sys_include2/include2.h", 28, 5);
     }
+
+    public void testIZ140787_cout() throws Exception {
+        // iz #140787 cout, endl unresolved in some Loki files
+        performTest("src/iz140787_cout.cc", 9, 9, "sys_include/include1.h", 44, 5);
+        performTest("src/iz140787_cout.cc", 10, 10, "sys_include2/include2.h", 28, 5);
+    }
+
 }

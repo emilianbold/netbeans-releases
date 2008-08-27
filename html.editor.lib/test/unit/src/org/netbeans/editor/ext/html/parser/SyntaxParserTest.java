@@ -50,7 +50,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.html.HTMLKit;
+import org.netbeans.modules.html.editor.HTMLKit;
 
 /** SyntaxParser unit tests
  *

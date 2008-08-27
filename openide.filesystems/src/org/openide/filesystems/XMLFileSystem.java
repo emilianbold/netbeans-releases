@@ -150,7 +150,16 @@ import org.xml.sax.helpers.DefaultHandler;
  * </pre>
  * where <code>Value</code> can be any java type.
  *
- *
+ * <p>
+ * If you are interested just in the Class of an attribute, but
+ * without creating its instance, use <code>fileObject.getAttribute("class:attrName")</code>.
+ * This instructs the XMLFileSystem to scan its XML files for definition of <code>attrName</code>
+ * attribute and <i>guess</i> its class. The <i>guessing</i> is usually easy,
+ * just for <code>methodvalue</code> types, the system needs to use
+ * some kind of heuristic: it locates the appropriate factory method and returns
+ * its return type. This may not be the actual type of the returned object at the end,
+ * but it seems as the best guess without instantiating it.
+
  * @author Radek Matous
  */
 public final class XMLFileSystem extends AbstractFileSystem {

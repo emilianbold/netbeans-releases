@@ -356,7 +356,7 @@ public class DesignCenter extends UMLTestCase {
         //
         assertTrue("There is no Design Center root node or invisible, current root:"+tr.getRoot(),"Design Center".equals(tr.getRoot().toString()) && tr.isRootVisible());
         tr.findPath("DesignPatternCatalog");
-        tr.findPath("Requirements");
+//        tr.findPath("Requirements");
         tr.findPath("DesignPatternCatalog|EJB1.1");
         tr.findPath("DesignPatternCatalog|EJB2.0");
         tr.findPath("DesignPatternCatalog|GoF Design Patterns");

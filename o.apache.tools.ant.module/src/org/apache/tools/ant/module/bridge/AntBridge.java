@@ -44,6 +44,7 @@ package org.apache.tools.ant.module.bridge;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -895,10 +896,9 @@ public final class AntBridge {
                 assert !(orig instanceof MultiplexPrintStream);
                 return orig;
             } else {
-                // Probably should not happen? But not sure.
-                PrintStream stream = err ? System.err : System.out;
-                assert !(stream instanceof MultiplexPrintStream); // #89020
-                return stream;
+                // Probably should not happen? But not sure. See: #89020, #144468
+                // Safest to just discard output in this case.
+                return new PrintStream(new ByteArrayOutputStream());
             }
         }
         

@@ -124,16 +124,16 @@ public class ReflowParagraphAction extends BaseAction {
         ParagraphFormatter(boolean currentSectionOnly, JTextComponent target, BaseDocument doc, int rightMargin) {
             this.currentSectionOnly = currentSectionOnly;
             this.target = target;
-            if (rightMargin != -1) {
-                this.rightMargin = rightMargin;
-            } else {
-                this.rightMargin = CodeStyle.getDefault(null).getRightMargin();// EditorOptions.get(RubyInstallation.RUBY_MIME_TYPE).getRightMargin();
-            }
             if (target != null) {
                 this.doc = (BaseDocument)target.getDocument();
                 this.oldCaretPosition = target.getCaret() != null ? target.getCaret().getDot() : null;
             } else {
                 this.doc = doc;
+            }
+            if (rightMargin != -1) {
+                this.rightMargin = rightMargin;
+            } else {
+                this.rightMargin = CodeStyle.get(this.doc).getRightMargin();// EditorOptions.get(RubyInstallation.RUBY_MIME_TYPE).getRightMargin();
             }
         }
 

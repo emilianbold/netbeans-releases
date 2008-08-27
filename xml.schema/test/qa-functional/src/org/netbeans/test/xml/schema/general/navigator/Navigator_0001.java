@@ -194,13 +194,23 @@ public class Navigator_0001 extends Navigator {
       JTreeOperator tree = new JTreeOperator( top, 0 );
       String sOriginal = Dump( tree, tree.getRoot( ), -1, "" );
       if( !sOriginal.equals( data.sOriginal ) )
-        fail( "Invalid orignal data: \"" + sOriginal + "\"" );
+      {
+        // TODO : check tree
+        System.out.println( "+++1:" + data.sOriginal );
+        System.out.println( "+++2:" + sOriginal );
+        fail( "Invalid orignal data" );//: \"" + sOriginal + "\"" );
+      }
 
       button.setSelected( false );
 
       String sAttributes = Dump( tree, tree.getRoot( ), -1, "" );
       if( !sAttributes.equals( data.sAttributes ) )
-        fail( "Invalid attributes data: \"" + sAttributes + "\"" );
+      {
+        // TODO : check tree
+        System.out.println( "+++1:" + data.sAttributes );
+        System.out.println( "+++2:" + sAttributes );
+        fail( "Invalid attributes data" );//: \"" + sAttributes + "\"" );
+      }
 
       endTest( );
     }
@@ -230,7 +240,7 @@ public class Navigator_0001 extends Navigator {
       TopComponentOperator top = new TopComponentOperator( " - Navigator" );
       JComboBoxOperator jcb = new JComboBoxOperator( top );
       jcb.selectItem( "XML View" );
-      try { Thread.sleep( 3000 ); } catch( InterruptedException ex ) { }
+      Sleep( 3000 );
 
       // Get toggle button
       JToggleButtonOperator button = new JToggleButtonOperator( top, 1 );

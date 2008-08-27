@@ -39,14 +39,23 @@
 
 package org.netbeans.modules.web.client.tools.common.launcher;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public class Launcher {
+    
+    private static final Logger LOG = Logger.getLogger(Launcher.class.getPackage().getName());
+    
     private static class ProcessWaiter extends Thread {
         private Process process;
         private String command;
@@ -59,7 +68,33 @@ public class Launcher {
 
         public void run() {
             try {
-                int exitStatus = process.waitFor();               
+                int exitStatus = process.waitFor();
+                if (exitStatus != 0) {
+                    BufferedReader br = null;
+                    for (InputStream stream : new InputStream[]{process.getErrorStream(), process.getInputStream()}) {
+                        try {
+                            if (stream != null) {
+                                br = new BufferedReader(new InputStreamReader(stream));
+                                while (br.ready()) {
+                                    String nextLine = br.readLine();
+                                    LOG.info(nextLine);
+                                }
+                            }
+                        } catch (Exception ex) {
+                            LOG.log(Level.INFO, "Unexpected exception reading output", ex);
+                        } finally {
+                            if (br != null) {
+                                try {
+                                    br.close();
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+
+                            br = null;
+                        }
+                    }
+                }
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
@@ -70,8 +105,25 @@ public class Launcher {
         List<String> command = new LinkedList<String>();
         command.addAll(Arrays.asList(launchDescriptor.getLaunchCommand()));
         
+        String arguments = launchDescriptor.getArguments();
+        if (arguments != null && arguments.trim().length() > 0) {
+            for (String arg : arguments.split("\\s")) {
+                if (arg.length() > 0) {
+                    command.add(arg);
+                }
+            }
+        }
+        
         for (String uri : launchDescriptor.getURIs()) {
             command.add(uri);
+        }
+        
+        if (LOG.isLoggable(Level.FINE)) {
+            String p = "";
+            for (String s : command) {
+                p = p + " " + s;
+            }
+            LOG.fine("Launching:" + p);
         }
         
         ProcessBuilder processBuilder = new ProcessBuilder(command);
@@ -91,6 +143,7 @@ public class Launcher {
 
         private String executablePath;
         private String[] computedExecutablePath;
+        private String arguments;
         private List<String> uriList;
 
         public LaunchDescriptor(String executablePath) {
@@ -122,6 +175,14 @@ public class Launcher {
         
         public void setURI(List<String> uriList) {
             this.uriList = uriList;
+        } 
+ 
+        public String getArguments() {
+            return arguments;
+        }
+        
+        public void setArguments(String arguments) {
+            this.arguments = arguments;
         }
         
         public List<String> getURIs() {

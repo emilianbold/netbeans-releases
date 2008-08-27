@@ -63,6 +63,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAs
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -188,8 +189,10 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
     protected void validateFields() {
         String phpInterpreter = interpreterTextField.getText().trim();
+        String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText().trim();
-        String err = RunAsValidator.validateScriptFields(phpInterpreter, null, args);
+
+        String err = RunAsValidator.validateScriptFields(phpInterpreter, FileUtil.toFile(project.getProjectDirectory()), indexFile, args);
         category.setErrorMessage(err);
         category.setValid(err == null);
     }

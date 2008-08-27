@@ -44,7 +44,7 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
-import org.jruby.ast.Node;
+import org.jruby.nb.ast.Node;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -169,7 +169,7 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
         Preferences prefs = NbPreferences.forModule(RubyFormatterTest.class);
         prefs.put(FmtOptions.indentSize, Integer.toString(preferences.getIndentation()));
         prefs.put(FmtOptions.continuationIndentSize, Integer.toString(preferences.getHangingIndentation()));
-        CodeStyle codeStyle = CodeStyle.getTestStyle(prefs);
+        CodeStyle codeStyle = CodeStyle.get(prefs);
         
         RubyFormatter formatter = new RubyFormatter(codeStyle, 80);
         

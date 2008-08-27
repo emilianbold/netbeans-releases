@@ -42,8 +42,6 @@
 package org.netbeans.modules.versioning.system.cvss.ui.wizards;
 
 import java.awt.Dimension;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
 import javax.swing.JLabel;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.AttributeSet;
@@ -54,7 +52,7 @@ import javax.swing.text.BadLocationException;
  *
  * @author  Petr Kuzel
  */
-public class CvsRootPanel extends javax.swing.JPanel implements ItemListener {
+public class CvsRootPanel extends javax.swing.JPanel {
 
     /** Creates new form CvsRootPanel */
     public CvsRootPanel() {
@@ -73,7 +71,6 @@ public class CvsRootPanel extends javax.swing.JPanel implements ItemListener {
         setPreferredWidth(repositoryLabel, w);
 
         portTextField.setDocument(new PortDocument());
-        accessComboBox.addItemListener(this);
     }
     
     private void setPreferredWidth(JLabel label, int width) {
@@ -82,15 +79,7 @@ public class CvsRootPanel extends javax.swing.JPanel implements ItemListener {
         label.setPreferredSize(dim);
     }
 
-    public void itemStateChanged(ItemEvent e) {
-        refreshComponents();
-    }
-
-    private void refreshComponents() {
-        portTextField.setEnabled(accessComboBox.getSelectedItem().equals("pserver"));
-    }
-
-    static class PortDocument extends PlainDocument {
+     static class PortDocument extends PlainDocument {
 
          public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
 
