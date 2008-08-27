@@ -254,7 +254,7 @@ public final class DatabaseConnection {
      * ConnectionManager, or if <code>test</code> is set to true and this method is called
      * on the AWT event thread.
      *
-     * @since 1.29
+     * @since 1.30
      */
     public Connection getJDBCConnection(boolean test) {
         if (test && SwingUtilities.isEventDispatchThread()) {
