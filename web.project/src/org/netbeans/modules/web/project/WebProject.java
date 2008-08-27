@@ -1103,8 +1103,8 @@ public final class WebProject implements Project, AntProjectListener {
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                helper.createSimpleAntArtifact(WebProjectConstants.ARTIFACT_TYPE_WAR, "dist.war", evaluator(), "dist", "clean"), // NOI18N
-                helper.createSimpleAntArtifact(WebProjectConstants.ARTIFACT_TYPE_WAR_EAR_ARCHIVE, "dist.ear.war", evaluator(), "dist-ear", "clean-ear") // NOI18N
+                helper.createSimpleAntArtifact(WebProjectConstants.ARTIFACT_TYPE_WAR, "dist.war", evaluator(), "dist", "clean", WebProjectProperties.BUILD_FILE), // NOI18N
+                helper.createSimpleAntArtifact(WebProjectConstants.ARTIFACT_TYPE_WAR_EAR_ARCHIVE, "dist.ear.war", evaluator(), "dist-ear", "clean-ear", WebProjectProperties.BUILD_FILE) // NOI18N
             };
         }
 

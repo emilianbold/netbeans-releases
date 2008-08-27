@@ -44,7 +44,6 @@ package org.netbeans.spi.project.support.ant;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
@@ -63,17 +62,20 @@ final class SimpleAntArtifact extends AntArtifact {
     private final PropertyEvaluator eval;
     private final String targetName;
     private final String cleanTargetName;
+    private final String buildScriptProperty;
     
     /**
      * @see AntProjectHelper#createSimpleAntArtifact
      */
-    public SimpleAntArtifact(AntProjectHelper helper, String type, String locationProperty, PropertyEvaluator eval, String targetName, String cleanTargetName) {
+    public SimpleAntArtifact(AntProjectHelper helper, String type, String locationProperty, 
+            PropertyEvaluator eval, String targetName, String cleanTargetName, String buildScriptProperty) {
         this.h = helper;
         this.type = type;
         this.locationProperty = locationProperty;
         this.eval = eval;
         this.targetName = targetName;
         this.cleanTargetName = cleanTargetName;
+        this.buildScriptProperty = buildScriptProperty;
     }
     
     private URI getArtifactLocation0() {
@@ -95,6 +97,7 @@ final class SimpleAntArtifact extends AntArtifact {
         }
     }
     
+    @Override
     public URI[] getArtifactLocations() {
         return new URI[]{getArtifactLocation0()};
     }
@@ -104,7 +107,14 @@ final class SimpleAntArtifact extends AntArtifact {
     }
     
     public File getScriptLocation() {
-        return h.resolveFile(GeneratedFilesHelper.BUILD_XML_PATH);
+        String path = null;
+        if (buildScriptProperty != null) {
+            path = eval.getProperty(buildScriptProperty);
+        }
+        if (path == null) {
+            path = GeneratedFilesHelper.BUILD_XML_PATH;
+        }
+        return h.resolveFile(path);
     }
     
     public String getTargetName() {
@@ -115,13 +125,15 @@ final class SimpleAntArtifact extends AntArtifact {
         return type;
     }
     
+    @Override
     public Project getProject() {
         return AntBasedProjectFactorySingleton.getProjectFor(h);
     }
     
+    @Override
     public String toString() {
         return "SimpleAntArtifact[helper=" + h + ",type=" + type + ",locationProperty=" + locationProperty + // NOI18N
-            ",targetName=" + targetName + ",cleanTargetName=" + cleanTargetName + /*",props=" + eval.getProperties() +*/ "]"; // NOI18N
+            ",targetName=" + targetName + ",cleanTargetName=" + cleanTargetName + ",buildScriptProperty=" + buildScriptProperty + "]"; // NOI18N
     }
     
 }
