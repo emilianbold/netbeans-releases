@@ -279,7 +279,11 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         if (key.equals(CompilerSetManager.LOCALHOST)) {
             setValue(getCompilerSetManager().getCompilerSet(0).getName());
         } else {
-            setValue(CompilerSetManager.getDefault(key).getCompilerSet(0).getName());
+            CompilerSet cs = CompilerSetManager.getDefault(key).getDefaultCompilerSet();
+            if (cs == null) {
+                cs = CompilerSetManager.getDefault(key).getCompilerSet(0);
+            }
+            setValue(cs.getName());
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     ServerList server = (ServerList) Lookup.getDefault().lookup(ServerList.class);
@@ -287,7 +291,11 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
                         ServerRecord record = server.get(key);
                         if (record != null) {
                             CompilerSetManager csm = CompilerSetManager.getDefault(key);
-                            setValue(csm.getCompilerSet(0).getName());
+                            CompilerSet cs = csm.getDefaultCompilerSet();
+                            if (cs == null) {
+                                cs = csm.getCompilerSet(0);
+                            }
+                            setValue(cs.getName());
                             if (compilerSetNodeProp != null) {
                                 compilerSetNodeProp.repaint();
                             }

@@ -136,11 +136,6 @@ public class CreateRubyProject  extends org.netbeans.modules.performance.utiliti
         log("::close");
 
         try {
-            new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
-        } catch (Exception ex) {
-            log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
-        }
-        try {
             CommonUtilities.deleteProject(project_name);
         } catch(Exception ee) {
             log("Exception during project deletion: "+ee.getMessage());

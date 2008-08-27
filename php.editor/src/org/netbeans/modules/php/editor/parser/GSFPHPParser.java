@@ -39,10 +39,15 @@
 
 package org.netbeans.modules.php.editor.parser;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java_cup.runtime.Symbol;
 import org.netbeans.modules.gsf.api.*;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
@@ -144,7 +149,13 @@ public class GSFPHPParser implements Parser {
             }
             else {
                 LOGGER.fine ("The parser value is not a Program: " + rootSymbol.value);
-                result = sanitize(context, sanitizing, errorHandler);
+                if (scanner.getCurlyBalance() != 0) {
+                    // try to fix missing {
+                    result = sanitize(context, Sanitize.SYNTAX_ERROR_PREVIOUS_LINE, errorHandler);
+                }
+                else {
+                    result = sanitize(context, sanitizing, errorHandler);
+                }
             }
             if (!sanitizedSource) {
                 errorHandler.displaySyntaxErrors(program);
@@ -207,9 +218,88 @@ public class GSFPHPParser implements Parser {
                 return true;
             }
         }
+        if (sanitizing == Sanitize.MISSING_END) {
+            String source = context.getSource();
+            ASTPHP5Scanner scanner = new ASTPHP5Scanner(new ByteArrayInputStream(source.getBytes()));
+            //keep index of last ?>
+            Symbol lastPHPToken = null;
+            Symbol token = null;
+
+            try {
+                token = scanner.next_token();
+                int bracketCounter = 0;
+                int bracketClassCounter = 0;
+                boolean inClass = false;
+                while (token.sym != ASTPHP5Symbols.EOF) {
+                    switch (token.sym) {
+                        case ASTPHP5Symbols.T_CLASS:
+                            if (!inClass) {
+                                inClass = true;
+                            }
+                            else {
+                                // handle situatin class declaration in class
+                                if (bracketClassCounter == 1) {
+                                    int index = token.left - 1;
+                                    while (index > 0 && (source.charAt(index) == '\n'
+                                            || source.charAt(index) == '\r' || source.charAt(index) == '}')) {
+                                        index--;
+                                    }
+                                    if (source.charAt(index) == ' ') {
+                                        context.sanitizedSource = source.substring(0, index-1) + '}' + source.substring(index);
+                                        context.sanitizedRange = new OffsetRange(index-1, index);
+                                        return true;
+                                    }
+                                }
+                            }
+                            break;
+                        case ASTPHP5Symbols.T_CURLY_OPEN:
+                        case ASTPHP5Symbols.T_CURLY_OPEN_WITH_DOLAR:
+                            if (inClass) {
+                                bracketClassCounter++;
+                            }
+                            else {
+                                bracketCounter++;
+                            }
+                            break;
+                        case ASTPHP5Symbols.T_CURLY_CLOSE:
+                            if (inClass) {
+                                bracketClassCounter--;
+                                if (bracketClassCounter == 0) {
+                                    inClass = false;
+                                }
+                            }
+                            else {
+                                bracketCounter--;
+                            }
+                            break;
+                    }
+                    if (token.sym != ASTPHP5Symbols.T_INLINE_HTML) {
+                        lastPHPToken = token;
+                    }
+                    token = scanner.next_token();
+                }
+            } catch (IOException exception) {
+                LOGGER.log(Level.INFO, "Exception during calculating missing }", exception);
+            }
+            int count = scanner.getCurlyBalance();
+            if (count > 0){
+                if(lastPHPToken != null) {
+                    String lastTokenText = source.substring(lastPHPToken.left, lastPHPToken.right).trim();
+                    if ("?>".equals(lastTokenText)) {   //NOI18N
+                        context.sanitizedSource = source.substring(0, lastPHPToken.left) + Utils.getRepeatingChars('}', count) + source.substring(lastPHPToken.left);
+                        context.sanitizedRange = new OffsetRange(lastPHPToken.left, lastPHPToken.left + count);
+                        return true;
+                    }
+                    if (token.sym == ASTPHP5Symbols.EOF) {
+                        context.sanitizedSource = source.substring(0, token.left) + Utils.getRepeatingChars('}', count) + source.substring(token.left);
+                        context.sanitizedRange = new OffsetRange(token.left, token.left + count);
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
-
 
     private PHPParseResult sanitize(final Context context, final Sanitize sanitizing, PHP5ErrorHandler errorHandler) throws Exception{
         
@@ -221,6 +311,8 @@ public class GSFPHPParser implements Parser {
                 return parseBuffer(context, Sanitize.SYNTAX_ERROR_PREVIOUS, errorHandler);
             case SYNTAX_ERROR_PREVIOUS:
                 return parseBuffer(context, Sanitize.SYNTAX_ERROR_PREVIOUS_LINE, errorHandler);
+            case SYNTAX_ERROR_PREVIOUS_LINE:
+                return parseBuffer(context, Sanitize.MISSING_END, errorHandler);
             default:
                 int end = context.getSource().length();
                 Program emptyProgram = new Program(0, end, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
@@ -269,7 +361,7 @@ public class GSFPHPParser implements Parser {
         ERROR_LINE, 
         /** Try to cut out the current edited line, if known */
         EDITED_LINE,
-        /** Attempt to add an "end" to the end of the buffer to make it compile */
+        /** Attempt to fix missing } */
         MISSING_END,
     }
     

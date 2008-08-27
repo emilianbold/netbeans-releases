@@ -223,12 +223,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         return _const;
     }
 
-    public String getCanonicalText() {
+    public CharSequence getCanonicalText() {
         CharSequence text = getClassifierText();
         if (isInstantiationOrSpecialization()) {
             text = text.toString() + getInstantiationCanonicalText();
         }
-	return decorateText(text, this, true, null).toString();
+	return decorateText(text, this, true, null);
     }
     
     private CharSequence getInstantiationCanonicalText() {

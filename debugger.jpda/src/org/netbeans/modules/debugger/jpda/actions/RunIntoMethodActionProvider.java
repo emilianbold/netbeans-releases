@@ -72,12 +72,13 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.JPDAStepImpl;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
-import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
@@ -95,12 +96,10 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
 
     private JPDADebuggerImpl debugger;
     private ActionsManager lastActionsManager;
-    private SourcePath sourcePath;
     
     public RunIntoMethodActionProvider(ContextProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
                 (null, JPDADebugger.class);
-        sourcePath = lookupProvider.lookupFirst(null, SourcePath.class);
         debugger.addPropertyChangeListener (JPDADebuggerImpl.PROP_STATE, this);
         EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
@@ -253,46 +252,88 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         if (bpLocation == null) {
             bpLocation = locations.get(0);
         }
-        doAction(debugger, methodName, bpLocation);
+        doAction(debugger, methodName, bpLocation, false);
     }
 
-    static void doAction(final JPDADebuggerImpl debugger, final String methodName, Location bpLocation) {
+    static boolean doAction(final JPDADebuggerImpl debugger,
+                            final String methodName,
+                            Location bpLocation,
+                            // If it's important not to run far from the expression
+                            boolean setBoundaryStep) {
         final VirtualMachine vm = debugger.getVirtualMachine();
-        if (vm == null) return ;
+        if (vm == null) return false;
         final int line = bpLocation.lineNumber("Java");
         CallStackFrameImpl csf = (CallStackFrameImpl) debugger.getCurrentCallStackFrame();
+        if (csf == null) {
+            return false; // No intelligent stepping without the current stack frame.
+        }
+        final JPDAThreadImpl t;
         boolean areWeOnTheLocation;
         try {
-            areWeOnTheLocation = csf != null && csf.getStackFrame().location().equals(bpLocation);
+            areWeOnTheLocation = csf.getStackFrame().location().equals(bpLocation);
+            t = (JPDAThreadImpl) csf.getThread();
         } catch (InvalidStackFrameException e) {
-            areWeOnTheLocation = false;
+            return false; // No intelligent stepping without the current stack frame.
         }
+        final boolean doFinishWhenMethodNotFound = setBoundaryStep;
         if (areWeOnTheLocation) {
             // We're on the line from which the method is called
-            traceLineForMethod(debugger, methodName, line);
+            traceLineForMethod(debugger, methodName, line, doFinishWhenMethodNotFound);
         } else {
+            final JPDAStep[] boundaryStepPtr = new JPDAStep[] { null };
             // Submit the breakpoint to get to the point from which the method is called
             final BreakpointRequest brReq = vm.eventRequestManager().createBreakpointRequest(bpLocation);
-            debugger.getOperator().register(brReq, new Executor() {
+            Executor tracingExecutor = new Executor() {
 
                 public boolean exec(Event event) {
                     Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
                         fine("Calling location reached, tracing for "+methodName+"()");
+                    if (boundaryStepPtr[0] != null) {
+                        ((JPDAStepImpl) boundaryStepPtr[0]).cancel();
+                    }
                     vm.eventRequestManager().deleteEventRequest(brReq);
                     debugger.getOperator().unregister(brReq);
-                    traceLineForMethod(debugger, methodName, line);
+                    traceLineForMethod(debugger, methodName, line, doFinishWhenMethodNotFound);
                     return true;
                 }
-                
+
                 public void removed(EventRequest eventRequest) {}
-            });
+            };
+            debugger.getOperator().register(brReq, tracingExecutor);
+            brReq.addThreadFilter(t.getThreadReference());
             brReq.setSuspendPolicy(debugger.getSuspend());
             brReq.enable();
+            if (setBoundaryStep) {
+                boundaryStepPtr[0] = setBoundaryStepRequest(debugger, t, brReq);
+            }
         }
         resume(debugger);
+        return true;
     }
-    
-    private static void traceLineForMethod(final JPDADebugger debugger, final String method, final int methodLine) {
+
+    private static JPDAStep setBoundaryStepRequest(final JPDADebuggerImpl debugger,
+                                                   JPDAThread tr,
+                                                   final EventRequest request) {
+        // We need to also submit a step request so that we're sure that we end up at least on the next execution line
+        JPDAStep boundaryStep = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_OVER);
+        boundaryStep.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                VirtualMachine vm = debugger.getVirtualMachine();
+                if (vm != null) {
+                    debugger.getOperator().unregister(request);
+                    vm.eventRequestManager().deleteEventRequest(request);
+                }
+            }
+        });
+        boundaryStep.addStep(tr);
+        return boundaryStep;
+    }
+
+    private static void traceLineForMethod(final JPDADebuggerImpl debugger,
+                                           final String method,
+                                           final int methodLine,
+                                           final boolean finishWhenNotFound) {
         final int depth = debugger.getCurrentThread().getStackDepth();
         final JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_INTO);
         step.setHidden(true);
@@ -314,6 +355,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                             // We've missed the method :-(
                             step.setHidden(false);
                         } else {
+                            Logger.getLogger(RunIntoMethodActionProvider.class.getName()).
+                                fine("  back on the method invoaction line, setting additional step into.");
                             step.setDepth(JPDAStep.STEP_INTO);
                             step.addStep(debugger.getCurrentThread());
                         }
@@ -330,8 +373,13 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                         // The method can be a constructor
                         step.setHidden(false);
                     } else {
-                        step.setDepth(JPDAStep.STEP_OUT);
-                        step.addStep(debugger.getCurrentThread());
+                        if (finishWhenNotFound) {
+                            // We've missed the method, finish.
+                            step.setHidden(false);
+                        } else {
+                            step.setDepth(JPDAStep.STEP_OUT);
+                            step.addStep(debugger.getCurrentThread());
+                        }
                     }
                 }
             }
