@@ -87,7 +87,7 @@ public class AddTableColumnDDLTest extends DDLTestBase {
         col.setProperty(ColumnItem.NAME, secondColname);
         TypeElement type = new TypeElement("java.sql.Types.VARCHAR", "VARCHAR");
         col.setProperty(ColumnItem.TYPE, type);
-        col.setProperty(ColumnItem.SIZE, "255");
+        col.setProperty(ColumnItem.SIZE, "20");
         col.setProperty(ColumnItem.INDEX, new Boolean(true));
         
         ddl.execute(secondColname, col, fixIdentifier(indexName));
