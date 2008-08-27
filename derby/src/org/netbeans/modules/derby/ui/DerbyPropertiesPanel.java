@@ -121,7 +121,7 @@ public class DerbyPropertiesPanel extends javax.swing.JPanel {
                     continue;
                 }
             }
-            new RegisterSampleConnection();
+            new RegisterSampleDatabase();
             DerbyOptions.getDefault().setSystemHome(panel.getDerbySystemHome());
             DerbyOptions.getDefault().setLocation(panel.getInstallLocation());
             return true;
@@ -359,24 +359,24 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     // End of variables declaration//GEN-END:variables
     
     
-    private static class RegisterSampleConnection {
+    private static class RegisterSampleDatabase {
 
         private static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
         private static final String JDBC_URL = "jdbc:derby://localhost:1527/travel [travel on TRAVEL]";  // NOI18N
         private boolean registered;
 
-        RegisterSampleConnection() {
+        RegisterSampleDatabase() {
             if (JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET).length == 0) {
                 JDBCDriverManager.getDefault().addDriverListener(jdbcDriverListener);
             }
         }
         private final JDBCDriverListener jdbcDriverListener = new JDBCDriverListener() {
             public void driversChanged() {
-                registerSampleConnection();
+                registerDatabase();
             }
         };
 
-        void registerSampleConnection() {
+        void registerDatabase() {
             synchronized (this) {
                 if (registered) {
                     return;
