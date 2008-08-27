@@ -315,6 +315,7 @@ made subject to such option by the copyright holder.
                 <project>../../javascript.refactoring</project>
                 <project>../../javawebstart</project>
                 <project>../../jellytools</project>
+                <project>../../jellytools.platform</project>
                 <project>../../jemmy</project>
                 <project>../../jsp.lexer</project>
                 <project>../../jumpto</project>
@@ -323,6 +324,7 @@ made subject to such option by the copyright holder.
                 <project>../../languages.bat</project>
                 <project>../../languages.diff</project>
                 <project>../../languages.manifest</project>
+                <project>../../languages.refactoring</project>
                 <project>../../languages.sh</project>
                 <project>../../languages.yaml</project>
                 <project>../../lexer</project>
@@ -335,12 +337,14 @@ made subject to such option by the copyright holder.
                 <project>../../lib.terminalemulator</project>
                 <project>../../lib.uihandler</project>
                 <project>../../libs.aguiswinglayout</project>
+                <project>../../libs.bytelist</project>
                 <project>../../libs.cglib</project>
                 <project>../../libs.commons_fileupload</project>
                 <project>../../libs.commons_logging</project>
                 <project>../../libs.commons_net</project>
                 <project>../../libs.freemarker</project>
                 <project>../../libs.glassfish_logging</project>
+                <project>../../libs.httpunit</project>
                 <project>../../libs.ini4j</project>
                 <project>../../libs.jakarta_oro</project>
                 <project>../../libs.javacapi</project>
@@ -351,6 +355,7 @@ made subject to such option by the copyright holder.
                 <project>../../libs.jsch</project>
                 <project>../../libs.jsr223</project>
                 <project>../../libs.junit4</project>
+                <project>../../libs.jvyamlb</project>
                 <project>../../libs.jxpath</project>
                 <project>../../libs.lucene</project>
                 <project>../../libs.ppawtlayout</project>
@@ -400,7 +405,6 @@ made subject to such option by the copyright holder.
                 <project>../../o.n.core</project>
                 <project>../../o.n.insane</project>
                 <project>../../o.n.mobility.lib.activesync</project>
-                <project>../../o.n.soa.libs.httpunit</project>
                 <project>../../o.n.soa.libs.jbiadmincommon</project>
                 <project>../../o.n.soa.libs.jgo</project>
                 <project>../../o.n.soa.libs.wsdl4j</project>
@@ -668,11 +672,11 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.saas.services.zillow</project>
                 <project>../../websvc.saas.services.zvents</project>
                 <project>../../websvc.saas.ui</project>
-                <project>../../websvc.serverapi</project>
                 <project>../../websvc.utilities</project>
                 <project>../../websvc.websvcapi</project>
                 <project>../../websvc.wsitconf</project>
                 <project>../../websvc.wsitmodelext</project>
+                <project>../../websvc.wsstack.jaxws</project>
                 <project>../../websvc.wsstackapi</project>
                 <project>../../welcome</project>
                 <project>../../wsdlextensions.file</project>
