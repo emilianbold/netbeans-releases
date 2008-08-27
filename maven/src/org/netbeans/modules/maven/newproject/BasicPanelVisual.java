@@ -540,7 +540,6 @@ public class BasicPanelVisual extends JPanel implements DocumentListener {
             
             RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
             if (info != null) {
-                System.out.println("updating repository");
                 RepositoryIndexer.updateIndexWithArtifacts(info, Collections.singletonList(art));
             }
         } finally {
