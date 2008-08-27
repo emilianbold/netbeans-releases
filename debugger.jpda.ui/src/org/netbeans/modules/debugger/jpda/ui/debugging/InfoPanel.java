@@ -47,6 +47,7 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,6 +64,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
@@ -711,54 +713,72 @@ public class InfoPanel extends javax.swing.JPanel {
                 scrollPane.setPreferredSize(new Dimension(0, 1));
                 outerPanel.setPreferredSize(new Dimension(0, height));
                 animationRunning = true;
-                requestProcessor.post(new Runnable() {
+                isTop = top;
+                SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        isTop = top;
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                if (isTop && lastTop != null) {
-                                    lastTop.setTop(false);
-                                }
-                                topGapPanel.setVisible(!isTop);
-                                if (animationRunning) {
-                                    scrollPane.setVisible(true);
-                                    separator.setVisible(true);
-                                    tapPanel.revalidate();
-                                }
-                                if (isTop) {
-                                    tapPanel.setBackground(backgroundColor);
-                                }
-                            }
-                        });
-                        int delta = 1;
-                        int currHeight = 1;
-                        while (currHeight < (isTop ? preferredHeight - tapPanelMinimumHeight : preferredHeight) &&
-                                animationRunning) {
-                            currHeight += delta;
-                            int height = isTop ? preferredHeight - tapPanelMinimumHeight : preferredHeight;
-                            if (currHeight > height) {
-                                currHeight = height;
-                            }
-                            final int param = currHeight;
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    if (animationRunning) {
-                                        scrollPane.setPreferredSize(new Dimension(0, param));
-                                        revalidate();
-                                    }
-//                                    scrollPane.setVisible(false);
-//                                    scrollPane.setVisible(true);
-                                }
-                            });
-                            try {
-                                Thread.sleep(20);
-                            } catch (InterruptedException ex) {
-                            }
-                        } // while
-                        animationRunning = false;
-                    } // run
-                }, 0, Thread.MAX_PRIORITY);
+                        if (isTop && lastTop != null) {
+                            lastTop.setTop(false);
+                        }
+                        topGapPanel.setVisible(!isTop);
+                        if (animationRunning) {
+                            scrollPane.setVisible(true);
+                            separator.setVisible(true);
+                            tapPanel.revalidate();
+                        }
+                        if (isTop) {
+                            tapPanel.setBackground(backgroundColor);
+                        }
+                    }
+                });
+                int delta = 1;
+                int currHeight = 1;
+                Timer animationTimer = new Timer(20, null);
+                animationTimer.addActionListener(new AnimationTimerListener(animationTimer, delta, currHeight));
+                animationTimer.setCoalesce(false);
+                animationTimer.start();
             } // else
+        }
+
+        private class AnimationTimerListener implements ActionListener {
+
+            private int delta;
+            private int currHeight;
+            private Timer animationTimer;
+            private long time = 0l;
+
+            public AnimationTimerListener(Timer animationTimer, int delta, int currHeight) {
+                this.delta = delta;
+                this.currHeight = currHeight;
+                this.animationTimer = animationTimer;
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                long now = System.nanoTime();
+                int step;
+                if (time > 0) {
+                    // Do bigger step if time is running out...
+                    step = delta*((int) (now - time)/(animationTimer.getDelay()*1000000) + 1);
+                    //System.err.println("interval = "+(now-time)/1000000+"step = "+step);
+                } else {
+                    step = delta;
+                }
+                time = now;
+                currHeight += step;
+                int height = isTop ? preferredHeight - tapPanelMinimumHeight : preferredHeight;
+                if (currHeight > height) {
+                    currHeight = height;
+                }
+                scrollPane.setPreferredSize(new Dimension(0, currHeight));
+                //System.err.println("currHeight = "+currHeight);
+                revalidate();
+                doLayout();
+                if (currHeight >= (isTop ? preferredHeight - tapPanelMinimumHeight : preferredHeight)) {
+                    animationTimer.stop();
+                    synchronized (Item.this) {
+                        animationRunning = false;
+                    }
+                }
+            }
         }
 
         private void setTop(boolean isTop) {
