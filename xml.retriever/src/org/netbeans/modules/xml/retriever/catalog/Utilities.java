@@ -329,11 +329,13 @@ public class Utilities {
     }
     
     
-    
+    private static boolean firstRoot = true;
     public static List<File> getFilesWithExtension(File startFile, String fileExtension, List<File> curList) {
-        if(Thread.currentThread().isInterrupted())
-            //if interrupted by the client dump the result and immediately return
+        //if interrupted by the client dump the result and immediately return
+        if(Thread.currentThread().isInterrupted()) {
+            firstRoot = true; //reset before returning
             return curList;
+        }
         if(curList == null)
             curList = new ArrayList<File>();
         if(startFile.isFile()){
@@ -350,12 +352,15 @@ public class Utilities {
                 for(File child: children){
                     //exclude "build" dir since that is generated one.
                     //cannot think of a better solution.
-                    if(child.getName().endsWith("build")) //NOI18N
+                    if(firstRoot && child.getName().endsWith("build")) //NOI18N
                         continue;
+                    firstRoot = false;
                     getFilesWithExtension(child, fileExtension, curList);
                 }
             }
         }
+        //reset before returning.
+        firstRoot = true;
         return curList;
     }
     
