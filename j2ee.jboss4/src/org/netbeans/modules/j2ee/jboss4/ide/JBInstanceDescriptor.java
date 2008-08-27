@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,53 +31,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.editor.bookmarks.spi;
+package org.netbeans.modules.j2ee.jboss4.ide;
 
-import javax.swing.text.JTextComponent;
-import org.netbeans.lib.editor.bookmarks.api.Bookmark;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
+import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 
 /**
- * Manager of the bookmarks for a document.
- * <br>
- * If the manager wishes to persist the bookmarks
- * its implementation must do so at the appropriate times.
  *
- * @author Miloslav Metelka
+ * @author Petr Hejl
  */
+public class JBInstanceDescriptor implements ServerInstanceDescriptor {
 
-public interface BookmarkManager {
+    private final JBDeploymentManager manager;
 
-    /**
-     * Initialize the bookmarks.
-     * <br>
-     * If the manager persists the bookmarks it should restore
-     * them now and use
-     * {@link BookmarkManagerSupport#addBookmark(BookmarkImplementation)}
-     * to add them to the bookmark list.
-     */
-    void init(BookmarkManagerSupport support);
-    
-    /**
-     * Bookmark list calls this method once it's necessary
-     * to create the bookmark implementation (for example when 
-     * {@link BookmarkList#toggleBookmark(int)} gets called.
-     *
-     * @param offset offset at which the bookmark should be created.
-     * @return non-null bookmark implementation for the given offset.
-     */
-    BookmarkImplementation createBookmarkImplementation(int offset);
+    public JBInstanceDescriptor(JBDeploymentManager manager) {
+        this.manager = manager;
+    }
 
-    /**
-     * This method is called by the infrastructure to save
-     * the present bookmarks into a persistent storage.
-     * <br>
-     * This happens whenever a document gets uninstalled
-     * from a text component or when a document's content
-     * gets saved.
-     */
-    void saveBookmarks();
+    public String getHostname() {
+        return manager.getHost();
+    }
 
+    public int getHttpPort() {
+        return manager.getPort();
+    }
+
+    public boolean isLocal() {
+        return true;
+    }
 }
-

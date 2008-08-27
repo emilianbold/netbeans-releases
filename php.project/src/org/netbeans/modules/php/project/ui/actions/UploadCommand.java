@@ -87,6 +87,11 @@ public class UploadCommand extends FtpCommand implements Displayable {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 
+        uploadFiles(selectedFiles);
+    }
+
+    void uploadFiles(FileObject... selectedFiles) {
+
         FileObject[] sources = Utils.getSourceObjects(getProject());
 
         // XXX project name could be cached - but is it correct?

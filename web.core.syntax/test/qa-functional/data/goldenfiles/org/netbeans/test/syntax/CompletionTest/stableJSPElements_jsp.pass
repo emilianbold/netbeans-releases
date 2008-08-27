@@ -5,12 +5,12 @@
 < jsp:expression >
 < jsp:fallback >
 < jsp:forward >
-< jsp:getProperty />
+< jsp:getProperty / >
 < jsp:include >
-< jsp:param />
+< jsp:param / >
 < jsp:params >
 < jsp:plugin >
-< jsp:setProperty />
+< jsp:setProperty / >
 < jsp:text >
 < jsp:useBean >
 End cursor position = 155

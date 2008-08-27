@@ -90,7 +90,6 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.websvc.core.WSStackUtils;
 import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.ui.service.profiles.UsernameAuthenticationProfile;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
@@ -409,8 +408,13 @@ public class Util {
     public static String getServerName(Project p) {
         String sID = getServerInstanceID(p);
         if (sID != null) {
-            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(sID);
-            return j2eePlatform.getDisplayName();
+            J2eePlatform j2eePlatform;
+            try {
+                j2eePlatform = Deployment.getDefault().getServerInstance(sID).getJ2eePlatform();
+                return j2eePlatform.getDisplayName();
+            } catch (InstanceRemovedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return null;
     }
@@ -440,9 +444,14 @@ public class Util {
 
     private static String getStoreLocation(String serverInstanceID, boolean trust, boolean client) {
         String storeLocation = null;
-        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+        J2eePlatform j2eePlatform = null;
         File[] keyLocs = null;
         String store = null;
+        try {
+            j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+        } catch (InstanceRemovedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         if (client) {
             store = trust ? J2eePlatform.TOOL_TRUSTSTORE_CLIENT : J2eePlatform.TOOL_KEYSTORE_CLIENT;
         } else {
