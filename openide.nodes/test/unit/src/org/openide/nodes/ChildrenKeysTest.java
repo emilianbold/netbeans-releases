@@ -1040,6 +1040,42 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals ("add", arr[2].getName ());
     }
     
+    public void testComplexReorderAndAddAndRemoveEventWithHidden () {
+        class K extends Keys {
+
+            K(String... args) {
+                super(lazy(), args);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+        }        
+        K k = new K(new String[] {"-h1", "remove", "1", "-h2", "0" });
+        Node n = createNode (k);
+        Node[] toPreventGC = n.getChildren ().getNodes ();
+        assertEquals (3, toPreventGC.length);
+        
+        Listener l = new Listener ();
+        n.addNodeListener (l);
+        k.keys (new String[] {"-h1", "0", "-h2", "1", "add" });
+
+        l.assertRemoveEvent ("Removed index 0", 1);
+        l.assertReorderEvent ("0->1 and 1->0", new int[] { 1, 0 });
+        l.assertAddEvent ("Adding at index 2", 1);
+        l.assertNoEvents ("And that is all");
+
+        Node[] arr = n.getChildren ().getNodes ();
+        assertEquals (3, arr.length);
+        assertEquals ("0", arr[0].getName ());
+        assertEquals ("1", arr[1].getName ());
+        assertEquals ("add", arr[2].getName ());
+    }    
+
     /** Check refresh of nodes.
      */
     public void testResetOfNodes () throws Exception {
