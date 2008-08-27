@@ -591,6 +591,15 @@ public class ViewHandlerImpl extends ViewHandler implements PhaseListener {
         // and throw it
         List exceptions = cached(context);
         if ((exceptions != null) && (exceptions.size() > 0)) {
+            /* mbohm (144650): after throwing this ApplicationException
+             * and forwarding to a resource specified in the <error-page>
+             * element of web.xml, we will arrive here again and throw another
+             * ApplicationException during the attempt to present that resource
+             * (and thus fail to present it) if the CACHED_EXCEPTIONS entry
+             * still exists. So remove the CACHED_EXCEPTIONS entry before 
+             * throwing this ApplicationException.
+             */
+            map.remove(CACHED_EXCEPTIONS);
             throw new ApplicationException
                         ((Exception) exceptions.get(0), exceptions);
         }
