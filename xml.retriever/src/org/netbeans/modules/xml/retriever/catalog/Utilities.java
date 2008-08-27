@@ -348,6 +348,10 @@ public class Utilities {
             File[] children = startFile.listFiles();
             if(children != null){
                 for(File child: children){
+                    //exclude "build" dir since that is generated one.
+                    //cannot think of a better solution.
+                    if(child.getName().endsWith("build")) //NOI18N
+                        continue;
                     getFilesWithExtension(child, fileExtension, curList);
                 }
             }
