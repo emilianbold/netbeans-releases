@@ -383,10 +383,15 @@ public final class DocBaseNodeFactory implements NodeFactory {
         public boolean acceptDataObject(DataObject obj) {                
             FileObject fo = obj.getPrimaryFile();                
             boolean show = true;
-            if (sourceGroup != null && !sourceGroup.contains(fo)) {
+            try {
+                if (sourceGroup != null && !sourceGroup.contains(fo)) {
+                    show = false;
+                }
+            } catch (IllegalArgumentException ex) {
+                // sourceGroup is not parent of fo -> do not show file:
                 show = false;
             }
-            return VisibilityQuery.getDefault().isVisible(fo) && show;
+            return show && VisibilityQuery.getDefault().isVisible(fo);
         }
         
         public void stateChanged( ChangeEvent e) {            
