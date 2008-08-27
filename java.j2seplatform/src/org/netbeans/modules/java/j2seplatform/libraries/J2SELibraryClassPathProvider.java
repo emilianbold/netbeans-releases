@@ -51,6 +51,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 public class J2SELibraryClassPathProvider implements ClassPathProvider {
 
@@ -76,20 +77,25 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
     private ClassPath[] findClassPathOrNull(FileObject file, String type, Library lib) {
         if (lib.getType().equals(J2SELibraryTypeProvider.LIBRARY_TYPE)) {
             List<URL> resources = lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
-            ClassPath sourcePath = ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]));
-            FileObject root = sourcePath.findOwnerRoot(file);
-            if (root != null) {
-                setLastUsedLibrary(root, lib);
-                if (ClassPath.SOURCE.equals(type)) {
-                    return new ClassPath[] {sourcePath};
-                } else if (ClassPath.COMPILE.equals(type)) {
-                    resources = lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
-                    return new ClassPath[] {ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]))};
-                } else if (ClassPath.BOOT.equals(type)) {
-                    return new ClassPath[] {JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries()};
-                } else {
-                    return new ClassPath[] {null};
+            try {
+                ClassPath sourcePath = ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]));
+                FileObject root = sourcePath.findOwnerRoot(file);
+                if (root != null) {
+                    setLastUsedLibrary(root, lib);
+                    if (ClassPath.SOURCE.equals(type)) {
+                        return new ClassPath[] {sourcePath};
+                    } else if (ClassPath.COMPILE.equals(type)) {
+                        resources = lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
+                        return new ClassPath[] {ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]))};
+                    } else if (ClassPath.BOOT.equals(type)) {
+                        return new ClassPath[] {JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries()};
+                    } else {
+                        return new ClassPath[] {null};
+                    }
                 }
+            } catch (final IllegalArgumentException e) {
+                final IllegalArgumentException ne = new IllegalArgumentException("LibraryImplementation:["+lib.getClass().getName()+"] returned wrong root:" + e.getMessage());
+                Exceptions.printStackTrace(ne.initCause(e));
             }
         }
         return null;
