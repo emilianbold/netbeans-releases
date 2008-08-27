@@ -41,7 +41,7 @@
 
 package org.netbeans.api.db.explorer;
 
-import org.netbeans.modules.db.explorer.ConnectionList;
+import java.sql.Connection;
 import org.netbeans.modules.db.test.Util;
 import org.netbeans.modules.db.test.DBTestBase;
 
@@ -50,7 +50,6 @@ import org.netbeans.modules.db.test.DBTestBase;
  * @author Andrei Badea
  */
 public class DatabaseConnectionTest extends DBTestBase {
-    
     protected void setUp() throws Exception {
         super.setUp();
         Util.clearConnections();
@@ -93,10 +92,18 @@ public class DatabaseConnectionTest extends DBTestBase {
     }
 
     public void testSyncConnection() throws Exception {
-        DatabaseConnection dbconn = getDatabaseConnection();
+        DatabaseConnection dbconn = getDatabaseConnection(false);
+        ConnectionManager.getDefault().disconnect(dbconn);
+        assertNull(dbconn.getJDBCConnection());
+        
         ConnectionManager.getDefault().connect(dbconn);
-        assertTrue(dbconn.getJDBCConnection() != null);
-        assertFalse(dbconn.getJDBCConnection().isClosed());
+        Connection conn = dbconn.getJDBCConnection();
+        assertNotNull(conn);
+        assertFalse(conn.isClosed());
+        
+        ConnectionManager.getDefault().connect(dbconn);
+        assertSame(conn, dbconn.getJDBCConnection());
+        assertFalse(conn.isClosed());
     }
 
     public void testDeleteConnection() throws Exception {

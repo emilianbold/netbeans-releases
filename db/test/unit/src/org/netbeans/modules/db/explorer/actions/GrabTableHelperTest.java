@@ -50,7 +50,7 @@ public class GrabTableHelperTest extends DDLTestBase {
     
     public void testGrabTable() throws Exception {
         File file = null;
-        InfoHelper infoHelper = new InfoHelper(spec, drvSpec, conn);
+        InfoHelper infoHelper = new InfoHelper(spec, drvSpec, getConnection());
         
         try {
             String tablename = "grabtable";
@@ -97,7 +97,7 @@ public class GrabTableHelperTest extends DDLTestBase {
             CreateTable cmd = (CreateTable)istream.readObject();
             istream.close();
             cmd.setSpecification(spec);
-            cmd.setObjectOwner(SCHEMA);
+            cmd.setObjectOwner(getSchema());
             
             assertEquals(tablename, cmd.getObjectName());
             

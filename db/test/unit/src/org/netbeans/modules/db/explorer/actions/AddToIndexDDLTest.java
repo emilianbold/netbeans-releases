@@ -43,7 +43,7 @@ public class AddToIndexDDLTest extends DDLTestBase {
     
     public void testAddToIndex() throws Exception {
         String tablename = "addToIndex";
-        String indexname = "index";
+        String indexname = "testindex";
         String col1name = "col1";
         String col2name = "col2";
         
@@ -53,7 +53,8 @@ public class AddToIndexDDLTest extends DDLTestBase {
 
         addBasicColumn(tablename, col2name, Types.VARCHAR, 255);
 
-        AddToIndexDDL ddl = new AddToIndexDDL(spec, SCHEMA, fixIdentifier(tablename));
+        AddToIndexDDL ddl = new AddToIndexDDL(spec, getSchema(), fixIdentifier(tablename));
+
         
         HashSet cols = new HashSet();
         cols.add(fixIdentifier(col2name));

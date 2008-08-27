@@ -58,7 +58,7 @@ public class AddTableColumnDDLTest extends DDLTestBase {
     
     private void addColumn(String tablename, String colname) throws Exception {
         AddTableColumnDDL ddl = new AddTableColumnDDL(
-                spec, drvSpec, SCHEMA, fixIdentifier(tablename));
+                spec, drvSpec, getSchema(), fixIdentifier(tablename));
         
         ColumnItem col = new ColumnItem();
         col.setProperty(ColumnItem.NAME, colname);
@@ -81,7 +81,7 @@ public class AddTableColumnDDLTest extends DDLTestBase {
         createSimpleIndex(tablename, indexName, firstColname);        
 
         AddTableColumnDDL ddl = new AddTableColumnDDL(
-                spec, drvSpec, SCHEMA, fixIdentifier(tablename));
+                spec, drvSpec, getSchema(), fixIdentifier(tablename));
         
         ColumnItem col = new ColumnItem();
         col.setProperty(ColumnItem.NAME, secondColname);

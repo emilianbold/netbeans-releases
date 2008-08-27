@@ -41,7 +41,7 @@ public class AddViewDDLTest extends DDLTestBase {
         
         String viewname = "testview";
         String query = "SELECT * FROM " + table1;
-        boolean wasException = AddViewDDL.addView(spec, SCHEMA, viewname, query);
+        boolean wasException = AddViewDDL.addView(spec, getSchema(), viewname, query);
         
         assertFalse(wasException);
         

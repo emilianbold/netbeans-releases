@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,23 +31,71 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.test;
 
-import org.netbeans.junit.NbTestCase;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.util.Iterator;
+import java.util.Vector;
 
 /**
- * Common ancestor for all test classes.
  *
- * This currently does nothing but keeping it here in case we do want to
- * add common functionality.
- *
- * @author Andrei Badea
+ * @author David
  */
-public abstract class TestBase extends NbTestCase {
-    public TestBase(String name) {
-        super(name);
-    }
+public class DerbyDBProvider extends DefaultDBProvider {
+    @Override
+    public void dropSchema(Connection conn, String schemaName) throws Exception {
+        // With Derby, you can't just drop the schema.  You have go manually
+        // deal with all the constraints
+        
+        // drop views first, as they depend on tables
+        DatabaseMetaData md = conn.getMetaData();
+        
+        ResultSet rs = md.getTables(null, schemaName, null,
+                new String[] { "VIEW" } );
+        Vector views = new Vector();
+        while ( rs.next() ) {
+            String view = rs.getString(3);
+            views.add(view);
+        }
+        rs.close();
+        
+        setSchema(conn, schemaName);
 
+        Iterator it = views.iterator();        
+        while (it.hasNext()) {
+            String view = (String)it.next();
+            dropView(conn, schemaName, view);
+        }
+        
+        // drop all tables
+        md = conn.getMetaData();
+        
+        rs = md.getTables(null, schemaName, null, null);
+        Vector tables = new Vector();
+        while ( rs.next() ) {
+            String table = rs.getString(3);
+            tables.add(table);
+        }
+        rs.close();
+        
+        setSchema(conn, schemaName);
+
+        it = tables.iterator();        
+        while (it.hasNext()) {
+            String table = (String)it.next();
+            dropTable(conn, schemaName, table);
+        }
+        
+        // drop schema
+        conn.createStatement().executeUpdate("DROP SCHEMA " + schemaName + " RESTRICT");
+        
+    }
 }

@@ -45,7 +45,7 @@ public class QuoterTest extends DDLTestBase {
     
     public void setUp() throws Exception {
         super.setUp();
-        quoter = SQLIdentifiers.createQuoter(conn.getMetaData());        
+        quoter = SQLIdentifiers.createQuoter(getConnection().getMetaData());        
     }
         
     public void testNoQuoting() {

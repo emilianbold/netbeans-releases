@@ -27,24 +27,22 @@
  */
 package org.netbeans.modules.db.test;
 
+import java.io.File;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
+import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Iterator;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
-import org.netbeans.modules.db.test.TestBase;
+import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 
 /**
  * This class is a useful base test class that provides initial setup
@@ -60,22 +58,23 @@ public abstract class DBTestBase extends TestBase {
     // Change this to get rid of output or to see output
     protected static final Level DEBUGLEVEL = Level.FINE;
 
-    protected static final String SCHEMA = "TESTDDL";
-
-    private static String driverClass;
+    private static String driverClassName;
     private static String dbUrl;
     private static String username;
     private static String password;
     private static String dbname;
     protected static String dblocation;
-    private static URL driverJarUrl;
+    private static String driverJar;
+    private static Driver driver;
     
-    private static String DRIVER_PROPERTY = "db.driverclass";
-    private static String URL_PROPERTY = "db.url";
-    private static String USERNAME_PROPERTY = "db.username";
-    private static String PASSWORD_PROPERTY = "db.password";
-    private static String DBDIR_PROPERTY = "db.dir";
-    private static String DBNAME_PROPERTY = "db.name";
+    private static final String DRIVER_PROPERTY = "db.driver.classname";
+    private static final String DRIVER_JARPATH_PROPERTY = "db.driver.jarpath";
+    private static final String URL_PROPERTY = "db.url";
+    private static final String USERNAME_PROPERTY = "db.user";
+    private static final String PASSWORD_PROPERTY = "db.password";
+    private static final String DBDIR_PROPERTY = "db.dir";
+    private static final String DBNAME_PROPERTY = "db.name";
+    private static final String SCHEMA_NAME = "dbtests";
 
     private static String quoteString = null;
     
@@ -86,42 +85,104 @@ public abstract class DBTestBase extends TestBase {
     public static final int MC_RULE = 2; // mixed case remains mixed case
     public static final int QUOTE_RETAINS_CASE = 3; // quoted idents retain case
 
+    private static final String TEST_TABLE = "test";
+    private static final String TEST_TABLE_ID = "id";
+
     private static int    unquotedCaseRule = RULE_UNDEFINED;
     private static int    quotedCaseRule = RULE_UNDEFINED;
 
-    private static JDBCDriver jdbcDriver;
-    private static DatabaseConnection dbConnection;
+    private static DBProvider dbProvider;
     
-    protected Connection conn;
+    private File clusterDir;
 
     public DBTestBase(String name) {
         super(name);
     }
 
-    protected static JDBCDriver getJDBCDriver() throws Exception{
-        if (jdbcDriver == null) {
-            jdbcDriver = JDBCDriver.create("derbydriver", "derbydriver", driverClass, new URL[] {driverJarUrl});
-            assertNotNull(jdbcDriver);
-            JDBCDriverManager.getDefault().addDriver(jdbcDriver);
-        }
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        getProperties();
+        createDBProvider();
+    }
+        
+    protected DBProvider getDBProvider() {
+        return dbProvider;
+    }
 
-        return jdbcDriver;
+    protected final void createTestTable() throws Exception {
+        createSchema();
+        dbProvider.createTestTable(getConnection(), getSchema(), TEST_TABLE, TEST_TABLE_ID);
 
     }
 
-    /**
-     * Get the DatabaseConnection for the configured Java DB database.  This
-     * method will create and register the connection the first time it is called
-     */
-    protected static DatabaseConnection getDatabaseConnection() throws Exception {
-        if (dbConnection == null) {
-            JDBCDriver driver = getJDBCDriver();
+    protected static final String getTestTableName() {
+        return TEST_TABLE;
+    }
 
-            dbConnection = DatabaseConnection.create(driver, dbUrl, username, "APP", password, false);
-            ConnectionManager.getDefault().addConnection(dbConnection);
+    protected static final String getTestTableIdName() {
+        return TEST_TABLE_ID;
+    }
+    
+    protected final Connection getConnection() throws Exception {
+        return getDatabaseConnection(true).getJDBCConnection();
+    }
+
+    protected final Connection reconnect() throws Exception {
+        disconnect();
+        return getConnection();
+    }
+    
+    protected JDBCDriver getJDBCDriver() throws Exception {
+        JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClassName);
+        if (drivers.length > 0) {
+            return drivers[0];
         }
 
-        return dbConnection;
+        JDBCDriver jdbcDriver = JDBCDriver.create(driverClassName, driverClassName,
+                driverClassName, new URL[]{ new URL(driverJar)});
+        JDBCDriverManager.getDefault().addDriver(jdbcDriver);
+
+        return jdbcDriver;
+    }
+
+    protected void disconnect() throws Exception {
+        ConnectionManager.getDefault().disconnect(getDatabaseConnection(false));
+    }
+
+    protected void removeConnection() throws Exception {
+        DatabaseConnection dbconn = getDatabaseConnection(false);
+        if (dbconn == null) {
+            return;
+        }
+        ConnectionManager.getDefault().disconnect(dbconn);
+        ConnectionManager.getDefault().removeConnection(dbconn);
+    }
+
+
+    /**
+     * Get the DatabaseConnection for the configured database.  This
+     * method will create and register the connection the first time it is called
+     */
+    protected DatabaseConnection getDatabaseConnection(boolean connect) throws Exception {
+        DatabaseConnection dbconn = DatabaseConnection.create(getJDBCDriver(), dbUrl, username, SCHEMA_NAME, password, false);
+        DatabaseConnection existing = ConnectionManager.getDefault().getConnection(dbconn.getName());
+        if (existing != null) {
+            dbconn = existing;
+        } else {
+            ConnectionManager.getDefault().addConnection(dbconn);
+        }
+
+        if (connect) {
+            ConnectionManager.getDefault().connect(dbconn);
+        }
+
+        return dbconn;
+    }
+
+    protected String getSchema() throws Exception {
+        // return fixIdentifier(SCHEMA_NAME);
+        return SCHEMA_NAME;
     }
 
     protected static String getDbUrl() {
@@ -129,203 +190,85 @@ public abstract class DBTestBase extends TestBase {
     }
 
     protected static String getDriverClass() {
-        return driverClass;
+        return driverClassName;
     }
 
     protected static String getPassword() {
         return password;
     }
 
-    public static String getUsername() {
+    protected static String getUsername() {
         return username;
     }
 
-    
-    @Override
-    protected void setUp() throws Exception {
-        driverClass = System.getProperty(DRIVER_PROPERTY,
-                "org.apache.derby.jdbc.EmbeddedDriver");
-        dbname = System.getProperty(DBNAME_PROPERTY, "ddltestdb");
+    /**
+     * Goes through all SQLExceptions found through getNextException()
+     * and builds it instead as a set of chained exceptions, so they
+     * all get reported
+     */
+    protected static SQLException processSQLException(SQLException original) {
+        SQLException next = original;
+        while (next != null) {
+            if (next.getNextException() != null) {
+                Throwable cause = next;
+                
+                while (cause.getCause() != null) {
+                    cause = cause.getCause();
+                }
 
-        clearWorkDir();
-        dblocation = System.getProperty(DBDIR_PROPERTY, getWorkDirPath());
+                cause.initCause(next.getNextException());
+            }
 
-        // Add a slash for the Derby URL syntax if we are
-        // requesting a specific path for database files
-        if ( dblocation.length() > 0 ) {
-            dblocation = dblocation + "/";
+            next = next.getNextException();
         }
 
-        LOGGER.log(DEBUGLEVEL, "DB location is " + dblocation);
+        return original;        
+    }
+    protected final boolean isDerby() {
+        return driverClassName.startsWith("org.apache.derby");
+    }
 
-        dbUrl = System.getProperty(URL_PROPERTY,
-                "jdbc:derby:" + dblocation + dbname + ";create=true");
+    protected final boolean isMySQL() {
+        return driverClassName.equals("com.mysql.jdbc.Driver");
+    }
+    
+    protected final void createSchema() throws Exception {
+        dbProvider.createSchema(getConnection(), getSchema());
 
-        LOGGER.log(DEBUGLEVEL, "DB URL is " + dbUrl);
-
-        username = System.getProperty(USERNAME_PROPERTY, "testddl");
-        password = System.getProperty(PASSWORD_PROPERTY, "testddl");
-
-        driverJarUrl = Class.forName(driverClass).getProtectionDomain().getCodeSource().getLocation();
-
-        try {
+        setSchema();
+    }
+    
+    protected final void dropSchema() throws Exception {
+        dbProvider.dropSchema(getConnection(), getSchema());
+    }
+    
+    protected final boolean schemaExists(String schemaName) throws Exception {
+        return dbProvider.schemaExists(getConnection(), schemaName);
+    }
+    
+    protected final void setSchema() throws Exception {
+        if (isMySQL()) {
+            // Not sure why, but we need a connection directly to this database
+            removeConnection();
+            dbUrl = dbUrl + getSchema();
             getConnection();
-            createSchema();
-            setSchema();
-            initQuoteString();
-        } catch ( SQLException e ) {
-            SQLException original = e;
-            while ( e != null ) {
-                LOGGER.log(Level.SEVERE, null, e);
-                e = e.getNextException();
-            }
-            
-            throw original;
-        }
-    }
-
-    protected Connection getConnection() throws Exception {
-        return getConnection(false);
-    }
-    
-    private void shutdownDerby() throws Exception {
-        Connection conn = getConnection(true);
-        
-        try { 
-            conn.close();
-        } catch ( SQLException sqle ) {
-            
-        }
-    }
-    
-    private Connection getConnection(boolean shutdown) throws Exception {
-        String url;
-        
-        if ( shutdown ) {
-            url = dbUrl + ";shutdown=true";
         } else {
-            url = dbUrl;
+            dbProvider.setSchema(getConnection(), getSchema());
         }
-        
-        Class.forName(driverClass);
-        conn = DriverManager.getConnection(dbUrl, username, password);
-        return conn;
     }
-    
-    protected void createSchema() throws Exception {
-        dropSchema();
-        conn.createStatement().executeUpdate("CREATE SCHEMA " + SCHEMA);
-    }
-    
-    protected void dropSchema() throws Exception {
-        if ( ! schemaExists(SCHEMA) ) {
+
+    protected final void dropView(String viewname) throws Exception {
+        if (! viewExists(viewname)) {
             return;
         }
         
-        assert (conn != null);
-
-        // drop views first, as they depend on tables
-        DatabaseMetaData md = conn.getMetaData();
-        
-        ResultSet rs = md.getTables(null, SCHEMA, null, 
-                new String[] { "VIEW" } );
-        Vector views = new Vector();
-        while ( rs.next() ) {
-            String view = rs.getString(3);
-            LOGGER.log(DEBUGLEVEL, "view in schema: " + view);
-            views.add(view);
-        }
-        rs.close();
-        
-        setSchema();
-
-        Iterator it = views.iterator();        
-        while (it.hasNext()) {
-            String view = (String)it.next();
-            dropView(view);
-        }
-        
-        // drop all tables
-        md = conn.getMetaData();
-        
-        rs = md.getTables(null, SCHEMA, null, null);
-        Vector tables = new Vector();
-        while ( rs.next() ) {
-            String table = rs.getString(3);
-            LOGGER.log(DEBUGLEVEL, "table in schema: " + table);
-            tables.add(table);
-        }
-        rs.close();
-        
-        setSchema();
-
-        it = tables.iterator();        
-        while (it.hasNext()) {
-            String table = (String)it.next();
-            dropTable(table);
-        }
-        
-        // drop schema
-        try {
-            conn.createStatement().executeUpdate(
-                    "DROP SCHEMA " + SCHEMA + " RESTRICT");
-        } catch (SQLException e) {
-            LOGGER.log(Level.FINE, null, e);
-            LOGGER.log(DEBUGLEVEL, "Got an exception when attempting to " +
-                    "drop the schema: " + e.getMessage());
-        }
+        dbProvider.dropView(getConnection(), getSchema(), viewname);
     }
-    
-    protected boolean schemaExists(String schemaName) throws Exception {
-        DatabaseMetaData md = conn.getMetaData();
+    protected final void dropTable(String tablename) throws Exception {
+        dbProvider.dropTable(getConnection(), getSchema(), tablename);
+    }
         
-        ResultSet rs  = md.getSchemas();
-        
-        while ( rs.next() ) {
-            if ( schemaName.equals(rs.getString(1))) {
-                return true;
-            }
-        }
-    
-        return false;
-    }
-    
-    protected void setSchema() throws Exception {
-        PreparedStatement stmt = conn.prepareStatement("SET SCHEMA " + SCHEMA);
-        stmt.executeUpdate();
-    }
-
-    protected void dropView(String viewname) {
-        try {
-            conn.createStatement().executeUpdate(
-                    "DROP VIEW " + viewname);
-        } catch ( Exception e ) {
-            LOGGER.log(Level.FINE, null, e);
-            LOGGER.log(DEBUGLEVEL, "Got exception trying to drop view " +
-                    viewname + ": " + e);
-        }
-    }
-    protected void dropTable(String tablename) {
-        try {
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate("DROP TABLE " + tablename);
-        } catch (Exception e) {
-            LOGGER.log(Level.FINE, null, e);
-            LOGGER.log(DEBUGLEVEL, "Got exception trying to drop table " +
-                    tablename + ": " + e);
-        }
-    }
-    
-    protected void initQuoteString() throws Exception {
-        if ( quoteString != null  ) {
-            return;
-        }
-        
-        DatabaseMetaData md = conn.getMetaData();
-        quoteString = md.getIdentifierQuoteString();
-    }
-    
-    protected String quote(String value) throws Exception {
+    protected final String quote(String value) throws Exception {
         if ( value == null  || value.equals("") )
         {
             return value;
@@ -338,19 +281,17 @@ public abstract class DBTestBase extends TestBase {
         return quoteString + value + quoteString;
     }
     
-    protected boolean tableExists(String tablename) throws Exception {
-        tablename = fixIdentifier(tablename);
-        DatabaseMetaData md = conn.getMetaData();
-        ResultSet rs = md.getTables(null, SCHEMA, tablename, null);
-        return rs.next();        
+    protected final boolean tableExists(String tablename) throws Exception {
+        return dbProvider.tableExists(getConnection(), getSchema(), fixIdentifier(tablename));
     }
     
-    protected boolean columnExists(String tablename, String colname)
+    protected final boolean columnExists(String tablename, String colname)
             throws Exception {
         tablename = fixIdentifier(tablename);
         colname = fixIdentifier(colname);
-        DatabaseMetaData md = conn.getMetaData();
-        ResultSet rs = md.getColumns(null, SCHEMA, tablename, colname);
+        String schemaName = getSchema();
+        DatabaseMetaData md = getConnection().getMetaData();
+        ResultSet rs = md.getColumns(null, schemaName, tablename, colname);
         
         int numrows = printResults(
                 rs, "columnExists(" + tablename + ", " + colname + ")");
@@ -360,11 +301,12 @@ public abstract class DBTestBase extends TestBase {
         return numrows > 0;
     }
     
-    protected boolean indexExists(String tablename, String indexname)
+    protected final boolean indexExists(String tablename, String indexname)
             throws Exception {
         indexname = fixIdentifier(indexname);
-        DatabaseMetaData md = conn.getMetaData();
-        ResultSet rs = md.getIndexInfo(null, SCHEMA, tablename, false, false);
+        String schemaName = fixIdentifier(getSchema());
+        DatabaseMetaData md = getConnection().getMetaData();
+        ResultSet rs = md.getIndexInfo(null, schemaName, tablename, false, false);
 
         while ( rs.next() ) {
             String idx = rs.getString(6);
@@ -376,20 +318,20 @@ public abstract class DBTestBase extends TestBase {
         return false;
     }
     
-    protected boolean viewExists(String viewName) throws Exception {
-        DatabaseMetaData md = conn.getMetaData();
-        ResultSet rs = md.getTables(null, SCHEMA, fixIdentifier(viewName),
+    protected final boolean viewExists(String viewName) throws Exception {
+        DatabaseMetaData md = getConnection().getMetaData();
+        ResultSet rs = md.getTables(null, getSchema(), fixIdentifier(viewName),
                 new String[] {"VIEW"});
         
         return rs.next();
     }
     
-    protected boolean columnInPrimaryKey(String tablename, String colname) 
+    protected final boolean columnInPrimaryKey(String tablename, String colname)
         throws Exception {
         tablename = fixIdentifier(tablename);
         colname = fixIdentifier(colname);
-        DatabaseMetaData md = conn.getMetaData();
-        ResultSet rs = md.getPrimaryKeys(null, SCHEMA, tablename);
+        DatabaseMetaData md = getConnection().getMetaData();
+        ResultSet rs = md.getPrimaryKeys(null, getSchema(), tablename);
         
         // printResults(rs, "columnInPrimaryKey(" + tablename + ", " +
         //        colname + ")");
@@ -404,48 +346,31 @@ public abstract class DBTestBase extends TestBase {
         return false;
     }
 
-    protected void printAllTables() throws Exception {
-        DatabaseMetaData md = conn.getMetaData();
-        ResultSet rs = md.getTables(null, SCHEMA, "%", null);
+    protected final void printAllTables() throws Exception {
+        DatabaseMetaData md = getConnection().getMetaData();
+        ResultSet rs = md.getTables(null, getSchema(), "%", null);
         printResults(rs, "printAllTables()");
     }
 
-    protected boolean columnInIndex(String tablename, String colname, 
+    protected final boolean columnInIndex(String tablename, String colname,
             String indexname) throws Exception {
         tablename = fixIdentifier(tablename);
         colname = fixIdentifier(colname);
         indexname = fixIdentifier(indexname);
-        DatabaseMetaData md = conn.getMetaData();
-        ResultSet rs = md.getIndexInfo(null, SCHEMA, tablename, false, false);
-
-        // printResults(rs, "columnInIndex(" + tablename + ", " + colname + 
-        //    ", " + indexname + ")");
-
-        while ( rs.next() ) {
-            String ixName = rs.getString(6);
-            if ( ixName != null && ixName.equals(indexname)) {
-                String ixColName = rs.getString(9);
-                if ( ixColName.equals(colname) ) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return dbProvider.columnInIndex(getConnection(), getSchema(), tablename, colname, indexname);
     }
     
-    protected boolean columnInAnyIndex(String tablename, String colname)
+    protected final boolean columnInAnyIndex(String tablename, String colname)
             throws Exception {
         tablename = fixIdentifier(tablename);
         colname = fixIdentifier(colname);
-        DatabaseMetaData md = conn.getMetaData();
-        ResultSet rs = md.getIndexInfo(null, SCHEMA, tablename, false, false);
+        DatabaseMetaData md = getConnection().getMetaData();
+        ResultSet rs = md.getIndexInfo(null, getSchema(), tablename, false, false);
 
         // printResults(rs, "columnInIndex(" + tablename + ", " + colname + 
         //    ", " + indexname + ")");
 
         while ( rs.next() ) {
-        String ixName = rs.getString(6);
             String ixColName = rs.getString(9);
             if ( ixColName.equals(colname) ) {
                 return true;
@@ -455,12 +380,12 @@ public abstract class DBTestBase extends TestBase {
         return false;        
     }
     
-    protected boolean indexIsUnique(String tablename, String indexName)
+    protected final boolean indexIsUnique(String tablename, String indexName)
             throws Exception {
         tablename = fixIdentifier(tablename);
         indexName = fixIdentifier(indexName);
-        DatabaseMetaData md = conn.getMetaData();
-        ResultSet rs = md.getIndexInfo(null, SCHEMA, tablename, false, false);
+        DatabaseMetaData md = getConnection().getMetaData();
+        ResultSet rs = md.getIndexInfo(null, getSchema(), tablename, false, false);
         
         // TODO - Parse results
         
@@ -472,7 +397,7 @@ public abstract class DBTestBase extends TestBase {
      * Fix an identifier for a metadata call, as the metadata APIs
      * require identifiers to be in proper case
      */
-    public String fixIdentifier(String ident) throws Exception {
+    protected final String fixIdentifier(String ident) throws Exception {
         if ( unquotedCaseRule == RULE_UNDEFINED ) {
             getCaseRules();
         }
@@ -511,65 +436,20 @@ public abstract class DBTestBase extends TestBase {
         }
     }
     
-    protected boolean isQuoted(String ident) {
-        assert quoteString != null;
+    protected final boolean isQuoted(String ident) throws Exception {
+        if (quoteString == null) {
+            initQuoteString();
+        }
         
         return ident.startsWith(quoteString) && ident.endsWith(quoteString);
     }
     
-    public int getUnquotedCaseRule() throws Exception {
+    protected final int getUnquotedCaseRule() throws Exception {
         getCaseRules();
         return unquotedCaseRule;
     }
-    
-    private void getCaseRules() throws Exception {
-        assert conn != null;
 
-        DatabaseMetaData md;
-        
-        try {
-            md = conn.getMetaData();
-            if ( md.storesUpperCaseIdentifiers() ) {
-                unquotedCaseRule = UC_RULE;
-            } else if ( md.storesLowerCaseIdentifiers() ) {
-                unquotedCaseRule = LC_RULE;
-            } else if ( md.storesMixedCaseIdentifiers() ) {
-                unquotedCaseRule = MC_RULE;
-            } else {
-                unquotedCaseRule = UC_RULE;
-            }
-        } catch ( SQLException sqle ) {
-            LOGGER.log(Level.INFO, "Exception trying to find out how " +
-                    "db stores unquoted identifiers, assuming upper case: " +
-                    sqle.getMessage());
-            LOGGER.log(Level.FINE, null, sqle);
-            
-            unquotedCaseRule = UC_RULE;
-        }
-
-        try {
-            md = conn.getMetaData();
-            
-            if ( md.storesLowerCaseQuotedIdentifiers() ) {
-                quotedCaseRule = LC_RULE;
-            } else if ( md.storesUpperCaseQuotedIdentifiers() ) {
-                quotedCaseRule = UC_RULE;
-            } else if ( md.storesMixedCaseQuotedIdentifiers() ) {
-                quotedCaseRule = MC_RULE;
-            } else {
-                quotedCaseRule = QUOTE_RETAINS_CASE;
-            }
-        } catch ( SQLException sqle ) {
-            LOGGER.log(Level.INFO, "Exception trying to find out how " +
-                    "db stores quoted identifiers, assuming case is retained: " +
-                    sqle.getMessage());
-            LOGGER.log(Level.FINE, null, sqle);
-            
-            quotedCaseRule = QUOTE_RETAINS_CASE;
-        }
-    }
-    
-    protected int printResults(ResultSet rs, String queryName) 
+    protected final int printResults(ResultSet rs, String queryName)
             throws Exception {
         ResultSetMetaData rsmd = rs.getMetaData();
         int numcols = rsmd.getColumnCount();
@@ -598,16 +478,165 @@ public abstract class DBTestBase extends TestBase {
         
         return numrows;
     }
-    
+
+    @Override
     protected void tearDown() throws Exception {
-        if ( conn != null ) {
-            try {
-                conn.close();
-                shutdownDerby();
-            } catch ( SQLException sqle ) {
-                LOGGER.log(Level.INFO, "Got exception closing connection: " +
-                    sqle.getMessage());
+        getConnection();
+        dropSchema();
+        removeConnection();
+        if (isDerby()) {
+            shutdownDerby();
+            clearWorkDir();
+        }
+    }
+
+    private void connect(DatabaseConnection dbconn) throws Exception {
+        ConnectionManager.getDefault().connect(dbconn);
+        assertTrue(dbconn.getJDBCConnection() != null);
+        assertFalse(dbconn.getJDBCConnection().isClosed());
+    }
+
+    private void initQuoteString() throws Exception {
+        DatabaseMetaData md = getConnection().getMetaData();
+        quoteString = md.getIdentifierQuoteString();
+    }
+
+    private void getProperties() throws Exception {
+        
+        clearWorkDir();
+        
+        dblocation = System.getProperty(DBDIR_PROPERTY, getWorkDirPath());
+        
+        // Add a slash for the Derby URL syntax if we are
+        // requesting a specific path for database files
+        if (dblocation.length() > 0) {
+            dblocation = dblocation + "/";
+        }
+        
+        driverClassName = System.getProperty(DRIVER_PROPERTY, "org.apache.derby.jdbc.EmbeddedDriver");
+        dbname = System.getProperty(DBNAME_PROPERTY, "dbtests");        
+        dbUrl = System.getProperty(URL_PROPERTY, "jdbc:derby:" + dblocation + dbname + ";create=true");
+        if (isMySQL() && ! (dbUrl.endsWith("/"))) {
+            fail("The MySQL url needs to be of the form 'jdbc:mysql://<host>:<port>/'.  Please do not specify a database in the URL");
+        }
+        username = System.getProperty(USERNAME_PROPERTY, "dbtests");
+        password = System.getProperty(PASSWORD_PROPERTY, "dbtests");        
+        driverJar = System.getProperty(DRIVER_JARPATH_PROPERTY, "nball:///db/external/derby-10.2.2.0.jar");
+
+        driverJar = convertPath(driverJar);
+    }
+
+    private void createDBProvider() {
+        if (isDerby()) {
+            dbProvider = new DerbyDBProvider();
+        } else if (isMySQL()) {
+            dbProvider = new MySQLDBProvider();
+        } else {
+            dbProvider = new DefaultDBProvider();
+        }
+    }
+
+    private Driver getDriver() throws Exception {
+        if (driver == null) {
+            URLClassLoader driverLoader = new URLClassLoader(new URL[]{new URL(driverJar)});
+            driver = (Driver)driverLoader.loadClass(driverClassName).newInstance();
+        }
+
+        return driver;
+    }
+
+
+    private String convertPath(String urlString) throws Exception {
+        if (clusterDir == null) {
+            String netBeansDirs = System.getProperty("netbeans.dirs");
+            if (netBeansDirs != null) {
+                String[] paths = netBeansDirs.split(":");
+                assert(paths.length > 0);
+                
+                // They are all paths to a cluster directory, just take the first
+                // one.
+                clusterDir = new File(paths[0]);
+            } else {
+                // We're running outside of NetBeans, so let's derive the cluster roo from 
+                // where we find a class in the db module
+                File jarFile = new File(JDBCDriverManager.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                clusterDir = jarFile.getParentFile().getParentFile();
             }
         }
-    }       
+        
+        if (urlString.startsWith("nbinst")) {
+            // The path to the NetBeans installation
+            URL url = new URL(urlString.replace("nbinst:", "file:"));
+            return "file://" + clusterDir.getAbsolutePath() + url.getPath();
+
+        } else if (urlString.startsWith("nball")) {
+            // The path to the root of the NetBeans source tree.  This only
+            // works if you're testing from a source tree
+            URL url = new URL(urlString.replace("nball:", "file:"));
+            String rootpath = clusterDir.getParentFile().getParentFile().getParentFile().getAbsolutePath();
+            return "file://" + rootpath + url.getPath();
+        } else {
+            return urlString;
+        }
+    }
+    
+    private void shutdownDerby() throws Exception {
+        if (! driverClassName.equals("org.apache.derby.jdbc.ClientDriver")) {
+            return;
+        }
+
+        String oldUrl = dbUrl;
+        dbUrl = dbUrl + ";shutdown=true";
+
+        disconnect();
+        getConnection();
+
+        dbUrl = oldUrl;
+    }
+
+    private void getCaseRules() throws Exception {
+        DatabaseMetaData md;
+        
+        try {
+            md = getConnection().getMetaData();
+            if ( md.storesUpperCaseIdentifiers() ) {
+                unquotedCaseRule = UC_RULE;
+            } else if ( md.storesLowerCaseIdentifiers() ) {
+                unquotedCaseRule = LC_RULE;
+            } else if ( md.storesMixedCaseIdentifiers() ) {
+                unquotedCaseRule = MC_RULE;
+            } else {
+                unquotedCaseRule = UC_RULE;
+            }
+        } catch ( SQLException sqle ) {
+            LOGGER.log(Level.INFO, "Exception trying to find out how " +
+                    "db stores unquoted identifiers, assuming upper case: " +
+                    sqle.getMessage());
+            LOGGER.log(Level.FINE, null, sqle);
+            
+            unquotedCaseRule = UC_RULE;
+        }
+
+        try {
+            md = getConnection().getMetaData();
+            
+            if ( md.storesLowerCaseQuotedIdentifiers() ) {
+                quotedCaseRule = LC_RULE;
+            } else if ( md.storesUpperCaseQuotedIdentifiers() ) {
+                quotedCaseRule = UC_RULE;
+            } else if ( md.storesMixedCaseQuotedIdentifiers() ) {
+                quotedCaseRule = MC_RULE;
+            } else {
+                quotedCaseRule = QUOTE_RETAINS_CASE;
+            }
+        } catch ( SQLException sqle ) {
+            LOGGER.log(Level.INFO, "Exception trying to find out how " +
+                    "db stores quoted identifiers, assuming case is retained: " +
+                    sqle.getMessage());
+            LOGGER.log(Level.FINE, null, sqle);
+            
+            quotedCaseRule = QUOTE_RETAINS_CASE;
+        }
+    }
+    
 }
