@@ -743,7 +743,8 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         getChildren().add(child);
 
         if ( notify ) {
-        notifyChange();
+            notifyChange();
+        }
     }
     
     public void removeChild(DatabaseNodeInfo child) throws DatabaseException {
