@@ -488,4 +488,16 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
 
         return registeredDBDriver;
     }
+
+    /**
+     * Prepares and returns a custom classloader for this project.
+     * The classloader is capable of loading project classes and resources.
+     * 
+     * @param classpaths, custom classpaths that are registered along with project based classpath.
+     * @return classloader which is a URLClassLoader instance.
+     */
+    public ClassLoader getProjectClassLoader(URL[] classpaths) {
+        ClassLoader customClassLoader = new CustomClassLoader(classpaths, getClass().getClassLoader());
+        return customClassLoader;
+    }
 }

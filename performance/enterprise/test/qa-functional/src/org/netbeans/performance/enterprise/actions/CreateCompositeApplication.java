@@ -101,6 +101,7 @@ public class CreateCompositeApplication extends PerformanceTestCase {
         project = "Composite Application"; // NOI18N
         index=1;
         
+        closeAllModal();
         MainWindowOperator.getDefault().maximize();
     }
     
@@ -135,7 +136,6 @@ public class CreateCompositeApplication extends PerformanceTestCase {
     @Override
     public void close(){
         ProjectSupport.closeProject(project_name);
-//        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     public static Test suite() {

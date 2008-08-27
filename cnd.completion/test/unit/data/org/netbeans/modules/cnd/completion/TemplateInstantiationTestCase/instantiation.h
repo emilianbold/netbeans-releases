@@ -32,3 +32,29 @@ public:
     void boo();
 };
 
+template<typename _Iterator> class My__normal_iterator {
+protected:
+    _Iterator _M_current;
+
+public:
+    typedef typename _Iterator::pointer pointer;
+
+    pointer
+    operator->() const {
+        return _M_current;
+    }
+};
+
+template<typename _Tp> class MyAllocator {
+public:
+    typedef _Tp* pointer;
+};
+
+template<typename _Tp, typename _Alloc = MyAllocator<_Tp> > class MyVector {
+public:
+    typedef _Tp value_type;
+    typedef typename _Alloc::pointer pointer;
+    typedef My__normal_iterator<pointer> iterator;
+
+    void push_back(const value_type& __x);
+};

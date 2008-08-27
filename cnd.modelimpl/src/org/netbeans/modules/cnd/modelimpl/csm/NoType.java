@@ -84,11 +84,11 @@ public class NoType implements CsmType {
         return false;
     }
     
-    public String getText() {
+    public CharSequence getText() {
         return "";
     }
     
-    public String getCanonicalText() {
+    public CharSequence getCanonicalText() {
 	return "";
     }
     

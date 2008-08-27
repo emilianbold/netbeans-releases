@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 
 /**
@@ -226,6 +227,11 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         public CsmReferenceKind getKind() {
             return CsmReferenceKind.DECLARATION;
         }
+
+        @Override
+        public CharSequence getText() {
+            return TextCache.getString(super.getText());
+        }        
     }
 
     private class MacroReference extends OffsetableBase implements CsmReference {
@@ -293,6 +299,11 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
         
         public CsmReferenceKind getKind() {
             return CsmReferenceKind.DECLARATION;
-        }        
+        }
+
+        @Override
+        public CharSequence getText() {
+            return TextCache.getString(super.getText());
+        }
     }
 }

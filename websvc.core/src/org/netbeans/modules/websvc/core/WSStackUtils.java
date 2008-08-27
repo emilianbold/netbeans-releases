@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -95,7 +96,7 @@ public class WSStackUtils {
     
      public boolean isWsitSupported() {
         if (j2eePlatform != null) {
-            WSStack wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
+            WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
             return wsStack != null && wsStack.isFeatureSupported(JaxWs.Feature.WSIT);
         }
         return false;
@@ -103,7 +104,7 @@ public class WSStackUtils {
 
      public boolean isJsr109Supported() {
         if(j2eePlatform != null){
-            WSStack wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
+            WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
             return wsStack != null && wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
         }
         return false;
@@ -146,7 +147,7 @@ public class WSStackUtils {
         return getServerType(project);
     }
     
-    public WSStack getWsStack(Class stackDescriptor) {
+    public <T> WSStack<T> getWsStack(Class<T> stackDescriptor) {
         if (j2eePlatform != null) {
             return WSStack.findWSStack(j2eePlatform.getLookup(), stackDescriptor);
         }

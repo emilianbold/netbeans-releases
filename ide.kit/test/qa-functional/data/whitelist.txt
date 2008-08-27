@@ -1264,6 +1264,7 @@ org.netbeans.core.startup.layers.BinaryFS
 org.netbeans.core.startup.layers.BinaryFS$AttrFileSet
 org.netbeans.core.startup.layers.BinaryFS$AttrFileSet$1Iter
 org.netbeans.core.startup.layers.BinaryFS$AttrImpl
+org.netbeans.core.startup.layers.BinaryFS$AttrImpl$MethodAndParams
 org.netbeans.core.startup.layers.BinaryFS$BFSBase
 org.netbeans.core.startup.layers.BinaryFS$BFSFile
 org.netbeans.core.startup.layers.BinaryFS$BFSFolder
@@ -2935,6 +2936,7 @@ org.netbeans.modules.form.j2ee.QueryCreator
 org.netbeans.modules.form.j2ee.QueryResultListCreator
 org.netbeans.modules.form.palette.PaletteItemDataObject
 org.netbeans.modules.form.palette.PaletteItemDataObject$PaletteItemDataLoader
+org.netbeans.modules.glassfish.common.Installer
 org.netbeans.modules.gototest.GotoOppositeAction
 org.netbeans.modules.groovy.grailsproject.GrailsProjectFactory
 org.netbeans.modules.gsf.DefaultLanguage
@@ -3227,6 +3229,7 @@ org.netbeans.modules.java.source.usages.ClassIndexImpl
 org.netbeans.modules.java.source.usages.ClassIndexManager
 org.netbeans.modules.java.source.usages.ClassIndexManager$ExceptionAction
 org.netbeans.modules.java.source.usages.ClassPathRootsListener$ClassPathRootsChangedListener
+org.netbeans.modules.java.source.usages.Index
 org.netbeans.modules.java.source.usages.Pair
 org.netbeans.modules.java.source.usages.RepositoryUpdater
 org.netbeans.modules.java.source.usages.RepositoryUpdater$CompileWithDepsWork
@@ -4808,6 +4811,7 @@ org.openide.awt.DropDownToggleButton
 org.openide.awt.DynaMenuModel
 org.openide.awt.DynaMenuModel$InvisibleMenuItem
 org.openide.awt.DynamicMenuContent
+org.openide.awt.ExecBridge
 org.openide.awt.HtmlBrowser$URLDisplayer
 org.openide.awt.HtmlLabelUI
 org.openide.awt.HtmlRenderer
@@ -4850,6 +4854,7 @@ org.openide.cookies.CloseCookie
 org.openide.cookies.EditCookie
 org.openide.cookies.EditorCookie
 org.openide.cookies.EditorCookie$Observable
+org.openide.cookies.ExecCookie
 org.openide.cookies.InstanceCookie
 org.openide.cookies.InstanceCookie$Of
 org.openide.cookies.LineCookie
