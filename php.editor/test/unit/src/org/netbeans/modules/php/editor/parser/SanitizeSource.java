@@ -114,6 +114,11 @@ public class SanitizeSource extends ParserTestBase {
         performTest("sanitize/curly08");
     }
     
+    public void testUnfinishedVar() throws Exception {
+        // non finished class
+        performTest("sanitize/sanitize006");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         CompilationInfo info = getInfo("testfiles/" + filename + ".php");

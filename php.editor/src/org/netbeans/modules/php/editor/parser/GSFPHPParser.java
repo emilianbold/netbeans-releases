@@ -133,10 +133,11 @@ public class GSFPHPParser implements Parser {
                 program = (Program)rootSymbol.value; // call the parser itself
                 List<Statement> statements = program.getStatements();
                 //do we need sanitization?
-                boolean ok = false;
+                boolean ok = true;
                 for (Statement statement : statements) {
-                    if (!(statement instanceof ASTError) && !(statement instanceof EmptyStatement)) {
-                        ok = true;
+                    if (statement instanceof ASTError) {
+                        // if there is an errot, try to sanitize 
+                        ok = false;
                         break;
                     }
                 }
