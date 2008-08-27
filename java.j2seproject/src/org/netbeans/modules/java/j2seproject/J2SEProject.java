@@ -630,9 +630,7 @@ public final class J2SEProject implements Project, AntProjectListener {
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                new J2SEProjectAntArtifact (J2SEProject.this,
-                        JavaProjectConstants.ARTIFACT_TYPE_JAR,
-                        "dist.jar", "jar", "clean"), // NOI18N
+                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", evaluator(), "jar", "clean", J2SEProjectProperties.BUILD_SCRIPT), // NOI18N
             };
         }
 
