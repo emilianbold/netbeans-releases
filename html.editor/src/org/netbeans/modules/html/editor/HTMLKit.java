@@ -76,10 +76,10 @@ import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.SelectCodeElementAction;
@@ -116,10 +116,12 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         return HTML_MIME_TYPE;
     }
 
+    @Override
     public Object clone() {
         return new HTMLKit();
     }
 
+    @Override
     protected void initDocument(final BaseDocument doc) {
         TokenHierarchy hi = TokenHierarchy.get(doc);
         if (hi == null) {
@@ -133,6 +135,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     }
 
     /** Called after the kit is installed into JEditorPane */
+    @Override
     public void install(javax.swing.JEditorPane c) {
         super.install(c);
         c.setTransferHandler(new HTMLTransferHandler());
@@ -150,6 +153,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         return new HTMLInsertBreakAction();
     }
     
+    @Override
     protected Action[] createActions() {
         Action[] HTMLActions = new Action[]{
             createInsertBreakAction(),
@@ -234,6 +238,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         private JTextComponent currentTarget;
         private String insertedText;
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             currentTarget = target;
             
@@ -337,22 +342,22 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                         HTMLLexerFormatter htmlFormatter = new HTMLLexerFormatter(languagePath);
 
                         if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
-                            final Reformat reformat = Reformat.get(doc);
-                            reformat.lock();
+                            final Indent indent = Indent.get(doc);
+                            indent.lock();
                             try {
                                 doc.runAtomic(new Runnable() {
                                 public void run() {
                                         try {
                                             int startOffset = Utilities.getRowStart(doc, dotPos);
                                             int endOffset = Utilities.getRowEnd(doc, dotPos);
-                                            reformat.reformat(startOffset, endOffset);
+                                            indent.reindent(startOffset, endOffset);
                                         } catch (BadLocationException ex) {
                                             //ignore
                                         }
                                 } 
                             });
                             } finally {
-                                reformat.unlock();
+                                indent.unlock();
                             }
                         }
                     }
@@ -376,6 +381,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             currentTarget = null;
         }
 
+        @Override
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
               if (completionSettingEnabled()) {
                 KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
@@ -562,6 +568,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
          *  since exporting data via user gestures is not allowed.  If the text component is
          *  editable, COPY_OR_MOVE is returned, otherwise just COPY is allowed.
          */
+        @Override
         public int getSourceActions(JComponent c) {
             int actions = NONE;
             if (!(c instanceof JPasswordField)) {
@@ -583,6 +590,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
          * @return  The representation of the data to be transfered.
          *
          */
+        @Override
         protected Transferable createTransferable(JComponent comp) {
             exportComp = (JTextComponent) comp;
             shouldRemove = true;
@@ -600,6 +608,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
          *               if the action is <code>NONE</code>.
          * @param action The actual action that was performed.
          */
+        @Override
         protected void exportDone(JComponent source, Transferable data, int action) {
             // only remove the text if shouldRemove has not been set to
             // false by importData and only if the action is a move
@@ -622,6 +631,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
          * @param t     The data to import
          * @return  true if the data was inserted into the component, false otherwise.
          */
+        @Override
         public boolean importData(JComponent comp, Transferable t) {
             JTextComponent c = (JTextComponent) comp;
 
@@ -674,6 +684,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
          * @param flavors  The data formats available
          * @return  true if the data can be inserted into the component, false otherwise.
          */
+        @Override
         public boolean canImport(JComponent comp, DataFlavor[] flavors) {
             JTextComponent c = (JTextComponent) comp;
             if (!(c.isEditable() && c.isEnabled())) {
@@ -744,6 +755,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
              * If the EditorKit is not for text/plain or text/html, that format
              * is supported through the "richer flavors" part of BasicTransferable.
              */
+            @Override
             protected DataFlavor[] getRicherFlavors() {
                 if (richText == null) {
                     return null;
@@ -765,6 +777,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             /**
              * The only richer format supported is the file list flavor
              */
+            @Override
             protected Object getRicherData(DataFlavor flavor) throws UnsupportedFlavorException {
                 if (richText == null) {
                     return null;

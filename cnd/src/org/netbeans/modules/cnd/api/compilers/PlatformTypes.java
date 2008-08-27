@@ -82,4 +82,34 @@ public class PlatformTypes {
         }
         return defaultPlatform;
     }
+
+    public static String toString(int platform) {
+        String out;
+        switch (platform) {
+            case PLATFORM_SOLARIS_SPARC:
+                out = "PLATFORM_SOLARIS_SPARC";
+                break;
+            case PLATFORM_SOLARIS_INTEL:
+                out = "PLATFORM_SOLARIS_INTEL";
+                break;
+            case PLATFORM_LINUX:
+                out = "PLATFORM_LINUX";
+                break;
+            case PLATFORM_WINDOWS:
+                out = "PLATFORM_WINDOWS";
+                break;
+            case PLATFORM_MACOSX:
+                out = "PLATFORM_MACOSX";
+                break;
+            case PLATFORM_GENERIC:
+                out = "PLATFORM_GENERIC";
+                break;
+            case PLATFORM_NONE:
+                out = "PLATFORM_NONE";
+                break;
+            default:
+                 out = "Error";
+        }
+        return out;
+    }
 }

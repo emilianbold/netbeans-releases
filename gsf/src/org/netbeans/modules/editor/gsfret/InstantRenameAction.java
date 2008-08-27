@@ -107,6 +107,10 @@ public class InstantRenameAction extends BaseAction {
             }
 
             Source js = Source.forFileObject(DataLoadersBridge.getDefault().getFileObject(target));
+            if (js == null) {
+                return;
+            }
+
             final boolean[] wasResolved = new boolean[1];
             final String[] message = new String[1];
             final Set<OffsetRange>[] changePoints = new Set[1];

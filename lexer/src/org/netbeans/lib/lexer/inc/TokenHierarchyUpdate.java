@@ -360,12 +360,11 @@ public final class TokenHierarchyUpdate {
                     } else {
                         change = tokenListChange;
                     }
-                    Set<Language<?>> removedLanguages = processBoundsChange(change);
-                    if (removedLanguages != null) {
-                        // Just assume a single embedded language
-                        collectAddedEmbeddings(change);
+                    Set<Language<?>> attemptEmbeddingLanguages = processBoundsChange(change);
+                    if (attemptEmbeddingLanguages != null) {
+                        collectAddedEmbeddings(change, attemptEmbeddingLanguages);
                     }
-
+        
                 } else { // Non-bounds change
                     // Mark changed area based on start of first mod.token and end of last mod.token
                     // of the root-level change
@@ -401,6 +400,12 @@ public final class TokenHierarchyUpdate {
             if (parentItem != null) {
                 parentItem.tokenListChange.tokenChangeInfo().addEmbeddedChange(change.tokenChangeInfo());
             }
+            // Set of embeddings that will be attempted to be created.
+            // For example for "a%" there is a PERCENTS token but there can't be embedding
+            // because there must be two skip chars (assumed "%something%").
+            // Once "%" is typed there should be an empty embedding for "%%" created.
+            Set<Language<?>> attemptEmbeddingLanguages = childrenLanguages;
+            boolean attemptEmbeddingLanguagesUnmod = true;
             // Go through all embedded list in a chain and check whether the embeddings are OK
             EmbeddingContainer<T> ec = change.tokenChangeInfo().removedTokenList().tokenOrEmbedding(0).embedding();
             if (ec != null) { // The only removed token had embeddings
@@ -416,28 +421,38 @@ public final class TokenHierarchyUpdate {
                     int modRelOffset = eventInfo.modOffset() - change.offset();
                     int beyondModLength = change.addedEndOffset() - (eventInfo.modOffset() + eventInfo.diffLengthOrZero());
                     EmbeddedTokenList<?> prevEtl = null;
-                    Set<Language<?>> removedLanguages = null;
                     do {
                         // Check whether chars in start/end skip lengths weren't modified
                         if (processBoundsChangeEmbeddedTokenList(etl, modRelOffset, beyondModLength)) { // Embedding saved -> proceed to next ETL
+                            // In fact all the ETLs that remain should logically be excluded from attempt
+                            // for embedding creation. The removed ETLs should remain among attempted.
+                            if (attemptEmbeddingLanguages != null) {
+                                Language<?> lang = etl.languagePath().innerLanguage();
+                                if (attemptEmbeddingLanguages.contains(lang)) {
+                                    if (attemptEmbeddingLanguages.size() == 1) { // single and contained
+                                        attemptEmbeddingLanguages = null;
+                                    } else { // Multiple langs
+                                        // Possibly make a copied modifiable set
+                                        if (attemptEmbeddingLanguagesUnmod) {
+                                            attemptEmbeddingLanguagesUnmod = false;
+                                            attemptEmbeddingLanguages = new HashSet<Language<?>>(attemptEmbeddingLanguages);
+                                        }
+                                        attemptEmbeddingLanguages.remove(lang);
+                                    }
+                                } // else - lang not contained in attemptEmbeddingLanguages
+                            }
+                            // Process the next ETL
                             prevEtl = etl;
                             etl = prevEtl.nextEmbeddedTokenList();
-                        } else {
-                            Language<?> lang = etl.languagePath().innerLanguage();
-                            if (removedLanguages == null) {
-                                removedLanguages = Collections.<Language<?>>singleton(lang);
-                            } else if (removedLanguages.size() == 1) {
-                                removedLanguages = new HashSet<Language<?>>(removedLanguages);
-                                removedLanguages.add(lang);
-                            }
+                        } else  {
                             etl = ec.removeEmbeddedTokenList(prevEtl, etl);
                             // Removal of children is done in processBoundsChangeEmbeddedTokenList()
                         }
                     } while (etl != null && etl != EmbeddedTokenList.NO_DEFAULT_EMBEDDING);
-                    return removedLanguages;
+                    return attemptEmbeddingLanguages;
                 }
             }
-            return null;
+            return childrenLanguages;
         }
 
         /**
@@ -506,7 +521,7 @@ public final class TokenHierarchyUpdate {
                     ec.updateStatusUnsync(); // Update status since markRemoved() will need it
                     EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
                     while (etl != null && etl != EmbeddedTokenList.NO_DEFAULT_EMBEDDING) {
-                        internalMarkAddedRemovedMember(etl, false);
+                        internalMarkRemovedMember(etl);
                         etl = etl.nextEmbeddedTokenList();
                     }
                 }
@@ -514,35 +529,47 @@ public final class TokenHierarchyUpdate {
         }
 
         void collectAddedEmbeddings(TokenListChange<?> change) {
-            // Now collect added embeddings
-            TokenList<?> currentTokenList = change.tokenList();
-            collectAddedEmbeddings(currentTokenList, change.index(), change.addedTokenOrEmbeddingsCount());
+            collectAddedEmbeddings(change, childrenLanguages);
         }
 
-        void collectAddedEmbeddings(TokenList<?> tokenList, int index, int addedCount) {
+        void collectAddedEmbeddings(TokenListChange<?> change, Set<Language<?>> attemptLanguages) {
+            // Now collect added embeddings
+            TokenList<?> currentTokenList = change.tokenList();
+            collectAddedEmbeddings(currentTokenList, change.index(), change.addedTokenOrEmbeddingsCount(), attemptLanguages);
+        }
+
+        void collectAddedEmbeddings(TokenList<?> tokenList, int index, int addedCount, Set<Language<?>> attemptLanguages) {
             for (int i = 0; i < addedCount; i++) {
                 // Ensure that the default embedding gets possibly created
-                EmbeddedTokenList<?> etl = EmbeddingContainer.embeddedTokenList(tokenList, index + i, childrenLanguages, false);
+                EmbeddedTokenList<?> etl = EmbeddingContainer.embeddedTokenList(tokenList, index + i, attemptLanguages, false);
                 while (etl != null) {
-                    internalMarkAddedRemovedMember(etl, true);
+                    internalMarkAddedMember(etl);
                     etl = etl.nextEmbeddedTokenList();
                 }
             }
         }
 
         /**
-         * This code is extracted from collectAdded/RemovedEmbeddings() for convenient generification
+         * This code is extracted from collectRemovedEmbeddings() for convenient generification
          * over a type ET.
          */
-        private <ET extends TokenId> void internalMarkAddedRemovedMember(EmbeddedTokenList<ET> etl, boolean add) {
+        private <ET extends TokenId> void internalMarkRemovedMember(EmbeddedTokenList<ET> etl) {
             UpdateItem<ET> item = update.tokenListListItem(etl.languagePath());
             if (item != null) {
                 // update-status called in caller
-                if (add) {
-                    item.tokenListListUpdate.markAddedMember(etl);
-                } else {
-                    item.tokenListListUpdate.markRemovedMember(etl, update.eventInfo);
-                }
+                item.tokenListListUpdate.markRemovedMember(etl, update.eventInfo);
+            }
+        }
+
+        /**
+         * This code is extracted from collectAddedEmbeddings() for convenient generification
+         * over a type ET.
+         */
+        private <ET extends TokenId> void internalMarkAddedMember(EmbeddedTokenList<ET> etl) {
+            UpdateItem<ET> item = update.tokenListListItem(etl.languagePath());
+            if (item != null) {
+                // update-status called in caller
+                item.tokenListListUpdate.markAddedMember(etl);
             }
         }
 

@@ -11,7 +11,7 @@
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
+ * License.  When d1istributing the software, include this License Header
  * Notice in each file and include the License file at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
  * particular file as subject to the "Classpath" exception as provided
@@ -125,7 +125,10 @@ public class TiledLayerPreviewPanel extends JComponent implements TiledLayerList
         for (int r = 0; r < this.tiledLayer.getRowCount(); r++) {
             for (int c = 0; c < this.tiledLayer.getColumnCount(); c++) {
                 Tile tile = this.tiledLayer.getTileAt(r, c);
-                tile.paint(g, c * tile.getWidth(), r * tile.getHeight());
+                // Fix for #144948 - [65cat] NullPointerException at org.netbeans.modules.vmd.game.editor.tiledlayer.TiledLayerPreviewPanel.paintCellContents
+                if ( tile != null ){
+                    tile.paint(g, c * tile.getWidth(), r * tile.getHeight());
+                }
             }
         }
     }

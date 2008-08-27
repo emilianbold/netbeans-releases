@@ -214,6 +214,7 @@ public class KeymapModel {
     public Map<ShortcutAction,Set<String>> getKeymap (String profile) {
         profile = displayNameToName(profile);
         if (!keyMaps.containsKey(profile)) {
+            ensureActionsLoaded();
             Map<ShortcutAction,Set<String>> res = new 
                     HashMap<ShortcutAction,Set<String>>();
             for (KeymapManager m : getKeymapManagerInstances()) {
@@ -237,6 +238,7 @@ public class KeymapModel {
     public Map<ShortcutAction, Set<String>> getKeymapDefaults(String profile) {
         profile = displayNameToName(profile);
         if (!keyMapDefaults.containsKey (profile)) {
+            ensureActionsLoaded();
             Map<ShortcutAction,Set<String>> res = new 
                     HashMap<ShortcutAction,Set<String>>();
             for (KeymapManager m : getKeymapManagerInstances()) {
@@ -378,6 +380,12 @@ public class KeymapModel {
             }
         }
         return res;
+    }
+
+    private void ensureActionsLoaded() {
+        for(String c : getActionCategories()) {
+            getActions(c);
+        }
     }
 
     private String displayNameToName(String keymapDisplayName) {

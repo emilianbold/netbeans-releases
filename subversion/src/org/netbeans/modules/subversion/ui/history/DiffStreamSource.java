@@ -186,7 +186,7 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
                             // doesn't work with javahl but we won't change for cli as there might be some reason
                             in = client.getContent(url.appendPath("@" + revision), SvnUtils.toSvnRevision(revision));
                         } else {
-                            in = client.getContent(url, SvnUtils.toSvnRevision(revision));
+                            in = client.getContent(url, SvnUtils.toSvnRevision(revision), SvnUtils.toSvnRevision(revision));
                         }
                     } catch (SVNClientException e) {
                         if(SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage())) {

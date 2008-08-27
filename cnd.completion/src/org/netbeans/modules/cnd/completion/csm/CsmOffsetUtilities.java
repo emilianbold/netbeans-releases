@@ -175,7 +175,9 @@ public class CsmOffsetUtilities {
     }
 
     public static boolean isInClassScope(final CsmClass clazz, final int offset) {
-        return isInObject(clazz, offset) && clazz.getLeftBracketOffset() < offset;
+        return isInObject(clazz, offset) 
+                && clazz.getLeftBracketOffset() < offset
+                && offset < clazz.getEndOffset();
     }
 
 }

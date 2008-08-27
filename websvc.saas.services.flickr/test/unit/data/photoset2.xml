@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp stat="ok">
+    <photoset id="4" primary="2483" page="1" perpage="500" pages="1" total="2">
+        <photo id="2484" secret="123456" server="1"
+		title="my photo" isprimary="0" />
+        <photo id="2483" secret="123456" server="1"
+		title="flickr rocks" isprimary="1" />
+    </photoset>
+</rsp>

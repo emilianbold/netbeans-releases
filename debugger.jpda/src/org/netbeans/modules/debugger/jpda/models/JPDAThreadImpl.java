@@ -75,6 +75,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -790,6 +792,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      */
     public void makeCurrent () {
         debugger.setCurrentThread (this);
+        Session session = debugger.getSession();
+        DebuggerManager manager = DebuggerManager.getDebuggerManager();
+        if (session != manager.getCurrentSession()) {
+            manager.setCurrentSession(session);
+        }
     }
     
     /**

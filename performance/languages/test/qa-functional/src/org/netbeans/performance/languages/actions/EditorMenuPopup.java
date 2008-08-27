@@ -122,7 +122,6 @@ public class EditorMenuPopup extends org.netbeans.modules.performance.utilities.
     {
         log("::close");
         editorOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport        
     }    
         
     @Override

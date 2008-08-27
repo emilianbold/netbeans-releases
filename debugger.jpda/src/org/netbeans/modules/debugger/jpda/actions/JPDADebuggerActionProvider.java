@@ -109,9 +109,13 @@ implements PropertyChangeListener {
     }
     
     protected void removeStepRequests (ThreadReference tr) {
+        removeStepRequests(getDebuggerImpl(), tr);
+    }
+
+    static void removeStepRequests(JPDADebuggerImpl debugger, ThreadReference tr) {
         //S ystem.out.println ("removeStepRequests");
         try {
-            VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
+            VirtualMachine vm = debugger.getVirtualMachine ();
             if (vm == null) return;
             EventRequestManager erm = vm.eventRequestManager ();
             List<StepRequest> l = erm.stepRequests ();
@@ -122,7 +126,7 @@ implements PropertyChangeListener {
                     //S ystem.out.println("  remove request " + stepRequest);
                     erm.deleteEventRequest (stepRequest);
                     //SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
-                    getDebuggerImpl().getOperator().unregister(stepRequest);
+                    debugger.getOperator().unregister(stepRequest);
                     break;
                 }
                 //S ystem.out.println("  do not remove " + stepRequest + " : " + stepRequest.thread ());

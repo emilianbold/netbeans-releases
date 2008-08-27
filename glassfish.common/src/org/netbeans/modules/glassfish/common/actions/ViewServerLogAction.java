@@ -42,6 +42,10 @@
 package org.netbeans.modules.glassfish.common.actions;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,6 +54,9 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.Recognizer;
+import org.netbeans.modules.glassfish.spi.RecognizerCookie;
+import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
 /** 
@@ -65,14 +72,30 @@ public class ViewServerLogAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] nodes) {
-        GlassfishModule commonSupport = nodes[0].getLookup().lookup(GlassfishModule.class);
+        Lookup lookup = nodes[0].getLookup();
+        GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
         if(commonSupport != null) {
             Map<String, String> properties = commonSupport.getInstanceProperties();
             String uri = properties.get(GlassfishModule.URL_ATTR);
             LogViewMgr mgr = LogViewMgr.getInstance(uri);
-            mgr.ensureActiveReader(getServerLog(properties));
+            List<Recognizer> recognizers = getRecognizers(lookup.lookupAll(RecognizerCookie.class));
+            mgr.ensureActiveReader(recognizers, getServerLog(properties));
             mgr.selectIO();
         }
+    }
+    
+    private List<Recognizer> getRecognizers(Collection<? extends RecognizerCookie> cookies) {
+        List<Recognizer> recognizers;
+        if(!cookies.isEmpty()) {
+            recognizers = new LinkedList<Recognizer>();
+            for(RecognizerCookie cookie: cookies) {
+                recognizers.addAll(cookie.getRecognizers());
+            }
+            recognizers = Collections.unmodifiableList(recognizers);
+        } else {
+            recognizers = Collections.emptyList();
+        }
+        return recognizers;
     }
     
     private File getServerLog(Map<String, String> ip) {

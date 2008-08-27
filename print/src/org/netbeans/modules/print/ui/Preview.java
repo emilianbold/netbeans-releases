@@ -56,8 +56,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -592,7 +592,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   private void createPapers() {
-    myPapers = new LinkedList<Paper>();
+    myPapers = new ArrayList<Paper>();
 
     int width = Config.getDefault().getPageWidth();
     int height = Config.getDefault().getPageHeight();
@@ -864,7 +864,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     public void addMouseWheelListener(MouseWheelListener listener) {
       if (myMouseWheelListeners == null) {
-        myMouseWheelListeners = new LinkedList<MouseWheelListener>();
+        myMouseWheelListeners = new ArrayList<MouseWheelListener>();
       }
 //out("Listener: " + listener.getClass().getName());
       myMouseWheelListeners.add(listener);

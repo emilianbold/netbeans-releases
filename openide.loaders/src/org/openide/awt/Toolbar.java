@@ -587,11 +587,10 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     private DataObject getDataObjectUnderDropCursor( int dropIndex, boolean dropBefore ) {
         DataObject[] buttons = backingFolder.getChildren();
         DataObject objUnderCursor = null;
-        boolean appendToEnd = false;
         if( buttons.length > 0 ) {
             if( !dropBefore )
                 dropIndex++;
-            if( dropIndex < buttons.length ) {
+            if( dropIndex < buttons.length && dropIndex >= 0 ) {
                 objUnderCursor = buttons[dropIndex];
             }
         }

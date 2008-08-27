@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.wsitconf.ui.service;
 
 import java.awt.Color;
 import java.awt.Dialog;
+import java.util.Collection;
 import java.util.Set;
 import javax.swing.undo.UndoManager;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -82,6 +83,8 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AddressingModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMSequenceBinding;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.openide.util.NbBundle;
 
 /**
@@ -333,7 +336,7 @@ public class BindingPanel extends SectionInnerPanel {
             boolean addr = AddressingModelHelper.isAddressingEnabled(binding);
             if (addrChBox.isSelected() != addr) {
                 if (addrChBox.isSelected()) { 
-                    AddressingModelHelper.getInstance(getUserExpectedConfigVersion()).enableAddressing(binding);
+                    AddressingModelHelper.getInstance(getUserExpectedConfigVersion()).enableAddressing(binding, true);
                 } else {
                     AddressingModelHelper.disableAddressing(binding);
                 }
@@ -560,7 +563,7 @@ public class BindingPanel extends SectionInnerPanel {
             trustButton.setEnabled(secSelected && trustStoreConfigRequired && !defaults);
             kerberosCfgButton.setEnabled(secSelected && kerberosConfigRequired && !defaults);
 
-            addrChBox.setEnabled(!relSelected && !secSelected && !mtomChBox.isSelected());
+            addrChBox.setEnabled(!relSelected && !secSelected);
 
         } else { // no wsit fun, there's access manager security selected
             profileComboLabel.setEnabled(false);
@@ -581,15 +584,20 @@ public class BindingPanel extends SectionInnerPanel {
         }
     }
 
-
     private boolean isJsr109Supported(){
         J2eePlatform j2eePlatform = Util.getJ2eePlatform(project);
-        if (j2eePlatform != null) {
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
+        if (j2eePlatform != null){
+            Collection<WSStack> wsStacks = (Collection<WSStack>)
+                    j2eePlatform.getLookup().lookupAll(WSStack.class);
+            for (WSStack stack : wsStacks) {
+                if (stack.isFeatureSupported(JaxWs.Feature.JSR109)) {
+                    return true;
+                }
+            }
         }
         return false;
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

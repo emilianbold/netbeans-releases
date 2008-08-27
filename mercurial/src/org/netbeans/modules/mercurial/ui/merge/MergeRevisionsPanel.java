@@ -121,7 +121,6 @@ public class MergeRevisionsPanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("Dialog", 1, 11)); // NOI18N
         jLabel1.setText(org.openide.util.NbBundle.getMessage(MergeRevisionsPanel.class, "infoLabel.text")); // NOI18N
 
         jLabel2.setForeground(new java.awt.Color(153, 153, 153));
@@ -146,7 +145,7 @@ public class MergeRevisionsPanel extends javax.swing.JPanel {
                         .add(jLabel2))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 424, Short.MAX_VALUE)))
+                        .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -168,15 +167,15 @@ public class MergeRevisionsPanel extends javax.swing.JPanel {
 
 private void revisionsComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revisionsComboBoxActionPerformed
     int index = revisionsComboBox.getSelectedIndex();
-    if(getMore((String) revisionsComboBox.getSelectedItem())) return;
+    if(getMore((String) revisionsComboBox.getSelectedItem())) return;//GEN-HEADEREND:event_revisionsComboBoxActionPerformed
     
     if(messages != null && index >= 0 && index < messages.length ){
         changesetPanel1.setInfo(messages[index]);
     }
-}//GEN-LAST:event_revisionsComboBoxActionPerformed
+}                                                 
     
     private boolean getMore(String revStr) {
-        if (bGettingRevisions) return false;
+        if (bGettingRevisions) return false;//GEN-LAST:event_revisionsComboBoxActionPerformed
         boolean bGetMore = false;
         int limit = -1;
 

@@ -48,6 +48,8 @@ import java.io.OutputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -373,12 +375,22 @@ public class RegisterDerby implements DatabaseRuntime {
             shutwownProcess.waitFor();
 
             process.destroy();
+            disconnectAllDerbyConnections();
         } 
         catch (Exception e) {
             Util.showInformation(e.getMessage());
         }
         finally {
             process=null;
+        }
+    }
+    
+    private void disconnectAllDerbyConnections() {
+        DatabaseConnection[] dbconn = ConnectionManager.getDefault().getConnections();
+        for (int i = 0; i < dbconn.length; i++) {
+            if (RegisterDerby.getDefault().acceptsDatabaseURL(dbconn[i].getDatabaseURL())) {
+                ConnectionManager.getDefault().disconnect(dbconn[i]);
+            }
         }
     }
     

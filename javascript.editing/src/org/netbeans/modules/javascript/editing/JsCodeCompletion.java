@@ -52,7 +52,7 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
@@ -562,7 +562,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         if (startsWith(ARGUMENTS, prefix)) {
             // Make sure we're in a function before adding the arguments property
             for (Node n = node; n != null; n = n.getParentNode()) {
-                if (n.getType() == org.mozilla.javascript.Token.FUNCTION) {
+                if (n.getType() == org.mozilla.nb.javascript.Token.FUNCTION) {
                     KeywordElement element = new KeywordElement(ARGUMENTS, ElementKind.VARIABLE);
                     proposals.add(new JsCompletionItem(element, request));
                     break;
@@ -1319,7 +1319,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 Node method = AstUtilities.findLocalScope(node, path);
                 if (method != null) {
                     List<Node> nodes = new ArrayList<Node>();
-                    AstUtilities.addNodesByType(method, new int[] { org.mozilla.javascript.Token.MISSING_DOT }, nodes);
+                    AstUtilities.addNodesByType(method, new int[] { org.mozilla.nb.javascript.Token.MISSING_DOT }, nodes);
                     if (nodes.size() > 0) {
                         Node exprNode = nodes.get(0);
                         JsTypeAnalyzer analyzer = new JsTypeAnalyzer(info, /*request.info.getParserResult(),*/ index, method, node, astOffset, lexOffset, doc, fileObject);
@@ -1340,9 +1340,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     Iterator<Node> it = callPath.leafToRoot();
                     while (it.hasNext()) {
                         Node callNode = it.next();
-                        if (callNode.getType() == org.mozilla.javascript.Token.FUNCTION) {
+                        if (callNode.getType() == org.mozilla.nb.javascript.Token.FUNCTION) {
                             break;
-                        } else if (callNode.getType() == org.mozilla.javascript.Token.CALL) {
+                        } else if (callNode.getType() == org.mozilla.nb.javascript.Token.CALL) {
                             Node method = AstUtilities.findLocalScope(node, path);
 
                             if (method != null) {
@@ -1350,7 +1350,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                                 type = analyzer.getType(callNode);
                             }
                             break;
-                        } else if (callNode.getType() == org.mozilla.javascript.Token.GETELEM) {
+                        } else if (callNode.getType() == org.mozilla.nb.javascript.Token.GETELEM) {
                             Node method = AstUtilities.findLocalScope(node, path);
 
                             if (method != null) {
@@ -1698,8 +1698,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         AstPath path = request.path;
         Node leaf = path.leaf();
         int leafType = leaf.getType();
-        if (leafType == org.mozilla.javascript.Token.OBJECTLIT || leafType == org.mozilla.javascript.Token.OBJLITNAME) {
-            if (leafType == org.mozilla.javascript.Token.OBJLITNAME) {
+        if (leafType == org.mozilla.nb.javascript.Token.OBJECTLIT || leafType == org.mozilla.nb.javascript.Token.OBJLITNAME) {
+            if (leafType == org.mozilla.nb.javascript.Token.OBJLITNAME) {
                 leaf = leaf.getParentNode(); // leaf still won't be null, OBJLITNAME is always below an OBJECTLIT
             }
             // We're trying to complete object literal names. These should be properties we're
@@ -1711,8 +1711,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             
             Node parent = leaf.getParentNode();
             int parentType = parent.getType();
-            if (parentType == org.mozilla.javascript.Token.CALL ||
-                    parentType == org.mozilla.javascript.Token.NEW) {
+            if (parentType == org.mozilla.nb.javascript.Token.CALL ||
+                    parentType == org.mozilla.nb.javascript.Token.NEW) {
 
                 int last = params.size()-1;
                 if (index > last) {
@@ -2233,8 +2233,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 while (it.hasNext()) {
                     Node node = it.next();
 
-                    if (node.getType() == org.mozilla.javascript.Token.CALL ||
-                            node.getType() == org.mozilla.javascript.Token.NEW) {
+                    if (node.getType() == org.mozilla.nb.javascript.Token.CALL ||
+                            node.getType() == org.mozilla.nb.javascript.Token.NEW) {
                         call = node;
                         index = AstUtilities.findArgumentIndex(call, astOffset, path);
                         break;

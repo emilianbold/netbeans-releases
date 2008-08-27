@@ -358,6 +358,7 @@ TestSupport.prototype = {
         str += "<input name='path' value='"+uri+"' type='hidden'>";
         str += "<input id='methodName' name='methodName' value='"+mName+"' type='hidden'>";
         str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
+        str += "<input id='test' name='test' style='display:none' value='' type='submit' onchange='ts.testResource();'>";
         str += "</form>";
         str += "</div>";
         return str;

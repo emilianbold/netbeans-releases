@@ -96,13 +96,21 @@ made subject to such option by the copyright holder.
         </classpath>
         <include name="org/netbeans/nbbuild/HgExec.java"/>
         <include name="org/netbeans/nbbuild/ValidateHgConfiguration.java"/>
-        <include name="org/netbeans/nbbuild/extlibs/RegisterExternalHook.java"/>
+        <include name="org/netbeans/nbbuild/extlibs/DeregisterExternalHook.java"/>
+        <include name="org/netbeans/nbbuild/extlibs/DownloadBinaries.java"/>
         <compilerarg line="-Xlint -Xlint:-serial"/>
     </javac>
     <taskdef name="validate-hg-configuration" classname="org.netbeans.nbbuild.ValidateHgConfiguration" classpath="build/antclasses"/>
     <validate-hg-configuration root=".."/>
-    <taskdef name="registerexternalhook" classname="org.netbeans.nbbuild.extlibs.RegisterExternalHook" classpath="build/antclasses"/>
-    <registerexternalhook root=".." hook="antsrc/org/netbeans/nbbuild/extlibs/external.py"/>
+    <taskdef name="deregisterexternalhook" classname="org.netbeans.nbbuild.extlibs.DeregisterExternalHook" classpath="build/antclasses"/>
+    <deregisterexternalhook root=".."/>
+    <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="build/antclasses"/>
+    <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+        <manifest dir="${nb_all}">
+            <include name="*/external/binaries-list"/>
+            <include name="contrib/*/external/binaries-list"/>
+        </manifest>
+    </downloadbinaries>
 
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
     <path id="bootstrap-cp">
@@ -1369,6 +1377,13 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="contrib/*/external/build.xml"/>
       </fileset>
     </subant>
+    <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="nbantext.jar"/>
+    <downloadbinaries cache="${binaries.cache}" server="${binaries.server}" clean="true">
+        <manifest dir="${nb_all}">
+            <include name="*/external/binaries-list"/>
+            <include name="contrib/*/external/binaries-list"/>
+        </manifest>
+    </downloadbinaries>
   </target>
 
   <target name="-real-clean" depends="-cleanall,localclean,-clean-external">
@@ -1474,7 +1489,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <target name="localtest" depends="bootstrap">
         <mkdir dir="build/test/unit/classes"/>
         <path id="test.cp">
-            <pathelement path="../libs.junit4/external/junit-4.1.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar"/>
+            <pathelement path="../libs.junit4/external/junit-4.5.jar:netbeans/harness/modules/org-netbeans-modules-nbjunit.jar:${ant.core.lib}:nbantext.jar"/>
         </path>
         <javac srcdir="test/unit/src" destdir="build/test/unit/classes" debug="true" source="1.5">
             <classpath refid="test.cp"/>

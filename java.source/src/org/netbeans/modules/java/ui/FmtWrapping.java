@@ -152,6 +152,8 @@ public class FmtWrapping extends javax.swing.JPanel {
         setLayout(new java.awt.BorderLayout());
 
         scrollPane.setBackground(java.awt.SystemColor.controlLtHighlight);
+        scrollPane.setMinimumSize(new java.awt.Dimension(300, 200));
+        scrollPane.setPreferredSize(new java.awt.Dimension(350, 600));
 
         panel1.setOpaque(false);
         panel1.setLayout(new java.awt.GridBagLayout());

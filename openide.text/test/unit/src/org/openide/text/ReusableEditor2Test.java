@@ -43,22 +43,21 @@ package org.openide.text;
 
 
 import java.beans.PropertyChangeListener;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JEditorPane;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.lookup.*;
-
+import org.openide.util.lookup.Lookups;
 
 /** Testing the behavior of editor reusal framework. It uses new Line.show API.
  * The behavior was discussed thoroughly at issue 94607.
  *
  * @author Petr Nejedly, Marek Slama
  */
+@RandomlyFails // #144747
 public class ReusableEditor2Test extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
@@ -73,6 +72,11 @@ public class ReusableEditor2Test extends NbTestCase {
         super(testName);
     }
             
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
+
 
     /**
      * Prepares few editors at the test dispoition.

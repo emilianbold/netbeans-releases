@@ -55,7 +55,7 @@ import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
-import org.mozilla.javascript.Node;
+import org.mozilla.nb.javascript.Node;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
@@ -157,12 +157,12 @@ public class RetoucheUtils {
         String name = null;
         String simpleName = null;
         int type = node.getType();
-        if (type == org.mozilla.javascript.Token.CALL) {
+        if (type == org.mozilla.nb.javascript.Token.CALL) {
             name = AstUtilities.getCallName(node, true);
             simpleName = AstUtilities.getCallName(node, false);
         } else if (node instanceof Node.StringNode) {
             name = node.getString();
-        } else if (node.getType() == org.mozilla.javascript.Token.FUNCTION) {
+        } else if (node.getType() == org.mozilla.nb.javascript.Token.FUNCTION) {
             name = AstUtilities.getFunctionFqn(node, null);
             if (name != null && name.indexOf('.') != -1) {
                 name = name.substring(name.indexOf('.')+1);

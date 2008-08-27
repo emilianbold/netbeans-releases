@@ -53,7 +53,6 @@ import org.netbeans.modules.vmd.api.model.PresenterEvent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
-import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.mobility.svgcore.util.Util;
@@ -114,13 +113,12 @@ public class SVGFormFileChangePresneter extends DynamicPresenter implements Desi
     @Override
     protected void designChanged(DesignEvent event) {
         DesignComponent svgImageComponent = getComponent().readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
-        if (!event.isComponentPropertyChanged(svgImageComponent, SVGImageCD.PROP_RESOURCE_PATH) || !event.isComponentPropertyChanged(getComponent(), SVGFormCD.PROP_SVG_IMAGE)) {
-            return;
-        }
-        checkSVGComponent();
-        if (!isInit) {
-            isInit = true;
-            init();
+        if (event.isComponentPropertyChanged(svgImageComponent, SVGImageCD.PROP_RESOURCE_PATH) || event.isComponentPropertyChanged(getComponent(), SVGFormCD.PROP_SVG_IMAGE)) {
+            checkSVGComponent();
+            if (!isInit) {
+                isInit = true;
+                init();
+            }
         }
     }
 
@@ -137,7 +135,7 @@ public class SVGFormFileChangePresneter extends DynamicPresenter implements Desi
         if (svgImageComponent == null) {
             return;
         }
-        FileObject svgFileObjectNew = getSVGFile(svgImageComponent);
+        FileObject svgFileObjectNew = SVGFormSupport.getSVGFile(svgImageComponent);
         if (svgFileObjectNew != null) {
             try {
                 //Check if this file is SVG file
@@ -156,7 +154,6 @@ public class SVGFormFileChangePresneter extends DynamicPresenter implements Desi
 
     @Override
     protected void presenterChanged(PresenterEvent event) {
-        System.out.println();
     }
 
     public void setDesignDocument(DesignDocument designDocument) {
@@ -181,14 +178,5 @@ public class SVGFormFileChangePresneter extends DynamicPresenter implements Desi
         svgFileObject = null;
     }
 
-    private static synchronized FileObject getSVGFile(DesignComponent svgImageComponent) {
-        PropertyValue propertyValue = svgImageComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
-        FileObject svgFileObject = null;
-        if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
-            Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(svgImageComponent.getDocument(), MidpTypes.getString(propertyValue));
-            Iterator<FileObject> iterator = images.keySet().iterator();
-            svgFileObject = iterator.hasNext() ? iterator.next() : null;
-        }
-        return svgFileObject;
-    }
+    
 }

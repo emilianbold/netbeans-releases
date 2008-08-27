@@ -888,6 +888,18 @@ long parseTime = -1;
                             // Ensure document is forced open such that info.getDocument() will not yield null
                             UiUtils.getDocument(currentInfo.getFileObject(), true);
                             document = currentInfo.getDocument();
+                        } else {
+                            // If you have a plain text file and try to assign a new mime type
+                            // to it, we end up in a scenario where the file mime type and the
+                            // document mime type do not (at least not yet) match - with bad results
+                            // later on (mime type lookup, TokenHierarchy lookup etc) all return
+                            // objects with a wrong/unexpected text/plain mimetype.
+                            // See http://www.netbeans.org/issues/show_bug.cgi?id=138948 for details.
+                            // It looks like the infrastructure closes the file shortly after this,
+                            // so presumably live-changing files like this isn't supported..
+                            if ("text/plain".equals(document.getProperty("mimeType"))) { // NOI18N
+                                return Phase.MODIFIED;
+                            }
                         }
                         
                         if (document == null) {
@@ -906,7 +918,7 @@ long vsStart = System.currentTimeMillis();
                         Collection<? extends TranslatedSource> translations = null;
 
                         boolean incremental = false;
-                        if (model instanceof IncrementalEmbeddingModel) {
+                        if (model instanceof IncrementalEmbeddingModel && (source.files == null || source.files.size() <= 1)) {
                             incremental = true;
                             IncrementalEmbeddingModel incrementalModel = (IncrementalEmbeddingModel)model;
                             translations = source.recentEmbeddingTranslations.get(model);
@@ -957,7 +969,7 @@ long parseStart = System.currentTimeMillis();
 // </editor-fold>
                             SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
                             ParserResult result = null;
-                            if (incrementalParser != null) {
+                            if (incrementalParser != null && (source.files == null || source.files.size() <= 1)) {
                                 ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
                                 if (previousResult != null) {
                                     ParserResult ir = incrementalParser.parse(file, reader, null, source.editHistory, previousResult);
@@ -998,7 +1010,7 @@ long parseStart = System.currentTimeMillis();
                         SourceFileReader reader = new StringSourceFileReader(buffer, bufferFo);
 
                         ParserResult result = null;
-                        if (incrementalParser != null) {
+                        if (incrementalParser != null && (source.files == null || source.files.size() <= 1)) {
                             ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
                             if (previousResult != null) {
                                 result = incrementalParser.parse(file, reader, null, source.editHistory, previousResult);

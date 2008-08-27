@@ -102,14 +102,13 @@ public class SVGLabel extends SVGComponent {
         }
         return myText.getTrait( TRAIT_TEXT );
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.microedition.svg.SVGComponent#focusGained()
-     */
-    public void focusGained() {
-        SVGComponent component = getLabelFor();
-        if ( component !=  null ){
-            component.requestFocus();
+
+    public synchronized boolean isFocusable() {
+        if ( getLabelFor() == null ){
+            return super.isFocusable();
+        }
+        else {
+            return false;
         }
     }
     

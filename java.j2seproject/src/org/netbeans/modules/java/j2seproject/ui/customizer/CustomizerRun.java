@@ -424,6 +424,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         }
         String name = d.getInputText();
         String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+        if (config.trim().length() == 0) {
+            //#143764
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.empty", config),
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return;
+            
+        }
         if (configs.get(config) != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.duplicate", config),

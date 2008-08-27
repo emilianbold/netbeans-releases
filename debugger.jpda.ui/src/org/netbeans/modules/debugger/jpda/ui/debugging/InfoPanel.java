@@ -47,6 +47,7 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,9 +64,11 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -103,8 +106,8 @@ public class InfoPanel extends javax.swing.JPanel {
     public InfoPanel(TapPanel tapPanel) {
         this.tapPanel = tapPanel;
         filterPanelColor = tapPanel.getBackground();
-        hitsPanelColor = DebuggingView.hitsColor; // [TODO]
-        deadlockPanelColor = hitsPanelColor; // DebuggingView.deadlockColor; // [TODO]
+        hitsPanelColor = DebuggingView.hitsColor;
+        deadlockPanelColor = hitsPanelColor;
         tapPanelMinimumHeight = tapPanel.getMinimumHeight();
         
         initComponents();
@@ -124,8 +127,8 @@ public class InfoPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         hitsInnerPanel.add(arrowButton, gridBagConstraints);
 
-        removeAll(); // [TODO]
-        items[FILTERS].makeVisible(false);
+        removeAll();
+        items[FILTERS].makeVisible(false, true, null);
         items[HITS].makeInvisible();
         items[DEADLOCKS].makeInvisible();
         items[DEADLOCKS_BY_DEBUGGER].makeInvisible();
@@ -199,12 +202,36 @@ public class InfoPanel extends javax.swing.JPanel {
             }
         });
     }
-    
+
+    public void recomputeMenuItems(final List<JPDAThread> hits) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                arrowMenu.removeAll();
+                threadToMenuItem.clear();
+                for (JPDAThread thread : hits) {
+                    JMenuItem item = createMenuItem(thread);
+                    threadToMenuItem.put(thread, item);
+                    arrowMenu.add(item);
+                }
+            }
+        });
+    }
+
     private JMenuItem createMenuItem(final JPDAThread thread) {
         String displayName;
         try {
             displayName = DebuggingNodeModel.getDisplayName(thread, false);
-        } catch (UnknownTypeException e) {
+            Method method = thread.getClass().getMethod("getDebugger"); // [TODO]
+            JPDADebugger debugger = (JPDADebugger)method.invoke(thread);
+            method = debugger.getClass().getMethod("getSession");
+            Session session = (Session) method.invoke(debugger);
+            Session currSession = DebuggerManager.getDebuggerManager().getCurrentSession();
+            if (session != currSession) {
+                String str = NbBundle.getMessage(ThreadsHistoryAction.class, "CTL_Session", // [TODO] bundle
+                        session.getName());
+                displayName = displayName.charAt(0) + str + ", " + displayName.substring(1);
+            }
+        } catch (Exception e) { // [TODO]
             displayName = thread.getName();
         }
         Image image = Utilities.loadImage(DebuggingNodeModel.getIconBase(thread));
@@ -271,7 +298,7 @@ public class InfoPanel extends javax.swing.JPanel {
         if (wasOnTop) {
             for (int i = index - 1; i >= 0; i--) {
                 if (items[i].isVisible()) {
-                    items[i].makeTop();
+                    items[i].setTop(true);
                     break;
                 } // if
             } // for
@@ -283,7 +310,6 @@ public class InfoPanel extends javax.swing.JPanel {
         if (item.isVisible()) {
             return;
         }
-        item.makeVisible(false);
         boolean isOnTop = true;
         for (int i = index + 1; i < items.length; i++) {
             if (items[i].isVisible()) {
@@ -291,15 +317,16 @@ public class InfoPanel extends javax.swing.JPanel {
                 break;
             } // if
         }  // for
+        Item previousTop = null;
         if (isOnTop) {
-            item.makeTop();
             for (int i = index - 1; i >= 0; i--) {
                 if (items[i].isVisible()) {
-                    items[i].makeVisible(false);
+                    previousTop = items[i];
                     break;
                 } // if
             } // for
         } // if
+        item.makeVisible(true, isOnTop, previousTop);
     }
 
     private void hideHitsPanel() {
@@ -417,7 +444,7 @@ public class InfoPanel extends javax.swing.JPanel {
         toggleButton.setMargin(new Insets(2,3,2,3));
         toggleButton.setToolTipText(filtersDesc.getTooltip(index));
         toggleButton.setFocusable(false);
-        filtersDesc.connectToggleButton(index, toggleButton); // [TODO] ?
+        filtersDesc.connectToggleButton(index, toggleButton);
         return toggleButton;
     }
     
@@ -609,12 +636,12 @@ public class InfoPanel extends javax.swing.JPanel {
         private JScrollPane scrollPane;
         private JPanel separator;
         private boolean animationRunning = false;
+        private boolean isTop = false;
 
         Item(Color backgroundColor, int preferredHeight, JComponent innerPanel) {
             this.backgroundColor = backgroundColor;
             this.preferredHeight = preferredHeight;
             this.innerPanel = innerPanel;
-
             topGapPanel = createGapPanel();
             bottomGapPanel = createGapPanel();
             separator = createSeparator();
@@ -638,7 +665,7 @@ public class InfoPanel extends javax.swing.JPanel {
         }
 
         public boolean isVisible() {
-            return scrollPane.isVisible();
+            return scrollPane.isVisible() || animationRunning;
         }
 
         private JPanel createGapPanel() {
@@ -657,61 +684,99 @@ public class InfoPanel extends javax.swing.JPanel {
             return panel;
         }
 
-        private void makeInvisible() {
+        private synchronized void makeInvisible() {
             scrollPane.setVisible(false);
             separator.setVisible(false);
+            if (animationRunning) {
+                animationRunning = false;
+            }
+            setTop(isTop);
         }
         
-        private synchronized void makeVisible(boolean animate) {
-            animate &= !animationRunning;
-            if (animate) {
-                scrollPane.setPreferredSize(new Dimension(0, 0));
-            } else {
-                scrollPane.setPreferredSize(new Dimension(0, preferredHeight));
+        private synchronized void makeVisible(boolean animate, final boolean top, final Item lastTop) {
+            if (animationRunning) {
+                return;
             }
-            topGapPanel.setVisible(true);
-            bottomGapPanel.setVisible(true);
-            scrollPane.setVisible(true);
-            separator.setVisible(true);
-            outerPanel.setPreferredSize(new Dimension(0, preferredHeight));
-            if (animate) {
+            int height = top ? preferredHeight - tapPanelMinimumHeight : preferredHeight;
+            if (!animate) {
+                setTop(top);
+                if (top && lastTop != null) {
+                    lastTop.setTop(false);
+                }
+                scrollPane.setPreferredSize(new Dimension(0, height));
+                outerPanel.setPreferredSize(new Dimension(0, height));
+                scrollPane.setVisible(true);
+                separator.setVisible(true);
+            } else {
+                scrollPane.setPreferredSize(new Dimension(0, 1));
+                outerPanel.setPreferredSize(new Dimension(0, height));
                 animationRunning = true;
                 requestProcessor.post(new Runnable() {
                     public void run() {
-                        int delta = 1;
-                        int height = 0;
-                        while (height < preferredHeight) {
-                            height += delta;
-                            if (height > preferredHeight) {
-                                height = preferredHeight;
+                        isTop = top;
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                if (isTop && lastTop != null) {
+                                    lastTop.setTop(false);
+                                }
+                                topGapPanel.setVisible(!isTop);
+                                if (animationRunning) {
+                                    scrollPane.setVisible(true);
+                                    separator.setVisible(true);
+                                    tapPanel.revalidate();
+                                }
+                                if (isTop) {
+                                    tapPanel.setBackground(backgroundColor);
+                                }
                             }
-                            final int param = height;
+                        });
+                        int delta = 1;
+                        int currHeight = 1;
+                        while (currHeight < (isTop ? preferredHeight - tapPanelMinimumHeight : preferredHeight) &&
+                                animationRunning) {
+                            currHeight += delta;
+                            int height = isTop ? preferredHeight - tapPanelMinimumHeight : preferredHeight;
+                            if (currHeight > height) {
+                                currHeight = height;
+                            }
+                            final int param = currHeight;
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
-                                    scrollPane.setPreferredSize(new Dimension(0, param));
-                                    scrollPane.setVisible(false);
-                                    scrollPane.setVisible(true);
-                                    //System.out.println("HEIGHT: " + param);
+                                    if (animationRunning) {
+                                        scrollPane.setPreferredSize(new Dimension(0, param));
+                                        revalidate();
+                                    }
+//                                    scrollPane.setVisible(false);
+//                                    scrollPane.setVisible(true);
                                 }
                             });
                             try {
-                                Thread.sleep(200);
+                                Thread.sleep(20);
                             } catch (InterruptedException ex) {
                             }
                         } // while
                         animationRunning = false;
-                    }
+                    } // run
                 }, 0, Thread.MAX_PRIORITY);
+            } // else
+        }
+
+        private void setTop(boolean isTop) {
+            this.isTop = isTop;
+            if (isTop) {
+                topGapPanel.setVisible(false);
+                if (!animationRunning) {
+                    outerPanel.setPreferredSize(new Dimension(0, preferredHeight - tapPanelMinimumHeight));
+                    scrollPane.setPreferredSize(new Dimension(0, preferredHeight - tapPanelMinimumHeight));
+                }
+                tapPanel.setBackground(backgroundColor);
+            } else {
+                topGapPanel.setVisible(true);
+                outerPanel.setPreferredSize(new Dimension(0, preferredHeight));
+                scrollPane.setPreferredSize(new Dimension(0, preferredHeight));
             }
         }
-
-        private void makeTop() {
-            topGapPanel.setVisible(false);
-            outerPanel.setPreferredSize(new Dimension(0, preferredHeight - tapPanelMinimumHeight));
-            scrollPane.setPreferredSize(new Dimension(0, preferredHeight - tapPanelMinimumHeight));
-            tapPanel.setBackground(backgroundColor);
-        }
-
+        
     }
 
 }

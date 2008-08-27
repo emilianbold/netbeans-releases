@@ -110,6 +110,10 @@ do
 		echo "suppressing parser errors"
 		PARSERRORS=""
 		;;
+	--hardrefs|--hard)
+                echo "using in-memory (hard refs) repository"
+		PARAMS="${PARAMS} -J-Dcnd.repository.hardrefs=true"
+		;;
 	*)
 		PARAMS="${PARAMS} $1"
 		;;

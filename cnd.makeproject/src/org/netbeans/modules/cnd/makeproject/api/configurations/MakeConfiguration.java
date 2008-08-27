@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
@@ -659,7 +658,7 @@ public class MakeConfiguration extends Configuration {
         }
         return output;
     }
-
+    
     public String getAbsoluteOutputValue() {
         String output = getOutputValue();
 
@@ -674,13 +673,9 @@ public class MakeConfiguration extends Configuration {
     
     public String expandMacros(String val) {
         // Substitute macros
-        int i = val.indexOf(("${PLATFORM}")); // NOI18N
-        if (i == 0) {
-            val = getVariant() + val.substring(i);
-        }
-        else if (i > 0) {
-            val = val.substring(0, i) + getVariant() + val.substring(i+11);
-        }
+        val = IpeUtils.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
+        val = IpeUtils.expandMacro(val, "${OUTPUT_BASENAME}", IpeUtils.getBaseName(getOutputValue())); // NOI18N
+        val = IpeUtils.expandMacro(val, "${PLATFORM}", getVariant()); // NOI18N
         return val;
     }
 //

@@ -195,4 +195,34 @@ public class MigrateActionTest extends RailsProjectTestBase {
         
         checkMenu(this, name, p);
     }
+
+    public void testGetMigrationVersion() {
+        String sequential = "001_create_users.rb";
+        assertEquals(Long.valueOf("1"), MigrateAction.getMigrationVersion(sequential));
+
+        String sequential2 = "999_create_users.rb";
+        assertEquals(Long.valueOf("999"), MigrateAction.getMigrationVersion(sequential2));
+
+        String timestamp = "20080825092811_create_users.rb";
+        assertEquals(Long.valueOf("20080825092811"), MigrateAction.getMigrationVersion(timestamp));
+
+        String notMigration = "just_some_file.rb";
+        assertNull(MigrateAction.getMigrationVersion(notMigration));
+
+    }
+
+    public void testGetMigrationDescription() {
+        String sequential = "001_create_users.rb";
+        assertEquals("CreateUsers.rb", MigrateAction.getMigrationDescription(sequential));
+
+        String sequential2 = "999_create_users.rb";
+        assertEquals("CreateUsers.rb", MigrateAction.getMigrationDescription(sequential2));
+
+        String timestamp = "20080825092811_create_users_and_groups.rb";
+        assertEquals("CreateUsersAndGroups.rb", MigrateAction.getMigrationDescription(timestamp));
+
+        String notMigration = "just_some_file.rb";
+        assertNull(MigrateAction.getMigrationDescription(notMigration));
+
+    }
 }

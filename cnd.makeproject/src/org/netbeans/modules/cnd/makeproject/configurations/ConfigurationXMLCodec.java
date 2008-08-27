@@ -514,6 +514,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 boolean val = currentText.equals(TRUE_VALUE);
                 currentPackagingConfiguration.getVerbose().setValue(val);
             }
+        } else if (element.equals(PACK_TOPDIR_ELEMENT)) {
+            if (currentPackagingConfiguration != null) {
+                currentPackagingConfiguration.getTopDir().setValue(currentText);
+            }
         } else if (element.equals(ADDITIONAL_OPTIONS_ELEMENT)) {
             if (currentPackagingConfiguration != null) {
                 currentPackagingConfiguration.getOptions().setValue(getString(currentText));

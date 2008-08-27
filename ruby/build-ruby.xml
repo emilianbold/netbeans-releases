@@ -53,6 +53,8 @@ made subject to such option by the copyright holder.
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
 
+            <buildpath location="libs.bytelist"/>
+            <buildpath location="libs.jvyamlb"/>
             <buildpath location="ruby.rakeproject"/>
             <buildpath location="ruby.platform"/>
             <buildpath location="o.jruby"/>
@@ -122,6 +124,8 @@ made subject to such option by the copyright holder.
             <buildpath location="gsfpath.api"/>
             <buildpath location="gsf"/>
 
+            <buildpath location="libs.bytelist"/>
+            <buildpath location="libs.jvyamlb"/>
             <buildpath location="ruby.rakeproject"/>
             <buildpath location="ruby.platform"/>
             <buildpath location="o.jruby"/>
@@ -148,7 +152,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="runtests" description="Run Ruby tests">
-        <subant buildpath="ruby.platform:ruby:ruby.rhtml:ruby.project:ruby.railsprojects:ruby.testrunner"
+        <subant buildpath="ruby.platform:ruby:ruby.rhtml:ruby.project:ruby.railsprojects:ruby.testrunner:languages.yaml"
             target="test"
             inheritall="false"
             inheritrefs="false">
@@ -170,6 +174,7 @@ made subject to such option by the copyright holder.
                 <include name="ruby.project/${module.results}"/>
                 <include name="ruby.railsprojects/${module.results}"/>
                 <include name="ruby.testrunner/${module.results}"/>
+                <include name="languages.yaml/${module.results}"/>
             </fileset>
             <report format="frames" todir="${ruby.test.results}"/>
         </junitreport>

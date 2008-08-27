@@ -43,7 +43,6 @@ package org.netbeans.modules.glassfish.common.wizards;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -227,7 +226,7 @@ public class Retriever implements Runnable {
     
     private String getDownloadLocation() {
         URLConnection conn = null;
-        DataInputStream is = null;
+        BufferedReader reader = null;
         String result = defaultTargetUrl;
 
         if(locationUrl != null && locationUrl.length() > 0) {
@@ -239,16 +238,16 @@ public class Retriever implements Runnable {
                     conn = url.openConnection();
                     conn.setConnectTimeout(LOCATION_DOWNLOAD_TIMEOUT);
                     conn.setReadTimeout(LOCATION_DOWNLOAD_TIMEOUT);
-                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    while ((result = br.readLine()) != null) {
-                        return targetUrlPrefix + result; // we really just want the first line
+                    reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    while((result = reader.readLine()) != null) {
+                        return targetUrlPrefix + result; // Only need the the first line
                     }
                 } catch(Exception ex) {
                     Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 } finally {
                     try {
-                        if(is != null) {
-                            is.close();
+                        if( reader != null) {
+                             reader.close();
                         }
                     } catch (IOException ex) {
                         Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);

@@ -47,18 +47,18 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.text.Document;
-import org.jruby.ast.AliasNode;
-import org.jruby.ast.ArgumentNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.DAsgnNode;
-import org.jruby.ast.DVarNode;
-import org.jruby.ast.LocalAsgnNode;
-import org.jruby.ast.LocalVarNode;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.SymbolNode;
-import org.jruby.ast.types.INameNode;
+import org.jruby.nb.ast.AliasNode;
+import org.jruby.nb.ast.ArgumentNode;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.DAsgnNode;
+import org.jruby.nb.ast.DVarNode;
+import org.jruby.nb.ast.LocalAsgnNode;
+import org.jruby.nb.ast.LocalVarNode;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.SymbolNode;
+import org.jruby.nb.ast.types.INameNode;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.Error;
@@ -291,6 +291,9 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
     
     //@Override
     protected Problem fastCheckParameters(CompilationController info) {
+        if (targetName == null) {
+            return new Problem(true, "Cannot determine target name. Please file a bug with detailed information on how to reproduce (preferably including the current source file and the cursor position)");
+        }
         if (searchHandle.getKind() == ElementKind.METHOD) {
             return checkParametersForMethod(isFindOverridingMethods(), isFindUsages());
         } 
@@ -432,7 +435,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                 // Look in these files for the given classes
                 //findSubClass(root);
                 for (IndexedClass clz : subclasses) {
-                    RubyElementCtx matchCtx = new RubyElementCtx(clz, compiler);
+                    RubyElementCtx matchCtx = new RubyElementCtx(clz);
                     elements.add(refactoring, WhereUsedElement.create(matchCtx));
                 }
             } else if (isFindUsages()) {
@@ -646,6 +649,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                         RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                         elements.add(refactoring, WhereUsedElement.create(matchCtx));
                     }
+                    break;
                 }
                 case CONSTNODE:
                 case CONSTDECLNODE:
@@ -653,6 +657,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                         RubyElementCtx matchCtx = new RubyElementCtx(fileCtx, node);
                         elements.add(refactoring, WhereUsedElement.create(matchCtx));
                     }
+                    break;
                 }
             }
 

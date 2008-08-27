@@ -13,6 +13,7 @@ public:
         foo(a).doSomething();
         T::n::m;
     }
+    typename T::template Rebind<T> rebind;
 };
 
 template <template<typename> class T> class C {

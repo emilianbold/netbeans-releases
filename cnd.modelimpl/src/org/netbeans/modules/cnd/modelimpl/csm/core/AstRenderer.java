@@ -249,7 +249,9 @@ public class AstRenderer {
         if( typedefs != null ) {
             for (int i = 0; i < typedefs.length; i++) {
                 // It could be important to register in project before add as member...
-                file.getProjectImpl().registerDeclaration(typedefs[i]);
+//                if (!isRenderingLocalContext()) {
+                    file.getProjectImpl().registerDeclaration(typedefs[i]);
+//                }
                 if (container != null) {
                     container.addDeclaration(typedefs[i]);
                 }
@@ -398,6 +400,10 @@ public class AstRenderer {
                     break;
             }
         }
+        return false;
+    }
+
+    protected boolean isRenderingLocalContext() {
         return false;
     }
     
@@ -755,13 +761,14 @@ public class AstRenderer {
                 if( container != null ) {
                     container.addDeclaration(cfdi);
                 }
+                cfdi.init(ast, currentNamespace);
                 return true;
         }
                 
         return false;
     }
 
-    public static boolean renderForwardMemberDeclaration(
+    public boolean renderForwardMemberDeclaration(
             AST ast, 
             NamespaceImpl currentNamespace, MutableDeclarationsContainer container, 
             FileImpl file) {
@@ -784,11 +791,12 @@ public class AstRenderer {
         }
         if (child.getType() == CPPTokenTypes.LITERAL_template) {
             child = child.getNextSibling();
-            if( child == null ) {
-                return false;
-            }
         }
-        
+        child = getFirstSiblingSkipQualifiers(child);
+        if (child == null) {
+            return false;
+        }
+
         switch( child.getType() ) {
             case CPPTokenTypes.CSM_TYPE_COMPOUND:
             case CPPTokenTypes.CSM_TYPE_BUILTIN:
@@ -796,6 +804,7 @@ public class AstRenderer {
                 if (child != null){
                     if (child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION){
                         //static variable definition
+                        return renderVariable(ast, null, container);
                     } else {
                         //method forward declaratin
                         try {
@@ -1005,16 +1014,20 @@ public class AstRenderer {
     public boolean renderVariable(AST ast, MutableDeclarationsContainer namespaceContainer, MutableDeclarationsContainer container2) {
         boolean _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         AST typeAST = ast.getFirstChild();
-        AST tokType = getFirstChildSkipQualifiers(ast);
+        AST tokType = typeAST;
+        if (tokType != null && tokType.getType() == CPPTokenTypes.LITERAL_template) {
+            typeAST = tokType = tokType.getNextSibling();
+        }
+        tokType = getFirstSiblingSkipQualifiers(tokType);
         if( tokType == null ) {
             return false;
         }
         boolean isThisReference = false;
         if (tokType != null &&
-            tokType.getType() == CPPTokenTypes.LITERAL_struct ||
+            (tokType.getType() == CPPTokenTypes.LITERAL_struct ||
             tokType.getType() == CPPTokenTypes.LITERAL_union ||
             tokType.getType() == CPPTokenTypes.LITERAL_enum ||
-            tokType.getType() == CPPTokenTypes.LITERAL_class){
+            tokType.getType() == CPPTokenTypes.LITERAL_class)) {
             // This is struct/class word for reference on containing struct/class
             tokType = tokType.getNextSibling();
             typeAST = tokType;

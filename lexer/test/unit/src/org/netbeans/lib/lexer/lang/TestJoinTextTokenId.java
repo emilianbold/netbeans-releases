@@ -101,6 +101,9 @@ public enum TestJoinTextTokenId implements TokenId {
     public static final Language<TestJoinTextTokenId> inBackquotesLanguage
             = new LH("text/x-join-in-quotes").language();
             
+    public static final Language<TestJoinTextTokenId> inPercentsLanguage
+            = new LH("text/x-join-in-percents").language();
+            
     private static final class LH extends LanguageHierarchy<TestJoinTextTokenId> {
 
         private String mimeType;

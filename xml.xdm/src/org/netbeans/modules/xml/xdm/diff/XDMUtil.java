@@ -86,11 +86,11 @@ public class XDMUtil {
      */
     public String prettyPrintXML(String doc, String indentation) 
     throws UnsupportedEncodingException, IOException, BadLocationException {
-        Document sd1 = new BaseDocument(BaseKit.class, false);
+        Document sd1 = new BaseDocument(true, "text/xml"); //NOI18N
         XDMModel m1 = createXDMModel(sd1, doc);
         Node root1 = m1.getDocument();
         
-        Document sd2 = new BaseDocument(BaseKit.class, false);
+        Document sd2 = new BaseDocument(true, "text/xml"); //NOI18N
         XDMModel m2 = createXDMModel(sd2);
         m2.setPretty(true);
         m2.setIndentation(indentation);
@@ -160,14 +160,14 @@ public class XDMUtil {
     public List<Difference> compareXML(String firstDoc,  
             String secondDoc, ComparisonCriteria type, boolean filterWhiteSpace) 
     throws BadLocationException, IOException {
-        Document sd1 = new BaseDocument(BaseKit.class, false);
+        Document sd1 = new BaseDocument(true, "text/xml"); //NOI18N
         XDMModel m1 = createXDMModel(sd1);
         sd1.remove(0, XML_PROLOG.length());
         sd1.insertString(0, firstDoc, null);
         m1.sync();
         fDoc = m1.getDocument();        
         
-        Document sd2 = new BaseDocument(BaseKit.class, false);
+        Document sd2 = new BaseDocument(true, "text/xml"); //NOI18N
         sd2.getText(0, sd2.getLength());
         XDMModel m2 = createXDMModel(sd2);        
         sd2.remove(0, XML_PROLOG.length());

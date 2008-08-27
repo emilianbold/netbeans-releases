@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;

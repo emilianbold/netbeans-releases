@@ -62,13 +62,13 @@ import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.spi.DefaultError;
 import org.openide.util.Exceptions;
-import org.mozilla.javascript.CompilerEnvirons;
-import org.mozilla.javascript.ScriptOrFnNode;
-import org.mozilla.javascript.ErrorReporter;
-import org.mozilla.javascript.EvaluatorException;
-import org.mozilla.javascript.FunctionNode;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.CompilerEnvirons;
+import org.mozilla.nb.javascript.ScriptOrFnNode;
+import org.mozilla.nb.javascript.ErrorReporter;
+import org.mozilla.nb.javascript.EvaluatorException;
+import org.mozilla.nb.javascript.FunctionNode;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 
@@ -395,7 +395,7 @@ public class JsParser implements IncrementalParser {
             String source = context.source.substring(oldFunctionStart, newFunctionEnd);
             Sanitize sanitizing = Sanitize.NEVER;
             boolean sanitizedSource = false;
-            org.mozilla.javascript.Parser parser = createParser(context, source, sanitizedSource, sanitizing);
+            org.mozilla.nb.javascript.Parser parser = createParser(context, source, sanitizedSource, sanitizing);
             context.parser = parser;
 
             if (sanitizing == Sanitize.NONE) {
@@ -738,7 +738,7 @@ public class JsParser implements IncrementalParser {
             }
         }
 
-        org.mozilla.javascript.Parser parser = createParser(context, source, sanitizedSource, sanitizing);
+        org.mozilla.nb.javascript.Parser parser = createParser(context, source, sanitizedSource, sanitizing);
 
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = -1;
@@ -782,7 +782,7 @@ public class JsParser implements IncrementalParser {
         }
     }
 
-    protected org.mozilla.javascript.Parser createParser(final Context context, String source, boolean sanitizedSource, final Sanitize sanitizing) {
+    protected org.mozilla.nb.javascript.Parser createParser(final Context context, String source, boolean sanitizedSource, final Sanitize sanitizing) {
         final boolean ignoreErrors = sanitizedSource;
         
         CompilerEnvirons compilerEnv = new CompilerEnvirons();
@@ -814,7 +814,7 @@ public class JsParser implements IncrementalParser {
 
         // XXX What do I set here: compilerEnv.setReservedKeywordAsIdentifier();
 
-        org.mozilla.javascript.Context ctx = new org.mozilla.javascript.Context();
+        org.mozilla.nb.javascript.Context ctx = new org.mozilla.nb.javascript.Context();
         compilerEnv.initFromContext(ctx);
         
         compilerEnv.setErrorReporter(errorReporter);
@@ -822,7 +822,7 @@ public class JsParser implements IncrementalParser {
         final int targetVersion = SupportedBrowsers.getInstance().getLanguageVersion();
         compilerEnv.setLanguageVersion(targetVersion);
 
-        if (targetVersion >= org.mozilla.javascript.Context.VERSION_1_7) {
+        if (targetVersion >= org.mozilla.nb.javascript.Context.VERSION_1_7) {
             // Let's try E4X... why not?
             compilerEnv.setXmlAvailable(true);
         }
@@ -837,8 +837,8 @@ public class JsParser implements IncrementalParser {
         // The parser is NOT used for parsing here, but the Rhino scanner
         // calls into the parser for error messages. So we register our own error
         // handler for the parser and pass it into the tokenizer to handle errors.
-        org.mozilla.javascript.Parser parser;
-        parser = new org.mozilla.javascript.Parser(compilerEnv, errorReporter);
+        org.mozilla.nb.javascript.Parser parser;
+        parser = new org.mozilla.nb.javascript.Parser(compilerEnv, errorReporter);
         context.parser = parser;
 
         return parser;
@@ -975,7 +975,7 @@ public class JsParser implements IncrementalParser {
 
     /** Parsing context */
     public static class Context {
-        private org.mozilla.javascript.Parser parser;
+        private org.mozilla.nb.javascript.Parser parser;
         private final ParserFile file;
         private ParseListener listener;
         private int errorOffset;

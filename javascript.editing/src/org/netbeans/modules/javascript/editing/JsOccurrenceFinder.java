@@ -42,8 +42,8 @@ package org.netbeans.modules.javascript.editing;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
-import org.mozilla.javascript.Node;
-import org.mozilla.javascript.Token;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OccurrencesFinder;
@@ -52,6 +52,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -62,6 +63,7 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
+    private FileObject file;
 
     public JsOccurrenceFinder() {
     }
@@ -91,6 +93,13 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
 
         if (isCancelled()) {
             return;
+        }
+
+        FileObject currentFile = info.getFileObject();
+        if (currentFile != file) {
+            // Ensure that we don't reuse results from a different file
+            occurrences = null;
+            file = currentFile;
         }
 
         JsParseResult rpr = AstUtilities.getParseResult(info);

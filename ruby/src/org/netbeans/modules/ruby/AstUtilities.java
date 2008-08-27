@@ -54,31 +54,31 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.jruby.ast.AliasNode;
-import org.jruby.ast.ArgsCatNode;
-import org.jruby.ast.ArgsNode;
-import org.jruby.ast.ArgumentNode;
-import org.jruby.ast.AssignableNode;
-import org.jruby.ast.CallNode;
-import org.jruby.ast.ClassNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.Colon3Node;
-import org.jruby.ast.ConstNode;
-import org.jruby.ast.FCallNode;
-import org.jruby.ast.IScopingNode;
-import org.jruby.ast.ListNode;
-import org.jruby.ast.LocalAsgnNode;
-import org.jruby.ast.MethodDefNode;
-import org.jruby.ast.ModuleNode;
-import org.jruby.ast.MultipleAsgnNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.NodeType;
-import org.jruby.ast.SClassNode;
-import org.jruby.ast.StrNode;
-import org.jruby.ast.SymbolNode;
-import org.jruby.ast.VCallNode;
-import org.jruby.ast.types.INameNode;
-import org.jruby.lexer.yacc.ISourcePosition;
+import org.jruby.nb.ast.AliasNode;
+import org.jruby.nb.ast.ArgsCatNode;
+import org.jruby.nb.ast.ArgsNode;
+import org.jruby.nb.ast.ArgumentNode;
+import org.jruby.nb.ast.AssignableNode;
+import org.jruby.nb.ast.CallNode;
+import org.jruby.nb.ast.ClassNode;
+import org.jruby.nb.ast.Colon2Node;
+import org.jruby.nb.ast.Colon3Node;
+import org.jruby.nb.ast.ConstNode;
+import org.jruby.nb.ast.FCallNode;
+import org.jruby.nb.ast.IScopingNode;
+import org.jruby.nb.ast.ListNode;
+import org.jruby.nb.ast.LocalAsgnNode;
+import org.jruby.nb.ast.MethodDefNode;
+import org.jruby.nb.ast.ModuleNode;
+import org.jruby.nb.ast.MultipleAsgnNode;
+import org.jruby.nb.ast.Node;
+import org.jruby.nb.ast.NodeType;
+import org.jruby.nb.ast.SClassNode;
+import org.jruby.nb.ast.StrNode;
+import org.jruby.nb.ast.SymbolNode;
+import org.jruby.nb.ast.VCallNode;
+import org.jruby.nb.ast.types.INameNode;
+import org.jruby.nb.lexer.yacc.ISourcePosition;
 import org.jruby.util.ByteList;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.CompilationInfo;
@@ -281,6 +281,56 @@ public class AstUtilities {
             // Previous line
             offset--;
         }
+    }
+
+    public static Node getForeignNode(final IndexedElement o, final CompilationInfo[] foreignInfoHolder) {
+        FileObject fo = o.getFileObject();
+        if (fo == null) {
+            return null;
+        }
+
+        SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+        if (model == null) {
+            return null;
+        }
+
+        final Node[] nodeHolder = new Node[1];
+        try {
+            model.runUserActionTask(new CancellableTask<CompilationInfo>() {
+
+                public void cancel() {
+                }
+
+                public void run(CompilationInfo info) throws Exception {
+                    if (foreignInfoHolder != null) {
+                        assert foreignInfoHolder.length == 1;
+                        foreignInfoHolder[0] = info;
+
+                        Node root = AstUtilities.getRoot(info);
+
+                        if (root != null) {
+                            String signature = o.getSignature();
+
+                            if (signature != null) {
+                                Node node = AstUtilities.findBySignature(root, signature);
+
+                                // Special handling for "new" - these are synthesized from "initialize" methods
+                                if ((node == null) && "new".equals(o.getName())) { // NOI18N
+                                    signature = signature.replaceFirst("new", "initialize"); //NOI18N
+                                    node = AstUtilities.findBySignature(root, signature);
+                                }
+
+                                nodeHolder[0] = node;
+                            }
+                        }
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return nodeHolder[0];
     }
 
     public static Node getForeignNode(final IndexedElement o, Node[] foreignRootRet) {
@@ -1647,7 +1697,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                     }
 
                     public void run(CompilationInfo info) {
-                        org.jruby.ast.Node root = AstUtilities.getRoot(info);
+                        org.jruby.nb.ast.Node root = AstUtilities.getRoot(info);
 
                         if (root == null) {
                             return;
@@ -1658,7 +1708,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                             return;
                         }
 
-                        org.jruby.ast.MethodDefNode method =
+                        org.jruby.nb.ast.MethodDefNode method =
                             AstUtilities.findMethodAtOffset(root, astOffset);
 
                         if (method == null) {
@@ -1724,7 +1774,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
                     public void run(CompilationInfo info) {
                     try {
-                        org.jruby.ast.Node root = AstUtilities.getRoot(info);
+                        org.jruby.nb.ast.Node root = AstUtilities.getRoot(info);
                         if (root == null) {
                             return;
                         }
@@ -1817,13 +1867,13 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                     }
 
                     public void run(CompilationInfo info) {
-                        org.jruby.ast.Node root = AstUtilities.getRoot(info);
+                        org.jruby.nb.ast.Node root = AstUtilities.getRoot(info);
 
                         if (root == null) {
                             return;
                         }
 
-                        org.jruby.ast.Node method =
+                        org.jruby.nb.ast.Node method =
                             AstUtilities.findMethod(root, methodName, Arity.UNKNOWN);
 
                         if (method != null) {

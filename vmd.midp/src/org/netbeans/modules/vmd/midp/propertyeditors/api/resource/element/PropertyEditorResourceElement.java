@@ -79,6 +79,12 @@ public abstract class PropertyEditorResourceElement extends JPanel {
     // support for post setValue() action
     public void postSetValue(DesignComponent parentComponent, DesignComponent childComponent) {
     }
+    /**
+     * Look ad DesignPropertyEditor for more ifnormation
+     */
+    public boolean isResetToDefaultAutomatically(DesignComponent component) {
+        return true;
+    }
 
     // messageAwareness allows to show warning/error message in custom PropertyEditor
     public void setPropertyEditorMessageAwareness(PropertyEditorMessageAwareness messageAwareness) {
@@ -111,7 +117,18 @@ public abstract class PropertyEditorResourceElement extends JPanel {
         }
     }
     
+    /**
+     * When property editor sets to null
+     * @param component Design component of the property Editor
+     */
     public void nullValueSet(DesignComponent component) {
+    }
+    
+    /**
+     *It is invokes at the end of the customEditorResetToDefaultValue of the DesignpropertyEditor
+     * @param component Design component of the property Editor
+     */
+    public void preResetToDefaultValue(DesignComponent component) {
     }
 
     public static boolean isPropertyValueAUserCodeType(PropertyValue propertyValue) {

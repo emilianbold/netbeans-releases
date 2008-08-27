@@ -216,7 +216,7 @@ public class FKit extends NbEditorKit {
 	}
     }    
 
-    public static class CCDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
+    private static class CCDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
         @Override
         protected void checkIndentHotChars(JTextComponent target, String typedText) {
             BaseDocument doc = Utilities.getDocument(target);

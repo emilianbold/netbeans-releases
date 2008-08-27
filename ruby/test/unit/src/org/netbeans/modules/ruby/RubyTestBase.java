@@ -44,7 +44,7 @@ package org.netbeans.modules.ruby;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
-import org.jruby.ast.Node;
+import org.jruby.nb.ast.Node;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;

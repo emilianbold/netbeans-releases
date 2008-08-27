@@ -94,6 +94,10 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
  */
 public class CsmKindUtilities {
 
+    public static boolean isInstantiation(CsmObject obj) {
+        return obj instanceof CsmInstantiation;
+    }
+
     private CsmKindUtilities() {
         
     }

@@ -170,6 +170,9 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             locationButton.setText(component.getProperty(LOCATION_BUTTON_TEXT_PROPERTY));
             locationsLabel.setText(component.getProperty(LIST_LABEL_TEXT_PROPERTY));
             
+            //TODO
+            //? This should be set somewhere at the early stage otherwise Issue 144955 occurs.
+            //Now it is workarounded my checking model == null in LocationsComboBoxEditor.getItem()
             LocationsListModel model = new LocationsListModel(
                     component.getLocations(),
                     component.getLabels());
@@ -470,6 +473,9 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         
         public Object getItem() {
             final String text = textField.getText();
+            if(model == null) {
+                return text;
+            }
             final int index = model.getLocations().indexOf(text);
             
             if (index != -1) {

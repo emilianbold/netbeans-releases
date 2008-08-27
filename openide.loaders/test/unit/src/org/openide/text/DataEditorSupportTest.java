@@ -241,22 +241,6 @@ public class DataEditorSupportTest extends NbTestCase {
         env.fileLock.releaseLock();
     }
     
-    public void testFileEncodingQuery () throws Exception {
-        DES des = support();
-        FileEncodingQueryImpl.getDefault().reset();
-        StyledDocument doc = des.openDocument();
-        FileEncodingQueryImpl.getDefault().assertFile(
-            des.getDataObject().getPrimaryFile()
-        );
-        FileEncodingQueryImpl.getDefault().reset();
-        doc.insertString(doc.getLength(), " Added text.", null);
-        des.saveDocument();        
-        FileEncodingQueryImpl.getDefault().assertFile(
-            des.getDataObject().getPrimaryFile()
-        );
-        assertEquals(" Added text.", content);
-    }
-    
     /** File object that let us know what is happening and delegates to certain
      * instance variables of the test.
      */

@@ -541,7 +541,7 @@ public class ConfigurationMakefileWriter {
         }
         
         if (conf.getPackagingConfiguration().getFiles().getValue().size() > 0) {
-            bw.write("\t${RM} " + conf.getPackagingConfiguration().getOutputValue() + "\n"); // NOI18N
+            bw.write("\t${RM} -r " + conf.getPackagingConfiguration().getOutputValue() + "\n"); // NOI18N
         }
         
         writeSubProjectCleanTargets(conf, bw);
@@ -574,7 +574,7 @@ public class ConfigurationMakefileWriter {
     }
     
     public static String getObjectDir(MakeConfiguration conf) {
-        return MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + '/' + "${PLATFORM}"; // UNIX path
+        return MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + '/' + "${PLATFORM}"; // UNIX path // NOI18N
     }
     
     private String getObjectFiles(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf) {
@@ -661,6 +661,7 @@ public class ConfigurationMakefileWriter {
         }
         bw.write("OUTPUT_PATH=" + projectOutput + "\n"); // NOI18N
         bw.write("OUTPUT_BASENAME=" + IpeUtils.getBaseName(projectOutput) + "\n"); // NOI18N
+        bw.write("PACKAGE_TOP_DIR=" + (packagingConfiguration.getTopDirValue().length() > 0 ? packagingConfiguration.getTopDirValue() + "/" : "") + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Functions\n"); // NOI18N
@@ -696,7 +697,7 @@ public class ConfigurationMakefileWriter {
         bw.write("}\n"); // NOI18N
         
         bw.write("# Setup\n"); // NOI18N
-        bw.write("rm -f " + output + "\n"); // NOI18N
+        bw.write("rm -rf " + output + "\n"); // NOI18N
         if (outputDir != null && outputDir.length() > 0) {
             bw.write("mkdir -p " + outputDir + "\n"); // NOI18N
         }
@@ -780,16 +781,6 @@ public class ConfigurationMakefileWriter {
         bw.write("rm -rf $TMPDIR\n"); // NOI18N
     }
     
-    private String findInfoValueName(PackagingConfiguration packagingConfiguration, String name) {
-        List<InfoElement> infoList = packagingConfiguration.getHeader().getValue();
-        for (InfoElement elem : infoList) {
-            if (elem.getName().equals(name)) {
-                return elem.getValue();
-            }
-        }
-        return null;
-    }
-    
     private List<String> findUndefinedDirectories(PackagingConfiguration packagingConfiguration) {
         List<FileElement> fileList = packagingConfiguration.getFiles().getValue();
         HashSet set  = new HashSet();
@@ -798,7 +789,7 @@ public class ConfigurationMakefileWriter {
         // Already Defined
         for (FileElement elem : fileList) {
             if (elem.getType() == FileElement.FileType.DIRECTORY) {
-                String path = elem.getTo();
+                String path = packagingConfiguration.expandMacros(elem.getTo());
                 if (path.endsWith("/")) { // NOI18N
                     path = path.substring(0, path.length()-1);
                 }
@@ -808,7 +799,7 @@ public class ConfigurationMakefileWriter {
         // Do all sub dirrectories
         for (FileElement elem : fileList) {
             if (elem.getType() == FileElement.FileType.FILE || elem.getType() == FileElement.FileType.SOFTLINK) {
-                String path = IpeUtils.getDirName(elem.getTo());
+                String path = IpeUtils.getDirName(packagingConfiguration.expandMacros(elem.getTo()));
                 String base = ""; // NOI18N
                 if (path != null && path.length() > 0) {
                     StringTokenizer tokenizer = new StringTokenizer(path, "/"); // NOI18N
@@ -830,7 +821,7 @@ public class ConfigurationMakefileWriter {
     
     private void writePackagingScriptBodySVR4(BufferedWriter bw, MakeConfiguration conf) throws IOException {
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
-        String packageName = findInfoValueName(packagingConfiguration, "PKG"); // NOI18N // FIXUP: what is null????
+        String packageName = packagingConfiguration.findInfoValueName("PKG"); // NOI18N // FIXUP: what is null????
         
         bw.write("# Create pkginfo and prototype files\n"); // NOI18N
         bw.write("PKGINFOFILE=$TMPDIR/pkginfo\n"); // NOI18N
@@ -840,7 +831,7 @@ public class ConfigurationMakefileWriter {
         bw.write("cd \"$TOP\"\n"); // NOI18N
         List<InfoElement> infoList = packagingConfiguration.getHeader().getValue();
         for (InfoElement elem : infoList) {
-            bw.write("echo \'" + elem.getName() + "=\"" + elem.getValue() + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
+            bw.write("echo \'" + elem.getName() + "=\"" + packagingConfiguration.expandMacros(elem.getValue()) + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
         }
         bw.write("\n"); // NOI18N       
         bw.write("cd \"$TOP\"\n"); // NOI18N
@@ -898,9 +889,10 @@ public class ConfigurationMakefileWriter {
         bw.write("cd \"$TOP\"\n"); // NOI18N
         bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
-        bw.write("pkgtrans -s $TMPDIR tmp.pkg " + packageName + "\n"); // NOI18N
-        bw.write("checkReturnCode\n"); // NOI18N
-        bw.write("mv $TMPDIR/tmp.pkg"  + " " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+//        bw.write("pkgtrans -s $TMPDIR tmp.pkg " + packageName + "\n"); // NOI18N
+//        bw.write("checkReturnCode\n"); // NOI18N
+        bw.write("rm -rf " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "/" + packageName + "\n"); // NOI18N
+        bw.write("mv $TMPDIR/" + packageName  + " " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
         bw.write("\n"); // NOI18N
         

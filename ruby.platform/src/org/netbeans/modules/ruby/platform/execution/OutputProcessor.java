@@ -74,7 +74,7 @@ public class OutputProcessor implements OutputListener {
     private final int lineno;
     private final FileLocator fileLocator;
 
-    OutputProcessor(String file, int lineno, FileLocator fileLocator) {
+    public OutputProcessor(String file, int lineno, FileLocator fileLocator) {
         // TODO : columns?
         this.file = file;
         this.lineno = lineno < 0 ? 0 : lineno;

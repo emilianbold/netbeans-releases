@@ -360,12 +360,15 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (oldConf == null) {
             // What else can we do?
             firePropertiesChanged(getMakeConfigurationDescriptor().getProjectItems(), true, true, true);
+            MakeLogicalViewProvider.checkForChangedItems(getMakeConfigurationDescriptor().getProject(), null, null);
             return;
         }
         
         // Check compiler collection. Fire if different (IZ 131825)
-        if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName())) {
+        if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName()) || 
+                !oldMConf.getDevelopmentHost().getName().equals(newMConf.getDevelopmentHost().getName())) {
             fireFilesPropertiesChanged(); // firePropertiesChanged(getAllFiles(), true);
+            MakeLogicalViewProvider.checkForChangedItems(getMakeConfigurationDescriptor().getProject(), null, null);
             return;
         }
         

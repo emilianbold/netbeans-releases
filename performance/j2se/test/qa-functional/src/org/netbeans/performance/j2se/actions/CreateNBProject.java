@@ -149,7 +149,6 @@ public class CreateNBProject extends PerformanceTestCase {
     @Override
     public void close(){
         ProjectSupport.closeProject(project_name);
-//        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     /** Test could be executed internaly in IDE without XTest

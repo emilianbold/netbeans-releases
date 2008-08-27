@@ -67,7 +67,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
-import org.xml.sax.EntityResolver;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.JDBCMetaDataConfiguration;
@@ -76,7 +75,6 @@ import org.hibernate.cfg.reveng.OverrideRepository;
 import org.hibernate.cfg.reveng.ReverseEngineeringSettings;
 import org.hibernate.tool.hbm2x.HibernateMappingExporter;
 import org.hibernate.tool.hbm2x.POJOExporter;
-import org.hibernate.util.XMLHelper;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.util.CustomClassLoader;
@@ -97,9 +95,10 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
     private Project project;
     private WizardDescriptor wizardDescriptor;
     private HibernateRevengWizardHelper helper;
+    private HibernateRevengNameLocationWizardDescriptor nameLocationDescriptor;
     private HibernateRevengDbTablesWizardDescriptor dbTablesDescriptor;
     private HibernateRevengCodeGenWizardDescriptor codeGenDescriptor;
-    private WizardDescriptor.Panel<WizardDescriptor>[] panels;
+    private WizardDescriptor.Panel[] panels;
     private final String DEFAULT_REVENG_FILENAME = "hibernate.reveng"; // NOI18N
     private final String CATALOG_NAME = "match-catalog"; // NOI18N
     private final String EXCLUDE_NAME = "exclude"; // NOI18N
@@ -107,8 +106,6 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
     private final String MATCH_NAME = "match-name"; // NOI18N
     private final String resourceAttr = "resource"; // NOI18N
     private final String classAttr = "class"; // NOI18N
-    private XMLHelper xmlHelper;
-    private EntityResolver entityResolver;
     private Logger logger = Logger.getLogger(HibernateRevengWizard.class.getName());
 
     public static HibernateRevengWizard create() {
@@ -130,9 +127,10 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
                         };
 
             } else {
-                Project p = Templates.getProject(wizardDescriptor);
-                SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
-                WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
+                Project prj = Templates.getProject(wizardDescriptor);
+                
+                SourceGroup[] groups = ProjectUtils.getSources(prj).getSourceGroups(Sources.TYPE_GENERIC);
+                WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(prj, groups, nameLocationDescriptor);
 
                 panels = new WizardDescriptor.Panel[]{
                             targetChooser,
@@ -257,8 +255,10 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
         helper = new HibernateRevengWizardHelper(project);
 
         wiz.putProperty(PROP_HELPER, helper);
-        dbTablesDescriptor = new HibernateRevengDbTablesWizardDescriptor(project);
-        codeGenDescriptor = new HibernateRevengCodeGenWizardDescriptor(project, wizardDescriptor);
+        String wizardTitle = NbBundle.getMessage(HibernateRevengWizard.class, "Templates/Hibernate/HibernateReveng"); // NOI18N   
+        nameLocationDescriptor = new HibernateRevengNameLocationWizardDescriptor(project, wizardTitle);
+        dbTablesDescriptor = new HibernateRevengDbTablesWizardDescriptor(project, wizardTitle);
+        codeGenDescriptor = new HibernateRevengCodeGenWizardDescriptor(project, wizardTitle);
 
         if (Templates.getTargetFolder(wiz) == null) {
             HibernateFileLocationProvider provider = project != null ? project.getLookup().lookup(HibernateFileLocationProvider.class) : null;
@@ -288,11 +288,6 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             }
             ((TemplateWizard) wiz).setTargetName(targetName);
         }
-
-        String wizardBundleKey = "Templates/Hibernate/HibernateReveng";  // NOI18N
-
-        wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(HibernateRevengWizard.class, wizardBundleKey)); // NOI18N        
-
     }
 
     // Generates POJOs and hibernate mapping files based on a .reveng.xml file
@@ -336,7 +331,7 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
                 if (helper.getDomainGen()) {
                     handle.progress(NbBundle.getMessage(HibernateRevengWizard.class, "HibernateRevengCodeGenerationPanel_WizardProgress_GenPOJO"), 2); // NOI18N
                     POJOExporter exporter = new POJOExporter(cfg, outputDir);
-                    exporter.getProperties().setProperty("jdk", new Boolean(helper.getJavaSyntax()).toString());
+                    exporter.getProperties().setProperty("jdk5", new Boolean(helper.getJavaSyntax()).toString());
                     exporter.getProperties().setProperty("ejb3", new Boolean(helper.getEjbAnnotation()).toString());
                     exporter.start();
                 }
@@ -427,19 +422,19 @@ public class HibernateRevengWizard implements WizardDescriptor.ProgressInstantia
             HibernateReverseEngineering hre = hro.getHibernateReverseEngineering();
             ArrayList<Table> list = (ArrayList<Table>) helper.getSelectedTables().getTables();
             for (int i = 0; i < list.size(); i++) {
-                int index = hre.addTableFilter(true);
+                int ix = hre.addTableFilter(true);
                 if (helper.getCatalogName() != null && !"".equals(helper.getCatalogName())) {
-                    hre.setAttributeValue(hre.TABLE_FILTER, index, CATALOG_NAME, helper.getCatalogName());
+                    hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, CATALOG_NAME, helper.getCatalogName());
                 } else {
-                    hre.setAttributeValue(hre.TABLE_FILTER, index, CATALOG_NAME, null);
+                    hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, CATALOG_NAME, null);
                 }
                 if (helper.getSchemaName() != null && !"".equals(helper.getSchemaName())) {
-                    hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, helper.getSchemaName());
+                    hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, ATTRIBUTE_NAME, helper.getSchemaName());
                 } else {
-                    hre.setAttributeValue(hre.TABLE_FILTER, index, ATTRIBUTE_NAME, null);
+                    hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, ATTRIBUTE_NAME, null);
                 }
-                hre.setAttributeValue(hre.TABLE_FILTER, index, MATCH_NAME, list.get(i).getName());
-                hre.setAttributeValue(hre.TABLE_FILTER, index, EXCLUDE_NAME, null);
+                hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, MATCH_NAME, list.get(i).getName());
+                hre.setAttributeValue(HibernateReverseEngineering.TABLE_FILTER, ix, EXCLUDE_NAME, null);
 
             }
             hro.addReveng();

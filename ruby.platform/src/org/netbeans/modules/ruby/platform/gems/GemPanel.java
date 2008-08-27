@@ -208,10 +208,12 @@ public final class GemPanel extends JPanel {
         cancelRunningTasks();
         
         boolean paltformsAreBeingLoaded = PlatformComponentFactory.isLoadingPlatforms(platforms);
-        if (paltformsAreBeingLoaded || !getSelectedPlatform().hasRubyGemsInstalled()) {
+        if (paltformsAreBeingLoaded || getSelectedPlatform() == null || !getSelectedPlatform().hasRubyGemsInstalled()) {
             if (!paltformsAreBeingLoaded) {
                 gemHomeValue.setForeground(PlatformComponentFactory.INVALID_PLAF_COLOR);
-                gemHomeValue.setText(GemManager.getNotInstalledMessage());
+                gemHomeValue.setText(getSelectedPlatform() == null
+                        ? getMessage("GemPanel.select.valid.platform")
+                        : GemManager.getNotInstalledMessage());
             }
             updateList(INSTALLED, Collections.<Gem>emptyList());
             updateList(NEW, Collections.<Gem>emptyList());
@@ -219,20 +221,21 @@ public final class GemPanel extends JPanel {
             setEnabledGUI(false);
             hideProgressBars();
             oldRubyGemsText.setVisible(false);
-        } else {
-            GemManager gemManager = getGemManager();
-            oldRubyGemsText.setVisible(gemManager.hasOldRubyGemsVersion());
-            if (gemManager.hasOldRubyGemsVersion()) {
-                oldRubyGemsText.setText(getMessage("GemPanel.oldRubyGems.warning", gemManager.getRubyGemsVersion()));
-            }
-
-            assert gemManager != null : "gemManager must not be null";
-            allVersionsCheckbox.setEnabled(!gemManager.hasAncientRubyGemsVersion());
-
-            gemHomeValue.setText(getGemManager().getGemHome());
-            gemHomeValue.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
-            refreshAllGems();
+            return;
         }
+        
+        GemManager gemManager = getGemManager();
+        oldRubyGemsText.setVisible(gemManager.hasOldRubyGemsVersion());
+        if (gemManager.hasOldRubyGemsVersion()) {
+            oldRubyGemsText.setText(getMessage("GemPanel.oldRubyGems.warning", gemManager.getRubyGemsVersion()));
+        }
+
+        assert gemManager != null : "gemManager must not be null";
+        allVersionsCheckbox.setEnabled(!gemManager.hasAncientRubyGemsVersion());
+
+        gemHomeValue.setText(getGemManager().getGemHome());
+        gemHomeValue.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
+        refreshAllGems();
     }
 
     public void setFilter(String filter) {
@@ -267,7 +270,9 @@ public final class GemPanel extends JPanel {
         closed = true;
         removeFilterDocumentListeners();
         cancelRunningTasks();
-        RubyPreferences.getPreferences().put(LAST_PLATFORM_ID, getSelectedPlatform().getID());
+        if (getSelectedPlatform() != null) {
+            RubyPreferences.getPreferences().put(LAST_PLATFORM_ID, getSelectedPlatform().getID());
+        }
         super.removeNotify();
     }
     
@@ -447,6 +452,7 @@ public final class GemPanel extends JPanel {
 
     private void hideProgressBars() {
         hideLocalProgressBars();
+        hideRemoteProgressBars();
     }
     
     private void hideRemoteProgressBars() {

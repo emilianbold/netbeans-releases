@@ -68,6 +68,7 @@ import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -1674,7 +1675,8 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
                 List<String> buildInfo = BuildInfo.logBuildInfo();
                 if (buildInfo != null) {
-                    params.addAll(buildInfo);
+                    Collection<? super String> c = params;
+                    c.addAll(buildInfo);
                 }
             }
         }

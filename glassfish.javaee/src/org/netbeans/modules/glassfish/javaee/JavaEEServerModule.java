@@ -39,32 +39,41 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.glassfish.eecommon.api.LogHyperLinkSupport;
 import org.netbeans.modules.glassfish.spi.ProfilerCookie;
+import org.netbeans.modules.glassfish.spi.Recognizer;
+import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.RemoveCookie;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
 import org.openide.util.Lookup;
+import org.openide.windows.OutputListener;
 
 
 /**
  *
  * @author Peter Williams
  */
-public class JavaEEServerModule implements RemoveCookie, ProfilerCookie {
+public class JavaEEServerModule implements RemoveCookie, ProfilerCookie, RecognizerCookie {
 
     private final Lookup lookup;
     private final InstanceProperties instanceProperties;
+    private final LogHyperLinkSupport.AppServerLogSupport logSupport;
     
     JavaEEServerModule(Lookup instanceLookup, InstanceProperties ip) {
         lookup = instanceLookup;
         instanceProperties = ip;
+        logSupport = new LogHyperLinkSupport.AppServerLogSupport("", "/");
     }
 
     public InstanceProperties getInstanceProperties() {
         return instanceProperties;
     }
+    
     // ------------------------------------------------------------------------
     // RemoveCookie support
     // ------------------------------------------------------------------------
@@ -72,6 +81,9 @@ public class JavaEEServerModule implements RemoveCookie, ProfilerCookie {
         InstanceProperties.removeInstance(serverUri);
     }
 
+    // ------------------------------------------------------------------------
+    // ProfilerCookie support
+    // ------------------------------------------------------------------------
     public Object[] getData() {
         Profiler profiler = (Profiler) Lookup.getDefault().lookup(Profiler.class);
         Object[] retVal = new Object[2];
@@ -87,6 +99,25 @@ public class JavaEEServerModule implements RemoveCookie, ProfilerCookie {
         retVal[0] = settings.getJavaPlatform().getInstallFolders().iterator().next();
         retVal[1] = settings.getJvmArgs();
         return retVal;
+    }
+
+    // ------------------------------------------------------------------------
+    // RecognizerCookie support
+    // ------------------------------------------------------------------------
+    public Collection<? extends Recognizer> getRecognizers() {
+        return Collections.singleton(new Recognizer() {
+            public OutputListener processLine(String text) {
+                OutputListener result = null;
+                if(text.length() > 0 && !" ".equals(text)) {
+                    LogHyperLinkSupport.AppServerLogSupport.LineInfo lineInfo = 
+                            logSupport.analyzeLine(text);
+                    if(lineInfo != null && lineInfo.isError() && lineInfo.isAccessible()) {
+                        result = logSupport.getLink(lineInfo.message(), lineInfo.path(), lineInfo.line());
+                    }
+                }
+                return result;
+            }
+        });
     }
 
     // ------------------------------------------------------------------------

@@ -4,6 +4,7 @@
 cnd.editor/build/classes/org/netbeans/modules/cnd/editor/Bundle.properties
 form/external/beansbinding-1.2.1-doc.zip
 form/external/beansbinding-1.2.1.jar
+nbbuild/antsrc/org/netbeans/nbbuild/extlibs/external.pyc
 nbbuild/velocity.log
 websvc.saas.api/build/classes/org/netbeans/modules/websvc/saas/Bundle.properties
 websvc.saas.api/build/classes/org/netbeans/modules/websvc/saas/resources/layer.xml

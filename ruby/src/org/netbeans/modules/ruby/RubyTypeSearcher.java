@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.jruby.ast.Node;
+import org.jruby.nb.ast.Node;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
@@ -294,7 +294,7 @@ public class RubyTypeSearcher implements TypeSearcher {
         }
 
         public void open() {
-            Node node = AstUtilities.getForeignNode(element, null);
+            Node node = AstUtilities.getForeignNode(element, (Node[])null);
             
             if (node != null) {
                 NbUtilities.open(element.getFileObject(), node.getPosition().getStartOffset(), element.getName());

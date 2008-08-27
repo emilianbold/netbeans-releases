@@ -83,15 +83,14 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Peter Pis
  */
 public class SvnProperties implements ActionListener, DocumentListener {
-    
+
     private PropertiesPanel panel;
     private File root;
     private PropertiesTable propTable;
     private SvnProgressSupport support;
     private boolean loadedFromFile;
     private File loadedValueFile;
-    private Font fontTextArea;
-    
+
     /** Creates a ew instance of SvnProperties */
     public SvnProperties(PropertiesPanel panel, PropertiesTable propTable, File root) {
         this.panel = panel;
@@ -112,53 +111,53 @@ public class SvnProperties implements ActionListener, DocumentListener {
         initPropertyNameCbx();
         setLoadedFromFile(false);
         refreshProperties();
-        
+
     }
-    
+
     public PropertiesPanel getPropertiesPanel() {
         return panel;
     }
-    
+
     public void setPropertiesPanel(PropertiesPanel panel) {
         this.panel = panel;
     }
-    
+
     public File getRoot() {
         return root;
     }
-    
+
     public void setRoot(File root) {
         this.root = root;
     }
-    
+
     public void setLoadedValueFile(File file) {
         this.loadedValueFile = file;
     }
-    
+
     public File getLoadedValueFile() {
         return loadedValueFile;
     }
-    
+
     public void actionPerformed(ActionEvent event) {
         Object source = event.getSource();
-        
+
         if (source.equals(panel.btnRefresh)) {
             refreshProperties();
         }
-        
+
         if (source.equals(panel.btnAdd)) {
             setProperties();
         }
-        
+
         if (source.equals(panel.btnRemove)) {
             removeProperties();
         }
-        
+
         if (source.equals(panel.btnBrowse)) {
             loadFromFile();
         }
     }
-    
+
     protected void initPropertyNameCbx() {
         List<String> lstName = new ArrayList<String>(8);
         if (panel.comboName.isEditable()) {
@@ -171,18 +170,18 @@ public class SvnProperties implements ActionListener, DocumentListener {
                 lstName.add("svn:keywords");
                 lstName.add("svn:needs-lock");
                 lstName.add("svn:mime-type");
-            }   
-            
+            }
+
         }
         ComboBoxModel comboModel = new DefaultComboBoxModel(new Vector(lstName));
         panel.comboName.setModel(comboModel);
         panel.comboName.getEditor().setItem("");
     }
-    
+
     protected String getPropertyValue() {
         return panel.txtAreaValue.getText();
     }
-    
+
     protected String getPropertyName() {
         Object selectedItem = panel.comboName.getSelectedObjects()[0];
         if (selectedItem != null) {
@@ -191,15 +190,15 @@ public class SvnProperties implements ActionListener, DocumentListener {
             return selectedItem.toString().trim();
         }
     }
-    
+
     public boolean isLoadedFromFile() {
         return loadedFromFile;
     }
-    
+
     public void setLoadedFromFile(boolean value) {
         this.loadedFromFile = value;
     }
-    
+
     public void handleBinaryFile(File source) {
         setLoadedValueFile(source);
         StringBuffer txtValue = new StringBuffer();
@@ -210,12 +209,10 @@ public class SvnProperties implements ActionListener, DocumentListener {
         } catch (IOException ex) {
             Subversion.LOG.log(Level.SEVERE, null, ex);
         }
-        fontTextArea = panel.txtAreaValue.getFont();
-        panel.txtAreaValue.setFont(new Font("Monospaced", Font.ITALIC, 12));
         panel.txtAreaValue.setText(txtValue.toString());
-        setLoadedFromFile(true); 
+        setLoadedFromFile(true);
     }
-    
+
     public void loadFromFile() {
         final JFileChooser chooser = new AccessibleJFileChooser(NbBundle.getMessage(SvnProperties.class, "ACSD_Properties"));
         chooser.setDialogTitle(NbBundle.getMessage(SvnProperties.class, "CTL_Load_Value_Title"));
@@ -225,7 +222,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
             javax.swing.filechooser.FileFilter fileFilter = fileFilters[i];
             chooser.removeChoosableFileFilter(fileFilter);
         }
-        
+
         chooser.setCurrentDirectory(root.getParentFile()); // NOI18N
         chooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
             public boolean accept(File f) {
@@ -235,20 +232,20 @@ public class SvnProperties implements ActionListener, DocumentListener {
                 return "";
             }
         });
-        
-        chooser.setDialogType(JFileChooser.OPEN_DIALOG);        
+
+        chooser.setDialogType(JFileChooser.OPEN_DIALOG);
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(SvnProperties.class, "MNE_LoadValue").charAt(0));
         chooser.setApproveButtonText(NbBundle.getMessage(SvnProperties.class, "CTL_LoadValue"));
         DialogDescriptor dd = new DialogDescriptor(chooser, NbBundle.getMessage(SvnProperties.class, "CTL_Load_Value_Title"));
         dd.setOptions(new Object[0]);
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        
+
         chooser.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String state = e.getActionCommand();
                 if (state.equals(JFileChooser.APPROVE_SELECTION)) {
-                    File source = chooser.getSelectedFile();                    
-                  
+                    File source = chooser.getSelectedFile();
+
                     if (Utils.isFileContentText(source)) {
                         if (source.canRead()) {
                             StringWriter sw = new StringWriter();
@@ -260,7 +257,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
                             }
                         }
                     } else {
-                        handleBinaryFile(source);                        
+                        handleBinaryFile(source);
                     }
                 }
                 dialog.dispose();
@@ -269,16 +266,16 @@ public class SvnProperties implements ActionListener, DocumentListener {
         dialog.setVisible(true);
 
     }
-  
-    protected void refreshProperties() {        
+
+    protected void refreshProperties() {
         final SVNUrl repositoryUrl;
-        try {            
+        try {
             repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
-        }                         
-              
+        }
+
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
             support = new SvnProgressSupport() {
@@ -291,13 +288,13 @@ public class SvnProperties implements ActionListener, DocumentListener {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     }
-                    
+
                     try {
                         isvnProps = client.getProperties(root);
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
-                    }    
+                    }
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             SvnPropertiesNode[] svnProps = new SvnPropertiesNode[isvnProps.length];
@@ -305,14 +302,14 @@ public class SvnProperties implements ActionListener, DocumentListener {
                                 if (isvnProps[i] == null) {
                                     return;
                                 }
-                                String name = isvnProps[i].getName();                                    
+                                String name = isvnProps[i].getName();
                                 String value;
                                 if (SvnUtils.isBinary(isvnProps[i].getData())) {
                                     value = org.openide.util.NbBundle.getMessage(SvnProperties.class, "Binary_Content");
                                 } else {
-                                    String tmp = isvnProps[i].getValue();                                
-                                    value = tmp != null ? tmp : ""; 
-                                }    
+                                    String tmp = isvnProps[i].getValue();
+                                    value = tmp != null ? tmp : "";
+                                }
                                 svnProps[i] = new SvnPropertiesNode(name, value);
                             }
                             propTable.setNodes(svnProps);
@@ -325,15 +322,15 @@ public class SvnProperties implements ActionListener, DocumentListener {
             support = null;
         }
     }
-    
+
     public void setProperties() {
         final SVNUrl repositoryUrl;
-        try {            
+        try {
             repositoryUrl = SvnUtils.getRepositoryRootUrl(root);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
-        }                                         
+        }
 
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
@@ -347,22 +344,22 @@ public class SvnProperties implements ActionListener, DocumentListener {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     }
-                    
+
                     try {
                         if (isLoadedFromFile()) {
                             try {
                                 client.propertySet(root, getPropertyName(), getLoadedValueFile(), panel.cbxRecursively.isSelected());
-                            } catch (IOException ex) {  
+                            } catch (IOException ex) {
                                 Subversion.LOG.log(Level.SEVERE, null, ex);
                                 return;
-                            }  
+                            }
                         } else {
                             client.propertySet(root, getPropertyName(), getPropertyValue(), panel.cbxRecursively.isSelected());
                         }
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
-                    }    
+                    }
                     EventQueue.invokeLater(new Runnable() {
                         public void run() {
                             panel.comboName.getEditor().setItem("");
@@ -373,11 +370,11 @@ public class SvnProperties implements ActionListener, DocumentListener {
             };
             support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(SvnProperties.class, "LBL_Properties_Progress"));
         } finally {
-            support = null;   
+            support = null;
         }
         refreshProperties();
     }
-    
+
     public void removeProperties() {
         final SVNUrl repositoryUrl;
         try {
@@ -385,7 +382,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ex, true, true);
             return;
-        }                   
+        }
         final int[] rows = propTable.getSelectedItems();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
@@ -398,26 +395,26 @@ public class SvnProperties implements ActionListener, DocumentListener {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
                     }
-                    
+
                     try {
                         boolean recursively = panel.cbxRecursively.isSelected();
                         for (int i = rows.length - 1; i >= 0; i--) {
                             SvnPropertiesNode[] svnPropertiesNodes = propTable.getNodes();
                             List<SvnPropertiesNode> lstSvnPropertiesNodes = Arrays.asList(svnPropertiesNodes);
-                            String svnPropertyName = svnPropertiesNodes[propTable.getModelIndex(rows[i])].getName(); 
+                            String svnPropertyName = svnPropertiesNodes[propTable.getModelIndex(rows[i])].getName();
                             client.propertyDel(root, svnPropertyName, recursively);
                             try {
-                                lstSvnPropertiesNodes.remove(svnPropertiesNodes[propTable.getModelIndex(rows[i])]);                               
+                                lstSvnPropertiesNodes.remove(svnPropertiesNodes[propTable.getModelIndex(rows[i])]);
                             } catch (UnsupportedOperationException e) {
                             }
 
                             propTable.setNodes((SvnPropertiesNode[]) lstSvnPropertiesNodes.toArray());
                             //refreshProperties();
-                        }                      
+                        }
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
-                    }    
+                    }
                 }
             };
             support.start(rp, repositoryUrl, org.openide.util.NbBundle.getMessage(SvnProperties.class, "LBL_Properties_Progress"));
@@ -426,7 +423,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
         }
         refreshProperties();
     }
-    
+
     public void insertUpdate(DocumentEvent event) {
         validateUserInput(event);
     }
@@ -438,16 +435,15 @@ public class SvnProperties implements ActionListener, DocumentListener {
     public void changedUpdate(DocumentEvent event) {
         validateUserInput(event);
     }
-    
+
     private void validateUserInput(DocumentEvent event) {
-        
+
         Document doc = event.getDocument();
         synchronized (panel.txtAreaValue) {
             if (doc.equals(panel.txtAreaValue.getDocument())) {
                 if (isLoadedFromFile()) {
                    EventQueue.invokeLater(new Runnable() {
                         public void run() {
-                            panel.txtAreaValue.setFont(fontTextArea);
                             panel.txtAreaValue.setText("");
                         }
                    });
@@ -457,26 +453,26 @@ public class SvnProperties implements ActionListener, DocumentListener {
         }
         String name = panel.comboName.getEditor().getItem().toString().trim();
         String value = panel.txtAreaValue.getText().trim();
-        
+
         if (name.length() == 0 || value.length() == 0 || name.indexOf(" ") > 0) {
             panel.btnAdd.setEnabled(false);
         } else {
             panel.btnAdd.setEnabled(true);
         }
-        
+
         if (root.isFile()) {
             if (name.equals("svn:ignore") || name.equals("svn:externals")) {
                 panel.btnAdd.setEnabled(false);
-            }    
-        } else if (root.isDirectory()) { 
+            }
+        } else if (root.isDirectory()) {
             if (name.equals("svn:eol-style") || name.equals("svn:executable") || name.equals("svn:keywords") || name.equals("svn:needs-lock") || name.equals("svn:mime-type")) {
                 panel.btnAdd.setEnabled(false);
-            }    
-        }  
-    }    
-    
+            }
+        }
+    }
+
     public class TableMouseListener extends MouseAdapter {
-        
+
         @Override
         public void mouseClicked(MouseEvent event) {
             //super.mouseClicked(arg0);
@@ -485,8 +481,8 @@ public class SvnProperties implements ActionListener, DocumentListener {
                 SvnPropertiesNode[] svnPropertiesNodes = propTable.getNodes();
                 if (svnPropertiesNodes == null)
                     return;
-                final String svnPropertyName = svnPropertiesNodes[propTable.getModelIndex(rows[0])].getName(); 
-                final String svnPropertyValue = svnPropertiesNodes[propTable.getModelIndex(rows[0])].getValue(); 
+                final String svnPropertyName = svnPropertiesNodes[propTable.getModelIndex(rows[0])].getName();
+                final String svnPropertyValue = svnPropertiesNodes[propTable.getModelIndex(rows[0])].getValue();
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
                         panel.comboName.getEditor().setItem(svnPropertyName);

@@ -335,12 +335,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private final String clientTaskPrefix = "Code Model Client Request"; // NOI18N
     private static final String modelTaskPrefix = "Code Model Request Processor"; // NOI18N
     
-    public void enqueue(Runnable task, CharSequence name) {
-        enqueue(RequestProcessor.getDefault(), task, clientTaskPrefix + " :" + name); // NOI18N
+    public Cancellable enqueue(Runnable task, CharSequence name) {
+        return enqueue(RequestProcessor.getDefault(), task, clientTaskPrefix + " :" + name); // NOI18N
     }
 
-    public void enqueue(Runnable task) {
-        enqueue(RequestProcessor.getDefault(), task, clientTaskPrefix);
+    public Cancellable enqueue(Runnable task) {
+        return enqueue(RequestProcessor.getDefault(), task, clientTaskPrefix);
     }
 
     public static ModelImpl instance() {
@@ -649,7 +649,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         APTSystemStorage.getDefault().dispose();
     }
     
-    private Object lock = new Object();
+    private final Object lock = new Object();
     
     /** maps platform project to project */
     private Map<Object, CsmUID<CsmProject>> platf2csm = new HashMap<Object, CsmUID<CsmProject>>();

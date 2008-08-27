@@ -87,6 +87,11 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("iz143977_3.cc", 23, 36, "iz143977_3.cc", 12, 9);
     }
     
+    public void testIZ103462_1() throws Exception {
+        // IZ#103462: Errors in template typedef processing:   'first' and 'second' are missed in Code Completion listbox
+        performTest("iz103462_first_and_second_1.cc", 21, 16, "iz103462_first_and_second_1.cc", 3, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

@@ -118,6 +118,22 @@ final class TestJoinTopLexer implements Lexer<TestJoinTopTokenId> {
                 }
                 // break;
 
+            case '%':
+                if (input.readLength() > 1) {
+                    input.backup(1);
+                    return token(TestJoinTopTokenId.TEXT);
+                }
+                while (true) {
+                    switch ((c = input.read())) {
+                        case '%':
+                            return token(TestJoinTopTokenId.PERCENTS);
+                        case EOF:
+                            // Return PERCENTS even in case there is no closing '%'
+                            return token(TestJoinTopTokenId.PERCENTS);
+                    }
+                }
+                // break;
+
             case EOF: // no more chars on the input
                 return null; // the only legal situation when null can be returned
 
@@ -127,6 +143,7 @@ final class TestJoinTopLexer implements Lexer<TestJoinTopTokenId> {
                         case '<':
                         case '{':
                         case '"':
+                        case '%':
                         case EOF:
                             input.backup(1);
                             return token(TestJoinTopTokenId.TEXT);
