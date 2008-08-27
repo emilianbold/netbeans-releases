@@ -118,7 +118,6 @@ public class AddNewXMLDocument extends PerformanceTestCase {
     
     @Override
     public void close(){
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     public static Test suite() {
@@ -127,6 +126,7 @@ public class AddNewXMLDocument extends PerformanceTestCase {
             .addTest("measureTime")
             .enableModules(".*")
             .clusters(".*")
+            .reuseUserDir(true)
         );    
     }
 }

@@ -52,8 +52,11 @@ import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
+import org.netbeans.modules.cnd.api.model.CsmModelStateListener;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
@@ -72,10 +75,11 @@ public abstract class CsmFileTaskFactory {
     private final Map<CsmFile, Pair> csm2task = new HashMap<CsmFile, Pair>();
     private final ProgressListener progressListener = new ProgressListener();
     private final ModelListener modelListener = new ModelListener();
-
+   
     protected CsmFileTaskFactory() {
         CsmListeners.getDefault().addProgressListener(progressListener);
         CsmListeners.getDefault().addModelListener(modelListener);
+        CsmStandaloneFileProvider.getDefault();
     }
 
     protected abstract PhaseRunner createTask(FileObject fo);
@@ -130,7 +134,10 @@ public abstract class CsmFileTaskFactory {
                     continue;
                 }
                 CsmFile csmFile = CsmUtilities.getCsmFile(fileObject, false);
-
+                if (csmFile == null) {
+                    csmFile = CsmStandaloneFileProvider.getDefault().getCsmFile(fileObject);
+                }
+                
                 if (csmFile != null) {
                     PhaseRunner task = createTask(fileObject);
                     Pair pair = new Pair(task);
@@ -154,6 +161,7 @@ public abstract class CsmFileTaskFactory {
                 }
                 post(e.getValue(), e.getKey(), PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
             }
+            CsmStandaloneFileProvider.getDefault().notifyClosed(e.getKey());
         }
 
         for (Entry<CsmFile, Pair> e : toAdd.entrySet()) {

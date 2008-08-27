@@ -36,18 +36,58 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.hibernate.wizards;
 
-package org.netbeans.modules.websvc.core.jaxwsstack;
-
-import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
 /**
  *
- * @author mkuchtiak
+ * @author Dongmei Cao
  */
-public final class IdeJaxWsStack extends AbstractJaxWsStack {
+public class HibernateRevengNameLocationWizardDescriptor implements WizardDescriptor.Panel<WizardDescriptor> {
+
+    private JPanel component;
+    private String title;
+
+    public HibernateRevengNameLocationWizardDescriptor(Project project, String title) {
+        this.title = title;
+    }
+
+    public JPanel getComponent() {
+        if (component == null) {
+            component = new JPanel();
+
+        }
+        return component;
+    }
+
+    public HelpCtx getHelp() {
+        return new HelpCtx(HibernateRevengNameLocationWizardDescriptor.class);
+    }
+
     
-    public WSStackVersion getVersion() {
-        return WSStackVersion.valueOf(2,1,4,0);
+    public void readSettings(WizardDescriptor settings) {
+        settings.putProperty("NewFileWizard_Title", title);
+    }
+
+    public boolean isValid() {
+        return true;
+    }
+
+    public void storeSettings(WizardDescriptor settings) {
+    }
+
+    public void stateChanged(ChangeEvent event) {
+    }
+
+    public void addChangeListener(ChangeListener l) {
+    }
+
+    public void removeChangeListener(ChangeListener l) {
     }
 }

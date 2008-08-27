@@ -88,10 +88,14 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.websvc.core.WSStackUtils;
 import org.netbeans.modules.websvc.jaxwsruntimemodel.JavaWsdlMapper;
 import org.netbeans.modules.websvc.wsitconf.ui.service.profiles.UsernameAuthenticationProfile;
 import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.KeystorePanel;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
@@ -341,16 +345,20 @@ public class Util {
     }
     
     public static final boolean isWsitSupported(Project p) {
-
-        // check if the wsimport class is already present - this means we don't need to add the library
+        // check if the Policy class is already present - this means we don't need to add the library
         SourceGroup[] sgs = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
         FileObject wsimportFO = classPath.findResource("com/sun/xml/ws/policy/Policy.class"); // NOI18N
-        
         if (wsimportFO == null) {
             J2eePlatform j2eePlatform = getJ2eePlatform(p);
             if (j2eePlatform != null) {
-                return j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT); //NOI18N
+                Collection<WSStack> wsStacks = (Collection<WSStack>)
+                        j2eePlatform.getLookup().lookupAll(WSStack.class);
+                for (WSStack stack : wsStacks) {
+                    if (stack.isFeatureSupported(JaxWs.Feature.WSIT)) {
+                        return true;
+                    }
+                }
             }
         }
         return true;
@@ -359,7 +367,11 @@ public class Util {
     public static J2eePlatform getJ2eePlatform(Project project) {
         String serverInstanceID = getServerInstanceID(project);
         if ((serverInstanceID != null) && (serverInstanceID.length() > 0)) {
-            return Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            try {
+                return Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
+            } catch (InstanceRemovedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return null;
     }

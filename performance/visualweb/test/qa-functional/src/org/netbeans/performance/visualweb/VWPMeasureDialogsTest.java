@@ -54,6 +54,7 @@ import org.netbeans.performance.visualweb.dialogs.PageStyleSheetDialog;
 import org.netbeans.performance.visualweb.dialogs.PageFragmentBoxDialog;
 import org.netbeans.performance.visualweb.dialogs.VirtualFormsDialog;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 
 /**
@@ -64,6 +65,8 @@ import org.netbeans.junit.NbTestSuite;
 
 public class VWPMeasureDialogsTest {
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Dialogs suite");
         System.setProperty("suitename", "org.netbeans.performance.visualweb.VWPMeasureDialogsTest");
 
