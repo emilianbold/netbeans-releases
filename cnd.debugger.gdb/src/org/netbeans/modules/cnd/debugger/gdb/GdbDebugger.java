@@ -1160,17 +1160,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
 
             // Now process the version information
-            int first = msg.indexOf('.');
-            int next = msg.indexOf('.', first + 1);
-            try {
-                if (next == -1) {
-                    gdbVersion = Double.parseDouble(msg.substring(8));
-                } else {
-                    gdbVersion = Double.parseDouble(msg.substring(8, next));
-                }
-            } catch (NumberFormatException ex) {
-                log.warning("GdbDebugger: Failed to parse version string");
-            }
+            gdbVersion = parseGdbVersionString(msg.substring(8));
             if (msg.contains("cygwin")) { // NOI18N
                 cygwin = true;
             }
@@ -2533,6 +2523,33 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private boolean isAttaching() {
         ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
         return pae.getID() == DEBUG_ATTACH;
+    }
+    
+    private double parseGdbVersionString(String msg) {
+        double ver = 0.0;
+        int first = msg.indexOf('.');
+        int last = first + 1;
+        
+        try {
+            while (last < msg.length() && Character.isDigit(msg.charAt(last))) {
+                last++;
+            }
+            ver = Double.parseDouble(msg.substring(0, last));
+        } catch (Exception ex) {
+            log.warning("GdbDebugger: Failed to parse version string [" + ex.getClass().getName() + "]");
+            if (msg.contains("6.5")) { // NOI18N
+                ver = 6.5;
+            } else if (msg.contains("6.6")) { // NOI18N
+                ver = 6.6;
+            } else if (msg.contains("6.7")) { // NOI18N
+                ver = 6.7;
+            } else if (msg.contains("6.8")) { // NOI18N
+                ver = 6.8;
+            } else {
+                log.warning("GdbDebugger: Failed to guess version string");
+            }
+        }
+        return ver;
     }
     
     public class ShareInfo {

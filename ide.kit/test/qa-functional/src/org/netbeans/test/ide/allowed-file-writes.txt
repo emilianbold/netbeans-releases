@@ -8,6 +8,7 @@ var/log/uigestures
 var/cache
 var/cache/lastModified
 var/cache/lastModified/all-checksum.txt
+var/cache/all-manifest.dat
 
 
 config

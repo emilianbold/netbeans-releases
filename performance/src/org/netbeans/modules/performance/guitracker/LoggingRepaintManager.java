@@ -122,13 +122,14 @@ public class LoggingRepaintManager extends RepaintManager {
      * @param w width of the region
      * @param h hieght of the region
      */
+    @Override
     public void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
         synchronized (this) {
             String log = c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
 
-            // fix for issue 73361, It looks like the biggest cursor is on Sol 10 (10,19) in textfields
+            // fix for issue 73361, It looks like the biggest cursor is on Sol 10 (11,19) in textfields
             // of some dialogs
-            if (w > 10 || h > 19) { // painted region isn't cursor (or painted region is greater than cursor)
+            if (w > 11 || h > 19) { // painted region isn't cursor (or painted region is greater than cursor)
                 if (regionFilters != null && !acceptedByRegionFilters(c)) {
                     tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "IGNORED DirtyRegion: " + log);
                 } else { // no filter || accepted by filter =>  measure it
@@ -261,12 +262,13 @@ public class LoggingRepaintManager extends RepaintManager {
     /**
      * Log the action when dirty regions are painted.
      */
+    @Override
     public void paintDirtyRegions() {
         super.paintDirtyRegions();
         //System.out.println("Done superpaint ("+tr+","+hasDirtyMatches+").");
         if (tr != null && hasDirtyMatches) {
             lastPaint = System.nanoTime();
-            tr.add(tr.TRACK_PAINT, "PAINTING - done");
+            tr.add(ActionTracker.TRACK_PAINT, "PAINTING - done");
             //System.out.println("Done painting - " +tr);
             hasDirtyMatches = false;
         }
@@ -295,7 +297,7 @@ public class LoggingRepaintManager extends RepaintManager {
         long first = current;
         while ((ActionTracker.nanoToMili(current - lastPaint) < timeout) || ((lastPaint == 0L) && afterPaint)) {
             try {
-                Thread.currentThread().sleep(Math.min(ActionTracker.nanoToMili(current - lastPaint) + 20, timeout));
+                Thread.sleep(Math.min(ActionTracker.nanoToMili(current - lastPaint) + 20, timeout));
             } catch (InterruptedException e) {
                 e.printStackTrace(System.err);
             }

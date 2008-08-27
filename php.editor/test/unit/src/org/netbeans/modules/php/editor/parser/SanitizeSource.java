@@ -74,6 +74,46 @@ public class SanitizeSource extends ParserTestBase {
         performTest("sanitize003");
     }
 
+    public void testMissingEndCurly() throws Exception {
+        // one } at the end
+        performTest("sanitize/curly01");
+    }
+
+    public void testMissingEndCurly2() throws Exception {
+        // more } at the end
+        performTest("sanitize/curly02");
+    }
+    
+    public void testMissingEndCurly3() throws Exception {
+        // more } at the end without end php ?> 
+        performTest("sanitize/curly03");
+    }
+    
+    public void testMissingEndCurly4() throws Exception {
+        // inner functions
+        performTest("sanitize/curly04");
+    }
+
+    public void testMissingEndCurly5() throws Exception {
+        // non finished class and method and blog
+        performTest("sanitize/curly05");
+    }
+    
+    public void testMissingEndCurly6() throws Exception {
+        // non finished class and method and blog 2
+        performTest("sanitize/curly06");
+    }
+    
+    public void testMissingEndCurly7() throws Exception {
+        // non finieshed class and method
+        performTest("sanitize/curly07");
+    }
+    
+    public void testMissingEndCurly8() throws Exception {
+        // non finished class
+        performTest("sanitize/curly08");
+    }
+    
     @Override
     protected String getTestResult(String filename) throws Exception {
         CompilationInfo info = getInfo("testfiles/" + filename + ".php");

@@ -44,6 +44,7 @@ package org.netbeans.performance.languages;
 
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.windows.AddJavaScriptLibraryDialog;
 import org.netbeans.performance.languages.windows.PhpPropertiesDialog;
 import org.netbeans.performance.languages.windows.RailsGeneratorDialog;
@@ -56,6 +57,8 @@ import org.netbeans.performance.languages.windows.RubyPropertiesDialog;
  */
 public class ScriptingMeasureDialogsTest {
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Dialogs suite");
         System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureDialogsTest");
 

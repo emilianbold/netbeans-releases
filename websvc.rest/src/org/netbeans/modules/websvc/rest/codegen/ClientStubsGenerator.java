@@ -291,13 +291,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         if(pHandle != null)
             initProgressReporting(pHandle, false);
+        Project targetPrj = FileOwnerQuery.getOwner(getRootFolder());
         this.model = new ClientStubModel();
         if(p != null) {
             getModel().buildModel(p);
             String url = findBaseUrl(p);
             if(url == null)
                 url = getDefaultBaseUrl();
-            Project targetPrj = FileOwnerQuery.getOwner(getRootFolder());
             String proxyUrl2 = findBaseUrl(targetPrj);
             if(proxyUrl2 == null)
                 proxyUrl2 = url;
@@ -309,7 +309,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 path = path.substring(0, path.length()-2);
             setBaseUrl((url.endsWith("/")?url:url+"/") + getProjectName() + (path.startsWith("/")?path:"/"+path));
             setProxyUrl((proxyUrl2.endsWith("/")?proxyUrl2:proxyUrl2+"/") + ProjectUtils.getInformation(targetPrj).getName() + PROXY_URL);
-            setBaseEncoding(findBaseEncoding(p));
         } else if(wis != null) {
             String url = getModel().buildModel(wis);
             if(url == null)
@@ -318,6 +317,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             setProxyUrl(url+".."+PROXY_URL);
             this.projectName = getApplicationNameFromUrl(url);
         }
+        setBaseEncoding(findBaseEncoding(targetPrj));
         List<Resource> resourceList = getModel().getResources();
         
         rjsDir = getStubFolder();
