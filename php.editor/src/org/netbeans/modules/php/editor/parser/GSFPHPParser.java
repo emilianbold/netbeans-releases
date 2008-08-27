@@ -136,9 +136,21 @@ public class GSFPHPParser implements Parser {
                 boolean ok = true;
                 for (Statement statement : statements) {
                     if (statement instanceof ASTError) {
-                        // if there is an errot, try to sanitize 
-                        ok = false;
-                        break;
+                        // if there is an errot, try to sanitize only if there 
+                        // is a class or function inside the error
+                        String errorCode = "<?" + source.substring(statement.getStartOffset(), statement.getEndOffset()) + "?>";
+                        ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), false);
+                        Symbol token = fcScanner.next_token();
+                        while (token.sym != ASTPHP5Symbols.EOF) {
+                            if (token.sym == ASTPHP5Symbols.T_CLASS || token.sym == ASTPHP5Symbols.T_FUNCTION) {
+                                ok = false;
+                                break;
+                            }
+                            token = fcScanner.next_token();
+                        }
+                        if (!ok) {
+                            break;
+                        }
                     }
                 }
                 if (ok) {
