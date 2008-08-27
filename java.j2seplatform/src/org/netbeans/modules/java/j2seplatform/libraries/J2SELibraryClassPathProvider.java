@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.j2seplatform.libraries;
 
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.project.libraries.Library;
@@ -94,11 +95,35 @@ public class J2SELibraryClassPathProvider implements ClassPathProvider {
                     }
                 }
             } catch (final IllegalArgumentException e) {
-                final IllegalArgumentException ne = new IllegalArgumentException("LibraryImplementation:["+lib.getClass().getName()+"] returned wrong root:" + e.getMessage());
+                final IllegalArgumentException ne = new IllegalArgumentException("LibraryImplementation:["+getImplClassName(lib)+"] returned wrong root:" + e.getMessage());
                 Exceptions.printStackTrace(ne.initCause(e));
             }
         }
         return null;
+    }
+    
+    private static String getImplClassName (final Library lib) {
+        String result = ""; //NOI18N
+        try {
+            final Class cls = lib.getClass();
+            final Field fld = cls.getDeclaredField("impl"); //NOI18N
+            if (fld != null) {                            
+                fld.setAccessible(true);
+                Object res = fld.get(lib);                            
+                if (res != null) {
+                    result = res.getClass().getName();
+                }
+            }
+        } catch (NoSuchFieldException noSuchFieldException) {
+            //Not needed
+        } catch (SecurityException securityException) {
+            //Not needed
+        } catch (IllegalArgumentException illegalArgumentException) {
+            //Not needed
+        } catch (IllegalAccessException illegalAccessException) {
+            //Not needed
+        }
+        return result;
     }
     
             
