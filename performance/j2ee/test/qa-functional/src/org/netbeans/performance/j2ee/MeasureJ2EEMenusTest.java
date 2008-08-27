@@ -45,6 +45,7 @@ package org.netbeans.performance.j2ee;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.j2ee.menus.*;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 
 
 /**
@@ -56,6 +57,8 @@ public class MeasureJ2EEMenusTest  {
 
  
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Menus suite");
         System.setProperty("suitename", "org.netbeans.performance.j2ee.MeasureJ2EEMenusTest");
 

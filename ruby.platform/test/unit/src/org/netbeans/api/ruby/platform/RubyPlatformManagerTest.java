@@ -110,8 +110,10 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
     }
 
     public void testPlatformDetection() throws Exception {
-        // sanity-check test
+        RubyPlatformManager.removePlatform(RubyPlatformManager.getDefaultPlatform());
+        assertEquals("no platform", 0, RubyPlatformManager.getPlatforms().size());
         RubyPlatformManager.performPlatformDetection();
+        assertTrue("platforms detected", RubyPlatformManager.getPlatforms().size() > 0);
     }
 
     public void testAddInvalidPlatform() throws Exception { // #125296

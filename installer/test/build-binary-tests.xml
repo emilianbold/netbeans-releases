@@ -55,6 +55,7 @@
     </target>
     <target name="run-binary-tests">
         <echo>Binary test run</echo>
+        <!-- XXX consider using lastStableBuild here -->
         <get src="http://deadlock.netbeans.org/hudson/job/test-compilation/lastSuccessfulBuild/artifact/nbbuild/build/testdist.zip" 
             dest="${xtest.tmpdir}/testdist.zip"
             verbose="true"/>

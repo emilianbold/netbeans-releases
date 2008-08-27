@@ -119,11 +119,7 @@ public class SvnClientFactory {
      * Resets the SvnClientFactory instance
      */
     public synchronized static void reset() {
-        if(instance == null) {
-            init(); // calls setup
-        } else {
-            instance.setup();
-        }
+        instance = null;
     }
 
     public static boolean isCLI() {

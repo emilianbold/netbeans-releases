@@ -104,11 +104,20 @@ public final class GemPanel extends JPanel {
     private static final String LAST_PLATFORM_ID = "gemPanelLastPlatformID"; // NOI18N
     
     static enum TabIndex { 
-        UPDATED(0), INSTALLED(1), NEW(2);
+        UPDATED(0, "GemPanel.updatedPanel.TabConstraints.tabTitle"), // NOI18N
+        INSTALLED(1, "GemPanel.installedPanel.TabConstraints.tabTitle"), // NOI18N
+        NEW(2, "GemPanel.newPanel.TabConstraints.tabTitle"); // NOI18N
         
         private final int position;
-        TabIndex(final int position) { this.position = position; }
+        private final String title;
+
+        TabIndex(final int position, final String titleKey) {
+            this.position = position;
+            this.title = getMessage(titleKey);
+        }
+
         private int getPosition() { return position; }
+        private String getTitle() { return title; }
     }
     
     private RequestProcessor updateTasksQueue;
@@ -501,13 +510,7 @@ public final class GemPanel extends JPanel {
         setEnabled(tab, true);
     }
     
-    private void setTabTitle(TabIndex tab, GemListModel model) {
-        String tabTitle = gemsTab.getTitleAt(tab.getPosition());
-        String originalTabTitle = tabTitle;
-        int index = tabTitle.lastIndexOf('(');
-        if (index != -1) {
-            tabTitle = tabTitle.substring(0, index);
-        }
+    private void setTabTitle(final TabIndex tab, final GemListModel model) {
         int allSize = model.getAllSize();
         int nOfGems = model.getSize();
         String count;
@@ -516,10 +519,8 @@ public final class GemPanel extends JPanel {
         } else {
             count = Integer.toString(allSize);
         }
-        tabTitle = tabTitle + "(" + count + ")"; // NOI18N
-        if (!tabTitle.equals(originalTabTitle)) {
-            gemsTab.setTitleAt(tab.getPosition(), tabTitle);
-        }
+        String tabTitle = tab.getTitle() + '(' + count + ')';
+        gemsTab.setTitleAt(tab.getPosition(), tabTitle);
     }
 
     /** Return whether any gems were modified - roots should be recomputed after panel is taken down */
@@ -1233,7 +1234,7 @@ public final class GemPanel extends JPanel {
         setEnabledLocalsGUI(false);
         showProgressBar(installedList, installedDesc, installedProgress, installedProgressLabel);
         installedList.setModel(emptyGemListModel);
-        setTabTitle(INSTALLED, emptyGemListModel);
+        gemsTab.setTitleAt(INSTALLED.getPosition(), INSTALLED.getTitle() + "(-)"); // NOI18N
 
         final GemManager gemManager = getGemManager();
         Runnable updateTask = new Runnable() {
@@ -1283,8 +1284,8 @@ public final class GemPanel extends JPanel {
         showProgressBar(updatedList, updatedDesc, updatedProgress, updatedProgressLabel);
         newList.setModel(emptyGemListModel);
         updatedList.setModel(emptyGemListModel);
-        setTabTitle(NEW, emptyGemListModel);
-        setTabTitle(UPDATED, emptyGemListModel);
+        gemsTab.setTitleAt(NEW.getPosition(), NEW.getTitle() + "(-)"); // NOI18N
+        gemsTab.setTitleAt(UPDATED.getPosition(), UPDATED.getTitle() + "(-)"); // NOI18N
 
         final GemManager gemManager = getGemManager();
         Runnable updateTask = new Runnable() {

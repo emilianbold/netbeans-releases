@@ -610,6 +610,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public boolean allowModifyMode() {
         return false;
     }
+
+
+    public boolean requireLegalArtifactSaving() {     
+       return false;                                   
+    }    
     
 /////////////////////////////////////////////////////////////////////////////////
 // Constants

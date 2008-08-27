@@ -115,11 +115,14 @@ public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnn
 
     @Override
     public void engineRemoved(DebuggerEngine engine){
+        assert engine != null;
+
         /* Remove the engine */
         Map<NbJSURIBreakpoint, Annotation> map = engineToBreakpointsToAnnotations.get(engine);
-
-        for (Entry<NbJSURIBreakpoint, Annotation> entry : map.entrySet()){
-            lingeringAnnotations.put(entry.getValue(), entry.getKey());
+        if ( map != null ){
+            for (Entry<NbJSURIBreakpoint, Annotation> entry : map.entrySet()){
+                lingeringAnnotations.put(entry.getValue(), entry.getKey());
+            }
         }
         engineToBreakpointsToAnnotations.remove(engine);
         

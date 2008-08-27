@@ -9,7 +9,7 @@
 
 <%--CC
 <h:inputText value="#{|}"/>
-cookie
+cookie[]
 <h:inputText value="#{cookie[]}"/>
 --%>
 
@@ -22,7 +22,7 @@ MyBean MyBean
 
 <%--CC
 <h:outputText value="#{MyBean.|}" title="Hi" />
-name String
+String name
 <h:outputText value="#{MyBean.name}" title="Hi" />
 --%>
 

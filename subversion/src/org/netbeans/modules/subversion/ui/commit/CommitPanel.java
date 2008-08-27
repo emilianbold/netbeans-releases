@@ -56,6 +56,7 @@ import java.util.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Cursor;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -66,7 +67,7 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
     static final Object EVENT_SETTINGS_CHANGED = new Object();
 
     private CommitTable commitTable;
-    
+
     /** Creates new form CommitPanel */
     public CommitPanel() {
         initComponents();
@@ -75,10 +76,10 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
     void setCommitTable(CommitTable commitTable) {
         this.commitTable = commitTable;
     }
-    
+
     void setErrorLabel(String htmlErrorLabel) {
         jLabel2.setText(htmlErrorLabel);
-    }    
+    }
 
     public void addNotify() {
         super.addNotify();
@@ -92,12 +93,15 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
                 onBrowseRecentMessages();
             }
         });
-        
-        List<String> messages = Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
-        if (messages.size() > 0) {
-            messageTextArea.setText(messages.get(0));
-        }
-        messageTextArea.selectAll();
+        final List<String> messages = Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (messages.size() > 0) {
+                    messageTextArea.setText(messages.get(0));
+                }
+                messageTextArea.selectAll();
+            }
+        });
     }
 
     public void removeNotify() {
@@ -105,16 +109,16 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
         SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
         super.removeNotify();
     }
-    
+
     private void onBrowseRecentMessages() {
-        String message = StringSelector.select(NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_RecentTitle"), 
-                                               NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_RecentPrompt"), 
+        String message = StringSelector.select(NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_RecentTitle"),
+                                               NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_RecentPrompt"),
             Utils.getStringList(SvnModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
         if (message != null) {
             messageTextArea.replaceSelection(message);
         }
     }
-    
+
     public void preferenceChange(PreferenceChangeEvent evt) {
         if (evt.getKey().startsWith(SvnModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
             commitTable.dataChanged();
@@ -125,7 +129,7 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
     public void tableChanged(TableModelEvent e) {
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -206,7 +210,7 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitPanel.class, "ACSN_CommitDialog")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitPanel.class, "ACSD_CommitDialog")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
+
     ListenersSupport listenerSupport = new ListenersSupport(this);
     public void addVersioningListener(VersioningListener listener) {
         listenerSupport.addListener(listener);
@@ -214,8 +218,8 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
 
     public void removeVersioningListener(VersioningListener listener) {
         listenerSupport.removeListener(listener);
-    }    
-    
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JLabel filesLabel = new javax.swing.JLabel();
     final javax.swing.JPanel filesPanel = new javax.swing.JPanel();
@@ -225,5 +229,5 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
     final javax.swing.JTextArea messageTextArea = new javax.swing.JTextArea();
     final javax.swing.JLabel recentLink = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
-    
+
 }

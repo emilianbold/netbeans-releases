@@ -93,14 +93,14 @@ public class MissingClientPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         tipLabel = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel2.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel2.text_1")); // NOI18N
 
         buttonGroup1.add(downloadRadioButton);
         downloadRadioButton.setSelected(true);
-        downloadRadioButton.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.bundledRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(downloadRadioButton, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.bundledRadioButton.text")); // NOI18N
 
         buttonGroup1.add(cliRadioButton);
-        cliRadioButton.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.cliRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cliRadioButton, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.cliRadioButton.text")); // NOI18N
         cliRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cliRadioButtonActionPerformed(evt);
@@ -113,11 +113,11 @@ public class MissingClientPanel extends javax.swing.JPanel {
         textPane.setEditable(false);
         textPane.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.text")); // NOI18N
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.browseButton.text")); // NOI18N
 
-        tipLabel.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.unix.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tipLabel, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingSvnClientPanel.jLabel1.unix.text")); // NOI18N
 
-        forceGlobalCheckBox.setText(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.forceGlobalCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(forceGlobalCheckBox, org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.forceGlobalCheckBox.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -166,7 +166,16 @@ public class MissingClientPanel extends javax.swing.JPanel {
                 .add(tipLabel))
         );
 
+        downloadRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.downloadRadioButton.AccessibleContext.accessibleName")); // NOI18N
+        downloadRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.downloadRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        cliRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.cliRadioButton.AccessibleContext.accessibleName")); // NOI18N
+        cliRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.cliRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
+        textPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
+        textPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
         forceGlobalCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.jCheckBox1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MissingClientPanel.class, "MissingClientPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cliRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cliRadioButtonActionPerformed
