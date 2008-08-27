@@ -178,6 +178,8 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
     }
 
     //always call from mutex.writeAccess
+    //TODO can the process be made faster by only loading context when missing and
+    // only unloading when not wanted?
     private void loadIndexingContext(final RepositoryInfo... repoids) throws IOException {
         assert MUTEX.isWriteAccess();
         for (RepositoryInfo info : repoids) {
