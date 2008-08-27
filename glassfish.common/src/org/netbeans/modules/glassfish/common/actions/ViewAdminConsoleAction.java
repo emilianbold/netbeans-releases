@@ -68,15 +68,16 @@ public class ViewAdminConsoleAction extends NodeAction {
                 try {
                     Map<String, String> ip = commonSupport.getInstanceProperties();
                     String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
-                    String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
-                    URL url = new URL("http://" + host + ":" + httpPort + "/admin");
+                    boolean useAdminPort = !"false".equals(System.getProperty("glassfish.useadminport")); // NOI18N
+                    String adminPort = ip.get(useAdminPort ? GlassfishModule.ADMINPORT_ATTR : GlassfishModule.HTTPPORT_ATTR);
+                    URL url = new URL("http://" + host + ":" + adminPort + "/admin"); // NOI18N
                     URLDisplayer.getDefault().showURL(url);
                 } catch (MalformedURLException ex) {
-                    Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
+                    Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex); // NOI18N
                 }
             } else {
                 String message = NbBundle.getMessage(ViewAdminConsoleAction.class, 
-                        "MSG_ServerMustBeRunning");
+                        "MSG_ServerMustBeRunning"); // NOI18N
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,
                         NotifyDescriptor.DEFAULT_OPTION);
                 DialogDisplayer.getDefault().notify(nd);
@@ -96,7 +97,7 @@ public class ViewAdminConsoleAction extends NodeAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(ViewAdminConsoleAction.class, "CTL_ViewAdminConsoleAction");
+        return NbBundle.getMessage(ViewAdminConsoleAction.class, "CTL_ViewAdminConsoleAction"); // NOI18N
     }
 
     @Override
