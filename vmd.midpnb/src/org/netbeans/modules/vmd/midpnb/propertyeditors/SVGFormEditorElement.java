@@ -626,13 +626,13 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         previewPanel.setEnabled(false);
         previewPanel.setLayout(new java.awt.BorderLayout());
 
-        widthLabel.setText(org.openide.util.NbBundle.getMessage(SVGFormEditorElement.class, "ImageEditorElement.widthLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(widthLabel, org.openide.util.NbBundle.getMessage(SVGFormEditorElement.class, "ImageEditorElement.widthLabel.text")); // NOI18N
         widthLabel.setEnabled(false);
 
         widthTextField.setEditable(false);
         widthTextField.setEnabled(false);
 
-        heightLabel.setText(org.openide.util.NbBundle.getMessage(SVGFormEditorElement.class, "ImageEditorElement.heightLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(heightLabel, org.openide.util.NbBundle.getMessage(SVGFormEditorElement.class, "ImageEditorElement.heightLabel.text")); // NOI18N
         heightLabel.setEnabled(false);
 
         heightTextField.setEditable(false);
@@ -668,13 +668,13 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                     .add(jPanelImageFileLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                         .add(jPanelImageFileLayout.createSequentialGroup()
                             .add(pathLabel)
-                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 324, Short.MAX_VALUE))
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 339, Short.MAX_VALUE))
                         .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanelImageFileLayout.createSequentialGroup()
                             .add(jPanelImageFileLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                 .add(jPanelImageFileLayout.createSequentialGroup()
                                     .add(previewLabel)
                                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                    .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                                    .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
                                     .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                     .add(jPanelImageFileLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                         .add(jPanelImageFileLayout.createSequentialGroup()
@@ -686,7 +686,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                                                 .add(widthTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 92, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                                 .add(heightTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 92, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                                         .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 146, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                                .add(pathTextComboBox, 0, 360, Short.MAX_VALUE))
+                                .add(pathTextComboBox, 0, 362, Short.MAX_VALUE))
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                             .add(chooserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .addContainerGap()))
@@ -716,7 +716,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                             .add(progressBar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
                         .add(previewLabel)
-                        .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE))
+                        .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE))
                     .addContainerGap()))
         );
 
@@ -766,9 +766,9 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
             .add(0, 282, Short.MAX_VALUE)
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(layout.createSequentialGroup()
-                    .add(0, 16, Short.MAX_VALUE)
+                    .add(0, 17, Short.MAX_VALUE)
                     .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(0, 16, Short.MAX_VALUE)))
+                    .add(0, 17, Short.MAX_VALUE)))
         );
 
         jTabbedPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SVGFormEditorElement.class, "ACSN_TabbedPane")); // NOI18N
