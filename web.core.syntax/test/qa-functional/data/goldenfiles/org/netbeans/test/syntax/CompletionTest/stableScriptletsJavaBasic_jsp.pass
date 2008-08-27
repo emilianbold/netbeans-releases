@@ -16,7 +16,7 @@ Throwable
 TypeNotPresentException
 End cursor position = 627
 [<% testBean.|, void setName (String name ), <% testBean.setName(name), 778]
-boolean equals (Object arg0 )
+boolean equals (Object obj )
 Class <?> getClass ()
 Integer getId ()
 String getName ()
@@ -27,6 +27,6 @@ void setId (Integer id )
 void setName (String name )
 String toString ()
 void wait ()
-void wait (long arg0 )
-void wait (long arg0 , int arg1 )
+void wait (long timeout )
+void wait (long timeout , int nanos )
 End cursor position = 803
