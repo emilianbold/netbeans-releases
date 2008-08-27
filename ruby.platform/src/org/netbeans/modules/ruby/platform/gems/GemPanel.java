@@ -342,7 +342,6 @@ public final class GemPanel extends JPanel {
     private void enableRemoteReloadGUI() {
         reloadNewButton.setEnabled(true);
         reloadUpdatedButton.setEnabled(true);
-        manageButton.setEnabled(true);
     }
 
     private void setEnabled(TabIndex tab, boolean enabled) {
@@ -387,7 +386,6 @@ public final class GemPanel extends JPanel {
         }
         boolean everythingDone = newPanel.isEnabled() && updatedPanel.isEnabled() && installedPanel.isEnabled();
         // allow certain actions only when all tabs are updated
-        manageButton.setEnabled(everythingDone);
         browseGemHome.setEnabled(everythingDone);
     }
 
