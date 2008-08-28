@@ -89,7 +89,7 @@ public abstract class CsmFileTaskFactory {
         final long id = Math.round(100.0*Math.random());
         final String name = this.getClass().getName();
         if (OpenedEditors.SHOW_TIME) System.err.println("CsmFileTaskFactory: POST worker " + id);
-        WORKER.post(new Runnable() {
+        DECISION_WORKER.post(new Runnable() {
 
             public void run() {
                 long start = System.currentTimeMillis();
@@ -230,6 +230,7 @@ public abstract class CsmFileTaskFactory {
     
     private static RequestProcessor WORKER = new RequestProcessor("CsmFileTaskFactory", 1); //NOI18N
     private static RequestProcessor HIGH_PRIORITY_WORKER = new RequestProcessor("CsmHighPriorityFileTaskFactory", 1); //NOI18N
+    private static RequestProcessor DECISION_WORKER = new RequestProcessor("CsmDecisionFileTaskFactory", 1); //NOI18N
 
     static {
         CsmFileTaskFactoryManager.ACCESSOR = new CsmFileTaskFactoryManager.Accessor() {
