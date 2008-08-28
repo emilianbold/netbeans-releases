@@ -67,36 +67,15 @@ import org.openide.util.Exceptions;
  */
 public final class DBMetaDataFactory {
 
-    public static final int NAME = 0;
-    public static final int CATALOG = 1;
-    public static final int SCHEMA = 2;
-    public static final int TYPE = 3;
     public static final int DB2 = 0;
     public static final int ORACLE = 1;
     public static final int SQLSERVER = 2;
     public static final int JDBC = 3;
-    public static final int VSAM_ADABAS_IAM = 4;
-    public static final int PostgreSQL = 5;
-    public static final int MYSQL = 6;
-    public static final int DERBY = 7;
-    public static final int SYBASE = 8;
-    public static final int AXION = 9;
-    public static final String DB2_TEXT = "DB2"; // NOI18N
-    public static final String ORACLE_TEXT = "ORACLE"; // NOI18N
-    public static final String AXION_TEXT = "AXION"; // NOI18N
-    public static final String DERBY_TEXT = "DERBY"; // NOI18N
-    public static final String MYSQL_TEXT = "MYSQL"; // NOI18N
-    public static final String PostgreSQL_TEXT = "PostgreSQL"; // NOI18N
-    public static final String SQLSERVER_TEXT = "SQL SERVER"; // NOI18N
-    public static final String SYBASE_TEXT = "SYBASE"; // NOI18N
-    public static final String JDBC_TEXT = "JDBC"; // NOI18N
-    public static final String VSAM_ADABAS_IAM_TEXT = "VSAM/ADABAS/IAM"; // NOI18N
-    /** List of database type display descriptions */
-    public static final String[] DBTYPES = {
-        DB2_TEXT, ORACLE_TEXT, SQLSERVER_TEXT,
-        JDBC_TEXT, VSAM_ADABAS_IAM_TEXT, PostgreSQL_TEXT,
-        MYSQL_TEXT, DERBY_TEXT, SYBASE_TEXT, AXION_TEXT
-    };
+    public static final int PostgreSQL = 4;
+    public static final int MYSQL = 5;
+    public static final int DERBY = 6;
+    public static final int SYBASE = 7;
+    public static final int AXION = 8;
     private Connection dbconn; // db connection
     private int dbType = -1;
     private DatabaseMetaData dbmeta; // db metadata
@@ -119,16 +98,6 @@ public final class DBMetaDataFactory {
         }
     }
 
-    private String getDBName() {
-        String dbname = "";
-        try {
-            dbname = dbmeta.getDatabaseProductName();
-        } catch (SQLException e) {
-            Exceptions.printStackTrace(e);
-        }
-        return dbname;
-    }
-
     public int getDBType() throws SQLException {
         if (dbType != -1) {
             return dbType;
@@ -137,7 +106,7 @@ public final class DBMetaDataFactory {
         if (dbmeta.getURL() != null) {
             return getDBTypeFromURL(dbmeta.getURL());
         }
-        return getDBTypeFromURL(getDBName());
+        return JDBC;
     }
 
     private static int getDBTypeFromURL(String url) {
@@ -147,12 +116,10 @@ public final class DBMetaDataFactory {
         url = url.toLowerCase();
         if (url.indexOf("sybase") > -1) { // NOI18N
             dbtype = SYBASE;
-        } else if (url.equals("microsoft sql server") || (url.equals("sql server"))) { // NOI18N
+        } else if (url.indexOf("sqlserver") > -1) { // NOI18N
             dbtype = SQLSERVER;
-        } else if ((url.indexOf("db2") > -1) || (url.equals("as"))) { // NOI18N
+        } else if (url.indexOf("db2") > -1) { // NOI18N
             dbtype = DB2;
-        } else if ((url.equals("exadas")) || (url.equals("attunity connect driver"))) { // NOI18N
-            dbtype = VSAM_ADABAS_IAM;
         } else if (url.indexOf("orac") > -1) { // NOI18N
             dbtype = ORACLE;
         } else if (url.indexOf("axion") > -1) { // NOI18N
@@ -264,6 +231,17 @@ public final class DBMetaDataFactory {
                 displaySize = 22;
             }
 
+            // The SQL Server timestamp type is a JDBC BINARY type with the fixed length of 8 bytes.
+            // A Transact-SQL timestamp != an ANSI SQL-92 timestamp.
+            // If its a SQL style timestamp you are after use a datetime data type.
+            // A T-SQL timestamp are just auto generated binary numbers guarenteed to
+            // be unique in the context of a database and are typically used for
+            // versioning, not storing dates.
+
+            if (sqlTypeCode == java.sql.Types.BINARY && dbType == SQLSERVER && precision == 8) {
+                autoIncrement = true;
+            }
+
             // create a table column and add it to the vector
             DBColumn col = new DBColumn(table, colName, sqlTypeCode, scale, precision, isNullable, autoIncrement);
             col.setOrdinalPosition(position);
@@ -272,12 +250,12 @@ public final class DBMetaDataFactory {
             table.addColumn(col);
             table.setQuoter(SQLIdentifiers.createQuoter(dbmeta));
         }
-        
+
         // Oracle does not return table name for resultsetmetadata.getTableName()
-        DBTable table =  tables.get(noTableName);
-        if(tables.size() == 1 && table != null && isSelect) {
+        DBTable table = tables.get(noTableName);
+        if (tables.size() == 1 && table != null && isSelect) {
             adjustTableMetadata(sql, tables.get(noTableName));
-            for(DBColumn col: table.getColumns().values()){
+            for (DBColumn col : table.getColumns().values()) {
                 col.setEditable(!table.getName().equals("") && !col.isGenerated());
             }
         }
@@ -292,45 +270,45 @@ public final class DBMetaDataFactory {
 
         return tables.values();
     }
-    
+
     private void adjustTableMetadata(String sql, DBTable table) {
         String tableName = "";
-        if(sql.toUpperCase().contains("FROM")) {
+        if (sql.toUpperCase().contains("FROM")) {
             // User may type "FROM" in either lower, upper or mixed case
             String[] splitByFrom = sql.toUpperCase().split("FROM"); // NOI18N
-            String fromsql = sql.substring(sql.length() - splitByFrom[1].length()); 
-            if(fromsql.toUpperCase().contains("WHERE")){
+            String fromsql = sql.substring(sql.length() - splitByFrom[1].length());
+            if (fromsql.toUpperCase().contains("WHERE")) {
                 splitByFrom = fromsql.toUpperCase().split("WHERE"); // NOI18N
-                fromsql = fromsql.substring(0, splitByFrom[0].length()); 
+                fromsql = fromsql.substring(0, splitByFrom[0].length());
             }
             StringTokenizer t = new StringTokenizer(fromsql, " ,");
 
-            if(t.hasMoreTokens()) {
+            if (t.hasMoreTokens()) {
                 tableName = t.nextToken();
             }
 
-            if(t.hasMoreTokens()) {
+            if (t.hasMoreTokens()) {
                 tableName = "";
             }
         }
         String[] splitByDot = tableName.split("\\.");
-        if(splitByDot.length == 3){
+        if (splitByDot.length == 3) {
             table.setCatalogName(unQuoteIfNeeded(splitByDot[0]));
             table.setSchemaName(unQuoteIfNeeded(splitByDot[1]));
             table.setName(unQuoteIfNeeded(splitByDot[2]));
-        } else if(splitByDot.length == 2){
+        } else if (splitByDot.length == 2) {
             table.setSchemaName(unQuoteIfNeeded(splitByDot[0]));
             table.setName(unQuoteIfNeeded(splitByDot[1]));
-        } else if(splitByDot.length == 1){
+        } else if (splitByDot.length == 1) {
             table.setName(unQuoteIfNeeded(splitByDot[0]));
-        } 
+        }
     }
-    
-    private String unQuoteIfNeeded(String id){
+
+    private String unQuoteIfNeeded(String id) {
         String quoteStr = "\"";
         try {
             quoteStr = dbmeta.getIdentifierQuoteString().trim();
-        } catch ( SQLException e ) {
+        } catch (SQLException e) {
         }
         return id.replaceAll(quoteStr, "");
     }
