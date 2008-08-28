@@ -209,7 +209,6 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(messageLabel, " ");
 
-        propertiesButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/derby/ui/Bundle").getString("LBL_Properties").charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(propertiesButton, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "LBL_Properties")); // NOI18N
         propertiesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
