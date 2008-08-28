@@ -42,8 +42,7 @@
 package org.netbeans.modules.junit.output;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import static org.netbeans.modules.junit.output.RegexpUtils.NESTED_EXCEPTION_PREFIX;
@@ -56,10 +55,19 @@ final class TestMethodNodeChildren extends Children.Array {
 
     /** */
     private final Report.Testcase testcase;
+    /** */
+    private final Collection<Node> childNodes;
+
+    private TestMethodNodeChildren(final Collection<Node> nodes,
+                                   final Report.Testcase testcase) {
+        super(nodes);
+        this.childNodes = nodes;
+        this.testcase = testcase;
+    }
 
     /** Creates a new instance of TestMethodNodeChildren */
     public TestMethodNodeChildren(final Report.Testcase testcase) {
-        this.testcase = testcase;
+        this(new ArrayList<Node>(getChildrenCount(testcase)), testcase);
     }
 
     /**
@@ -100,25 +108,19 @@ final class TestMethodNodeChildren extends Children.Array {
                                             ? trouble.stackTrace[0]
                                             : null;
 
-        int nodesCount = getChildrenCount(testcase);
-        Node[] children = new Node[nodesCount];
-        int index = 0;
         if (trouble.message != null) {
-            children[index++] = new CallstackFrameNode(topFrameInfo,
-                                                       trouble.message);
+            childNodes.add(new CallstackFrameNode(topFrameInfo,
+                                                  trouble.message));
         }
         if (trouble.exceptionClsName != null) {
-            children[index++] = new CallstackFrameNode(topFrameInfo,
-                                                       trouble.exceptionClsName);
+            childNodes.add(new CallstackFrameNode(topFrameInfo,
+                                                  trouble.exceptionClsName));
         }
-        for (int i = 0; index < nodesCount; i++) {
-            children[index++] = new CallstackFrameNode(trouble.stackTrace[i]);
+        for (String frameInfo : trouble.stackTrace) {
+            childNodes.add(new CallstackFrameNode(frameInfo));
         }
         
         if (trouble.nestedTrouble != null) {
-            List<Node> childrenList = new ArrayList<Node>(nodesCount * 3);
-            childrenList.addAll(Arrays.asList(children));
-            
             trouble = trouble.nestedTrouble;
             do {
                 String[] stackTrace = trouble.stackTrace;
@@ -132,18 +134,16 @@ final class TestMethodNodeChildren extends Children.Array {
                     topNodeDispName.append(": ")                        //NOI18N
                                    .append(trouble.message);
                 }
-                childrenList.add(new CallstackFrameNode(topFrameInfo,
-                                                        topNodeDispName.toString()));
+                childNodes.add(new CallstackFrameNode(topFrameInfo,
+                                                      topNodeDispName.toString()));
                 if (stackTrace != null) {
                     for (String frameInfo : stackTrace) {
-                        childrenList.add(new CallstackFrameNode(frameInfo));
+                        childNodes.add(new CallstackFrameNode(frameInfo));
                     }
                 }
             } while ((trouble = trouble.nestedTrouble) != null);
-            
-            children = childrenList.toArray(new Node[childrenList.size()]);
         }
         
-        add(children);
+        super.addNotify();
     }
 }
