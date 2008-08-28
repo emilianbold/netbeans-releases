@@ -61,6 +61,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
+import org.netbeans.modules.uml.drawingarea.support.ModelElementBridge;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -205,9 +206,7 @@ public class Util
      */
     public static void makeSureWidgetIsVisible(Widget widget)
     {
-        
         Scene contextScene = widget.getScene();
-                
         Rectangle visibleRect = contextScene.getView().getVisibleRect();
         Rectangle sceneRect = widget.convertLocalToScene(widget.getBounds());
         Rectangle viewWidgetRect = contextScene.convertSceneToView(sceneRect);
@@ -244,7 +243,7 @@ public class Util
                 Object obj = objectScene.findObject(widget);
                 HashSet<Object> set = new HashSet<Object>();
                 set.add(obj);
-                objectScene.setSelectedObjects(set);
+                objectScene.userSelectionSuggested(set, false);
             }
         }
     }

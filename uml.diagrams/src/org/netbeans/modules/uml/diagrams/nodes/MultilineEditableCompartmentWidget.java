@@ -214,7 +214,7 @@ public class MultilineEditableCompartmentWidget extends UMLMultilineLabelWidget
                     Set<Object> selectedObjs = (Set<Object>) dScene.getSelectedObjects();
                     if (selectedObjs != null && selectedObjs.size() == 1)
                     {
-                        dScene.setSelectedObjects(selectedObjs);
+                        dScene.userSelectionSuggested(selectedObjs, false);
                     }
                 }
             }

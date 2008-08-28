@@ -105,7 +105,7 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
             Set<Object> selectedObjs = (Set<Object>) scene.getSelectedObjects();
             if ( selectedObjs != null && selectedObjs.size() > 0)
             {
-                scene.setSelectedObjects(Collections.EMPTY_SET);
+                scene.userSelectionSuggested(Collections.EMPTY_SET, false);
                 scene.clearLockedSelected();
                 
                 // cancel context palette
@@ -207,7 +207,7 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                                 sceneCenter = getTranslatedLocation(scene, sceneCenter);
                                 // add the target widget to the scene at the translated location.
                                 sceneAcceptAction.addWidget(sceneCenter, scene, pe);
-                                scene.setSelectedObjects(Collections.singleton(pe));
+                                scene.userSelectionSuggested(Collections.singleton(pe), false);
                                 scene.setFocusedObject(pe);
                             }
                         }
