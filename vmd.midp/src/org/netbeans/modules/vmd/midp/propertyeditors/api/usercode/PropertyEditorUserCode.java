@@ -137,9 +137,10 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
 
     /**
      * Updates state of custom editor and returns it to edit property value.
+     * If you averide this method CALL super.getCustomEditor!!!!!
      */
     @Override
-    public final Component getCustomEditor() {
+    public Component getCustomEditor() {
         initCustomEditor();
         return customEditor;
     }

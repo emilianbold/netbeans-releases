@@ -668,7 +668,7 @@ public class ModelSupport implements PropertyChangeListener {
                     CsmFile[] files = CsmUtilities.getCsmFiles(fo);
                     for (int i = 0; i < files.length; i++) {
                         FileImpl file = (FileImpl) files[i];
-                        file.getProjectImpl().onFileExternalChange(file);
+                        file.getProjectImpl(true).onFileExternalChange(file);
                     }
                 }
             }

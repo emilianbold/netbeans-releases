@@ -134,9 +134,7 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>    
             <folder name="Lookup">
-                <file name="org-netbeans-modules-maven-runjar-J2seLookupProvider.instance">
-                    <attr name="position" intvalue="10"/> <!-- needs to come before the profiler provider all the time -->
-                </file>
+                <file name="org-netbeans-modules-maven-runjar-J2seLookupProvider.instance"/>
             </folder>    
             <folder name="Customizer">
                 <file name="org-netbeans-modules-maven-customizer-BasicPanelProvider.instance">
