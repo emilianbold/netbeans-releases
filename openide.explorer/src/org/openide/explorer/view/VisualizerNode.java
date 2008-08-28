@@ -96,6 +96,9 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
     /** default icon to use when none is present */
     private static final String DEFAULT_ICON = "org/openide/nodes/defaultNode.png"; // NOI18N
+    
+    /** node prefetch count before initialization of VisualizerChildren - to avoid*/
+    private static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerNode.prefetchCount", 50), 0);  // NOI18N    
 
     /** Cached icon - pre-html, there was a separate cache in NodeRenderer, but
      * if we're keeping a weak cache of VisualizerNodes, there's no reason not
@@ -250,10 +253,9 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             // initialize the nodes children before we enter the readAccess section 
             // (otherwise we could receive invalid node count (under lock))
             final int count = node.getChildren().getNodesCount();
-            Node[] nodes;
-            if (VisualizerChildren.prefetchCount > 0) {
+            if (prefetchCount > 0) {
                 Children nch = node.getChildren();
-                nodes = new Node[Math.min(VisualizerChildren.prefetchCount, count)];
+                Node[] nodes = new Node[Math.min(prefetchCount, count)];
                 for (int i = 0; i < nodes.length; i++) {
                     nodes[i] = nch.getNodeAt(i);
                 }
