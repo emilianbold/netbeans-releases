@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -69,15 +71,20 @@ import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.queries.FileBuiltQuery;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
+import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupport;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportEvent;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportListener;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 
@@ -86,10 +93,12 @@ import org.openide.util.WeakSet;
  * @author Jan Lahoda
  */
 public class BuildArtifactMapperImpl {
+    
+    private static final String ASK_BEFORE_RUN_WITH_ERRORS = "askBeforeRunWithErrors"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(BuildArtifactMapperImpl.class.getName());
     
-    private static final String TAG_FILE_NAME = ".netbeans_automatic_build";
+    private static final String TAG_FILE_NAME = ".netbeans_automatic_build"; //NOI18N
 //    private static final Map<URL, File> source2Target = new HashMap<URL, File>();
     private static final Map<URL, Set<ArtifactsUpdated>> source2Listener = new HashMap<URL, Set<ArtifactsUpdated>>();
 
@@ -114,6 +123,54 @@ public class BuildArtifactMapperImpl {
         
         if (listeners.isEmpty()) {
             source2Listener.remove(sourceRoot);
+        }
+    }
+
+    private static boolean protectAgainstErrors(File targetFolder, FileObject[][] sources) throws MalformedURLException {
+        Preferences pref = NbPreferences.forModule(BuildArtifactMapperImpl.class).node(BuildArtifactMapperImpl.class.getSimpleName());
+
+        if (!pref.getBoolean(ASK_BEFORE_RUN_WITH_ERRORS, true)) {
+            return true;
+        }
+        
+        sources(targetFolder, sources);
+        
+        for (FileObject file : sources[0]) {
+            if (TaskCache.getDefault().isInError(file, true)) {
+                String runAnyway = NbBundle.getMessage(BuildArtifactMapperImpl.class, "BTN_RunAnyway");
+                String cancel = NbBundle.getMessage(BuildArtifactMapperImpl.class, "BTN_Cancel");
+                ContainsErrorsWarning panel = new ContainsErrorsWarning();
+                DialogDescriptor dd = new DialogDescriptor(panel,
+                                                           NbBundle.getMessage(BuildArtifactMapperImpl.class, "TITLE_ContainsErrorsWarning"),
+                                                           true,
+                                                           new Object[] {runAnyway, cancel},
+                                                           runAnyway,
+                                                           DialogDescriptor.DEFAULT_ALIGN,
+                                                           null,
+                                                           null);
+
+                dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
+                
+                Object option = DialogDisplayer.getDefault().notify(dd);
+                
+                if (option == runAnyway) {
+                    pref.putBoolean(ASK_BEFORE_RUN_WITH_ERRORS, panel.getAskBeforeRunning());
+
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static void sources(File targetFolder, FileObject[][] sources) throws MalformedURLException {
+        if (sources[0] == null) {
+            URL targetFolderURL = FileUtil.urlForArchiveOrDir(targetFolder);
+            
+            sources[0] = SourceForBinaryQuery.findSourceRoots(targetFolderURL).getRoots();
         }
     }
     
@@ -154,6 +211,12 @@ public class BuildArtifactMapperImpl {
             //Not Important
             Exceptions.printStackTrace(e);            
         }
+
+        FileObject[][] sources = new FileObject[1][];
+        
+        if (!protectAgainstErrors(targetFolder, sources)) {
+            return false;
+        }
         
         File tagFile = new File(targetFolder, TAG_FILE_NAME);
 
@@ -167,7 +230,9 @@ public class BuildArtifactMapperImpl {
             throw new IOException("Cannot create destination folder: " + targetFolder.getAbsolutePath());
         }
 
-        for (FileObject sr : SourceForBinaryQuery.findSourceRoots(targetFolder.toURI().toURL()).getRoots()) {
+        sources(targetFolder, sources);
+
+        for (FileObject sr : sources[0]) {
             File index = Index.getClassFolder(sr.getURL(), true);
 
             if (index == null) {
