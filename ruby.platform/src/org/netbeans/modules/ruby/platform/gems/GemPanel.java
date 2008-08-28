@@ -144,20 +144,22 @@ public final class GemPanel extends JPanel {
     /** Empty non-modifiable Gem list model. */
     private final GemListModel emptyGemListModel;
 
-    public GemPanel(String availableFilter) {
-        this(availableFilter, null);
+    /**
+     * @param initialFilter the filter to use for displaying gems, e.g.
+     *        <code>"generators$"</code> for displaying only generator gems.
+     */
+    public GemPanel(final String initialFilter) {
+        this(initialFilter, null);
     }
 
     /**
-     * Creates a new GemPanel.
-     * 
-     * @param availableFilter the filter to use for displaying gems, e.g.
+     * @param initialFilter the filter to use for displaying gems, e.g.
      *        <code>"generators$"</code> for displaying only generator gems.
      * @param preselected the platform that should be preselected in the panel;
      *        may be <code>null</code> in which case the last selected platform
      *        is preselected.
      */
-    public GemPanel(String availableFilter, RubyPlatform preselected) {
+    public GemPanel(final String initialFilter, final RubyPlatform preselected) {
         emptyGemListModel = new GemListModel(Collections.<Gem>emptyList(), null);
         updateTasksQueue = new RequestProcessor("Gem Updater", 5); // NOI18N
         filterTask = FILTER_PROCESSOR.create(new Runnable() {
@@ -197,18 +199,20 @@ public final class GemPanel extends JPanel {
         updatedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         updatedList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(updatedList, updatedDesc, updateButton));
 
-        if (availableFilter != null) {
-            searchNewText.setText(availableFilter);
-            gemsTab.setSelectedIndex(NEW.getPosition());
-        }
-
         PlatformComponentFactory.addPlatformChangeListener(platforms, new PlatformComponentFactory.PlatformChangeListener() {
             public void platformChanged() {
                 GemPanel.this.platformChanged();
             }
         });
         platformChanged();
-        gemsTab.setSelectedIndex(INSTALLED.getPosition());
+        
+        if (initialFilter != null) {
+            setFilter(initialFilter);
+            gemsTab.setSelectedIndex(NEW.getPosition());
+            applyFilter();
+        } else {
+            gemsTab.setSelectedIndex(INSTALLED.getPosition());
+        }
     }
 
     private void platformChanged() {
