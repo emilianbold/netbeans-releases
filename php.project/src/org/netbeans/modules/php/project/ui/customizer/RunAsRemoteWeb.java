@@ -72,17 +72,16 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-// XXX upload files combobox is invisible for NB 6.5
 /**
  * @author Tomas Mysik
  */
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
-    private static final long serialVersionUID = -55934465454591271L;
+    private static final long serialVersionUID = -55933465454591271L;
     private static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
             new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"));
     private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION =
             new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration"));
-    private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.MANUALLY;
+    private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
     private final PhpProject project;
     private final JLabel[] labels;
@@ -102,7 +101,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         this.category = category;
 
         initComponents();
-        hideUploadFilesFields();
 
         labels = new JLabel[] {
             urlLabel,
@@ -179,12 +177,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             }
         });
         updateRemoteConnectionHint();
-    }
-
-    private void hideUploadFilesFields() {
-        uploadFilesLabel.setVisible(false);
-        uploadFilesComboBox.setVisible(false);
-        uploadFilesHintLabel.setVisible(false);
     }
 
     @Override

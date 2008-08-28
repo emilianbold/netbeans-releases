@@ -46,6 +46,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
@@ -142,7 +143,7 @@ public class SVGFormFileObjectListener implements FileChangeListener {
             }
         });
 
-        Map<String, String> changedIDs = new HashMap<String, String>();
+        Map<String, String> changedIDs = new LinkedHashMap<String, String>();
         for (int i = 0; i < idsArray.length; i++) {
             changedIDs.put(idsArray[i][1], idsArray[i][0]);
         }
@@ -153,7 +154,7 @@ public class SVGFormFileObjectListener implements FileChangeListener {
                 toDelete.add(id);
             }
         }
-        final Map<String, String> toAdd = new HashMap<String, String>();
+        final Map<String, String> toAdd = new LinkedHashMap<String, String>();
         for (String id : changedIDs.keySet()) {
             if (!exisitngIDs.containsKey(id)) {
                 toAdd.put(id, changedIDs.get(id));

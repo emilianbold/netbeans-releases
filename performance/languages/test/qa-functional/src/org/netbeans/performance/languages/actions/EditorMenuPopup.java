@@ -122,7 +122,6 @@ public class EditorMenuPopup extends org.netbeans.modules.performance.utilities.
     {
         log("::close");
         editorOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport        
     }    
         
     @Override
@@ -142,12 +141,13 @@ public class EditorMenuPopup extends org.netbeans.modules.performance.utilities.
         docName = "rhtml20kb.rhtml"; 
         doMeasurement();        
     }
-    public void test_PHP_EditorPopup() {
-        testProject = Projects.PHP_PROJECT;
-        pathName = "Source Files"+"|";
-        docName = "php20kb.php"; 
-        doMeasurement();         
-    }
+// TODO: Enable once PhpPerfTest is created    
+//    public void test_PHP_EditorPopup() {
+//        testProject = Projects.PHP_PROJECT;
+//        pathName = "Source Files"+"|";
+//        docName = "php20kb.php";
+//        doMeasurement();
+//    }
     public void test_JS_EditorPopup() {
         testProject = Projects.SCRIPTING_PROJECT;
         pathName = "Web Pages"+"|";

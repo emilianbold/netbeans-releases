@@ -162,7 +162,6 @@ public class CreateProject extends PerformanceTestCase {
             reportReference("Project "+project_name+" from CreateProject test", prj, PROJECT_REFS);
         }
         ProjectSupport.closeProject(project_name);
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     /** Tests if created and later dclosed projects can be GCed from memory.

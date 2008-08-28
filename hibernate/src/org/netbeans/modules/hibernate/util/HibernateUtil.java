@@ -170,7 +170,7 @@ public class HibernateUtil {
 
         for (SourceGroup sourceGroup : javaSourceGroup) {
             FileObject root = sourceGroup.getRootFolder();
-            Enumeration<? extends FileObject> enumeration = root.getChildren(false);
+            Enumeration<? extends FileObject> enumeration = root.getChildren(true);
             while (enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
                 if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateCfgDataLoader.REQUIRED_MIME)) {

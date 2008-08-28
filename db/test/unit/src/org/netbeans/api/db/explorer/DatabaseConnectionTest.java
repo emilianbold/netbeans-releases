@@ -41,16 +41,16 @@
 
 package org.netbeans.api.db.explorer;
 
-import org.netbeans.modules.db.explorer.ConnectionList;
+import java.sql.Connection;
 import org.netbeans.modules.db.test.Util;
-import org.netbeans.modules.db.util.DBTestBase;
+import org.netbeans.modules.db.test.DBTestBase;
 
 /**
  *
  * @author Andrei Badea
  */
 public class DatabaseConnectionTest extends DBTestBase {
-    
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         Util.clearConnections();
@@ -93,10 +93,18 @@ public class DatabaseConnectionTest extends DBTestBase {
     }
 
     public void testSyncConnection() throws Exception {
-        DatabaseConnection dbconn = getDatabaseConnection();
+        DatabaseConnection dbconn = getDatabaseConnection(false);
+        ConnectionManager.getDefault().disconnect(dbconn);
+        assertNull(dbconn.getJDBCConnection());
+        
         ConnectionManager.getDefault().connect(dbconn);
-        assertTrue(dbconn.getJDBCConnection() != null);
-        assertFalse(dbconn.getJDBCConnection().isClosed());
+        Connection conn = dbconn.getJDBCConnection();
+        assertNotNull(conn);
+        assertFalse(conn.isClosed());
+        
+        ConnectionManager.getDefault().connect(dbconn);
+        assertSame(conn, dbconn.getJDBCConnection());
+        assertFalse(conn.isClosed());
     }
 
     public void testDeleteConnection() throws Exception {
@@ -117,5 +125,20 @@ public class DatabaseConnectionTest extends DBTestBase {
         
         ConnectionManager.getDefault().removeConnection(dbconn);
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
-    }    
+    }
+
+    public void testGetJDBCConnectionWithTest() throws Exception {
+        DatabaseConnection dbconn = getDatabaseConnection(false);
+        ConnectionManager.getDefault().disconnect(dbconn);
+        assertNull(dbconn.getJDBCConnection(true));
+        
+        ConnectionManager.getDefault().connect(dbconn);
+        assertNotNull(dbconn.getJDBCConnection(true));
+        assertNotNull(dbconn.getJDBCConnection(false));
+
+        dbconn.getJDBCConnection(true).close();
+        assertNotNull(dbconn.getJDBCConnection(false));
+        assertNull(dbconn.getJDBCConnection(true));
+        assertNull(dbconn.getJDBCConnection(false));
+    }
 }

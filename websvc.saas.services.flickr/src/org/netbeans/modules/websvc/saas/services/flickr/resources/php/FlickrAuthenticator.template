@@ -1,6 +1,11 @@
 <?php
 
-    include_once "../org_netbeans_saas/RestConnection.php";
+    if (@file_exists("org_netbeans_saas/RestConnection.php")) {
+        include_once "org_netbeans_saas/RestConnection.php";
+    } else {
+        include_once "../org_netbeans_saas/RestConnection.php";
+    }
+
     include_once "__NAME__Profile.php";
 
     define("_ATTR_PREFIX", "__NAME__");
@@ -78,7 +83,7 @@
                 $params["api_sig"] = $apiSig;
                 $params["frob"] = $frob;
                 $conn = new RestConnection(
-                    "http://api.flickr.com/services/rest/", $params);
+                    "http://api.flickr.com/services/rest/", null, $params);
                 $res = $conn->get();
                 $result = $res->getResponseBody();
                 $result = str_replace("<", "&lt;", $result);

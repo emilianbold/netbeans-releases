@@ -101,7 +101,7 @@ public class PolicyModelHelper {
      * @param c
      * @return
      */
-    private static ConfigVersion getWrittenConfigVersion(WSDLComponent c) {
+    public static ConfigVersion getWrittenConfigVersion(WSDLComponent c) {
         Policy p = getPolicyForElement(c);
         if (p != null) {
             return PolicyQName.getConfigVersion(p.getQName());

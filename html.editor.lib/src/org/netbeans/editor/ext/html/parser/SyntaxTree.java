@@ -67,7 +67,7 @@ public class SyntaxTree {
                 
                 AstNode newTagNode = new AstNode(tagName, AstNode.NodeType.TAG,
                         element.offset(), openingTagEndOffset, element);
-                
+                        
                 nodeStack.getLast().addChild(newTagNode);
                 assert element instanceof SyntaxElement.Tag;
                 

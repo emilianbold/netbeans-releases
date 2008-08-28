@@ -194,11 +194,6 @@ public class CreateWebPackFiles extends org.netbeans.modules.performance.utiliti
     @Override
     public void close(){
         log("::close");
-        try {
-            new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport        
-        } catch (Exception ex) {
-            log("Exception catched on CloseAllDocuments action: "+ex.getMessage());
-        }        
         cleanupTest();        
     }
     
