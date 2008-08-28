@@ -53,7 +53,7 @@ public class AddToIndexDDLTest extends DDLTestBase {
 
         addBasicColumn(tablename, col2name, Types.VARCHAR, 255);
 
-        AddToIndexDDL ddl = new AddToIndexDDL(spec, getSchema(), fixIdentifier(tablename));
+        AddToIndexDDL ddl = new AddToIndexDDL(getSpecification(), getSchema(), fixIdentifier(tablename));
 
         
         HashSet cols = new HashSet();

@@ -78,6 +78,10 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     private boolean updatingUrl = false;
     private boolean updatingFields = false;
 
+    // keeps track of the user's last selection of whether or not to
+    // show the jdbc url.  
+    private boolean userSpecifiedShowUrl = false;
+    
     private final LinkedHashMap<String, UrlField> urlFields =
             new LinkedHashMap<String, UrlField>();
 
@@ -531,6 +535,8 @@ private void showUrlCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
 }
 
 private void showUrl() {
+    userSpecifiedShowUrl = showUrlCheckBox.isSelected();
+    
     if (showUrlCheckBox.isSelected()) {
         updateUrlFromFields();
     }
@@ -616,7 +622,6 @@ private void showUrl() {
                 entry.getValue().getLabel().setVisible(false);
             }
 
-            showUrlCheckBox.setVisible(false);
             urlField.setVisible(false);
 
             checkValid();
@@ -644,10 +649,13 @@ private void showUrl() {
         }
 
         if (! jdbcurl.urlIsParsed()) {
-            showUrlCheckBox.setVisible(false);
+            showUrlCheckBox.setEnabled(false);
+            showUrlCheckBox.setSelected(true);
             urlField.setVisible(true);
             setUrlField();
         } else {
+            showUrlCheckBox.setEnabled(true);
+            showUrlCheckBox.setSelected(userSpecifiedShowUrl);
             showUrl();
         }
 

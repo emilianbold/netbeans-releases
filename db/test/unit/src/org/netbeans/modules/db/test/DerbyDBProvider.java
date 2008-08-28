@@ -52,6 +52,10 @@ import java.util.Vector;
 public class DerbyDBProvider extends DefaultDBProvider {
     @Override
     public void dropSchema(Connection conn, String schemaName) throws Exception {
+        if (!schemaExists(conn, schemaName)) {
+            return;
+        }
+
         // With Derby, you can't just drop the schema.  You have go manually
         // deal with all the constraints
         

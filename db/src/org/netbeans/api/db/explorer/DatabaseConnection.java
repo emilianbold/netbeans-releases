@@ -220,7 +220,11 @@ public final class DatabaseConnection {
      *         ConnectionManager.
      */
     public Connection getJDBCConnection() {
-        return getJDBCConnection(false);
+        if (!ConnectionList.getDefault().contains(delegate)) {
+            throw new IllegalStateException("This connection is not added to the ConnectionManager."); // NOI18N
+        }
+
+        return delegate.getJDBCConnection();
     }
     
     /**
