@@ -60,6 +60,7 @@ public class InfoHelper {
     }
     
     public DatabaseNodeInfo getTableInfo(String tablename) throws Exception {
+
         drvSpec.getTables(tablename, null);
         ResultSet rs = drvSpec.getResultSet();
         assert rs != null;

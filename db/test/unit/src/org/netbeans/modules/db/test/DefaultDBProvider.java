@@ -65,7 +65,7 @@ public class DefaultDBProvider implements DBProvider {
     }
 
     public void createTestTable(Connection conn, String schemaName, String tableName, String idName) throws Exception {
-        if (! tableExists(conn, schemaName, tableName)) {
+        if (tableExists(conn, schemaName, tableName)) {
             return;
         }
         conn.createStatement().executeUpdate("CREATE TABLE " + schemaName + '.' + tableName + " (" +
