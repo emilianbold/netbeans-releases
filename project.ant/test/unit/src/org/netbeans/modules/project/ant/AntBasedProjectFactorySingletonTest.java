@@ -74,38 +74,37 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/project.properties"), projdir, "nbproject/project.properties");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/private.properties"), projdir, "nbproject/private/private.properties");
         TestUtil.createFileFromContent(AntProjectHelperTest.class.getResource("data/global.properties"), scratch, "userdir/build.properties");
+        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType());
     }
 
     /**Test for second part of #42738.
      */
     public void testAntBasedProjectTypesChanged() throws Exception {
-        AntBasedProjectFactorySingleton factory = new AntBasedProjectFactorySingleton();
         AntBasedProjectType type1 = AntBasedTestUtil.testAntBasedProjectType();
         AntBasedProjectType type2 = AntBasedTestUtil.testAntBasedProjectType();
-        MockLookup.setInstances(factory, type1, type2);
+        MockLookup.setInstances(type1, type2);
         Method getAntBasedProjectTypeMethod = AntProjectHelper.class.getDeclaredMethod("getType", new Class[0]);
         getAntBasedProjectTypeMethod.setAccessible(true);
         Project p = ProjectManager.getDefault().findProject(projdir);
         AntProjectHelper helper = p.getLookup().lookup(AntProjectHelper.class);
         assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type2);
-        MockLookup.setInstances(factory, type1);
+        MockLookup.setInstances(type1);
         p = ProjectManager.getDefault().findProject(projdir);
         helper = p.getLookup().lookup(AntProjectHelper.class);
         assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type1);
-        MockLookup.setInstances(factory, type2);
+        MockLookup.setInstances(type2);
         p = ProjectManager.getDefault().findProject(projdir);
         helper = p.getLookup().lookup(AntProjectHelper.class);
         assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type2);
-        MockLookup.setInstances(factory);
+        MockLookup.setInstances();
         assertNull(ProjectManager.getDefault().findProject(projdir));
-        MockLookup.setInstances(factory, type1, type2);
+        MockLookup.setInstances(type1, type2);
         assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type2);
     }
 
     public void testDoNotLoadInvalidProject() throws Exception {
         String content = TestFileUtils.readFile(projdir.getFileObject("nbproject/project.xml"));
         TestFileUtils.writeFile(projdir, "nbproject/project.xml", content.replace("</project>", "<bogus/>\n</project>"));
-        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType());
         try {
             ProjectManager.getDefault().findProject(projdir);
             fail("should not have successfully loaded an invalid project.xml");
