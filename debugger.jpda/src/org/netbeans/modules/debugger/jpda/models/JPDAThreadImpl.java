@@ -438,7 +438,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 try {
                     l = threadReference.frames (from, length);
                 } catch (IndexOutOfBoundsException ioobex) {
-                    ioobex = Exceptions.attachMessage(ioobex, "from = "+from+", to = "+to+", frame count = "+max+", length = "+length);
+                    ioobex = Exceptions.attachMessage(ioobex, "from = "+from+", to = "+to+", frame count = "+max+", length = "+length+", fresh frame count = "+threadReference.frameCount());
                     throw ioobex;
                 }
             }
