@@ -191,7 +191,7 @@ public class SVGFormFileObjectListener implements FileChangeListener {
         for (String id : ids.keySet()) {
             String type = ids.get(id);
             if (MidpTypes.getSimpleClassName(SVGButtonCD.TYPEID).equals(type)) {
-                SVGFormImageParser.SVGFormComponent srcSvgComponent = SVGFormImageParser.SVGFormComponent.createSVGButton(id, SVGButtonCD.TYPEID);
+                SVGFormImageParser.SVGFormComponent srcSvgComponent = SVGFormImageParser.SVGFormComponent.createSVGButton(id, SVGButtonCD.TYPEID, new Float(10000));
                 DesignComponent svgComponent = srcSvgComponent.createComponent(svgForm);
                 svgForm.addComponent(svgComponent);
                 MidpArraySupport.append(svgForm, SVGFormCD.PROP_COMPONENTS, svgComponent);
@@ -216,7 +216,7 @@ public class SVGFormFileObjectListener implements FileChangeListener {
     }
 
     private static void createComponent(String id, TypeID type, DesignComponent svgForm) {
-        SVGFormImageParser.SVGFormComponent srcSvgComponent = SVGFormImageParser.SVGFormComponent.create(id, type);
+        SVGFormImageParser.SVGFormComponent srcSvgComponent = SVGFormImageParser.SVGFormComponent.create(id, type, new Float(10000));
         DesignComponent svgComponent = srcSvgComponent.createComponent(svgForm);
         svgForm.addComponent(svgComponent);
         MidpArraySupport.append(svgForm, SVGFormCD.PROP_COMPONENTS, svgComponent);
