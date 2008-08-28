@@ -54,16 +54,28 @@ import org.netbeans.modules.uml.drawingarea.view.AlignWithMoveStrategyProvider;
 import org.openide.util.Utilities;
 
 /**
- *
+ * The MoveNodeKeyAction will move the selected nodes vertically and horizontally.
+ * The direction of the movement can be restricted by using by sepecifing the 
+ * movement policy.
+ * 
  * @author treyspiva
  */
 public class MoveNodeKeyAction extends WidgetAction.Adapter
 {
-
+    private boolean allowMoveHorizontal = true;
+    private boolean allowMoveVertical = true;
+    
     public MoveNodeKeyAction()
     {
+        this(true, true);
     }
 
+    public MoveNodeKeyAction(boolean allowMoveHorizontal, boolean allowMoveVertical)
+    {
+        this.allowMoveHorizontal = allowMoveHorizontal;
+        this.allowMoveVertical = allowMoveVertical;
+    }
+    
     @Override
     public State keyPressed(Widget widget, WidgetKeyEvent event)
     {
@@ -79,19 +91,19 @@ public class MoveNodeKeyAction extends WidgetAction.Adapter
         {
 
             boolean update = false;
-            if(event.getKeyCode() == KeyEvent.VK_UP)
+            if((event.getKeyCode() == KeyEvent.VK_UP) && (allowMoveVertical == true))
             {
                 updateSelectedWidgets(widget.getScene(), 0, -10);
             }
-            else if(event.getKeyCode() == KeyEvent.VK_DOWN)
+            else if((event.getKeyCode() == KeyEvent.VK_DOWN) && (allowMoveVertical == true))
             {
                 updateSelectedWidgets(widget.getScene(), 0, 10);
             }
-            else if(event.getKeyCode() == KeyEvent.VK_LEFT)
+            else if((event.getKeyCode() == KeyEvent.VK_LEFT) && (allowMoveHorizontal == true))
             {
                 updateSelectedWidgets(widget.getScene(), -10, 0);
             }
-            else if(event.getKeyCode() == KeyEvent.VK_RIGHT)
+            else if((event.getKeyCode() == KeyEvent.VK_RIGHT) && (allowMoveHorizontal == true))
             {
                 updateSelectedWidgets(widget.getScene(), 10, 0);
 

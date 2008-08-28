@@ -149,7 +149,7 @@ public class SwingPaletteManager implements ContextPaletteManager
         {
             Widget selectedWidget = getScene().findWidget(selectedObjects.get(0));
             
-            Util.makeSureWidgetIsVisible(selectedWidget);
+//            Util.makeSureWidgetIsVisible(selectedWidget);
             cancelledWidget=selectedWidget;
             
             if(selectedWidget instanceof UMLEdgeWidget)

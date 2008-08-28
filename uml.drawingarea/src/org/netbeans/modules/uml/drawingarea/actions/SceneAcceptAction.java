@@ -120,11 +120,10 @@ public class SceneAcceptAction extends WidgetAction.Adapter
                     IPresentationElement element = createModelElement(paletteItem,scene);
                     addWidget(event.getPoint(), scene, paletteItem, element);
 
-                    scene.setSelectedObjects(Collections.singleton(element));
+                    scene.userSelectionSuggested(Collections.singleton(element), false);
                     scene.setFocusedObject(element);
 
                     retVal = WidgetAction.State.CONSUMED;
-//                    scene.setActiveTool(DesignerTools.SELECT);
 
                 }
             }
@@ -252,7 +251,7 @@ public class SceneAcceptAction extends WidgetAction.Adapter
 
             if (!presentations.isEmpty())
             {
-                scene.setSelectedObjects(new HashSet(presentations));
+                scene.userSelectionSuggested(new HashSet(presentations), false);
                 
                 if(presentations.size() == 1)
                 {
@@ -488,7 +487,7 @@ public class SceneAcceptAction extends WidgetAction.Adapter
             {
                 addWidget(event.getPoint(), scene, paletteItem, pe);
 
-                scene.setSelectedObjects(Collections.singleton(pe));
+                scene.userSelectionSuggested(Collections.singleton(pe), false);
                 scene.setFocusedObject(pe);
 
                 ret = State.CONSUMED;

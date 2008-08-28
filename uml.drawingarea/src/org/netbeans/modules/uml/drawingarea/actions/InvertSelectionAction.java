@@ -88,7 +88,7 @@ public class InvertSelectionAction extends NodeAction
                     tobeSelected.add(o);
             }
         }
-        scene.setSelectedObjects(tobeSelected);
+        scene.userSelectionSuggested(tobeSelected, false);
     }
 
     protected boolean enable(Node[] activatedNodes)

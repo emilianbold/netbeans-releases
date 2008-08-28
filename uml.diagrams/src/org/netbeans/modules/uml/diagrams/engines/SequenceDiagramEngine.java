@@ -128,6 +128,7 @@ import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
 import org.netbeans.modules.uml.drawingarea.actions.DiscoverRelationshipAction;
 import org.netbeans.modules.uml.drawingarea.actions.HierarchicalLayoutAction;
+import org.netbeans.modules.uml.drawingarea.actions.MoveNodeKeyAction;
 import org.netbeans.modules.uml.drawingarea.actions.NavigateLinkAction;
 import org.netbeans.modules.uml.drawingarea.actions.OrthogonalLayoutAction;
 import org.netbeans.modules.uml.drawingarea.actions.SQDMessageConnectProvider;
@@ -440,7 +441,8 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         IElement  element=node.getFirstSubject();
         if(node.getFirstSubject().getExpandedElementType().equals("Lifeline"))//works for both Lifeline and ActorLifeline
         {
-            WidgetAction lifelineMoveAction=new LifelineMoveAction(new LifelineMoveStrategy(), new LifelineMoveProvider(provider));        
+            WidgetAction lifelineMoveAction=new LifelineMoveAction(new LifelineMoveStrategy(), new LifelineMoveProvider(provider));
+            selectTool.addAction(new MoveNodeKeyAction(true, false));
             selectTool.addAction(lifelineMoveAction);
         }
         else if(widget instanceof CombinedFragmentWidget)//covers combinedfragments, references, interaction boundary
