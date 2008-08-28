@@ -779,7 +779,7 @@ public class HTMLCompletionQuery  {
                 if (languagePath.innerLanguage() == HTMLTokenId.language()) {
                     doc.runAtomic(new Runnable() {
                         public void run() {
-                            HtmlIndenter.indentEndTag(doc, languagePath, dotPos > 0 ? dotPos - 1 : dotPos);
+                            HtmlIndenter.indentEndTag(doc, languagePath, dotPos, baseText);
                         }
                     });
 
