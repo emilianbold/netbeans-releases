@@ -171,7 +171,7 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
 //                public void fileAttributeChanged(FileAttributeEvent fe) {
 //                }
 //            });
-            if (wsdl == null) {
+            if ((wsdl == null)||(wsdl.getLookup().lookup(DataEditorSupport.class) == null)) {
                 return new PreviewMultiViewElement();
             } else {
                 DataEditorSupport des = wsdl.getLookup().lookup(DataEditorSupport.class);
