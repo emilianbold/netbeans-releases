@@ -79,10 +79,12 @@ public final class SelectAllAction extends NodeAction
             {
                 continue;
             }
+            widget.revalidate();
             selected.add(o);
         }
         scene.clearLockedSelected();
         scene.userSelectionSuggested(selected, false);
+        scene.validate();
     }
 
     protected boolean enable(Node[] activatedNodes)

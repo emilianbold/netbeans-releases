@@ -7,7 +7,7 @@ template<typename T> struct template_parameter_descendant : public T {
     empty_class& get_empty();
 
     void inline_use_anc_mem(template_parameter_descendant x, empty_class e) {
-        // this->ancestor_member(); // warning
+        this->ancestor_member(); // warning
         ancestor_member(); // warning
         x.ancestor_member(); // warning
         template_parameter_descendant::get_instance().ancestor_member(); // warning
@@ -22,7 +22,7 @@ template<typename T> struct template_parameter_descendant : public T {
 };
 
 void template_parameter_descendant::use_anc_mem(template_parameter_descendant x, empty_class e) {
-    // this->ancestor_member(); // warning
+    this->ancestor_member(); // warning
     ancestor_member(); // warning
     x.ancestor_member(); // warning
     template_parameter_descendant::get_instance().ancestor_member(); // warning
@@ -36,7 +36,7 @@ void template_parameter_descendant::use_anc_mem(template_parameter_descendant x,
 
 template<typename T> struct descendant_2 : template_parameter_descendant<T> {
     void inline_use_anc_mem(descendant_2 x, empty_class e) {
-        // this->ancestor_member(); // warning
+        this->ancestor_member(); // warning
         ancestor_member(); // warning
         x.ancestor_member(); // warning
         descendant_2 array[2];
@@ -50,7 +50,7 @@ template<typename T> struct descendant_2 : template_parameter_descendant<T> {
 
 template<typename T> struct descendant_3 : descendant_2<T> {
     void inline_use_anc_mem(descendant_3 x, empty_class e) {
-        // this->ancestor_member(); // warning
+        this->ancestor_member(); // warning
         ancestor_member(); // warning
         x.ancestor_member(); // warning
         descendant_3 array[2];
