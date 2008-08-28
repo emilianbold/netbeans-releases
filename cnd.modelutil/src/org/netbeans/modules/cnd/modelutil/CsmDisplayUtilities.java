@@ -209,7 +209,11 @@ public class CsmDisplayUtilities {
             if (target == null) {
                 tooltipText = getString("DSC_IncludeErrorTooltip", htmlize(incl.getText()));  // NOI18N
             } else {
-                tooltipText = getString("DSC_IncludeTooltip", target.getAbsolutePath(), target.getProject().getName());  // NOI18N
+                if (target.getProject().isArtificial()) {
+                    tooltipText = getString("DSC_IncludeLibraryTooltip", target.getAbsolutePath());// NOI18N
+                } else {
+                    tooltipText = getString("DSC_IncludeTooltip", target.getAbsolutePath(), target.getProject().getName());  // NOI18N
+                }
             }
         } else if (CsmKindUtilities.isQualified(item)) {
             tooltipText = ((CsmQualifiedNamedElement) item).getQualifiedName().toString();

@@ -27,7 +27,7 @@
  */
 package org.netbeans.modules.db.explorer.dlg;
 
-import org.netbeans.modules.db.util.DDLTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
  *
@@ -58,7 +58,7 @@ public class AddTableColumnDDLTest extends DDLTestBase {
     
     private void addColumn(String tablename, String colname) throws Exception {
         AddTableColumnDDL ddl = new AddTableColumnDDL(
-                spec, drvSpec, SCHEMA, fixIdentifier(tablename));
+                spec, drvSpec, getSchema(), fixIdentifier(tablename));
         
         ColumnItem col = new ColumnItem();
         col.setProperty(ColumnItem.NAME, colname);
@@ -81,13 +81,13 @@ public class AddTableColumnDDLTest extends DDLTestBase {
         createSimpleIndex(tablename, indexName, firstColname);        
 
         AddTableColumnDDL ddl = new AddTableColumnDDL(
-                spec, drvSpec, SCHEMA, fixIdentifier(tablename));
+                spec, drvSpec, getSchema(), fixIdentifier(tablename));
         
         ColumnItem col = new ColumnItem();
         col.setProperty(ColumnItem.NAME, secondColname);
         TypeElement type = new TypeElement("java.sql.Types.VARCHAR", "VARCHAR");
         col.setProperty(ColumnItem.TYPE, type);
-        col.setProperty(ColumnItem.SIZE, "255");
+        col.setProperty(ColumnItem.SIZE, "20");
         col.setProperty(ColumnItem.INDEX, new Boolean(true));
         
         ddl.execute(secondColname, col, fixIdentifier(indexName));

@@ -152,7 +152,7 @@ public class BuildNumberGlassFish extends Task {
             "sjsas-9_1_02-([a-z0-9]+)-bin-" + // NOI18N
             "b(([0-9]+)[a-z]?)-linux-([A-Za-z0-9_]+)\\.bin"); // NOI18N
     private static final Pattern PATTERN_V3 = Pattern.compile(            
-            "glassfish-v3-([a-z0-9]+)-b(([0-9]+)[a-z]?)-([0-9_]+)-windows\\.exe"); // NOI18N
+            "glassfish-v3-([a-z0-9]+)-b(([0-9]+)[a-z]?)-([0-9_]+)\\.zip"); // NOI18N
     
     /**
      * Date format used in the input file.

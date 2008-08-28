@@ -1824,7 +1824,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         return out;
     }
-
+    
     public static FileImpl getStartFile(final APTPreprocHandler.State state) {
         StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
 	ProjectBase startProject = getStartProject(startEntry);

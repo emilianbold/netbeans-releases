@@ -116,27 +116,79 @@ public class NbBasePanel extends DestinationPanel {
         
         jdkLocationPanel.setWizard(getWizard());
         
-        jdkLocationPanel.setProperty(
-                JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY,
-                getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
-        jdkLocationPanel.setProperty(
-                JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
-                getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
-        
-        if (getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY) != null) {
-            jdkLocationPanel.setProperty(
-                    JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY,
-                    getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY));
+        //first, initialize the min and max values with the panel`s default
+        //second, check if nbProduct has the properties set
+        //third, check other nb- products if they have these properties set        
+        String minVersionNbBase = getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY);
+        String maxVersionNbBase = getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY);
+        String preferredVersion = getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY);
+        String jreAllowedStr = getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY);
+
+        Version min = (minVersionNbBase != null) ? Version.getVersion(minVersionNbBase) : null;
+        Version max = (maxVersionNbBase != null) ? Version.getVersion(maxVersionNbBase) : null;
+        Version preferred = (preferredVersion != null) ? Version.getVersion(preferredVersion) : null;
+        boolean jreAllowed = !"false".equals(jreAllowedStr); // if nothing defined - then true
+
+        if (getWizard().getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY) != null) {
+            min = Version.getVersion(getWizard().getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
         }
-        List <Product> toInstall = Registry.getInstance().getProductsToInstall();
-        jdkLocationPanel.setJreAllowed(true);
-        for(Product product : toInstall) {
-            String uid = product.getUid();
-            if(uid.startsWith("nb-") && !uid.matches("nb-(base|cnd|php|ruby|webcommon)")) {
-                jdkLocationPanel.setJreAllowed(false);
-                break;
+        if (getWizard().getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY) != null) {
+            max = Version.getVersion(getWizard().getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY));
+        }
+        if (getWizard().getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY) != null) {
+            preferred = Version.getVersion(getWizard().getProperty(JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY));
+        }
+        if (getWizard().getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY) != null) {
+            jreAllowed = !"false".equals(getWizard().getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY));
+        }
+        
+        for (Product product : Registry.getInstance().getProductsToInstall()) {
+            if (product.getUid().startsWith("nb-")) {
+                jreAllowed &= !"false".equals(product.getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY));
+
+                String minVersionString = product.getProperty(JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY);
+                if (minVersionString != null) {
+                    Version depMinVersion = Version.getVersion(minVersionString);
+                    if (min == null || depMinVersion.newerThan(min)) {
+                        min = depMinVersion;
+                    }
+                }
+                String maxVersionString = product.getProperty(JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY);
+                if (maxVersionString != null) {
+                    Version depMaxVersion = Version.getVersion(maxVersionString);
+                    if (min == null || depMaxVersion.olderThan(max)) {
+                        max = depMaxVersion;
+                    }
+                }
+            // do not check preferred version of the dependent nb product :
+            // it is not clear how to handle that
             }
         }
+
+
+        String finalMinVersion = (min == null) ? null : min.toString();
+        String finalMaxVersion = (max == null) ? null : max.toString();
+        String preferedVersion = (preferred == null) ? null : preferred.toString();
+        String jreAllowedString = Boolean.toString(jreAllowed);
+
+        if (finalMinVersion != null) {
+            jdkLocationPanel.setProperty(
+                    JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY,
+                    finalMinVersion);
+        }
+        if (finalMaxVersion != null) {
+            jdkLocationPanel.setProperty(
+                    JdkLocationPanel.MAXIMUM_JDK_VERSION_PROPERTY,
+                    finalMaxVersion);
+        }
+        if (preferedVersion != null) {
+            jdkLocationPanel.setProperty(
+                    JdkLocationPanel.PREFERRED_JDK_VERSION_PROPERTY,
+                    preferedVersion);
+        }
+        jdkLocationPanel.setProperty(
+                JdkLocationPanel.JRE_ALLOWED_PROPERTY,
+                jreAllowedString);
         
         jdkLocationPanel.initialize();
         

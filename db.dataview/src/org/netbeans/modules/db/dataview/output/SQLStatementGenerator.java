@@ -51,6 +51,8 @@ import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
 import org.netbeans.modules.db.dataview.meta.DBPrimaryKey;
 import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -151,6 +153,12 @@ class SQLStatementGenerator {
     String generateCreateStatement(DBTable table) throws DBException, Exception{
 
         Connection conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
+        if(conn == null) {
+            String msg = NbBundle.getMessage(SQLStatementGenerator.class,"MSG_connection_failure", dataView.getDatabaseConnection());
+            NotifyDescriptor nd = new NotifyDescriptor.Message(msg);
+            DialogDisplayer.getDefault().notify(nd);
+        }
+
         DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
         boolean isdb2 = dbMeta.getDBType() == DBMetaDataFactory.DB2? true : false;
         Map<Integer, String> typeInfo = dbMeta.buildDBSpecificDatatypeMap();

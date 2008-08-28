@@ -1,34 +1,34 @@
-[<h:inputText value="#{|}"/>, cookie, <h:inputText value="#{cookie[]}"/>, 267]
+[<h:inputText value="#{|}"/>, cookie[], <h:inputText value="#{cookie[]}"/>, 269]
 MyBean MyBean
-applicationScope
-cookie
-headerValues
-header
-initParam
+applicationScope[]
+cookie[]
+headerValues[]
+header[]
+initParam[]
 pageContext
-pageScope
-paramValues
-param
-requestScope
-sessionScope
-End cursor position = 297
-[<h:outputText value="#{|}" title="Hi" />, MyBean MyBean, <h:outputText value="#{MyBean}" title="Hi" />, 382]
+pageScope[]
+paramValues[]
+param[]
+requestScope[]
+sessionScope[]
+End cursor position = 299
+[<h:outputText value="#{|}" title="Hi" />, MyBean MyBean, <h:outputText value="#{MyBean}" title="Hi" />, 384]
 MyBean MyBean
-applicationScope
-cookie
-headerValues
-header
-initParam
+applicationScope[]
+cookie[]
+headerValues[]
+header[]
+initParam[]
 pageContext
-pageScope
-paramValues
-param
-requestScope
-sessionScope
-End cursor position = 412
-[<h:outputText value="#{MyBean.|}" title="Hi" />, name String, <h:outputText value="#{MyBean.name}" title="Hi" />, 506]
-class Class<?>
-doSome 
-name String
-toString 
-End cursor position = 541
+pageScope[]
+paramValues[]
+param[]
+requestScope[]
+sessionScope[]
+End cursor position = 414
+[<h:outputText value="#{MyBean.|}" title="Hi" />, String name, <h:outputText value="#{MyBean.name}" title="Hi" />, 508]
+Class class
+doSome
+String name
+toString
+End cursor position = 543
