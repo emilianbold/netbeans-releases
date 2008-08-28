@@ -552,6 +552,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
         categoryPanel = new javax.swing.JPanel();
         manageStyles = new javax.swing.JButton();
 
+        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(styleComboBox);

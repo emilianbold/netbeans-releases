@@ -144,7 +144,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         if( typedefs != null && typedefs.length > 0 ) {
                             for (int i = 0; i < typedefs.length; i++) {
                                 // It could be important to register in project before add as member...
-                                ((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
+                                ((FileImpl)getContainingFile()).getProjectImpl(true).registerDeclaration(typedefs[i]);
                                 addMember((MemberTypedef) typedefs[i]);
                             }
                         }
@@ -201,7 +201,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             if( typedefs != null && typedefs.length > 0 ) {
                                 for (int i = 0; i < typedefs.length; i++) {
                                     // It could be important to register in project before add as member...
-                                    ((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
+                                    ((FileImpl)getContainingFile()).getProjectImpl(true).registerDeclaration(typedefs[i]);
                                     addMember((MemberTypedef) typedefs[i]);
                                 }
                                 break;

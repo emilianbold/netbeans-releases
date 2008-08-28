@@ -1111,7 +1111,7 @@ public final class FileUtil extends Object {
     }
 
     /** Resolves MIME type. Registered resolvers are invoked and used to achieve this goal.
-    * Resolvers must subclass MIMEResolver. If resolvers don`t recognize MIME type then
+    * Resolvers must subclass MIMEResolver. If resolvers don't recognize MIME type then
     * MIME type is obtained  for a well-known extension.
     * @param fo whose MIME type should be recognized
     * @return the MIME type for the FileObject, or <code>null</code> if the FileObject is unrecognized
@@ -1125,7 +1125,7 @@ public final class FileUtil extends Object {
 
         return retVal;
     }
-
+    
     /** Finds mime type by calling getMIMEType, but
      * instead of returning null it fallbacks to default type
      * either text/plain or content/unknown (even for folders)
@@ -1466,8 +1466,9 @@ public final class FileUtil extends Object {
     private static boolean canBeCanonicalizedOnWindows(final File file) {
         /*#4089199, #95031 - Flopy and empty CD-drives can't be canonicalized*/
         // UNC path \\computerName can't be canonicalized - parent is "\\\\" and exists() returns false
+        // #137407 - "." can be canonicalized - parent == null and file.isAbsolute() returns false
         String parent = file.getParent();
-        if ((parent == null || parent.equals("\\\\")) && Utilities.isWindows()) {//NOI18N
+        if (((parent == null && file.isAbsolute()) || (parent != null && parent.equals("\\\\"))) && Utilities.isWindows()) {//NOI18N
             FileSystemView fsv = getFileSystemView();
             return (fsv != null) ? !fsv.isFloppyDrive(file) && file.exists() : false;
         }

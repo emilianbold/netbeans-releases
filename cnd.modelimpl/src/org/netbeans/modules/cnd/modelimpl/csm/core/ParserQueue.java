@@ -268,7 +268,7 @@ public final class ParserQueue {
     private String traceState4File(FileImpl file, Set/*<FileImpl>*/ files) {
         StringBuilder builder = new StringBuilder(" "); // NOI18N
         builder.append(file);
-        builder.append("\n of project ").append(file.getProjectImpl()); // NOI18N
+        builder.append("\n of project ").append(file.getProjectImpl(true)); // NOI18N
         builder.append("\n content of projects files set:\n"); // NOI18N
         builder.append(files);
         builder.append("\nqueue content is:\n"); // NOI18N
@@ -297,7 +297,7 @@ public final class ParserQueue {
             if (queue.isEmpty()) {
                 serial = 0;
             }
-            Set/*<FileImpl>*/ files = getProjectFiles(file.getProjectImpl());
+            Set/*<FileImpl>*/ files = getProjectFiles(file.getProjectImpl(true));
             Entry entry = null;
             boolean addEntry = false;
             if( files.contains(file) ) {
@@ -378,7 +378,7 @@ public final class ParserQueue {
                 return null;
             }
             file = e.getFile();
-            project = file.getProjectImpl();
+            project = file.getProjectImpl(true);
             ProjectData data = getProjectData(project, true);
             data.filesInQueue.remove(file);
             data.filesBeingParsed.add(file);
@@ -411,7 +411,7 @@ public final class ParserQueue {
         boolean notifyListeners = false;
 
         synchronized ( lock ) {
-            project = file.getProjectImpl();
+            project = file.getProjectImpl(true);
             ProjectData data = getProjectData(project, true);
             if( data.filesInQueue.contains(file) ) {
                 //queue.remove(file); //TODO: think over / profile, probably this line is expensive
@@ -544,7 +544,7 @@ public final class ParserQueue {
         // we know, that each file is parsed only once =>
         // let's speed up work with queue ~75% by skipping such files
         // Also check that file project was not closed
-        return !file.isParsed() && !file.getProjectImpl().isDisposing() || addAlways;
+        return !file.isParsed() && !file.getProjectImpl(true).isDisposing() || addAlways;
     }
 
     public void onStartAddingProjectFiles(ProjectBase project) {
@@ -566,7 +566,7 @@ public final class ParserQueue {
         ProjectBase project;
         ProjectData data;
         synchronized (lock) {
-            project = file.getProjectImpl();
+            project = file.getProjectImpl(true);
             data = getProjectData(project, true);
             data.filesBeingParsed.remove(file);
             lastFileInProject = data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty();
