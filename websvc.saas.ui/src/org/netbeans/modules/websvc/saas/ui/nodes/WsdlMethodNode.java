@@ -144,7 +144,7 @@ public class WsdlMethodNode extends AbstractNode {
             int y = image1.getHeight(null) - image2.getHeight(null);
             return Utilities.mergeImages( image1, image2, x, y);
         } else
-            return Utilities.loadImage("org/netbeans/modules/websvc/manager/resources/methodicon.png");
+            return Utilities.loadImage("org/netbeans/modules/websvc/saas/ui/resources/methodicon.png");
     }
 
     /**
