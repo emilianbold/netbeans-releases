@@ -147,6 +147,7 @@ public class NbJSDebuggerActionsProvider extends ActionsProviderSupport
 
         // Initially enabled actions - ACTION_START
         setEnabled(ActionsManager.ACTION_START, true);
+        setEnabled(ActionsManager.ACTION_KILL, true);
 
         // Add listener to JSDebugger
         debuggerListener = new JSDebuggerEventListenerImpl();

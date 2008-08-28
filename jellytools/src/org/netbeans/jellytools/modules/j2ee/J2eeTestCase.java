@@ -192,15 +192,15 @@ public class J2eeTestCase extends JellyTestCase {
             LOG.info("adding server tests");
             return addTest(conf, clazz, testNames);
         } else {
-            if (server.equals(TOMCAT) || server.equals(ANY)){
-                registerTomcat();
-                if (isRegistered(TOMCAT)) {
-                    return addTest(conf, clazz, testNames);
-                }
-            }
             if (server.equals(GLASSFISH) || server.equals(ANY)){
                 registerGlassfish();
                 if (isRegistered(GLASSFISH)) {
+                    return addTest(conf, clazz, testNames);
+                }
+            }
+            if (server.equals(TOMCAT) || server.equals(ANY)){
+                registerTomcat();
+                if (isRegistered(TOMCAT)) {
                     return addTest(conf, clazz, testNames);
                 }
             }
