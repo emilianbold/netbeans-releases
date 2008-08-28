@@ -64,7 +64,7 @@ public class SaasServicesModel {
 
     public static final String PROP_GROUPS = "groups";
     public static final String PROP_SERVICES = "services";
-    public static final String ROOT_GROUP = "root";
+    public static final String ROOT_GROUP = "Root";
     public static final String WEBSVC_HOME = System.getProperty("netbeans.user") +
             File.separator + "config" + File.separator + "WebServices"; // NOI18N
 
