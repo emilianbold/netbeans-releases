@@ -304,7 +304,11 @@ public final class DBMetaDataFactory {
                 fromsql = fromsql.substring(0, splitByFrom[0].length()); 
             }
             StringTokenizer t = new StringTokenizer(fromsql, " ,");
-            tableName = t.nextToken();
+
+            if(t.hasMoreTokens()) {
+                tableName = t.nextToken();
+            }
+
             if(t.hasMoreTokens()) {
                 tableName = "";
             }
