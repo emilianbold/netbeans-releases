@@ -372,7 +372,7 @@ public class JPDAStart extends Task implements Runnable {
                 Map<URL, ArtifactsUpdated> listeners = new HashMap<URL, ArtifactsUpdated>();
                 List<Breakpoint> artificialBreakpoints = new LinkedList<Breakpoint>();
                 if (listeningCP != null) {
-                    for (String cp : listeningCP.split(":")) {
+                    for (String cp : listeningCP.split(File.pathSeparator)) {
                         getProject().log("cp=" + cp, Project.MSG_DEBUG);
                         File f = new File(cp);
                         f = FileUtil.normalizeFile(f);
