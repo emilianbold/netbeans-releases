@@ -60,6 +60,8 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.client.javascript.debugger.NbJSDebuggerConstants;
 import org.netbeans.modules.web.client.javascript.debugger.http.ui.models.HttpActivitiesModel;
 import org.netbeans.modules.web.client.javascript.debugger.ui.NbJSEditorUtil;
@@ -105,6 +107,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.text.Line;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -130,6 +133,7 @@ public final class NbJSDebugger {
     private URLContentProvider contentProvider;
     private JSDebugger debugger;
     private HashMap<Breakpoint, JSBreakpointImpl> breakpointsMap = new HashMap<Breakpoint, JSBreakpointImpl>();
+    private StartDebuggerTask startDebuggerTask;
 
     private class JSDebuggerEventListenerImpl implements JSDebuggerEventListener {
 
@@ -233,6 +237,44 @@ public final class NbJSDebugger {
             }
         }
     }
+    
+    private class StartDebuggerTask implements Cancellable, Runnable {
+        
+        private boolean success = false;
+        ProgressHandle handle;
+        
+        public StartDebuggerTask() {
+            this.handle = ProgressHandleFactory.createHandle(
+                    NbBundle.getMessage(NbJSDebugger.class, "MSG_TASK_INITIALIZING_JAVASCRIPT_DEBUGGER"), this);
+        }
+        
+        
+        public void run() {
+            handle.start();
+            try {
+                success = debugger.startDebugging();
+            } catch (Exception ex) {
+                Log.getLogger().log(Level.INFO, "Unexpected exception while starting debugger", ex);
+            }
+            handle.finish();
+        }
+        
+        public boolean cancel() {
+            try {
+                debugger.cancelStartDebugging();
+                return true;
+            } catch (Exception ex) {
+                Log.getLogger().log(Level.INFO, "Unexpected exception while canceling debugger start", ex);
+                return false;
+            }
+        }
+        
+        public boolean taskSucceeded() {
+            return success;
+        }
+        
+    }
+    
     private JSDebuggerEventListener debuggerListener;
     private JSDebuggerConsoleEventListener debuggerConsoleEventListener;
     private JSHttpMessageEventListener httpMessageEventListener;
@@ -326,7 +368,20 @@ public final class NbJSDebugger {
 
     public void startJSDebugging() {
         if (debugger != null) {
-            debugger.startDebugging();
+            startDebuggerTask = new StartDebuggerTask();
+            RequestProcessor.Task task = RequestProcessor.getDefault().post(startDebuggerTask);
+            task.waitFinished();
+            
+            synchronized(this) {
+                if (startDebuggerTask != null) {
+                    boolean success = startDebuggerTask.taskSucceeded();
+                    startDebuggerTask = null;
+
+                    if (!success) {
+                        setState(JSDebuggerState.DISCONNECTED);
+                    }
+                }
+            }
         }
     }
 
@@ -406,7 +461,7 @@ public final class NbJSDebugger {
         }
     }
 
-    synchronized void setState(JSDebuggerState state) {
+    synchronized void setState(JSDebuggerState state) {      
         this.state = state;
         if (state == JSDebuggerState.STARTING_INIT) {
             // Set the initial feature set
@@ -448,7 +503,7 @@ public final class NbJSDebugger {
         JSDebuggerEvent resourcedDebuggerEvent =
                 new JSDebuggerEvent(NbJSDebugger.this, this.state);
         fireJSDebuggerEvent(resourcedDebuggerEvent);
-        if (state.getState() == JSDebuggerState.State.DISCONNECTED) {
+        if (state.getState() == JSDebuggerState.State.DISCONNECTED) {            
             if (debuggerManagerListener != null) {
                 DebuggerManager.getDebuggerManager().removeDebuggerListener(debuggerManagerListener);
                 debuggerManagerListener = null;
@@ -464,6 +519,11 @@ public final class NbJSDebugger {
                 console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_CLOSE_JAVASCRIPT_DEBUGGER"));
                 console.closeInputOutput();
                 console = null;
+            }
+            
+            if (startDebuggerTask != null) {
+                startDebuggerTask.cancel();
+                startDebuggerTask = null;
             }
         }
     }

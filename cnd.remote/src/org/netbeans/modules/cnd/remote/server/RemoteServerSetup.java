@@ -41,13 +41,17 @@ package org.netbeans.modules.cnd.remote.server;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteCopySupport;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,20 +78,32 @@ public class RemoteServerSetup {
     
     protected RemoteServerSetup(String hkey) {
         this.hkey = hkey;
+        Lookup.Result<SetupProvider> results = Lookup.getDefault().lookup(new Lookup.Template<SetupProvider>(SetupProvider.class));
+        Collection<? extends SetupProvider> list = results.allInstances();
+        SetupProvider[] providers = list.toArray(new SetupProvider[list.size()]);
         
         // Script setup map
         scriptSetupMap = new HashMap<String, Double>();
         scriptSetupMap.put("getCompilerSets.bash", Double.valueOf(0.7)); // NOI18N
+        for (SetupProvider provider : providers) {
+            Map<String, Double> map = provider.getScriptFiles();
+            if (map != null) {
+                for (Map.Entry<String, Double> entry : map.entrySet()) {
+                    scriptSetupMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
         
         // Binary setup map
-        // TODO: this should be done in gdb module (see IZ 144053)
         binarySetupMap = new HashMap<String, String>();
-        binarySetupMap.put(REMOTE_LIB_DIR + "GdbHelper-Linux-x86.so", "bin/GdbHelper-Linux-x86.so"); // NOI18N
-        binarySetupMap.put(REMOTE_LIB_DIR + "GdbHelper-SunOS-x86.so", "bin/GdbHelper-SunOS-x86.so"); // NOI18N
-        binarySetupMap.put(REMOTE_LIB_DIR + "GdbHelper-SunOS-sparc.so", "bin/GdbHelper-SunOS-sparc.so"); // NOI18N
-        binarySetupMap.put(REMOTE_LIB_DIR + "unbuffer-Linux-x86.so", "bin/unbuffer-Linux-x86.so"); // NOI18N
-        binarySetupMap.put(REMOTE_LIB_DIR + "unbuffer-SunOS-x86.so", "bin/unbuffer-SunOS-x86.so"); // NOI18N
-        binarySetupMap.put(REMOTE_LIB_DIR + "unbuffer-SunOS-sparc.so", "bin/unbuffer-SunOS-sparc.so"); // NOI18N
+        for (SetupProvider provider : providers) {
+            Map<String, String> map = provider.getBinaryFiles();
+            if (map != null) {
+                for (Map.Entry<String, String> entry : map.entrySet()) {
+                    binarySetupMap.put(REMOTE_LIB_DIR + entry.getKey(), entry.getValue());
+                }
+            }
+        }
         
         updateMap = new HashMap<String, List<String>>();
     }

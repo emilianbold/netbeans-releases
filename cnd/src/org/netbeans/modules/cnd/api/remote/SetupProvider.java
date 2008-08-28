@@ -36,54 +36,19 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.client.tools.firefox;
 
-import java.io.IOException;
-import java.net.URI;
+package org.netbeans.modules.cnd.api.remote;
 
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
-import org.netbeans.modules.web.client.tools.common.launcher.Utils;
-import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSAbstractExternalDebugger;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
+import java.util.Map;
 
 /**
+ * An interface to allow cnd modules to add binary and script files to the cnd.remote setup and initialization.
  *
- * @author Sandip V. Chitale <sandipchitale@netbeans.org>, jdeva
+ * @author gordonp
  */
-public class FFJSDebugger extends JSAbstractExternalDebugger {
+public interface SetupProvider {
 
-    public FFJSDebugger(URI uri, HtmlBrowser.Factory browser) {
-        super(uri, browser);
-    }
+    public Map<String, String> getBinaryFiles();
 
-    @Override
-    protected void launchImpl(int port) {
-        LaunchDescriptor launchDescriptor = new LaunchDescriptor(getBrowserExecutable());
-        launchDescriptor.setURI(Utils.getDebuggerLauncherURI(port, getID()));
-        if (!Utilities.isMac()) {
-            launchDescriptor.setArguments(getBrowserArguments());
-        }
-        try {
-            Launcher.launch(launchDescriptor);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }        
-    }
-    
-    @Override
-    protected boolean startDebuggingImpl() {
-        boolean result = super.startDebuggingImpl();
-        startHttpMonitorThread();
-        return result;
-    }    
-
-    public String getID() {
-        if (ID == null) {
-            ID = FFJSDebuggerConstants.NETBEANS_FIREFOX_DEBUGGER + "-" + getSequenceId(); // NOI18N
-        }
-        return ID;
-    }
+    public Map<String, Double> getScriptFiles();
 }

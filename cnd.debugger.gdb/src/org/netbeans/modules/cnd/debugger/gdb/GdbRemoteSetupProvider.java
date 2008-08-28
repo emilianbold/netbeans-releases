@@ -36,54 +36,35 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.client.tools.firefox;
 
-import java.io.IOException;
-import java.net.URI;
+package org.netbeans.modules.cnd.debugger.gdb;
 
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher;
-import org.netbeans.modules.web.client.tools.common.launcher.Launcher.LaunchDescriptor;
-import org.netbeans.modules.web.client.tools.common.launcher.Utils;
-import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSAbstractExternalDebugger;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.cnd.api.remote.SetupProvider;
 
 /**
+ * An implementation of ServerProvider which configures remote development so that its
+ * setup step copies some shared libraries to the remote host.
  *
- * @author Sandip V. Chitale <sandipchitale@netbeans.org>, jdeva
+ * @author gordonp
  */
-public class FFJSDebugger extends JSAbstractExternalDebugger {
+public class GdbRemoteSetupProvider implements SetupProvider {
 
-    public FFJSDebugger(URI uri, HtmlBrowser.Factory browser) {
-        super(uri, browser);
+    private Map<String, String> binarySetupMap;
+
+    public GdbRemoteSetupProvider() {
+        binarySetupMap = new HashMap<String, String>();
+        binarySetupMap.put("GdbHelper-Linux-x86.so", "bin/GdbHelper-Linux-x86.so"); // NOI18N
+        binarySetupMap.put("GdbHelper-SunOS-x86.so", "bin/GdbHelper-SunOS-x86.so"); // NOI18N
+        binarySetupMap.put("GdbHelper-SunOS-sparc.so", "bin/GdbHelper-SunOS-sparc.so"); // NOI18N
     }
 
-    @Override
-    protected void launchImpl(int port) {
-        LaunchDescriptor launchDescriptor = new LaunchDescriptor(getBrowserExecutable());
-        launchDescriptor.setURI(Utils.getDebuggerLauncherURI(port, getID()));
-        if (!Utilities.isMac()) {
-            launchDescriptor.setArguments(getBrowserArguments());
-        }
-        try {
-            Launcher.launch(launchDescriptor);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }        
+    public Map<String, String> getBinaryFiles() {
+        return binarySetupMap;
     }
-    
-    @Override
-    protected boolean startDebuggingImpl() {
-        boolean result = super.startDebuggingImpl();
-        startHttpMonitorThread();
-        return result;
-    }    
 
-    public String getID() {
-        if (ID == null) {
-            ID = FFJSDebuggerConstants.NETBEANS_FIREFOX_DEBUGGER + "-" + getSequenceId(); // NOI18N
-        }
-        return ID;
+    public Map<String, Double> getScriptFiles() {
+        return null;
     }
 }

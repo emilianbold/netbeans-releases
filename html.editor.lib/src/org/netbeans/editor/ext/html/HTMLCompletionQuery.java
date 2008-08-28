@@ -53,6 +53,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.dtd.*;
@@ -770,32 +771,44 @@ public class HTMLCompletionQuery  {
         
         @Override
         protected void reformat(JTextComponent component, String text) {
-
             final BaseDocument doc = (BaseDocument) component.getDocument();
             final int dotPos = component.getCaretPosition();
-            final Indent indent = Indent.get(doc);
-            indent.lock();
 
-            try {
-                doc.runAtomic(new Runnable() {
-
-                    public void run() {
-                        try {
-                            int startOffset = Utilities.getRowStart(doc, dotPos);
-                            int endOffset = Utilities.getRowEnd(doc, dotPos);
-                            indent.reindent(startOffset, endOffset);
-                        } catch (BadLocationException ex) {
-                            //ignore
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+            for (final LanguagePath languagePath : (Set<LanguagePath>) tokenHierarchy.languagePaths()) {
+                if (languagePath.innerLanguage() == HTMLTokenId.language()) {
+                    doc.runAtomic(new Runnable() {
+                        public void run() {
+                            HtmlIndenter.indentEndTag(doc, languagePath, dotPos > 0 ? dotPos - 1 : dotPos);
                         }
-                    }
-                });
-            } finally {
-                indent.unlock();
-            }
+                    });
 
+//            //PUT BACK ONCE WE PROPERY IMPLEMENT HTML INDENT TASK
+//            final Indent indent = Indent.get(doc);
+//            indent.lock();
+//            try {
+//                doc.runAtomic(new Runnable() {
+//
+//                    public void run() {
+//                        try {
+//                            int startOffset = Utilities.getRowStart(doc, dotPos);
+//                            int endOffset = Utilities.getRowEnd(doc, dotPos);
+//                            indent.reindent(startOffset, endOffset);
+//                        } catch (BadLocationException ex) {
+//                            //ignore
+//                        }
+//                    }
+//                });
+//            } finally {
+//                indent.unlock();
+//            }
+
+                }
+
+            }
         }
-        
     }
+        
     
     private static class CharRefItem extends HTMLResultItem {
         
