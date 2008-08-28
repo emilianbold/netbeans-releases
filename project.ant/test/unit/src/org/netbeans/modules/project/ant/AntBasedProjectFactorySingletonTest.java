@@ -105,9 +105,7 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
     public void testDoNotLoadInvalidProject() throws Exception {
         String content = TestFileUtils.readFile(projdir.getFileObject("nbproject/project.xml"));
         TestFileUtils.writeFile(projdir, "nbproject/project.xml", content.replace("</project>", "<bogus/>\n</project>"));
-        AntBasedProjectFactorySingleton factory = new AntBasedProjectFactorySingleton();
-        AntBasedProjectType type1 = AntBasedTestUtil.testAntBasedProjectType();
-        MockLookup.setInstances(factory, type1);
+        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType());
         try {
             ProjectManager.getDefault().findProject(projdir);
             fail("should not have successfully loaded an invalid project.xml");
