@@ -155,8 +155,7 @@ class SQLStatementGenerator {
         Connection conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
         if(conn == null) {
             String msg = NbBundle.getMessage(SQLStatementGenerator.class,"MSG_connection_failure", dataView.getDatabaseConnection());
-            NotifyDescriptor nd = new NotifyDescriptor.Message(msg);
-            DialogDisplayer.getDefault().notify(nd);
+            throw new DBException(msg);
         }
 
         DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
