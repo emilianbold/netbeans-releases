@@ -144,14 +144,14 @@
                     <code-name-base>org.netbeans.modules.xml.tools</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>1.13</specification-version>
+                        <specification-version>1.14.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.xsl</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.13</specification-version>
+                        <specification-version>1.14.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
