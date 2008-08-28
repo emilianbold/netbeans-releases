@@ -905,7 +905,7 @@ public final class CsmProjectContentResolver {
             // we are in global context and are interested in all base classes
             minVisibility = CsmInheritanceUtilities.MAX_VISIBILITY;
         } else {
-            minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration);
+            minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, CsmVisibility.PUBLIC, true);
         }
 
         Map<CharSequence, CsmClass> set = getBaseClasses(clazz, contextDeclaration, strPrefix, match, new HashSet<CsmClass>(), minVisibility, INIT_INHERITANCE_LEVEL);
