@@ -40,7 +40,7 @@
 package org.netbeans.modules.db.mysql.actions;
 
 import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.modules.db.mysql.ui.CreateNewDatabasePanel;
+import org.netbeans.modules.db.mysql.ui.CreateDatabasePanel;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -102,6 +102,6 @@ public class CreateDatabaseAction extends CookieAction {
         Node node = activatedNodes[0];
         
         DatabaseServer server = node.getCookie(DatabaseServer.class);
-        CreateNewDatabasePanel.showCreateDatabaseDialog(server);
+        CreateDatabasePanel.showCreateDatabaseDialog(server);
     }
 }
