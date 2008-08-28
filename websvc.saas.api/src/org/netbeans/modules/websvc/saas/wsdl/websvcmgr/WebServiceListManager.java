@@ -49,7 +49,7 @@ import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 
 /**
  *
- * @author Roderico Cruz
+ * @author rico
  */
 public class WebServiceListManager implements PropertyChangeListener {
 

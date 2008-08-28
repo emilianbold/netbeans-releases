@@ -52,7 +52,7 @@ import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author nam
+ * @author rico
  */
 public class WsdlDataManagerImpl implements WsdlDataManager, PropertyChangeListener {
 
