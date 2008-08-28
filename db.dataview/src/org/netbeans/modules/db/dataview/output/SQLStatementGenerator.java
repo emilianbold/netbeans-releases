@@ -247,23 +247,27 @@ class SQLStatementGenerator {
 
     private void generateWhereCondition(StringBuilder result, StringBuilder raw, List<Integer> types, List<Object> values, int rowNum, TableModel model) {
         DBPrimaryKey key = tblMeta.geTable(0).getPrimaryKey();
+        boolean keySelected = false;
         boolean and = false;
 
         if (key != null) {
             for (String keyName : key.getColumnNames()) {
-                and = addSeparator(and, result, raw, " AND "); // NOI18N
                 for (int i = 0; i < model.getColumnCount(); i++) {
                     String columnName = tblMeta.getColumnName(i);
                     if (columnName.equals(keyName)) {
                         Object val = model.getValueAt(rowNum, i);
                         if (val != null) {
+                            keySelected = true;
+                            and = addSeparator(and, result, raw, " AND "); // NOI18N
                             generateNameValue(i, result, raw, val, values, types);
                             break;
                         }
                     }
                 }
             }
-        } else {
+        }
+
+        if(key == null || !keySelected) {
             for (int i = 0; i < model.getColumnCount(); i++) {
                 Object val = model.getValueAt(rowNum, i);
                 and = addSeparator(and, result, raw, " AND "); // NOI18N
