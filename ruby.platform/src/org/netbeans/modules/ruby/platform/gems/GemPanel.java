@@ -1028,7 +1028,10 @@ public final class GemPanel extends JPanel {
             final JTextField searchField, final JList list,
             final JTextPane desc, final JButton button) {
         // keep search filter fields in sync
-        searchField.setText(getFilter());
+        int pos = searchField.getCaretPosition();
+        String _filter = getFilter();
+        searchField.setText(_filter);
+        searchField.setCaretPosition(pos > _filter.length() ? _filter.length() : pos);
 
         GemListModel gemModel = (GemListModel) list.getModel();
         gemModel.applyFilter(getFilter());
