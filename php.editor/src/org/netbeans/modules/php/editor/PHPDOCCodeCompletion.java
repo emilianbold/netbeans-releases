@@ -71,8 +71,8 @@ public class PHPDOCCodeCompletion {
     private static final String TAGS[] = new String[]{
         "abstract", "access", "author", "category", "copyright", "deprecated", "example", "final",
         "filesource", "global", "ignore", "internal", "license", "link", "method", "name", "package",
-        "param", "property", "return", "see", "since", "static", "staticvar", "subpackage", "todo",
-        "tutorial", "uses", "var", "version"
+        "param", "property", "property-read", "property-write", "return", "see", "since", "static",
+        "staticvar", "subpackage", "todo", "tutorial", "uses", "var", "version"
     };
     private static final Map<String, String> CUSTOM_TEMPLATES = new TreeMap<String, String>();
     private static String docURLBase;
