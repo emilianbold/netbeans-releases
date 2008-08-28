@@ -51,8 +51,6 @@ import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
 import org.netbeans.modules.db.dataview.meta.DBPrimaryKey;
 import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -164,7 +162,7 @@ class SQLStatementGenerator {
 
         StringBuffer sql = new StringBuffer();
         List<DBColumn> columns = table.getColumnList();
-        sql.append("CREATE TABLE ").append(table.getQualifiedName()).append("(");
+        sql.append("CREATE TABLE ").append(table.getQualifiedName()).append(" (");
         int count = 0;
         for (DBColumn col : columns) {
             if (count++ > 0) {
