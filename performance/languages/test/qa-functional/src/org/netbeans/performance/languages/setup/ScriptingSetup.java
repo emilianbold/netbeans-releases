@@ -42,8 +42,6 @@
 package org.netbeans.performance.languages.setup;
 
 
-import java.io.File;
-import java.io.IOException;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.modules.performance.utilities.CommonUtilities;

@@ -142,12 +142,13 @@ public class TypingInScriptingEditor extends org.netbeans.modules.performance.ut
         nodePath = "Web Pages";
         doMeasurement();        
     }
-    public void test_PHP_EditorTyping() {
-        testProject = Projects.PHP_PROJECT;
-        fileName = "php20kb.php";
-        nodePath = "Source Files";
-        doMeasurement();         
-    }
+// TODO: Enable once PhpPerfTest is created    
+//    public void test_PHP_EditorTyping() {
+//        testProject = Projects.PHP_PROJECT;
+//        fileName = "php20kb.php";
+//        nodePath = "Source Files";
+//        doMeasurement();
+//    }
     /*
     public void test_JS_EditorTyping() {
         testProject = "";

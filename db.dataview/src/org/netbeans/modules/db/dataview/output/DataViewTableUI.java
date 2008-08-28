@@ -76,6 +76,8 @@ import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -247,7 +249,8 @@ class DataViewTableUI extends JTable {
                     dialog.setText(createSQL + ";\n"); // NOI18N
                     dialog.setVisible(true);
                 } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(ex.getMessage());
+                    DialogDisplayer.getDefault().notify(nd);
                 }
             }
         });
@@ -270,7 +273,8 @@ class DataViewTableUI extends JTable {
                     dialog.setText(insertSQL);
                     dialog.setVisible(true);
                 } catch (DBException ex) {
-                    Exceptions.printStackTrace(ex);
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(ex.getMessage());
+                    DialogDisplayer.getDefault().notify(nd);
                 }
             }
         });

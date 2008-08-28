@@ -48,17 +48,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.StringTokenizer;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -134,7 +130,7 @@ public class HelpManager {
                     try {
                         URL urll = f.toURL();
                         urll = FileUtil.getArchiveRoot(urll);
-                        helpZipURL = new URI(urll.toString()).toString();
+                        helpZipURL = new URI(urll.getProtocol(), urll.getFile(), urll.getRef()).toString();
                     } catch (java.net.MalformedURLException e){
                         ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
                         helpMap = new Hashtable();
@@ -264,9 +260,7 @@ public class HelpManager {
         if(link != null){
             String surl = helpZipURL + link;
             try{
-                url = new URI(surl).toURL();
-            } catch (URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
+                url = new URL(surl);
             } catch (java.net.MalformedURLException e){
                 ErrorManager.getDefault().log(e.toString());
                 return null;
@@ -282,9 +276,7 @@ public class HelpManager {
         if(helpItem != null){
             String surl = helpZipURL + helpItem.getFile();
             try{
-                url = new URI(surl).toURL();
-            } catch (URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
+                url = new URL(surl);
             } catch (java.net.MalformedURLException e){
                 ErrorManager.getDefault().log(e.toString());
                 return null;

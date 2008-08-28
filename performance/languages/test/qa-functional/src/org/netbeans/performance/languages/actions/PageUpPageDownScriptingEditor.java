@@ -7,6 +7,7 @@ package org.netbeans.performance.languages.actions;
 
 
 import java.awt.event.KeyEvent;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -15,6 +16,7 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
@@ -118,20 +120,21 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.modules.performa
         pgup = false;        
         doMeasurement();
     }
-    public void testPgUp_In_PHPEditor() {
-        testProject = Projects.PHP_PROJECT;
-        fileName = "php20kb.rb";
-        nodePath = "Source Files";        
-        pgup = true;        
-        doMeasurement();        
-    }
-    public void testPgDn_In_PHPEditor() {
-        testProject = Projects.PHP_PROJECT;
-        fileName = "php20kb.rb";
-        nodePath = "Source Files";        
-        pgup = false;        
-        doMeasurement();        
-    }
+// TODO: Enable once PhpPerfTest is created    
+//    public void testPgUp_In_PHPEditor() {
+//        testProject = Projects.PHP_PROJECT;
+//        fileName = "php20kb.rb";
+//        nodePath = "Source Files";
+//        pgup = true;
+//        doMeasurement();
+//    }
+//    public void testPgDn_In_PHPEditor() {
+//        testProject = Projects.PHP_PROJECT;
+//        fileName = "php20kb.rb";
+//        nodePath = "Source Files";
+//        pgup = false;
+//        doMeasurement();
+//    }
     public void testPgUp_In_RHTMLEditor() {
         testProject = Projects.RAILS_PROJECT;
         fileName = "rhtml20kb.rhtml";
@@ -179,4 +182,14 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.modules.performa
         doMeasurement();
     }    
     
+    public static Test suite() {
+        prepareForMeasurements();
+
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(PageUpPageDownScriptingEditor.class)
+            .enableModules(".*")
+            .clusters(".*")
+            .reuseUserDir(true)
+        );    
+    }
 }

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,59 +31,27 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.actions;
 
+package org.netbeans.modules.css.editor;
 
-import java.net.MalformedURLException;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
+import org.netbeans.spi.editor.bracesmatching.MatcherContext;
+import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
 
 /**
- * @author Radek Matous
+ *
+ * @author marekfukala
  */
-public class RunCommand extends Command implements Displayable {
-    public static final String ID = ActionProvider.COMMAND_RUN;
-    public static final String DISPLAY_NAME=NbBundle.getMessage(RunCommand.class, "LBL_RunProject");
-    private final RunLocalCommand localCommand;
+public class CssBracesMatcherFactory implements BracesMatcherFactory {
 
-    /**
-     * @param project
-     */
-    public RunCommand(PhpProject project) {
-        super(project);
-        localCommand = new RunLocalCommand(project);
+    public BracesMatcher createMatcher(MatcherContext context) {
+        return BracesMatcherSupport.defaultMatcher(context, -1, -1);
     }
 
-    @Override
-    public void invokeAction(Lookup context) throws IllegalArgumentException {
-        if (isScriptSelected()) {
-            localCommand.invokeAction(null);
-        } else {
-            eventuallyUploadFiles(getProject().getSourcesDirectory());
-            try {
-                showURLForProjectFile();
-            } catch (MalformedURLException ex) {
-                //TODO: improve error handling
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
-    @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return true;
-    }
-
-    @Override
-    public String getCommandId() {
-        return ID;
-    }
-
-    public String getDisplayName() {
-        return DISPLAY_NAME;
-    }
 }
