@@ -92,6 +92,7 @@ final class TestMethodNodeChildren extends Children.Array {
 
     /**
      */
+    @Override
     protected void addNotify() {
         Report.Trouble trouble = testcase.trouble;
         String topFrameInfo = (trouble.stackTrace != null)
