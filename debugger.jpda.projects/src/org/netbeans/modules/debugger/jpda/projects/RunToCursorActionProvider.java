@@ -173,11 +173,9 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
         if (i == k) return false;
 
         // check if this action should be enabled
-        return ((ActionProvider) p.getLookup ().lookup (
-                ActionProvider.class
-            )).isActionEnabled (
+        return actionProvider.isActionEnabled (
                 ActionProvider.COMMAND_DEBUG, 
-                MainProjectManager.getDefault ().getMainProject ().getLookup ()
+                p.getLookup ()
             );
     }
     

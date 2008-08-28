@@ -56,6 +56,32 @@ class clsCVarAssignment {
 
 }
 
+class clsBVarAssignment extends clsAVarAssignment {
+    /**
+     * @return clsAVarAssignment
+     */
+    function bCreateA() {
+        $this1 = $this->aCreateA();
+        $this1->aCreateA();
+        return new clsAVarAssignment();
+    }
+    /**
+     * @return clsCVarAssignment
+     */
+    function bcreateC() {
+        $self1 = self::bCreateA();
+        $self1->aCreateA();
+        return new clsCVarAssignment();
+    }
+    /**
+     * @return clsCVarAssignment
+     */
+    function bcreateB() {
+        $parent1 = parent::aStaticCreateA();
+        $parent1->aCreateA();
+        return new clsCVarAssignment();
+    }
+}
 
 /**
  * @return clsAVarAssignment
@@ -68,6 +94,15 @@ function fncCreateA() {
  */
 function fncCreateC() {
     return new clsAVarAssignment();
+}
+
+function fn1(clsAVarAssignment $aParam) {
+    $aParam2 = $aParam;
+    $aParam2->aCreateA();
+    function fn2(clsAVarAssignment $cParam) {
+        $cParam2 = $cParam;
+        $cParam2->aCreateA();
+    }
 }
 
 function mytest() {

@@ -393,47 +393,55 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     public CallStackFrame[] getCallStack (int from, int to) 
     throws AbsentInformationException {
         try {
-            int max = threadReference.frameCount();
-            from = Math.min(from, max);
-            to = Math.min(to, max);
+            List l;
             CallStackFrame[] theCachedFrames = null;
-            if (to - from > 1) {  /*TODO: Frame caching cause problems with invalid frames. Some fix is necessary...
-             *  as a workaround, frames caching is disabled.*/
-                synchronized (cachedFramesLock) {
-                    if (from == cachedFramesFrom && to == cachedFramesTo) {
-                        return cachedFrames;
-                    }
-                    if (from >= cachedFramesFrom && to <= cachedFramesTo) {
-                        // TODO: Arrays.copyOfRange(cachedFrames, from - cachedFramesFrom, to);
-                        return copyOfRange(cachedFrames, from - cachedFramesFrom, to - cachedFramesFrom);
-                    }
-                    if (cachedFramesFrom >= 0 && cachedFramesTo > cachedFramesFrom) {
-                        int length = to - from;
-                        theCachedFrames = new CallStackFrame[length];
-                        for (int i = 0; i < length; i++) {
-                            if (i >= cachedFramesFrom && i < cachedFramesTo) {
-                                theCachedFrames[i] = cachedFrames[i - cachedFramesFrom];
-                            } else {
-                                theCachedFrames[i] = null;
+            synchronized (this) {
+                int max = threadReference.frameCount();
+                from = Math.min(from, max);
+                to = Math.min(to, max);
+                if (to - from > 1) {  /*TODO: Frame caching cause problems with invalid frames. Some fix is necessary...
+                 *  as a workaround, frames caching is disabled.*/
+                    synchronized (cachedFramesLock) {
+                        if (from == cachedFramesFrom && to == cachedFramesTo) {
+                            return cachedFrames;
+                        }
+                        if (from >= cachedFramesFrom && to <= cachedFramesTo) {
+                            // TODO: Arrays.copyOfRange(cachedFrames, from - cachedFramesFrom, to);
+                            return copyOfRange(cachedFrames, from - cachedFramesFrom, to - cachedFramesFrom);
+                        }
+                        if (cachedFramesFrom >= 0 && cachedFramesTo > cachedFramesFrom) {
+                            int length = to - from;
+                            theCachedFrames = new CallStackFrame[length];
+                            for (int i = 0; i < length; i++) {
+                                if (i >= cachedFramesFrom && i < cachedFramesTo) {
+                                    theCachedFrames[i] = cachedFrames[i - cachedFramesFrom];
+                                } else {
+                                    theCachedFrames[i] = null;
+                                }
                             }
                         }
                     }
                 }
+                if (from < 0) {
+                    throw new IndexOutOfBoundsException("from = "+from);
+                }
+                if (from == to) {
+                    return new CallStackFrame[0];
+                }
+                if (from >= max) {
+                    throw new IndexOutOfBoundsException("from = "+from+" is too high, frame count = "+max);
+                }
+                int length = to - from;
+                if (length < 0 || (from+length) > max) {
+                    throw new IndexOutOfBoundsException("from = "+from+", to = "+to+", frame count = "+max);
+                }
+                try {
+                    l = threadReference.frames (from, length);
+                } catch (IndexOutOfBoundsException ioobex) {
+                    ioobex = Exceptions.attachMessage(ioobex, "from = "+from+", to = "+to+", frame count = "+max+", length = "+length+", fresh frame count = "+threadReference.frameCount());
+                    throw ioobex;
+                }
             }
-            if (from < 0) {
-                throw new IndexOutOfBoundsException("from = "+from);
-            }
-            if (from == to) {
-                return new CallStackFrame[0];
-            }
-            if (from >= max) {
-                throw new IndexOutOfBoundsException("from = "+from+" is too high, frame count = "+max);
-            }
-            int length = to - from;
-            if (length < 0 || (from+length) > max) {
-                throw new IndexOutOfBoundsException("from = "+from+", to = "+to+", frame count = "+max);
-            }
-            List l = threadReference.frames (from, length);
             int n = l.size();
             CallStackFrame[] frames = new CallStackFrame[n];
             for (int i = 0; i < n; i++) {

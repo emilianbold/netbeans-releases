@@ -131,6 +131,9 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
                                 if (name.startsWith("//localhost/")) { // NOI18N
                                     name = name.substring("//localhost/".length()); // NOI18N
                                 }
+                                if ("".equals(name)) {
+                                    name = "ROOT"; // NOI18N // consistent with JBoss4
+                                }
                                 if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
                                     continue;
                                 }

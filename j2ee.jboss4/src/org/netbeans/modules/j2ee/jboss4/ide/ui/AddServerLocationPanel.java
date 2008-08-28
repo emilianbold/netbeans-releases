@@ -56,7 +56,8 @@ import org.openide.util.NbBundle;
  * @author Ivan Sidorkin
  */
 public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeListener {
-    private final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE; // NOI18N
+    private final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;
+    private final static String PROP_INFO_MESSAGE = WizardDescriptor.PROP_INFO_MESSAGE;
     
     private JBInstantiatingIterator instantiatingIterator;
     
@@ -73,8 +74,6 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     }
     
     private void fireChangeEvent(ChangeEvent ev) {
-        //@todo implement it
-        
         Iterator it;
         synchronized (listeners) {
             it = new HashSet(listeners).iterator();
@@ -97,15 +96,20 @@ public class AddServerLocationPanel implements WizardDescriptor.Panel, ChangeLis
     }
     
     public boolean isValid() {
-        String locationStr = ((AddServerLocationVisualPanel)getComponent()).getInstallLocation();
-        if (locationStr == null || "".equals(locationStr.trim())
-                || !JBPluginUtils.isGoodJBServerLocation(new File(locationStr))) {
-            wizard.putProperty(PROP_ERROR_MESSAGE,  NbBundle.getMessage(AddServerLocationPanel.class, "MSG_InvalidServerLocation")); // NOI18N
+        String locationStr = component.getInstallLocation();
+        if (locationStr == null || locationStr.trim().length() < 1) {
+            wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(AddServerLocationPanel.class, "MSG_SpecifyServerLocation")); // NOI18N
             return false;
         }
-        
+
+        if (!JBPluginUtils.isGoodJBServerLocation(new File(locationStr))) {
+            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(AddServerLocationPanel.class, "MSG_InvalidServerLocation")); // NOI18N
+            return false;
+        }
+                
         wizard.putProperty(PROP_ERROR_MESSAGE, null);
-        JBPluginProperties.getInstance().setInstallLocation(((AddServerLocationVisualPanel)getComponent()).getInstallLocation());
+        wizard.putProperty(PROP_INFO_MESSAGE, null);
+        JBPluginProperties.getInstance().setInstallLocation(component.getInstallLocation());
         JBPluginProperties.getInstance().saveProperties();
         instantiatingIterator.setInstallLocation(locationStr);
         return true;

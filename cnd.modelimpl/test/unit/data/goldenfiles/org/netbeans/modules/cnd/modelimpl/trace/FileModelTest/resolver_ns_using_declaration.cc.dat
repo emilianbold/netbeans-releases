@@ -49,7 +49,7 @@ NAMESPACE DEFINITOIN rnud_2 [12:1/131-34:2/524] SCOPE: resolver_ns_using_declara
                     UNIQUE NAME F:rnud_2::C::CC::foo()
                     PARAMETERS:
                     RETURNS int TEXT=int  [28:13/476-28:16/479]
-    USING DECL. C::CC  [33:5/510-33:16/521]; REF DECL: null  SCOPE: rnud_2 
+    USING DECL. C::CC  [33:5/510-33:16/521]; REF DECL: rnud_2::C::CC  [21:9/296-29:10/496] SCOPE: rnud_2 
 NAMESPACE DEFINITOIN rnud_2 [37:1/527-41:2/591] SCOPE: resolver_ns_using_declaration.cc
     FUNCTION DEFINITION foo  [38:5/550-40:6/589] FunctionDefinitionImpl SCOPE: resolver_ns_using_declaration.cc
         SIGNATURE foo()
@@ -126,7 +126,7 @@ NAMESPACE DEFINITIONS for rnud_2 (rnud_2)
     resolver_ns_using_declaration.cc  [37:1/527-41:2/591]
 NAMESPACE rnud_2 (rnud_2) 
     USING DECL. rnud::A::B  [13:5/154-13:21/170]; REF DECL: rnud::A::B  [3:9/43-8:10/120] SCOPE: rnud_2 
-    USING DECL. C::CC  [33:5/510-33:16/521]; REF DECL: null  SCOPE: rnud_2 
+    USING DECL. C::CC  [33:5/510-33:16/521]; REF DECL: rnud_2::C::CC  [21:9/296-29:10/496] SCOPE: rnud_2 
     NAMESPACE DEFINITIONS for A (rnud_2::A) 
         resolver_ns_using_declaration.cc  [14:5/176-18:6/237]
     NAMESPACE A (rnud_2::A) 

@@ -72,7 +72,6 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     private List<File>   jdkLocations;
     private List<String> jdkLabels;
     private static File lastSelectedJava = null;
-    private boolean jreAllowed;
     
     public JdkLocationPanel() {
         setProperty(MINIMUM_JDK_VERSION_PROPERTY,
@@ -81,7 +80,8 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 DEFAULT_MAXIMUM_JDK_VERSION);
         setProperty(VENDOR_JDK_ALLOWED_PROPERTY,
                 DEFAULT_VENDOR_JDK_ALLOWED);
-        
+        setProperty(JRE_ALLOWED_PROPERTY, 
+                DEFAULT_JRE_ALLOWED);
         setProperty(LOCATION_LABEL_TEXT_PROPERTY,
                 DEFAULT_LOCATION_LABEL_TEXT);
         setProperty(LOCATION_BUTTON_TEXT_PROPERTY,
@@ -216,11 +216,9 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     public List<String> getLabels() {
         return jdkLabels;
     }
-    public void setJreAllowed(boolean isJreAllowed) {
-        jreAllowed = isJreAllowed;
-    }
-    public boolean isJreAllowed() {
-        return jreAllowed;
+    
+    private boolean isJreAllowed() {        
+        return "true".equals(getProperty(JRE_ALLOWED_PROPERTY));
     }
     
     public File getSelectedLocation() {
@@ -537,6 +535,10 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             "preferred.jdk.version"; // NOI18N
     public static final String VENDOR_JDK_ALLOWED_PROPERTY =
             "vendor.jdk.allowed.pattern"; // NOI18N
+    public static final String JRE_ALLOWED_PROPERTY =
+            "jre.allowed"; // NOI18N
+    public static final String DEFAULT_JRE_ALLOWED =
+            "false";//NOI18N
     
     public static final String DEFAULT_LOCATION_LABEL_TEXT =
             ResourceUtils.getString(JdkLocationPanel.class,

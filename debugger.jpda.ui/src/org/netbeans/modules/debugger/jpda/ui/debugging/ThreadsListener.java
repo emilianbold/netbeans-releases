@@ -362,7 +362,7 @@ public class ThreadsListener extends DebuggerManagerAdapter {
         
     }
 
-    class BreakpointHits {
+    static class BreakpointHits {
         private Set<JPDAThread> stoppedThreadsSet = new HashSet<JPDAThread>();
         private LinkedList<JPDAThread> stoppedThreads = new LinkedList<JPDAThread>();
         

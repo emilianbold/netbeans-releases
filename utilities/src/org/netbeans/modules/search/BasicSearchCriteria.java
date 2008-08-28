@@ -75,6 +75,13 @@ import static java.util.logging.Level.FINEST;
  */
 final class BasicSearchCriteria {
 
+    /**
+     * maximum size of file of unrecognized file that will be searched.
+     * Files of uknown type that whose size exceed this limit will be considered
+     * binary and will not be searched.
+     */
+    private static final int MAX_UNRECOGNIZED_FILE_SIZE = 5 * (1 << 20); //5 MiB
+
     private static int instanceCounter;
     private final int instanceId = instanceCounter++;
     private static final Logger LOG = Logger.getLogger(
@@ -603,8 +610,11 @@ final class BasicSearchCriteria {
     private static boolean isTextFile(FileObject fileObj) {
         String mimeType = fileObj.getMIMEType();
         
-        if (mimeType.equals("content/unknown")                          //NOI18N
-                || mimeType.startsWith("text/")) {                      //NOI18N
+        if (mimeType.equals("content/unknown")) {                       //NOI18N
+            return fileObj.getSize() <= MAX_UNRECOGNIZED_FILE_SIZE;
+        }
+
+        if (mimeType.startsWith("text/")) {                             //NOI18N
             return true;
         }
 
