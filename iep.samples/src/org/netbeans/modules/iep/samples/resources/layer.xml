@@ -1,0 +1,100 @@
+<?xml version="1.0"?>
+<!--
+  The contents of this file are subject to the terms of the Common Development
+  and Distribution License (the License). You may not use this file except in
+  compliance with the License.
+  
+  You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+  or http://www.netbeans.org/cddl.txt.
+  
+  When distributing Covered Code, include this CDDL Header Notice in each file
+  and include the License file at http://www.netbeans.org/cddl.txt.
+  If applicable, add the following below the CDDL Header, with the fields
+  enclosed by brackets [] replaced by your own identifying information:
+  "Portions Copyrighted [year] [name of copyright owner]"
+  
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+  Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="Samples">
+                <folder name="SOA">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.samples.resources.Bundle"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/iep/samples/resources/category.html"/>
+
+                    <file name="IEPBluePrint1">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/iep/samples/resources/project.png"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.samples.resources.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.iep.samples.BluePrint1SampleWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/iep/samples/resources/BluePrint1.html"/>
+                        <attr name="position" intvalue="900"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>            
+
+                    <file name="IEPBluePrint2">
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/iep/samples/resources/project.png"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.samples.resources.Bundle"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.iep.samples.BluePrint2SampleWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/iep/samples/resources/BluePrint2.html"/>
+                        <attr name="position" intvalue="1000"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>  
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="org-netbeans-modules-iep-samples-resources-zip">
+        <!-- "type" attribute's possible values: 
+        doc 
+        http://www.netbeans.org/ns/j2ee-jbi/1
+        http://www.netbeans.org/ns/j2ee-ieppro/1
+        http://www.netbeans.org/ns/j2se-project/3
+        ....
+        -->
+        <!-- XXX in <file name="XXX" .../> must match the template project name -->
+        <folder name="BluePrint1">
+            <file name="templateJBI" url="zip/BluePrint1/templateJBI.zip">
+                <attr name="type" stringvalue="http://www.netbeans.org/ns/j2ee-jbi/1"/>
+                <attr name="serviceEngine" boolvalue="false"/>
+                <attr name="postfix" stringvalue="JBI"/>
+            </file>
+            <file name="templateIEP" url="zip/BluePrint1/templateIEP.zip">
+                <attr name="type" stringvalue="http://www.netbeans.org/ns/j2ee-ieppro/1"/>
+                <attr name="serviceEngine" boolvalue="true"/>
+                <attr name="postfix" stringvalue="IEP"/>
+            </file>    
+            <file name="datafeed" url="zip/BluePrint1/datafeed.zip">
+                <attr name="type" stringvalue="http://www.netbeans.org/ns/j2se-project/3"/>
+                <attr name="serviceEngine" boolvalue="false"/>
+                <attr name="postfix" stringvalue="Datafeed"/>
+            </file>
+            <file name="tableinput" url="zip/BluePrint1/tableinput.zip">
+                <attr name="type" stringvalue="http://www.netbeans.org/ns/j2se-project/3"/>
+                <attr name="serviceEngine" boolvalue="false"/>
+                <attr name="postfix" stringvalue="TableInput"/>
+            </file>
+        </folder>
+        <folder name="BluePrint2">
+            <file name="templateJBI" url="zip/BluePrint2/templateJBI.zip">
+                <attr name="type" stringvalue="http://www.netbeans.org/ns/j2ee-jbi/1"/>
+                <attr name="serviceEngine" boolvalue="false"/>
+                <attr name="postfix" stringvalue="JBI"/>
+            </file>
+            <file name="templateIEP" url="zip/BluePrint2/templateIEP.zip">
+                <attr name="type" stringvalue="http://www.netbeans.org/ns/j2ee-ieppro/1"/>
+                <attr name="serviceEngine" boolvalue="true"/>
+                <attr name="postfix" stringvalue="IEP"/>
+            </file>    
+            <file name="datafeed" url="zip/BluePrint2/datafeed.zip">
+                <attr name="type" stringvalue="http://www.netbeans.org/ns/j2se-project/3"/>
+                <attr name="serviceEngine" boolvalue="false"/>
+                <attr name="postfix" stringvalue="Datafeed"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>
