@@ -140,6 +140,7 @@ public class BuildArtifactMapperImpl {
         return result;
     }
     
+    @SuppressWarnings("deprecation")
     public static boolean ensureBuilt(URL sourceRoot, boolean cleanCompletely) throws IOException {
         File targetFolder = getTarget(sourceRoot);
         
@@ -159,7 +160,7 @@ public class BuildArtifactMapperImpl {
         if (tagFile.exists()) {
             return true;
         }
-
+        
         delete(targetFolder, cleanCompletely);
         
         if (!targetFolder.exists() && !targetFolder.mkdirs()) {
