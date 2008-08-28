@@ -120,21 +120,20 @@ public class PageUpPageDownScriptingEditor extends org.netbeans.modules.performa
         pgup = false;        
         doMeasurement();
     }
-// TODO: Enable once PhpPerfTest is created    
-//    public void testPgUp_In_PHPEditor() {
-//        testProject = Projects.PHP_PROJECT;
-//        fileName = "php20kb.rb";
-//        nodePath = "Source Files";
-//        pgup = true;
-//        doMeasurement();
-//    }
-//    public void testPgDn_In_PHPEditor() {
-//        testProject = Projects.PHP_PROJECT;
-//        fileName = "php20kb.rb";
-//        nodePath = "Source Files";
-//        pgup = false;
-//        doMeasurement();
-//    }
+    public void testPgUp_In_PHPEditor() {
+        testProject = Projects.PHP_PROJECT;
+        fileName = "php20kb.php";
+        nodePath = "Source Files";
+        pgup = true;
+        doMeasurement();
+    }
+    public void testPgDn_In_PHPEditor() {
+        testProject = Projects.PHP_PROJECT;
+        fileName = "php20kb.php";
+        nodePath = "Source Files";
+        pgup = false;
+        doMeasurement();
+    }
     public void testPgUp_In_RHTMLEditor() {
         testProject = Projects.RAILS_PROJECT;
         fileName = "rhtml20kb.rhtml";

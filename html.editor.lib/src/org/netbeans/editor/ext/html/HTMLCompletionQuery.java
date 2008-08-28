@@ -85,7 +85,10 @@ public class HTMLCompletionQuery  {
     private static final String SCRIPT_TAG_NAME = "SCRIPT"; //NOI18N
     private static final String STYLE_TAG_NAME = "STYLE"; //NOI18N
     
+    private static final String XHTML_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Strict//EN";
+    
     private static boolean lowerCase;
+    private static boolean isXHTML = false;
     
     private static final HTMLCompletionQuery DEFAULT = new HTMLCompletionQuery();
     
@@ -121,6 +124,11 @@ public class HTMLCompletionQuery  {
         
         DTD dtd = sup.getDTD();
         if( dtd == null ) return null; // We have no knowledge about the structure!
+        
+        if(XHTML_PUBLIC_ID.equalsIgnoreCase(dtd.getIdentifier())) {
+            //we are completing xhtml document
+            isXHTML = true;
+        }
         
         doc.readLock();
         try {
@@ -173,7 +181,7 @@ public class HTMLCompletionQuery  {
                 for(int i = 0;i < tagName.length(); i++) {
                     char ch = tagName.charAt(i);
                     if(Character.isLetter(ch)) {
-                        lowerCase = !Character.isUpperCase(tagName.charAt(i));
+                        lowerCase = isXHTML || !Character.isUpperCase(tagName.charAt(i));
                         break;
                     }
                 }
@@ -726,6 +734,21 @@ public class HTMLCompletionQuery  {
         public CharSequence getInsertPrefix() {
             //disable instant substitution
             return null;
+        }
+
+        @Override
+        public boolean instantSubstitution(JTextComponent c) {
+            return false; //do not complete even if we are the only item in the completion
+        }
+        
+        
+    }
+    
+    static class NonHTMLEndTagItem extends EndTagItem {
+        
+        public NonHTMLEndTagItem( String baseText, int offset, int length, int order ) {
+            super( baseText, offset, length, null, order );
+            this.baseText = baseText; //ufff, ugly ... reset the original text back in super we change the case 
         }
         
     }
