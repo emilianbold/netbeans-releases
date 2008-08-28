@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,77 +31,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.mysql.actions;
+package org.netbeans.modules.websvc.saas.model.wsdl.impl;
 
-import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.modules.db.mysql.ui.CreateDatabasePanel;
-import org.netbeans.modules.db.mysql.util.Utils;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.CookieAction;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
+import org.netbeans.modules.xml.wsdl.model.Port;
+import org.netbeans.modules.xml.wsdl.model.Service;
 
 /**
  *
- * @author David Van Couvering
+ * @author Roderico Cruz
  */
-public class CreateDatabaseAction extends CookieAction {
-    private static final Class[] COOKIE_CLASSES = new Class[] {
-        DatabaseServer.class
-    };
+public class WsdlService implements WSService{
+    public Service service;
 
-    public CreateDatabaseAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
-    }    
-        
-    protected boolean asynchronous() {
-        return false;
+    public WsdlService(Service service){
+        this.service = service;
+    }
+
+    public Object getInternalJAXWSService() {
+        return service;
+    }
+
+    public List<WSPort> getPorts() {
+        List<WSPort> wsdlPorts = new ArrayList<WSPort>();
+        Collection<Port> ports = service.getPorts();
+        for(Port port : ports){
+            wsdlPorts.add(new WsdlPort(port));
+        }
+        return wsdlPorts;
     }
 
     public String getName() {
-        return Utils.getBundle().getString("LBL_CreateDatabaseAction");
+        return service.getName();
     }
 
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(CreateDatabaseAction.class);
+    public String getNamespaceURI() {
+        return service.getPeer().getNamespaceURI();
     }
 
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if ( activatedNodes.length == 0 ) {
-            return false;
+    public String getJavaName() {
+        return service.getName(); //TODO Capitalize first char??
+    }
+
+    public WSPort getPortByName(String portName) {
+        for(WSPort port : getPorts()){
+            if(port.getName().equals(portName)){
+                return port;
+            }
         }
-        
-        Node node = activatedNodes[0];
-        
-        DatabaseServer server = node.getCookie(DatabaseServer.class);
-        if ( server != null && server.isConnected() ) {
-            return true;
-        }
-        
-        return false;
+        return null;
     }
 
-    @Override
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-    }
-
-    @Override
-    protected Class<?>[] cookieClasses() {
-        return COOKIE_CLASSES;
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        Node node = activatedNodes[0];
-        
-        DatabaseServer server = node.getCookie(DatabaseServer.class);
-        CreateDatabasePanel.showCreateDatabaseDialog(server);
-    }
 }

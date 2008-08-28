@@ -21,8 +21,8 @@ import javax.faces.FacesException;
  * or method binding expression that references a managed bean using
  * this class.</p>
  *
- * ${name}.java
- * Created on ${date}, ${time}
+ * @version ${name}.java
+ * @version Created on ${date}, ${time}
  * @author ${user}
  */
 
