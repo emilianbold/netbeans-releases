@@ -102,7 +102,7 @@ public final class DBConnectionFactory {
 
         synchronized (DBConnectionFactory.class) {
             if (dbConn != null) {
-                return dbConn.getJDBCConnection();
+                return dbConn.getJDBCConnection(true);
             }
         }
         return null;
