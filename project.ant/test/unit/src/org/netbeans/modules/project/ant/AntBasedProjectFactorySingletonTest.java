@@ -56,19 +56,16 @@ import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.test.MockLookup;
 
-/**
- *
- * @author Jan Lahoda
- */
 public class AntBasedProjectFactorySingletonTest extends NbTestCase {
-    
+
     public AntBasedProjectFactorySingletonTest(String testName) {
         super(testName);
     }
 
     private FileObject scratch;
     private FileObject projdir;
-    
+
+    @Override
     protected void setUp() throws Exception {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
@@ -85,38 +82,23 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
         AntBasedProjectFactorySingleton factory = new AntBasedProjectFactorySingleton();
         AntBasedProjectType type1 = AntBasedTestUtil.testAntBasedProjectType();
         AntBasedProjectType type2 = AntBasedTestUtil.testAntBasedProjectType();
-        
         MockLookup.setInstances(factory, type1, type2);
-        
         Method getAntBasedProjectTypeMethod = AntProjectHelper.class.getDeclaredMethod("getType", new Class[0]);
-        
         getAntBasedProjectTypeMethod.setAccessible(true);
-        
         Project p = ProjectManager.getDefault().findProject(projdir);
         AntProjectHelper helper = p.getLookup().lookup(AntProjectHelper.class);
-        
         assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type2);
-        
         MockLookup.setInstances(factory, type1);
-        
         p = ProjectManager.getDefault().findProject(projdir);
         helper = p.getLookup().lookup(AntProjectHelper.class);
-        
         assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type1);
-        
         MockLookup.setInstances(factory, type2);
-        
         p = ProjectManager.getDefault().findProject(projdir);
         helper = p.getLookup().lookup(AntProjectHelper.class);
-        
         assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type2);
-        
         MockLookup.setInstances(factory);
-        
         assertNull(ProjectManager.getDefault().findProject(projdir));
-
         MockLookup.setInstances(factory, type1, type2);
-        
         assertTrue(getAntBasedProjectTypeMethod.invoke(helper) == type2);
     }
 
@@ -139,5 +121,5 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
             // Probably should not assert exact string, as this is dependent on parser.
         }
     }
-    
+
 }
