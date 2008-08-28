@@ -75,12 +75,15 @@ import com.sun.tools.javac.util.Context;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.api.java.queries.JavadocForBinaryQuery.Result;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -562,7 +565,14 @@ out:                    for (URL e : roots) {
                 }
             }
             for (URL binary : binaries) {
-                URL[] result = JavadocForBinaryQuery.findJavadoc(binary).getRoots();
+                Result javadocResult = JavadocForBinaryQuery.findJavadoc(binary);
+                URL[] result = javadocResult.getRoots();
+                for (int cntr = 0; cntr < result.length; cntr++) {
+                    if (!result[cntr].toExternalForm().endsWith("/")) { // NOI18N
+                        Logger.getLogger(SourceUtils.class.getName()).log(Level.WARNING, "JavadocForBinaryQuery.Result: {0} returned non-folder URL: {1}, ignoring", new Object[] {javadocResult.getClass(), result[cntr].toExternalForm()});
+                        result[cntr] = null;
+                    }
+                }
                 ClassPath cp = ClassPathSupport.createClassPath(result);
                 FileObject fo = cp.findResource(pkgName);
                 if (fo != null) {

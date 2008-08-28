@@ -273,10 +273,13 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         methodBody += "        " + queryParamsCode;
 
         methodBody += "             " + Constants.REST_CONNECTION + " conn = new " + Constants.REST_CONNECTION + "(\"" + getBean().getUrl() + "\"";
+        HttpMethodType httpMethod = getBean().getHttpMethod();
+        String queryParams = (httpMethod == HttpMethodType.POST) ? "null" : Constants.QUERY_PARAMS;
+        
         if (!pathParamsCode.trim().equals("")) {
-            methodBody += ", " + Constants.PATH_PARAMS + ", " + (queryParamsCode.trim().equals("") ? "null" : Constants.QUERY_PARAMS);
+            methodBody += ", " + Constants.PATH_PARAMS + ", " + (queryParamsCode.trim().equals("") ? "null" : queryParams);
         } else if (!queryParamsCode.trim().equals("")) {
-            methodBody += ", " + Constants.QUERY_PARAMS;
+            methodBody += ", " + queryParams;
         }
         methodBody += ");\n";
 
@@ -284,7 +287,7 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         methodBody += "             " +
                 getAuthenticationGenerator().getPostAuthenticationCode() + "\n";
 
-        HttpMethodType httpMethod = getBean().getHttpMethod();
+        
         String headerUsage = "null";
         if (getBean().getHeaderParameters() != null && getBean().getHeaderParameters().size() > 0) {
             headerUsage = Constants.HEADER_PARAMS;

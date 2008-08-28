@@ -36,7 +36,7 @@ import java.util.Vector;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.TableColumn;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.util.DDLTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 import org.netbeans.modules.db.util.InfoHelper;
 
 /**
@@ -50,7 +50,7 @@ public class GrabTableHelperTest extends DDLTestBase {
     
     public void testGrabTable() throws Exception {
         File file = null;
-        InfoHelper infoHelper = new InfoHelper(spec, drvSpec, conn);
+        InfoHelper infoHelper = new InfoHelper(spec, drvSpec, getConnection());
         
         try {
             String tablename = "grabtable";
@@ -97,7 +97,7 @@ public class GrabTableHelperTest extends DDLTestBase {
             CreateTable cmd = (CreateTable)istream.readObject();
             istream.close();
             cmd.setSpecification(spec);
-            cmd.setObjectOwner(SCHEMA);
+            cmd.setObjectOwner(getSchema());
             
             assertEquals(tablename, cmd.getObjectName());
             

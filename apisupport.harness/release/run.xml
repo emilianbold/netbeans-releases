@@ -147,7 +147,7 @@ made subject to such option by the copyright holder.
         <touch file="${cluster}/.lastModified"/> <!-- #138427 -->
         <property name="run.args" value=""/>
         <property name="run.args.extra" value=""/>
-        <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP Windows NT (unknown) Windows Vista" executable="${run.exe}" failonerror="yes">
+        <exec osfamily="windows" executable="${run.exe}" failonerror="yes">
             <arg value="--jdkhome"/>
             <arg file="${run.jdkhome}"/>
             <arg line="${run.args.common}"/>
@@ -155,7 +155,7 @@ made subject to such option by the copyright holder.
             <arg line="${run.args}"/>
             <arg line="${run.args.extra}"/>
         </exec>
-        <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes">
+        <exec osfamily="unix" dir="." executable="sh" failonerror="yes">
             <arg value="${run.sh}"/>
             <arg value="--jdkhome"/>
             <arg file="${run.jdkhome}"/>

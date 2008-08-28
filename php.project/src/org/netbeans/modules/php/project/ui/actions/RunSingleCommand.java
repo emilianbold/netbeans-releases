@@ -41,6 +41,7 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
@@ -68,7 +69,11 @@ public class RunSingleCommand extends RunCommand {
             localCommand.invokeAction(context);
         } else {
             try {
-                showURLForContext(context);
+                // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
+                final URL url = urlForContext(context);
+
+                eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
+                showURL(url);
             } catch (MalformedURLException ex) {
                 //TODO: improve error handling
                 Exceptions.printStackTrace(ex);

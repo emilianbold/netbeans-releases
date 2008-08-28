@@ -245,6 +245,11 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         return hash;
     }
     
+    @Override
+    public String toString () {
+        return "Impl[" + getUpdateElement () + "]"; // NOI18N
+    }
+    
     private Logger getLogger () {
         if (log == null) {
             log = Logger.getLogger (ModuleUpdateElementImpl.class.getName ());

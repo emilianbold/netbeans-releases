@@ -229,21 +229,18 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         return ninfo;
     }
         
-    public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {
-        synchronized (ConnectionList.getDefault()) {
+    public void addConnection(DBConnection con) throws DatabaseException {
+        DatabaseConnection dbconn = (DatabaseConnection)con;
+        getChildren(); // force restore
 
-            if (ConnectionList.getDefault().contains(dbconn)) {
-                return;
-            }
-            
-            ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
-            addChild(ninfo);
-
-            ConnectionList.getDefault().add(dbconn);
+        if (ConnectionList.getDefault().contains(dbconn)) {
+            throw new DatabaseException(bundle().getString("EXC_ConnectionAlreadyExists"));
         }
-        notifyChange();
+        
+        ConnectionList.getDefault().add(dbconn);
+        refreshChildren();
     }
-    
+        
     public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
         if ( dbconn == null ) {
             throw new NullPointerException();
@@ -272,27 +269,6 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         notifyChange();
     }
     
-    public void addConnection(DBConnection cinfo) throws DatabaseException {
-        DatabaseConnection dbconn = (DatabaseConnection)cinfo;
-        getChildren(); // force restore
-
-        if (ConnectionList.getDefault().contains(dbconn)) {
-            throw new DatabaseException(bundle().getString("EXC_ConnectionAlreadyExists"));
-        }
-        
-        ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
-        addChild(ninfo);
-
-        ConnectionList.getDefault().add(dbconn);
-        
-        if (((DatabaseConnection) dbconn).getConnection() == null)
-            ninfo.connect();
-        else
-            ninfo.connect(dbconn);
-        
-        notifyChange();
-    }
-
     public void stateChanged(ChangeEvent evt) {
         // One of the node loader's underlying nodes have changed, so let's
         // do a refresh of our nodes

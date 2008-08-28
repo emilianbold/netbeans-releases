@@ -223,6 +223,9 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
     }
     
     static boolean canCreate(File dir) {
+        if (dir.exists()) {
+            return false;
+        }
         while(dir != null && !dir.exists()) {
             dir = dir.getParentFile();
         }
