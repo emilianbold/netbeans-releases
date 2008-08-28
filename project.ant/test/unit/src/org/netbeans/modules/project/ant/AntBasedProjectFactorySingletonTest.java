@@ -43,6 +43,7 @@ package org.netbeans.modules.project.ant;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
@@ -52,9 +53,14 @@ import org.netbeans.spi.project.support.ant.AntBasedTestUtil;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelperTest;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
+import org.w3c.dom.Element;
 
 public class AntBasedProjectFactorySingletonTest extends NbTestCase {
 
@@ -117,6 +123,112 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
             assertTrue(loc, loc.contains("project.xml"));
             // Probably should not assert exact string, as this is dependent on parser.
         }
+    }
+
+    public void testCorrectableInvalidProject() throws Exception { // #143966
+        clearWorkDir();
+        TestFileUtils.writeFile(Repository.getDefault().getDefaultFileSystem().getRoot(), "ProjectXMLCatalog/foo/1.xsd",
+                "<xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'\n" +
+                "            targetNamespace='http://www.netbeans.org/ns/foo/1'\n" +
+                "            xmlns='http://www.netbeans.org/ns/foo/1'\n" +
+                "            elementFormDefault='qualified'>\n" +
+                " <xsd:element name='data'>\n" +
+                "  <xsd:complexType>\n" +
+                "   <xsd:sequence>\n" +
+                "    <xsd:element name='a'/>\n" +
+                "    <xsd:element name='b' maxOccurs='unbounded'/>\n" +
+                "    <xsd:element name='c' maxOccurs='unbounded'/>\n" +
+                "   </xsd:sequence>\n" +
+                "  </xsd:complexType>\n" +
+                " </xsd:element>\n" +
+                "</xsd:schema>");
+        TestFileUtils.writeFile(Repository.getDefault().getDefaultFileSystem().getRoot(), "ProjectXMLCatalog/foo/2.xsd",
+                "<xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'\n" +
+                "            targetNamespace='http://www.netbeans.org/ns/foo/2'\n" +
+                "            xmlns='http://www.netbeans.org/ns/foo/2'\n" +
+                "            elementFormDefault='qualified'>\n" +
+                " <xsd:element name='data'>\n" +
+                "  <xsd:complexType>\n" +
+                "   <xsd:sequence>\n" +
+                "    <xsd:element name='a'/>\n" +
+                "    <xsd:element name='b' maxOccurs='unbounded'/>\n" +
+                "    <xsd:element name='c' maxOccurs='unbounded'/>\n" +
+                "    <xsd:element name='d'/>\n" +
+                "   </xsd:sequence>\n" +
+                "  </xsd:complexType>\n" +
+                " </xsd:element>\n" +
+                "</xsd:schema>");
+        MockLookup.setInstances(new AntBasedProjectType() {
+            public String getType() {
+                return "test";
+            }
+            public Project createProject(final AntProjectHelper helper) throws IOException {
+                return new Project() {
+                    public FileObject getProjectDirectory() {
+                        return helper.getProjectDirectory();
+                    }
+                    public Lookup getLookup() {
+                        return Lookups.singleton(helper);
+                    }
+                };
+            }
+            public String getPrimaryConfigurationDataElementNamespace(boolean shared) {
+                return "http://www.netbeans.org/ns/foo/2";
+            }
+            public String getPrimaryConfigurationDataElementName(boolean shared) {
+                return "data";
+            }
+        });
+        FileObject d = FileUtil.toFileObject(getWorkDir());
+        TestFileUtils.writeFile(d, "p1/nbproject/project.xml",
+                "<project xmlns='http://www.netbeans.org/ns/project/1'>\n" +
+                " <type>test</type>\n" +
+                " <configuration>\n" +
+                "  <data xmlns='http://www.netbeans.org/ns/foo/2'>\n" +
+                "   <a/>\n" +
+                "   <c/>\n" +
+                "   <c/>\n" +
+                "   <b/>\n" +
+                "   <b/>\n" +
+                "   <d/>\n" +
+                "  </data>\n" +
+                " </configuration>\n" +
+                "</project>");
+        Project p = ProjectManager.getDefault().findProject(d.getFileObject("p1"));
+        AntProjectHelper helper = p.getLookup().lookup(AntProjectHelper.class);
+        Element data = helper.getPrimaryConfigurationData(true);
+        List<Element> kids = Util.findSubElements(data);
+        assertEquals("a", kids.get(0).getLocalName());
+        assertEquals("b", kids.get(1).getLocalName());
+        assertEquals("b", kids.get(2).getLocalName());
+        assertEquals("c", kids.get(3).getLocalName());
+        assertEquals("c", kids.get(4).getLocalName());
+        assertEquals("d", kids.get(5).getLocalName());
+        TestFileUtils.writeFile(d, "p2/nbproject/project.xml",
+                "<project xmlns='http://www.netbeans.org/ns/project/1'>\n" +
+                " <type>test</type>\n" +
+                " <configuration>\n" +
+                "  <data xmlns='http://www.netbeans.org/ns/foo/1'>\n" +
+                "   <a/>\n" +
+                "   <b/>\n" +
+                "   <c/>\n" +
+                "   <d/>\n" +
+                "  </data>\n" +
+                " </configuration>\n" +
+                "</project>");
+        p = ProjectManager.getDefault().findProject(d.getFileObject("p2"));
+        helper = p.getLookup().lookup(AntProjectHelper.class);
+        data = helper.getPrimaryConfigurationData(true);
+        assertEquals("http://www.netbeans.org/ns/foo/2", data.getNamespaceURI());
+        kids = Util.findSubElements(data);
+        assertEquals("a", kids.get(0).getLocalName());
+        assertEquals("http://www.netbeans.org/ns/foo/2", kids.get(0).getNamespaceURI());
+        assertEquals("b", kids.get(1).getLocalName());
+        assertEquals("http://www.netbeans.org/ns/foo/2", kids.get(1).getNamespaceURI());
+        assertEquals("c", kids.get(2).getLocalName());
+        assertEquals("http://www.netbeans.org/ns/foo/2", kids.get(2).getNamespaceURI());
+        assertEquals("d", kids.get(3).getLocalName());
+        assertEquals("http://www.netbeans.org/ns/foo/2", kids.get(3).getNamespaceURI());
     }
 
 }
