@@ -73,28 +73,29 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         txtGroupId.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                artifactCompleter.setLoading(true);
-                versionCompleter.setLoading(true);
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        populateArtifact();
-                        if (txtArtifactId.getText().trim().length() > 0) {
-                            populateVersion();
+                if (txtGroupId.getText().trim().length() > 0) {
+                    artifactCompleter.setLoading(true);
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            populateArtifact();
                         }
-                    }
-                });
+                    });
+                }
             }
         });
         
         txtArtifactId.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                versionCompleter.setLoading(true);
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        populateVersion();
-                    }
-                });
+                if (txtGroupId.getText().trim().length() > 0 &&
+                    txtArtifactId.getText().trim().length() > 0) {
+                    versionCompleter.setLoading(true);
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            populateVersion();
+                        }
+                    });
+                }
             }
         });
 

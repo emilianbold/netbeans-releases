@@ -250,7 +250,14 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             // initialize the nodes children before we enter the readAccess section 
             // (otherwise we could receive invalid node count (under lock))
             final int count = node.getChildren().getNodesCount();
-
+            Node[] nodes;
+            if (VisualizerChildren.prefetchCount > 0) {
+                Children nch = node.getChildren();
+                nodes = new Node[Math.min(VisualizerChildren.prefetchCount, count)];
+                for (int i = 0; i < nodes.length; i++) {
+                    nodes[i] = nch.getNodeAt(i);
+                }
+            }
             // go into lock to ensure that no childrenAdded, childrenRemoved,
             // childrenReordered notifications occures and that is why we do
             // not loose any changes

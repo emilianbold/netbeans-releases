@@ -231,7 +231,11 @@ public class ${name} {
     }
 
     private String encodeUrl(String baseUrl, String[][] params) {
-        return baseUrl + encodeParams(params);
+        String encodedParams = encodeParams(params);
+        if (encodedParams.length() > 0) {
+            encodedParams = "?"+ encodedParams;
+        }
+        return baseUrl + encodedParams;
     }
 
     private String encodeParams(String[][] params) {
@@ -251,7 +255,7 @@ public class ${name} {
                 }
             }
             if (p.length() > 0) {
-                p = "?" + p.substring(0, p.length() - 1);
+                p = p.substring(0, p.length() - 1);
             }
         }
 

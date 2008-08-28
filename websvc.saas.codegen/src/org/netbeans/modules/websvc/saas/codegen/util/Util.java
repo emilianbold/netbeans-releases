@@ -1381,6 +1381,11 @@ public class Util {
     public static List<ParameterInfo> getRestClientMethodParameters(RestClientSaasBean bean) {
         List<ParameterInfo> params = bean.filterParametersByAuth(bean.filterParameters(
                 new ParamFilter[]{ParamFilter.FIXED}));
+        getRestClientPutPostParameters(bean, params);
+        return params;
+    }
+    
+    public static List<ParameterInfo> getRestClientPutPostParameters(RestClientSaasBean bean, List<ParameterInfo> params) {
         HttpMethodType httpMethod = bean.getHttpMethod();
 
         if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
@@ -1399,9 +1404,9 @@ public class Util {
                         contentType = String.class;
                     }
                 }
-                if (!bean.findInputRepresentations(bean.getMethod()).isEmpty()) {
-                    params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
-                }
+            }
+            if (!bean.findInputRepresentations(bean.getMethod()).isEmpty()) {
+                params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
             }
         }
         return params;

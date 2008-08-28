@@ -46,8 +46,6 @@ import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
-import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
-import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.OpenURLAction;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.OpenURLActionCookie;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.UndeployModuleAction;

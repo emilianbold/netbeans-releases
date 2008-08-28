@@ -342,7 +342,6 @@ public final class GemPanel extends JPanel {
     private void enableRemoteReloadGUI() {
         reloadNewButton.setEnabled(true);
         reloadUpdatedButton.setEnabled(true);
-        manageButton.setEnabled(true);
     }
 
     private void setEnabled(TabIndex tab, boolean enabled) {
@@ -387,7 +386,6 @@ public final class GemPanel extends JPanel {
         }
         boolean everythingDone = newPanel.isEnabled() && updatedPanel.isEnabled() && installedPanel.isEnabled();
         // allow certain actions only when all tabs are updated
-        manageButton.setEnabled(everythingDone);
         browseGemHome.setEnabled(everythingDone);
     }
 
@@ -592,6 +590,7 @@ public final class GemPanel extends JPanel {
         FormListener formListener = new FormListener();
 
         searchUpdatedText.setColumns(14);
+        searchUpdatedText.addActionListener(formListener);
 
         searchUpdatedLbl.setLabelFor(searchUpdatedText);
         org.openide.awt.Mnemonics.setLocalizedText(searchUpdatedLbl, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.searchUpdatedLbl.text")); // NOI18N
@@ -681,6 +680,7 @@ public final class GemPanel extends JPanel {
         gemsTab.addTab(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.updatedPanel.TabConstraints.tabTitle"), updatedPanel); // NOI18N
 
         searchInstText.setColumns(14);
+        searchInstText.addActionListener(formListener);
 
         searchInstLbl.setLabelFor(searchInstText);
         org.openide.awt.Mnemonics.setLocalizedText(searchInstLbl, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.searchInstLbl.text")); // NOI18N
@@ -762,6 +762,7 @@ public final class GemPanel extends JPanel {
         gemsTab.addTab(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installedPanel.TabConstraints.tabTitle"), installedPanel); // NOI18N
 
         searchNewText.setColumns(14);
+        searchNewText.addActionListener(formListener);
 
         searchNewLbl.setLabelFor(searchNewText);
         org.openide.awt.Mnemonics.setLocalizedText(searchNewLbl, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.searchNewLbl.text")); // NOI18N
@@ -868,7 +869,7 @@ public final class GemPanel extends JPanel {
                     .add(descriptionCheckbox)
                     .add(proxyButton)
                     .add(allVersionsCheckbox))
-                .addContainerGap(463, Short.MAX_VALUE))
+                .addContainerGap(459, Short.MAX_VALUE))
         );
         settingsPanelLayout.setVerticalGroup(
             settingsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1005,6 +1006,15 @@ public final class GemPanel extends JPanel {
             else if (evt.getSource() == browseGemHome) {
                 GemPanel.this.browseGemHomeActionPerformed(evt);
             }
+            else if (evt.getSource() == searchUpdatedText) {
+                GemPanel.this.searchUpdatedTextActionPerformed(evt);
+            }
+            else if (evt.getSource() == searchInstText) {
+                GemPanel.this.searchInstTextActionPerformed(evt);
+            }
+            else if (evt.getSource() == searchNewText) {
+                GemPanel.this.searchNewTextActionPerformed(evt);
+            }
         }
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1030,7 +1040,10 @@ public final class GemPanel extends JPanel {
             final JTextField searchField, final JList list,
             final JTextPane desc, final JButton button) {
         // keep search filter fields in sync
-        searchField.setText(getFilter());
+        int pos = searchField.getCaretPosition();
+        String _filter = getFilter();
+        searchField.setText(_filter);
+        searchField.setCaretPosition(pos > _filter.length() ? _filter.length() : pos);
 
         GemListModel gemModel = (GemListModel) list.getModel();
         gemModel.applyFilter(getFilter());
@@ -1173,6 +1186,20 @@ public final class GemPanel extends JPanel {
     private void descriptionCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_descriptionCheckboxActionPerformed
         RubyPreferences.setFetchGemDescriptions(descriptionCheckbox.isSelected());
     }//GEN-LAST:event_descriptionCheckboxActionPerformed
+
+    private void searchUpdatedTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchUpdatedTextActionPerformed
+        // Eat Enter, so the dialog is not closed when user hits the Enter in
+        // search field. Filter task is already submitted and will be applied in
+        // few ms.
+    }//GEN-LAST:event_searchUpdatedTextActionPerformed
+
+    private void searchInstTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchInstTextActionPerformed
+        // see comment in #searchUpdatedTextActionPerformed
+    }//GEN-LAST:event_searchInstTextActionPerformed
+
+    private void searchNewTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNewTextActionPerformed
+        // see comment in #searchUpdatedTextActionPerformed
+    }//GEN-LAST:event_searchNewTextActionPerformed
 
     public static File chooseGemRepository(final Component parent) {
         JFileChooser chooser = new JFileChooser();

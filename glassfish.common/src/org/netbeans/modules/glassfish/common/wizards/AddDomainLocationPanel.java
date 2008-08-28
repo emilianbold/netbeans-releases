@@ -85,13 +85,21 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             try {
                 AddDomainLocationVisualPanel panel = (AddDomainLocationVisualPanel) getComponent();
                 String domainField = panel.getDomainField().trim();
+                File domainDirCandidate = new File(gfRoot, "domains" + File.separator + domainField); // NOI18N
                 if (domainField.length() < 1) {
-                    wizard.putProperty(PROP_ERROR_MESSAGE, 
-                            NbBundle.getMessage(this.getClass(), "MSG_MustHaveName",domainField)); // NOI18N
+                    if (!domainDirCandidate.canWrite()) {
+                        // the user needs to enter the name of a directory for 
+                        // a personal domain
+                        wizard.putProperty(PROP_ERROR_MESSAGE, 
+                            NbBundle.getMessage(this.getClass(), "MSG_EnterDomainDirectory")); // NOI18N
+                    } else {
+                        // the user probably deleted a valid name from the field.
+                        wizard.putProperty(PROP_ERROR_MESSAGE, 
+                            NbBundle.getMessage(this.getClass(), "MSG_MustHaveName")); // NOI18N
+                    }
                     return false;
                 }
                 int dex = domainField.indexOf(File.separator);
-                File domainDirCandidate = new File(gfRoot, "domains" + File.separator + domainField); // NOI18N
                 if (AddServerLocationPanel.isRegisterableV3Domain(domainDirCandidate)) {
                     // the entry resolves to a domain name that we can register
                     wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
