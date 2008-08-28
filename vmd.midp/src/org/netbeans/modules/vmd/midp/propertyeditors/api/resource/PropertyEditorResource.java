@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midp.propertyeditors.api.resource;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -157,6 +158,13 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
         return new PropertyEditorResource(new ImageEditorElement(), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NEW"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_NONE"), NbBundle.getMessage(PropertyEditorResource.class, "LBL_IMAGERESOURCEPE_UCLABEL"), true); //NOI18N
     }
 
+    @Override
+    public final Component getCustomEditor() {
+        perElement.getCustomEdiotrNotification();
+        return super.getCustomEditor();
+    }
+     
+    
     private Map<String, DesignComponent> getComponentsMap() {
         final Map<String, DesignComponent> componentsMap = new TreeMap<String, DesignComponent>();
         if (component == null || component.get() == null) {
@@ -288,7 +296,7 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
 
     @Override
     public void init(DesignComponent component) {
-        perElement.setDesignDocument(component.getDocument());
+        perElement.setDesignComponent(component);
         super.init(component);
     }
 
@@ -425,6 +433,8 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
 
         }
     }
+    
+    
 
     public JComponent getCustomEditorComponent() {
         return rePanel;

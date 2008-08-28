@@ -104,11 +104,11 @@ public class SQLExecutorTest extends DBTestBase {
     }
 
     public void testExecute() throws Exception {
-        SQLExecutionInfo info = SQLExecutor.execute(dbconn, "SELECT * FROM TEST;");
+        SQLExecutionInfo info = SQLExecutor.execute(dbconn, "SELECT * FROM " + getTestTableName() + ";");
         checkExecution(info);
         assertTrue(info.getStatementInfos().size() == 1);
 
-        info = SQLExecutor.execute(dbconn, "SELECT * FROM TEST; SELECT id FROM TEST;");
+        info = SQLExecutor.execute(dbconn, "SELECT * FROM " + getTestTableName() + "; SELECT " + getTestTableIdName() + " FROM " + getTestTableName() + ";");
         checkExecution(info);
         assertTrue(info.getStatementInfos().size() == 2);
     }
@@ -118,27 +118,7 @@ public class SQLExecutorTest extends DBTestBase {
 
         assertTrue(info.hasExceptions());
     }
-        
-    public void testDelimiter() throws Exception {
-        String sql = "SELECT * FROM TEST;\n--Here is a comment\nDELIMITER ??\n SELECT * FROM TEST??\n " +
-                "--Another comment\n DELIMITER ;\nSELECT * FROM TEST;";
-        SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
-        checkExecution(info);
-
-        info = SQLExecutor.execute(dbconn,
-                "DELIMITER ??\nSELECT * FROM TEST?? DELIMITER ;\nSELECT * FROM TEST;");
-        checkExecution(info);
-
-        info = SQLExecutor.execute(dbconn,
-                "/** a block comment */\nDELIMITER ??\nSELECT * FROM TEST??");
-        checkExecution(info);
-
-        info = SQLExecutor.execute(dbconn,
-                "DELIMITER ??\nSELECT * FROM TEST;");
-
-        assertTrue(info.hasExceptions());
-    }
-    
+            
     private void checkExecution(SQLExecutionInfo info) throws Exception {
         assertNotNull(info);
 

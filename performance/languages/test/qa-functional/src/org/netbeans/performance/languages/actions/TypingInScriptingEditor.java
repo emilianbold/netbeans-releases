@@ -43,12 +43,14 @@ package org.netbeans.performance.languages.actions;
 
 
 import java.awt.Font;
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
@@ -84,6 +86,7 @@ public class TypingInScriptingEditor extends org.netbeans.modules.performance.ut
     @Override
     public void initialize() {
         log("::initialize");
+        closeAllModal();
         String path = nodePath+"|"+fileName;
         log("attempting to open: "+path);
         
@@ -142,13 +145,12 @@ public class TypingInScriptingEditor extends org.netbeans.modules.performance.ut
         nodePath = "Web Pages";
         doMeasurement();        
     }
-// TODO: Enable once PhpPerfTest is created    
-//    public void test_PHP_EditorTyping() {
-//        testProject = Projects.PHP_PROJECT;
-//        fileName = "php20kb.php";
-//        nodePath = "Source Files";
-//        doMeasurement();
-//    }
+    public void test_PHP_EditorTyping() {
+        testProject = Projects.PHP_PROJECT;
+        fileName = "php20kb.php";
+        nodePath = "Source Files";
+        doMeasurement();
+    }
     /*
     public void test_JS_EditorTyping() {
         testProject = "";
@@ -198,4 +200,12 @@ public class TypingInScriptingEditor extends org.netbeans.modules.performance.ut
         doMeasurement();
     }
     */
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(TypingInScriptingEditor.class)
+            .enableModules(".*")
+            .clusters(".*")
+            .reuseUserDir(true)
+        );    
+    }    
 }

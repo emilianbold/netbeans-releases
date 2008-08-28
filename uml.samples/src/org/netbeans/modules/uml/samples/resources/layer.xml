@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
             <folder name="Samples">
                 <folder name="UML">
                     <attr name="position" intvalue="660"/>
-                    <file name="UML Bank App Sample" url="../bankapp/resources/javaProject.zip">
+                    <file name="UMLBankAppSampleProject.zip" url="../bankapp/resources/javaProject.zip">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.samples.bankapp.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.uml.samples.bankapp.UMLBankAppSampleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/samples/bankapp/resources/UMLBankAppSampleDescription.html"/>

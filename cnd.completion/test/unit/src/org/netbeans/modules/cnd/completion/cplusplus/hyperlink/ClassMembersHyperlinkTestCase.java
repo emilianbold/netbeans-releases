@@ -50,6 +50,24 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testClassUsageAfterDereferrencedObjects() throws Exception {
+        // IZ#145230:Various C++ expressions don't resolve
+        performTest("ClassNameAfterDeref.cc", 22, 18, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 23, 18, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 29, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 30, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 31, 16, "ClassNameAfterDeref.cc", 2, 5);
+    }
+
+    public void testClassMembersUsageAfterDereferrencedClass() throws Exception {
+        // IZ#145230:Various C++ expressions don't resolve
+//        performTest("ClassNameAfterDeref.cc", 22, 25, "ClassNameAfterDeref.cc", 8, 9);
+//        performTest("ClassNameAfterDeref.cc", 23, 25, "ClassNameAfterDeref.cc", 9, 9);
+        performTest("ClassNameAfterDeref.cc", 30, 22, "ClassNameAfterDeref.cc", 6, 9);
+        performTest("ClassNameAfterDeref.cc", 31, 22, "ClassNameAfterDeref.cc", 5, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 29, 22);
+    }
+
     public void testClassFwdTemplateParameters() throws Exception {
         // template parameters of class member forward template class declaration
         performTest("templateParameters.h", 36, 23, "templateParameters.h", 36, 13);
