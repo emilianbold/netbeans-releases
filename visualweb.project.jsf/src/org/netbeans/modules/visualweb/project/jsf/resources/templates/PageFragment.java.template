@@ -17,8 +17,8 @@ import javax.faces.FacesException;
  * lifecycle methods and event handlers where you may add behavior
  * to respond to incoming events.</p>
  *
- * ${name}.java
- * Created on ${date}, ${time}
+ * @version ${name}.java
+ * @version Created on ${date}, ${time}
  * @author ${user}
  */
 
