@@ -56,6 +56,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
@@ -74,8 +75,7 @@ import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.actions.ConnectAction;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.explorer.ExplorerManager;
@@ -212,6 +212,41 @@ public class DatabaseConnection implements DBConnection {
             }
         }
         return useDriver;
+    }
+
+    public Connection getJDBCConnection(boolean test) {
+        Connection conn = getJDBCConnection();
+        if (test) {
+            if (! test(conn, getName())) {
+                try {
+                    this.disconnect();
+                } catch (DatabaseException e) {
+                    LOGGER.log(Level.FINE, null, e);
+                }
+
+                return null;
+            }
+        }
+
+        return conn;
+    }
+
+    public static boolean test(Connection conn, String connectionName) {
+        try {
+            if (conn == null || conn.isClosed()) {
+                return false;
+            }
+
+            // Send a command to the server, if it fails we know the connection is invalid.
+            conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+        } catch (SQLException e) {
+            LOGGER.log(Level.INFO, NbBundle.getMessage(DatabaseConnection.class,
+                    "MSG_TestFailed", connectionName, e.getMessage()));
+            LOGGER.log(Level.FINE, null, e);
+            return false;
+        }
+        return true;
+
     }
 
      private Collection getOpenConnections() {
@@ -493,7 +528,7 @@ public class DatabaseConnection implements DBConnection {
         }
     }
 
-    public void connectSync() throws DatabaseException {
+        public void connectSync() throws DatabaseException {
         try {
             doConnect();
 
@@ -807,52 +842,41 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public Connection getJDBCConnection() {
+        return getConnection();
+        /*
         try {
+            System.out.println("\nIN GETJDBCCONNECTION()");
             ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
+            System.out.println("\nIN GETJDBCCONNECTION, info is " + cni == null ? "null" : "not null");
             if (cni != null && cni.getConnection() != null) {
                 return cni.getConnection();
             }
         } catch (DatabaseException e) {
             Exceptions.printStackTrace(e);
         }
-        return null;
+        */
     }
 
     public void disconnect() throws DatabaseException {
+        setConnection(null);
         ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
         if (cni != null && cni.getConnection() != null) {
             cni.disconnect();
         }
     }
 
-    private ConnectionNodeInfo findConnectionNodeInfo(String connection) throws DatabaseException {
+    // Needed by unit tests as well as internally
+    public static ConnectionNodeInfo findConnectionNodeInfo(String connection) throws DatabaseException {
         assert connection != null;
 
-        // We can't use the info classes here since surprisingly
-        // the CNIs found in RootNode.getInstance().getInfo are different than
-        // the ones the ConnectionNodes in the Databases tree listen to.
+        Vector<DatabaseNodeInfo> infos = RootNodeInfo.getInstance().getChildren();
 
-        // This will account for the "Please wait" node.
-        Node[] nodes = RootNode.getInstance().getChildren().getNodes(true);
-
-        for (int i = 0; i < nodes.length; i++) {
-            // Skip nodes registered by node providers
-            if ( ! (nodes[i] instanceof DatabaseNode) ) {
-                continue;
-            }
-
-            DatabaseNodeInfo info = (DatabaseNodeInfo)nodes[i].getCookie(DatabaseNodeInfo.class);
-            if (info == null) {
-                continue;
-            }
-            ConnectionNodeInfo nfo = (ConnectionNodeInfo)info.getParent(DatabaseNode.CONNECTION);
-            if (nfo == null) {
-                continue;
-            }
-            if (connection.equals(nfo.getDatabaseConnection().getName())) {
-                return nfo;
-            }
+        for (DatabaseNodeInfo info : infos) {
+           if (info instanceof ConnectionNodeInfo && connection.equals(info.getName())) {
+               return (ConnectionNodeInfo)info;
+           }
         }
+
         return null;
     }
 

@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
@@ -48,11 +50,9 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.completion.impl.xref.ReferencesSupport;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.util.NbBundle;
 
 /**
  * Implementation of the hyperlink provider for java language.
@@ -65,6 +65,7 @@ import org.openide.util.NbBundle;
  */
 public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     private static final boolean NEED_TO_TRACE_UNRESOLVED_INCLUDE = getBoolean("cnd.modelimpl.trace.failed.include", false); 
+    private static final Logger log = Logger.getLogger("cnd.include.logger");
    
     
     /** Creates a new instance of CsmIncludeHyperlinkProvider */
@@ -83,6 +84,9 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 case PREPROCESSOR_SYS_INCLUDE:
                 case PREPROCESSOR_USER_INCLUDE:
                     return true;
+            }
+            if (log.isLoggable(Level.FINE) && token.offset(null) == 0) {
+                return true;
             }
         }
         return false;
@@ -159,8 +163,8 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             return DUMMY_POSITION;
         }
         
-        public String getText() {
-            return include.getIncludeName().toString();
+        public CharSequence getText() {
+            return include.getIncludeName();
         }
         
     }
@@ -185,6 +189,10 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         if (csmFile != null) {
             target = ReferencesSupport.findInclude(csmFile, offset);
         }
-        return target == null ? null : CsmDisplayUtilities.getTooltipText(target);
+        String out = target == null ? null : CsmDisplayUtilities.getTooltipText(target);
+        if (out != null && log.isLoggable(Level.FINE)) {
+            log.fine("include tooltip:\n" + out); // NOI18N
+        }
+        return out;
     }    
 }

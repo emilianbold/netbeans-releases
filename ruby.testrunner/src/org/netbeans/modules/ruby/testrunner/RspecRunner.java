@@ -262,6 +262,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         // using a shorter wait time than for test/unit since the only cases
         // i've seen requiring more than 1000ms have all been test/unit executions
         taskDescriptor.setReadMaxWaitTime(1500);
+        taskDescriptor.setRerun(false);
     }
 
 }

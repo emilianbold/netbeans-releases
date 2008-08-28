@@ -53,6 +53,8 @@ import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import hidden.org.codehaus.plexus.util.IOUtil;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -60,6 +62,8 @@ import hidden.org.codehaus.plexus.util.IOUtil;
  */
 public final class RepositoryUtil {
 
+    private static Logger LOGGER = Logger.getLogger(RepositoryUtil.class.getName());
+    
     private RepositoryUtil() {
     }
 
@@ -148,11 +152,11 @@ public final class RepositoryUtil {
 
         } catch (InvalidProjectModelException ex) {
             //ignore nexus is falling ???
-            ex.printStackTrace();
+            LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
         } catch (ProjectBuildingException ex) {
-            ex.printStackTrace();
+            LOGGER.log(Level.FINE, "Failed to load project model from repository.", ex);
         } catch (Exception exception) {
-            exception.printStackTrace();
+            LOGGER.log(Level.FINE, "Failed to load project model from repository.", exception);
         }
         return mavenProject;
     }

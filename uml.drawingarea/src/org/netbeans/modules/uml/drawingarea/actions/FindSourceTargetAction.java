@@ -139,8 +139,9 @@ public class FindSourceTargetAction extends NodeAction
                 Object obj = objectScene.findObject(widget);
                 HashSet<Object> set = new HashSet<Object>();
                 set.add(obj);
-                objectScene.setSelectedObjects(set);
+                objectScene.userSelectionSuggested(set, false);
                 Util.centerWidget(widget);
+                objectScene.validate();
             }
         }
         

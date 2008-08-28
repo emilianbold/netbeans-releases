@@ -255,6 +255,15 @@ public class HibernateWebModuleExtender extends WebModuleExtender {
             // Register Hibernate Library in the project if its not already registered.
             HibernateEnvironment hibernateEnvironment = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
             logger.info("Library registered : " + hibernateEnvironment.addHibernateLibraryToProject(hdo.getPrimaryFile()));
+            // Register DB driver if possible.
+            if(!hibernateEnvironment.canLoadDBDriver(hdo.getHibernateConfiguration())) {
+                logger.info("DB Driver not registered with the project. Registering now..");
+                logger.info("DB Driver registered : " + hibernateEnvironment.registerDBDriver(
+                        configPanel.getSelectedDriver(),
+                        hdo.getPrimaryFile()
+                        ));
+            }
+            
             createdFilesSet.add(hdo.getPrimaryFile());
 
         }

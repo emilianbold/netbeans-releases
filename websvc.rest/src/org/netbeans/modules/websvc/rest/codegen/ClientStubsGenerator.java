@@ -135,7 +135,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private Project p;
     private boolean overwrite;
     private String projectName;
-    private ClientStubModel model;
+    private ResourceModel model;
     private FileObject rjsDir;
     private InputStream wis;
     private String folderName;
@@ -197,7 +197,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return projectName;
     }
     
-    public ClientStubModel getModel() {
+    public ResourceModel getModel() {
         return model;
     }
     
@@ -263,6 +263,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     }
     
     private String findBaseEncoding(Project p) {
+        if(p == null)
+            return null;
         FileObject projProp = p.getProjectDirectory().getFileObject("nbproject/project.properties");
         return getProperty(projProp, "source.encoding");
     }
@@ -292,9 +294,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
         if(pHandle != null)
             initProgressReporting(pHandle, false);
         Project targetPrj = FileOwnerQuery.getOwner(getRootFolder());
-        this.model = new ClientStubModel();
         if(p != null) {
-            getModel().buildModel(p);
+            this.model = new ClientStubModel().createModel(p);
+            this.model.build();
             String url = findBaseUrl(p);
             if(url == null)
                 url = getDefaultBaseUrl();
@@ -310,14 +312,17 @@ public class ClientStubsGenerator extends AbstractGenerator {
             setBaseUrl((url.endsWith("/")?url:url+"/") + getProjectName() + (path.startsWith("/")?path:"/"+path));
             setProxyUrl((proxyUrl2.endsWith("/")?proxyUrl2:proxyUrl2+"/") + ProjectUtils.getInformation(targetPrj).getName() + PROXY_URL);
         } else if(wis != null) {
-            String url = getModel().buildModel(wis);
+            this.model = new ClientStubModel().createModel(wis);
+            this.model.build();
+            String url = ((WadlModeler)this.model).getBaseUrl();
             if(url == null)
                 url = getDefaultBaseUrl();
             setBaseUrl(url);
             setProxyUrl(url+".."+PROXY_URL);
             this.projectName = getApplicationNameFromUrl(url);
         }
-        setBaseEncoding(findBaseEncoding(targetPrj));
+        if(targetPrj != null)
+            setBaseEncoding(findBaseEncoding(targetPrj));
         List<Resource> resourceList = getModel().getResources();
         
         rjsDir = getStubFolder();

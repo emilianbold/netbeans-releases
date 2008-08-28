@@ -40,19 +40,32 @@
  */
 package org.netbeans.modules.j2ee.websphere6.ui.wizard;
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
-
-import org.openide.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.event.ChangeListener;
 import org.openide.awt.Mnemonics;
-import org.openide.util.*;
+import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.websphere6.ui.Instance;
 import org.netbeans.modules.j2ee.websphere6.ui.Customizer;
 import org.netbeans.modules.j2ee.websphere6.ui.InstancesModel;
 import org.netbeans.modules.j2ee.websphere6.ui.ServerProperties;
+
 /**
  * The second panel of the custom wizard used for registering an instance of
  * the server. Here user should choose among the the existing local instances,
@@ -62,12 +75,6 @@ import org.netbeans.modules.j2ee.websphere6.ui.ServerProperties;
  */
 public class ServerPropertiesPanel extends JPanel
         implements WizardDescriptor.Panel {
-    /**
-     * Since the WizardDescriptor does not expose the property name for the
-     * error message label, we have to keep it here also
-     */
-    private final static String PROP_ERROR_MESSAGE =
-            WizardDescriptor.PROP_ERROR_MESSAGE;                                // NOI18N
     
     /**
      * The parent wizard descriptor handle
@@ -93,6 +100,7 @@ public class ServerPropertiesPanel extends JPanel
         }
         
         public class WizardServerTypeActionListener extends ServerTypeActionListener{
+            @Override
             public void actionPerformed(ActionEvent e) {
                 super.actionPerformed(e);
                 isValid();
@@ -129,9 +137,9 @@ public class ServerPropertiesPanel extends JPanel
         
         // set the required properties, so that the panel appear correct in
         // the steps
-        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);           // NOI18N
+        putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
         putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,
-                Integer.valueOf(index));                                   // NOI18N
+                Integer.valueOf(index));
         
         // register the supplied listener
         addChangeListener(listener);
@@ -169,17 +177,19 @@ public class ServerPropertiesPanel extends JPanel
      * @return true if the entered installation directory is valid, false
      *      otherwise
      */
+    @Override
     public boolean isValid() {
         // clear the error message
-        wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, "");          // NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         
         // if the server instance is local, then check the profile root
         // directory for validity
         if (serverTypeCombo.getSelectedItem().equals(NbBundle.getMessage(
                 Customizer.class,
                 "TXT_ServerTypeLocal"))) {                             // NOI18N
-            if (!wizardServerProperties.isValidDomainRoot(domainPathField.getText())) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+            if (!WizardServerProperties.isValidDomainRoot(domainPathField.getText())) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(ServerPropertiesPanel.class,
                         "ERR_INVALID_DOMAIN_ROOT"));                           // NOI18N
                 return false;
@@ -187,28 +197,35 @@ public class ServerPropertiesPanel extends JPanel
         }
         
         // check the host field (not empty)
-        if (hostField.getText().trim().equals("")) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+        if (hostField.getText().trim().length() < 1) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                     NbBundle.getMessage(ServerPropertiesPanel.class,
                     "ERR_INVALID_HOST"));                              // NOI18N
         }
         
         // check the port field (not empty and a positive integer)
-        //if (!portField.getValue().toString().trim().matches("[0-9]+")) {
-        if (!portField.getText().trim().matches("[0-9]+")) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+        if (portField.getText().trim().length() < 1) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                     NbBundle.getMessage(ServerPropertiesPanel.class,
-                    "ERR_INVALID_PORT"));                              // NOI18N
+                    "ERR_EMPTY_PORT"));                              // NOI18N
+            return false;
         }
-        if (portField.getText().trim().matches("[0-9]+") &&
-                new java.lang.Integer(portField.getText().trim()).intValue()>65535) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+        if (!portField.getText().trim().matches("[0-9]+")) {  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(ServerPropertiesPanel.class,
                     "ERR_INVALID_PORT"));                              // NOI18N
+            return false;
+        }
+        if (portField.getText().trim().matches("[0-9]+") &&     // NOI18N
+                new java.lang.Integer(portField.getText().trim()).intValue()>65535) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(ServerPropertiesPanel.class,
+                    "ERR_INVALID_PORT"));                              // NOI18N
+            return false;
         }
         
         if (((Instance) localInstancesCombo.getSelectedItem()).isSecurityEnabled()) {
-            wizardDescriptor.putProperty(PROP_ERROR_MESSAGE,
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(ServerPropertiesPanel.class,
                     "ERR_SECURITY_ENABLED"));                              // NOI18N
             return false;
@@ -218,11 +235,9 @@ public class ServerPropertiesPanel extends JPanel
         // save the data to the parent instantiating iterator
         instantiatingIterator.setDomainRoot(domainPathField.getText());
         instantiatingIterator.setHost(hostField.getText());
-        //instantiatingIterator.setPort(portField.getValue().toString());
         instantiatingIterator.setPort(portField.getText());
         instantiatingIterator.setUsername(usernameField.getText());
-        instantiatingIterator.setPassword(new String(
-                passwordField.getPassword()));
+        instantiatingIterator.setPassword(new String(passwordField.getPassword()));
         instantiatingIterator.setIsLocal(serverTypeCombo.getSelectedItem().
                 equals(NbBundle.getMessage(Customizer.class,
                 "TXT_ServerTypeLocal")) ? "true" : "false");           // NOI18N
@@ -269,8 +284,8 @@ public class ServerPropertiesPanel extends JPanel
         GridBagConstraints gridBagConstraints;
         getAccessibleContext().setAccessibleDescription(
                 java.util.ResourceBundle.getBundle(
-                "org/netbeans/modules/j2ee/websphere6/ui/Bundle").
-                getString("MSG_ServerPropertiesPanelDescription"));
+                "org/netbeans/modules/j2ee/websphere6/ui/Bundle").    // NOI18N
+                getString("MSG_ServerPropertiesPanelDescription"));    // NOI18N
         // initialize the components
         domainPathLabel = new JLabel();
         domainPathField = new JTextField();
@@ -284,12 +299,10 @@ public class ServerPropertiesPanel extends JPanel
         passwordField = new JPasswordField();
         serverTypeLabel = new JLabel();
         serverTypeCombo = new JComboBox(new Object[] {NbBundle.getMessage(
-                Customizer.class, "TXT_ServerTypeLocal")/*,
-        //NbBundle.getMessage(Customizer.class,
-                "TXT_ServerTypeRemote")*/});// NOI18N
+                Customizer.class, "TXT_ServerTypeLocal")});// NOI18N
         localInstanceLabel = new JLabel();
         localInstancesCombo = new JComboBox(new InstancesModel(
-                wizardServerProperties.getServerInstances(
+                WizardServerProperties.getServerInstances(
                 instantiatingIterator.getServerRoot())));
         remoteWarningLabel = new JTextArea(NbBundle.getMessage(
                 ServerPropertiesPanel.class,
@@ -475,12 +488,12 @@ public class ServerPropertiesPanel extends JPanel
         remoteWarningLabel.setOpaque(false);
         remoteWarningLabel.getAccessibleContext().setAccessibleName(
                 java.util.ResourceBundle.getBundle(
-                "org/netbeans/modules/j2ee/websphere6/ui/wizard/Bundle").
-                getString("TTL_RemoteWarningA11Name"));
+                "org/netbeans/modules/j2ee/websphere6/ui/wizard/Bundle").    // NOI18N
+                getString("TTL_RemoteWarningA11Name"));    // NOI18N
         remoteWarningLabel.getAccessibleContext().setAccessibleDescription(
                 java.util.ResourceBundle.getBundle(
-                "org/netbeans/modules/j2ee/websphere6/ui/wizard/Bundle").
-                getString("MSG_RemoteWarningA11Description"));
+                "org/netbeans/modules/j2ee/websphere6/ui/wizard/Bundle").    // NOI18N
+                getString("MSG_RemoteWarningA11Description"));    // NOI18N
         
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -588,6 +601,7 @@ public class ServerPropertiesPanel extends JPanel
         /**
          * This method is called when a user presses a key on the keyboard
          */
+        @Override
         public void keyTyped(KeyEvent event) {
             fireChangeEvent();
         }
@@ -595,6 +609,7 @@ public class ServerPropertiesPanel extends JPanel
         /**
          * This method is called when a user releases a key on the keyboard
          */
+        @Override
         public void keyReleased(KeyEvent event) {
             fireChangeEvent();
         }

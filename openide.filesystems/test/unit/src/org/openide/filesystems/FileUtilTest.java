@@ -160,4 +160,10 @@ public class FileUtilTest extends NbTestCase {
             assertEquals("FileUtil.getArchiveFile failed.", new URL(urls[i][1]), FileUtil.getArchiveFile(new URL(urls[i][0])));
         }
     }
+    
+    /** Tests whether java.io.File(".") is normalized. */
+    public void testNormalizeFile137407() {
+        File file = new File(".");
+        assertTrue("java.io.File(\".\") not normalized.", FileUtil.normalizeFile(FileUtil.normalizeFile(file)).equals(FileUtil.normalizeFile(file)));
+    }
 }

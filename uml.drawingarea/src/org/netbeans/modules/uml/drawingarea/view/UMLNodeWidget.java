@@ -780,6 +780,29 @@ public abstract class UMLNodeWidget extends Widget
         ((UMLNodeWidget) target).setNodeForeground(getNodeForeground());
         ((UMLNodeWidget) target).setNodeFont(getNodeFont());
         
+        
+        Collection<? extends CollapsibleWidgetManager> mgrList = getLookup().lookupAll(CollapsibleWidgetManager.class);
+        CollapsibleWidgetManager[] originalMgrs = new CollapsibleWidgetManager[mgrList.size()];
+        mgrList.toArray(originalMgrs); 
+        
+        mgrList = target.getLookup().lookupAll(CollapsibleWidgetManager.class);
+        CollapsibleWidgetManager[] clonedMgrs = new CollapsibleWidgetManager[mgrList.size()];
+        mgrList.toArray(clonedMgrs); 
+        
+        for (CollapsibleWidgetManager mgr : originalMgrs)
+        {
+            String name = mgr.getCollapsibleCompartmentName();
+            for (CollapsibleWidgetManager cloned : clonedMgrs)
+            {
+                if (name.equals(cloned.getCollapsibleCompartmentName()))
+                {
+                    if (mgr.isCompartmentCollapsed())
+                        cloned.collapseWidget(UMLNodeWidget.COLLAPSE_ALL);
+                    break;
+                }
+            }
+        }
+        
         if (setBounds)
         {
             Insets insets = getBorder().getInsets();

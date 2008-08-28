@@ -43,6 +43,8 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.Customizer;
 import java.io.File;
 import java.io.IOException;
@@ -53,11 +55,13 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.KeyStroke;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
@@ -168,6 +172,13 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 removeButton.setEnabled(indices.length > 0);
                 downButton.setEnabled(indices.length > 0 && indices[indices.length-1]<model.getSize()-1);
                 upButton.setEnabled(indices.length>0 && indices[0]>0);
+            }
+        });
+        //#143481
+        content.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete");
+        content.getActionMap().put("delete", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                removeResource(null);
             }
         });
     }

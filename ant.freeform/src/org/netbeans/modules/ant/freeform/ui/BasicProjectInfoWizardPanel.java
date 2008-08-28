@@ -77,9 +77,9 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
     
     public boolean isValid() {
         getComponent();
-        String error = component.getError();
+        String[] error = component.getError();
         if (error != null) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
+            wizardDescriptor.putProperty(error[1], error[0]);
             return false;
         }
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N

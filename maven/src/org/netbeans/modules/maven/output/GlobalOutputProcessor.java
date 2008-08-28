@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven.output;
 
+import java.util.regex.Pattern;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 
@@ -47,6 +48,7 @@ import org.netbeans.modules.maven.api.output.OutputVisitor;
  */
 public class GlobalOutputProcessor implements OutputProcessor {
     private static final String SECTION_PROJECT = "project-execute"; //NOI18N
+    private final Pattern DOWNLOAD = Pattern.compile("^(\\d+)/(\\d+)[MKb]$");
     
     /** Creates a new instance of GlobalOutputProcessor */
     public GlobalOutputProcessor() {
@@ -57,11 +59,14 @@ public class GlobalOutputProcessor implements OutputProcessor {
     }
 
     public void processLine(String line, OutputVisitor visitor) {
+        if (DOWNLOAD.matcher(line).matches()) {
+            visitor.skipLine();
+        }
     }
 
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
         if (sequenceId.startsWith(SECTION_PROJECT)) {
-            visitor.setLine(sequenceId);
+//            visitor.setLine(sequenceId);
         } else {
             visitor.setLine("[" + sequenceId.substring("mojo-execute#".length()) + "]"); //NOI18N
         }

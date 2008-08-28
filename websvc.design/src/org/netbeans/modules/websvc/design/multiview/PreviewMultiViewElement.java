@@ -50,6 +50,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
+import org.openide.awt.Toolbar;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
@@ -143,7 +144,8 @@ public class PreviewMultiViewElement extends CloneableEditor
                 return toolbar;
             }
         }
-        return null;
+        Toolbar tb = new Toolbar();
+        return tb;
     }
 
     public void setMultiViewCallback(MultiViewElementCallback callback) {

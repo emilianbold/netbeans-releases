@@ -214,8 +214,14 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("main.cc", 102, 13, "main.cc", 83, 9);
     }
 
+    public void testChildNamespaces() throws Exception {
+        // IZ#145148: forward class declaration is not replaced by real declaration in some cases
+        performTest("child_ns.cc", 9, 12, "child_ns.cc", 4, 13);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
+        @Override
         protected Class getTestCaseDataClass() {
             return NamespacesHyperlinkTestCase.class;
         }

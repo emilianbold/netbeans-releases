@@ -76,6 +76,9 @@ made subject to such option by the copyright holder.
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-mobility-editor-PPCompletionProvider.instance"/>
                 </folder>
+                <file name="org-netbeans-modules-mobility-editor-ConfigurationHighlightsLayer.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.mobility.editor.ConfigurationHighlightsLayerFactory"/>
+                </file>                
             </folder>
             <folder name="x-java-preprocessor">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>

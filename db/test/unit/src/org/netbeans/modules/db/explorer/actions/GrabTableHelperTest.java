@@ -36,7 +36,7 @@ import java.util.Vector;
 import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.TableColumn;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.util.DDLTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 import org.netbeans.modules.db.util.InfoHelper;
 
 /**
@@ -50,7 +50,7 @@ public class GrabTableHelperTest extends DDLTestBase {
     
     public void testGrabTable() throws Exception {
         File file = null;
-        InfoHelper infoHelper = new InfoHelper(spec, drvSpec, conn);
+        InfoHelper infoHelper = new InfoHelper(getSpecification(), getDriverSpecification(), getConnection());
         
         try {
             String tablename = "grabtable";
@@ -84,9 +84,11 @@ public class GrabTableHelperTest extends DDLTestBase {
             // Initialize the table information in the format required
             // by the helper.  This is done by creating a DatabaseNodeInfo
             // for the table
-            DatabaseNodeInfo tableInfo = infoHelper.getTableInfo(tablename);
+            //DatabaseNodeInfo tableInfo = infoHelper.getTableInfo(tablename);
+            DatabaseNodeInfo tableInfo = getTableNodeInfo(tablename);
+            assertNotNull(tableInfo);
 
-            new GrabTableHelper().execute(spec, tablename, 
+            new GrabTableHelper().execute(getSpecification(), tablename,
                     tableInfo.getChildren().elements(), file);
             
             assertTrue(file.exists());
@@ -96,8 +98,8 @@ public class GrabTableHelperTest extends DDLTestBase {
             ObjectInputStream istream = new ObjectInputStream(fstream);
             CreateTable cmd = (CreateTable)istream.readObject();
             istream.close();
-            cmd.setSpecification(spec);
-            cmd.setObjectOwner(SCHEMA);
+            cmd.setSpecification(getSpecification());
+            cmd.setObjectOwner(getSchema());
             
             assertEquals(tablename, cmd.getObjectName());
             
@@ -127,8 +129,7 @@ public class GrabTableHelperTest extends DDLTestBase {
             cmd.execute();
             
             assertFalse(cmd.wasException());
-            
-            dropTable(tablename);
+            assertTrue(tableExists(tablename));
         } finally {        
             if ( file != null && file.exists()) {
                 file.delete();
