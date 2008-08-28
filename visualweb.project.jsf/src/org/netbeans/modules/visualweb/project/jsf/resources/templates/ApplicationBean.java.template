@@ -21,9 +21,8 @@ import javax.faces.FacesException;
  * this class.</p>
  *
  * ${name}.java
- *
- * @author ${user}
  * Created on ${date}, ${time}
+ * @author ${user}
  */
 
 public class ${name} extends AbstractApplicationBean {

@@ -18,9 +18,8 @@ import javax.faces.FacesException;
  * to respond to incoming events.</p>
  *
  * ${name}.java
- *
- * @author ${user}
  * Created on ${date}, ${time}
+ * @author ${user}
  */
 
 public class ${name} extends AbstractFragmentBean {
