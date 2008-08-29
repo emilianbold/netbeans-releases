@@ -623,6 +623,7 @@ public final class FoldHierarchyTransactionImpl {
                                 sb.append(f.getEndOffset());
                                 sb.append(">: "); //NOI18N
                                 sb.append(f.toString());
+                                sb.append("; FoldManager: ").append(getManager(f));
                                 sb.append("\n"); //NOI18N
                             }
 
