@@ -1417,9 +1417,11 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (!contextOnly) {
             namespaces.addAll(CsmUsingResolver.getDefault().findVisibleNamespaces(file, offset, inProject));
         }
-        // add global namespace
-        CsmNamespace globNS = prj.getGlobalNamespace();
-        namespaces.add(globNS);
+        if (prj != null) {
+            // add global namespace
+            CsmNamespace globNS = prj.getGlobalNamespace();
+            namespaces.add(globNS);
+        }
         // add all namespaces from context
         Collection<CsmNamespace> contextNSs = getContextNamespaces(context);
         namespaces.addAll(contextNSs);

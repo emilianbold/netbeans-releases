@@ -877,15 +877,15 @@ public final class RubyPlatform {
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
             Info info = new Info("JRuby", "1.8.6"); // NOI18N
-            info.jversion = "1.1.3"; // NOI18N
+            info.jversion = "1.1.4"; // NOI18N
             info.patchlevel = "114"; // NOI18N
             // XXX this is dynamically generated during JRuby build, should be
             // fixed by not hardcoding the default platform info, but rather
             // computing as for other platforms
-            info.releaseDate = "2008-08-15"; // NOI18N
+            info.releaseDate = "2008-08-28"; // NOI18N
             info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
-                    "jruby-1.1.3", "org.netbeans.modules.ruby.platform", false);  // NOI18N
+                    "jruby-1.1.4", "org.netbeans.modules.ruby.platform", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
             FileObject libDirFO = FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby"); // NOI18N

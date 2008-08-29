@@ -419,7 +419,10 @@ public class ExecutionService {
                     }
 
                     stopAction.setEnabled(false);
-                    rerunAction.setEnabled(true);
+
+                    if (descriptor.isRerun()) {
+                        rerunAction.setEnabled(true);
+                    }
 
                     if (stopAction.process != null) {
                         stopAction.process.destroy();

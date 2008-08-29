@@ -42,8 +42,11 @@
 package org.netbeans.api.db.explorer;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.logging.Level;
 import org.netbeans.modules.db.test.Util;
 import org.netbeans.modules.db.test.DBTestBase;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -99,12 +102,11 @@ public class DatabaseConnectionTest extends DBTestBase {
         
         ConnectionManager.getDefault().connect(dbconn);
         Connection conn = dbconn.getJDBCConnection();
-        assertNotNull(conn);
-        assertFalse(conn.isClosed());
+        assertTrue(connectionIsValid(conn));
         
         ConnectionManager.getDefault().connect(dbconn);
         assertSame(conn, dbconn.getJDBCConnection());
-        assertFalse(conn.isClosed());
+        assertTrue(connectionIsValid(dbconn.getJDBCConnection()));
     }
 
     public void testDeleteConnection() throws Exception {
@@ -127,18 +129,56 @@ public class DatabaseConnectionTest extends DBTestBase {
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
     }
 
+    public void testDisconnect() throws Exception {
+        DatabaseConnection conn = getDatabaseConnection(true);
+        assertTrue(connectionIsValid(conn.getJDBCConnection()));
+
+        ConnectionManager.getDefault().disconnect(conn);
+        assertFalse(connectionIsValid(conn.getJDBCConnection()));
+
+        ConnectionManager.getDefault().connect(conn);
+        assertTrue(connectionIsValid(conn.getJDBCConnection()));
+
+    }
+
     public void testGetJDBCConnectionWithTest() throws Exception {
         DatabaseConnection dbconn = getDatabaseConnection(false);
         ConnectionManager.getDefault().disconnect(dbconn);
         assertNull(dbconn.getJDBCConnection(true));
-        
+        assertFalse(connectionIsValid(dbconn.getJDBCConnection()));
+
         ConnectionManager.getDefault().connect(dbconn);
         assertNotNull(dbconn.getJDBCConnection(true));
+        assertTrue(connectionIsValid(dbconn.getJDBCConnection(true)));
         assertNotNull(dbconn.getJDBCConnection(false));
 
         dbconn.getJDBCConnection(true).close();
         assertNotNull(dbconn.getJDBCConnection(false));
         assertNull(dbconn.getJDBCConnection(true));
         assertNull(dbconn.getJDBCConnection(false));
+
+        ConnectionManager.getDefault().connect(dbconn);
+        assertNotNull(dbconn.getJDBCConnection(true));
+        assertTrue(connectionIsValid(dbconn.getJDBCConnection(true)));
+        assertNotNull(dbconn.getJDBCConnection(false));
+
+        if (isDerby()) {
+            shutdownDerby();
+            assertNull(dbconn.getJDBCConnection(true));
+        }
+    }
+
+    private static boolean connectionIsValid(Connection conn) throws Exception {
+        if (conn == null || conn.isClosed()) {
+            return false;
+        }
+
+        try {
+            // Send a command to the server, if it fails we know the connection is invalid.
+            conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+        } catch (SQLException e) {
+            return false;
+        }
+        return true;
     }
 }

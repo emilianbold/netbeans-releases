@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
@@ -947,7 +948,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * to get state lock use
      * Object stateLock = getFileContainer().getLock(file);
      */
-    protected final void putPreprocState(FileContainer.Entry entry, APTPreprocHandler.State state) {
+    final void putPreprocState(FileContainer.Entry entry, APTPreprocHandler.State state) {
 	if( state != null && ! state.isCleaned() ) {
 	    state = APTHandlersSupport.createCleanPreprocState(state);
 	}
@@ -1022,7 +1023,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
 
             // gather macro map from all includes
-            FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(csmFile);
+            FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(csmFile/*, preprocHandler*/);
             APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, pcState);
             walker.visit();
 
@@ -1408,20 +1409,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private void disposeFiles() {
-        Collection<FileImpl> list;
-//        synchronized (fileContainer) {
-        list = getFileContainer().getFileImpls();
+        Collection<FileImpl> list = getFileContainer().getFileImpls();
         getFileContainer().clear();
-//        }
         for (FileImpl file : list){
-            file.onProjectDispose();
-            if (TraceFlags.USE_AST_CACHE) {
-                CacheManager.getInstance().invalidate(file);
-            } else {
-                APTDriver.getInstance().invalidateAPT(file.getBuffer());
-            }
+            file.onProjectClose();
+            APTDriver.getInstance().invalidateAPT(file.getBuffer());
         }
-        clearNativeFileContainer();
+        //clearNativeFileContainer();
     }
 
     private NamespaceImpl _getGlobalNamespace() {
@@ -1816,7 +1810,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public static NativeFileItem getCompiledFileItem(FileImpl fileImpl) {
         NativeFileItem out = null;
-        ProjectBase filePrj = fileImpl.getProjectImpl();
+        ProjectBase filePrj = fileImpl.getProjectImpl(true);
         if (filePrj != null) {
             APTPreprocHandler.State state = filePrj.getPreprocState(fileImpl);
             FileImpl startFile = getStartFile(state);
@@ -1999,7 +1993,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * when the project is being disposed)
      *
      */
-    private boolean disposing;
+    private volatile boolean disposing;
     private ReadWriteLock disposeLock = new ReentrantReadWriteLock();
 
     private CharSequence uniqueName = null; // lazy initialized

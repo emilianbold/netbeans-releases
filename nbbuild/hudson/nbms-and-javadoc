@@ -9,6 +9,8 @@ else
     hg clone http://hg.netbeans.org/main/contrib contrib
 fi
 
+hg up -C .
+hg -R contrib up -C .
 hg --config extensions.purge= clean --all || exit
 hg -R contrib --config extensions.purge= clean --all || exit
 
@@ -24,3 +26,5 @@ ant -v -f $mydir/build-update-descriptor.xml || exit
 ant -Djnlp.codebase=${HUDSON_URL}job/${JOB_NAME}/${BUILD_NUMBER}/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp || exit
 ant index-layer-paths
 ant clean-untracked-files
+test -z "`hg st | tee /dev/stderr`" || exit
+test -z "`hg -R contrib st | tee /dev/stderr`" || exit
