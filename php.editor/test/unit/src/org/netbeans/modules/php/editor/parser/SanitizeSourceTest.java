@@ -165,6 +165,10 @@ public class SanitizeSourceTest extends ParserTestBase {
         performTest("sanitize/sanitize145494");
     }
 
+    public void testDoNotDeleteCurly01() throws Exception {
+        performTest("sanitize/sanitize017");
+    }
+
     protected String getTestResult(String filename) throws Exception {
         GsfTestCompilationInfo info = getInfo("testfiles/" + filename + ".php");
         StringBuffer textresult = new StringBuffer();
