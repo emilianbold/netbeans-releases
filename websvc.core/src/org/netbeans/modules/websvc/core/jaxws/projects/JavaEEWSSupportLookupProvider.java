@@ -159,7 +159,9 @@ public class JavaEEWSSupportLookupProvider implements LookupProvider {
                         for (WebserviceDescription wsDesc : webServices.getWebserviceDescription()) {
                             PortComponent[] ports = wsDesc.getPortComponent();
                             for (PortComponent port : ports) {
-                                if (JaxWsUtils.isInSourceGroup(prj, port.getServiceEndpointInterface())) {
+                                if ("javax.xml.ws.WebServiceProvider".equals(wsDesc.getDisplayName())) { //NOI18N
+                                    result.put("fromWsdl:"+wsDesc.getWebserviceDescriptionName(), port.getDisplayName()); //NOI18N
+                                } else if (JaxWsUtils.isInSourceGroup(prj, port.getServiceEndpointInterface())) {
                                     result.put(port.getDisplayName(), port.getPortComponentName());
                                 } else if (wsDesc.getWsdlFile() != null) {
                                     result.put("fromWsdl:"+wsDesc.getWebserviceDescriptionName(), port.getDisplayName()); //NOI18N
@@ -212,7 +214,7 @@ public class JavaEEWSSupportLookupProvider implements LookupProvider {
                     }
                     // add new services
                     for (String key : newServices.keySet()) { // services from WSDL
-                        if (key.startsWith("fromWsdl:")) {
+                        if (key.startsWith("fromWsdl:")) { //NOI18N
                             Service oldServiceFromWsdl = oldServicesFromWsdl.get(key);
                             String newImplClass = newServices.get(key);
                             if (oldServiceFromWsdl != null && !oldServiceFromWsdl.getImplementationClass().equals(newImplClass)) {
