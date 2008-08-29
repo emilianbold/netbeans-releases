@@ -43,6 +43,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
@@ -67,9 +68,12 @@ public class FilePreprocessorConditionState
 
     private static final int MIN_SIZE = 16;
 
-    public FilePreprocessorConditionState(FileImpl file) {
+    //private boolean isCpp;
+
+    public FilePreprocessorConditionState(FileImpl file/*, APTPreprocHandler preprocHandler*/) {
         offsets = new int[MIN_SIZE];
         fileName = file.getAbsolutePath();
+        //this.isCpp = preprocHandler.getMacroMap().isDefined("__cplusplus");
     }
 
     public FilePreprocessorConditionState(DataInput input) throws IOException {
@@ -212,7 +216,7 @@ public class FilePreprocessorConditionState
         if (state == null) {
             return "null"; // NOI18N
         }
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(/*state.isCpp ? "c++ " : "c   "*/);
         sb.append("["); // NOI18N
         for (int i = 0; i < state.size; i++) {
             if (i > 0) {

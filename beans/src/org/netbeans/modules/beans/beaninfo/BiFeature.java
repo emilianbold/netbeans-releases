@@ -64,6 +64,7 @@ import org.netbeans.modules.beans.Pattern;
 import org.netbeans.modules.beans.PatternAnalyser;
 import org.netbeans.modules.beans.PropertyPattern;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /** The basic class representing features included in BeanInfo.
 *
@@ -322,6 +323,11 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
             //else                
             //    return null;    // NOI18N
             return BIF_DESCRIPTOR; // NOI18N
+        }
+
+        @Override
+        public String getToolTip() {
+            return NbBundle.getMessage(BiFeature.class, "HINT_NODE_Descriptor");
         }
         
         void analyzeCustomizationString( String statement ) {

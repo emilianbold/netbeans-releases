@@ -92,7 +92,7 @@ public class JaxWsAddOperation implements AddOperationCookie {
     }
     
     public boolean isEnabledInEditor(FileObject implClass) {
-        return isJaxWsImplementationClass() && !isFromWSDL();
+        return isJaxWsImplementationClass() && !isFromWSDL() && !isProvider();
     }
     
     private boolean isJaxWsImplementationClass() {
@@ -119,6 +119,13 @@ public class JaxWsAddOperation implements AddOperationCookie {
     private boolean isFromWSDL() {
         if(service != null){
             return service.getWsdlUrl()!=null;
+        }
+        return false;
+    }
+    
+    private boolean isProvider() {
+        if(service != null){
+            return service.isUseProvider();
         }
         return false;
     }

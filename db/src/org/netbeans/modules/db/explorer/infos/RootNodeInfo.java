@@ -223,9 +223,11 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         ninfo.setSchema(dbconn.getSchema());
         ninfo.setName(dbconn.getName());
         ninfo.setDatabaseConnection(dbconn);
-        if (dbconn.getConnection() != null) {
+
+        if (DatabaseConnection.test(getConnection(), dbconn.getName())) {
             ninfo.connect(dbconn);
         }
+        
         return ninfo;
     }
         
@@ -238,6 +240,10 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         }
         
         ConnectionList.getDefault().add(dbconn);
+
+        // Force an immediate refresh rather than wait for the Connectionist
+        // change listener to detect the change and refresh.  Otherwise synchronous
+        // users of this API will hit errors when the refresh hasn't happened yet.
         refreshChildren();
     }
         
@@ -246,27 +252,12 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             throw new NullPointerException();
         }
         
-        Vector<DatabaseNodeInfo> children = getChildren();
-        DatabaseNodeInfo toRemove = null;
-        
-        for ( DatabaseNodeInfo child : children ) {
-            if ( child instanceof ConnectionNodeInfo ) {
-                ConnectionNodeInfo ninfo = (ConnectionNodeInfo)child;
-                if ( ninfo.getDatabaseConnection().equals(dbconn)) {
-                    toRemove = ninfo;
-                }
-                
-                dbconn.disconnect();
-            }
-        }
-        
-        if ( toRemove != null ) {
-            removeChild(toRemove, false);
-        }
-        
         ConnectionList.getDefault().remove(dbconn);
-        
-        notifyChange();
+
+        // Force an immediate refresh rather than wait for the ConnectionList
+        // change listener to detect the change.   Otherwise synchronous
+        // users of this API will hit errors when the refresh hasn't happened yet.
+        refreshChildren();
     }
     
     public void stateChanged(ChangeEvent evt) {

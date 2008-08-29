@@ -69,7 +69,7 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
     
     protected static String getProjectName(FileImpl file) {
 	assert (file != null);
-	ProjectBase prj = file.getProjectImpl();
+	ProjectBase prj = file.getProjectImpl(true);
 	assert (prj != null);
 	return prj == null ? "<No Project Name>" : prj.getUniqueName().toString();  // NOI18N
     }

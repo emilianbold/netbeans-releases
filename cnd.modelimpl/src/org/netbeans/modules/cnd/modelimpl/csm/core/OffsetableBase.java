@@ -128,7 +128,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         onDispose();
     }
     
-    private void onDispose() {
+    private synchronized void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
             // restore container from it's UID
             this.fileRef = UIDCsmConverter.UIDtoFile(fileUID);
@@ -136,7 +136,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         }
     }
     
-    private CsmFile _getFile() {
+    private synchronized CsmFile _getFile() {
         CsmFile file = this.fileRef;
         if (file == null) {
             file = UIDCsmConverter.UIDtoFile(fileUID);

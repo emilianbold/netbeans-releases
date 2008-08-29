@@ -113,7 +113,7 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
 
         public int getPlatform() {
             if (platform == null) {
-                RemoteCommandSupport support = new RemoteCommandSupport(hkey, "uname -s"); //NOI18N
+                RemoteCommandSupport support = new RemoteCommandSupport(hkey, "uname -sm"); //NOI18N
                 int result;
                 if (support.run() == 0) {
                     result = recognizePlatform(support.toString());

@@ -195,67 +195,44 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     }
     
     protected String getServiceMethodBody() throws IOException {
-        String fixedCode = getFixedParameterDeclaration();
-
-        String pathParamsCode = "";
-        if (getBean().getTemplateParameters() != null && getBean().getTemplateParameters().size() > 0) {
-            pathParamsCode = getTemplateParameterDefinition(getBean().getTemplateParameters(), Constants.PATH_PARAMS, false);
-        }
-        String queryParamsCode = "";
-        if (getBean().getQueryParameters() != null &&
-                getBean().getQueryParameters().size() > 0) {
-            queryParamsCode = getHeaderOrParameterDefinition(getBean().getQueryParameters(), Constants.QUERY_PARAMS, false);
-        }
-
         String methodBody = "";
-        methodBody += "        " + fixedCode;
+        methodBody += INDENT + getFixedParameterDeclaration();
 
         //Insert authentication code before new "+Constants.REST_CONNECTION+"() call
         methodBody += getAuthenticationGenerator().getPreAuthenticationCode() + "\n";
 
         //Insert parameter declaration
-        methodBody += "        " + pathParamsCode;
-        methodBody += "        " + queryParamsCode;
+        methodBody += INDENT + getTemplateParameterDefinition(
+                getBean().getTemplateParameters(), Constants.PATH_PARAMS, false);
+        methodBody += INDENT + getHeaderOrParameterDefinition(
+                getBean().getQueryParameters(), Constants.QUERY_PARAMS, false);
 
-        HttpMethodType httpMethod = getBean().getHttpMethod();
-        String queryParams = (httpMethod == HttpMethodType.POST) ? "null" : "$" + Constants.QUERY_PARAMS;
-        
-        methodBody += "$conn = new " + Constants.REST_CONNECTION + "(\"" + getBean().getUrl() + "\"";
-        methodBody += ", " + (pathParamsCode.trim().equals("") ? "null" : "$" + Constants.PATH_PARAMS);
-        methodBody += ", " + (queryParamsCode.trim().equals("") ? "null" : queryParams);
+        methodBody += INDENT + "$conn = new " + Constants.REST_CONNECTION + "(\"" + 
+                getBean().getUrl() + "\"";
+        methodBody += ", $" + Constants.PATH_PARAMS;
+        methodBody += ", " + (!Util.isPutPostFormParams(getBean())?"$"+Constants.QUERY_PARAMS:"array()");
         methodBody += ");\n";
 
         //Insert authentication code after new "+Constants.REST_CONNECTION+"() call
         methodBody += "             " +
                 getAuthenticationGenerator().getPostAuthenticationCode() + "\n";
 
-        
+        HttpMethodType httpMethod = getBean().getHttpMethod();
         if (getBean().getHeaderParameters() != null && getBean().getHeaderParameters().size() > 0) {
             methodBody += "        " + getHeaderOrParameterDefinition(getBean().getHeaderParameters(), Constants.HEADER_PARAMS, false, httpMethod);
             methodBody += INDENT+"$conn->setHeaders($" +Constants.HEADER_PARAMS+");\n";
         }
 
-        boolean hasRequestRep = !getBean().findInputRepresentations(getBean().getMethod()).isEmpty();
         //Insert the method call
-        String returnStatement = "return $conn";
-        if (httpMethod == HttpMethodType.GET) {
-            methodBody += "             " + returnStatement + "->get();\n";
-        } else if (httpMethod == HttpMethodType.PUT) {
-            if (hasRequestRep) {
-                methodBody += "             " + returnStatement + "->put($" + Constants.PUT_POST_CONTENT + ");\n";
+        methodBody += INDENT + "return $conn"+"->" + httpMethod.prefix() + "(";
+        if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
+            if (Util.isPutPostFormParams(getBean())) {
+                methodBody += "$" + Constants.QUERY_PARAMS;
             } else {
-                methodBody += "             " + returnStatement + "->put(null);\n";
+                methodBody += "$" + Constants.PUT_POST_CONTENT;
             }
-        } else if (httpMethod == HttpMethodType.POST) {
-            if (hasRequestRep) {
-                methodBody += "             " + returnStatement + "->post($" + Constants.QUERY_PARAMS + ");\n";
-            } else {
-                methodBody += "             " + returnStatement + "->post($" + Constants.PUT_POST_CONTENT + ");\n";
-            }
-        } else if (httpMethod == HttpMethodType.DELETE) {
-            methodBody += "             " + returnStatement + "->delete();\n";
         }
-
+        methodBody += ");\n";
         return methodBody;
     }
 
@@ -453,14 +430,14 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     //$pathParams["{volumeId}"] = $volumeId;
     //$pathParams["{objectId}"] = $objectId; 
     private String getTemplateParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate) {
-        StringBuffer sb = new StringBuffer();
-        for (ParameterInfo param : params) {
-            sb.append(getHeaderOrParameterDefinitionPart(param, varName, evaluate, true));
+        String paramCode = "$" + varName + " = array();\n";
+        if(getBean().getTemplateParameters() != null && getBean().getTemplateParameters().size() > 0) {
+            StringBuffer sb = new StringBuffer();
+            for (ParameterInfo param : params) {
+                sb.append(getHeaderOrParameterDefinitionPart(param, varName, evaluate, true));
+            }
+            paramCode += sb.toString() + "\n";
         }
-
-        String paramCode = "";
-        paramCode += "$" + varName + " = array();\n";
-        paramCode += sb.toString() + "\n";
         return paramCode;
     }
 
@@ -477,21 +454,19 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
         String paramDecl = "";
-        String indent2 = "                    ";
-        
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
         List<ParameterInfo> filterParams = getServiceMethodParameters();//includes request, response also
         paramUse += getHeaderOrParameterUsage(filterParams);
         paramDecl += getHeaderOrParameterDeclaration(filterParams);
         String methodBody = "";
-        methodBody += indent2 + "try {\n";
+        methodBody += INDENT + "try {\n";
         methodBody += paramDecl + "\n";
-        methodBody += indent2 + "$result = " + getBean().getSaasServiceName() +
+        methodBody += INDENT_2 + "$result = " + getBean().getSaasServiceName() +
                 "::" + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        methodBody += indent2 + "echo $result->getResponseBody();\n";
-        methodBody += indent2 + "} catch(Exception $e) {\n";
-        methodBody += indent2 + "    echo \"Exception occured: \".$e;\n";
-        methodBody += indent2 + "}\n";
+        methodBody += INDENT_2 + "echo $result->getResponseBody();\n";
+        methodBody += INDENT + "} catch(Exception $e) {\n";
+        methodBody += INDENT_2 + "    echo \"Exception occured: \".$e;\n";
+        methodBody += INDENT + "}\n";
         return methodBody;
     }
 
@@ -551,10 +526,12 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         return sb.toString();
     }
     
-    public static String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate) {
-        String paramCode = "";
-        paramCode += INDENT+"$" + varName + " = array();\n";
-        paramCode += getHeaderOrParameterDefinitionPart(params, varName, evaluate) + "\n";
+    public String getHeaderOrParameterDefinition(List<ParameterInfo> params, String varName, boolean evaluate) {
+        String paramCode = INDENT+"$" + varName + " = array();\n";
+        if (getBean().getQueryParameters() != null &&
+                getBean().getQueryParameters().size() > 0) {
+            paramCode += getHeaderOrParameterDefinitionPart(params, varName, evaluate) + "\n";
+        }
         return paramCode;
     }
     

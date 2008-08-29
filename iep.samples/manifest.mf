@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Specification-Version: 1.3
+OpenIDE-Module: org.netbeans.modules.iep.samples/1
+OpenIDE-Module-Layer: org/netbeans/modules/iep/samples/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/iep/samples/resources/Bundle.properties

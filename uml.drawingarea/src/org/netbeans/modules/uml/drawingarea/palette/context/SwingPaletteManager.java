@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.drawingarea.palette.context;
 import java.util.List;
 import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.action.WidgetAction.WidgetMouseEvent;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.drawingarea.palette.context.*;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -57,6 +58,7 @@ import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.openide.util.Lookup;
@@ -146,6 +148,8 @@ public class SwingPaletteManager implements ContextPaletteManager
            ((selectedObjects.size() > 1) && (forceShow == true)))
         {
             Widget selectedWidget = getScene().findWidget(selectedObjects.get(0));
+            
+//            Util.makeSureWidgetIsVisible(selectedWidget);
             cancelledWidget=selectedWidget;
             
             if(selectedWidget instanceof UMLEdgeWidget)
@@ -246,12 +250,7 @@ public class SwingPaletteManager implements ContextPaletteManager
         // Need to make sure that the attached Widget is visible.
         if(paletteWidget != null)
         {
-            ContextPaletteModel model = paletteWidget.getModel();
-            if(model != null)
-            {
-                Widget context = model.getContext();
-                context.getScene().getView();
-            }
+            
         }
     }
 
@@ -266,6 +265,19 @@ public class SwingPaletteManager implements ContextPaletteManager
             ContextPaletteModel model = lookup.lookup(ContextPaletteModel.class);
             if(model != null)
             {
+                // For some reason when you use tab key, and the new widget is 
+                // off the screen the palette is not being removed off the screen
+                // correctly, therefore the current paletteWidget gets orphaned.
+                //
+                // I think that this is because the selectionChanged method is
+                // being called twice (however the selectionChanged method also
+                // calls cancelPalettte so it should be removed).  So, instead 
+                // requiring others to manage the events, the palette manager
+                // should make sure that things are cleaned up correctly.
+                if(paletteWidget != null)
+                {
+                    paletteWidget.getParent().remove(paletteWidget);
+                }
 
                 paletteWidget = new ContextPalette(model);            
                 paletteWidget.revalidate();
