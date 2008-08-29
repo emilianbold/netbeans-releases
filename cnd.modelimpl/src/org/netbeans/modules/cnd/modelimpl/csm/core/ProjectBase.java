@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
@@ -1022,7 +1023,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
 
             // gather macro map from all includes
-            FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(csmFile);
+            FilePreprocessorConditionState pcState = new FilePreprocessorConditionState(csmFile/*, preprocHandler*/);
             APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, pcState);
             walker.visit();
 
