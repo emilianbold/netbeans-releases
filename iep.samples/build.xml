@@ -41,7 +41,7 @@
 -->
 <project name="samples" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-    <property name="zip.folder" value="src/org/netbeans/modules/iep/samples/resources/zip"/>
+    <property name="zip.folder" value="build/classes/org/netbeans/modules/iep/samples/resources/zip"/>
 
     <target name="jar" depends="create-zip,zip-blueprint,projectized-common.jar"/>
                               
