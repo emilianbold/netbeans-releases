@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.php.editor.parser;
 
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.php.editor.PHPLanguage;
@@ -64,12 +65,17 @@ public class SanitizeSource extends ParserTestBase {
         super.tearDown();
     }
     
-    public void testSanitizeClass() throws Exception {
+    public void testSanitizeClass01() throws Exception {
         performTest("sanitize/sanitize001");
-        performTest("sanitize/sanitize002");
-        performTest("sanitize/sanitize004");
     }
 
+    public void testSanitizeClass02() throws Exception {
+        performTest("sanitize/sanitize002");
+    }
+
+    public void testSanitizeClass03() throws Exception {
+        performTest("sanitize/sanitize004");
+    }
     public void testSanitizeTopContext() throws Exception {
         performTest("sanitize/sanitize003");
     }
@@ -124,10 +130,49 @@ public class SanitizeSource extends ParserTestBase {
         performTest("sanitize/sanitize006");
     }
 
-    @Override
+    // testing when class declaration is in class declaration
+    public void testCDInCD01() throws Exception {
+        performTest("sanitize/sanitize007");
+    }
+    public void testCDInCD02() throws Exception {
+        performTest("sanitize/sanitize008");
+    }
+    public void testCDInCD03() throws Exception {
+        performTest("sanitize/sanitize009");
+    }
+    public void testCDInCD04() throws Exception {
+        performTest("sanitize/sanitize010");
+    }
+    public void testCDInCD05() throws Exception {
+        performTest("sanitize/sanitize011");
+    }
+    public void testCDInCD06() throws Exception {
+        performTest("sanitize/sanitize012");
+    }
+    public void testCDInCD07() throws Exception {
+        performTest("sanitize/sanitize013");
+    }
+    public void testCDInCD08() throws Exception {
+        performTest("sanitize/sanitize014");
+    }
+    public void testCDInCD09() throws Exception {
+        performTest("sanitize/sanitize015");
+    }
+    public void testCDInCD10() throws Exception {
+        performTest("sanitize/sanitize016");
+    }
+
     protected String getTestResult(String filename) throws Exception {
-        CompilationInfo info = getInfo("testfiles/" + filename + ".php");
+        GsfTestCompilationInfo info = getInfo("testfiles/" + filename + ".php");
         StringBuffer textresult = new StringBuffer();
+        int offset = info.getText().indexOf('^');
+        if (offset > -1) {
+            String content = info.getText();
+            content = content.substring(0, offset) + content.substring(offset+1, content.length()-1);
+            info = getInfoForText(content, "testFile.php");
+            info.setCaretOffset(offset);
+        }
+
         ParserResult result = info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, 0);
 
         if (result == null) {
