@@ -69,7 +69,7 @@ public class RunCommand extends Command implements Displayable {
         if (isScriptSelected()) {
             localCommand.invokeAction(null);
         } else {
-            eventuallyUploadFiles(getProject().getSourcesDirectory());
+            eventuallyUploadFiles();
             try {
                 showURLForProjectFile();
             } catch (MalformedURLException ex) {
