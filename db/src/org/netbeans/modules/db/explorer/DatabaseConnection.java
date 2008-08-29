@@ -146,7 +146,8 @@ public class DatabaseConnection implements DBConnection {
     public static final String PROP_SCHEMA = "schema"; //NOI18N
     public static final String PROP_DRIVERNAME = "drivername"; //NOI18N
     public static final String PROP_NAME = "name"; //NOI18N
-
+    public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
+    public static final int DERBY_UNICODE_ERROR_CODE = 20000;
     private OpenConnectionInterface openConnection = null;
 
     static private final Lookup.Result openConnectionLookupResult;
@@ -589,8 +590,16 @@ public class DatabaseConnection implements DBConnection {
             propertySupport.firePropertyChange("connected", null, null);
         } catch (Exception e) {
             String message = MessageFormat.format(
-                    NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"),
-                    db, drv, e.getMessage()); // NOI18N
+                        NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"),
+                        db, drv, e.getMessage()); // NOI18N
+            // Issue 69265
+            if (drv.equals(DRIVER_CLASS_NET)) {
+                if (e instanceof SQLException) {
+                    if (((SQLException) e).getErrorCode() == DERBY_UNICODE_ERROR_CODE) {
+                        message = MessageFormat.format(NbBundle.getMessage(DatabaseConnection.class, "EXC_DerbyCreateDatabaseUnicode"), new String[]{message, db}); // NOI18N
+                    }
+                }
+            }
 
             propertySupport.firePropertyChange("failed", null, null);
 
