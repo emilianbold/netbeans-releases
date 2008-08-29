@@ -161,6 +161,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
     private PopupMenuProvider menuProvider = new DiagramPopupMenuProvider();
     private IInteraction interaction;
     private RelationshipDiscovery relDiscovery = null;
+    private boolean trackbarusage=true;
     
     public SequenceDiagramEngine(DesignerScene scene) {
         super(scene);
@@ -272,7 +273,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
             newWidget.setPreferredLocation(newWidget.convertLocalToScene(location));
         
             //
-            if(element instanceof ILifeline)
+            if(element instanceof ILifeline && trackbarusage)
             {
                 //set properties if actor
                 ILifeline ll=(ILifeline) element;
@@ -282,6 +283,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                     new AfterValidationExecutor(new AddCarFprPresentationElementAction((SQDDiagramTopComponent) tc,(LifelineWidget) newWidget, presentation), getScene());
                 }
             }
+            trackbarusage=true;
         }
         //
         if(element instanceof ICombinedFragment || element instanceof IInteraction)
@@ -1758,5 +1760,9 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         public void focusChanged(ObjectSceneEvent event, Object previousFocusedObject, Object newFocusedObject) {
         }
         
+    }
+
+    public void doNotUseTrackbar() {
+        this.trackbarusage=false;
     }
 }

@@ -99,11 +99,11 @@ done
 echo SigTest: Checking All Changes Done
 
 echo SigTest: Generating Golden Files
-ant gen-sigtests 
+ant gen-sigtests || exit 1
 echo SigTest: Generating Golden Files Done
 
 echo SigTest: Incompatible Changes
-ant check-sigtests-release
+ant check-sigtests-release -Dfail.on.error=false
 echo SigTest: Incompatible Changes Done
 
 ###############  Commit validation tests  ##########################

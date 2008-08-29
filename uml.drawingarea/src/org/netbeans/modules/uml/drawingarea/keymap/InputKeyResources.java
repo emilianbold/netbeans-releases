@@ -82,8 +82,8 @@ public class InputKeyResources extends ListResourceBundle
         {"key.1.focus", WHEN_IN_FOCUSED_WINDOW},
         
         {"key.2.keyCode", String.valueOf(KeyEvent.VK_P)}, 
-        {"key.2.modifiers", String.valueOf(KeyEvent.ALT_DOWN_MASK)},
-        {"key.2.mac_modifiers", String.valueOf(KeyEvent.CTRL_DOWN_MASK)},
+        {"key.2.modifiers", String.valueOf(KeyEvent.CTRL_DOWN_MASK)},
+        {"key.2.mac_modifiers", String.valueOf(KeyEvent.META_DOWN_MASK)},
         {"key.2.command", DiagramInputkeyMapper.CONTEXT_PALETTE_FOCUS }, 
         {"key.2.focus", WHEN_IN_FOCUSED_WINDOW},
         

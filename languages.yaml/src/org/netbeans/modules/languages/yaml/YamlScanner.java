@@ -251,20 +251,22 @@ public class YamlScanner implements StructureScanner {
                             PositionedScalarNode scalar = (PositionedScalarNode) key;
                             String childName = scalar.getValue().toString();
                             Node child = (Node) entry.getValue();
-                            int e = ((Positionable) child).getRange().end.offset;
-                            // If you have an "empty" key, e.g.
-                            //   foo:
-                            //   bar: Hello World
-                            // here foo is "empty" but I get a child of "" positioned at the beginning
-                            // of "bar", which is wrong. In this case, don't include the child in the
-                            // position bounds.
-                            if (child.getValue() instanceof ByteList && ((ByteList)child.getValue()).length() == 0) {
-                                e = ((Positionable) scalar).getRange().end.offset;
+                            if (child != null) {
+                                int e = ((Positionable) child).getRange().end.offset;
+                                // If you have an "empty" key, e.g.
+                                //   foo:
+                                //   bar: Hello World
+                                // here foo is "empty" but I get a child of "" positioned at the beginning
+                                // of "bar", which is wrong. In this case, don't include the child in the
+                                // position bounds.
+                                if (child.getValue() instanceof ByteList && ((ByteList)child.getValue()).length() == 0) {
+                                    e = ((Positionable) scalar).getRange().end.offset;
+                                }
+                                children.add(new YamlStructureItem(child, childName, depth+1,
+                                        // Range: beginning of -key- to ending of -value-
+                                        ((Positionable) scalar).getRange().start.offset,
+                                        e));
                             }
-                            children.add(new YamlStructureItem(child, childName, depth+1,
-                                    // Range: beginning of -key- to ending of -value-
-                                    ((Positionable) scalar).getRange().start.offset,
-                                    e));
                         }
                     }
                     // Keep the list ordered, same order as in the document!!

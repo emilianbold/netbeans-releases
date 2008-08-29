@@ -16,20 +16,20 @@
 <small><a href="#seealso">See Also</a></small></p>
 <p>In a debugging session, you can see the call stack for the current thread 
 in the Debugging window (opened automatically
-  whenever you start a debugging session).
+whenever you start a debugging session).
 If you expand the node for the current thread you can see a list of the
 sequence of calls made during the execution of the thread. 
 </p>
   
-<p>The information given for each call includes the name of the call, followed 
+<p>The information given for each call (marked by a <img src="images/call_stack_16.png" alt="Current frame icon"> 
+  icon) includes the name of the call, followed 
   by the file name and line number of the call's currently executing statement. 
   If the sources are available, you can right-click the call and choose 
   Go To Source to go to the source code of the call.</p>
 <p>Alternatively, you can open the Call Stack window by choosing Window  &gt; Debugging  &gt; Call
 Stack (Alt -Shift-3). </p>
 <h3>Changing the Current Call</h3>
-<p>The current call (marked by a <img src="images/call_stack_16.png" alt="Current frame icon"> 
-  icon) is the most recent call made by the current thread. When you select a 
+<p>The current call (indicated in bold) is the most recent call made by the current thread. When you select a 
   different current thread, the window is updated to show the calls 
   for that thread. The Local Variables window is also updated to display the values of variables 
   for the current call. </p>
@@ -59,7 +59,7 @@ call is removed, the database connection will remain open.
 <p><b>To pop the most recent call from the call stack:</b>
 </p>
 <ul>
-  <li>From the main menu, choose Run  &gt; Stack &gt; Pop Topmost Call. 
+  <li>From the main menu, choose Debug  &gt; Stack &gt; Pop Topmost Call. 
     <p> The call is removed from the call stack. The program counter is moved to the 
       line before the instruction that made the removed call. If the source code 
       is available, the focus of the Source Editor is set to that line. When you 

@@ -2831,7 +2831,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         return;
                     }
                 }
-                ensureAttributeValue(rootUrl, DIGEST, printDigest(digest), true);
+                boolean dirty = (data == null || getAttribute(rootUrl, DIRTY_ROOT, null) != null) ? true : false;
+                ensureAttributeValue(rootUrl, DIGEST, printDigest(digest), dirty);
             } catch (IOException e) {
             } catch (NoSuchAlgorithmException ex) {
                 Exceptions.printStackTrace(ex);

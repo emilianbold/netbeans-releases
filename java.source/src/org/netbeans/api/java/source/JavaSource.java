@@ -2037,7 +2037,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         if (js.files.size() == 1) {
             fo = js.files.iterator().next();
         }
-        if (fo != null) {
+        if (!js.isClassFile() && fo != null) {
             final ClassPath scp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
             if (scp != js.classpathInfo.getClassPath(PathKind.SOURCE)) {
                 //Revalidate
