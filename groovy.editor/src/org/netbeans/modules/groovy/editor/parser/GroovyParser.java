@@ -83,6 +83,11 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 
 /**
  *
@@ -196,6 +201,29 @@ class GroovyParser implements Parser {
 
             if (!(GroovyUtils.isRowEmpty(doc, offset) || GroovyUtils.isRowWhite(doc, offset))) {
                 if ((sanitizing == Sanitize.EDITED_LINE) || (sanitizing == Sanitize.ERROR_LINE)) {
+
+                    if (sanitizing == Sanitize.ERROR_LINE) {
+                        // groovy-only, this is not done in Ruby or JavaScript sanitization
+                        // look backwards if there is unfinished line with trailing dot and remove that dot
+                        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(context.document, offset);
+                        Token<? extends GroovyTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                        if (token.id() == GroovyTokenId.DOT) {
+                            int removeStart = ts.offset();
+                            int removeEnd = removeStart + 1;
+                            StringBuilder sb = new StringBuilder(doc.length());
+                            sb.append(doc.substring(0, removeStart));
+                            sb.append(' ');
+                            if (removeEnd < doc.length()) {
+                                sb.append(doc.substring(removeEnd, doc.length()));
+                            }
+                            assert sb.length() == doc.length();
+                            context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
+                            context.sanitizedSource = sb.toString();
+                            context.sanitizedContents = doc.substring(removeStart, removeEnd);
+                            return true;
+                        }
+                    }
+
                     // See if I should try to remove the current line, since it has text on it.
                     int lineEnd = GroovyUtils.getRowLastNonWhite(doc, offset);
 
