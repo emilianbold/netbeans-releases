@@ -71,9 +71,7 @@ import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.IStructuredClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
@@ -132,7 +130,6 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
 import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.UIDiagram;
-import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.openide.windows.TopComponent;
 
 /**
@@ -1108,7 +1105,7 @@ catch (IOException ex) {
 		// Relationship discovery thinks the packages are contained. Bug DT 2533 reported by Sun
                 if(pDiagram.getDiagramKind()==IDiagramKind.DK_SEQUENCE_DIAGRAM)
                 {
-                    //we do not have specific sqd layeot, may be yet
+                    //we do not have specific sqd layeot, may be yet, so all necessary layout is here
                     Point lifelinePoint=null;
                     for(int i=0;i<newPES.size();i++)
                     {
@@ -1122,24 +1119,27 @@ catch (IOException ex) {
                             {
                                 lifelinePoint=w.getPreferredLocation();
                             }
-                            w.setPreferredLocation(lifelinePoint);
+                            else
+                            {
+                                w.setPreferredLocation(new Point(lifelinePoint.x-w.getBounds().x,lifelinePoint.y));
+                            }
                             System.out.println("POINT:"+lifelinePoint);
-                            lifelinePoint.x+=w.getBounds().width+30;
+                            lifelinePoint.x=w.getPreferredLocation().x+w.getBounds().x+w.getBounds().width+30;//right side+30
                         }
                     }
                     scene.validate();
-//                    for(int i=0;i<newPES.size();i++)
-//                    {
-//                        IPresentationElement pe=newPES.get(i);
-//                        if(pe.getFirstSubject() instanceof ILifeline)
-//                        {
-//                            TopComponent tc=scene.getTopComponent();
-//                            if(tc instanceof SQDDiagramTopComponent)
-//                            {
-//                                ((SQDDiagramTopComponent)tc).getTrackBar().addPresentationElement(pe);
-//                            }
-//                        }
-//                    }
+                    for(int i=0;i<newPES.size();i++)
+                    {
+                        IPresentationElement pe=newPES.get(i);
+                        if(pe.getFirstSubject() instanceof ILifeline)
+                        {
+                            TopComponent tc=scene.getTopComponent();
+                            if(tc instanceof SQDDiagramTopComponent)
+                            {
+                                ((SQDDiagramTopComponent)tc).getTrackBar().addPresentationElement(pe);
+                            }
+                        }
+                    }
                 }
                 else 
                 {
