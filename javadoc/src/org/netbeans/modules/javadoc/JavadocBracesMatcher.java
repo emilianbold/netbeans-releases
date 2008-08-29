@@ -30,6 +30,7 @@ package org.netbeans.modules.javadoc;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavadocTokenId;
@@ -74,114 +75,124 @@ public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherF
     // -----------------------------------------------------
     
     public int[] findOrigin() throws BadLocationException, InterruptedException {
-        int caretOffset = context.getSearchOffset();
-        boolean backward = context.isSearchingBackward();
-        
-        TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
-        List<TokenSequence<?>> sequences = th.embeddedTokenSequences(caretOffset, backward);
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
+            int caretOffset = context.getSearchOffset();
+            boolean backward = context.isSearchingBackward();
 
-        for(int i = sequences.size() - 1; i >= 0; i--) {
-            TokenSequence<? extends TokenId> seq = sequences.get(i);
-            if (seq.language() == JavadocTokenId.language()) {
-                jdocSeq = seq;
-                if (i > 0) {
-                    TokenSequence<? extends TokenId> javaSeq = sequences.get(i - 1);
-                    jdocStart = javaSeq.offset();
-                    jdocEnd = javaSeq.offset() + javaSeq.token().length();
-                } else {
-                    // jdocSeq is the top level sequence, ie the whole document is just javadoc
-                    jdocStart = 0;
-                    jdocEnd = context.getDocument().getLength();
-                }
-                break;
-            }
-        }
+            TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
+            List<TokenSequence<?>> sequences = th.embeddedTokenSequences(caretOffset, backward);
 
-        if (jdocSeq == null) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Not javadoc TokenSequence."); //NOI18N
-            }
-            return null;
-        }
-        
-//        if (caretOffset >= jdocStart && 
-//            ((backward && caretOffset <= jdocStart + 3) ||
-//            (!backward && caretOffset < jdocStart + 3))
-//        ) {
-//            matchingArea = new int [] { jdocEnd - 2, jdocEnd };
-//            return new int [] { jdocStart, jdocStart + 3 };
-//        }
-//
-//        if (caretOffset <= jdocEnd && 
-//            ((backward && caretOffset > jdocEnd - 2) ||
-//            (!backward && caretOffset >= jdocEnd - 2))
-//        ) {
-//            matchingArea = new int [] { jdocStart, jdocStart + 3 };
-//            return new int [] { jdocEnd - 2, jdocEnd };
-//        }
-        
-        // look for tags first
-        jdocSeq.move(caretOffset);
-        if (jdocSeq.moveNext()) {
-            if (isTag(jdocSeq.token())) {
-                if (jdocSeq.offset() < caretOffset || !backward) {
-                    return prepareOffsets(jdocSeq, true);
-                }
-            }
-
-            while(moveTheSequence(jdocSeq, backward, context.getLimitOffset())) {
-                if (isTag(jdocSeq.token())) {
-                    return prepareOffsets(jdocSeq, true);
-                }
-            }
-        }
-
-        defaultMatcher = BracesMatcherSupport.defaultMatcher(context, jdocStart, jdocEnd);
-        return defaultMatcher.findOrigin();
-    }
-
-    public int[] findMatches() throws InterruptedException, BadLocationException {
-        if (defaultMatcher != null) {
-            return defaultMatcher.findMatches();
-        }
-    
-//        if (matchingArea != null) {
-//            return matchingArea;
-//        }
-        
-        assert jdocSeq != null : "No javadoc token sequence"; //NOI18N
-        
-        Token<? extends TokenId> tag = jdocSeq.token();
-        assert tag.id() == JavadocTokenId.HTML_TAG : "Wrong token"; //NOI18N
-        
-        if (isSingleTag(tag)) {
-            return new int [] { jdocSeq.offset(), jdocSeq.offset() + jdocSeq.token().length() };
-        }
-        
-        boolean backward = !isOpeningTag(tag);
-        int cnt = 0;
-        
-        while(moveTheSequence(jdocSeq, backward, -1)) {
-            if (!isTag(jdocSeq.token())) {
-                continue;
-            }
-            
-            if (matchTags(tag, jdocSeq.token())) {
-                if ((backward && !isOpeningTag(jdocSeq.token())) ||
-                    (!backward && isOpeningTag(jdocSeq.token()))
-                ) {
-                    cnt++;
-                } else {
-                    if (cnt == 0) {
-                        return prepareOffsets(jdocSeq, false);
+            for(int i = sequences.size() - 1; i >= 0; i--) {
+                TokenSequence<? extends TokenId> seq = sequences.get(i);
+                if (seq.language() == JavadocTokenId.language()) {
+                    jdocSeq = seq;
+                    if (i > 0) {
+                        TokenSequence<? extends TokenId> javaSeq = sequences.get(i - 1);
+                        jdocStart = javaSeq.offset();
+                        jdocEnd = javaSeq.offset() + javaSeq.token().length();
                     } else {
-                        cnt--;
+                        // jdocSeq is the top level sequence, ie the whole document is just javadoc
+                        jdocStart = 0;
+                        jdocEnd = context.getDocument().getLength();
+                    }
+                    break;
+                }
+            }
+
+            if (jdocSeq == null) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Not javadoc TokenSequence."); //NOI18N
+                }
+                return null;
+            }
+
+    //        if (caretOffset >= jdocStart && 
+    //            ((backward && caretOffset <= jdocStart + 3) ||
+    //            (!backward && caretOffset < jdocStart + 3))
+    //        ) {
+    //            matchingArea = new int [] { jdocEnd - 2, jdocEnd };
+    //            return new int [] { jdocStart, jdocStart + 3 };
+    //        }
+    //
+    //        if (caretOffset <= jdocEnd && 
+    //            ((backward && caretOffset > jdocEnd - 2) ||
+    //            (!backward && caretOffset >= jdocEnd - 2))
+    //        ) {
+    //            matchingArea = new int [] { jdocStart, jdocStart + 3 };
+    //            return new int [] { jdocEnd - 2, jdocEnd };
+    //        }
+
+            // look for tags first
+            jdocSeq.move(caretOffset);
+            if (jdocSeq.moveNext()) {
+                if (isTag(jdocSeq.token())) {
+                    if (jdocSeq.offset() < caretOffset || !backward) {
+                        return prepareOffsets(jdocSeq, true);
+                    }
+                }
+
+                while(moveTheSequence(jdocSeq, backward, context.getLimitOffset())) {
+                    if (isTag(jdocSeq.token())) {
+                        return prepareOffsets(jdocSeq, true);
                     }
                 }
             }
+
+            defaultMatcher = BracesMatcherSupport.defaultMatcher(context, jdocStart, jdocEnd);
+            return defaultMatcher.findOrigin();
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
         }
-        
-        return null;
+    }
+
+    public int[] findMatches() throws InterruptedException, BadLocationException {
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
+            if (defaultMatcher != null) {
+                return defaultMatcher.findMatches();
+            }
+
+    //        if (matchingArea != null) {
+    //            return matchingArea;
+    //        }
+
+            assert jdocSeq != null : "No javadoc token sequence"; //NOI18N
+
+            Token<? extends TokenId> tag = jdocSeq.token();
+            assert tag.id() == JavadocTokenId.HTML_TAG : "Wrong token"; //NOI18N
+
+            if (isSingleTag(tag)) {
+                return new int [] { jdocSeq.offset(), jdocSeq.offset() + jdocSeq.token().length() };
+            }
+
+            boolean backward = !isOpeningTag(tag);
+            int cnt = 0;
+
+            while(moveTheSequence(jdocSeq, backward, -1)) {
+                if (!isTag(jdocSeq.token())) {
+                    continue;
+                }
+
+                if (matchTags(tag, jdocSeq.token())) {
+                    if ((backward && !isOpeningTag(jdocSeq.token())) ||
+                        (!backward && isOpeningTag(jdocSeq.token()))
+                    ) {
+                        cnt++;
+                    } else {
+                        if (cnt == 0) {
+                            return prepareOffsets(jdocSeq, false);
+                        } else {
+                            cnt--;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
+        }
     }
 
     // -----------------------------------------------------

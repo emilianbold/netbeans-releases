@@ -123,8 +123,7 @@ public interface BracesMatcher {
      * matcher does not want to highlight the whole original area it can return
      * additional offset pairs for areas that should be highlighted instead.
      * 
-     * <p>The infrastructure calls this method while holding the readlock of the
-     * document being searched.
+     * <p>The infrastructure does not lock the document prior calling this method.
      * 
      * @return The starting and ending offset of the original area or <code>null</code>
      *   if the matcher can't detect the origin area within the lookahead distance.
@@ -143,8 +142,7 @@ public interface BracesMatcher {
      * infrastructure to find all areas that are matching the original area
      * of the document in the <code>MatcherContext</code>.
      * 
-     * <p>The infrastructure calls this method while holding the readlock of the
-     * document being searched.
+     * <p>The infrastructure does not lock the document prior calling this method.
      * 
      * <p>It is essential for all implementations to respond when thread running
      * this method is interrupted and abort the task and return immediately. This can
