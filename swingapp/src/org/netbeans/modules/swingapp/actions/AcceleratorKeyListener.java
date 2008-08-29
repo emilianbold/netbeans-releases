@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.swingapp.actions;
 
+import java.awt.Component;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -67,22 +68,23 @@ public class AcceleratorKeyListener implements KeyListener {
     public void keyPressed(KeyEvent ke) {
         ke.consume();
         JTextField tf = (JTextField) ke.getSource();
-        setModifiers(ke);
-        String s = toString(ke);
-        tf.setText(s);
-    }
-
-    public void keyReleased(KeyEvent ke) {
-        ke.consume();
-        JTextField tf = (JTextField) ke.getSource();
-        switch(currentKeyCode) {
+        switch (ke.getKeyCode()) {
             case KeyEvent.VK_ALT:
             case KeyEvent.VK_ALT_GRAPH:
             case KeyEvent.VK_CONTROL:
+            case KeyEvent.VK_META:
             case KeyEvent.VK_SHIFT:
-                tf.setText("");
                 return;
+            default:
+                setModifiers(ke);
+                String s = toString(ke);
+                if (!tf.getText().equals(s)) {
+                    tf.setText(s);
+                }
         }
+    }
+
+    public void keyReleased(KeyEvent ke) {
     }
 
     public void keyTyped(KeyEvent ke) {
@@ -143,6 +145,13 @@ public class AcceleratorKeyListener implements KeyListener {
     
     
     private String toString(KeyEvent ke) {
+        if (!ke.isShiftDown() && !ke.isControlDown() && !ke.isAltDown() && !ke.isMetaDown()) {
+            int modifiers = panel.altCheckbox.isSelected() ? KeyEvent.ALT_MASK : 0;
+            modifiers = modifiers | (panel.controlCheckbox.isSelected() ? KeyEvent.CTRL_MASK : 0);
+            modifiers = modifiers | (panel.metaCheckbox.isSelected() ? KeyEvent.META_MASK : 0);
+            modifiers = modifiers | (panel.shiftCheckbox.isSelected() ? KeyEvent.SHIFT_MASK : 0);
+            ke = new KeyEvent((Component)ke.getSource(), ke.getID(), ke.getWhen(), modifiers, ke.getKeyCode(), ke.getKeyChar());
+        }
         keyStroke = KeyStroke.getKeyStrokeForEvent(ke);
         currentKeyCode = ke.getKeyCode();
         return KeyEvent.getKeyText(currentKeyCode);
