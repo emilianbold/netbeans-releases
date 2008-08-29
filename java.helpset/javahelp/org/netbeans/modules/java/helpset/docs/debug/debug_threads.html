@@ -25,6 +25,7 @@
 <p><b>To change the current thread:</b></p>
 <ul>
   <li>Double-click any thread in the Debugging window to make it the current thread. </li>
+  <li>In the source editor, right-click the suspended thread icon and choose Set Current Thread To &gt; <i>new_current_thread</i>.</li>
 </ul>
 
 <h3>Suspending and Resuming Threads</h3>
@@ -65,9 +66,9 @@ Alternatively, you can click the  Resume (<img src="images/resume_button_16.png"
             <tr>
         </table>
         
-        <p>You can click on the suspended thread icon in the source editor to make the suspended thread the current thread.</p>
-
-
+        <p>A thread icon in the left margin of the source editor indicates that there is a suspended thread at that line.
+        You can switch the current thread by right-clicking the suspended thread icon and choosing Set Current Thread To &gt; <i>new_current_thread</i>.
+        </p>
 
 <h3>Multi-threaded Applications</h3>
     <p>When debugging a multi-threaded application, a step in a particular thread may be interrupted by
@@ -82,7 +83,7 @@ Alternatively, you can click the  Resume (<img src="images/resume_button_16.png"
     This enables you to continue debugging the current thread and then switching to the thread that hit
     a breakpoint when it is convenient.
     
-    Alternatively, you can use the thread chooser to select the thread you want to be the current thread.
+    Alternatively, you can use the Current Thread Chooser (Ctrl-8) to select the thread you want to be the current thread.
     </p>
 
 <p>Let us suppose you are stepping through a thread (<i>thread 1</i>), 
