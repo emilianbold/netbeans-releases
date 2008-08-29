@@ -71,6 +71,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 import org.openide.windows.CloneableOpenSupport;
 
 public final class JaxWsDataObject extends MultiDataObject {
@@ -87,6 +88,11 @@ public final class JaxWsDataObject extends MultiDataObject {
                 createEditorSupport().saveAs( folder, fileName );
             }
         });
+    }
+    
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
     
     private void lazyInitialize() {
