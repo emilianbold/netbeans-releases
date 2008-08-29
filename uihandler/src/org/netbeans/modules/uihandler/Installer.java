@@ -206,6 +206,7 @@ public class Installer extends ModuleInstall implements Runnable {
         logsSizeMetrics = prefs.getInt("countMetrics", 0);
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
+        System.setProperty("nb.show.statistics.ui",USAGE_STATISTICS_ENABLED);
         logMetricsEnabled = corePref.getBoolean(USAGE_STATISTICS_ENABLED,Boolean.FALSE);
         if (logMetricsEnabled) {
             //Handler for metrics
