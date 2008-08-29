@@ -84,6 +84,8 @@ public class PhpStructureScanner implements StructureScanner {
 
     private static final String CLOSE_FONT = "</font>";                   //NOI18N
 
+    private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY";
+
     public List<? extends StructureItem> scan(final CompilationInfo info) {
         this.info = info;
         Program program = Utils.getRoot(info);
@@ -99,7 +101,18 @@ public class PhpStructureScanner implements StructureScanner {
         Program program = Utils.getRoot(info);
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         if (program != null) {
-            //program.accept(new FoldVisitor(folds));
+            if (program.getStatements().size() == 1) {
+                // check whether the ast is broken.
+                if (program.getStatements().get(0) instanceof ASTError) {
+                    Object lastCorrect = info.getDocument().getProperty(LAST_CORRECT_FOLDING_PROPERTY);
+                    if (lastCorrect != null){
+                        return ( Map<String, List<OffsetRange>>)lastCorrect;
+                    }
+                    else {
+                        return Collections.emptyMap();
+                    }
+                }
+            }
             (new FoldVisitor(folds)).scan(program);
             List<Comment> comments = program.getComments();
             if (comments != null) {
@@ -113,6 +126,7 @@ public class PhpStructureScanner implements StructureScanner {
                     }
                 }
             }
+            info.getDocument().putProperty(LAST_CORRECT_FOLDING_PROPERTY, folds);
             return folds;
         }
         return Collections.emptyMap();

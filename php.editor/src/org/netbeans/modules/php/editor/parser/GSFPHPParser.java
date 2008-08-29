@@ -41,6 +41,7 @@ package org.netbeans.modules.php.editor.parser;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -204,7 +205,10 @@ public class GSFPHPParser implements Parser {
 
                 int end = error.getCurrentToken().right;
                 int start = error.getCurrentToken().left;
-
+                String replace = source.substring(start, end);
+                if ("}".equals(replace)) {
+                    return false;
+                }
                 context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end-start) + source.substring(end);
                 context.sanitizedRange = new OffsetRange(start, end);
                 return true;
@@ -402,7 +406,13 @@ public class GSFPHPParser implements Parser {
                 return parseBuffer(context, Sanitize.EDITED_LINE, errorHandler);
             default:
                 int end = context.getSource().length();
-                Program emptyProgram = new Program(0, end, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+                // add the ast error, some features can recognized that there is something wrong.
+                // for example folding.
+                ASTError error = new ASTError(0, end);
+                List<Statement> statements = new ArrayList<Statement>();
+                statements.add(error);
+                Program emptyProgram = new Program(0, end, statements, Collections.EMPTY_LIST);
+
                 return new PHPParseResult(this, context.getFile(), emptyProgram);
         }
         
