@@ -85,12 +85,15 @@ public class ${name} {
         return connect(headers, null);
     }
     
+    public RestResponse put(String[][] headers) throws IOException {
+        return put(headers, (InputStream) null);
+    }
+
     public RestResponse put(String[][] headers, String data) throws IOException {
-        conn.setRequestMethod("PUT");
         InputStream is = null;
         if(data != null)
             is = new ByteArrayInputStream(data.getBytes("UTF-8"));
-        return connect(headers, is);
+        return put(headers, is);
     }
 
     public RestResponse put(String[][] headers, InputStream is) throws IOException {
@@ -98,12 +101,15 @@ public class ${name} {
         return connect(headers, is);
     }
     
+    public RestResponse post(String[][] headers) throws IOException {
+        return post(headers, (InputStream) null);
+    }
+
     public RestResponse post(String[][] headers, String data) throws IOException {
-        conn.setRequestMethod("POST");
         InputStream is = null;
         if(data != null)
             is = new ByteArrayInputStream(data.getBytes("UTF-8"));
-        return connect(headers, is);
+        return post(headers, is);
     }
     
     public RestResponse post(String[][] headers, InputStream is) throws IOException {
