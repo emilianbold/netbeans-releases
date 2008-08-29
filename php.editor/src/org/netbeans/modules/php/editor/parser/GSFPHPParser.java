@@ -280,7 +280,6 @@ public class GSFPHPParser implements Parser {
 
     protected boolean sanitizeCurly (Context context) {
         String source = context.getSource();
-        System.out.println("offset: " + context.caretOffset);
         ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), false);
         //keep index of last ?>
         Symbol lastPHPToken = null;
@@ -389,8 +388,7 @@ public class GSFPHPParser implements Parser {
         return false;
     }
 
-    private PHPParseResult sanitize(final Context context, final Sanitize sanitizing, PHP5ErrorHandler errorHandler) throws Exception{
-        System.out.println(sanitizing.name());
+    private PHPParseResult sanitize(final Context context, final Sanitize sanitizing, PHP5ErrorHandler errorHandler) throws Exception {
         switch(sanitizing) {
             case NONE:
             case MISSING_CURLY:
