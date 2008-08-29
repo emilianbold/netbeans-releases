@@ -40,8 +40,6 @@
 package org.netbeans.modules.db.test;
 
 import java.sql.Types;
-import java.util.Vector;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.lib.ddl.impl.AddColumn;
@@ -50,9 +48,7 @@ import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.CreateView;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
-import org.netbeans.lib.ddl.impl.SpecificationFactory;
 import org.netbeans.lib.ddl.impl.TableColumn;
-import org.netbeans.lib.ddl.DatabaseSpecification;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
@@ -65,30 +61,16 @@ import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
 public class DDLTestBase extends DBTestBase {
     private static Logger LOGGER = Logger.getLogger(DDLTestBase.class.getName());
 
-    protected static SpecificationFactory specfactory;
-    protected Specification spec;
-    protected DriverSpecification drvSpec;
-
-    static {
-        try {
-            specfactory = new SpecificationFactory();
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, null, e);
-            throw new RuntimeException(e);
-        }
-    }
-
-
     public DDLTestBase(String name) {
         super(name);
     }
 
-    protected final DatabaseSpecification getSpecification() throws Exception {
+    protected final Specification getSpecification() throws Exception {
         DatabaseConnection dbconn = getDatabaseConnection(true);
         
         ConnectionNodeInfo cinfo = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNodeInfo(dbconn.getName());
         
-        return cinfo.getSpecification();        
+        return (Specification)cinfo.getSpecification();
     }
     
     protected final DriverSpecification getDriverSpecification() throws Exception {
@@ -98,46 +80,11 @@ public class DDLTestBase extends DBTestBase {
         
         return cinfo.getDriverSpecification();
     }
-    
-    protected final TableNodeInfo getTableNodeInfo(String tablename) throws Exception {
-        DatabaseConnection dbconn = getDatabaseConnection(true);
         
-        ConnectionNodeInfo cinfo = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNodeInfo(dbconn.getName());
-
-        TableListNodeInfo tableList = null;
-        for (DatabaseNodeInfo child : cinfo.getChildren()) {
-            if (child instanceof TableListNodeInfo) {
-                tableList = (TableListNodeInfo)child;
-            }
-        }
-
-        assertNotNull(tableList);
-
-        for (Object child : tableList.getChildren()) {
-            if (child instanceof TableNodeInfo) {
-                TableNodeInfo tinfo = (TableNodeInfo)child;
-                if (tinfo.getDisplayName().equals(tablename)) {
-                    return tinfo;
-                }
-            }
-        }
-
-        return null;
-    }
-
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        spec = (Specification)getSpecification();
-        drvSpec = getDriverSpecification();
-    }
-    
     protected void createBasicTable(String tablename, String pkeyName)
             throws Exception {
         dropTable(tablename);
-        CreateTable cmd = spec.createCommandCreateTable(tablename);
+        CreateTable cmd = getSpecification().createCommandCreateTable(tablename);
         cmd.setObjectOwner(getSchema());
 
         // primary key
@@ -149,7 +96,7 @@ public class DDLTestBase extends DBTestBase {
     }
 
     protected void createView(String viewName, String query) throws Exception {
-        CreateView cmd = spec.createCommandCreateView(viewName);
+        CreateView cmd = getSpecification().createCommandCreateView(viewName);
         cmd.setQuery(query);
         cmd.setObjectOwner(getSchema());
         cmd.execute();
@@ -162,7 +109,7 @@ public class DDLTestBase extends DBTestBase {
         // Need to get identifier into correct case because we are
         // still quoting referred-to identifiers.
         tablename = fixIdentifier(tablename);
-        CreateIndex xcmd = spec.createCommandCreateIndex(tablename);
+        CreateIndex xcmd = getSpecification().createCommandCreateIndex(tablename);
         xcmd.setIndexName(indexname);
 
         // *not* unique
@@ -182,7 +129,7 @@ public class DDLTestBase extends DBTestBase {
         // Need to get identifier into correct case because we are
         // still quoting referred-to identifiers.
         tablename = fixIdentifier(tablename);
-        AddColumn cmd = spec.createCommandAddColumn(tablename);
+        AddColumn cmd = getSpecification().createCommandAddColumn(tablename);
         cmd.setObjectOwner(getSchema());
         TableColumn col = (TableColumn)cmd.createColumn(colname);
         col.setColumnType(type);

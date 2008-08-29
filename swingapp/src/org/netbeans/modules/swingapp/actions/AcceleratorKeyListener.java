@@ -133,10 +133,12 @@ public class AcceleratorKeyListener implements KeyListener {
     }
     
     private void setModifiers(KeyEvent ke) {
-        panel.shiftCheckbox.setSelected(ke.isShiftDown());
-        panel.controlCheckbox.setSelected(ke.isControlDown());
-        panel.altCheckbox.setSelected(ke.isAltDown());
-        panel.metaCheckbox.setSelected(ke.isMetaDown());
+        if (ke.isShiftDown() || ke.isControlDown() || ke.isAltDown() || ke.isMetaDown()) {
+            panel.shiftCheckbox.setSelected(ke.isShiftDown());
+            panel.controlCheckbox.setSelected(ke.isControlDown());
+            panel.altCheckbox.setSelected(ke.isAltDown());
+            panel.metaCheckbox.setSelected(ke.isMetaDown());
+        }
     }
     
     

@@ -160,6 +160,10 @@ import org.openide.ErrorManager;
                 TokenItem whitespaceTokenItem = tokenItem;
                 while (whitespaceTokenItem != null && "whitespace".equals(whitespaceTokenItem.getTokenID().getName())) {
                     int wsOffset = whitespaceTokenItem.getOffset();
+                    if (wsOffset == 0) {
+                        //#145250: at the very beginning of a file
+                        return 0;
+                    }
                     whitespaceTokenItem =((ExtSyntaxSupport) syntaxSupport).getTokenChain(wsOffset - 1, wsOffset);
                 }
                 if (whitespaceTokenItem != null) {

@@ -215,8 +215,9 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public Connection getJDBCConnection(boolean test) {
+        Connection conn = getJDBCConnection();
         if (test) {
-            if (! test()) {
+            if (! test(conn, getName())) {
                 try {
                     this.disconnect();
                 } catch (DatabaseException e) {
@@ -227,12 +228,11 @@ public class DatabaseConnection implements DBConnection {
             }
         }
 
-        return getJDBCConnection();
+        return conn;
     }
 
-    private boolean test() {
+    public static boolean test(Connection conn, String connectionName) {
         try {
-            Connection conn = getJDBCConnection();
             if (conn == null || conn.isClosed()) {
                 return false;
             }
@@ -241,7 +241,7 @@ public class DatabaseConnection implements DBConnection {
             conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
         } catch (SQLException e) {
             LOGGER.log(Level.INFO, NbBundle.getMessage(DatabaseConnection.class,
-                    "MSG_TestFailed", this.getName(), e.getMessage()));
+                    "MSG_TestFailed", connectionName, e.getMessage()));
             LOGGER.log(Level.FINE, null, e);
             return false;
         }
@@ -842,18 +842,23 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public Connection getJDBCConnection() {
+        return getConnection();
+        /*
         try {
+            System.out.println("\nIN GETJDBCCONNECTION()");
             ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
+            System.out.println("\nIN GETJDBCCONNECTION, info is " + cni == null ? "null" : "not null");
             if (cni != null && cni.getConnection() != null) {
                 return cni.getConnection();
             }
         } catch (DatabaseException e) {
             Exceptions.printStackTrace(e);
         }
-        return null;
+        */
     }
 
     public void disconnect() throws DatabaseException {
+        setConnection(null);
         ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
         if (cni != null && cni.getConnection() != null) {
             cni.disconnect();

@@ -177,9 +177,6 @@ public class CreatePHPProject  extends org.netbeans.modules.performance.utilitie
             .enableModules(".*")
             .clusters(".*")
             .reuseUserDir(true)
-
-
-
         );    
     }
 }

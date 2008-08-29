@@ -42,6 +42,7 @@
 package org.netbeans.performance.languages.actions;
 
 
+import junit.framework.Test;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
@@ -53,7 +54,7 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-import org.netbeans.jemmy.operators.Operator;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 
@@ -88,34 +89,33 @@ public class CreateScriptingPackFiles extends org.netbeans.modules.performance.u
         super(testName, performanceDataName);
     }
     
-// TODO: Enable once PhpPerfTest is created    
-//    public void testCreatePHPPage(){
-//        expectedTime = WINDOW_OPEN;
-//        WAIT_AFTER_OPEN=15000;
-//        docname = "PHPPage"; //NOI18N
-//        doccategory = "Scripting"; //NOI18N
-//        
-//        doctype ="PHP File"; //NOI18N
-//	docfolder = "web";
-//	suffix = ".php";
-//        projectfolder = ScriptingUtilities.SOURCE_PACKAGES;
-//        project_name = Projects.PHP_PROJECT;        
-//	doMeasurement();
-//    }
-//    
-//    public void testCreatePHPFile(){
-//        expectedTime = WINDOW_OPEN;
-//        WAIT_AFTER_OPEN=15000;
-//        docname = "PHPFile"; //NOI18N
-//        doccategory = "Scripting"; //NOI18N
-//        
-//        doctype ="PHP File"; //NOI18N
-//	docfolder = "web";
-//	suffix = ".php";
-//        projectfolder = ScriptingUtilities.SOURCE_PACKAGES;
-//        project_name = Projects.PHP_PROJECT;
-//	doMeasurement();
-//    }
+    public void testCreatePHPPage(){
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=15000;
+        docname = "PHPPage"; //NOI18N
+        
+        doccategory = "PHP"; //NOI18N        
+        doctype ="PHP Web Page"; //NOI18N
+	docfolder = "web";
+	suffix = ".php";
+        projectfolder = ScriptingUtilities.SOURCE_PACKAGES;
+        project_name = Projects.PHP_PROJECT;        
+	doMeasurement();
+    }
+    
+    public void testCreatePHPFile(){
+        expectedTime = WINDOW_OPEN;
+        WAIT_AFTER_OPEN=15000;
+        docname = "PHPFile"; //NOI18N
+
+        doccategory = "PHP"; //NOI18N        
+        doctype ="PHP File"; //NOI18N
+	docfolder = "web";
+	suffix = ".php";
+        projectfolder = ScriptingUtilities.SOURCE_PACKAGES;
+        project_name = Projects.PHP_PROJECT;
+	doMeasurement();
+    }
     
     
     public ComponentOperator open(){
@@ -128,6 +128,7 @@ public class CreateScriptingPackFiles extends org.netbeans.modules.performance.u
     @Override
     public void initialize(){
 	log("::initialize::");
+        closeAllModal();
         pto = ScriptingUtilities.invokePTO();
                 
         projectRoot = null;
@@ -138,6 +139,7 @@ public class CreateScriptingPackFiles extends org.netbeans.modules.performance.u
         } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
             fail("Cannot find and select project root node");
         }
+        
     }
 
     public void prepare(){
@@ -155,13 +157,11 @@ public class CreateScriptingPackFiles extends org.netbeans.modules.performance.u
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
+
+        waitNoEvent(2000);
         
-        // create exactly (full match) and case sensitively comparing comparator
-        Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
-        wizard.lstFileTypes().setComparator(comparator);
-        log("Selected Project: "+wizard.getSelectedProject());
-        wizard.selectProject(project_name);
-        log("Selected Project: "+wizard.getSelectedProject());
+        // We can't select project as it's name is not available
+        
         wizard.selectCategory(doccategory);
         wizard.selectFileType(doctype);
 	
@@ -224,4 +224,12 @@ public class CreateScriptingPackFiles extends org.netbeans.modules.performance.u
         super.shutdown();
     }
     
+    public static Test suite() {
+        return NbModuleSuite.create(
+            NbModuleSuite.createConfiguration(CreateScriptingPackFiles.class)
+            .enableModules(".*")
+            .clusters(".*")
+            .reuseUserDir(true)
+        );    
+    }
 }
