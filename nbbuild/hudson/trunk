@@ -99,7 +99,7 @@ done
 echo SigTest: Checking All Changes Done
 
 echo SigTest: Generating Golden Files
-ant gen-sigtests 
+ant gen-sigtests || exit 1
 echo SigTest: Generating Golden Files Done
 
 echo SigTest: Incompatible Changes
