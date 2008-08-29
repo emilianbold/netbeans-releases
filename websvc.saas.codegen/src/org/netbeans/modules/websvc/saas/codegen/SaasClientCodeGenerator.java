@@ -93,6 +93,8 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
     public static final String CONVERTER_FOLDER = "converter";      //NOI18N
     public static final String RESOURCE_SUFFIX = "Resource";      //NOI18N
     public static final String VAR_NAMES_RESULT_DECL = REST_RESPONSE + " " + Util.VAR_NAMES_RESULT;
+    public static final String INDENT = "        ";
+    public static final String INDENT_2 = "             ";
     
     private FileObject targetFile; // resource file target of the drop
     private FileObject destDir;

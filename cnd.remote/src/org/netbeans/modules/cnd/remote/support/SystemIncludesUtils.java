@@ -82,7 +82,7 @@ public class SystemIncludesUtils {
                         for (Tool tool : cs.getTools()) {
                             if (tool instanceof BasicCompiler) {
                                 BasicCompiler bc = (BasicCompiler) tool;
-                                storagePrefix = bc.getStoragePrefix();
+                                storagePrefix = bc.getIncludeFilePathPrefix();
                                 for (Object obj : bc.getSystemIncludeDirectories()) {
                                     String localPath = (String) obj;
                                     if (localPath.length() < storagePrefix.length()) {

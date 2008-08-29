@@ -67,17 +67,22 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import hidden.org.codehaus.plexus.util.IOUtil;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeSet;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.filter.Filter;
 import org.jdom.input.SAXBuilder;
+import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.HintContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.RequestProcessor;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -87,16 +92,29 @@ import org.w3c.dom.NodeList;
  */
 public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     
-            private static final String[] SCOPES = new String[] {
-                "compile", //NOI18N
-                "test", //NOI18N
-                "runtime", //NOI18N
-                "provided", //NOI18N
-                "system" //NOI18N
-            };
-    
+    private static final String[] SCOPES = new String[] {
+        "compile", //NOI18N
+        "test", //NOI18N
+        "runtime", //NOI18N
+        "provided", //NOI18N
+        "system" //NOI18N
+    };
+
+    private Set<String> groupCache;
+    private RequestProcessor.Task groupTask;
+    private Map<String, RequestProcessor.Task> artifactTasks = new HashMap<String, RequestProcessor.Task>();
+    private Map<String, Set<String>> artifactCache = new HashMap<String, Set<String>>();
+    private Map<String, RequestProcessor.Task> versionTasks = new HashMap<String, RequestProcessor.Task>();
+    private Map<String, Set<String>> versionCache = new HashMap<String, Set<String>>();
+    private final Object GROUP_LOCK = new Object();
+    private final Object ARTIFACT_LOCK = new Object();
+    private final Object VERSION_LOCK = new Object();
+
+
     public MavenProjectGrammar(GrammarEnvironment env) {
         super(env);
+        groupTask = RequestProcessor.getDefault().create(new GroupTask());
+        
     }
     
     protected InputStream getSchemaStream() {
@@ -246,8 +264,6 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             path.endsWith("extensions/extension/version") || //NOI18N
             path.endsWith("/project/parent/version")) { //NOI18N
             
-            //poor mans solution, just check local repository for possible versions..
-            // in future would be nice to include remote repositories somehow..
             Node previous;
             if (virtualTextCtx.getCurrentPrefix().length() == 0) {
                 previous = virtualTextCtx.getPreviousSibling();
@@ -256,18 +272,12 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             }
             ArtifactInfoHolder hold = findPluginInfo(previous, null, false);
             if (hold.getGroupId() != null && hold.getArtifactId() != null) {
-                List<NBVersionInfo> versions = RepositoryQueries.getVersions(hold.getGroupId(), hold.getArtifactId());
-                Set<String> verStrings = new HashSet<String>();
-                if (versions != null) {
-                    for (NBVersionInfo info : versions) {
-                        if (info.getVersion().startsWith(virtualTextCtx.getCurrentPrefix())) {
-                            verStrings.add(info.getVersion());
-                        }
-                    }
-                }
+                Set<String> verStrings = getVersions(hold.getGroupId(), hold.getArtifactId());
                 Collection elems = new ArrayList();
                 for (String vers : verStrings) {
-                    elems.add(new MyTextElement(vers, virtualTextCtx.getCurrentPrefix()));
+                    if (vers.startsWith(virtualTextCtx.getCurrentPrefix())) {
+                        elems.add(new MyTextElement(vers, virtualTextCtx.getCurrentPrefix()));
+                    }
                 }
                 
                 return Collections.enumeration(elems);
@@ -275,11 +285,12 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         }
         if (path.endsWith("dependencies/dependency/groupId") || //NOI18N
             path.endsWith("extensions/extension/groupId")) {    //NOI18N
-           
-                Set<String> elems = RepositoryQueries.filterGroupIds(virtualTextCtx.getCurrentPrefix());
+                Set<String> elems = getGroupIds();
                 ArrayList texts = new ArrayList();
                 for (String elem : elems) {
-                    texts.add(new MyTextElement(elem, virtualTextCtx.getCurrentPrefix()));
+                    if (elem.startsWith(virtualTextCtx.getCurrentPrefix())) {
+                        texts.add(new MyTextElement(elem, virtualTextCtx.getCurrentPrefix()));
+                    }
                 }
                 return Collections.enumeration(texts);
             
@@ -305,13 +316,13 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             }
             ArtifactInfoHolder hold = findArtifactInfo(previous);
             if (hold.getGroupId() != null) {
-              
-                    Set<String> elems = RepositoryQueries.filterArtifactIdForGroupId(hold.getGroupId(), virtualTextCtx.getCurrentPrefix());
-                    Iterator it = elems.iterator();
+                    Set<String> elems = getArtifactIds(hold.getGroupId());
                     ArrayList texts = new ArrayList();
-                    while (it.hasNext()) {
-                        String elem = (String) it.next();
-                        texts.add(new MyTextElement(elem, virtualTextCtx.getCurrentPrefix()));
+                    String currprefix = virtualTextCtx.getCurrentPrefix();
+                    for (String elem : elems) {
+                        if (elem.startsWith(currprefix)) {
+                            texts.add(new MyTextElement(elem, currprefix));
+                        }
                     }
                     return Collections.enumeration(texts);
                
@@ -387,6 +398,90 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         }
         return null;
     }
+
+    private Set<String> getGroupIds() {
+        Set<String> elems = null;
+        synchronized (GROUP_LOCK) {
+            if (groupCache != null) {
+                elems = groupCache;
+            } else {
+                if (!groupTask.isFinished()) {
+                    groupTask.run();
+                }
+            }
+        }
+        if (elems == null) {
+            groupTask.waitFinished();
+        }
+        synchronized (GROUP_LOCK) {
+            if (groupCache != null) {
+                elems = groupCache;
+            } else {
+                //can it happen?
+                elems = Collections.<String>emptySet();
+            }
+        }
+        return elems;
+    }
+    
+    private Set<String> getArtifactIds(String groupId) {
+        Set<String> elems = null;
+        RequestProcessor.Task tsk = null;
+        synchronized (ARTIFACT_LOCK) {
+            tsk = artifactTasks.get(groupId);
+            if (tsk == null) {
+                tsk = RequestProcessor.getDefault().create(new ArtifactTask(groupId));
+                artifactTasks.put(groupId, tsk);
+            }
+            Set<String> c = artifactCache.get(groupId);
+            if (c != null) {
+                elems = c;
+            } else {
+                if (!tsk.isFinished()) {
+                    tsk.run();
+                }
+            }
+        }
+        if (elems == null) {
+            tsk.waitFinished();
+        }
+        synchronized (ARTIFACT_LOCK) {
+            Set<String> c = artifactCache.get(groupId);
+            elems = c != null ? c : Collections.<String>emptySet();
+        }
+        return elems;
+    }
+    
+    private Set<String> getVersions(String groupId, String artifactId) {
+        Set<String> elems = null;
+        RequestProcessor.Task tsk = null;
+        String id = groupId + ":" + artifactId; //NOI18N
+        synchronized (VERSION_LOCK) {
+            tsk = versionTasks.get(id);
+            if (tsk == null) {
+                tsk = RequestProcessor.getDefault().create(new VersionTask(groupId, artifactId));
+                versionTasks.put(id, tsk);
+            }
+            Set<String> c = versionCache.get(id);
+            if (c != null) {
+                elems = c;
+            } else {
+                if (!tsk.isFinished()) {
+                    tsk.run();
+                }
+            }
+        }
+        if (elems == null) {
+            tsk.waitFinished();
+        }
+        synchronized (VERSION_LOCK) {
+            Set<String> c = versionCache.get(id);
+            elems = c != null ? c : Collections.<String>emptySet();
+        }
+        return elems;
+    }
+    
+    
   /*Return repo url's*/
     private List<String> getRepoUrls() {
         List<String> repos = new ArrayList<String>();
@@ -469,23 +564,6 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         return Collections.enumeration(toReturn);
     }
     
-    private void checkFolder(File parent, String groupId, Set<String> list) {
-        File[] files = parent.listFiles();
-        boolean hasFile = false;
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            if (file.isDirectory()) {
-                String group = groupId + (groupId.length() == 0 ? "" : ".") + file.getName(); //NOI18N
-                checkFolder(file, group, list);
-            }
-            if (file.isFile()) {
-                hasFile = true;
-            }
-        }
-        if (hasFile) {
-            list.add(groupId);
-        }
-    }
     
     private static class ArtifactInfoHolder  {
         private String artifactId;
@@ -514,6 +592,53 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         
         public void setVersion(String version) {
             this.version = version;
+        }
+        
+    }
+    
+    private class GroupTask implements Runnable {
+
+        public void run() {
+            Set<String> elems = RepositoryQueries.getGroups();
+            synchronized (GROUP_LOCK) {
+                MavenProjectGrammar.this.groupCache = elems;
+            }
+        }
+    }
+            
+    private class ArtifactTask implements Runnable {
+        private String groupId;
+
+        ArtifactTask(String groupId) {
+            this.groupId = groupId;
+        }
+        
+        public void run() {
+            Set<String> elems = RepositoryQueries.getArtifacts(groupId);
+            synchronized (ARTIFACT_LOCK) {
+                MavenProjectGrammar.this.artifactCache.put(groupId, elems);
+            }
+        }
+    }
+
+    private class VersionTask implements Runnable {
+        private String groupId;
+        private String artifactId;
+
+        VersionTask(String groupId, String art) {
+            this.groupId = groupId;
+            artifactId = art;
+        }
+        
+        public void run() {
+            List<NBVersionInfo> infos = RepositoryQueries.getVersions(groupId, artifactId);
+            Set<String> elems = new TreeSet<String>();
+            for (NBVersionInfo inf : infos) {
+                elems.add(inf.getVersion());
+            }
+            synchronized (VERSION_LOCK) {
+                MavenProjectGrammar.this.versionCache.put(groupId + ":" + artifactId, elems); //NOI18N
+            }
         }
         
     }

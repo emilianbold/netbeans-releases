@@ -321,7 +321,11 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     getMethod,
                     new Value [0]
                 );
-            fileName = sr.value();
+            if (sr == null) {
+                fileName = null;
+            } else {
+                fileName = sr.value();
+            }
         } catch (InvalidExpressionException ex) {
             fileName = ex.getLocalizedMessage();
         }
@@ -335,7 +339,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
                 );
             lineNumber = iv.value();
         } catch (InvalidExpressionException ex) {
-            lineNumber = 0;
+            lineNumber = -1;
         }
         return new StackTraceElement(declaringClass, methodName, fileName, lineNumber);
     }

@@ -432,6 +432,16 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ144363.cc", 20, 43, "IZ144363.cc", 9, 5);
     }
 
+    public void testIZ145286() throws Exception {
+        // IZ#145286 : const variable declared in "if" condition is not resolved
+        performTest("IZ145286.cc", 3, 27, "IZ145286.cc", 3, 13);
+        performTest("IZ145286.cc", 4, 14, "IZ145286.cc", 3, 13);
+        performTest("IZ145286.cc", 6, 31, "IZ145286.cc", 6, 16);
+        performTest("IZ145286.cc", 7, 15, "IZ145286.cc", 6, 16);
+        performTest("IZ145286.cc", 9, 29, "IZ145286.cc", 9, 17);
+        performTest("IZ145286.cc", 10, 22, "IZ145286.cc", 9, 17);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

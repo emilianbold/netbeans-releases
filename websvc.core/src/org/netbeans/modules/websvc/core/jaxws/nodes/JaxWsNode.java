@@ -181,7 +181,7 @@ public class JaxWsNode extends AbstractNode implements
         content.add(service);
         content.add(implBeanClass);
         content.add(new EditWSAttributesCookieImpl(this, jaxWsModel));
-        if (service.getWsdlUrl() != null) {
+        if (service.getWsdlUrl() != null && !service.isUseProvider()) {
             content.add(new RefreshServiceImpl());
         } else {
             content.add(new JaxWsGenWSDLImpl(project, serviceName));

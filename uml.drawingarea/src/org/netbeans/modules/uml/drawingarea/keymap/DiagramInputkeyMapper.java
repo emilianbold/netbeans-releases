@@ -322,7 +322,6 @@ public class DiagramInputkeyMapper implements DiagramKeyMapConstants{
         {
             int keyCode = Integer.valueOf(keyCodeString).intValue();
             int modifiers = Integer.valueOf(bundle.getStringResource("key." + i + ".modifiers")).intValue();
-            //String command = bundle.getStringResource("key." + i + ".command");
             int focus = Integer.valueOf(bundle.getStringResource("key." + i + ".focus")).intValue();
             
             inputMap = component.getInputMap(focus);

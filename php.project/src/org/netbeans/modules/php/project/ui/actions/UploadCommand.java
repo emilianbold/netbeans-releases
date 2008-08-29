@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
@@ -53,6 +56,7 @@ import org.netbeans.modules.php.project.connections.TransferInfo;
 import org.netbeans.modules.php.project.connections.ui.TransferFilter;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -87,10 +91,10 @@ public class UploadCommand extends FtpCommand implements Displayable {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 
-        uploadFiles(selectedFiles);
+        uploadFiles(selectedFiles, (FileObject[]) null);
     }
 
-    void uploadFiles(FileObject... selectedFiles) {
+    void uploadFiles(FileObject[] filesToUpload, FileObject[] preselectedFiles) {
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
 
@@ -103,9 +107,18 @@ public class UploadCommand extends FtpCommand implements Displayable {
         TransferInfo transferInfo = null;
         try {
             progressHandle.start();
-            Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], selectedFiles);
+            Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], filesToUpload);
 
-            forUpload = TransferFilter.showUploadDialog(forUpload, getProject());
+            Set<TransferFile> preselected = Collections.<TransferFile>emptySet();
+            if (preselectedFiles != null && preselectedFiles.length > 0) {
+                File baseLocalDir = FileUtil.toFile(sources[0]);
+                String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
+                preselected = new HashSet<TransferFile>();
+                for (FileObject fo : preselectedFiles) {
+                    preselected.add(TransferFile.fromFileObject(fo, baseLocalAbsolutePath));
+                }
+            }
+            forUpload = TransferFilter.showUploadDialog(forUpload, RemoteSettings.getLastUpload(getProject()), preselected);
             if (forUpload.size() == 0) {
                 return;
             }
@@ -117,7 +130,7 @@ public class UploadCommand extends FtpCommand implements Displayable {
                 transferInfo = remoteClient.upload(sources[0], forUpload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
-                rememberLastUpload(sources[0], selectedFiles);
+                rememberLastUpload(sources[0], filesToUpload);
             }
         } catch (RemoteException ex) {
             processRemoteException(ex);

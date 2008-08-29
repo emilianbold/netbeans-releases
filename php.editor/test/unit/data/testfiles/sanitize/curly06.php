@@ -14,7 +14,8 @@ class test {
     function __construct() {
         $this->name = "ahoj";
         $this->age = "10";
-        if ($a) {
+        if ($a) {^
+
 
 class hello {
     function __construct() {

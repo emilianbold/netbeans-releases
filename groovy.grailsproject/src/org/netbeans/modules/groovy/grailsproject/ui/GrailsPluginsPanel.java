@@ -208,7 +208,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(reloadInstalledButton)
                     .add(uninstallButton)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE))
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE))
                 .addContainerGap())
         );
         installedPanelLayout.setVerticalGroup(
@@ -217,7 +217,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(reloadInstalledButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(uninstallButton)
                 .addContainerGap())
@@ -226,7 +226,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
         reloadInstalledButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.reloadInstalledButton.accessibleName")); // NOI18N
         reloadInstalledButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.reloadInstalledButton.accessibleDescription")); // NOI18N
 
-        pluginsPanel.addTab("Installed", installedPanel);
+        pluginsPanel.addTab(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.installed"), installedPanel); // NOI18N
 
         newPluginPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentShown(java.awt.event.ComponentEvent evt) {
@@ -279,13 +279,13 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
             .add(newPluginPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(newPluginPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
+                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
                     .add(newPluginPanelLayout.createSequentialGroup()
                         .add(installButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(pluginLocationLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(pluginZipPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+                        .add(pluginZipPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(pluginBrowseButton))
                     .add(reloadAvailableButton))
@@ -297,7 +297,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(reloadAvailableButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(newPluginPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(installButton)
@@ -314,7 +314,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
         pluginBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.pluginBrowseButton.accessibleName")); // NOI18N
         pluginBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.pluginBrowseButton.accessibleDescription")); // NOI18N
 
-        pluginsPanel.addTab("New plugins", newPluginPanel);
+        pluginsPanel.addTab(org.openide.util.NbBundle.getMessage(GrailsPluginsPanel.class, "GrailsPluginPanel.newPlugins"), newPluginPanel); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
