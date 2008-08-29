@@ -131,6 +131,9 @@ public class DatabaseConnection implements DBConnection {
 
     /** Connection name */
     private String name;
+    
+    /** Error code */
+    private int errorCode = -1;
 
     /**
      * The API DatabaseConnection (delegates to this instance)
@@ -369,9 +372,9 @@ public class DatabaseConnection implements DBConnection {
         ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
         if(name == null)
             if((getSchema()==null)||(getSchema().length()==0))
-                name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), new String[] {getDatabase(), getUser(), bundle.getString("SchemaIsNotSet")}); //NOI18N
+                name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), getDatabase(), getUser(), bundle.getString("SchemaIsNotSet")); //NOI18N
             else
-                name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), new String[] {getDatabase(), getUser(), getSchema()}); //NOI18N
+                name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), getDatabase(), getUser(), getSchema()); //NOI18N
                 return name;
     }
 
@@ -498,7 +501,7 @@ public class DatabaseConnection implements DBConnection {
 
             return connection;
         } catch (SQLException e) {
-            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
+            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"), db, drv, e.getMessage()); // NOI18N
 
             //commented out for 3.6 release, need to solve for next Studio release
             // hack for Pointbase Network Server
@@ -516,7 +519,7 @@ public class DatabaseConnection implements DBConnection {
             ddle.initCause(e);
             throw ddle;
         } catch (Exception exc) {
-            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"), new String[] {db, drv, exc.getMessage()}); // NOI18N
+            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"), db, drv, exc.getMessage()); // NOI18N
 
             propertySupport.firePropertyChange("failed", null, null);
 
@@ -551,6 +554,11 @@ public class DatabaseConnection implements DBConnection {
             throw new DatabaseException(exc);
         }
     }
+
+        /* return Error code for unit test */
+        public int getErrorCode() {
+            return errorCode;
+        }
 
     private void doConnect() throws DDLException {
         if (drv == null || db == null || usr == null )
@@ -595,8 +603,9 @@ public class DatabaseConnection implements DBConnection {
             // Issue 69265
             if (drv.equals(DRIVER_CLASS_NET)) {
                 if (e instanceof SQLException) {
-                    if (((SQLException) e).getErrorCode() == DERBY_UNICODE_ERROR_CODE) {
-                        message = MessageFormat.format(NbBundle.getMessage(DatabaseConnection.class, "EXC_DerbyCreateDatabaseUnicode"), new String[]{message, db}); // NOI18N
+                    errorCode = ((SQLException) e).getErrorCode();
+                    if (errorCode == DERBY_UNICODE_ERROR_CODE) {
+                        message = MessageFormat.format(NbBundle.getMessage(DatabaseConnection.class, "EXC_DerbyCreateDatabaseUnicode"),message, db); // NOI18N
                     }
                 }
             }
@@ -719,6 +728,7 @@ public class DatabaseConnection implements DBConnection {
         propertySupport.removePropertyChangeListener(l);
     }
 
+    @Override
     public int hashCode() {
         return drv.hashCode() + db.hashCode() + usr.hashCode();
     }
@@ -726,6 +736,7 @@ public class DatabaseConnection implements DBConnection {
     /** Compares two connections.
      * Returns true if driver, database and login name equals.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof DBConnection) {
             DBConnection con = (DBConnection) obj;
@@ -773,6 +784,7 @@ public class DatabaseConnection implements DBConnection {
         out.writeObject(drvname);
     }
 
+    @Override
     public String toString() {
         return "Driver:" + getDriver() + "Database:" + getDatabase().toLowerCase() + "User:" + getUser().toLowerCase() + "Schema:" + getSchema().toLowerCase(); // NOI18N
     }
