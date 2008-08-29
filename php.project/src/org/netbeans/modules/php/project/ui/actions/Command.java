@@ -376,7 +376,11 @@ public abstract class Command {
         return getProject().getEvaluator();
     }
 
-    protected void eventuallyUploadFiles(FileObject... selectedFiles) {
+    protected void eventuallyUploadFiles() {
+        eventuallyUploadFiles((FileObject[]) null);
+    }
+
+    protected void eventuallyUploadFiles(FileObject... preselectedFiles) {
         if (!isRemoteConfigSelected()) {
             return;
         }
@@ -395,7 +399,7 @@ public abstract class Command {
         }
 
         if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
-            uploadCommand.uploadFiles(selectedFiles);
+            uploadCommand.uploadFiles(new FileObject[] {getProject().getSourcesDirectory()}, preselectedFiles);
         }
     }
 
