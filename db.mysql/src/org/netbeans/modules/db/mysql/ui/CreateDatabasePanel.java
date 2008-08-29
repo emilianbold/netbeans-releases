@@ -149,6 +149,13 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             final DatabaseConnection dbconn = result;
 
             if (result != null && SampleManager.isSample(dbname)) {
+                boolean create = Utils.displayConfirmDialog(NbBundle.getMessage(CreateDatabasePanel.class, 
+                        "CreateDatabasePanel.MSG_ConfirmCreateSample", dbname));
+
+                if (! create) {
+                    return dbconn;
+                }
+
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
