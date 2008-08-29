@@ -358,7 +358,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
         return databases.values();
     }
 
-     public void reconnect() throws DatabaseException {
+    public void reconnect() throws DatabaseException {
        try {
            reconnect(true, false); // quiet, async
        } catch ( Throwable t ) {
@@ -475,9 +475,9 @@ public class MySQLDatabaseServer implements DatabaseServer {
                             }
                          }
                      }
-                     updateDisplayName();
-                     refreshDatabaseList();
                 } finally {
+                    updateDisplayName();
+                    refreshDatabaseList();
                     progress.finish();
                 }
             }
