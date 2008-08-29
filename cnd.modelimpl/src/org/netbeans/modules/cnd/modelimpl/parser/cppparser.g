@@ -2670,6 +2670,7 @@ condition_expression
 protected 
 condition_declaration {int ts = tsInvalid;}
 	:
+        cv_qualifier_seq (LITERAL_typename)?
 	ts=type_specifier[dsInvalid] declarator ASSIGNEQUAL assignment_expression
 	;
 
