@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,13 +50,11 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JFileChooser;
-import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
 import org.openide.actions.CopyAction;
@@ -95,8 +93,6 @@ import org.openide.windows.TopComponent;
 public class TemplatesPanel extends TopComponent implements ExplorerManager.Provider {
     private ExplorerManager manager;
     private TemplateTreeView view;
-    private JTree tree;
-    static private Set newlyCreatedFolders;
     
     static private FileObject templatesRoot;
     
@@ -508,10 +504,12 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             
             content.add (this);
         }
+        @Override
         public Action [] getActions (boolean context) {
             return isLeaf () ? ACTIONS_ON_LEAF : ACTIONS_ON_FOLDER;
         }
         
+        @Override
         public Action getPreferredAction () {
             return null;
         }
@@ -536,8 +534,8 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             super (n);
         }
         
+        @Override
         protected Node[] createNodes(Node key) {
-            Node n = (Node) key;
             Node [] orig = super.createNodes (key);
             Node [] filtered = new Node [orig.length];
             for (int i = 0; i < orig.length; i++) {
@@ -554,7 +552,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
     
     static private DataObject getDOFromNode (Node n) {
-        DataObject dobj = (DataObject) n.getLookup ().lookup (DataObject.class);
+        DataObject dobj = n.getLookup ().lookup (DataObject.class);
         assert dobj != null : "DataObject for node " + n;
         return dobj;
     }
@@ -565,12 +563,12 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             folder = DataFolder.findFolder (getTemplatesRoot ());
         } else {
             // try if has a data folder (alert: leaf node can be a empty folder)
-            folder = (DataFolder) nodes [0].getLookup ().lookup (DataFolder.class);
+            folder = nodes[0].getLookup ().lookup (DataFolder.class);
             
             // if not this node then try its parent
             if (folder == null && nodes [0].isLeaf ()) {
                 Node parent = nodes [0].getParentNode ();
-                folder = (DataFolder) parent.getLookup ().lookup (DataFolder.class);
+                folder = parent.getLookup ().lookup (DataFolder.class);
             }
         }
         return folder;
@@ -610,7 +608,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         if (JFileChooser.APPROVE_OPTION == result) {
             File f = chooser.getSelectedFile ();
             assert f != null;
-            DataObject newDO = createTemplateFromFile (f, getTargetFolder (nodes));
+            createTemplateFromFile (f, getTargetFolder (nodes));
         }    
     }
     
@@ -700,7 +698,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private int getNodePosition (Node n) {
         Index supp = getIndexSupport (n);
 
-        DataFolder df = (DataFolder) n.getParentNode ().getLookup ().lookup (DataFolder.class);
+        DataFolder df = n.getParentNode ().getLookup ().lookup (DataFolder.class);
         df.getNodeDelegate ().getChildren ().getNodes (true);
 
         int pos = supp.indexOf (n);          
@@ -716,7 +714,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         Node parent = n.getParentNode ();
         assert parent != null : "Node " + n + " has a parent.";
 
-        Index index = (Index) parent.getLookup ().lookup (Index.class);
+        Index index = parent.getLookup ().lookup (Index.class);
         assert index != null : "Node " + parent + " has Index cookie.";
         
         return index;
@@ -776,6 +774,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             return null;
         }
         
+        @Override
         protected boolean asynchronous () {
             return true;
         }
@@ -798,6 +797,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             return null;
         }
         
+        @Override
         protected boolean asynchronous () {
             return true;
         }
