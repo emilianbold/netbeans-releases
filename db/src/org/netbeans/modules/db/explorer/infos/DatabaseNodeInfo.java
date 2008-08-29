@@ -496,7 +496,6 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
             }
         }
 
-        refreshChildren();
         getConnectionPCS().firePropertyChange(CONNECTION, oldval, con);
         notifyChange();
     }
@@ -894,7 +893,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         changeSupport.removeChangeListener(listener);
     }
     
-    protected void notifyChange() {
+    public void notifyChange() {
         changeSupport.fireChange();
     }
     
