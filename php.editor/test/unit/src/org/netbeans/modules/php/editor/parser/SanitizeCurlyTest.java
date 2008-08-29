@@ -46,9 +46,9 @@ import org.netbeans.modules.php.editor.parser.GSFPHPParser.Context;
  *
  * @author Petr Pisl
  */
-public class SanitizeCurly extends NbTestCase {
+public class SanitizeCurlyTest extends NbTestCase {
 
-    public SanitizeCurly(String testName) {
+    public SanitizeCurlyTest(String testName) {
         super(testName);
     }
 
