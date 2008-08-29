@@ -367,11 +367,18 @@ public class CsmBaseUtilities {
                 out = orig;
             }
         } catch (StackOverflowError ex) {
-            ex.printStackTrace(System.err);
+            if (isStandalone()) {
+                ex.printStackTrace(System.err);
+            } else {
+                System.err.println("StackOverflowError in getOriginalClassifier for " + orig); // NOI18N
+            }
         }
         return out;
     }     
 
+    private static boolean isStandalone() {
+        return !CsmBaseUtilities.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
+    }
 
     public static CsmClassifier findOtherClassifier(CsmClassifier out) {
         CsmNamespace ns = getClassNamespace(out);
