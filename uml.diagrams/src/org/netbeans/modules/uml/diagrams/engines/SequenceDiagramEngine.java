@@ -107,8 +107,6 @@ import org.netbeans.modules.uml.diagrams.actions.sqd.LifelineMoveStrategy;
 import org.netbeans.modules.uml.diagrams.actions.sqd.MessageMoveProvider;
 import org.netbeans.modules.uml.diagrams.actions.sqd.MessageMoveStrategy;
 import org.netbeans.modules.uml.diagrams.actions.sqd.MessagesConnectProvider;
-import org.netbeans.modules.uml.diagrams.actions.sqd.SQDRelationshipDisovery;
-import org.netbeans.modules.uml.diagrams.actions.sqd.ToolbarTestMessageCreateAction;
 import org.netbeans.modules.uml.diagrams.anchors.TargetMessageAnchor;
 import org.netbeans.modules.uml.diagrams.edges.factories.MessageFactory;
 import org.netbeans.modules.uml.diagrams.edges.sqd.MessageLabelManager;
@@ -444,7 +442,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         if(node.getFirstSubject().getExpandedElementType().equals("Lifeline"))//works for both Lifeline and ActorLifeline
         {
             WidgetAction lifelineMoveAction=new LifelineMoveAction(new LifelineMoveStrategy(), new LifelineMoveProvider(provider));
-            selectTool.addAction(new MoveNodeKeyAction(true, false));
+            selectTool.addAction(new MoveNodeKeyAction(new LifelineMoveStrategy(), new LifelineMoveProvider(provider)));
             selectTool.addAction(lifelineMoveAction);
         }
         else if(widget instanceof CombinedFragmentWidget)//covers combinedfragments, references, interaction boundary
@@ -456,7 +454,9 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
             }
             else 
             {
-                selectTool.addAction(ActionFactory.createMoveAction(provider, new CombinedFragmentMoveProvider(provider)));
+                CombinedFragmentMoveProvider cfMoveProvider = new CombinedFragmentMoveProvider(provider);
+                selectTool.addAction(ActionFactory.createMoveAction(provider, cfMoveProvider));
+                selectTool.addAction(new MoveNodeKeyAction(provider, cfMoveProvider));
             }
         }
         else
