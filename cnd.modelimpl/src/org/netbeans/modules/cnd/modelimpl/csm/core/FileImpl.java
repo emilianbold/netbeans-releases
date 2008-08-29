@@ -131,6 +131,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private Map<NameSortedKey, CsmUID<CsmMacro>> macros = createMacros();
     private final ReadWriteLock macrosLock = new ReentrantReadWriteLock();
+
+    private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
     
     private int errorCount = 0;
     
@@ -190,18 +192,22 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public final NativeFileItem getNativeFileItem() {
-        return getProjectImpl().getNativeFileItem(getUID());
+        return getProjectImpl(true).getNativeFileItem(getUID());
     }
-    
     private ProjectBase _getProject(boolean assertNotNull) {
-        ProjectBase prj = this.projectRef;
-        if (prj == null) {
-            prj = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
-            if( assertNotNull ) {
-                assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+        projectLock.readLock().lock();
+        try {
+            ProjectBase prj = this.projectRef;
+            if (prj == null) {
+                prj = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
+                if (assertNotNull) {
+                    assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+                }
             }
+            return prj;
+        } finally {
+            projectLock.readLock().unlock();
         }
-        return prj;
     }
     
     public boolean isSourceFile(){
@@ -229,19 +235,29 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     // TODO: consider using macro map and __cplusplus here instead of just checking file name
-    public APTLanguageFilter getLanguageFilter() {        
-        String lang  = APTLanguageSupport.GNU_CPP;
-        String name =  getName().toString();
-                      
-        if (name.length() > 2 && name.endsWith(".c")) { // NOI18N
-            lang = APTLanguageSupport.GNU_C;                  
+    public APTLanguageFilter getLanguageFilter(APTPreprocHandler.State ppState) {
+        FileImpl startFile = ppState == null ? null : ProjectBase.getStartFile(ppState);
+        if (startFile != null && startFile != this) {
+            return startFile.getLanguageFilter(null);
+        } else {
+            String lang;
+            if (fileType == SOURCE_CPP_FILE) {
+                lang = APTLanguageSupport.GNU_CPP;
+            } else if (fileType == SOURCE_C_FILE) {
+                lang = APTLanguageSupport.GNU_C;
+            } else {
+                lang  = APTLanguageSupport.GNU_CPP;
+                String name =  getName().toString();
+                if (name.length() > 2 && name.endsWith(".c")) { // NOI18N
+                    lang = APTLanguageSupport.GNU_C;
+                }
+            }
+            return APTLanguageSupport.getInstance().getFilter(lang);
         }
-        
-        return APTLanguageSupport.getInstance().getFilter(lang);
     }
     
     public APTPreprocHandler getPreprocHandler() {
-        return getProjectImpl()==null ? null : getProjectImpl().getPreprocHandler(fileBuffer.getFile());
+        return getProjectImpl(true)==null ? null : getProjectImpl(true).getPreprocHandler(fileBuffer.getFile());
     }
     
     public void setBuffer(FileBuffer fileBuffer) {
@@ -372,7 +388,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // update this file and it's project     
             RepositoryUtils.put(this);
             if (TraceFlags.USE_DEEP_REPARSING) {
-                getProjectImpl().getGraph().putFile(this);
+                getProjectImpl(true).getGraph().putFile(this);
             }
             Notificator.instance().registerChangedFile(this);
             Notificator.instance().flush();
@@ -386,15 +402,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	disposeAll(true);
     }
     
-    public void onProjectDispose(){
+    public void onProjectClose(){
         onDispose();
     }
     
     private void onDispose() {
-        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
-            // restore container from it's UID
-            this.projectRef = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
-            assert (this.projectRef != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+        projectLock.writeLock().lock();
+        try {
+            if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+                // restore container from it's UID
+                this.projectRef = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
+                assert (this.projectRef != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+            }
+        } finally {
+            projectLock.writeLock().unlock();
         }
     }
     
@@ -490,7 +511,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 RepositoryUtils.put(this);
             }
             if (TraceFlags.USE_DEEP_REPARSING && isValid()) {	// FIXUP: use a special lock here
-                getProjectImpl().getGraph().putFile(this);
+                getProjectImpl(true).getGraph().putFile(this);
             }
             if( isValid() ) {   // FIXUP: use a special lock here
 		Notificator.instance().registerChangedFile(this);
@@ -519,14 +540,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (apt == null) {
             return null;
         }
-        ProjectBase startProject = ProjectBase.getStartProject(preprocHandler.getState());
+        APTPreprocHandler.State ppState = preprocHandler.getState();
+        ProjectBase startProject = ProjectBase.getStartProject(ppState);
         if (startProject == null) {
-            System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(preprocHandler.getState()) + // NOI18N
+            System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
                     "\n while getting TS of file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
             return null;
         }
         APTParseFileWalker walker = new APTParseFileWalker(startProject, apt, this, preprocHandler);
-        return walker.getFilteredTokenStream(getLanguageFilter());        
+        return walker.getFilteredTokenStream(getLanguageFilter(ppState));        
     }
     
     private final String tokStreamLock = new String("TokenStream lock"); // NOI18N
@@ -651,7 +673,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if( TraceFlags.TRACE_ERROR_PROVIDER ) System.err.printf("\n\n>>> Start parsing (getting errors) %s \n", getName());
         long time = TraceFlags.TRACE_ERROR_PROVIDER ? System.currentTimeMillis() : 0;
         APTPreprocHandler preprocHandler = getPreprocHandler();
-        ProjectBase startProject = ProjectBase.getStartProject(preprocHandler.getState());
+        APTPreprocHandler.State ppState = preprocHandler.getState();
+        ProjectBase startProject = ProjectBase.getStartProject(ppState);
         int flags = CPPParserEx.CPP_CPLUSPLUS;
         if( ! TraceFlags.TRACE_ERROR_PROVIDER ) {
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
@@ -659,7 +682,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             APTFile aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
             APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler);
-            CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter()), flags);
+            CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
             parser.setErrorDelegate(delegate);
             parser.setLazyCompound(false);
             parser.translation_unit();
@@ -735,9 +758,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 System.err.println("CACHE: parsing using full APT for " + getAbsolutePath());
             }      
             // make real parse
-            ProjectBase startProject = ProjectBase.getStartProject(preprocHandler.getState());
+            APTPreprocHandler.State ppState = preprocHandler.getState();
+            ProjectBase startProject = ProjectBase.getStartProject(ppState);
             if (startProject == null) {
-                System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(preprocHandler.getState()) + // NOI18N
+                System.err.println(" null project for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
                     "\n while parsing file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
                 return null;
             }
@@ -748,7 +772,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(oldState));
             }
             clearFakeRegistrations();
-            CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter()), flags);
+            CPPParserEx parser = CPPParserEx.getInstance(fileBuffer.getFile().getName(), walker.getFilteredTokenStream(getLanguageFilter(ppState)), flags);
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
             try {
                 parser.translation_unit();
@@ -877,12 +901,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public CsmProject getProject() {
-        return _getProject(true);
+        return _getProject(false);
     }
 
     /** Just a convenient shortcut to eliminate casts */
-    public ProjectBase getProjectImpl() {
-        return _getProject(true);
+    public ProjectBase getProjectImpl(boolean assertNotNull) {
+        return _getProject(assertNotNull);
     }
 
     public CharSequence getName() {
@@ -1306,7 +1330,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public @Override int hashCode() {
 	if( hash == 0 ) {   // we don't need sync here - at worst, we'll calculate the same value twice
-	    String identityHashPath = getProjectImpl().getUniqueName() + "*" + getAbsolutePath(); // NOI18N
+	    String identityHashPath = getProjectImpl(true).getUniqueName() + "*" + getAbsolutePath(); // NOI18N
 	    hash = identityHashPath.hashCode();
 	}
         return hash;
@@ -1321,7 +1345,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	}
 	FileImpl other = (FileImpl) obj;
 	if( this.getAbsolutePath().equals(other.getAbsolutePath()) ) {
-	    return this.getProjectImpl().getUniqueName().equals(other.getProjectImpl().getUniqueName());
+	    return this.getProjectImpl(true).getUniqueName().equals(other.getProjectImpl(true).getUniqueName());
 	}
 	return false;
     }

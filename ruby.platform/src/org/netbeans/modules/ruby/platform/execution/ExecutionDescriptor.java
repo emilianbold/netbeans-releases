@@ -87,6 +87,13 @@ public class ExecutionDescriptor {
     private boolean useInterpreter;
     List<OutputRecognizer> outputRecognizers;
     /**
+     * Defines whether rerun should be allowed. <i>Currently needed
+     * only because rerunning rake test tasks in the test runner does not
+     * work reliably (might be causing #145228), likely will become obsolete
+     * once that issue has been solved</i>.
+     */
+    private boolean rerun = true;
+    /**
      * The max time in ms for waiting a stream to become ready
      * before considering the process to be stalling.
      */
@@ -348,6 +355,20 @@ public class ExecutionDescriptor {
      */
     public void setReadMaxWaitTime(int readMaxWaitTime) {
         this.readMaxWaitTime = readMaxWaitTime;
+    }
+
+    /**
+     * @see #rerun
+     */
+    public boolean isRerun() {
+        return rerun;
+    }
+
+    /**
+     * @see #rerun
+     */
+    public void setRerun(boolean rerun) {
+        this.rerun = rerun;
     }
 
 }

@@ -736,7 +736,11 @@ public class RemoteClient implements Cancellable {
     }
 
     private String getReplyString() {
-        return ftpClient.getReplyString().trim();
+        String reply = ftpClient.getReplyString();
+        if (reply == null) {
+            return null;
+        }
+        return reply.trim();
     }
 
     private static class PrintCommandListener implements ProtocolCommandListener {

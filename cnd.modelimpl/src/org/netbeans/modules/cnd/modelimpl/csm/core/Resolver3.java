@@ -487,12 +487,6 @@ public class Resolver3 implements Resolver {
         CsmNamespace containingNS = null;
         
         if( nameTokens.length == 1 ) {
-            if (needClassifiers()){
-                result = findClassifier(nameTokens[0]);
-            }
-            if( result == null  && needNamespaces()) {
-                result = findNamespace(nameTokens[0]);
-            }
             if( result == null && needClassifiers()) {
                 containingNS = getContainingNamespace();
                 result = findClassifier(containingNS, nameTokens[0]);
@@ -514,6 +508,15 @@ public class Resolver3 implements Resolver {
                         result = resolveInBaseClasses(cls, nameTokens[0]);
                     }
                 }
+            }
+            if( result == null  && needNamespaces()) {
+                result = findNamespace(nameTokens[0]);
+                if (result == null && getContainingNamespace() != null) {
+                    result = findNamespace(getContainingNamespace().getQualifiedName() + "::" + nameTokens[0]); // NOI18N
+                }
+            }
+            if (result == null  && needClassifiers()){
+                result = findClassifier(nameTokens[0]);
             }
             if( result == null ) {
                 currTypedef = null;

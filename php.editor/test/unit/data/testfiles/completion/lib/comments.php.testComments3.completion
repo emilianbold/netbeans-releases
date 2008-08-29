@@ -21,6 +21,8 @@ KEYWORD    @name
 KEYWORD    @package                                   
 KEYWORD    @param                                     
 KEYWORD    @property                                  
+KEYWORD    @property-read                             
+KEYWORD    @property-write                            
 KEYWORD    @return                                    
 KEYWORD    @see                                       
 KEYWORD    @since                                     

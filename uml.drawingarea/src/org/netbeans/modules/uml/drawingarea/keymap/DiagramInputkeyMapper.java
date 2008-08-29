@@ -298,7 +298,18 @@ public class DiagramInputkeyMapper implements DiagramKeyMapConstants{
             
             inputkeyAction = new DiagramInputkeyAction(component, command);
             inputMap = component.getInputMap(focus);
-            inputMap.put(KeyStroke.getKeyStroke(keyCode, modifiers), command);
+            
+            
+            if((Utilities.isMac() == true) && 
+               (bundle.getStringResource("key." + i + ".mac_modifiers") != null))
+            {
+                int macModifiers = Integer.valueOf(bundle.getStringResource("key." + i + ".mac_modifiers")).intValue();
+                inputMap.put(KeyStroke.getKeyStroke(keyCode, macModifiers), command);
+            }
+            else
+            {
+                inputMap.put(KeyStroke.getKeyStroke(keyCode, modifiers), command);
+            }
             actionMap.put(command, inputkeyAction);
             
             i++;
@@ -322,7 +333,6 @@ public class DiagramInputkeyMapper implements DiagramKeyMapConstants{
         {
             int keyCode = Integer.valueOf(keyCodeString).intValue();
             int modifiers = Integer.valueOf(bundle.getStringResource("key." + i + ".modifiers")).intValue();
-            //String command = bundle.getStringResource("key." + i + ".command");
             int focus = Integer.valueOf(bundle.getStringResource("key." + i + ".focus")).intValue();
             
             inputMap = component.getInputMap(focus);

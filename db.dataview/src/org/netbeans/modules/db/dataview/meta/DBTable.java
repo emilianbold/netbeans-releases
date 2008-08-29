@@ -79,7 +79,7 @@ public final class DBTable extends DBObject<DBModel> {
     public synchronized boolean addColumn(DBColumn theColumn) {
         if (theColumn != null) {
             theColumn.setParentObject(this);
-            columns.put(theColumn.getName(), theColumn);
+            columns.put(theColumn.getName() + theColumn.getOrdinalPosition(), theColumn);
             return true;
         }
         return false;

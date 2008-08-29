@@ -55,7 +55,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.StyledDocument;
 import javax.swing.JEditorPane;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;

@@ -108,7 +108,7 @@ public class CommonUtilities {
     private static String prev="";
     
     private static String projectsDir; // <nbextra>/data/
-    private static String tempDir; // <nbjunit.workdir>/tmpdir
+    private static String tempDir; // <nbjunit.workdir>/tmpdir/
     
     static {
         String workDir = System.getProperty("nbjunit.workdir");
@@ -136,10 +136,18 @@ public class CommonUtilities {
         }
     }
     
+    /**
+     * Returns data directory path ending with file.separator
+     * @return &lt;nbextra&gt;/data/
+     */
     public static String getProjectsDir() {
         return projectsDir;
     }
-    
+
+    /**
+     * Returns temprorary directory path ending with file.separator
+     * @return &lt;nbjunit.workdir&gt;/tmpdir/
+     */
     public static String getTempDir() {
         return tempDir;
     }
