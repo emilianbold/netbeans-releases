@@ -42,8 +42,9 @@ package org.netbeans.modules.db.mysql.impl;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.db.mysql.util.Utils;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.openide.util.NbBundle;
 
 /**
@@ -57,6 +58,7 @@ public class ConnectionProcessor implements Runnable {
     final BlockingQueue<Runnable> inqueue;
     
     private Connection conn;
+    private Thread taskThread;
     
     void setConnection(Connection conn) {
         this.conn = conn;
@@ -66,37 +68,28 @@ public class ConnectionProcessor implements Runnable {
         return this.conn;
     }
 
-    boolean validateConnection() {
-        return validateConnection(true);
-    }
-
-    boolean validateConnection(boolean displayMessage) {
+    void validateConnection() throws DatabaseException {
         try {
             if (conn == null || conn.isClosed()) {
-                if (displayMessage) {
-                    Utils.displayErrorMessage(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
-                }
-
                 conn = null;
-                return false;
+                throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
             }
 
             // Send a command to the server, if it fails we know the connection is invalid.
             conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
-
-            return true;
         } catch (SQLException e) {
-            if (displayMessage) {
-                Utils.displayErrorMessage(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
-            }
-
             conn = null;
-            return false;
+            LOGGER.log(Level.INFO, null, e);
+            throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"), e);
         }
     }
     
     boolean isConnected() {
         return conn != null;
+    }
+
+    boolean isConnProcessorThread() {
+        return Thread.currentThread().equals(taskThread);
     }
     
     public ConnectionProcessor(BlockingQueue<Runnable> inqueue) {
@@ -104,6 +97,7 @@ public class ConnectionProcessor implements Runnable {
     } 
     
     public void run() {
+        taskThread = Thread.currentThread();
         for ( ; ; ) {
             try {              
                 Runnable command = inqueue.take();
