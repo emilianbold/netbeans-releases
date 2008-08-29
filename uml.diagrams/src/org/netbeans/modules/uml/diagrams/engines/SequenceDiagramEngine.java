@@ -435,6 +435,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         //
         WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT);
         
+        selectTool.addAction(DiagramEngine.lockSelectionAction);
         selectTool.addAction(mouseHoverAction);
         selectTool.addAction(sceneSelectAction);
         selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
