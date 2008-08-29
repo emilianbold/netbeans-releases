@@ -121,6 +121,15 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         lblLearnMore.getAccessibleContext ().setAccessibleName (loc ("AN_Learn_More"));
         
         rbUseSystemProxy.setToolTipText (getUseSystemProxyToolTip ());
+
+        //#144853: Show statistics ui only in IDE not in Platform.
+        if (System.getProperty("nb.show.statistics.ui") == null) {
+            jSeparator3.setVisible(false);
+            lUsage.setVisible(false);
+            jUsageCheck.setVisible(false);
+            lblUsageInfo.setVisible(false);
+            lblLearnMore.setVisible(false);
+        }
         
         // if system proxy setting is not detectable, disable this radio
         // button
