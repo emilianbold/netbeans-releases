@@ -487,6 +487,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
             edgeKind=getMessageKindAsString(msg.getKind());
         }
                 
+        selectTool.addAction(DiagramEngine.lockSelectionAction);
         selectTool.addAction(sceneSelectAction);
         selectTool.addAction(ActionFactory.createPopupMenuAction(menuProvider));
         if("Synchronous".equals(edgeKind) || "Asynchronous".equals(edgeKind))selectTool.addAction(ActionFactory.createReconnectAction(new MessageReconnectDecorator(widget),new MessagesReconnectProvider()));//only these messages was possible to reconnect in 6.0

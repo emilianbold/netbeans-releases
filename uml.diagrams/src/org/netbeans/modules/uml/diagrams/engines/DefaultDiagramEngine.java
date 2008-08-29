@@ -267,7 +267,9 @@ public class DefaultDiagramEngine extends  DiagramEngine {
     }
 
     public void setActions(ConnectionWidget widget,IPresentationElement edge) {
-        WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT);      
+        WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT); 
+        
+        selectTool.addAction(DiagramEngine.lockSelectionAction);
         selectTool.addAction (ActionFactory.createAddRemoveControlPointAction ());
         selectTool.addAction(sceneSelectAction);
         
