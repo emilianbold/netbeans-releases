@@ -1,4 +1,4 @@
-<Program start='0' end='285'>
+<Program start='0' end='282'>
     <Statements>
         <ClassDeclaration start='7' end='65' modifier='NONE'>
             <ClassName>
@@ -21,7 +21,7 @@
                 </MethodDeclaration>
             </Block>
         </ClassDeclaration>
-        <ClassDeclaration start='67' end='285' modifier='NONE'>
+        <ClassDeclaration start='67' end='231' modifier='NONE'>
             <ClassName>
                 <Identifier start='73' end='77' name='test'/>
             </ClassName>
@@ -29,7 +29,7 @@
             </SuperClassName>
             <Interfaces>
             </Interfaces>
-            <Block start='78' end='285' isCurly='true'>
+            <Block start='78' end='231' isCurly='true'>
                 <FieldsDeclaration start='84' end='98' modifier='private'>
                     <VariableNames>
                         <Variable start='92' end='97' isDollared='true'>
@@ -51,12 +51,12 @@
                         </Block>
                     </FunctionDeclaration>
                 </MethodDeclaration>
-                <MethodDeclaration start='132' end='284' modifiers='public'>
-                    <FunctionDeclaration start='132' end='284' isReference='false'>
+                <MethodDeclaration start='132' end='230' modifiers='public'>
+                    <FunctionDeclaration start='132' end='230' isReference='false'>
                         <Identifier start='141' end='152' name='__construct'/>
                         <FormalParameters>
                         </FormalParameters>
-                        <Block start='155' end='284' isCurly='true'>
+                        <Block start='155' end='230' isCurly='true'>
                             <ExpressionStatement start='165' end='186'>
                                 <Assignment start='165' end='185' operator='EQUAL'>
                                     <FieldAccess start='165' end='176'>
@@ -95,26 +95,26 @@
                                 <Else>
                                 </Else>
                             </IfStatement>
-                            <ClassDeclaration start='231' end='282' modifier='NONE'>
-                                <ClassName>
-                                    <Identifier start='237' end='242' name='hello'/>
-                                </ClassName>
-                                <SuperClassName>
-                                </SuperClassName>
-                                <Interfaces>
-                                </Interfaces>
-                                <Block start='243' end='282' isCurly='true'>
-                                    <MethodDeclaration start='249' end='280' modifiers='public'>
-                                        <FunctionDeclaration start='249' end='280' isReference='false'>
-                                            <Identifier start='258' end='269' name='__construct'/>
-                                            <FormalParameters>
-                                            </FormalParameters>
-                                            <Block start='272' end='280' isCurly='true'>
-                                            </Block>
-                                        </FunctionDeclaration>
-                                    </MethodDeclaration>
-                                </Block>
-                            </ClassDeclaration>
+                        </Block>
+                    </FunctionDeclaration>
+                </MethodDeclaration>
+            </Block>
+        </ClassDeclaration>
+        <ClassDeclaration start='231' end='282' modifier='NONE'>
+            <ClassName>
+                <Identifier start='237' end='242' name='hello'/>
+            </ClassName>
+            <SuperClassName>
+            </SuperClassName>
+            <Interfaces>
+            </Interfaces>
+            <Block start='243' end='282' isCurly='true'>
+                <MethodDeclaration start='249' end='280' modifiers='public'>
+                    <FunctionDeclaration start='249' end='280' isReference='false'>
+                        <Identifier start='258' end='269' name='__construct'/>
+                        <FormalParameters>
+                        </FormalParameters>
+                        <Block start='272' end='280' isCurly='true'>
                         </Block>
                     </FunctionDeclaration>
                 </MethodDeclaration>
