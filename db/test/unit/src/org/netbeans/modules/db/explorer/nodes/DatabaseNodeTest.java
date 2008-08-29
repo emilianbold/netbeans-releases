@@ -80,6 +80,11 @@ public class DatabaseNodeTest extends TestCase {
         DatabaseConnection conn = DatabaseConnection.create(
                 driver, "jdbc:mark//twain", "tomsawyer", null, "whitewash", true);
         ConnectionManager.getDefault().addConnection(conn);
+        
+        // Need to force a refresh because otherwise it happens asynchronously
+        // and this test does not pass reliably
+        RootNodeInfo.getInstance().refreshChildren();
+        
         checkConnection(RootNodeInfo.getInstance(), conn);
 
         checkInfoChildren(RootNodeInfo.getInstance());

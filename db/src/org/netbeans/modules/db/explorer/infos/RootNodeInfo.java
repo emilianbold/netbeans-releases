@@ -222,12 +222,11 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         ninfo.setDatabase(dbconn.getDatabase());
         ninfo.setSchema(dbconn.getSchema());
         ninfo.setName(dbconn.getName());
-        ninfo.setDatabaseConnection(dbconn);
-
-        if (DatabaseConnection.test(getConnection(), dbconn.getName())) {
+        ninfo.setDatabaseConnection(dbconn); 
+        if (DatabaseConnection.test(dbconn.getConnection(), dbconn.getName())) {
             ninfo.connect(dbconn);
         }
-        
+
         return ninfo;
     }
         
@@ -240,11 +239,6 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         }
         
         ConnectionList.getDefault().add(dbconn);
-
-        // Force an immediate refresh rather than wait for the Connectionist
-        // change listener to detect the change and refresh.  Otherwise synchronous
-        // users of this API will hit errors when the refresh hasn't happened yet.
-        refreshChildren();
     }
         
     public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
@@ -253,11 +247,6 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         }
         
         ConnectionList.getDefault().remove(dbconn);
-
-        // Force an immediate refresh rather than wait for the ConnectionList
-        // change listener to detect the change.   Otherwise synchronous
-        // users of this API will hit errors when the refresh hasn't happened yet.
-        refreshChildren();
     }
     
     public void stateChanged(ChangeEvent evt) {

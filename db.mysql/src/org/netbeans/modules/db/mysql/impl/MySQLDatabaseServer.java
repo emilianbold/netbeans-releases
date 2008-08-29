@@ -643,20 +643,18 @@ public class MySQLDatabaseServer implements DatabaseServer {
 
     public void stop() throws DatabaseException {
         if ( !Utils.isValidExecutable(getStopPath(), false)) {
-            throw new DatabaseException(Utils.getMessage(
-                    "MSG_InvalidStopCommand"));
+            throw new DatabaseException(Utils.getMessage("MSG_InvalidStopCommand"));
         }
 
         try {
-            runProcess(getStopPath(), getStopArgs(),
-                    true, Utils.getMessage(
-                        "LBL_AdminOutputTab"));
+            runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_AdminOutputTab"));
         } catch ( Exception e ) {
             throw new DatabaseException(e);
         }
-
-        // Mark ourselves as disconnected (this includes notifying listeners)
-        disconnect();
+        
+        if (validateConnection()) {
+            throw new DatabaseException(Utils.getMessage("MSG_ServerStillRunning"));
+        }
     }
 
     /**
@@ -731,12 +729,21 @@ public class MySQLDatabaseServer implements DatabaseServer {
         listeners.remove(listener);
     }
 
-    static abstract class DatabaseCommand implements Runnable {
+    static abstract class DatabaseCommand<T> implements Runnable {
         private Throwable throwable;
         private final BlockingQueue<Runnable> outqueue;
+        private T result;
 
         public DatabaseCommand(BlockingQueue<Runnable> outqueue) {
             this.outqueue = outqueue;
+        }
+
+        public T getResult() {
+            return result;
+        }
+
+        public void setResult(T result) {
+            this.result = result;
         }
 
         public DatabaseCommand() {
@@ -765,6 +772,51 @@ public class MySQLDatabaseServer implements DatabaseServer {
         public Throwable getException() {
             return throwable;
         }
+    }
+
+    private boolean validateConnection() throws DatabaseException {
+        ArrayBlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(1);
+
+        DatabaseCommand<Boolean> cmd = new DatabaseCommand<Boolean>(queue) {
+            @Override
+            public void execute() throws Exception {
+                Connection conn  = connProcessor.getConnection();
+                try {
+                    if (conn == null || conn.isClosed()) {
+                        setResult(false);
+                    }
+
+                    // Send a command to the server, if it fails we know the connection is invalid.
+                    conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+
+                    setResult(true);
+
+                } catch (SQLException e) {
+                    LOGGER.log(Level.INFO, NbBundle.getMessage(DatabaseConnection.class,
+                            "MSG_TestFailed", e.getMessage()));
+                    LOGGER.log(Level.FINE, null, e);
+                    setResult(false);
+                }
+
+                if (! getResult()) {
+                    disconnect();
+                }
+            }
+        };
+
+        commandQueue.offer(cmd);
+
+        // Synch up
+        try {
+            queue.take();
+            if (cmd.getException() != null) {
+                throw new DatabaseException(cmd.getException());
+            }
+        } catch ( InterruptedException e ) {
+            throw new DatabaseException(e);
+        }
+
+        return cmd.getResult();
     }
 
 }
