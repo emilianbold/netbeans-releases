@@ -73,23 +73,27 @@
         }
 
         public function put($data) {
-            if(is_array($data)) {
-                $this->req->setMethod("PUT");
-                $this->req->addHeader("Content-Type", "application/x-www-form-urlencoded");
-                $this->req->setBody($this->encodeParams($data));
-            } else {
-                $this->req->setBody($data);
+            if ($data != null) {
+                if(is_array($data)) {
+                    $this->req->setMethod("PUT");
+                    $this->req->addHeader("Content-Type", "application/x-www-form-urlencoded");
+                    $this->req->setBody($this->encodeParams($data));
+                } else {
+                    $this->req->setBody($data);
+                }
             }
             return $this->connect();
         }
 
         public function post($data) {
-            if(is_array($data)) {
-                $this->req->setMethod("POST");
-                $this->req->addHeader("Content-Type", "application/x-www-form-urlencoded");
-                $this->req->setBody($this->encodeParams($data));
-            } else {
-                $this->req->setBody($data);
+            if ($data != null) {
+                if(is_array($data)) {
+                    $this->req->setMethod("POST");
+                    $this->req->addHeader("Content-Type", "application/x-www-form-urlencoded");
+                    $this->req->setBody($this->encodeParams($data));
+                } else {
+                    $this->req->setBody($data);
+                }
             }
             return $this->connect();
         }
