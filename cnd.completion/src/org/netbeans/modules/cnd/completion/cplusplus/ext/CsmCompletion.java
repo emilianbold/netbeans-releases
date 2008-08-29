@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
@@ -594,6 +595,10 @@ abstract public class CsmCompletion {
                 return clazz.getUID();
             }
             return null;
+        }
+
+        public boolean isValid() {
+            return CsmBaseUtilities.isValid(clazz);
         }
 
     }

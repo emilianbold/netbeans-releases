@@ -264,14 +264,6 @@ public class GotoTest implements TestLocator {
                     return matching;
                 }
             }
-
-            if (isRSpecInstalled(project)) {
-                File matching = findMatching(RSPEC_PATTERNS, file, findTest);
-
-                if (matching != null) {
-                    return matching;
-                }
-            }
         }
         
         if (isRailsInstalled()) {
@@ -286,6 +278,16 @@ public class GotoTest implements TestLocator {
 
         if (matching != null) {
             return matching;
+        }
+        
+        if (project != null) {
+            if (isRSpecInstalled(project)) {
+                matching = findMatching(RSPEC_PATTERNS, file, findTest);
+
+                if (matching != null) {
+                    return matching;
+                }
+            }
         }
 
         return null;

@@ -118,6 +118,9 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     @Override
     public CsmFile getCsmFile(FileObject file) {
         File javaIoFile = FileUtil.toFile(file);
+        if (javaIoFile == null) {
+            return null;
+        }
         String name = javaIoFile.getAbsolutePath();
         ProjectBase project;
         synchronized (this) {

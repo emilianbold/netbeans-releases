@@ -42,8 +42,6 @@
 package org.netbeans.performance.languages.setup;
 
 
-import java.io.File;
-import java.io.IOException;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
@@ -87,11 +85,10 @@ public class ScriptingSetup extends JellyTestCase {
         CommonUtilities.closeTaskWindow();
     }
 
-/* TODO create PHPProject
     public void testOpenPHPProject() {
         openProject(Projects.PHP_PROJECT);
     }
-*/    
+
     public void openProject(String projectPath) {
         String projectsDir = CommonUtilities.getProjectsDir() + projectPath;
         Object prj = ProjectSupport.openProject(projectsDir);

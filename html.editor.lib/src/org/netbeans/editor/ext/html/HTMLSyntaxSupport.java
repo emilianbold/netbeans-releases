@@ -549,18 +549,17 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             if (item.id() == org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION) {
                 java.lang.StringBuffer sb = new java.lang.StringBuffer(item.text());
                 
-                while (item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION ||
-                        item.id() ==
-                        org.netbeans.api.html.lexer.HTMLTokenId.SGML_COMMENT) {
+                while (item.id() == HTMLTokenId.DECLARATION || 
+                       item.id() == HTMLTokenId.SGML_COMMENT ||
+                       item.id() == HTMLTokenId.WS) {
                     lastOffset = getTokenEnd(hi, item);
                     if (!ts.moveNext()) {
                         break;
                     }
                     item = ts.token();
-                    if (item.id() ==
-                            org.netbeans.api.html.lexer.HTMLTokenId.DECLARATION)
+                    if (item.id() == HTMLTokenId.DECLARATION || item.id() == HTMLTokenId.WS) {
                         sb.append(item.text().toString());
+                    }
                 }
                 java.lang.String image = sb.toString();
                 
@@ -821,28 +820,44 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         int itemsCount = 0;
         for( elem= elem.getPrevious() ; elem != null; elem = elem.getPrevious() ) {
             if( elem.getType() == SyntaxElement.TYPE_ENDTAG) { // NOI18N
-                DTD.Element tag = dtd.getElement( ((SyntaxElement.Named)elem).getName().toUpperCase() );
+                String tagName = ((SyntaxElement.Named)elem).getName().trim();
+                //HACK: if there is just close tag opening symbol (</) a syntax element of
+                //end tag is created for it. Such SE has empty name
+                if(tagName.length() == 0) {
+                    continue;
+                } 
+                DTD.Element tag = dtd.getElement( tagName.toUpperCase() );
                 if(tag != null) {
                     stack.push( ((SyntaxElement.Named)elem).getName().toUpperCase() );
+                } else {
+                    stack.push(tagName); //non-html tag, store it with the original case
                 }
             } else if(elem.getType() == SyntaxElement.TYPE_TAG) { //now </ and > are returned as SyntaxElement.TAG so I need to filter them  NOI18N
-                DTD.Element tag = dtd.getElement( ((SyntaxElement.Tag)elem).getName().toUpperCase() );
-                
-                if( tag == null ) continue; // Unknown tag - ignore
                 if(((SyntaxElement.Tag)elem).isEmpty() ) continue; // ignore empty Tags - they are like start and imediate end
                 
-                String name = tag.getName();
+                String tagName = ((SyntaxElement.Named)elem).getName();
+                DTD.Element tag = dtd.getElement( tagName.toUpperCase() );
+                
+                if(tag != null) {
+                    tagName = tag.getName();
+                }
                 
                 if( stack.empty() ) {           // empty stack - we are on the same tree deepnes - can close this tag
-                    if( name.startsWith( prefix ) && !found.contains( name ) ) {    // add only new items
-                        found.add( name );
-                        result.add( new HTMLCompletionQuery.EndTagItem( name, offset-2-prefixLen, prefixLen+2, name, itemsCount ) );
+                    if( tagName.startsWith( prefix ) && !found.contains( tagName ) ) {    // add only new items
+                        found.add( tagName );
+                        if(tag != null) {
+                            //html item
+                            result.add( new HTMLCompletionQuery.EndTagItem( tagName, offset-2-prefixLen, prefixLen+2, tagName, itemsCount ) );
+                        } else {
+                            //non html item
+                            result.add( new HTMLCompletionQuery.NonHTMLEndTagItem( tagName, offset-2-prefixLen, prefixLen+2, itemsCount ) );
+                        }
                     }
-                    if( ! tag.hasOptionalEnd() ) break;  // If this tag have required EndTag, we can't go higher until completing this tag
+                    if( tag != null && !tag.hasOptionalEnd() ) break;  // If this tag have required EndTag, we can't go higher until completing this tag
                 } else {                        // not empty - we match content of stack
-                    if( stack.peek().equals( name ) ) { // match - close this branch of document tree
+                    if( stack.peek().equals( tagName ) ) { // match - close this branch of document tree
                         stack.pop();
-                    } else if( ! tag.hasOptionalEnd() ) break; // we reached error in document structure, give up
+                    } else if( tag != null && ! tag.hasOptionalEnd() ) break; // we reached error in document structure, give up
                 }
             }
         }
@@ -859,7 +874,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 //check if the tag has required endtag
                 Element dtdElem = getDTD().getElement(tagName.toUpperCase());
                 if(!((SyntaxElement.Tag)elem).isEmpty() && (dtdElem == null || !dtdElem.isEmpty())) {
-                    CompletionItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset);
+                    CompletionItem eti = new HTMLCompletionQuery.AutocompleteEndTagItem(tagName, offset, dtdElem != null);
                     l.add(eti);
                 }
             }

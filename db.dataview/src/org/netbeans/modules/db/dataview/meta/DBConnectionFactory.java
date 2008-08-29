@@ -44,6 +44,7 @@ import java.sql.Connection;
 import java.util.Iterator;
 
 import javax.imageio.spi.ServiceRegistry;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.spi.DBConnectionProvider;
@@ -102,7 +103,7 @@ public final class DBConnectionFactory {
 
         synchronized (DBConnectionFactory.class) {
             if (dbConn != null) {
-                return dbConn.getJDBCConnection(true);
+                return dbConn.getJDBCConnection(!SwingUtilities.isEventDispatchThread());
             }
         }
         return null;

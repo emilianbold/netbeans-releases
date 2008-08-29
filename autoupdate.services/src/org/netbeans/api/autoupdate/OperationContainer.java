@@ -284,7 +284,7 @@ public final class OperationContainer<Support> {
     public OperationInfo<Support> add(UpdateElement updateElement) {
         upToDate = false;
         UpdateUnit updateUnit = updateElement.getUpdateUnit ();
-        return impl.add (updateUnit, updateElement);
+        return add (updateUnit, updateElement);
     }
     
     

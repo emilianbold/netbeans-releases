@@ -40,8 +40,9 @@ package org.netbeans.modules.vmd.midpnb.components.svg.parsers;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.regex.Pattern;
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
@@ -132,8 +133,8 @@ public class SVGFormImageParser extends SVGComponentImageParser {
 
     public abstract static class SVGFormComponent {
 
-        public static SVGFormComponent create(final String id, final TypeID type) {
-            return new SVGFormComponent(id, type) {
+        public static SVGFormComponent create(final String id, final TypeID type, Float position) {
+            return new SVGFormComponent(id, type, position) {
 
                 @Override
                 public DesignComponent createComponent(DesignComponent parentComponent) {
@@ -144,8 +145,8 @@ public class SVGFormImageParser extends SVGComponentImageParser {
             };
         }
 
-        public static SVGFormComponent createSVGButton(final String id, final TypeID type) {
-            return new SVGFormComponent(id, type) {
+        public static SVGFormComponent createSVGButton(final String id, final TypeID type, Float position) {
+            return new SVGFormComponent(id, type, position) {
 
                 @Override
                 public DesignComponent createComponent(DesignComponent parentComponent) {
@@ -160,10 +161,15 @@ public class SVGFormImageParser extends SVGComponentImageParser {
         }
         private String id;
         private TypeID type;
+        private Float position;
 
-        SVGFormComponent(String id, TypeID type) {
+        SVGFormComponent(String id, TypeID type, Float position) {
+            if (type == null || id == null || position == null) {
+                throw new IllegalArgumentException(" id or type argument is null"); //NOI18N
+            }
             this.type = type;
             this.id = id;
+            this.position = position;
         }
 
         public abstract DesignComponent createComponent(DesignComponent parentComponent);
@@ -174,6 +180,10 @@ public class SVGFormImageParser extends SVGComponentImageParser {
 
         TypeID getTypeID() {
             return type;
+        }
+
+        Float getPositon() {
+            return position;
         }
     }
 
@@ -186,47 +196,155 @@ public class SVGFormImageParser extends SVGComponentImageParser {
         }
 
         public SVGFormComponent[] getFoundElements() {
-            return foundElements.toArray(new SVGFormComponent[foundElements.size()]);
+//            Comparator<SVGFormComponent> comparator = new Comparator<SVGFormComponent>() {
+//
+//                public int compare(SVGFormComponent o1, SVGFormComponent o2) {
+//                    if (o1.getPositon() > o2.getPositon())
+//                        return -1;
+//                    else if (o1.getPositon() < o2.getPositon())
+//                        return 1;
+//                    return 0;
+//                        
+//                }
+//            };
+
+
+
+            //Collections.sort(foundElements, comparator);
+            //for (SVGFormComponent c : foundElements) {
+            //    System.out.println(c.id + " "+ c.getPositon() + " "  + c.getTypeID());
+            //     
+            // }
+            System.out.println("+++++++++Before you passing to array");
+             
+            LinkedList<SVGFormComponent> reversedList = new LinkedList<SVGFormComponent>();
+            for (SVGFormComponent c : foundElements) {
+                    System.out.println(c.getId() + " " + c.getPositon());
+                    reversedList.addFirst(c);
+            }
+            return reversedList.toArray(new SVGFormComponent[reversedList.size()]);
         }
 
         public final void resetFoundElements() {
             foundElements.clear();
         }
-
+        
+        private Float lastPosition; 
+        
         @Override
         public final void startElement(String namespaceURI, String localName,
                 String qName, Attributes atts)
                 throws SAXException {
             // get id attribute value
-            final String value = atts.getValue("id"); // NOI18N
-            if (value == null) {
+            final String id = atts.getValue("id"); // NOI18N
+            final  String transform = atts.getValue("transform");
+            if (id == null || transform == null) {
                 return;
             }
-            if (FORM_COMPONENT_ID_BUTTON.matcher(value).find()) {
-                foundElements.add(SVGFormComponent.createSVGButton(value, SVGButtonCD.TYPEID));
-            } else if (FORM_COMPONENT_ID_CHECKBOX.matcher(value).find()) {
-                foundElements.add(SVGFormComponent.create(value, SVGCheckBoxCD.TYPEID));
-            } else if (FORM_COMPONENT_ID_COMBOBOX.matcher(value).find()) {
-                foundElements.add(SVGFormComponent.create(value, SVGComboBoxCD.TYPEID));
-            } else if (FORM_COMPONENT_ID_LABEL.matcher(value).find()) {
-                foundElements.add(SVGFormComponent.create(value, SVGLabelCD.TYPEID));
-            } else if (FORM_COMPONENT_ID_LIST.matcher(value).find()) {
-                foundElements.add(SVGFormComponent.create(value, SVGListCD.TYPEID));
-            } else if (FORM_COMPONENT_ID_RADIO.matcher(value).find()) {
-                foundElements.add(SVGFormComponent.create(value, SVGRadioButtonCD.TYPEID));
-            } else if (FORM_COMPONENT_ID_SLIDER.matcher(value).find()) {
-                foundElements.add(SVGFormComponent.create(value, SVGSliderCD.TYPEID));
-            } else if (FORM_COMPONENT_ID_SPINNER.matcher(value).find()) {
-                foundElements.add(SVGFormComponent.create(value, SVGSpinnerCD.TYPEID));
-            } else if (FORM_COMPONENT_ID_TEXTFIELD.matcher(value).find()) {
-                foundElements.add(SVGFormComponent.create(value, SVGTextFieldCD.TYPEID));
+
+             System.out.println("---------");
+            System.out.println("COMPONENT " + id);
+            
+            if (FORM_COMPONENT_ID_BUTTON.matcher(id).find()) {
+                Float position = getPosition(atts);
+                int index = getIndex(position);
+                if (index == -1) {
+                    
+//                    for (SVGFormComponent c : foundElements) {
+//                        System.out.println(c.getId() + " " + c.getPositon());
+//                    }
+                    //System.out.println(id + " " + position);
+                    foundElements.add(SVGFormComponent.createSVGButton(id, SVGButtonCD.TYPEID, position));
+                } else {
+                   
+//                    for (SVGFormComponent c : foundElements) {
+//                        System.out.println(c.getId() + " " + c.getPositon());
+//                    }
+//                    System.out.println(id + " " + position);
+                    foundElements.add(index, SVGFormComponent.createSVGButton(id, SVGButtonCD.TYPEID, position));
+                }
+                for (SVGFormComponent c : foundElements) {
+                    System.out.println(c.getId() + " " + c.getPositon());
+                }
+            } else if (FORM_COMPONENT_ID_CHECKBOX.matcher(id).find()) {
+                addSVGFormComponent(id, SVGCheckBoxCD.TYPEID, getPosition(atts));
+            } else if (FORM_COMPONENT_ID_COMBOBOX.matcher(id).find()) {
+                addSVGFormComponent(id, SVGComboBoxCD.TYPEID, getPosition(atts));
+            } else if (FORM_COMPONENT_ID_LABEL.matcher(id).find()) {
+                addSVGFormComponent(id, SVGLabelCD.TYPEID, getPosition(atts));
+            } else if (FORM_COMPONENT_ID_LIST.matcher(id).find()) {
+                addSVGFormComponent(id, SVGListCD.TYPEID, getPosition(atts));
+            } else if (FORM_COMPONENT_ID_RADIO.matcher(id).find()) {
+                addSVGFormComponent(id, SVGRadioButtonCD.TYPEID, getPositionForRadioButton(atts, lastPosition));
+            } else if (FORM_COMPONENT_ID_SLIDER.matcher(id).find()) {
+                addSVGFormComponent(id, SVGSliderCD.TYPEID, getPosition(atts));
+            } else if (FORM_COMPONENT_ID_SPINNER.matcher(id).find()) {
+                addSVGFormComponent(id, SVGSpinnerCD.TYPEID, getPosition(atts));
+            } else if (FORM_COMPONENT_ID_TEXTFIELD.matcher(id).find()) {
+                addSVGFormComponent(id, SVGTextFieldCD.TYPEID, getPosition(atts));
             }
+            lastPosition = getPosition(atts);
+        }
+
+        private void addSVGFormComponent(String id, TypeID type, Float position) {
+            int index = getIndex(position);
+            if (index == -1) {
+//                for (SVGFormComponent c : foundElements) {
+//                    System.out.println(c.getId() + " " + c.getPositon());
+//                }
+                //System.out.println(id + " " + position);
+                foundElements.add(SVGFormComponent.create(id, type, position));
+            } else {
+//                for (SVGFormComponent c : foundElements) {
+//                    System.out.println(c.getId() + " " + c.getPositon());
+//                }
+                //System.out.println(id + " " + position);
+                foundElements.add(index, SVGFormComponent.create(id, type, position));
+            }
+            for (SVGFormComponent c : foundElements) {
+                    System.out.println(c.getId() + " " + c.getPositon());
+                }
         }
 
         @Override
         public void endElement(String namespaceURI, String localName, String qName)
                 throws SAXException {
         }
+
+        private int getIndex(Float position) {
+            int index = -1;
+            Float highestPosition = new Float(-1);
+            System.out.println("Positions :" + position);
+            for (SVGFormComponent c : foundElements) {
+                if (position > c.getPositon() && highestPosition < c.getPositon()) {
+                    highestPosition = c.getPositon();
+                    index = foundElements.indexOf(c);
+                }
+            }
+            return index;
+        }
+    }
+
+    private static Float getPosition(Attributes atts) {
+        String transform = atts.getValue("transform"); //NOI18N
+        Float position = null;
+        if (transform != null) {
+            int begining = transform.indexOf(","); //NOI18N
+            int end = transform.indexOf(")"); //NOI18N
+            position = new Float(transform.substring(begining + 1, end));
+        }
+        return position;
+    }
+    
+    private static Float getPositionForRadioButton(Attributes atts, Float lastPosition) {
+        String transform = atts.getValue("transform"); //NOI18N
+        Float position = null;
+        if (transform != null) {
+            int begining = transform.indexOf(","); //NOI18N
+            int end = transform.indexOf(")"); //NOI18N
+            position = new Float(transform.substring(begining + 1, end));
+        }
+        return position + lastPosition;
     }
 
     /**
@@ -244,9 +362,5 @@ public class SVGFormImageParser extends SVGComponentImageParser {
 
         return values;
     }
-    
-    
-
-    
 }
 

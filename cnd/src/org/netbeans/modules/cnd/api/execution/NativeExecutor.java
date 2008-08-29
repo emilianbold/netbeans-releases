@@ -72,7 +72,7 @@ public class NativeExecutor implements Runnable {
     private final String actionName;
     private final boolean parseOutputForErrors;
     private final boolean showInput;
-    private final String host;
+    private final String hkey;
     private final boolean unbuffer;
     
     private String rcfile;
@@ -92,7 +92,7 @@ public class NativeExecutor implements Runnable {
      * The real constructor. This class is used to manage native execution, but run and build.
      */
     public NativeExecutor(
-	    String host,
+	    String hkey,
             String runDir,
             String executable,
             String arguments,
@@ -102,7 +102,7 @@ public class NativeExecutor implements Runnable {
             boolean parseOutputForErrors,
             boolean showInput,
             boolean unbuffer) {
-        this.host = host;
+        this.hkey = hkey;
         this.runDir = runDir;
         this.executable = executable;
         this.arguments = arguments;
@@ -204,7 +204,7 @@ public class NativeExecutor implements Runnable {
         
         File runDirFile = new File(runDir);
         if (parseOutputForErrors)
-            out = new PrintWriter(new OutputWindowWriter(io.getOut(), FileUtil.toFileObject(runDirFile), parseOutputForErrors));
+            out = new PrintWriter(new OutputWindowWriter(hkey, io.getOut(), FileUtil.toFileObject(runDirFile), parseOutputForErrors));
         else
             out = io.getOut();
         executionStarted();
@@ -212,7 +212,7 @@ public class NativeExecutor implements Runnable {
         
         try {
             // Execute the selected command
-            nativeExecution = NativeExecution.getDefault(host).getNativeExecution();
+            nativeExecution = NativeExecution.getDefault(hkey).getNativeExecution();
             String[] preparedEnvp = nativeExecution.prepareEnvironment(envp, unbuffer);
             rc = nativeExecution.executeCommand(
                     runDirFile,
@@ -279,8 +279,8 @@ public class NativeExecutor implements Runnable {
     
     private void executionStarted() {
         if( showHeader ) {
-            String runDirToShow = CompilerSetManager.LOCALHOST.equals(host) ?
-                runDir : HostInfoProvider.getDefault().getMapper(host).getRemotePath(runDir);
+            String runDirToShow = CompilerSetManager.LOCALHOST.equals(hkey) ?
+                runDir : HostInfoProvider.getDefault().getMapper(hkey).getRemotePath(runDir);
             
             String preText = MessageFormat.format(getString("PRETEXT"),
 		    new Object[] {exePlusArgsQuoted(executable, arguments), runDirToShow});

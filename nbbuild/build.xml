@@ -2048,10 +2048,12 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   >
     <echo message="Generating signature files for ${cluster.config} modules"/>
     <property name="sigtest.basedir" location="build/sigtest/snapshot"/>
+    <property name="sigtest.output.dir" location="build/sigtest/generate"/>
     
-    <subant target="gen-sigtest" buildpath="${modules.fullpath}">
+    <subant target="gen-sigtest" buildpath="${modules.fullpath}" failonerror="false">
       <property name="ant.core.lib" value="${ant.core.lib}"/>
       <property name="sigtest.basedir" value="${sigtest.basedir}"/>
+      <property name="sigtest.output.dir" location="${sigtest.output.dir}"/>
     </subant>
   </target>
 

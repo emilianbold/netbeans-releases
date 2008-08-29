@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.services.CsmMemberResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver.SafeTemplateBasedProvider;
@@ -78,7 +79,7 @@ public class NestedType extends TypeImpl {
     @Override
     public CsmClassifier getClassifier(Resolver parent) {
         CsmClassifier classifier = _getClassifier();
-        if (classifier != null && (!(classifier instanceof CsmValidable) || (((CsmValidable)classifier).isValid()))) {
+        if (CsmBaseUtilities.isValid(classifier)) {
             // skip
         } else {
             _setClassifier(null);
@@ -89,7 +90,7 @@ public class NestedType extends TypeImpl {
                 } else {
                     parentClassifier = parentType.getClassifier();
                 }
-                if (CsmKindUtilities.isValidable(parentClassifier) && ((CsmValidable)parentClassifier).isValid()) {
+                if (CsmBaseUtilities.isValid(parentClassifier)) {
                     CsmMemberResolver memberResolver = CsmMemberResolver.getDefault();
                     Iterator<CsmClassifier> iter = memberResolver.getNestedClassifiers(parentClassifier, getOwnText());
                     if (iter.hasNext()) {

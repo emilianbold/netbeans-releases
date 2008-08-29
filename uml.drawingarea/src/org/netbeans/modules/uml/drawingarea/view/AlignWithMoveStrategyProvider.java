@@ -105,7 +105,6 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         
         if(movingWidgets.size() > 1)
         {
-            adjustControlPoints(originalLocation, suggestedLocation);
             return suggestedLocation;
         }
         
@@ -130,7 +129,6 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         }
         
         Point localPt = parent.convertSceneToLocal (point);
-        adjustControlPoints(originalLocation, localPt);
         return localPt;
     }
 
@@ -239,6 +237,14 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                     initializeMovingWidgets(widget.getScene(), widget);
                 }
                 
+                // The dx is calcuated using a start location of when the move
+                // first started.  However for connection points we do not have
+                // the connection point values from before the move started.
+                // 
+                // Therefore use the reference widget to determine the dx.
+                int edgeDx = location.x - widget.getPreferredLocation().x;
+                int edgeDy = location.y - widget.getPreferredLocation().y;
+                adjustControlPoints(getMovingWidgetList(), edgeDx, edgeDy);
                 for(MovingWidgetDetails details : movingWidgets)
                 {
                     Point point = details.getOriginalLocation();
@@ -283,29 +289,49 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         return movingWidgets;
     }
 
-    private void adjustControlPoints(Point originalLocation, Point suggestedLocation)
+    protected List < Widget > getMovingWidgetList()
+    {
+        ArrayList < Widget > retVal = new ArrayList < Widget >();
+        
+        for(MovingWidgetDetails details : movingWidgets)
+        {
+            retVal.add(details.getWidget());
+        }
+        
+        return retVal;
+    }
+    
+    public static void adjustControlPoints(List < Widget> widgets, 
+                                           int dx, int dy)
     {
         // Nodes are only put onto this list of widgets.  Therefore I need 
         // to check there associated connection widgets to see if any are selected.
-        for(MovingWidgetDetails details : movingWidgets)
+        ArrayList < Object > alreadyProcessed = new ArrayList < Object >();
+        for(Widget widget : widgets)
         {
-            Widget widget = details.getWidget();
             GraphScene scene = (GraphScene)widget.getScene();
             Object data = scene.findObject(widget);
             
-            Point location = widget.getPreferredLocation();
-            int dx = suggestedLocation.x - location.x;
-            int dy = suggestedLocation.y - location.y;
-        
-            for (Object connectionObj : scene.findNodeEdges(data, true, true))
+            if(scene.isNode(data) == true)
             {
-                ConnectionWidget connection = (ConnectionWidget) scene.findWidget(connectionObj);
-                if(connection.getState().isSelected() == true)
+                for (Object connectionObj : scene.findNodeEdges(data, true, true))
                 {
-                    for(Point pt : connection.getControlPoints())
+                    // Maket sure that an edge is only processed once.
+                    if(alreadyProcessed.contains(connectionObj) == false)
                     {
-                        pt.x += dx;
-                        pt.y += dy;
+                        ConnectionWidget connection = (ConnectionWidget) scene.findWidget(connectionObj);
+                        if(connection.getState().isSelected() == true)
+                        {
+                            //for(Point pt : connection.getControlPoints())
+                            List < Point > points = connection.getControlPoints();
+                            for(int index = 1; index < points.size() - 1; index++)
+                            {
+                                Point pt = points.get(index);
+                                pt.x += dx;
+                                pt.y += dy;
+                            }
+                        }
+                        alreadyProcessed.add(connectionObj);
                     }
                 }
             }
@@ -633,6 +659,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         {
             return widget;
         }
+        
         
         public int getOriginalIndex()
         {

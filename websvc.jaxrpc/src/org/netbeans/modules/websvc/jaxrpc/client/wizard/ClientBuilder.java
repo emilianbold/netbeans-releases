@@ -505,7 +505,19 @@ public class ClientBuilder {
             features.toArray(wscompileFeatures);
             projectSupport.addServiceClient(wsdlTarget.getName(), packageName, sourceUrl, configFile, stubDescriptor, wscompileFeatures);
 
-            // 9. Execute wscompile script for the new client (mostly to populate for code completion.
+            // 9. Code Completion HACK to enable filesystems to fire events when new folder is created
+            // need to ask for children
+            FileObject projectDir = project.getProjectDirectory();
+            FileObject clientArtifactsFolder = projectDir.getFileObject("build/generated/wsclient"); //NOI18N
+            if (clientArtifactsFolder!=null) {
+                clientArtifactsFolder.getChildren(true);
+            } else {
+                try {
+                    FileUtil.createFolder(projectDir, "build/generated/wsclient"); //NOI18N
+                } catch (IOException ex) {}
+            }            
+
+            // 10. Execute wscompile script for the new client (mostly to populate for code completion.
             handle.progress(NbBundle.getMessage(ClientBuilder.class, "MSG_WizGenerateClient"), 80);
 
             String targetName = wsdlTarget.getName() + "-client-wscompile"; // NOI18N

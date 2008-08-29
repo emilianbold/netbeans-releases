@@ -50,13 +50,14 @@ import java.net.URI;
 import java.net.URLConnection;
 import java.util.Random;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
@@ -68,6 +69,7 @@ import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JSpinnerOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
@@ -78,14 +80,14 @@ import org.openide.util.Exceptions;
  * @author Jiri..Skrivanek@sun.com
  */
 public class Utils {
-    
+
     /** Default value for Sun App Server. If we test Tomcat, it is 
      * overridden in setTomcatProperties() method. */
     private static int socketPort = 9009;
     public static final String SUN_APP_SERVER = "GlassFish";
     public static final String TOMCAT = "Tomcat";
     public static final String DEFAULT_SERVER = SUN_APP_SERVER;
-    
+
     /** Sets a random port for Tomcat server and socket debugger transport. */
     public static void setTomcatProperties() throws Exception {
         // "Tools"
@@ -94,7 +96,7 @@ public class Utils {
         String serverManagerItem = Bundle.getStringTrimmed(
                 "org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle",
                 "CTL_ServerManager");
-        new ActionNoBlock(toolsItem+"|"+serverManagerItem, null).perform();
+        new ActionNoBlock(toolsItem + "|" + serverManagerItem, null).perform();
         // "Server Manager"
         String serverManagerTitle = Bundle.getString(
                 "org.netbeans.modules.j2ee.deployment.devmodules.api.Bundle",
@@ -103,18 +105,18 @@ public class Utils {
         String j2eeLabel = Bundle.getString(
                 "org.netbeans.modules.j2ee.deployment.impl.ui.Bundle",
                 "LBL_J2eeServersNode");
-        new Node(new JTreeOperator(serverManagerOper), j2eeLabel+"|"+"Bundled Tomcat").select(); // NOI18N
+        new Node(new JTreeOperator(serverManagerOper), j2eeLabel + "|" + "Bundled Tomcat").select(); // NOI18N
         // set server port
         JSpinnerOperator serverPortOper = new JSpinnerOperator(serverManagerOper, 0);
         // satisfy focus on spinner which causes changes are reflected
-        serverPortOper.getNumberSpinner().scrollToValue((Number)serverPortOper.getNextValue());
+        serverPortOper.getNumberSpinner().scrollToValue((Number) serverPortOper.getNextValue());
         serverPortOper.setValue(new Integer(getPort()));
         // set shutdown port
         JSpinnerOperator shutdownPortOper = new JSpinnerOperator(serverManagerOper, 1);
         // satisfy focus on spinner which causes changes are reflected
-        shutdownPortOper.getNumberSpinner().scrollToValue((Number)shutdownPortOper.getNextValue());
+        shutdownPortOper.getNumberSpinner().scrollToValue((Number) shutdownPortOper.getNextValue());
         shutdownPortOper.setValue(new Integer(getPort()));
-        
+
         // set socket debugger transport
         // "Startup"
         String startupLabel = Bundle.getString("org.netbeans.modules.tomcat5.customizer.Bundle", "TXT_Startup");
@@ -125,28 +127,28 @@ public class Utils {
         // set socket port number
         JSpinnerOperator socketPortOper = new JSpinnerOperator(serverManagerOper, 0);
         // satisfy focus on spinner which causes changes are reflected
-        socketPortOper.getNumberSpinner().scrollToValue((Number)socketPortOper.getNextValue());
+        socketPortOper.getNumberSpinner().scrollToValue((Number) socketPortOper.getNextValue());
         socketPort = getPort();
         socketPortOper.setValue(new Integer(socketPort));
-        
+
         serverManagerOper.close();
     }
-    
+
     /** Returns socket port set in setTomcatProperties method.
      * @return socket port used for debugger transport
      */
     public static String getSocketPort() {
         return Integer.toString(socketPort);
     }
-    
+
     /** Returns unique free port number within range of dynamic or private ports
      * (see http://www.iana.org/assignments/port-numbers)
      */
     private static int getPort() throws Exception {
         int port = 0;
         boolean notfree = true;
-        while(notfree) {
-            port = 49152+new Random().nextInt(16383);
+        while (notfree) {
+            port = 49152 + new Random().nextInt(16383);
             // test whether port is already used
             ServerSocket socket = null;
             try {
@@ -160,7 +162,7 @@ public class Utils {
         }
         return port;
     }
-    
+
     /** Finishes debugger and wait until it finishes. */
     public static void finishDebugger() {
         ContainerOperator debugToolbarOper = getDebugToolbar();
@@ -172,17 +174,17 @@ public class Utils {
         serverNode.waitFinished();
         new EventTool().waitNoEvent(2000);
 
-        /* cannot be used because of this issue 71263 ('User program finished' not printed to output)
-        MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
-        // start to track Main Window status bar
-        stt.start();
-        new FinishDebuggerAction().perform();
-        String programFinishedLabel = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_finished");
-        stt.waitText(programFinishedLabel);
-        stt.stop();
-        */
+    /* cannot be used because of this issue 71263 ('User program finished' not printed to output)
+    MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
+    // start to track Main Window status bar
+    stt.start();
+    new FinishDebuggerAction().perform();
+    String programFinishedLabel = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Debugger_finished");
+    stt.waitText(programFinishedLabel);
+    stt.stop();
+     */
     }
-    
+
     /** Returns ContainerOperator representing Debug toolbar.
      * @return ContainerOperator representing Debug toolbar
      */
@@ -190,7 +192,7 @@ public class Utils {
         String debugToolbarLabel = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "Toolbars/Debug");
         return MainWindowOperator.getDefault().getToolbar(debugToolbarLabel);
     }
-    
+
     public static class ToolTipChooser implements ComponentChooser {
         private String tooltip;
         public ToolTipChooser(String tooltip) {
@@ -203,7 +205,7 @@ public class Utils {
             return("ToolTip equals to "+tooltip);
         }
     }
-    
+
     /** Sets breakpoint in editor on line with specified text.
      * @param eo EditorOperator instance where to set breakpoint
      * @param text text to find for setting breakpoint
@@ -231,7 +233,7 @@ public class Utils {
         }).waitAction(eo);
         return line;
     }
-    
+
     /** Gets URL of default server. */
     public static String getDefaultUrl() {
         if(DEFAULT_SERVER.equals(SUN_APP_SERVER)) {
@@ -240,7 +242,7 @@ public class Utils {
             return "http://localhost:8084/";
         }
     }
-    
+
     /** Opens URL connection to server with given urlSuffix.
      * @param urlSuffix suffix added to server URL
      */
@@ -255,7 +257,7 @@ public class Utils {
             }
         }).start();
     }
-    
+
     /** Opens URL connection and waits for given text. It thows TimeoutExpiredException
      * if timeout expires.
      * @param urlSuffix suffix added to server URL
@@ -305,7 +307,7 @@ public class Utils {
             throw new JemmyException("Exception while waiting for connection.", e);
         }
     }
-    
+
     /** Increases timeout and waits until deployment is finished. 
      * @param test instance of JellyTestCase to get access to logs
      * @param projectName name of deployed project
@@ -325,9 +327,9 @@ public class Utils {
             // log messages from output
             test.getLog("ServerMessages").print(new OutputTabOperator(Utils.DEFAULT_SERVER).getText()); // NOI18N
             test.getLog("RunOutput").print(new OutputTabOperator(projectName).getText()); // NOI18N
+        }
     }
-    }
-    
+
     /** Set longer time for timeout and confirm Information dialog */
     public static void confirmInformationMessage() {
         long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
@@ -335,21 +337,38 @@ public class Utils {
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
         String infTitle = org.netbeans.jellytools.Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");
         // confirm dialog
-        new NbDialogOperator(infTitle).ok(); 
+        new NbDialogOperator(infTitle).ok();
         // restore default timeout
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout); 
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout);
     }
-    
-    public static void cancelClientSideDebuggingMeassage() {
+
+    /** Confirming message about Client Side Debugging and setting don't show this message again. */
+    public static void confirmClientSideDebuggingMeassage() {
         long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
         // increase time to wait to 240 second
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
         String title = "Client Side Debugging";
-        // confirm dialog
-        new NbDialogOperator(title).cancel();
+        long time = System.currentTimeMillis();
+        JDialog dialog = null;
+        while ((System.currentTimeMillis() - 120000 < time) && dialog == null) {
+            dialog = NbDialogOperator.findJDialog(title, true, true);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        if (dialog != null) {
+            // wait for dialog
+            NbDialogOperator dialogOperator = new NbDialogOperator(dialog);
+            // turn of client-side debugging
+            new JCheckBoxOperator(dialogOperator, "Enable Client-Side Debugging").setSelected(false);
+            String doNotShowTitle = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.client.tools.impl.Bundle", "DO_NOT_SHOW_AGAIN");
+            // choose don't display this message again
+            new JCheckBoxOperator(dialogOperator, doNotShowTitle).setSelected(true);
+            dialogOperator.ok();
+        }
         // restore default timeout
-        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout); 
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", oldTimeout);
     }
-    
-    
 }

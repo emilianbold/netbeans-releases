@@ -290,6 +290,10 @@ public final class UI {
     print(message, NotifyDescriptor.ERROR_MESSAGE);
   }
 
+  public static void printError(Exception exception) {
+    print(exception.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+  }
+
   private static void print(String message, int type) {
     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, type));
   }
