@@ -40,7 +40,6 @@
 package org.netbeans.modules.php.editor.parser;
 
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
@@ -49,11 +48,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
  *
  * @author Petr Pisl
  */
-public class SanitizeSource extends ParserTestBase {
+public class SanitizeSourceTest extends ParserTestBase {
     
-    public SanitizeSource(String testName) {
+    public SanitizeSourceTest(String testName) {
         super(testName);
-    }            
+    }
 
     @Override
     protected void setUp() throws Exception {
