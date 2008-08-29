@@ -47,9 +47,12 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -76,6 +79,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -174,10 +178,27 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     
     static Node getTemplateRootNode () {
         DataFolder df = DataFolder.findFolder (getTemplatesRoot ());
+        try {
+            df.setOrder (orderFolders (df.getChildren ()));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace (ex);
+        }
         return new TemplateNode (new FilterNode (df.getNodeDelegate (), df.createNodeChildren (new TemplateFilter ())));
     }
     
-    static private final class TemplateFilter implements DataFilter {
+    private static DataObject [] orderFolders (DataObject [] original) {
+        SortedSet<DataObject> sorted = new TreeSet<DataObject> (new Comparator<DataObject> () {
+            public int compare (DataObject o1, DataObject o2) {
+                return o1.getNodeDelegate ().getDisplayName ().compareTo (o2.getNodeDelegate ().getDisplayName ());
+            }
+        });
+        for (DataObject o : original) {
+            sorted.add (o);
+        }
+        return sorted.toArray (new DataObject [0]);
+    }
+    
+    private static final class TemplateFilter implements DataFilter {
         public boolean acceptDataObject (DataObject obj) {
             return acceptTemplate (obj);
         }
@@ -475,7 +496,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             this (n, new DataFolderFilterChildren (n), new InstanceContent ());
         }
         
-        public TemplateNode (Node n, org.openide.nodes.Children ch) { 
+        private TemplateNode (Node n, org.openide.nodes.Children ch) { 
             this (n, ch, new InstanceContent ());
         }
         
