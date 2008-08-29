@@ -386,7 +386,7 @@ class GroovyParser implements Parser {
     }
 
     @SuppressWarnings("unchecked")
-    public GroovyParserResult parseBuffer(final Context context, final Sanitize sanitizing) {
+    GroovyParserResult parseBuffer(final Context context, final Sanitize sanitizing) {
         boolean sanitizedSource = false;
         String source = context.source;
         if (!((sanitizing == Sanitize.NONE) || (sanitizing == Sanitize.NEVER))) {
@@ -697,7 +697,7 @@ class GroovyParser implements Parser {
             return sanitizedRange;
         }
 
-        public Sanitize getSanitized() {
+        Sanitize getSanitized() {
             return sanitized;
         }
         
