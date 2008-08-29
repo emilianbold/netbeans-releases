@@ -175,7 +175,7 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
                 return new PreviewMultiViewElement();
             } else {
                 DataEditorSupport des = wsdl.getLookup().lookup(DataEditorSupport.class);
-                System.out.println("DataEditorSupport:" + des);
+                //System.out.println("DataEditorSupport:" + des);
                 return new PreviewMultiViewElement(des);
 
             }
