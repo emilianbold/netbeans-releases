@@ -239,12 +239,13 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 }
             }
 
-            if (smartLogger.isLoggable(Level.FINER))
-                if (stop) {
+            if (stop) {
+                if (smartLogger.isLoggable(Level.FINER))
                     smartLogger.finer("FINISH IN CLASS " +
                         t.getClassName () + " ********"
                     );
-                }
+                StepActionProvider.setLastOperation(tr, debugger, null);
+            }
             return !stop;
         }
     }
