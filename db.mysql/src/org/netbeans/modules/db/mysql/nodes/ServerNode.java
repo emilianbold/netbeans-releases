@@ -195,6 +195,7 @@ public class ServerNode extends AbstractNode implements ChangeListener, Comparab
             List<Database> fresh = new ArrayList<Database>();
 
             try {
+                server.refreshDatabaseList();
                 fresh.addAll(server.getDatabases());
             } catch (DatabaseException ex) {
                 Utils.displayError(Utils.getMessage( 

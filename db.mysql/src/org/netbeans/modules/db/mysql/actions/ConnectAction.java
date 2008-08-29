@@ -99,6 +99,11 @@ public class ConnectAction extends CookieAction {
         }
         Database model = activatedNodes[0].getCookie(Database.class);        
         DatabaseServer server = model.getServer();
+
+        if (! server.validateConnection()) {
+            return;
+        }
+        
         String dbname = model.getDbName();
         
         List<DatabaseConnection> conns = 
@@ -114,6 +119,6 @@ public class ConnectAction extends CookieAction {
                     null);
         } else {
             ConnectionManager.getDefault().showConnectionDialog(conns.get(0));            
-        }      
+        }
     }
 }

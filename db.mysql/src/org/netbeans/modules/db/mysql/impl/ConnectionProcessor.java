@@ -40,8 +40,11 @@
 package org.netbeans.modules.db.mysql.impl;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Logger;
+import org.netbeans.modules.db.mysql.util.Utils;
+import org.openide.util.NbBundle;
 
 /**
  * This class encapsulates a database connection and serializes
@@ -61,6 +64,35 @@ public class ConnectionProcessor implements Runnable {
     
     Connection getConnection() {
         return this.conn;
+    }
+
+    boolean validateConnection() {
+        return validateConnection(true);
+    }
+
+    boolean validateConnection(boolean displayMessage) {
+        try {
+            if (conn == null || conn.isClosed()) {
+                if (displayMessage) {
+                    Utils.displayErrorMessage(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
+                }
+
+                conn = null;
+                return false;
+            }
+
+            // Send a command to the server, if it fails we know the connection is invalid.
+            conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+
+            return true;
+        } catch (SQLException e) {
+            if (displayMessage) {
+                Utils.displayErrorMessage(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
+            }
+
+            conn = null;
+            return false;
+        }
     }
     
     boolean isConnected() {
