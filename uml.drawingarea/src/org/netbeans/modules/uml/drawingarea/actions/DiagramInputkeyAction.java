@@ -194,6 +194,11 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
             
             if (scene != null)
             {
+                ContextPaletteManager manager = scene.getContextPaletteManager();
+                if(manager != null)
+                {
+                    manager.cancelPalette();;
+                }
                 // Check if the Project tab is currently active.
                 // If yes, process the activated/selected node on the model tree
                 // else process the item selected on the palette if any.
@@ -208,7 +213,14 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                 {
                     processPaletteNodes(scene);
                 }
+                
+                if(manager != null)
+                {
+                    manager.selectionChanged(null);
+                }
             }
+            
+            
         }
     }
     
