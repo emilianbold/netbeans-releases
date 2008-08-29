@@ -1421,7 +1421,7 @@ public class AstRenderer {
     
     public CsmCondition renderCondition(AST ast, CsmScope scope) {
         if( ast != null && ast.getType() == CPPTokenTypes.CSM_CONDITION ) {
-            AST first = ast.getFirstChild();
+            AST first = getFirstChildSkipQualifiers(ast);
             if( first != null ) {
                 int type = first.getType();
                 if( isExpression(type) ) {
