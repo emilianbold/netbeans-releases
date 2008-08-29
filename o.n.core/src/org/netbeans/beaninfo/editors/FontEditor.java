@@ -48,6 +48,7 @@ import java.beans.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
+import org.netbeans.core.UIExceptions;
 import org.openide.DialogDisplayer;
 
 import org.openide.NotifyDescriptor;
@@ -423,9 +424,20 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             int size = 12;
             try {
                 size = Integer.parseInt (tfSize.getText ());
+                if (size <= 0) {
+                    IllegalStateException ise = new IllegalStateException ();
+                    UIExceptions.annotateUser (ise, null,
+                            size == 0 ? NbBundle.getMessage (FontEditor.class, "CTL_InvalidValue") : // NOI18N
+                                NbBundle.getMessage (FontEditor.class, "CTL_NegativeSize"), // NOI18N
+                            null, null);
+                    throw ise;
+                }
                 updateSizeList(size);
             } catch (NumberFormatException e) {
-                return;
+                UIExceptions.annotateUser (e, null,
+                        NbBundle.getMessage (FontEditor.class, "CTL_InvalidValue"), // NOI18N
+                        null, null);
+                throw e;
             }
             int i = lStyle.getSelectedIndex (), ii = Font.PLAIN;
             switch (i) {

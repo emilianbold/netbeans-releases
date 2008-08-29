@@ -91,6 +91,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.OccurrencesFinder;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 
@@ -109,6 +110,7 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
+    private FileObject file;
 
     /** When true, don't match alias nodes as reads. Used during traversal of the AST. */
     private boolean ignoreAlias;
@@ -137,6 +139,13 @@ public class RubyOccurrencesFinder implements OccurrencesFinder {
 
         if (isCancelled()) {
             return;
+        }
+
+        FileObject currentFile = info.getFileObject();
+        if (currentFile != file) {
+            // Ensure that we don't reuse results from a different file
+            occurrences = null;
+            file = currentFile;
         }
 
         RubyParseResult rpr = AstUtilities.getParseResult(info);

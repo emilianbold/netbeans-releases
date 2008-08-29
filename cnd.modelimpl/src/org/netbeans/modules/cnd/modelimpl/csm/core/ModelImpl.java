@@ -233,6 +233,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         _closeProject(prj, prj.getPlatformProject(), !TraceFlags.PERSISTENT_REPOSITORY);
     }
     
+    public void closeProjectBase(ProjectBase prj, boolean cleanRepository) {
+        _closeProject(prj, prj.getPlatformProject(), cleanRepository);
+    }
+    
     private void _closeProject(final ProjectBase csmProject, final Object platformProjectKey, final boolean cleanRepository) {
         if (SwingUtilities.isEventDispatchThread()) {
             _closeProject2_pre(csmProject, platformProjectKey);
@@ -243,32 +247,11 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                             };
             this.enqueueModelTask(task, "Closing Project "); // NOI18N
         } else {
+            _closeProject2_pre(csmProject, platformProjectKey);
             _closeProject2(csmProject, platformProjectKey, cleanRepository);
         }           
     }
     
-    public void removeProject(Object platformProject) {
-        _removeProject(null, platformProject);
-    }
-    
-    public void removeProjectBase(ProjectBase prj) {
-        _removeProject(prj, prj.getPlatformProject());
-    }
-    
-    private void _removeProject(final ProjectBase csmProject, final Object platformProjectKey) {
-        if (SwingUtilities.isEventDispatchThread()) {
-            _closeProject2_pre(csmProject, platformProjectKey);
-            Runnable task = new Runnable() {
-                                public void run() {
-                                    _closeProject2(csmProject, platformProjectKey, true);
-                                }
-                            };
-            this.enqueueModelTask(task, "Closing Project and cleaning the repository"); // NOI18N
-        } else {
-            _closeProject2(csmProject, platformProjectKey, true);
-        }        
-    }
-
     private void _closeProject2_pre(ProjectBase csmProject, Object platformProjectKey) {
         ProjectBase prj = (csmProject == null) ? (ProjectBase) getProject(platformProjectKey) : csmProject;
         if( prj != null ) {
@@ -307,13 +290,15 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     
     /*package-local*/ void disposeProject(final ProjectBase prj, boolean cleanRepository) {
         assert prj != null;
-        CharSequence name = prj.getName();
-        if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("dispose project " + name);
-        prj.setDisposed();
-        ListenersImpl.getImpl().fireProjectClosed(prj);
-        ParserThreadManager.instance().waitEmptyProjectQueue(prj);
-        prj.dispose(cleanRepository);
-        if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("project closed " + name);
+        if (prj != null) {
+            CharSequence name = prj.getName();
+            if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("dispose project " + name);
+            prj.setDisposed();
+            ListenersImpl.getImpl().fireProjectClosed(prj);
+            ParserThreadManager.instance().waitEmptyProjectQueue(prj);
+            prj.dispose(cleanRepository);
+            if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("project closed " + name);
+        }
     }
     
     public Collection<CsmProject> projects() {
@@ -325,7 +310,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         for (CsmUID<CsmProject> uid : vals) {
             ProjectBase prj = (ProjectBase)UIDCsmConverter.UIDtoProject(uid);
             assert prj != null : "null project for UID " + uid;
-            out.add(prj);
+            if (prj != null) {
+                out.add(prj);
+            }
         }
         return out;
     }

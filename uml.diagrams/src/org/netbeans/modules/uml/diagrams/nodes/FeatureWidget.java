@@ -400,19 +400,10 @@ public abstract class FeatureWidget extends CustomizableWidget
         UMLDiagramTopComponent tc=(UMLDiagramTopComponent) scene.getTopComponent();
         if(tc.isActivated())//diagram action
         {
-            //Set selected=scene.getSelectedObjects();
             HashSet newSelection=new HashSet();
             newSelection.add(getObject());
             scene.setFocusedObject(getObject());
-            scene.setSelectedObjects(newSelection);
-            //ObjectState stFocFoc=attrW.getState().deriveWidgetFocused(true).deriveObjectFocused(true).deriveHighlighted(true).deriveWidgetAimed(true);
-            //attrW.setState(stFocFoc);
-            //scene.setSelectedObjects(newSelection);
-//                        new AfterValidationExecutor(new ActionProvider() {
-//                            public void perfomeAction() {
-//                                attrW.switchToEditMode();
-//                            }
-//                        }, scene);
+            scene.userSelectionSuggested(newSelection, false);
             scene.validate();
         }
     }

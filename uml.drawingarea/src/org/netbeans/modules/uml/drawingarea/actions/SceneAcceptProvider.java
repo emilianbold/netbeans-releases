@@ -541,7 +541,7 @@ public class SceneAcceptProvider implements AcceptProvider
 
             if (!presentations.isEmpty())
             {
-                engine.getScene().setSelectedObjects(new HashSet<IPresentationElement>(presentations));
+                engine.getScene().userSelectionSuggested(new HashSet<IPresentationElement>(presentations), false);
             }
         } catch (UnsupportedFlavorException ex)
         {

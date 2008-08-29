@@ -1408,20 +1408,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private void disposeFiles() {
-        Collection<FileImpl> list;
-//        synchronized (fileContainer) {
-        list = getFileContainer().getFileImpls();
+        Collection<FileImpl> list = getFileContainer().getFileImpls();
         getFileContainer().clear();
-//        }
         for (FileImpl file : list){
-            file.onProjectDispose();
-            if (TraceFlags.USE_AST_CACHE) {
-                CacheManager.getInstance().invalidate(file);
-            } else {
-                APTDriver.getInstance().invalidateAPT(file.getBuffer());
-            }
+            file.onProjectClose();
+            APTDriver.getInstance().invalidateAPT(file.getBuffer());
         }
-        clearNativeFileContainer();
+        //clearNativeFileContainer();
     }
 
     private NamespaceImpl _getGlobalNamespace() {
@@ -1816,7 +1809,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public static NativeFileItem getCompiledFileItem(FileImpl fileImpl) {
         NativeFileItem out = null;
-        ProjectBase filePrj = fileImpl.getProjectImpl();
+        ProjectBase filePrj = fileImpl.getProjectImpl(true);
         if (filePrj != null) {
             APTPreprocHandler.State state = filePrj.getPreprocState(fileImpl);
             FileImpl startFile = getStartFile(state);
@@ -1824,7 +1817,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         return out;
     }
-
+    
     public static FileImpl getStartFile(final APTPreprocHandler.State state) {
         StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
 	ProjectBase startProject = getStartProject(startEntry);
@@ -1999,7 +1992,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * when the project is being disposed)
      *
      */
-    private boolean disposing;
+    private volatile boolean disposing;
     private ReadWriteLock disposeLock = new ReentrantReadWriteLock();
 
     private CharSequence uniqueName = null; // lazy initialized

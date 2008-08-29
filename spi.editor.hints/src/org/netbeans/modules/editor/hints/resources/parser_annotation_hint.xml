@@ -47,6 +47,9 @@ made subject to such option by the copyright holder.
              description_key="LAB_parser_annotation_hint_fixable"
              localizing_bundle="org.netbeans.modules.editor.hints.resources.Bundle"
              visible="true"
-	     severity="ok"
+
+             glyph="nbresloc:/org/netbeans/modules/editor/hints/resources/warning-glyph.gif"
+
+             severity="ok"
 	     browseable="true"
              type="linepart"/>

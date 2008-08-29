@@ -635,7 +635,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
 
         public Parameter(CsmParameter parameter, CsmInstantiation instantiation) {
             super(parameter, instantiation.getMapping());
-            this.type = createType(parameter.getType(), instantiation);
+            this.type = parameter.isVarArgs() ? TypeFactory.getVarArgType() : createType(parameter.getType(), instantiation);
         }
 
         public boolean isExtern() {
@@ -767,7 +767,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public boolean isTemplateBased() {
-            return true;
+            return (instantiatedType == null) ? true : instantiatedType.isTemplateBased();
         }
 
         public boolean isReference() {

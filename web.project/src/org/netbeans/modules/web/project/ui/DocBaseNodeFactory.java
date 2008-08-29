@@ -330,11 +330,11 @@ public final class DocBaseNodeFactory implements NodeFactory {
                 actions = new Action[9];
                 actions[0] = CommonProjectActions.newFileAction();
                 actions[1] = null;
-                actions[2] = SystemAction.get(FileSystemAction.class);
+                actions[2] = SystemAction.get(FindAction.class);
                 actions[3] = null;
-                actions[4] = SystemAction.get(FindAction.class);
+                actions[4] = SystemAction.get(PasteAction.class);
                 actions[5] = null;
-                actions[6] = SystemAction.get(PasteAction.class);
+                actions[6] = SystemAction.get(FileSystemAction.class);
                 actions[7] = null;
                 actions[8] = new PreselectPropertiesAction(project, "Sources"); //NOI18N
             }
@@ -383,10 +383,15 @@ public final class DocBaseNodeFactory implements NodeFactory {
         public boolean acceptDataObject(DataObject obj) {                
             FileObject fo = obj.getPrimaryFile();                
             boolean show = true;
-            if (sourceGroup != null && !sourceGroup.contains(fo)) {
+            try {
+                if (sourceGroup != null && !sourceGroup.contains(fo)) {
+                    show = false;
+                }
+            } catch (IllegalArgumentException ex) {
+                // sourceGroup is not parent of fo -> do not show file:
                 show = false;
             }
-            return VisibilityQuery.getDefault().isVisible(fo) && show;
+            return show && VisibilityQuery.getDefault().isVisible(fo);
         }
         
         public void stateChanged( ChangeEvent e) {            
