@@ -57,7 +57,6 @@ import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcAsAdapterConnec
 import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcConnection;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
