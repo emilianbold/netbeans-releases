@@ -95,6 +95,7 @@ public class LanguageRegistry implements Iterable<Language> {
     private static final String HINTS = "hints.instance"; // NOI18N
     private static final String SEMANTIC = "semantic.instance"; // NOI18N
     private static final String OCCURRENCES = "occurrences.instance"; // NOI18N
+    private static final String INDEX_SEARCHER = "index_searcher.instance"; // NOI18N
 
     /** Location in the system file system where languages are registered */
     private static final String FOLDER = "GsfPlugins"; // NOI18N
@@ -552,6 +553,8 @@ public class LanguageRegistry implements Iterable<Language> {
                         language.setSemanticAnalyzer(fo);
                     } else if (OCCURRENCES.equals(name)) {
                         language.setOccurrencesFinderFile(fo);
+                    } else if (INDEX_SEARCHER.equals(name)) {
+                        language.setIndexSearcher(fo);
                     }
                 }
 

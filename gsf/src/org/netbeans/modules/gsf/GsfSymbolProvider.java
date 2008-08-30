@@ -51,13 +51,13 @@ import javax.swing.Icon;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.api.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.Source;
@@ -66,20 +66,24 @@ import org.netbeans.modules.gsfret.navigation.Icons;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
 import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
+import org.netbeans.spi.jumpto.symbol.SymbolProvider;
+import org.netbeans.spi.jumpto.symbol.SymbolProvider.Context;
+import org.netbeans.spi.jumpto.symbol.SymbolProvider.Result;
 import org.netbeans.spi.jumpto.type.SearchType;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
+ * Highly similar to GsfTypeProvider; this implements the SymbolProvider instead of
+ * the TypeProvider interface from the jumpto module
  *
  * @author Tor Norbye
  */
-public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
-    private static final Logger LOGGER = Logger.getLogger(GsfTypeProvider.class.getName());
+public class GsfSymbolProvider implements SymbolProvider, IndexSearcher.Helper {
+    private static final Logger LOGGER = Logger.getLogger(GsfSymbolProvider.class.getName());
     private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath( new FileObject[0] );
     private Set<CacheItem> cache;
     private volatile boolean isCancelled = false;
@@ -97,18 +101,18 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
         public String projectName;
         public Icon projectIcon;
 //        private ClassPath.Entry defEntry;
-        
+
         public CacheItem ( FileObject fileObject, ClasspathInfo classpathInfo, boolean isBinary ) {
             this.isBinary = isBinary;
             this.fileObject = fileObject;
             this.classpathInfo = classpathInfo;
         }
-        
+
 //        Removed because of bad performance To reenable see diff between 1.15 and 1.16
-//        
+//
 //        public ClassPath.Entry getDefiningEntry () {
 //            if (defEntry == null) {
-//                ClassPath defCp = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);                    
+//                ClassPath defCp = ClassPath.getClassPath(fileObject, ClassPath.SOURCE);
 //                if (defCp != null) {
 //                    for (ClassPath.Entry e : defCp.entries()) {
 //                        if (fileObject.equals(e.getRoot())) {
@@ -120,12 +124,12 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
 //            }
 //            return defEntry;
 //        }
-        
+
         @Override
         public int hashCode () {
             return this.fileObject == null ? 0 : this.fileObject.hashCode();
         }
-        
+
         @Override
         public boolean equals (Object other) {
             if (other instanceof CacheItem) {
@@ -134,15 +138,15 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
             }
             return false;
         }
-    
+
         public FileObject getRoot() {
             return fileObject;
         }
-        
+
         public boolean isBinary() {
             return isBinary;
         }
-        
+
         public synchronized String getProjectName() {
             if (projectName == null) {
             try {
@@ -160,29 +164,29 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
             }
             return projectName;
         }
-        
+
         public synchronized Icon getProjectIcon() {
             if ( !isBinary && projectIcon == null ) {
                 initProjectInfo();
             }
             return projectIcon;
         }
-        
+
         private void initProjectInfo() {
-            Project p = FileOwnerQuery.getOwner(fileObject);                    
+            Project p = FileOwnerQuery.getOwner(fileObject);
             if (p != null) {
                 ProjectInformation pi = ProjectUtils.getInformation( p );
                 projectName = pi.getDisplayName();
                 projectIcon = pi.getIcon();
             }
         }
-        
+
     }
 
-    
-    public GsfTypeProvider() {
+
+    public GsfSymbolProvider() {
     }
-   
+
 //    // This is essentially the code from OpenDeclAction
 //    // TODO: Was OpenDeclAction used for anything else?
 //    public void gotoType(TypeDescriptor type) {
@@ -199,19 +203,19 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
 //            }
 //        }
 //    }
-    
+
 
     //@Override
-       public void computeTypeNames(Context context, Result res) {
+    public void computeSymbolNames(Context context, Result res) {
             isCancelled = false;
             String text = context.getText();
             SearchType nameKind = context.getSearchType();
-        
+
             long time;
-            
+
             long cp, gss, gsb, sfb, gtn, add, sort;
             cp = gss = gsb = sfb = gtn = add = sort = 0;
-            
+
             if (cache == null) {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine("GoToTypeAction.getTypeNames recreates cache\n");
@@ -220,13 +224,13 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
                 time = System.currentTimeMillis();
                 ClassPath scp = RepositoryUpdater.getDefault().getScannedSources();
                 FileObject roots[] = scp.getRoots();
-                gss += System.currentTimeMillis() - time; 
+                gss += System.currentTimeMillis() - time;
                 FileObject root[] = new FileObject[1];
                 Set<CacheItem> sources = new HashSet<CacheItem>( roots.length );
-                for (int i = 0; i < roots.length; i++ ) {                    
+                for (int i = 0; i < roots.length; i++ ) {
                     root[0] = roots[i];
-                    time = System.currentTimeMillis();                
-                    ClasspathInfo ci = ClasspathInfo.create(EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(root)); 
+                    time = System.currentTimeMillis();
+                    ClasspathInfo ci = ClasspathInfo.create(EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(root));
                     //create(roots[i]);
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("GoToTypeAction.getTypeNames created ClasspathInfo for source: " + FileUtil.getFileDisplayName(roots[i])+"\n");
@@ -237,16 +241,16 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
                     }
                     else {
                         sources.add( new CacheItem( roots[i], ci, false ) );
-                    }                        
+                    }
                     cp += System.currentTimeMillis() - time;
                 }
-                     
-                
-                
+
+
+
                 // Binaries
-                time = System.currentTimeMillis();                
+                time = System.currentTimeMillis();
                 scp = RepositoryUpdater.getDefault().getScannedBinaries();
-                roots = scp.getRoots(); 
+                roots = scp.getRoots();
                 gsb += System.currentTimeMillis() - time;
                 root = new FileObject[1];
                 for (int i = 0; i < roots.length; i++ ) {
@@ -255,21 +259,21 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
                         SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(roots[i].getURL());
                         if ( result.getRoots().length == 0 ) {
                             continue;
-                        }       
-                        sfb += System.currentTimeMillis() - time;                        
-                        time = System.currentTimeMillis();                        
+                        }
+                        sfb += System.currentTimeMillis() - time;
+                        time = System.currentTimeMillis();
                         root[0] = roots[i];
-                        ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(root), EMPTY_CLASSPATH, EMPTY_CLASSPATH );//create(roots[i]);                                
+                        ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(root), EMPTY_CLASSPATH, EMPTY_CLASSPATH );//create(roots[i]);
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.fine("GoToTypeAction.getTypeNames created ClasspathInfo for binary: " + FileUtil.getFileDisplayName(roots[i])+"\n");
                         }
-                        sources.add( new CacheItem( roots[i], ci, true ) );                                                
-                        
+                        sources.add( new CacheItem( roots[i], ci, true ) );
+
                         cp += System.currentTimeMillis() - time;
                     }
                     catch ( FileStateInvalidException e ) {
                         continue;
-                    }                        
+                    }
                 }
 //                if ( !isCanceled ) {
                 if ( !isCancelled ) {
@@ -278,14 +282,14 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
                 else {
                     return;
                 }
-                
+
             }
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine("GoToTypeAction.getTypeNames collected : " + cache.size() +" elements\n");
             }
-            
+
             //ArrayList<GsfTypeDescription> types = new ArrayList<GsfTypeDescription>(cache.size() * 20);
-            ArrayList<TypeDescriptor> types = new ArrayList<TypeDescriptor>(cache.size() * 20);
+            ArrayList<SymbolDescriptor> types = new ArrayList<SymbolDescriptor>(cache.size() * 20);
 
             NameKind indexNameKind;
             switch (nameKind) {
@@ -298,10 +302,10 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
 	    case CASE_INSENSITIVE_EXACT_NAME: indexNameKind = NameKind.EXACT_NAME; break;
             default: throw new RuntimeException("Unexpected name kind: " + nameKind);
             }
-            
-            for( CacheItem ci : cache ) {    
+
+            for( CacheItem ci : cache ) {
                 time = System.currentTimeMillis();
-                
+
                 String textForQuery;
                 switch( nameKind ) {
                     case REGEXP:
@@ -318,20 +322,20 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
                 }
 
                 //Set<? extends Element/*Handle<Element>*/> names = getTypes(index, textForQuery, indexNameKind,  EnumSet.of(ci.isBinary ? Index.SearchScope.DEPENDENCIES : Index.SearchScope.SOURCE ));
-                Set<? extends TypeDescriptor> names = getTypes(ci.classpathInfo, textForQuery, indexNameKind,  EnumSet.of(ci.isBinary ? Index.SearchScope.DEPENDENCIES : Index.SearchScope.SOURCE ));
+                Set<? extends SymbolDescriptor> names = getSymbols(ci.classpathInfo, textForQuery, indexNameKind,  EnumSet.of(ci.isBinary ? Index.SearchScope.DEPENDENCIES : Index.SearchScope.SOURCE ));
                 //Set<ElementHandle<TypeElement>> names = ci.classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, indexNameKind, EnumSet.of( ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE ));
 //                if ( isCanceled ) {
                 if ( isCancelled ) {
                     return;
                 }
-                
-                gtn += System.currentTimeMillis() - time;            
+
+                gtn += System.currentTimeMillis() - time;
                 time = System.currentTimeMillis();
-                
+
 //              Removed because of bad performance To reenable see diff between 1.15 and 1.16
 //              ClassPath.Entry defEntry = ci.getDefiningEntry();
                 //for (Element/*Handle<Element>*/ name : names) {
-                for (TypeDescriptor td : names) {
+                for (SymbolDescriptor td : names) {
 //                    Removed because of bad performance To reenable see diff between 1.15 and 1.16
 //                    if (defEntry.includes(convertToSourceName(name.getBinaryName()))) {
                         //GsfTypeDescription td = new GsfTypeDescription(ci, name );
@@ -344,30 +348,30 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
                 }
                 add += System.currentTimeMillis() - time;
             }
-            
+
             if ( !isCancelled ) {
                 time = System.currentTimeMillis();
                 // Sorting is now done on the Go To Tpe dialog side
                 // Collections.sort(types);
                 sort += System.currentTimeMillis() - time;
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort ); 
+                    LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
                 }
                 res.addResult(types);
             }
         }
 
-        private Set<? extends TypeDescriptor> getTypes(ClasspathInfo classpathInfo, String textForQuery, NameKind kind, EnumSet<Index.SearchScope> scope) {
-            Set<GsfTypeDescriptor> items = new HashSet<GsfTypeDescriptor>();
+        private Set<? extends SymbolDescriptor> getSymbols(ClasspathInfo classpathInfo, String textForQuery, NameKind kind, EnumSet<Index.SearchScope> scope) {
+            Set<GsfSymbolDescriptor> items = new HashSet<GsfSymbolDescriptor>();
             for (Language language : LanguageRegistry.getInstance()) {
                 IndexSearcher searcher = language.getIndexSearcher();
                 if (searcher != null) {
                     Index index = classpathInfo.getClassIndex(language.getMimeType());
                     try {
-                        Set<? extends Descriptor> set = searcher.getTypes(index, textForQuery, kind, scope, this);
+                        Set<? extends Descriptor> set = searcher.getSymbols(index, textForQuery, kind, scope, this);
                         if (set != null) {
                             for (Descriptor desc : set) {
-                                GsfTypeDescriptor d = new GsfTypeDescriptor(desc);
+                                GsfSymbolDescriptor d = new GsfSymbolDescriptor(desc);
                                 items.add(d);
                             }
                         }
@@ -376,6 +380,7 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
                     }
                 }
             }
+            
             return items;
         }
 
@@ -402,37 +407,32 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
         isCancelled = true;
     }
 
-    private class GsfTypeDescriptor extends TypeDescriptor {
+    private class GsfSymbolDescriptor extends SymbolDescriptor {
         private Descriptor delegated;
 
-        private GsfTypeDescriptor(Descriptor delegated) {
+        private GsfSymbolDescriptor(Descriptor delegated) {
             this.delegated = delegated;
         }
 
-        @Override
-        public String getSimpleName() {
-            return delegated.getSimpleName();
-        }
-
-        @Override
-        public String getOuterName() {
-            return delegated.getOuterName();
-        }
-
-        @Override
-        public String getTypeName() {
-            return delegated.getTypeName();
-        }
-
-        @Override
-        public String getContextName() {
-            String s = delegated.getContextName();
-            if (s != null) {
-                return " (" + s + ")";
-            }
-
-            return s;
-        }
+//        @Override
+//        public String getSimpleName() {
+//            return delegated.getSimpleName();
+//        }
+//
+//        @Override
+//        public String getOuterName() {
+//            return delegated.getOuterName();
+//        }
+//
+//        @Override
+//        public String getTypeName() {
+//            return delegated.getTypeName();
+//        }
+//
+//        @Override
+//        public String getContextName() {
+//            return delegated.getContextName();
+//        }
 
         @Override
         public Icon getIcon() {
@@ -463,6 +463,20 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
         public void open() {
             delegated.open();
         }
+
+        @Override
+        public String getSymbolName() {
+            return delegated.getSimpleName();
+        }
+
+        @Override
+        public String getOwnerName() {
+            String owner = delegated.getContextName();
+            if (owner == null) {
+                owner = "";
+            }
+
+            return owner;
+        }
     }
 }
-
