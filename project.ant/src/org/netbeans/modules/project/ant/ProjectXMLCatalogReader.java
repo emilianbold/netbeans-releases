@@ -277,38 +277,37 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
             if (datas.getLength() > 0) {
                 Element data = (Element) datas.item(0);
                 NodeList stuff = data.getChildNodes();
-                Element misplaced = null;
-                int phase = 0;
-                for (int i = 0; i < stuff.getLength(); i++) {
-                    Node n = stuff.item(i);
-                    switch (phase) {
-                        case 0: // looking for misplaced
-                            if (n instanceof Element) {
-                                Element e = (Element) n;
-                                if (misplacedName.equals(e.getLocalName())) {
-                                    misplaced = e;
-                                    phase++;
-                                }
-                            }
-                            break;
-                        case 1: // looking for first element with different name
-                            if (n instanceof Element) {
-                                Element e = (Element) n;
-                                if (!misplacedName.equals(e.getLocalName())) {
-                                    phase++;
-                                }
-                            }
-                            if (phase == 1) {
+                int len = stuff.getLength();
+                if (len > 1) {
+                    int numberOfMisplaced = 0;
+                    Node originalFront = stuff.item(0);
+                    Node misplaced = null;
+                    for (int i = 0; i < len; i++) {
+                        Node n = stuff.item(i);
+                        if (n instanceof Element) {
+                            Element e = (Element) n;
+                            boolean matches = misplacedName.equals(e.getLocalName());
+                            if (misplaced == null && matches) {
+                                misplaced = n;
+                            } else if (misplaced != null && !matches) {
                                 break;
                             }
-                        default: // shifting everything else before the misplaced element
-                            data.insertBefore(n, misplaced);
-                            if (n instanceof Element) { // don't validate moves of comments
-                                try {
-                                    validate(attempt);
-                                    return attempt;
-                                } catch (SAXException failed) {}
-                            }
+                        }
+                        if (misplaced != null) {
+                            numberOfMisplaced++;
+                            data.insertBefore(n, originalFront);
+                        }
+                    }
+                    try {
+                        validate(attempt);
+                        return attempt;
+                    } catch (SAXException failed) {}
+                    for (int i = numberOfMisplaced; i < len; i++) {
+                        data.insertBefore(stuff.item(i), misplaced);
+                        try {
+                            validate(attempt);
+                            return attempt;
+                        } catch (SAXException failed) {}
                     }
                 }
             }

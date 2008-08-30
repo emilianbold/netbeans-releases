@@ -1461,7 +1461,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg file="."/>
       <arg value="--config"/>
       <arg value="extensions.purge="/>
-      <arg value="--verbose"/>
       <arg value="clean"/>
       <arg value="--all"/>
       <arg value="--exclude"/>
