@@ -76,6 +76,7 @@ import org.netbeans.modules.db.explorer.actions.ConnectAction;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
+import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.explorer.ExplorerManager;
@@ -535,14 +536,10 @@ public class DatabaseConnection implements DBConnection {
         public void connectSync() throws DatabaseException {
         try {
             doConnect();
-
-            // Let the CNI know we're connected and set things up
-            // appropriately
-            ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
-
-            assert(cni != null);
             
-            cni.connect(this);
+            // Refresh synchronously so changes to info tree get propagated
+            // now, not later when the NodeChildren thread does the refresh
+            RootNodeInfo.getInstance().refreshChildren();
         } catch (Exception exc) {
             try {
                 if (getConnection() != null) {
