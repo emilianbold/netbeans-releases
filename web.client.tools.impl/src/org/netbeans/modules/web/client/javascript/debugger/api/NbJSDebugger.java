@@ -134,7 +134,7 @@ public final class NbJSDebugger {
     private JSDebugger debugger;
     private HashMap<Breakpoint, JSBreakpointImpl> breakpointsMap = new HashMap<Breakpoint, JSBreakpointImpl>();
     private StartDebuggerTask startDebuggerTask;
-
+    
     private class JSDebuggerEventListenerImpl implements JSDebuggerEventListener {
 
         public void onDebuggerEvent(JSDebuggerEvent debuggerEvent) {
@@ -142,7 +142,7 @@ public final class NbJSDebugger {
             setState(debuggerState);
         }
     }
-
+    
     private class JSDebuggerConsoleEventListenerImpl implements JSDebuggerConsoleEventListener {
 
         public void onConsoleEvent(JSDebuggerConsoleEvent consoleEvent) {
@@ -358,7 +358,7 @@ public final class NbJSDebugger {
             if (jSToNbJSLocation != null) {
                 services.add(jSToNbJSLocation);
             }
-
+            
             DebuggerInfo debuggerInfo = DebuggerInfo.create(
                     NbJSDebuggerConstants.DEBUG_INFO_ID,
                     services.toArray());
@@ -546,12 +546,14 @@ public final class NbJSDebugger {
         if (bpImpl != null) {
             return;
         }
+
         JSURILocation jsURILocation = null;
         if (bp instanceof NbJSFileObjectBreakpoint) {
             jsURILocation = (JSURILocation) getJSLocation(((NbJSFileObjectBreakpoint) bp).getLocation());
         } else if (bp instanceof NbJSURIBreakpoint) {
             jsURILocation = ((NbJSURIBreakpoint) bp).getLocation();
         }
+        
         if (jsURILocation != null) {
             bpImpl = new JSBreakpointImpl(jsURILocation);
             //TODO set the type correctly for other types of breakpoints
@@ -576,9 +578,12 @@ public final class NbJSDebugger {
             RequestProcessor.getDefault().post(new Runnable() {
 
                 public void run() {
-                    String bpId = debugger.setBreakpoint(tmpBreakpointImp);
-                    if (bpId != null) {
-                        tmpBreakpointImp.setId(bpId);
+                    List<String> bpIds = debugger.setBreakpoint(tmpBreakpointImp);
+                    if (bpIds != null) {
+                        for (String bpId : bpIds) {
+                            tmpBreakpointImp.addId(bpId);
+                        }
+                        
                         breakpointsMap.put(bp, tmpBreakpointImp);
                         bp.addPropertyChangeListener(WeakListeners.propertyChange(breakpointPropertyChangeListener, bp));
                     }
@@ -587,19 +592,29 @@ public final class NbJSDebugger {
         }
     }
 
-    private void removeBreakpoint(Breakpoint bp) {
+    private synchronized void removeBreakpoint(Breakpoint bp) {
+        if (state.getState() == JSDebuggerState.State.DISCONNECTED ||
+                state.getState() == JSDebuggerState.State.NOT_CONNECTED) {
+            return;
+        }
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
         if (bpImpl != null) {
-            String id = bpImpl.getId();
-            // commented since remove is not implemented on extension side            
-            boolean removed = debugger.removeBreakpoint(id);
+            boolean removed = false;
+            for (String id : bpImpl.getIds()) {
+                removed = debugger.removeBreakpoint(id) || removed;
+            }
+            
             if (removed) {
                 breakpointsMap.remove(bp);
             }
         }
     }
 
-    private void updateBreakpoint(NbJSBreakpoint bp) {
+    private synchronized void updateBreakpoint(NbJSBreakpoint bp) {
+        if (state.getState() == JSDebuggerState.State.DISCONNECTED ||
+                state.getState() == JSDebuggerState.State.NOT_CONNECTED) {
+            return;
+        }
         JSBreakpointImpl bpImpl = breakpointsMap.get(bp);
         if (bpImpl == null) {
             Log.getLogger().log(Level.INFO, "Cannot update non existing breakpoint");   //NOI18N
@@ -619,12 +634,21 @@ public final class NbJSDebugger {
             condition = "";
         }
 
-        String id = bpImpl.getId();
-        debugger.updateBreakpoint(id, enabled, line, hitValue, hitCondition, condition);
+        for (String id : bpImpl.getIds()) {
+            debugger.updateBreakpoint(id, enabled, line, hitValue, hitCondition, condition);
+        }
     }
 
     private JSLocation getJSLocation(JSAbstractLocation nbJSLocation) {
-        Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
+        Session session = null;
+        for (Session nextSession : DebuggerManager.getDebuggerManager().getSessions()) {
+            NbJSDebugger debuggr = nextSession.lookupFirst(null, NbJSDebugger.class);
+            if (debuggr == this) {
+                session = nextSession;
+                break;
+            }
+        }
+        
         if (session != null) {
             NbJSToJSLocationMapper nbJSToJSLocationMapper = session.lookupFirst(null, NbJSToJSLocationMapper.class);
             if (nbJSToJSLocationMapper != null) {
