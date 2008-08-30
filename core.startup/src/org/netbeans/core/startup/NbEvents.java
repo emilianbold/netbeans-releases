@@ -421,7 +421,7 @@ final class NbEvents extends Events {
     private static void showUrl (URI uri, Component c) throws Exception {
         SpecificationVersion javaSpec = new SpecificationVersion (System.getProperty("java.specification.version")); // NOI18N
         if (javaSpec.compareTo (new SpecificationVersion ("1.6")) >= 0) {
-            Class desktopC = Class.forName ("java.awt.Desktop");
+            Class<?> desktopC = Class.forName ("java.awt.Desktop");
             Method getDesktopM = desktopC.getMethod ("getDesktop");
             Object desktopInstanceO = getDesktopM.invoke (null);
             Method browseM = desktopC.getMethod ("browse", URI.class);
