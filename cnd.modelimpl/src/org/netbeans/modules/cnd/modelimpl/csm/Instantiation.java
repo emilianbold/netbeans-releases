@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.services.CsmMemberResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
@@ -108,6 +109,10 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         return mapping;
     }
 
+    public boolean isValid() {
+        return CsmBaseUtilities.isValid(declaration);
+    }
+    
     /*
      * The only public method to create a new instantiation
      */
@@ -190,10 +195,6 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         
         public Class(CsmClass clazz, Map<CsmTemplateParameter, CsmType> mapping) {
             super(clazz, mapping);
-        }
-        
-        public boolean isValid() {
-            return ((CsmClass)declaration).isValid();
         }
 
         public Collection<CsmScopeElement> getScopeElements() {
@@ -767,7 +768,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public boolean isTemplateBased() {
-            return true;
+            return (instantiatedType == null) ? true : instantiatedType.isTemplateBased();
         }
 
         public boolean isReference() {
@@ -905,7 +906,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
                     } else {
                         parentClassifier = parentType.getClassifier();
                     }
-                    if (CsmKindUtilities.isValidable(parentClassifier) && ((CsmValidable) parentClassifier).isValid()) {
+                    if (CsmBaseUtilities.isValid(parentClassifier)) {
                         CsmMemberResolver memberResolver = CsmMemberResolver.getDefault();
                         if (instantiatedType instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
                             Iterator<CsmClassifier> iter = memberResolver.getNestedClassifiers(parentClassifier, ((org.netbeans.modules.cnd.modelimpl.csm.NestedType) instantiatedType).getOwnText());

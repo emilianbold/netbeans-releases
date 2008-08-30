@@ -264,6 +264,9 @@ public class GsfTaskProvider extends PushTaskScanner  {
                 if (provider != null) {
                     applicable = true;
                 }
+                if (language.getParser() != null) {
+                    applicable = true;
+                }
             }
             if (!applicable) {
                 // No point compiling the file if there are no hintsproviders
@@ -307,22 +310,38 @@ public class GsfTaskProvider extends PushTaskScanner  {
                         for (ParserResult parserResult : embeddedResults) {
                             Language language = registry.getLanguageByMimeType(mimeType);
                             HintsProvider provider = language.getHintsProvider();
+                            List<Error> errors = new ArrayList<Error>();
+
                             if (provider == null) {
-                                continue;
+                                // Just parser errors, no hints
+                                List<Error> parserErrors = parserResult.getDiagnostics();
+                                if (parserErrors != null) {
+                                    errors.addAll(parserErrors);
+                                }
+                            } else {
+                                GsfHintsManager manager = language.getHintsManager();
+                                if (manager == null) {
+                                    continue;
+                                }
+                                RuleContext ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
+                                if (ruleContext == null) {
+                                    continue;
+                                }
+                                final List<Hint> hints = new ArrayList<Hint>();
+                                provider.computeErrors(manager, ruleContext, hints, errors);
+                                provider.computeHints(manager, ruleContext, hints);
+
+                                if (!file.isValid()) {
+                                    continue;
+                                }
+                                for (Hint desc : hints) {
+                                    ErrorDescription errorDesc = manager.createDescription(desc, ruleContext, false);
+                                    if (errorDesc != null) {
+                                        result.add(errorDesc);
+                                    }
+                                }
                             }
 
-                            List<Error> errors = new ArrayList<Error>();
-                            GsfHintsManager manager = language.getHintsManager();
-                            if (manager == null) {
-                                continue;
-                            }
-                            RuleContext ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
-                            if (ruleContext == null) {
-                                continue;
-                            }
-                            final List<Hint> hints = new ArrayList<Hint>();
-                            provider.computeErrors(manager, ruleContext, hints, errors);
-                            provider.computeHints(manager, ruleContext, hints);
                             for (Error error : errors) {
                                 StyledDocument doc = (StyledDocument) info.getDocument();
                                 if (doc == null) {
@@ -346,16 +365,6 @@ public class GsfTaskProvider extends PushTaskScanner  {
                                         error.getDisplayName(),
                                         lineno);
                                 tasks.add(task);
-                            }
-                            
-                            if (!file.isValid()) {
-                                continue;
-                            }
-                            for (Hint desc : hints) {
-                                ErrorDescription errorDesc = manager.createDescription(desc, ruleContext, false);
-                                if (errorDesc != null) {
-                                    result.add(errorDesc);
-                                }
                             }
                         }
                     }

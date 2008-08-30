@@ -85,11 +85,10 @@ public class ScriptingSetup extends JellyTestCase {
         CommonUtilities.closeTaskWindow();
     }
 
-/* TODO create PHPProject
     public void testOpenPHPProject() {
         openProject(Projects.PHP_PROJECT);
     }
-*/    
+
     public void openProject(String projectPath) {
         String projectsDir = CommonUtilities.getProjectsDir() + projectPath;
         Object prj = ProjectSupport.openProject(projectsDir);

@@ -69,12 +69,12 @@ public class HtmlIndenter {
     private final static Logger LOGGER = Logger.getLogger(HtmlIndenter.class.getName());
     private final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
-    public static synchronized void indentEndTag(Document doc, LanguagePath languagePath, final int offset) {
+    public static synchronized void indentEndTag(Document doc, LanguagePath languagePath, final int offset, String endTagName) {
         LOGGER.fine("Offset=" + offset);
-        
+
         TokenSequence htmlTokenSequence = getHtmlSequence(doc, languagePath, offset);
-        final String closeTagName = getCloseTagName(htmlTokenSequence, offset);
-        
+        final String closeTagName = endTagName == null ? getCloseTagName(htmlTokenSequence, offset) : endTagName;
+
         if (closeTagName == null) {
             LOGGER.info("Cannot find close tag name for offset " + offset);
             return;
@@ -82,27 +82,28 @@ public class HtmlIndenter {
         LOGGER.fine("Close tag name: '" + closeTagName + "'");
 
         SyntaxParser parser = SyntaxParser.get(doc, languagePath);
-        
+
         //attach syntaxparser listener 
         final List<SyntaxElement> fresh = new ArrayList<SyntaxElement>();
         parser.addSyntaxParserListener(new SyntaxParserListener() {
+
             public void parsingFinished(List<SyntaxElement> elements) {
                 fresh.addAll(elements);
             }
         });
-        
+
         AstNode node = SyntaxTree.makeTree(parser.elements());
         AstNode found = AstNodeUtils.findDescendant(node, offset);
-        
+
         if (found != null && found.type() == AstNode.NodeType.ENDTAG && found.name().equalsIgnoreCase(closeTagName)) {
             LOGGER.fine("Found end tag node with matching name at the offset");
             //the end tag is already in the parser result, unlikely but possible
             AstNode tagNode = found.parent();
             AstNode pair = tagNode.children().get(0); //first node in the parent should be my pair
-            if(pair.type() == AstNode.NodeType.OPEN_TAG) {
+            if (pair.type() == AstNode.NodeType.OPEN_TAG) {
                 LOGGER.fine("Found pair open tag " + pair.path() + " (" + pair.startOffset() + "-" + pair.endOffset());
                 changeRowIndent(doc, pair.startOffset(), offset);
-                return ;
+                return;
             }
         } else {
             LOGGER.fine("No corresponding end tag found on offset position - searching the whole parse result for unmatched open tags");
@@ -136,11 +137,11 @@ public class HtmlIndenter {
             if (last[0] != null) {
                 //we found a pair
                 changeRowIndent(doc, last[0].startOffset(), offset);
-                return ;
+                return;
             }
 
         }
-        
+
         LOGGER.fine("Couldn't change proper pair, trying to find it lexically");
         //we weren't able to reindent it is likely that the parse result is not up-to-date
         //lets try to find the pair lexically.
@@ -149,26 +150,27 @@ public class HtmlIndenter {
         int limit = 50; //limit the backward search to some reasonable range; 50 tokens seems to be enought
         htmlTokenSequence.move(offset);
         //lexer bug hack
-        htmlTokenSequence.moveNext();htmlTokenSequence.moveNext();
-        
-        while(htmlTokenSequence.movePrevious() && limit-- > 0) {
+        htmlTokenSequence.moveNext();
+        htmlTokenSequence.moveNext();
+
+        while (htmlTokenSequence.movePrevious() && limit-- > 0) {
             Token token = htmlTokenSequence.token();
-            if(token.id() == HTMLTokenId.TAG_OPEN && token.text().toString().equalsIgnoreCase(closeTagName)) {
+            if (token.id() == HTMLTokenId.TAG_OPEN && token.text().toString().equalsIgnoreCase(closeTagName)) {
                 //looks like we found it
                 changeRowIndent(doc, htmlTokenSequence.offset(), offset);
                 break;
             }
         }
-        
+
 
     }
 
     private static void changeRowIndent(Document doc, int pairOffset, int offset) {
         try {
             int pairIndent = Utilities.getRowIndent((BaseDocument) doc, pairOffset);
-            
+
             LOGGER.fine("Paired open tag indent level=" + pairIndent);
-            
+
             String indentString = IndentUtils.createIndentString(doc, pairIndent);
             int rowStart = Utilities.getRowStart((BaseDocument) doc, offset);
             int textStart = Utilities.getFirstNonWhiteFwd((BaseDocument) doc, rowStart);
@@ -207,26 +209,30 @@ public class HtmlIndenter {
 
     private static String getCloseTagName(TokenSequence sequence, int offset) {
         sequence.move(offset);
-        
-        //lexer bug hack
-        sequence.moveNext();sequence.movePrevious();
-        
-        if (!(sequence.movePrevious() || sequence.moveNext())) {
+
+        if (!sequence.moveNext()) {
             throw new IllegalArgumentException("no token on the position!"); //NOI18N
         }
 
-        //try to find the close tag name
+        //try to find the close tag token backward
         Token token = sequence.token();
-        if(token.id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
-            sequence.movePrevious();
+        //we are the end of a tag - may be close tag or open tag
+        while (token.id() != HTMLTokenId.TAG_CLOSE && sequence.movePrevious()) {
             token = sequence.token();
-        } else if(token.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
-            sequence.moveNext();
-            token = sequence.token();
+            if (token.id() == HTMLTokenId.TAG_CLOSE) {
+                //we found it!
+                break;
+            }
+
+            if (token.id() == HTMLTokenId.TAG_OPEN_SYMBOL) {
+                //out of scope
+                break;
+            }
+
         }
-        
-        assert token.id() == HTMLTokenId.TAG_CLOSE : "unexpected token " + token.id() +"; " + token.text().toString();
-        
+
+        assert token.id() == HTMLTokenId.TAG_CLOSE : "unexpected state, we are on token " + token.id() + "; " + token.text().toString();
+
         return token.text().toString();
     }
 }

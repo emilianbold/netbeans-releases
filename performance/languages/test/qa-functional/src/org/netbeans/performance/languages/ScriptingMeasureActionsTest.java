@@ -62,8 +62,7 @@ public class ScriptingMeasureActionsTest {
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
                 .addTest(CreatePHPSampleProject.class)
                 
-// TODO: Enable once PhpPerfTest is created    
-//                .addTest(CreateScriptingPackFiles.class)
+                .addTest(CreateScriptingPackFiles.class)
                 .addTest(ScriptingExpandFolder.class)
                 .addTest(EditorMenuPopup.class)
                 .addTest(TypingInScriptingEditor.class)

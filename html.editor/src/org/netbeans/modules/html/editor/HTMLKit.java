@@ -345,7 +345,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                         if (htmlFormatter.isJustAfterClosingTag(doc, dotPos)) {
                             doc.runAtomic(new Runnable() {
                                 public void run() {
-                                    HtmlIndenter.indentEndTag(doc, languagePath, dotPos);
+                                    HtmlIndenter.indentEndTag(doc, languagePath, dotPos, null);
                                 }
                             });
 

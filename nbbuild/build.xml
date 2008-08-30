@@ -2047,10 +2047,12 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   >
     <echo message="Generating signature files for ${cluster.config} modules"/>
     <property name="sigtest.basedir" location="build/sigtest/snapshot"/>
+    <property name="sigtest.output.dir" location="build/sigtest/generate"/>
     
-    <subant target="gen-sigtest" buildpath="${modules.fullpath}">
+    <subant target="gen-sigtest" buildpath="${modules.fullpath}" failonerror="false">
       <property name="ant.core.lib" value="${ant.core.lib}"/>
       <property name="sigtest.basedir" value="${sigtest.basedir}"/>
+      <property name="sigtest.output.dir" location="${sigtest.output.dir}"/>
     </subant>
   </target>
 
@@ -2077,6 +2079,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <echo message="Checking signature files of stable API modules"/>
     
     <property name="sigtest.output.dir" location="build/sigtest/check-release"/>
+    <property name="fail.on.error" value="true"/>
     <delete dir="${sigtest.output.dir}"/>
     <mkdir dir="${sigtest.output.dir}"/>
     <pathconvert property="modules.fullpath" >
@@ -2085,7 +2088,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         </path>
         <mapper type="identity" />
     </pathconvert>
-    <subant target="check-sigtest" buildpath="${modules.fullpath}">
+    <subant target="check-sigtest" buildpath="${modules.fullpath}" failonerror="${fail.on.error}">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
         <property name="ant.core.lib" value="${ant.core.lib}"/>
     </subant>
@@ -2096,7 +2099,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <property name="sigtest.output.dir" location="build/sigtest/check-snapshot"/>
     <antcall target="-do-check-sigtests">
         <param name="sigtest.check.type" value="strictcheck"/>
-        <param name="sigtest.fail.on.error" value="false"/>
         <param name="sigtest.output.dir" value="${sigtest.output.dir}"/>
     </antcall>
     <junitreport todir="${sigtest.output.dir}">
@@ -2110,7 +2112,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   
   <target name="-do-check-sigtests" depends="sigtests-init">
     <fail unless="sigtest.check.type"/>
-    <fail unless="sigtest.fail.on.error"/>
     <fail unless="sigtest.output.dir"/>
 
     <property name="sigtest.basedir" location="build/sigtest/snapshot"/>
@@ -2118,7 +2119,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <mkdir dir="${sigtest.basedir}"/>
     <delete dir="${sigtest.output.dir}"/>
     <mkdir dir="${sigtest.output.dir}"/>
-    <subant target="check-sigtest" buildpath="${modules.fullpath}">
+    <subant target="check-sigtest" buildpath="${modules.fullpath}" failonerror="false">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
         <property name="ant.core.lib" value="${ant.core.lib}"/>
         <property name="sigtest.basedir" value="${sigtest.basedir}"/>

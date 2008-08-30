@@ -172,4 +172,8 @@ public class YamlScannerTest extends YamlTestBase {
     public void testErb3Folds() throws Exception {
         checkFolds("testfiles/fixture3.yml");
     }
+
+    public void test143747() throws Exception {
+        checkFolds("testfiles/unicode.yml");
+    }
 }
