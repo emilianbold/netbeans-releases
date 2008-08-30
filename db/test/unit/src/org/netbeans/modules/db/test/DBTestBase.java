@@ -47,6 +47,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
 
@@ -80,7 +81,7 @@ public abstract class DBTestBase extends TestBase {
     private static final String PASSWORD_PROPERTY = "db.password";
     private static final String DBDIR_PROPERTY = "db.dir";
     private static final String DBNAME_PROPERTY = "db.name";
-    private static final String SCHEMA_NAME = "dbtests";
+    private static final String SCHEMA_NAME = "DBTESTS";
 
     private static String quoteString = null;
     
@@ -91,8 +92,8 @@ public abstract class DBTestBase extends TestBase {
     public static final int MC_RULE = 2; // mixed case remains mixed case
     public static final int QUOTE_RETAINS_CASE = 3; // quoted idents retain case
 
-    private static final String TEST_TABLE = "test";
-    private static final String TEST_TABLE_ID = "id";
+    private static final String TEST_TABLE = "TEST";
+    private static final String TEST_TABLE_ID = "ID";
 
     private static int    unquotedCaseRule = RULE_UNDEFINED;
     private static int    quotedCaseRule = RULE_UNDEFINED;
@@ -153,18 +154,23 @@ public abstract class DBTestBase extends TestBase {
 
     protected TableNodeInfo getTableNodeInfo(String tablename) throws Exception {
         ConnectionNodeInfo cinfo = org.netbeans.modules.db.explorer.DatabaseConnection.findConnectionNodeInfo(
-                getDatabaseConnection(false).getName());
+                getDatabaseConnection(true).getName());
 
         assertNotNull(cinfo);
 
         Vector children = cinfo.getChildren();
+        // DatabaseNodeInfo.printChildren("connection children", children);
+        
         for (Object child : children) {
             if (child instanceof TableListNodeInfo) {
-                Vector<TableNodeInfo> tables = ((TableListNodeInfo)child).getChildren();
-                DatabaseNodeInfo.printChildren("tables", tables);
+                TableListNodeInfo tableList = (TableListNodeInfo)child;
+
+                Vector<TableNodeInfo> tables = tableList.getChildren();
+
+                // DatabaseNodeInfo.printChildren("tables", tables);
 
                 for (TableNodeInfo table : tables) {
-                    if (tablename.equals(table.getDisplayName())) {
+                    if (tablename.toLowerCase().equals(table.getDisplayName().toLowerCase())) {
                         return table;
                     }
                 }
@@ -600,13 +606,13 @@ public abstract class DBTestBase extends TestBase {
         }
         
         driverClassName = System.getProperty(DRIVER_PROPERTY, "org.apache.derby.jdbc.EmbeddedDriver");
-        dbname = System.getProperty(DBNAME_PROPERTY, "dbtests");        
+        dbname = System.getProperty(DBNAME_PROPERTY, "DBTESTS");
         dbUrl = System.getProperty(URL_PROPERTY, "jdbc:derby:" + dblocation + dbname + ";create=true");
         if (isMySQL() && ! (dbUrl.endsWith("/"))) {
             fail("The MySQL url needs to be of the form 'jdbc:mysql://<host>:<port>/'.  Please do not specify a database in the URL");
         }
-        username = System.getProperty(USERNAME_PROPERTY, "dbtests");
-        password = System.getProperty(PASSWORD_PROPERTY, "dbtests");        
+        username = System.getProperty(USERNAME_PROPERTY, "DBTESTS");
+        password = System.getProperty(PASSWORD_PROPERTY, "DBTESTS");
         driverJar = System.getProperty(DRIVER_JARPATH_PROPERTY, "nball:///db/external/derby-10.2.2.0.jar");
 
         driverJar = convertPath(driverJar);

@@ -42,6 +42,7 @@ package org.netbeans.modules.db.test;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  *
@@ -73,8 +74,10 @@ public class DefaultDBProvider implements DBProvider {
     }
     
     public void dropTable(Connection conn, String schemaName, String tableName) throws Exception {
-        if (tableExists(conn, schemaName, tableName)) {
+        try {
             conn.createStatement().executeUpdate("DROP TABLE " + schemaName + "." + tableName);
+        } catch (SQLException sqle) {
+            System.out.println("Exception when dropping table, probably because it doesn't exist: " + sqle.getMessage());
         }
     }
 

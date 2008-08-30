@@ -282,9 +282,9 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
             if (Util.isPutPostFormParams(getBean())) {
                 methodBody += ", " + Constants.QUERY_PARAMS;
-            } else {
+            } else if (Util.hasInputRepresentations(getBean())) {
                 methodBody += ", " + Constants.PUT_POST_CONTENT;
-            }
+            } 
         }
         methodBody += ");\n";
         return methodBody;

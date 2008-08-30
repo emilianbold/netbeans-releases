@@ -1406,7 +1406,7 @@ public class Util {
                     }
                 }
             }
-            if (!isPutPostFormParams(bean)) {
+            if (hasInputRepresentations(bean) && !isPutPostFormParams(bean)) {
                 params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
             }
         }
@@ -1423,6 +1423,15 @@ public class Util {
             }
         }
         return false;
+    }
+    
+    public static boolean hasInputRepresentations(RestClientSaasBean bean) {
+       List<RepresentationType> reps = bean.findInputRepresentations(bean.getMethod());
+       
+       if (reps == null || reps.size() == 0) 
+           return false;
+       
+       return true;
     }
 
     public static Document getDocument(FileObject f) throws IOException {

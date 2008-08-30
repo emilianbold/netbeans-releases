@@ -179,6 +179,15 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     public List<FileObject> getAllHibernateConfigFileObjects() {
         return HibernateUtil.getAllHibernateConfigFileObjects(project);
     }
+    
+    /**
+     * Returns configuration fileobjects if any contained under the source root in this project.
+     * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
+     */
+    public List<FileObject> getDefaultHibernateConfigFileObjects() {
+        return HibernateUtil.getDefaultHibernateConfigFileObjects(project);
+    }
+    
 
     /**
      * Returns all mapping files defined under this project.

@@ -93,4 +93,9 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#144403: restrict keywords are flagged as ERRORs in C header files
         performTest("testHeaderWithCKeywords.c");
     }
+
+    public void testNamesakes() throws Exception {
+        // IZ#145553 Class in the same namespace should have priority over a global one
+        performTest("iz_145553_namesakes.cc");
+    }
 }

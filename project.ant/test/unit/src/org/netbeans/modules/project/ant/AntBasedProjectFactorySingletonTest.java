@@ -43,7 +43,6 @@ package org.netbeans.modules.project.ant;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
@@ -135,7 +134,7 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
                 " <xsd:element name='data'>\n" +
                 "  <xsd:complexType>\n" +
                 "   <xsd:sequence>\n" +
-                "    <xsd:element name='a'/>\n" +
+                "    <xsd:element name='a' minOccurs='0'/>\n" +
                 "    <xsd:element name='b' maxOccurs='unbounded'/>\n" +
                 "    <xsd:element name='c' maxOccurs='unbounded'/>\n" +
                 "   </xsd:sequence>\n" +
@@ -150,7 +149,7 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
                 " <xsd:element name='data'>\n" +
                 "  <xsd:complexType>\n" +
                 "   <xsd:sequence>\n" +
-                "    <xsd:element name='a'/>\n" +
+                "    <xsd:element name='a' minOccurs='0'/>\n" +
                 "    <xsd:element name='b' maxOccurs='unbounded'/>\n" +
                 "    <xsd:element name='c' maxOccurs='unbounded'/>\n" +
                 "    <xsd:element name='d'/>\n" +
@@ -197,13 +196,7 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
         Project p = ProjectManager.getDefault().findProject(d.getFileObject("p1"));
         AntProjectHelper helper = p.getLookup().lookup(AntProjectHelper.class);
         Element data = helper.getPrimaryConfigurationData(true);
-        List<Element> kids = Util.findSubElements(data);
-        assertEquals("a", kids.get(0).getLocalName());
-        assertEquals("b", kids.get(1).getLocalName());
-        assertEquals("b", kids.get(2).getLocalName());
-        assertEquals("c", kids.get(3).getLocalName());
-        assertEquals("c", kids.get(4).getLocalName());
-        assertEquals("d", kids.get(5).getLocalName());
+        assertEquals("a2 b2 b2 c2 c2 d2", namesOfChildren(data));
         TestFileUtils.writeFile(d, "p2/nbproject/project.xml",
                 "<project xmlns='http://www.netbeans.org/ns/project/1'>\n" +
                 " <type>test</type>\n" +
@@ -220,15 +213,37 @@ public class AntBasedProjectFactorySingletonTest extends NbTestCase {
         helper = p.getLookup().lookup(AntProjectHelper.class);
         data = helper.getPrimaryConfigurationData(true);
         assertEquals("http://www.netbeans.org/ns/foo/2", data.getNamespaceURI());
-        kids = Util.findSubElements(data);
-        assertEquals("a", kids.get(0).getLocalName());
-        assertEquals("http://www.netbeans.org/ns/foo/2", kids.get(0).getNamespaceURI());
-        assertEquals("b", kids.get(1).getLocalName());
-        assertEquals("http://www.netbeans.org/ns/foo/2", kids.get(1).getNamespaceURI());
-        assertEquals("c", kids.get(2).getLocalName());
-        assertEquals("http://www.netbeans.org/ns/foo/2", kids.get(2).getNamespaceURI());
-        assertEquals("d", kids.get(3).getLocalName());
-        assertEquals("http://www.netbeans.org/ns/foo/2", kids.get(3).getNamespaceURI());
+        assertEquals("a2 b2 c2 d2", namesOfChildren(data));
+        TestFileUtils.writeFile(d, "p3/nbproject/project.xml",
+                "<project xmlns='http://www.netbeans.org/ns/project/1'>\n" +
+                " <type>test</type>\n" +
+                " <configuration>\n" +
+                "  <data xmlns='http://www.netbeans.org/ns/foo/2'>\n" +
+                "   <b/>\n" +
+                "   <b/>\n" +
+                "   <a/>\n" +
+                "   <c/>\n" +
+                "   <c/>\n" +
+                "   <d/>\n" +
+                "  </data>\n" +
+                " </configuration>\n" +
+                "</project>");
+        p = ProjectManager.getDefault().findProject(d.getFileObject("p3"));
+        helper = p.getLookup().lookup(AntProjectHelper.class);
+        data = helper.getPrimaryConfigurationData(true);
+        assertEquals("a2 b2 b2 c2 c2 d2", namesOfChildren(data));
+    }
+    private static String namesOfChildren(Element e) {
+        StringBuilder b = new StringBuilder();
+        for (Element kid : Util.findSubElements(e)) {
+            if (b.length() > 0) {
+                b.append(' ');
+            }
+            b.append(kid.getLocalName());
+            String ns = kid.getNamespaceURI();
+            b.append(ns.charAt(ns.length() - 1));
+        }
+        return b.toString();
     }
 
 }
