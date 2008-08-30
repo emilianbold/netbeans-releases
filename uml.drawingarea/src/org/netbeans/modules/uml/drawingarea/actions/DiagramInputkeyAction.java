@@ -54,8 +54,12 @@ import java.util.Set;
 import javax.swing.JToggleButton;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IAutonomousElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.MetaLayerRelationFactory;
+import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.keymap.DiagramKeyMapConstants;
@@ -194,17 +198,11 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
             
             if (scene != null)
             {
-                ContextPaletteManager manager = scene.getContextPaletteManager();
-                if(manager != null)
-                {
-                    manager.cancelPalette();;
-                }
                 // Check if the Project tab is currently active.
-                // If yes, process the activated/selected node on the model tree
+                // If yes, process the activated/selected nodes on the model tree
                 // else process the item selected on the palette if any.
 
                 // Get the currently active top component
-                //TopComponent activeTopComp = WindowManager.getDefault().getRegistry().getActivated();
                 TopComponent activeTopComp = TopComponent.getRegistry().getActivated();
                 if (activeTopComp != null && "Projects".equals(activeTopComp.getName()))  // NO18N
                 {
@@ -213,14 +211,7 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                 {
                     processPaletteNodes(scene);
                 }
-                
-                if(manager != null)
-                {
-                    manager.selectionChanged(null);
-                }
             }
-            
-            
         }
     }
     
@@ -259,18 +250,25 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                         // add the target widget to the scene at the translated location.
                         engine.addWidget(pe, loc);
                         
+                        // import element if from different project
+                        importElement(elemToDrop, scene);
+                        
                         // update the location for the next node, so that the next node
                         // would not overlap this node.
                         int x = loc.x + OFFSET_POS;
                         int y = loc.y + OFFSET_POS;
-                        loc = new Point(x,y);
+                        loc = new Point(x, y);
                     }
                 }
                 // select all the added nodes and request 
                 // diagram top component to be in focus and active
                 if ( addedPEs != null && addedPEs.size() > 0) 
                 {
-                    scene.setSelectedObjects( new HashSet<IPresentationElement>(addedPEs) );
+                    scene.userSelectionSuggested( new HashSet<IPresentationElement>(addedPEs), false );
+                     if (addedPEs.size() == 1)
+                    {
+                        scene.setFocusedObject(addedPEs.get(0));
+                    }
                     scene.getTopComponent().requestActive();
                 }
             }
@@ -308,7 +306,7 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
                             sceneAcceptAction.addWidget(sceneCenter, scene, pe);
 
                             // select the added widget and set it focused
-                            scene.setSelectedObjects(Collections.singleton(pe));
+                            scene.userSelectionSuggested(Collections.singleton(pe), false);
                             scene.setFocusedObject(pe);
                         }
                     }
@@ -378,6 +376,24 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
             }
         }
         return retPoint;
+    }
+    
+    private void importElement(INamedElement element, DesignerScene scene)
+    {
+        IDiagram diagram = scene.getDiagram();
+        INamespace diaNameSpace = diagram.getNamespace();
+        if (diaNameSpace == null)
+            return;
+        
+        if (element != null && element.getProject() != diaNameSpace.getProject())
+        {
+            // Only AutonomousElements can be imported across Projects
+            if (element instanceof IAutonomousElement)
+            {
+                // create flat import element structure
+                MetaLayerRelationFactory.instance().establishImportIfNeeded(diaNameSpace.getProject(), element);
+            } 
+        }
     }
 }
 
