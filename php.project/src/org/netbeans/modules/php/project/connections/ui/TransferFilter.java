@@ -55,7 +55,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -72,13 +71,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.connections.RemoteSettings;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -119,16 +115,16 @@ public final class TransferFilter extends javax.swing.JPanel {
     });
         
     //folders are not filtered although not showed to user
-    public static Set<TransferFile> showUploadDialog(Set<TransferFile> transferFiles, PhpProject project) {
-        return showTransferDialog(transferFiles, project, TransferFileTableModel.Type.UPLOAD);
+    public static Set<TransferFile> showUploadDialog(Set<TransferFile> transferFiles, long timestamp, Set<TransferFile> preselectedFiles) {
+        return showTransferDialog(transferFiles, TransferFileTableModel.Type.UPLOAD, timestamp, preselectedFiles);
     }
 
     //folders are not filtered although not showed to user
     public static Set<TransferFile> showDownloadDialog(Set<TransferFile> transferFiles) {
-        return showTransferDialog(transferFiles, null, TransferFileTableModel.Type.DOWNLOAD);
+        return showTransferDialog(transferFiles, TransferFileTableModel.Type.DOWNLOAD, -1, null);
     }
 
-    private static Set<TransferFile> showTransferDialog(Set<TransferFile> transferFiles, PhpProject project, TransferFileDownloadModel.Type type) {
+    private static Set<TransferFile> showTransferDialog(Set<TransferFile> transferFiles, TransferFileDownloadModel.Type type, long timestamp, Set<TransferFile> preselectedFiles) {
         TransferFileTableModel model = null;
         String title = null;
         switch (type) {
@@ -137,8 +133,7 @@ public final class TransferFilter extends javax.swing.JPanel {
                 title = NbBundle.getMessage(TransferFilter.class, "Download_Title");
                 break;
             case UPLOAD:
-                assert project != null : "project must be provided for uploading files";
-                model = new TransferFileUploadModel(wrapTransferFiles(transferFiles, project));
+                model = new TransferFileUploadModel(wrapTransferFiles(transferFiles, timestamp, preselectedFiles));
                 title = NbBundle.getMessage(TransferFilter.class, "Upload_Title");
                 break;
             default:
@@ -156,30 +151,23 @@ public final class TransferFilter extends javax.swing.JPanel {
         return (continueTransfer) ? unwrapFileUnits(model.getFilteredUnits()) : new HashSet<TransferFile>();
     }
 
-    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> file, TransferFileTableModel model) {
+    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer, TransferFileTableModel model) {
         List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
-        for (TransferFile transferFile : file) {
+        for (TransferFile transferFile : toTransfer) {
             retval.add(new TransferFileUnit(transferFile, model.isMarkedAsDefault()));
         }
         return retval;
     }
 
-    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> file, PhpProject project) {
+    private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer,  long timestamp, Set<TransferFile> preselectedFiles) {
         List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
-        long lastUpload = RemoteSettings.getLastUpload(project);
-        boolean selected = true;
-        for (TransferFile transferFile : file) {
-            if (lastUpload != -1) {
+        for (TransferFile transferFile : toTransfer) {
+            boolean selected = timestamp == -1 && preselectedFiles.size() == 0;
+            if (preselectedFiles.contains(transferFile)) {
+                selected = true;
+            } else if (timestamp != -1) {
                 // we have some timestamp
-                if (transferFile.isFile()) {
-                    // minor optimization + bugfix (relative path of sources directory is TransferFile.CWD)
-                    FileObject fo = project.getSourcesDirectory().getFileObject(transferFile.getRelativePath());
-                    assert fo != null : "fileobject must exist for relative path " + transferFile.getRelativePath();
-                    long lastModified = TimeUnit.SECONDS.convert(fo.lastModified().getTime(), TimeUnit.MILLISECONDS);
-                    selected = lastModified > lastUpload;
-                } else {
-                    selected = true;
-                }
+                selected = transferFile.isFile() && transferFile.getTimestamp() > timestamp;
             }
             retval.add(new TransferFileUnit(transferFile, selected));
         }

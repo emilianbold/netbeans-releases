@@ -192,7 +192,8 @@ public final class ResultWindow extends TopComponent {
         
         open();
         requestVisible();
-        requestActive();
+        // don't activate, see #145382
+        //requestActive();
     }
     
     /**

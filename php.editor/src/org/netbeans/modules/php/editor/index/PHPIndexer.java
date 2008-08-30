@@ -212,7 +212,7 @@ public class PHPIndexer implements Indexer {
         // php runtime files. Go to the php.project/tools, modify and run
         // preindex.sh script. Also change the number of license in
         // php.project/external/preindexed-php-license.txt
-        return "0.5.0"; // NOI18N
+        return "0.5.1"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -254,13 +254,54 @@ public class PHPIndexer implements Indexer {
         List<IndexDocument> getDocuments() {
             return documents;
         }
+        
+        private class IndexerVisitor extends DefaultVisitor{
+            private List<IndexDocument> documents;
+            private IndexDocument defaultDocument;
+
+            public IndexerVisitor(List<IndexDocument> documents, IndexDocument defaultDocument) {
+                this.documents = documents;
+                this.defaultDocument = defaultDocument;
+            }
+
+            @Override
+            public void visit(ClassDeclaration node) {
+                // create a new document for each class
+                IndexDocument classDocument = factory.createDocument(10);
+                documents.add(classDocument);
+                indexClass((ClassDeclaration) node, classDocument);
+                super.visit(node);
+            }
+
+            @Override
+            public void visit(FunctionDeclaration node) {
+                indexFunction((FunctionDeclaration)node, defaultDocument);
+                super.visit(node);
+            }
+
+            @Override
+            public void visit(ExpressionStatement node) {
+                indexConstant(node, defaultDocument);
+                super.visit(node);
+            }
+
+            @Override
+            public void visit(InterfaceDeclaration node) {
+                IndexDocument ifaceDocument = factory.createDocument(10);
+                documents.add(ifaceDocument);
+                indexInterface((InterfaceDeclaration) node, ifaceDocument);
+                super.visit(node);
+            }
+        }
 
         public void analyze() throws IOException {
             
-            IndexDocument document = factory.createDocument(40); // TODO - measure!
-            documents.add(document);
+            IndexDocument defaultDocument = factory.createDocument(40); // TODO - measure!
+            documents.add(defaultDocument);
 
             root = result.getProgram();
+            root.accept(new IndexerVisitor(documents, defaultDocument));
+
             String processedFileURL = null;
 
             try {
@@ -275,14 +316,12 @@ public class PHPIndexer implements Indexer {
             StringBuilder includes = new StringBuilder();
             
             for (Statement statement : root.getStatements()){
-                if (statement instanceof FunctionDeclaration){
-                    indexFunction((FunctionDeclaration)statement, document);
-                } else if (statement instanceof ExpressionStatement){
+                if (statement instanceof ExpressionStatement){
                     ExpressionStatement expressionStatement = (ExpressionStatement) statement;
                     
                     if (expressionStatement.getExpression() instanceof Assignment) {
                         Assignment assignment = (Assignment) expressionStatement.getExpression();
-                        indexVarsInAssignment(assignment, document);
+                        indexVarsInAssignment(assignment, defaultDocument);
                     }
                     
                     if (expressionStatement.getExpression() instanceof Include) {
@@ -306,21 +345,10 @@ public class PHPIndexer implements Indexer {
                             }
                         }
                     }
-                    
-                    indexConstant(statement, document);
-                } else if (statement instanceof ClassDeclaration){
-                    // create a new document for each class
-                    IndexDocument classDocument = factory.createDocument(10);
-                    documents.add(classDocument);
-                    indexClass((ClassDeclaration)statement, classDocument);
-                } else if (statement instanceof InterfaceDeclaration){
-                    IndexDocument ifaceDocument = factory.createDocument(10);
-                    documents.add(ifaceDocument);
-                    indexInterface((InterfaceDeclaration)statement, ifaceDocument);
                 }
             }
             
-            document.addPair(FIELD_INCLUDE, includes.toString(), false);
+            defaultDocument.addPair(FIELD_INCLUDE, includes.toString(), false);
             final IndexDocument idDocument = factory.createDocument(10);
             documents.add(idDocument);            
             DefaultVisitor visitor = new DefaultVisitor() {

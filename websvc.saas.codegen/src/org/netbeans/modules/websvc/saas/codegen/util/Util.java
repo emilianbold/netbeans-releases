@@ -108,6 +108,7 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthenticatio
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
+import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -1405,11 +1406,32 @@ public class Util {
                     }
                 }
             }
-            if (!bean.findInputRepresentations(bean.getMethod()).isEmpty()) {
+            if (hasInputRepresentations(bean) && !isPutPostFormParams(bean)) {
                 params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
             }
         }
         return params;
+    }
+
+    public static boolean isPutPostFormParams(RestClientSaasBean bean) {
+        HttpMethodType httpMethod = bean.getHttpMethod();
+        if(httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
+            List<RepresentationType> reps = bean.findInputRepresentations(bean.getMethod());
+            for(RepresentationType rep: reps) {
+                if (rep.getParam() != null && rep.getParam().size() > 0)
+                    return true;
+            }
+        }
+        return false;
+    }
+    
+    public static boolean hasInputRepresentations(RestClientSaasBean bean) {
+       List<RepresentationType> reps = bean.findInputRepresentations(bean.getMethod());
+       
+       if (reps == null || reps.size() == 0) 
+           return false;
+       
+       return true;
     }
 
     public static Document getDocument(FileObject f) throws IOException {

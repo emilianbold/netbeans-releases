@@ -38,7 +38,7 @@ public class InstallingPluginPanel extends javax.swing.JPanel {
 
         progressBar.setIndeterminate(true);
 
-        jLabel1.setText("Plugin");
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(InstallingPluginPanel.class, "InstallingPluginPanel.plugin")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);

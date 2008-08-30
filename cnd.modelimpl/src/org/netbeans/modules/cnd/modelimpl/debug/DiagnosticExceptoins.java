@@ -76,11 +76,11 @@ public class DiagnosticExceptoins {
         if( TraceFlags.TIMING ) {
             thr.printStackTrace();
         } else {
-            if (thr.getMessage()!=null) {
-                System.err.println(thr.getMessage());
-            } else {
-                System.err.println(thr);
-            }
+//            if (thr.getMessage()!=null) {
+//                System.err.println(thr.getMessage());
+//            } else {
+//                System.err.println(thr);
+//            }
         }
 	Hook aHook = hook;
 	if( aHook != null ) {

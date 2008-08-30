@@ -227,7 +227,7 @@ public class CodeUtils {
                     }
                 }
 
-                if (className != null) {
+                if (className != null && className.trim().length() > 0) {
                     for (IndexedFunction func : index.getAllMethods(context, className,
                             methodName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
 

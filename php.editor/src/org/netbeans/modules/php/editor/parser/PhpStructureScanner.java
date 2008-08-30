@@ -84,6 +84,8 @@ public class PhpStructureScanner implements StructureScanner {
 
     private static final String CLOSE_FONT = "</font>";                   //NOI18N
 
+    private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY";
+
     public List<? extends StructureItem> scan(final CompilationInfo info) {
         this.info = info;
         Program program = Utils.getRoot(info);
@@ -99,11 +101,21 @@ public class PhpStructureScanner implements StructureScanner {
         Program program = Utils.getRoot(info);
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         if (program != null) {
-            program.accept(new FoldVisitor(folds));
+            if (program.getStatements().size() == 1) {
+                // check whether the ast is broken.
+                if (program.getStatements().get(0) instanceof ASTError) {
+                    Object lastCorrect = info.getDocument().getProperty(LAST_CORRECT_FOLDING_PROPERTY);
+                    if (lastCorrect != null){
+                        return ( Map<String, List<OffsetRange>>)lastCorrect;
+                    }
+                    else {
+                        return Collections.emptyMap();
+                    }
+                }
+            }
+            (new FoldVisitor(folds)).scan(program);
             List<Comment> comments = program.getComments();
             if (comments != null) {
-                List<Comment> customeFoldStarts = new ArrayList<Comment>();
-                String text = info.getText();
                 for (Comment comment : comments) {
                     if (comment.getCommentType() == Comment.Type.TYPE_PHPDOC) {
                         getRanges(folds, FOLD_PHPDOC).add(createOffsetRange(comment));
@@ -114,6 +126,7 @@ public class PhpStructureScanner implements StructureScanner {
                     }
                 }
             }
+            info.getDocument().putProperty(LAST_CORRECT_FOLDING_PROPERTY, folds);
             return folds;
         }
         return Collections.emptyMap();
@@ -531,7 +544,7 @@ public class PhpStructureScanner implements StructureScanner {
         public void visit(ClassDeclaration cldec) {
             foldType = FOLD_CLASS;
             if (cldec.getBody() != null) {
-                cldec.getBody().accept(this);
+                scan(cldec.getBody());
             }
         }
 
@@ -539,7 +552,7 @@ public class PhpStructureScanner implements StructureScanner {
         public void visit(InterfaceDeclaration node) {
             foldType = FOLD_CLASS;
             if (node.getBody() != null) {
-                node.getBody().accept(this);
+                scan(node.getBody());
             }
         }
 
@@ -548,11 +561,9 @@ public class PhpStructureScanner implements StructureScanner {
             if (foldType != null) {
                 getRanges(folds, foldType).add(createOffsetRange(block));
                 foldType = null;
-                if (block.getStatements() != null) {
-                    for (Statement statement : block.getStatements()) {
-                        statement.accept(this);
-                    }
-                }
+            }
+            if (block.getStatements() != null) {
+                scan(block.getStatements());
             }
         }
 
@@ -560,7 +571,7 @@ public class PhpStructureScanner implements StructureScanner {
         public void visit(FunctionDeclaration function) {
             foldType = FOLD_CODE_BLOCKS;
             if (function.getBody() != null) {
-                function.getBody().accept(this);
+                scan(function.getBody());
             }
         }
     }

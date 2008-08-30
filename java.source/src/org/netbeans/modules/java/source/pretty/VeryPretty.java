@@ -1963,7 +1963,7 @@ public final class VeryPretty extends JCTree.Visitor {
             return;
         }
 	String body = comment.getText();
-        boolean rawBody = body.charAt(0) != '/';
+        boolean rawBody = body.length()==0 || body.charAt(0) != '/';
         LinkedList<CommentLine> lines = new LinkedList<CommentLine>();
 	int stpos = -1;
 	int limit = body.length();
@@ -2004,7 +2004,8 @@ public final class VeryPretty extends JCTree.Visitor {
                 print(" * ");
             }
         }
-        lines.removeFirst().print(out.col);
+        if (!lines.isEmpty())
+            lines.removeFirst().print(out.col);
         while (!lines.isEmpty()) {
             newline();
             toLeftMargin();

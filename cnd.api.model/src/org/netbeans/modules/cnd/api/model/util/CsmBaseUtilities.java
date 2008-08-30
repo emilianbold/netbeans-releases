@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 
@@ -74,6 +75,14 @@ public class CsmBaseUtilities {
     private CsmBaseUtilities() {
     }
 
+    public static boolean isValid(CsmObject obj) {
+        if (CsmKindUtilities.isValidable(obj)) {
+            return ((CsmValidable)obj).isValid();
+        } else {
+            return obj != null;
+        }
+    }
+    
     public static boolean isGlobalNamespace(CsmScope scope) {
         if (CsmKindUtilities.isNamespace(scope)) {
             return ((CsmNamespace)scope).isGlobal();
@@ -358,11 +367,18 @@ public class CsmBaseUtilities {
                 out = orig;
             }
         } catch (StackOverflowError ex) {
-            ex.printStackTrace(System.err);
+            if (isStandalone()) {
+                ex.printStackTrace(System.err);
+            } else {
+                System.err.println("StackOverflowError in getOriginalClassifier for " + orig); // NOI18N
+            }
         }
         return out;
     }     
 
+    private static boolean isStandalone() {
+        return !CsmBaseUtilities.class.getClassLoader().getClass().getName().startsWith("org.netbeans."); // NOI18N
+    }
 
     public static CsmClassifier findOtherClassifier(CsmClassifier out) {
         CsmNamespace ns = getClassNamespace(out);
