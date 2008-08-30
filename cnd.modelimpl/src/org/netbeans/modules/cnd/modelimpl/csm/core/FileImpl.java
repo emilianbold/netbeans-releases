@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import antlr.Parser;
 import antlr.RecognitionException;
@@ -99,7 +100,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author Vladimir Kvashin
  */
 public class FileImpl implements CsmFile, MutableDeclarationsContainer, 
-        ChangeListener, Disposable, Persistent, SelfPersistent {
+        Disposable, Persistent, SelfPersistent {
     
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
@@ -136,10 +137,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private int errorCount = 0;
     
-    private enum State { 
-	INITIAL, 
+    private enum State {
+
+        /** The file has never been parsed */
+	INITIAL,
+
+        /** The file has been completely parsed */
 	PARSED, 
-	MODIFIED, 
+        
+        /** The file is modified and needs to be reparsed */
+	MODIFIED,
+
+        /** The file is now being parsed */
 	BEING_PARSED 
     }
     
@@ -166,6 +175,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final ReadWriteLock  staticLock = new ReentrantReadWriteLock();
     
     private List<CsmReference> lastMacroUsages;
+    
+    private ChangeListener fileBufferChangeListener = new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+            FileImpl.this.markModified(false);
+        }        
+    };
     
     /** For test purposes only */
     public interface Hook {
@@ -263,13 +278,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public void setBuffer(FileBuffer fileBuffer) {
         synchronized (changeStateLock) {
             if( this.fileBuffer != null ) {
-                this.fileBuffer.removeChangeListener(this);
+                this.fileBuffer.removeChangeListener(fileBufferChangeListener);
             }
             this.fileBuffer = fileBuffer;
             if( state != State.INITIAL ) {
                 state = State.MODIFIED;
             }
-            this.fileBuffer.addChangeListener(this);
+            this.fileBuffer.addChangeListener(fileBufferChangeListener);
         }
     }
     
@@ -309,11 +324,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private final Object changeStateLock = new Object();
-    public void stateChanged(javax.swing.event.ChangeEvent e) {
-        stateChanged(false);
-    }
 
-    public void stateChanged(boolean invalidateCache) {
+    public void markModified(boolean invalidateCache) {
         synchronized (changeStateLock) {
 	    if( state != State.INITIAL ) {
 		state = State.MODIFIED;
@@ -347,7 +359,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * Removes old content from te file and model,
      * then parses the current buffer
      */
-    public void reparse(APTPreprocHandler preprocHandler) {
+    private void reparse(APTPreprocHandler preprocHandler) {
         synchronized( stateLock ) {
             state = State.BEING_PARSED;
             try {
@@ -464,7 +476,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return new TreeSet<CsmUID<CsmInclude>>(UID_START_OFFSET_COMPARATOR);
     }
     
-    public AST parse(APTPreprocHandler preprocHandler) {
+    /** for debugging/tracing purposes only */
+    public AST debugParse() {
+        return parse(null);
+    }
+
+    private AST parse(APTPreprocHandler preprocHandler) {
         synchronized( stateLock ) {
             state = State.BEING_PARSED;
             try {

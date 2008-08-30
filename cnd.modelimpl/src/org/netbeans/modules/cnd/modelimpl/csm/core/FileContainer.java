@@ -236,7 +236,9 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         List<MyFile> files;
         files = new ArrayList<MyFile>(myFiles.values());
         for (MyFile file : files){
-            file.setState(null);
+            synchronized (getLock(file)) {
+                file.setState(null);
+            }
         }
 	put();
     }

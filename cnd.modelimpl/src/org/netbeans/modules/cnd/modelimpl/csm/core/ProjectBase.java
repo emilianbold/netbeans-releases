@@ -974,11 +974,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    public void invalidateFiles() {
+    /**
+     * The method is for tracing/testing/debugging purposes only
+     */
+    public void debugInvalidateFiles() {
         getFileContainer().clearState();
         for (Iterator it = getLibraries().iterator(); it.hasNext();) {
             ProjectBase lib = (ProjectBase) it.next();
-            lib.invalidateFiles();
+            lib.debugInvalidateFiles();
         }
     }
 
@@ -1045,7 +1048,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     }
                 }
                 if (reparseNeeded && !isDisposing() && !base.isDisposing()) {
-                    csmFile.stateChanged(true);
+                    csmFile.markModified(true);
                     scheduleIncludedFileParsing(csmFile, newState);
                 }
             }

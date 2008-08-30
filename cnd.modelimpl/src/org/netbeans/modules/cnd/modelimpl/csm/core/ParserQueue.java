@@ -241,30 +241,6 @@ public final class ParserQueue {
         return new ParserQueue(true);
     }
 
-    /**
-     * Puts the given file at the end of the queue
-     * (In the case it isn't already enqueued;
-     * if it already is, does nothing)
-     */
-//    public void addLast(FileImpl file) {
-//        addLast(file, file.getPreprocState());
-//    }
-
-    //    public void addLast(FileImpl file, APTPreprocHandler.State ppState, boolean onInclude) {
-    //        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: addLast " + file.getName());
-    //        synchronized ( lock ) {
-    //            Set/*<FileImpl>*/ files = getProjectFiles(file.getProjectImpl());
-    //            if( ! files.contains(file) ) {
-    //                files.add(file);
-    //                //queue.add(file);
-    //                Entry entry = new Entry(file, ppState, onInclude);
-    //                if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: added as Last with entry " + entry);
-    //                queue.addLast(entry);
-    //                lock.notifyAll();
-    //            }
-    //        }
-    //    }
-
     private String traceState4File(FileImpl file, Set/*<FileImpl>*/ files) {
         StringBuilder builder = new StringBuilder(" "); // NOI18N
         builder.append(file);
@@ -282,10 +258,6 @@ public final class ParserQueue {
      * If file isn't yet enqueued, places it at the beginning of the queue,
      * otherwise moves it there
      */
-//    public void addFirst(FileImpl file) {
-//        addFirst(file, file.getPreprocState(), false);
-//    }
-
     public void add(FileImpl file, APTPreprocHandler.State ppState, Position position) {
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: add " + file.getAbsolutePath() + " as " + position);
         synchronized ( lock ) {
