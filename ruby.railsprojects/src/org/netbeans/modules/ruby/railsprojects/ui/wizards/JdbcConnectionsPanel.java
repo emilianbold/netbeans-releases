@@ -57,6 +57,7 @@ import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcAsAdapterConnec
 import org.netbeans.modules.ruby.railsprojects.database.RailsJdbcConnection;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -241,8 +242,12 @@ private void createProductionDbActionPerformed(java.awt.event.ActionEvent evt) {
         }
         DatabaseConnection result = null;
         if (mysql.isConnected()) {
-            result = CreateDatabasePanel.showCreateDatabaseDialog(mysql);
-            updateConnectionCombos();
+            try {
+                result = CreateDatabasePanel.showCreateDatabaseDialog(mysql);
+                updateConnectionCombos();
+            } catch (DatabaseException dbe) {
+                Utils.displayErrorMessage(dbe.getMessage());
+            }
         }
         return result;
     }
