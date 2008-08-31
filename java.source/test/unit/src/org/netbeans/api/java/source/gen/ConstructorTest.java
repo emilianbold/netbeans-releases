@@ -41,6 +41,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import java.io.File;
 import static com.sun.source.tree.Tree.Kind.*;
 import java.util.*;
 import java.io.IOException;
@@ -55,6 +56,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Tests the method generator.
@@ -159,6 +161,43 @@ public class ConstructorTest extends GeneratorTest {
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertFiles("testAddConstructor2.pass");
+    }
+    
+    public void testRemovingReturnType134403() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void Test() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                MethodTree nueMethod = make.Method(method.getModifiers(), method.getName(), null, method.getTypeParameters(), method.getParameters(), method.getThrows(), method.getBody(), (ExpressionTree) method.getDefaultValue());
+                workingCopy.rewrite(method, nueMethod);
+            }
+            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
     }
     
     ////////////////////////////////////////////////////////////////////////////
