@@ -287,7 +287,7 @@ public class WebProjectProperties {
     private static String logServInstID = null;
 
     
-    public WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
+    WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
         this.updateHelper = updateHelper;
         
@@ -781,26 +781,6 @@ public class WebProjectProperties {
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
         }
         roots.putRoots(rootURLs,rootLabels);
-    }
-
-    public Object get(String propertyName) {
-        EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
-
-        if (J2EE_SERVER_INSTANCE.equals(propertyName))
-            return privateProperties.getProperty(J2EE_SERVER_INSTANCE);
-        else
-            return projectProperties.getProperty(propertyName);
-        
-//        return evaluator.getProperty(propertyName);
-    }
-    
-    public void put( String propertyName, String value ) {
-        EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        projectProperties.put(propertyName, value);
-        if (J2EE_SERVER_INSTANCE.equals (propertyName)) {
-            projectProperties.put (J2EE_SERVER_TYPE, Deployment.getDefault ().getServerID ((String) value));
-        }
     }
 
     public void store() {
