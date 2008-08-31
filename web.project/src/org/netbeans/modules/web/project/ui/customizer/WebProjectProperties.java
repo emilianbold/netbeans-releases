@@ -526,7 +526,7 @@ public class WebProjectProperties {
         // Store special properties
         
         // Modify the project dependencies properly        
-        resolveProjectDependencies();
+        destroyRemovedDependencies();
        
         // Store source roots
         storeRoots( project.getSourceRoots(), SOURCE_ROOTS_MODEL );
@@ -717,19 +717,21 @@ public class WebProjectProperties {
     /** Finds out what are new and removed project dependencies and 
      * applyes the info to the project
      */
-    private void resolveProjectDependencies() {
+    private void destroyRemovedDependencies() {
             
         // Create a set of old and new artifacts.
         Set oldArtifacts = new HashSet();
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
-        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB ) );
+        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.JAVAC_CLASSPATH ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES ) );
         oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.JAVAC_TEST_CLASSPATH ), null ) );
         oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( ProjectProperties.RUN_TEST_CLASSPATH ), null ) );
+        oldArtifacts.addAll( cs.itemsList( (String)projectProperties.get( WAR_CONTENT_ADDITIONAL ), ClassPathSupportCallbackImpl.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES ) );
 
         Set newArtifacts = new HashSet();
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ) );
         newArtifacts.addAll( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ) );
+        newArtifacts.addAll( ClassPathUiSupport.getList( WAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel() ) );
                 
         // Create set of removed artifacts and remove them
         Set removed = new HashSet( oldArtifacts );
