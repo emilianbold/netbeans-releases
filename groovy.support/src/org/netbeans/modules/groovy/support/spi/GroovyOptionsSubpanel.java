@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,63 +31,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.connections.ui;
 
-import org.netbeans.modules.php.project.connections.TransferFile;
+package org.netbeans.modules.groovy.support.spi;
+
+import java.awt.Component;
 
 /**
+ * First implementation of this interface is taken from default lookup and is added
+ * to Groovy option panel in IDE preferences.
  *
- * @author Radek Matous
+ * @author Martin Adamek
  */
-public class TransferFileUnit {
+public interface GroovyOptionsSubpanel {
 
-    static int compare(TransferFileUnit o1, TransferFileUnit o2) {
-        String o2Path = o2.getTransferFile().getRelativePath();
-        String o1Path = o1.getTransferFile().getRelativePath();
-        return o1Path.compareTo(o2Path);
-    }
+    Component getComponent();
 
-    private TransferFile transferFile;
-    private boolean isMarked;
+    void load();
 
-    protected TransferFile getTransferFile() {
-        return transferFile;
-    }
+    void store();
 
-    public boolean isMarked() {
-        return isMarked;
-    }
+    boolean valid();
 
-    public void setMarked(boolean marked) {
-        this.isMarked = marked;
-    }
-
-
-    public TransferFileUnit(TransferFile transferFile, boolean isMarked) {
-        this.transferFile = transferFile;
-        this.isMarked = isMarked;
-    }
-
-    public Integer getId() {
-        return getTransferFile().hashCode();
-    }
-
-
-    public boolean canBeMarked() {
-        return true;
-    }
-
-
-    public final boolean isVisible(final String filter) {
-        return !getTransferFile().isDirectory() &&
-                (filter == null ||
-                filter.length() == 0 ||
-                getDisplayName().toLowerCase().contains(filter));
-    }
-
-
-    String getDisplayName() {
-        return getTransferFile().getRelativePath();
-    }
 }
