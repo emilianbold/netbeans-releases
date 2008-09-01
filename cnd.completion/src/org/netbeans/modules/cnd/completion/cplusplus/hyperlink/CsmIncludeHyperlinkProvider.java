@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
@@ -193,7 +194,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         if (csmFile != null) {
             target = ReferencesSupport.findInclude(csmFile, offset);
         }
-        String tooltip = target == null ? null : CsmDisplayUtilities.getTooltipText(target);
+        CharSequence tooltip = target == null ? null : CsmDisplayUtilities.getTooltipText(target);
         if (tooltip != null) {
             StringBuilder buf = new StringBuilder(tooltip);
             CsmFile includeFile = target.getIncludeFile();
@@ -210,7 +211,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 OutputWriter out = io.getOut();
                 if (!includeStack.isEmpty()) {
                     try {
-                        out.println("path to file " + csmFile.getAbsolutePath()); // NOI18N
+                        out.println("path to file " + csmFile.getAbsolutePath(), new RefLink(csmFile)); // NOI18N
                         for (CsmInclude incl : includeStack) {
                             out.println(incl.getText() + " from file " + incl.getContainingFile().getAbsolutePath(), new RefLink(incl)); // NOI18N
                         }
@@ -227,7 +228,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             }
             tooltip = buf.toString();           
         }
-        return tooltip;
+        return tooltip == null ? null : tooltip.toString();
     }
 
     private void appendInclStack(StringBuilder buf, List<CsmInclude> includeStack) {
@@ -258,19 +259,23 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     }
 
     private static final class RefLink implements OutputListener {
-        private final CsmUID<CsmInclude> uid;
+        private final CsmUID<? extends CsmObject> uid;
 
         public RefLink(CsmInclude incl) {
             uid = incl.getUID();
+        }
+
+        public RefLink(CsmFile file) {
+            uid = file.getUID();
         }
 
         public void outputLineSelected(OutputEvent ev) {
         }
 
         public void outputLineAction(OutputEvent ev) {
-            CsmInclude incl = uid.getObject();
-            if (incl != null) {
-                CsmUtilities.openSource(incl);
+            CsmObject obj = uid.getObject();
+            if (obj != null) {
+                CsmUtilities.openSource(obj);
             }
         }
 
