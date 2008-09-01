@@ -50,6 +50,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ144731() throws Exception {
+        // IZ#144731: function(a->m_obj ? a->m_obj : a->m_obj);
+        performTest("iz145077.cc", 132, 30, "iz145077.cc", 118, 5);
+    }
+
     public void testClassUsageAfterDereferrencedObjects() throws Exception {
         // IZ#145230:Various C++ expressions don't resolve
         performTest("ClassNameAfterDeref.cc", 22, 18, "ClassNameAfterDeref.cc", 2, 5);
