@@ -126,6 +126,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         menu.add(new MoveAction(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle").getString("Move_Down_Action"), -1)); //NOi18N
         jTable1.addMouseListener(new PopupListener());
         pathMap = new HashMap<String, String>();
+        jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     @Override
