@@ -522,6 +522,14 @@ public class PropertiesTableModel extends AbstractTableModel {
             
             return str1.equals(str2);
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 19 * hash + (comment != null ? comment.hashCode() : 0);
+            hash = 19 * hash + (value != null ? value.hashCode() : 0);
+            return hash;
+        }
         
         /** Overrides superclass method. */
         @Override
