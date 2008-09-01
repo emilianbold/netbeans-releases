@@ -122,6 +122,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             an = vs.getVCSAnnotator();
             if (an == null) return null;
 
+            at = System.currentTimeMillis();
             VCSContext context = Utils.contextForFileObjects(files);
             return an.annotateName(name, context);
         } finally {
