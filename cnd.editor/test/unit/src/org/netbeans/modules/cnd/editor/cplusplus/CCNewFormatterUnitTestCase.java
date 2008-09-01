@@ -4751,4 +4751,17 @@ public class CCNewFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "    } slotinfo[10];\n" +
                 "} pcihp_t;\n");
     }
+
+    public void testIZ145529() {
+        setLoadDocumentText(
+                "class Base {\n" +
+                "\n" +
+                "};\n"
+                );
+        reformat();
+        assertDocumentText("Incorrect empty class formatting",
+                "class Base {\n" +
+                "};\n"
+                );
+    }
 }

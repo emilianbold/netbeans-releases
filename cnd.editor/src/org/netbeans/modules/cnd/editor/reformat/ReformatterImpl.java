@@ -1222,6 +1222,8 @@ public class ReformatterImpl {
                                 spaceBefore(previous, codeStyle.spaceWithinBraces());
                             }
                         }
+                    } else if (diff.replace != null) {
+                        diff.after.setText(0, 0, false);
                     }
                     done = true;
                 }

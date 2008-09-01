@@ -64,6 +64,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ145280() throws Exception {
+        // IZ#145280: IDE highlights code with '__attribute__((unused))' as wrong
+        performTest("iz145280.cc");
+    }
+
     public void testIZ143977_0() throws Exception {
         // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
         performTest("iz143977_0.cc");

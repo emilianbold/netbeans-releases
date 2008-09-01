@@ -128,8 +128,11 @@ bool CClipFile::getTimecode()
     if (hold.valid()) {
         return true;
     }
-
+    CClipFile* a;
+    function(a->m_obj ? a->m_obj : a->m_obj);
     return false;
 }
+void function(void* ) {
 
+}
 }
