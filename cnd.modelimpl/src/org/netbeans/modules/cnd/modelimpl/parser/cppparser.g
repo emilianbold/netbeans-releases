@@ -1932,7 +1932,10 @@ direct_declarator
 		(parameter_list)?
 		RPAREN //{declaratorEndParameterList(false);}
 	|	
-		LPAREN declarator RPAREN declarator_suffixes
+		LPAREN declarator RPAREN 
+        (options {greedy=true;} :variable_attribute_specification)?
+        declarator_suffixes
+        (options {greedy=true;} :variable_attribute_specification)?
 
 /* **            
              // Issue #87792  Parser reports error on declarations with name in parenthesis.
