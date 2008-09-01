@@ -86,6 +86,7 @@
             <folder name="x-gsp">
                 <file name="org-netbeans-modules-groovy-gsp-GspIndentTaskFactory.instance"/>
                 <file name="org-netbeans-modules-groovy-gsp-EmbeddedSectionsHighlighting$Factory.instance"/>
+                <file name="org-netbeans-modules-gsfret-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
 
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId.language"/>
@@ -101,6 +102,14 @@
                     -->
                 </folder>
    
+                <folder name="FoldManager">
+                    <file name="org-netbeans-modules-gsfret-editor-fold-GsfFoldManagerFactory.instance"/>
+                </folder>
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-editor-gsfret-GsfCodeFoldingSideBarFactory.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                </folder>
                 <!--
                 <folder name="CodeTemplateFilterFactories">
                     <file name="org-netbeans-modules-groovy-gsp-editor-GspCodeTemplateFilter$Factory.instance"/>
