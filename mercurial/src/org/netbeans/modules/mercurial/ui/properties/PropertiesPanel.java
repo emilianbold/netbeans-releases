@@ -119,7 +119,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
         );
         propsPanelLayout.setVerticalGroup(
             propsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 137, Short.MAX_VALUE)
+            .add(0, 113, Short.MAX_VALUE)
         );
 
         txtAreaValue.setColumns(20);
@@ -138,8 +138,8 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, propsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, labelForTable))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, labelForTable)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -152,7 +152,7 @@ public class PropertiesPanel extends javax.swing.JPanel implements PreferenceCha
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 54, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
