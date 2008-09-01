@@ -394,7 +394,7 @@ public class RootSelectorTree extends JCheckTree {
         }
 
         if (root.isFullyChecked() || root.isPartiallyChecked()) {
-            if ((root.getSignature() != null) && !toRemove.contains(root.getSignature())) {
+            if ((root.getSignature() != null) && root.isFullyChecked() && !toRemove.contains(root.getSignature())) {
                 selection.add(root.getSignature());
             }
 
