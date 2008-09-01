@@ -37,68 +37,21 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.model.services;
+package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.services.CsmTypedefResolver;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 
 /**
  *
  * @author Alexander Simon
  */
-public abstract class CsmMemberResolver {
-    private static CsmMemberResolver DEFAULT = new Default();
+public class TypedefResolver extends CsmTypedefResolver {
 
-    /**
-     * @param cls
-     * @param name
-     * @return class declaration with name including inhered declarations
-     */
-    public abstract Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name);
-
-    /**
-     * @param cls
-     * @param name
-     * @return nested classifiers with name including inhered nested classifiers
-     */
-    public abstract Iterator<CsmClassifier> getNestedClassifiers(CsmClassifier cls, CharSequence name);
-    
-    protected CsmMemberResolver() {
-    }
-    
-    /**
-     * Static method to obtain the CsmSelect implementation.
-     * @return the resolver
-     */
-    public static synchronized CsmMemberResolver getDefault() {
-        return DEFAULT;
-    }
-    
-    /**
-     * Implementation of the default resolver
-     */  
-    private static final class Default extends CsmMemberResolver {
-        private final Lookup.Result<CsmMemberResolver> res;
-        Default() {
-            res = Lookup.getDefault().lookupResult(CsmMemberResolver.class);
-        }
-
-        @Override
-        public Iterator<CsmMember> getDeclarations(CsmClassifier cls, CharSequence name) {
-            for (CsmMemberResolver resolver : res.allInstances()) {
-                return resolver.getDeclarations(cls, name);
-            }
-            return null;
-        }
-
-        @Override
-        public Iterator<CsmClassifier> getNestedClassifiers(CsmClassifier cls, CharSequence name) {
-            for (CsmMemberResolver resolver : res.allInstances()) {
-                return resolver.getNestedClassifiers(cls, name);
-            }
-            return null;
-        }
+    @Override
+    public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
+        return ResolverFactory.createResolver((CsmOffsetable) orig).getOriginalClassifier(orig);
     }
 }
