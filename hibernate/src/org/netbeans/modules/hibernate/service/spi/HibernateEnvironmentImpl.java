@@ -467,11 +467,11 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
                         file = InstalledFileLocator.getDefault().locate(url.getFile().substring(1), null, false);
                         logger.info("Bundled DB Driver Jar : " + file);
                     } else {
-                        file = new java.io.File(url.getFile());
+                        file = new java.io.File(url.getFile().replace("%20", " "));
                     }
                     if (file.isFile() && file.getName().endsWith(".jar")) {
                         logger.info("DB Driver Jar : " + file);
-                        driverURLs.add(new URL("jar:" + file.toURL() + "!/"));
+                        driverURLs.add(new URL("jar:" + url + "!/"));
 
                     } else {
                         logger.info("Registering DB Driver from folder : " + url);
