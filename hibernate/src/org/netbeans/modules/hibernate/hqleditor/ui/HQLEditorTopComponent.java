@@ -39,6 +39,18 @@
 package org.netbeans.modules.hibernate.hqleditor.ui;
 
 import java.awt.CardLayout;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -52,6 +64,9 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
@@ -71,6 +86,7 @@ import org.netbeans.modules.hibernate.hqleditor.HQLEditorController;
 import org.netbeans.modules.hibernate.hqleditor.HQLResult;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
+import org.openide.awt.MouseUtils.PopupMouseAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -124,8 +140,139 @@ public final class HQLEditorTopComponent extends TopComponent {
 
         sqlToggleButton.setSelected(true);
         hqlEditor.getDocument().addDocumentListener(new HQLDocumentListener());
+        hqlEditor.addMouseListener(new HQLEditorPopupMouseAdapter());
+
+    }
+
+    private class HQLEditorPopupMouseAdapter extends PopupMouseAdapter {
+
+        private JPopupMenu popupMenu;
+        private JMenuItem runHQLMenuItem;
+        private JMenuItem cutMenuItem;
+        private JMenuItem copyMenuItem;
+        private JMenuItem pasteMenuItem;
+        private JMenuItem selectAllMenuItem;
+        private final String RUN_HQL_COMMAND = NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_RUN_HQL_COMMAND");
+        private final String CUT_COMMAND = NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_CUT_COMMAND");
+        private final String COPY_COMMAND = NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_COPY_COMMAND");
+        private final String PASTE_COMMAND = NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_PASTE_COMMAND");
+        private final String SELECT_ALL_COMMAND = NbBundle.getMessage(HQLEditorTopComponent.class, "CTL_SELECT_ALL_COMMAND");
+        private Clipboard systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+        public HQLEditorPopupMouseAdapter() {
+            super();
+            popupMenu = new JPopupMenu();
+            ActionListener actionListener = new PopupActionListener();
+            runHQLMenuItem = popupMenu.add(RUN_HQL_COMMAND);
+            runHQLMenuItem.setMnemonic('Q');
+            runHQLMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.ALT_MASK | InputEvent.SHIFT_MASK, false));
+            runHQLMenuItem.addActionListener(actionListener);
+
+            popupMenu.addSeparator();
+
+            cutMenuItem = popupMenu.add(CUT_COMMAND);
+            cutMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK, true));
+            cutMenuItem.setMnemonic('t');
+            cutMenuItem.addActionListener(actionListener);
+
+            copyMenuItem = popupMenu.add(COPY_COMMAND);
+            copyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK, true));
+            copyMenuItem.setMnemonic('y');
+            copyMenuItem.addActionListener(actionListener);
+
+            pasteMenuItem = popupMenu.add(PASTE_COMMAND);
+            pasteMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK, true));
+            pasteMenuItem.setMnemonic('P');
+            pasteMenuItem.addActionListener(actionListener);
+            
+            popupMenu.addSeparator();
+            
+            selectAllMenuItem = popupMenu.add(SELECT_ALL_COMMAND);
+            selectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_MASK, true));
+            selectAllMenuItem.setMnemonic('A');
+            selectAllMenuItem.addActionListener(actionListener);
+        }
+
+        @Override
+        protected void showPopup(MouseEvent evt) {
+            // Series of checks.. to enable or disable menus.
+            if (hqlEditor.getText().trim().equals("")) {
+                runHQLMenuItem.setEnabled(false);
+                selectAllMenuItem.setEnabled(false);
+            } else {
+                runHQLMenuItem.setEnabled(true);
+                selectAllMenuItem.setEnabled(true);
+            }
+            if (hqlEditor.getSelectedText() == null || hqlEditor.getSelectedText().trim().equals("")) {
+                cutMenuItem.setEnabled(false);
+                copyMenuItem.setEnabled(false);
+            } else {
+                cutMenuItem.setEnabled(true);
+                copyMenuItem.setEnabled(true);
+            }
+
+            Transferable transferable = (Transferable) systemClipboard.getContents(null);
+            if (transferable.getTransferDataFlavors().length == 0) {
+                pasteMenuItem.setEnabled(false);
+            } else {
+                pasteMenuItem.setEnabled(true);
+            }
 
 
+            popupMenu.show(hqlEditor, evt.getX(), evt.getY());
+        }
+
+        private class PopupActionListener implements ActionListener {
+
+            public void actionPerformed(ActionEvent e) {
+                if (e.getActionCommand().equals(RUN_HQL_COMMAND)) {
+                    runHQLButtonActionPerformed(e);
+                } else if(e.getActionCommand().equals(SELECT_ALL_COMMAND)) {
+                    hqlEditor.selectAll();
+                } else if (e.getActionCommand().equals(CUT_COMMAND)) {
+                    StringSelection stringSelection = new StringSelection(hqlEditor.getSelectedText());
+                    systemClipboard.setContents(stringSelection, stringSelection);
+                    hqlEditor.setText(
+                            hqlEditor.getText().substring(0, hqlEditor.getSelectionStart()) +
+                            hqlEditor.getText().substring(hqlEditor.getSelectionEnd()));
+
+                } else if (e.getActionCommand().equals(COPY_COMMAND)) {
+                    StringSelection stringSelection = new StringSelection(hqlEditor.getSelectedText());
+                    systemClipboard.setContents(stringSelection, stringSelection);
+
+                } else if (e.getActionCommand().equals(PASTE_COMMAND)) {
+                    Transferable transferable = (Transferable) systemClipboard.getContents(null);
+                    String clipboardContents = "";
+                    try {
+                        if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                            clipboardContents = (String) transferable.getTransferData(DataFlavor.stringFlavor);
+                        } else if (transferable.isDataFlavorSupported(DataFlavor.getTextPlainUnicodeFlavor())) {
+                            clipboardContents = (String) transferable.getTransferData(DataFlavor.getTextPlainUnicodeFlavor());
+                        }
+                    } catch (UnsupportedFlavorException ex) {
+                        logger.log(Level.INFO, "Unsupported transfer flavor", ex);
+                    } catch (IOException ex) {
+                        logger.log(Level.INFO, "IOException during paste operation", ex);
+                    }
+                    if(!clipboardContents.equals("")) {
+                        if(hqlEditor.getSelectedText() != null) {
+                            hqlEditor.replaceSelection(clipboardContents);
+                        } else {
+                            hqlEditor.setText(
+                                    hqlEditor.getText().substring(0, hqlEditor.getCaretPosition()) +
+                                    clipboardContents +
+                                    hqlEditor.getText().substring(hqlEditor.getCaretPosition())
+                                    );
+                        }
+                    }
+                }
+            }
+        }
+
+        // Future..
+//        private class HQLTransferHandler extends TransferHandler {
+//
+//        }
     }
 
     public void setFocusToEditor() {
@@ -140,7 +287,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                 if (hqlEditor.getText().trim().equals("")) {
                     return;
                 }
-                if(hibernateConfigurationComboBox.getSelectedItem() == null ) {
+                if (hibernateConfigurationComboBox.getSelectedItem() == null) {
                     logger.info("hibernate configuration combo box is empty.");
                     return;
                 }
@@ -163,8 +310,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                     ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
                     try {
                         ClassLoader ccl = env.getProjectClassLoader(
-                                env.getProjectClassPath(selectedConfigObject).toArray(new URL[]{})
-                                );
+                                env.getProjectClassPath(selectedConfigObject).toArray(new URL[]{}));
 
                         Thread.currentThread().setContextClassLoader(ccl);
                         SessionFactory sessionFactory =
@@ -306,7 +452,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             // logger.info(r.getQueryResults().toString());
             switchToResultView();
             StringBuilder strBuffer = new StringBuilder();
-            String space = " ",separator  = "; "; //NOI18N
+            String space = " ", separator = "; "; //NOI18N
             strBuffer.append(result.getUpdateOrDeleteResult());
             strBuffer.append(space);
             strBuffer.append(NbBundle.getMessage(HQLEditorTopComponent.class, "queryUpdatedOrDeleted"));
@@ -394,7 +540,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                             oneRow.add("NULL"); //NOI18N
                             continue;
                         }
-                        if(methodReturnValue instanceof java.util.Collection) {
+                        if (methodReturnValue instanceof java.util.Collection) {
                             continue;
                         }
                         oneRow.add(methodReturnValue.toString());
@@ -762,6 +908,7 @@ private void runHQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JToolBar.Separator toolbarSeparator;
     private javax.swing.JToolBar.Separator toolbarSeparator1;
     // End of variables declaration//GEN-END:variables
+
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
