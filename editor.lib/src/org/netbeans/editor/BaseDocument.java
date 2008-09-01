@@ -2175,8 +2175,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             super.die();
 
             if (previousEdit != null) {
-                previousEdit.die();
+                // Should not always be previousEdit != this ??
+                // Apparently not, see the stacktrace in #145634.
                 previousEdit = null;
+                previousEdit.die();
             }
         }
 
