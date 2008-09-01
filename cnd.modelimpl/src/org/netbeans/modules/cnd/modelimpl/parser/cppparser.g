@@ -905,8 +905,11 @@ external_declaration {String s; K_and_R = false; boolean definition;}
                 //enum typedef )))	
                 (LITERAL_typedef enum_specifier)=> typedef_enum
                 {  #external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration); }
-	|
-  
+/*    |
+        // IZ#145071: forward declarations marked as error
+        (LITERAL_typedef (LITERAL_struct |	LITERAL_union |	LITERAL_class)) => typedef_class_fwd
+		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
+*/	|
 		// Enum definition (don't want to backtrack over this in other alts)
 		(LITERAL_enum (ID)? (LCURLY))=>
 		{if (statementTrace>=1) 
@@ -1763,6 +1766,20 @@ class_head
 	)? LCURLY
 	;
 
+protected
+typedef_class_fwd
+{ String id = "", td = ""; }
+    :
+    LITERAL_typedef
+	(
+		LITERAL_struct
+	|	LITERAL_union
+	|	LITERAL_class
+	)
+    id = qualified_id
+    td = qualified_id
+    SEMICOLON
+;
 
 base_clause
 	:	COLON base_specifier (COMMA base_specifier)*

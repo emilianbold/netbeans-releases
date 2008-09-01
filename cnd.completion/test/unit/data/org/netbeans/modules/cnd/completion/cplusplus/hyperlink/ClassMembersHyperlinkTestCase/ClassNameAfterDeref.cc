@@ -22,11 +22,19 @@
         this->Bass::method11();
         (*this).Bass::field11;
         Bass::method1();
+        Bass::method11();
+        Bass* bbb;
+        bbb->method11(); // not visible in this context!
     }
 
     int check() {
         Derived* dd;
-        dd->Bass::method11();
+        dd->Bass::method1();
+        dd->method1();
         dd->Bass::field1;
+        dd->Bass::field11; // not visible!
+        dd->field1;
+        dd->field11; // not visible!
         (*dd).Bass::method1();
+        (*dd).Bass::method11(); // not visible!
     }
