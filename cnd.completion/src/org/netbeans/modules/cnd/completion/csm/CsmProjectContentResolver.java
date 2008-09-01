@@ -1137,7 +1137,7 @@ public final class CsmProjectContentResolver {
                 if (nextMinVisibility != CsmVisibility.NONE) {
                     Map<CharSequence, CsmClass> baseRes = getBaseClasses(baseClass, contextDeclaration,strPrefix, match,
                             handledClasses, nextMinVisibility, nextInheritanceLevel);
-                    if (matchName(baseClass.getQualifiedName(), strPrefix, match)) {
+                    if (matchName(baseClass.getName(), strPrefix, match)) {
                         baseRes.put(baseClass.getQualifiedName(), baseClass);
                     }
                     // replace by own elements in inherited set
