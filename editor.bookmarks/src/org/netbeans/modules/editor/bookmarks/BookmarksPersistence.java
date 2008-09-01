@@ -273,6 +273,10 @@ public class BookmarksPersistence {
                 "editor-bookmarks"
             );
             for (URL url : urlToBookmarks.keySet ()) {
+                if (urlToBookmarks.get(url).length == 0) {
+                    continue;
+                }
+                
                 Element fileElement = document.createElementNS (
                     EDITOR_BOOKMARKS_NAMESPACE_URI, 
                     "file"
