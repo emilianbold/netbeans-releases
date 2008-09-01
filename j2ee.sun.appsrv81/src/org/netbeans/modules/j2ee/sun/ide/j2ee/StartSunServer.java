@@ -418,6 +418,16 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         
         
         if (cmd == CMD_START || cmd == CMD_RESTART) {
+            int startupLimit = dmProps.getStartupTimeout() * 1000;
+            if (startupLimit < 1) {
+                // don't do any of this... just return a failed status.
+                pes.fireHandleProgressEvent(null,pes.createStatus(ActionType.EXECUTE,
+                        ct, NbBundle.getMessage(StartSunServer.class, "LBL_ZeroTimeoutForStartingServer"), StateType.FAILED)); //NOI18N
+                cmd = CMD_NONE;
+                pes.clearProgressListener();
+                resetProfiler();
+                return; //we failed to start the server.            }
+            }
             if (null == installRoot) {
                 pes.fireHandleProgressEvent(null,pes.createStatus(ActionType.EXECUTE,
                         ct, NbBundle.getMessage(StartSunServer.class, "LBL_ErrorStartingServer"), StateType.FAILED));//NOI18N
@@ -583,6 +593,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
             final Process process;
             Locale current = Locale.getDefault();
             String message = ""; // NOI18N
+            final int startupLimit = dmProps.getStartupTimeout() * 1000;
             if (type == CMD_START && current.equals(new Locale("tr","TR"))) {
                 // the server is just plain broken when run in a Turkish locale
                 process = Runtime.getRuntime().exec(arr, new String[] {"LANG=en_US","LC_ALL=en_US"} );
@@ -625,10 +636,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                         Logger.getLogger(StartSunServer.class.getName()).log(Level.FINE,"",e);
                     }
                     
-                    int startupLimit = dmProps.getStartupTimeout();
-                    startupLimit *= 1000;
-                    startupLimit -= 3000;
-                    if (hasCommandSucceeded(startupLimit)){
+                    if (hasCommandSucceeded(startupLimit-3000)){
                         return 0;
                     } else {
                         if (null != io)
@@ -642,8 +650,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
 
                         public void run() {
                             try {
-                                java.lang.Thread.sleep(dmProps.getStartupTimeout() *
-                                        1000);
+                                java.lang.Thread.sleep(startupLimit);
                             } catch (InterruptedException ex) {
                                 // do something here?
                             }

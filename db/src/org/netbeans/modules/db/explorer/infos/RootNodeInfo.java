@@ -222,10 +222,11 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         ninfo.setDatabase(dbconn.getDatabase());
         ninfo.setSchema(dbconn.getSchema());
         ninfo.setName(dbconn.getName());
-        ninfo.setDatabaseConnection(dbconn);
-        if (dbconn.getConnection() != null) {
+        ninfo.setDatabaseConnection(dbconn); 
+        if (DatabaseConnection.test(dbconn.getConnection(), dbconn.getName())) {
             ninfo.connect(dbconn);
         }
+
         return ninfo;
     }
         
@@ -238,7 +239,6 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         }
         
         ConnectionList.getDefault().add(dbconn);
-        refreshChildren();
     }
         
     public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
@@ -246,27 +246,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
             throw new NullPointerException();
         }
         
-        Vector<DatabaseNodeInfo> children = getChildren();
-        DatabaseNodeInfo toRemove = null;
-        
-        for ( DatabaseNodeInfo child : children ) {
-            if ( child instanceof ConnectionNodeInfo ) {
-                ConnectionNodeInfo ninfo = (ConnectionNodeInfo)child;
-                if ( ninfo.getDatabaseConnection().equals(dbconn)) {
-                    toRemove = ninfo;
-                }
-                
-                dbconn.disconnect();
-            }
-        }
-        
-        if ( toRemove != null ) {
-            removeChild(toRemove, false);
-        }
-        
         ConnectionList.getDefault().remove(dbconn);
-        
-        notifyChange();
     }
     
     public void stateChanged(ChangeEvent evt) {

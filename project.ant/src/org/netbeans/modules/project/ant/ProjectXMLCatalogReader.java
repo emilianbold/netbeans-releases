@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -66,6 +68,9 @@ import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -83,6 +88,9 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
     public ProjectXMLCatalogReader() {}
 
     public String resolveURI(String name) {
+        return _resolveURI(name);
+    }
+    private static String _resolveURI(String name) {
         if (name.startsWith(PREFIX)) {
             FileObject rsrc = Repository.getDefault().getDefaultFileSystem().findResource(CATALOG + "/" + name.substring(PREFIX.length()) + "." + EXTENSION);
             if (rsrc != null) {
@@ -209,5 +217,124 @@ public class ProjectXMLCatalogReader implements CatalogReader, CatalogDescriptor
         }
         return LAST_USED_SCHEMA;
     }
-    
+
+    /**
+     * Attempt to fix up simple mistakes in a project file.
+     * Current strategies:
+     * <ul>
+     * <li>See if increasing /5 to /6 (or whatever) in the namespace used for "data" helps.
+     * <li>See if reordering subelements of "data" helps.
+     * </ul>
+     * @param dom a faulty DOM tree
+     * @param x the exception caused by trying to validate the original DOM tree
+     * @return a valid DOM tree, or null if it cannot be corrected
+     */
+    @SuppressWarnings("fallthrough")
+    public static Element autocorrect(Element dom, SAXException x) {
+        String error = x.getMessage();
+        if (error != null && error.contains("cvc-") && !error.contains("cvc-complex-type.2.4.a:")) { // NOI18N
+            // The message from Xerces "Invalid content was found starting with element...".
+            // All of the corrections that could be made here would be fixing this error.
+            // So if something else is wrong, don't even bother.
+            // For a non-Xerces parser, probably the "cvc-" will not be present, so try to fix.
+            return null;
+        }
+        {
+            Element attempt = (Element) dom.cloneNode(true);
+            NodeList datas = attempt.getElementsByTagName("data");
+            if (datas.getLength() > 0) {
+                Element data = (Element) datas.item(0);
+                String ns = data.getNamespaceURI();
+                if (ns != null) {
+                    int slash = ns.lastIndexOf('/');
+                    if (slash != -1) {
+                        try {
+                            String ns2 = ns.substring(0, slash + 1) + Integer.toString(Integer.parseInt(ns.substring(slash + 1)) + 1);
+                            if (_resolveURI(ns2) != null) {
+                                Element data2 = translateXML(data, ns2);
+                                data.getParentNode().replaceChild(data2, data);
+                                try {
+                                    validate(attempt);
+                                    return attempt;
+                                } catch (SAXException failed) {}
+                            }
+                        } catch (NumberFormatException ignoreme) {}
+                    }
+                }
+            }
+        }
+        // For order corrections, we really rely on the error message to know what to try.
+        // Trying every combination would be too slow.
+        // This only works with Xerces (which is what we use for now for validation)
+        // and assumes the messages have not been translated (the JRE does not do so).
+        Matcher m = Pattern.compile(
+                "cvc-complex-type[.]2[.]4[.]a: Invalid content was found starting with element '(.+)'. One of '.+' is expected."). // NOI18N
+                matcher(error);
+        if (m.matches()) {
+            String misplacedName = m.group(1);
+            Element attempt = (Element) dom.cloneNode(true);
+            NodeList datas = attempt.getElementsByTagName("data");
+            if (datas.getLength() > 0) {
+                Element data = (Element) datas.item(0);
+                NodeList stuff = data.getChildNodes();
+                int len = stuff.getLength();
+                if (len > 1) {
+                    int numberOfMisplaced = 0;
+                    Node originalFront = stuff.item(0);
+                    Node misplaced = null;
+                    for (int i = 0; i < len; i++) {
+                        Node n = stuff.item(i);
+                        if (n instanceof Element) {
+                            Element e = (Element) n;
+                            boolean matches = misplacedName.equals(e.getLocalName());
+                            if (misplaced == null && matches) {
+                                misplaced = n;
+                            } else if (misplaced != null && !matches) {
+                                break;
+                            }
+                        }
+                        if (misplaced != null) {
+                            numberOfMisplaced++;
+                            data.insertBefore(n, originalFront);
+                        }
+                    }
+                    try {
+                        validate(attempt);
+                        return attempt;
+                    } catch (SAXException failed) {}
+                    for (int i = numberOfMisplaced; i < len; i++) {
+                        data.insertBefore(stuff.item(i), misplaced);
+                        try {
+                            validate(attempt);
+                            return attempt;
+                        } catch (SAXException failed) {}
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static Element translateXML(Element from, String namespace) { // XXX use #136595
+        Element to = from.getOwnerDocument().createElementNS(namespace, from.getLocalName());
+        NodeList nl = from.getChildNodes();
+        int length = nl.getLength();
+        for (int i = 0; i < length; i++) {
+            Node node = nl.item(i);
+            Node newNode;
+            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                newNode = translateXML((Element) node, namespace);
+            } else {
+                newNode = node.cloneNode(true);
+            }
+            to.appendChild(newNode);
+        }
+        NamedNodeMap m = from.getAttributes();
+        for (int i = 0; i < m.getLength(); i++) {
+            Node attr = m.item(i);
+            to.setAttribute(attr.getNodeName(), attr.getNodeValue());
+        }
+        return to;
+    }
+
 }

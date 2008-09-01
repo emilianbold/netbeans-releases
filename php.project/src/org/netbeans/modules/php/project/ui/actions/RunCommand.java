@@ -43,7 +43,6 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -92,28 +91,5 @@ public class RunCommand extends Command implements Displayable {
 
     public String getDisplayName() {
         return DISPLAY_NAME;
-    }
-
-    private void eventuallyUploadFiles() {
-        if (!isRemoteConfigSelected()) {
-            return;
-        }
-        UploadCommand uploadCommand = (UploadCommand) getOtherCommand(UploadCommand.ID);
-        if (!uploadCommand.isActionEnabled(null)) {
-            return;
-        }
-
-        PhpProjectProperties.UploadFiles uploadFiles = null;
-        String remoteUpload = getProject().getEvaluator().getProperty(PhpProjectProperties.REMOTE_UPLOAD);
-        assert remoteUpload != null;
-        try {
-            uploadFiles = PhpProjectProperties.UploadFiles.valueOf(remoteUpload);
-        } catch (IllegalArgumentException iae) {
-            // ignored
-        }
-
-        if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
-            uploadCommand.uploadFiles(getProject().getSourcesDirectory());
-        }
     }
 }

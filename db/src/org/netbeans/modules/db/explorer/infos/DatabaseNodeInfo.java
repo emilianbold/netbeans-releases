@@ -353,8 +353,10 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
 
     public void refreshChildren() throws DatabaseException {
         // create list (infos)
-        put(DatabaseNodeInfo.CHILDREN, new Vector());
-        getChildren();
+        Vector children = loadChildren(new Vector());
+
+        put(DatabaseNodeInfo.CHILDREN, children);
+        
         notifyChange();
     }
     
@@ -693,9 +695,20 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
             return children;
         }
 
+        Vector chalt = loadChildren(children);
+
+        put(CHILDREN, chalt);
+
+        // Do NOT notify change here, as this is called by the stateChanged()
+        // method in the Node, we'd end up in an endless loop
+        
+        return chalt;
+    }
+    
+    public Vector loadChildren(Vector initialList) throws DatabaseException {
         Vector chalt = new Vector();
         initChildren(chalt);
-        chalt.addAll(children);
+        chalt.addAll(initialList);
 
         for (int i=0; i<chalt.size();i++) {
             Object e_child = chalt.elementAt(i);
@@ -705,17 +718,11 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
             }
         }
 
-        children = chalt;
-        put(CHILDREN, children);
-        
-        // Do NOT notify change here, as this is called by the stateChanged()
-        // method in the Node, we'd end up in an endless loop
-        
-        return children;
+        return chalt;
     }
     
     // For debugging
-    public void printChildren(String message, Vector children) {
+    public static void printChildren(String message, Vector children) {
         System.out.println("");
         System.out.println(message);
         for ( Object child : children ) {
@@ -746,27 +753,15 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
             notifyChange();
         }
     }
-    
+        
     public void removeChild(DatabaseNodeInfo child) throws DatabaseException {
         removeChild(child, true);
     }
-    
-    public synchronized void removeChild(DatabaseNodeInfo child, boolean notify) 
+
+    public synchronized void removeChild(DatabaseNodeInfo child, boolean notify)
             throws DatabaseException {
         getChildren().remove(child);
-        
-        if ( notify ) {
-            notifyChange();
-        }
-    }
-    
-    public void setChildren(Vector chvec) {
-        setChildren(chvec, true);
-    }
 
-    public void setChildren(Vector chvec, boolean notify)
-    {
-        put(CHILDREN, chvec);
         if ( notify ) {
             notifyChange();
         }
@@ -898,7 +893,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         changeSupport.removeChangeListener(listener);
     }
     
-    protected void notifyChange() {
+    public void notifyChange() {
         changeSupport.fireChange();
     }
     

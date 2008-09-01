@@ -96,7 +96,7 @@ import org.w3c.dom.Node;
  * @author  Timothy Prinzing
  * @author  Tor Norbye
  */
-/*public*/ class DesignerCaret extends Rectangle implements FocusListener, MouseListener,
+public class DesignerCaret extends Rectangle implements FocusListener, MouseListener,
     MouseMotionListener {
     private static transient Action selectWord = null;
     private static transient Action selectLine = null;

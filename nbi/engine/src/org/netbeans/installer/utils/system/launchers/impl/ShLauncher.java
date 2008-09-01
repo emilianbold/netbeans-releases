@@ -107,7 +107,7 @@ public class ShLauncher extends CommonLauncher {
         "/usr/local/j2se", "/usr/local/j2se/*",
         "/usr/local/j2sdk","/usr/local/j2sdk/*",
         
-        "/opt/java",  "/opt/java/*",
+        "/opt/java*",  "/opt/java/*",
         "/opt/jdk*",  "/opt/jdk/*",
         "/opt/j2sdk", "/opt/j2sdk/*",
         "/opt/j2se",  "/opt/j2se/*",

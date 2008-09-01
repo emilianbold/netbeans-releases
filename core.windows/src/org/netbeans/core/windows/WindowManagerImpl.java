@@ -1295,9 +1295,12 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
                 arr = new ArrayList<Runnable>();
             }
 
+            Logger perf = Logger.getLogger("org.netbeans.log.startup"); // NOI18N
             for (Runnable r : arrCopy) {
                 try {
+                    perf.log(Level.FINE, "start", "invokeWhenUIReady: " + r.getClass().getName()); // NOI18N
                     r.run();
+                    perf.log(Level.FINE, "end", "invokeWhenUIReady: " + r.getClass().getName()); // NOI18N
                 } catch (RuntimeException ex) {
                     Logger.getLogger(WindowManagerImpl.class.getName()).log(
                             Level.WARNING, null, ex);

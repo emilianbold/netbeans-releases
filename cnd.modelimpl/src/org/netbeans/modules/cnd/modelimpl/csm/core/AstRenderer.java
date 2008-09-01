@@ -250,7 +250,7 @@ public class AstRenderer {
             for (int i = 0; i < typedefs.length; i++) {
                 // It could be important to register in project before add as member...
 //                if (!isRenderingLocalContext()) {
-                    file.getProjectImpl().registerDeclaration(typedefs[i]);
+                    file.getProjectImpl(true).registerDeclaration(typedefs[i]);
 //                }
                 if (container != null) {
                     container.addDeclaration(typedefs[i]);
@@ -1421,7 +1421,7 @@ public class AstRenderer {
     
     public CsmCondition renderCondition(AST ast, CsmScope scope) {
         if( ast != null && ast.getType() == CPPTokenTypes.CSM_CONDITION ) {
-            AST first = ast.getFirstChild();
+            AST first = getFirstChildSkipQualifiers(ast);
             if( first != null ) {
                 int type = first.getType();
                 if( isExpression(type) ) {

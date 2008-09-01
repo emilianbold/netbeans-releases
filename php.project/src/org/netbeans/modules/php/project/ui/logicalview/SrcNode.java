@@ -73,7 +73,7 @@ public class SrcNode extends FilterNode {
     static final Image PACKAGE_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
     static final Image WEB_ROOT_BADGE = ImageUtilities.loadImage(
-            "org/netbeans/modules/php/project/ui/resources/webRootBadge.png"); // NOI18N
+            "org/netbeans/modules/php/project/ui/resources/webRootBadge.gif"); // NOI18N
 
     /**
      * creates source root node based on specified DataFolder.

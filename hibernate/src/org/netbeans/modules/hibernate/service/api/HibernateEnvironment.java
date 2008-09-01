@@ -109,6 +109,13 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
      * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
      */
     List<FileObject> getAllHibernateConfigFileObjects();
+    
+    /**
+     * Returns configuration fileobjects if any contained under the source root in this project.
+     * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
+     */
+    List<FileObject> getDefaultHibernateConfigFileObjects();
+    
 
     /**
      * Returns the list of 'HibernateConfiguration' (schema2beans bean) for

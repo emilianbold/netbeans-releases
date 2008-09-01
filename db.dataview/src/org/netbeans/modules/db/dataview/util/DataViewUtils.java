@@ -187,6 +187,20 @@ public class DataViewUtils {
         }
     }
 
+    public static boolean isString(int jdbcType) {
+        switch (jdbcType) {
+            case Types.CHAR:
+            case Types.VARCHAR:
+            case Types.LONGVARCHAR:
+            case -9:  //NVARCHAR
+            case -8:  //ROWID
+            case -15: //NCHAR
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public static boolean isNullString(String str) {
         return (str == null || str.trim().length() == 0);
     }

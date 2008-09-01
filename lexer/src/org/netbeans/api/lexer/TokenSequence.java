@@ -499,13 +499,17 @@ public final class TokenSequence<T extends TokenId> {
             tokenIndex--;
             token = tokenList.tokenOrEmbedding(tokenIndex).token();
             if (tokenOffset != -1) {
-                // If the token list is continuous or the original token
-                // is flyweight (there cannot be a gap before flyweight token)
-                // the original offset can be just decreased
-                // by the fetched token's length.
-                if (tokenList.isContinuous() || origToken.isFlyweight()) {
-                    tokenOffset -= token.length(); // decrease by the fetched's token length
-                } else { // mark the offset to be computed upon call to offset()
+                if (origToken != null) {
+                    // If the token list is continuous or the original token
+                    // is flyweight (there cannot be a gap before flyweight token)
+                    // the original offset can be just decreased
+                    // by the fetched token's length.
+                    if (tokenList.isContinuous() || origToken.isFlyweight()) {
+                        tokenOffset -= token.length(); // decrease by the fetched's token length
+                    } else { // mark the offset to be computed upon call to offset()
+                        tokenOffset = -1;
+                    }
+                } else {
                     tokenOffset = -1;
                 }
             }
