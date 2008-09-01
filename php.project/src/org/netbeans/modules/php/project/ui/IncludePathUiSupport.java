@@ -257,7 +257,7 @@ public final class IncludePathUiSupport {
                     if (item.isBroken()) {
                         return NbBundle.getMessage(IncludePathUiSupport.class, "LBL_MissingFile", getFileRefName(item));
                     }
-                    return item.getFilePath();
+                    return FileUtil.toFile(projectFolder.getFileObject(item.getFilePath())).getAbsolutePath();
                     //break;
             }
         }
