@@ -25,7 +25,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <EmptySpace min="0" pref="445" max="32767" attributes="0"/>
+          <EmptySpace min="0" pref="472" max="32767" attributes="0"/>
           <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <EmptySpace min="0" pref="16" max="32767" attributes="0"/>
@@ -37,7 +37,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <EmptySpace min="0" pref="282" max="32767" attributes="0"/>
+          <EmptySpace min="0" pref="288" max="32767" attributes="0"/>
           <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <EmptySpace min="0" pref="17" max="32767" attributes="0"/>
@@ -75,14 +75,14 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="408" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="435" max="32767" attributes="0"/>
                   <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="pathLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="339" max="32767" attributes="0"/>
+                                  <EmptySpace pref="351" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="1" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
@@ -106,7 +106,7 @@
                                               <Component id="progressBar" min="-2" pref="146" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
-                                      <Component id="pathTextComboBox" pref="362" max="32767" attributes="0"/>
+                                      <Component id="pathTextComboBox" pref="387" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace min="-2" max="-2" attributes="0"/>
                                   <Component id="chooserButton" min="-2" pref="30" max="-2" attributes="0"/>
@@ -119,7 +119,7 @@
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <EmptySpace min="0" pref="223" max="32767" attributes="0"/>
+                  <EmptySpace min="0" pref="227" max="32767" attributes="0"/>
                   <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
@@ -259,12 +259,12 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane1" alignment="0" pref="408" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="0" pref="435" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane1" alignment="0" pref="223" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="0" pref="227" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>
