@@ -37,28 +37,24 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grails;
+package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import java.io.File;
-import org.netbeans.modules.groovy.grails.settings.GrailsSettings;
-import org.openide.modules.ModuleInstall;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.services.CsmTypedefResolver;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 
 /**
  *
- * @author Petr Hejl
+ * @author Alexander Simon
  */
-public class ModuleInstaller extends ModuleInstall {
+public class TypedefResolver extends CsmTypedefResolver {
 
     @Override
-    public void restored() {
-        GrailsSettings settings = GrailsSettings.getInstance();
-        String grailsBase = settings.getGrailsBase();
-        if (grailsBase == null) {
-            String env = System.getenv("GRAILS_HOME"); // NOI18N
-            if (env != null && RuntimeHelper.isValidRuntime(new File(env))) {
-                settings.setGrailsBase(env);
-            }
+    public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
+        if (orig instanceof CsmOffsetable) {
+            return ResolverFactory.createResolver((CsmOffsetable) orig).getOriginalClassifier(orig);
         }
+        return orig;
     }
-
 }

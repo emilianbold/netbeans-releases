@@ -85,6 +85,9 @@ public enum Platform {
     AIX_PPC64(OS_FAMILY_AIX, HARDWARE_PPC64, null, null, "AIX PowerPC X64"),
 
     HPUX(OS_FAMILY_HPUX, null, null, null, "HP-UX"),
+    HPUX_IA64(OS_FAMILY_HPUX, HARDWARE_IA64, null, null, "HP-UX Itanium"),
+    HPUX_PA_RISC(OS_FAMILY_HPUX, HARDWARE_PA_RISC, null, null, "HP-UX PA-RISC"),
+    HPUX_PA_RISC20(OS_FAMILY_HPUX, HARDWARE_PA_RISC20, null, null, "HP-UX PA-RISC2.0"),
     ;
     
     /////////////////////////////////////////////////////////////////////////////////

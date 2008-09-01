@@ -24,30 +24,31 @@
 package org.netbeans.test.installer;
 
 import java.util.logging.Logger;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import junit.framework.TestCase;
 
 /**
  *
  * @author Mikhail Vaysman
  */
-public class TestInstallerAll extends NbTestCase {
+public class InstallerAndUninstallerAllTest extends TestCase {
 
-    public TestInstallerAll() {
+    public InstallerAndUninstallerAllTest() {
         super("Installer test");
     }
 
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(TestInstallerAll.class);
+//    public static Test suite() {
+//        TestSuite suite = new NbTestSuite(InstallerAndUninstallerAllTest.class);
+//       TestSuite suite = new TestSuite("Installer All Packs bundle test");
+//
+//        suite.addTest(TestSuite.create(InstallerAndUninstallerAllTest.class, ".*", ".*"));
+//
+//        return suite;
+//    }
 
-        return suite;
-    }
-
+    @org.junit.Test
     public void testInstaller() {
         TestData data = new TestData(Logger.getLogger("global"));
-        
+
         Utils.phaseOne(this, data, "all");
 
         //select apache
@@ -64,6 +65,6 @@ public class TestInstallerAll extends NbTestCase {
     }
 
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(suite());
+        org.junit.runner.JUnitCore.runClasses(InstallerAndUninstallerAllTest.class);
     }
 }

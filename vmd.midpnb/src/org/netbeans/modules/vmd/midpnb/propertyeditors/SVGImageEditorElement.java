@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import java.awt.BorderLayout;
@@ -55,7 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.DefaultComboBoxModel;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -75,7 +73,6 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditor
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
-import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGMenuImageParser;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGImageComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -194,15 +191,14 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     @Override
     public void postSetValue(final DesignComponent parentComponent, final DesignComponent childComponent) {
         final FileObject[] svgImageFileObject = new FileObject[1];
-        childComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+        childComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
             public void run() {
-                PropertyValue propertyValue = childComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
-                if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
-                    Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(parentComponent.getDocument(), MidpTypes.getString(propertyValue));
-                    Iterator<FileObject> iterator = images.keySet().iterator();
-                    svgImageFileObject[0] = iterator.hasNext() ? iterator.next() : null;
-                }
+                String path = (String) pathTextComboBox.getSelectedItem();
+                childComponent.writeProperty(SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(path));
+                Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(parentComponent.getDocument(), path);
+                Iterator<FileObject> iterator = images.keySet().iterator();
+                svgImageFileObject[0] = iterator.hasNext() ? iterator.next() : null;
             }
         });
 
@@ -217,7 +213,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         if (parser == null) {
             return;
         }
-        
+
         InputStream inputStream = null;
         try {
             inputStream = imageFO.getInputStream();
@@ -236,7 +232,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
             }
         }
     }
-    
+
     private void setText(String text) {
         if (text == null) {
             text = ""; // NOI18N

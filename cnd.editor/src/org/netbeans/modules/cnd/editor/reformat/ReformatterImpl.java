@@ -227,8 +227,15 @@ public class ReformatterImpl {
                     if (braces.parenDepth == 0) {
                         StackEntry entry = braces.peek();
                         if (entry == null || entry.getKind() != LBRACE ||
-                            entry.getImportantKind() == CLASS || entry.getImportantKind() == NAMESPACE){
-                            braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
+                            entry.getImportantKind() == CLASS || entry.getImportantKind() == STRUCT || entry.getImportantKind() == NAMESPACE){
+                            Token<CppTokenId> next = ts.lookNextImportant();
+                            if (next != null && next.id() == COLON) {
+                                braces.setStatementContinuation(BracesStack.StatementContinuation.CONTINUE_INIT);
+                            } else {
+                                if (braces.getStatementContinuation() != BracesStack.StatementContinuation.CONTINUE_INIT) {
+                                    braces.setStatementContinuation(BracesStack.StatementContinuation.STOP);
+                                }
+                            }
                         }
                         if (braces.lastStatementParen >= 0) {
                             braces.lastStatementParen = -1;
@@ -763,6 +770,13 @@ public class ReformatterImpl {
                         break;
                     }
                 }
+            } else if (braces.getStatementContinuation() == BracesStack.StatementContinuation.CONTINUE_INIT){
+                if (entry.getKind() == LBRACE) {
+                    if (entry.getImportantKind() != null &&
+                        (entry.getImportantKind() == CLASS || entry.getImportantKind() == STRUCT)) {
+                        shift += codeStyle.getConstructorInitializerListContinuationIndent();
+                    }
+                }
             }
         } else {
             if (braces.getStatementContinuation() == BracesStack.StatementContinuation.CONTINUE){
@@ -1222,6 +1236,8 @@ public class ReformatterImpl {
                                 spaceBefore(previous, codeStyle.spaceWithinBraces());
                             }
                         }
+                    } else if (diff.replace != null) {
+                        diff.after.setText(0, 0, false);
                     }
                     done = true;
                 }
