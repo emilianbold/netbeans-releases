@@ -43,7 +43,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
@@ -53,7 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
  * @author Vladimir Kvashin
  */
 public class FilePreprocessorConditionState
-        implements APTParseFileWalker.EvalCallback, Comparable {
+        implements APTParseFileWalker.EvalCallback {
 
     private static final boolean TRACE = Boolean.getBoolean("cnd.pp.condition.state.trace");
 
@@ -149,12 +148,57 @@ public class FilePreprocessorConditionState
         size++;
     }
 
-    public int compareTo(Object o) {
+    public boolean isBetter(Object o) {
         int result = compareToImpl(o);
         if (TRACE) {
             traceComparison(o, result);
         }
-        return result;
+        return result > 0;
+    }
+    
+    public boolean isEqual(FilePreprocessorConditionState other) {
+        // we assume that the array is ordered
+        if (this.size == other.size) {
+            for (int i = 0; i < size; i++) {
+                if (this.offsets[i] != other.offsets[i]) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean isSubset(FilePreprocessorConditionState other) {
+        // we assume that the array is ordered
+        if (this.size < other.size) {
+            int thisPos = 0;
+            int otherPos = 0;
+            while (thisPos < size && otherPos < other.size) {
+                // on each iteration we assume
+                // that all on the left of the current position
+                // this is a subset of other
+                if (this.offsets[thisPos] == other.offsets[thisPos]) {
+                    thisPos++;
+                    otherPos++;
+                    continue;
+                } else if (this.offsets[thisPos] < other.offsets[thisPos]) {
+                    return false;
+                } else { // this.offsets[thisPos] > other.offsets[thisPos]
+                    while (++otherPos < other.size) {
+                        if (this.offsets[thisPos] == other.offsets[thisPos]) {
+                            thisPos++;
+                            otherPos++;
+                            continue;
+                        }
+                    }
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     private void traceComparison(Object o, int result) {

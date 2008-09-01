@@ -83,17 +83,23 @@ public final class ParserQueue {
     public static class Entry implements Comparable<Entry> {
 
         private FileImpl file;
-        private APTPreprocHandler.State ppState;
+        /** either APTPreprocHandler.State or Collection<APTPreprocHandler.State> */
+        private Object ppState;
         private Position position;
         private int serial;
 
-        private Entry(FileImpl file, APTPreprocHandler.State ppState, Position position, int serial) {
+        private Entry(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position, int serial) {
             if( TraceFlags.TRACE_PARSER_QUEUE ) {
                 System.err.println("creating entry for " + file.getAbsolutePath() +
-                        " as " + tracePreprocState(ppState)); // NOI18N
+                        " as " + tracePreprocStates(ppStates)); // NOI18N
             }
             this.file = file;
-            this.ppState = ppState;
+            if (ppStates.size() == 1) {
+                this.ppState = ppStates.iterator().next();
+            } else {
+                this.ppState = ppStates;
+            }
+            
             this.position = position;
             this.serial = serial;
         }
@@ -102,8 +108,20 @@ public final class ParserQueue {
             return file;
         }
 
+        /** @deprecated - use getPreprocStates() instead */
         public APTPreprocHandler.State getPreprocState() {
-            return ppState;
+            return getPreprocStates().iterator().next(); // never empty!
+        }
+
+        /** @erecated - use getPreprocStates() instead */
+        public Collection<APTPreprocHandler.State> getPreprocStates() {
+            Object state = ppState;
+            if (state instanceof APTPreprocHandler.State || state == null) {
+                return Collections.singleton((APTPreprocHandler.State) state);
+            }
+            else {
+                return (Collection<APTPreprocHandler.State>) state;
+            }
         }
 
         public Position getPosition() {
@@ -129,12 +147,26 @@ public final class ParserQueue {
             if( detailed ) {
                 retValue.append("\nposition: ").append(position); // NOI18N
                 retValue.append(", serial: ").append(serial); // NOI18N
-                retValue.append("\nwith PreprocState:\n").append(ppState); // NOI18N
+                retValue.append("\nwith PreprocStates:"); // NOI18N
+                for (APTPreprocHandler.State state : getPreprocStates()) {
+                    retValue.append('\n');
+                    retValue.append(state);
+                }
             }
             return retValue.toString();
         }
 
-        public void setState(APTPreprocHandler.State ppState) {
+        private synchronized void addStates(Collection<APTPreprocHandler.State> ppStates) {
+            if (this.ppState instanceof APTPreprocHandler.State) {
+                APTPreprocHandler.State oldState = (APTPreprocHandler.State) ppState;
+                this.ppState = new ArrayList<APTPreprocHandler.State>();
+                ((Collection<APTPreprocHandler.State>) this.ppState).add(oldState);
+            }
+            Collection<APTPreprocHandler.State> states = (Collection<APTPreprocHandler.State>) this.ppState;
+            states.addAll(ppStates);
+        }
+        
+        private synchronized void setStates(Collection<APTPreprocHandler.State> ppStates) {
             // TODO: IZ#87204: AssertionError on _Bvector_base opening
             // review why it could be null
             // FIXUP: remove assert checks and update if statements to prevent NPE
@@ -143,10 +175,10 @@ public final class ParserQueue {
 
             if( TraceFlags.TRACE_PARSER_QUEUE ) {
                 System.err.println("setPreprocStateIfNeed for " + file.getAbsolutePath() +
-                        " as " + tracePreprocState(ppState) + " with current " + tracePreprocState(this.ppState)); // NOI18N
+                        " as " + tracePreprocStates(ppStates) + " with current " + tracePreprocStates(getPreprocStates())); // NOI18N
             }
             // we don't need check here - all logic is in ProjectBase.onFileIncluded
-            this.ppState = ppState;
+            this.ppState = ppStates;
         }
 
         public int compareTo(Entry that) {
@@ -161,6 +193,23 @@ public final class ParserQueue {
 
     }
 
+    /*package*/static String tracePreprocStates(Collection<APTPreprocHandler.State> ppStates) {
+        StringBuilder sb = new StringBuilder('('); //NOI18N
+        boolean first = false;
+        for (APTPreprocHandler.State state : ppStates) {
+            sb.append('(');
+            if (!first) {
+                sb.append(';');
+            }
+            first = false;
+            sb.append(tracePreprocState(state));
+            sb.append(')');
+        }
+        sb.append(')');
+        return sb.toString();
+    }
+    
+    
     /*package*/static String tracePreprocState(APTPreprocHandler.State ppState) {
         if (ppState == null) {
             return "null"; // NOI18N
@@ -225,8 +274,6 @@ public final class ParserQueue {
 
     private final boolean addAlways;
 
-    //private WeakList<CsmProgressListener> progressListeners = new WeakList<CsmProgressListener>();
-
     private Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
 
     private ParserQueue(boolean addAlways) {
@@ -257,8 +304,21 @@ public final class ParserQueue {
     /**
      * If file isn't yet enqueued, places it at the beginning of the queue,
      * otherwise moves it there
+     * @deprecated use the one with clearPrevState parameter
      */
     public void add(FileImpl file, APTPreprocHandler.State ppState, Position position) {
+        add(file, Collections.singleton(ppState), position, true);
+    }
+
+    /**
+     * If file isn't yet enqueued, places it at the beginning of the queue,
+     * otherwise moves it there
+     */
+    public void add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position, boolean clearPreState) {
+        if (ppStates.isEmpty()) {
+            Utils.LOG.severe("Adding a file with an emty preprocessor state set"); //NOI18N
+        }
+        assert state != null;
         if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: add " + file.getAbsolutePath() + " as " + position);
         synchronized ( lock ) {
             if( state == State.OFF  ) return;
@@ -277,7 +337,11 @@ public final class ParserQueue {
                 if( entry == null ) {
                     assert false : "ProjectData contains file " + file + ", but there is no matching entry in the queue"; // NOI18N
                 } else {
-                    entry.setState(ppState);
+                    if (clearPreState) {
+                        entry.addStates(ppStates);
+                    } else {
+                        entry.setStates(ppStates);
+                    }
                     if (position.compareTo(entry.getPosition()) < 0) {
                         queue.remove(entry);
                         entry.setPosition(position);
@@ -290,7 +354,7 @@ public final class ParserQueue {
                 files.add(file);
             }
             if (entry == null) {
-                entry = new Entry(file, ppState, position, ++serial);
+                entry = new Entry(file, ppStates, position, ++serial);
                 addEntry = true;
             }
             if (addEntry) {

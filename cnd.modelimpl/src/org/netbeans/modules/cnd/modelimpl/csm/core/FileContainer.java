@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -75,7 +77,8 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * Storage for files and states. Class was extracted from ProjectBase.
  * @author Alexander Simon
  */
-/*package-local*/ class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
+/*package-local*/ 
+class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
     private final Object lock = new Object();
     private Map<CharSequence, MyFile> myFiles = new ConcurrentHashMap<CharSequence, MyFile>();
@@ -149,26 +152,30 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         return impl;
     }
 
-    public void putPreprocConditionState(Entry entry, FilePreprocessorConditionState pcState) {
-        if (entry != null) {
-            MyFile f = ((MyFile) entry);
-//            if (pcState == null) {
-//                System.err.printf("Null pcState for %s\n", f.canonical);
-//            }
-            f.setPCState(pcState);
-        }
-    }
+//    /** @deprecated  - use entry */
+//    public void putPreprocConditionState(Entry entry, FilePreprocessorConditionState pcState) {
+//        if (entry != null) {
+//            MyFile f = ((MyFile) entry);
+////            if (pcState == null) {
+////                System.err.printf("Null pcState for %s\n", f.canonical);
+////            }
+//            f.setPCState(pcState);
+//        }
+//    }
 
+    /** @deprecated  - use entry */
     public void putPreprocState(File file, APTPreprocHandler.State state) {
         MyFile f = getMyFile(file, true);
         putPreprocState(f, state);
     }
 
+    /** @deprecated  */
     public void putPreprocState(Entry entry, APTPreprocHandler.State state) {
         if (entry == null) {
             return;
         }
         MyFile f = (MyFile) entry;
+        //assert f.size() <= 1 : "this method shold never be called for an entry with mltiple states"; //NOI18N
 	if (f.getState() == null || !f.getState().isValid()) {
 	    f.setState(state);
 	} else {
@@ -189,16 +196,15 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	    System.err.println(state);
 	}
     }
-    
+
+    @Deprecated
     public void invalidatePreprocState(File file) {
         MyFile f = getMyFile(file, false);
         if (f == null){
             return;
         }
         synchronized (f) {
-            if (f.getState() != null){
-                f.setState(APTHandlersSupport.createInvalidPreprocState(f.getState()));
-            }
+            f.invalidateState();
         }
         if (TRACE_PP_STATE_OUT) {
             String path = getFileKey(file, false);
@@ -206,6 +212,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         }
     }
     
+    /** @deprecated use  getPreprocStates() or getEntry() instead*/
     public APTPreprocHandler.State getPreprocState(File file) {
         MyFile f = getMyFile(file, false);
         if (f == null){
@@ -214,10 +221,11 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         return f.getState();
     }
 
-    public FilePreprocessorConditionState getPreprocessorConditionState(File file) {
-        MyFile f = getMyFile(file, false);
-        return (f == null) ? null : f.getPCState();
-    }
+// unused    
+//    public FilePreprocessorConditionState getPreprocessorConditionState(File file) {
+//        MyFile f = getMyFile(file, false);
+//        return (f == null) ? null : f.getPCState();
+//    }
 
     public Entry getEntry(File file) {
         return getMyFile(file, false);
@@ -232,12 +240,12 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         return getLock(f);
     }
     
-    public void clearState(){
+    public void debugClearState(){
         List<MyFile> files;
         files = new ArrayList<MyFile>(myFiles.values());
         for (MyFile file : files){
             synchronized (getLock(file)) {
-                file.setState(null);
+                file.clearState();
             }
         }
 	put();
@@ -313,7 +321,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         if (f == null) {
             // check alternative expecting that 'path' is canonical path
             String path2 = getAlternativeFileKey(path);
-            f = path2 == null ? null : myFiles.get(path2);
+            f = (path2 == null) ? null : myFiles.get(path2);
             if (f != null) {
                 if (TraceFlags.TRACE_CANONICAL_FIND_FILE) {
                     System.err.println("alternative for " + path + " is " + path2);
@@ -511,9 +519,52 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         }
     }
 
+    public static class StatePair {
+        
+        public final APTPreprocHandler.State state;
+        public final FilePreprocessorConditionState pcState;
+        
+        private StatePair(State ppState, FilePreprocessorConditionState pcState) {
+            this.state = ppState;
+            this.pcState = pcState;
+        }
+
+//        public FilePreprocessorConditionState getPCState() {
+//            return pcState;
+//        }
+//
+//        public State getState() {
+//            return ppState;
+//        }
+    }
+            
     public static interface Entry {
+
+        /** @deprecated  */
         APTPreprocHandler.State getState();
+        /** @deprecated  */
         FilePreprocessorConditionState getPCState();
+
+        /** Gets the states collection */
+        Collection<StatePair> getStates();
+        
+        void replacePairs(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
+
+        StatePair addPair(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
+        
+//        /** Should never be empty - so if the one to remove is the only one, relace it by defaultPair */
+//        void removePair(StatePair pair, StatePair defaultPair);
+        
+        void removePair(StatePair pair);
+        
+        public void removePairs(Collection<StatePair> pairsToRemove);
+        
+        int size();
+
+        /**
+         * Gets mod count; mod count allows to understand whether the entry was changed:
+         * each modification changes mod count
+         */
         int getModCount();
     }
 
@@ -521,25 +572,29 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
         private final CsmUID<CsmFile> fileNew;
         private final CharSequence canonical;
-        private APTPreprocHandler.State state;
-        private FilePreprocessorConditionState pcState;
+        private Object data; // either StatePair or Collection<StatePair>
         private int modCount;
         
         private MyFile (final DataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);
             canonical = input.readUTF();
             modCount = input.readInt();
-            if (input.readBoolean()){
-                state = PersistentUtils.readPreprocState(input);
-            }
-            if (input.readBoolean()){
-                pcState = new FilePreprocessorConditionState(input);
+            if (input.readBoolean()) {
+                int cnt = input.readInt();
+                if (cnt == 1) {
+                    data = readStatePair(input);
+                } else {
+                    data = new ArrayList<StatePair>(cnt);
+                    for (int i = 0; i < cnt; i++) {
+                        ((List<StatePair>) data).add(readStatePair(input));
+                    }
+                }
             }
         }
         
         private MyFile(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
             this.fileNew = fileNew;
-            this.state = state;
+            this.data = new StatePair(state, null);
             this.canonical = getCanonicalKey(fileKey);
             this.modCount = 0;
         }
@@ -548,42 +603,181 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
             UIDObjectFactory.getDefaultFactory().writeUID(fileNew, output);
             output.writeUTF(canonical.toString());
             output.writeInt(modCount);
-            output.writeBoolean(state != null);
-            if (state != null) {
-                PersistentUtils.writePreprocState(state, output);
+            output.writeBoolean(data != null);
+            if (data != null) {
+                if(data instanceof StatePair) {
+                    output.writeInt(1);
+                    writeStatePair(output, (StatePair) data);
+                } else {
+                    Collection<StatePair> pairs = (Collection<StatePair>)data;
+                    output.writeInt(pairs.size());
+                    for (StatePair pair : pairs) {
+                        writeStatePair(output, pair);
+                    }
+                }
             }
-            output.writeBoolean(pcState != null);
-            if (pcState != null) {
-                pcState.write(output);
+        }
+        
+        private static StatePair readStatePair(DataInput input) throws IOException {
+            if (input.readBoolean()) {
+                APTPreprocHandler.State state = null;
+                if (input.readBoolean()){
+                    state = PersistentUtils.readPreprocState(input);
+                }
+                FilePreprocessorConditionState pcState = null;
+                if (input.readBoolean()){
+                    pcState = new FilePreprocessorConditionState(input);
+                }
+                return new StatePair(state, pcState);
+            }
+            return null;
+            
+            
+        }
+
+        private static void writeStatePair(DataOutput output, StatePair pair) throws IOException {
+            output.writeBoolean(pair != null);
+            if (pair != null) {
+                output.writeBoolean(pair.state != null);
+                if (pair.state != null) {
+                    PersistentUtils.writePreprocState(pair.state, output);
+                }
+                output.writeBoolean(pair.pcState != null);
+                if (pair.pcState != null) {
+                    pair.pcState.write(output);
+                }
             }
         }
 
         public final int getModCount() {
             return modCount;
         }
+        
+        public int size() {
+            return (data instanceof Collection) ? ((Collection) data).size() : 1;
+        }
 
+        @Deprecated
         public final FilePreprocessorConditionState getPCState() {
-            return pcState;
+            return getStates().iterator().next().pcState;
         }
 
-        public final void setPCState(FilePreprocessorConditionState newPCState) {
-            incrementModCount();
-            pcState = newPCState;
-        }
+//        public final void setPCState(FilePreprocessorConditionState newPCState) {
+//            incrementModCount();
+//            pcState = newPCState;
+//        }
+//
 
+        @Deprecated
         public final APTPreprocHandler.State getState() {
-            return state;
+            return getStates().iterator().next().state;
+        }
+
+        private void clearState() {
+            data = null;
         }
 
         //package
+        @Deprecated
         final void setState(APTPreprocHandler.State state) {
             incrementModCount();
-            this.state = state;
+            //assert size() <= 1 : "this method shold never be called for an entry with mltiple states"; //NOI18N
+            data = new StatePair(state, null);
+        }
+        
+        public void replacePairs(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState) {
+            data = new StatePair(ppState, pcState);
         }
 
         private void incrementModCount() {
             modCount = (modCount == Integer.MAX_VALUE) ? 0 : modCount+1;
         }
+
+        private void invalidateState() {
+            incrementModCount();
+            if (data != null) {
+                if (data instanceof StatePair) {
+                    data = createInvalidState((StatePair) data);
+                } else {
+                    Collection<StatePair> newData = new ArrayList();
+                    for (StatePair pair : (Collection<StatePair>) data) {
+                        newData.add(createInvalidState(pair));
+                    }
+                    data = newData;
+                }
+            }
+        }
+        
+        private static StatePair createInvalidState(StatePair pair) {
+            if (pair == null) {
+                return pair;
+            } else {
+                if (pair.state == null) {
+                    return pair;
+                } else {
+                    return new StatePair(APTHandlersSupport.createInvalidPreprocState(pair.state), pair.pcState);
+                }
+            }
+        }
+            
+        public Collection<StatePair> getStates() {
+            if (data == null) {
+                return Collections.singleton(new StatePair(null, null));
+            } else if(data instanceof StatePair) {
+                return Collections.singleton((StatePair) data);
+            } else {
+                return (Collection<StatePair>) data;
+            }
+        }
+
+        public StatePair addPair(State ppState, FilePreprocessorConditionState pcState) {
+            incrementModCount();
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        /** Invoke ONLY UNDER THE ENTRY LOCK - as well as all modifications */
+        public void removePair(StatePair pair) {
+            incrementModCount();
+            if (data instanceof StatePair) {
+                if (data.equals(pair)) {
+                    data = null;
+                }
+            } else {
+                for (Iterator<StatePair> iter = ((Collection<StatePair>) data).iterator(); iter.hasNext(); ) {
+                    StatePair curr = iter.next();
+                    if (curr.equals(pair)) {
+                        iter.remove();
+                        return;
+                    }
+                }
+            }
+
+        }
+
+        /** Invoke ONLY UNDER THE ENTRY LOCK - as well as all modifications */
+        public void removePairs(Collection<StatePair> pairsToRemove) {
+            incrementModCount();
+            for (StatePair pair : pairsToRemove) {
+                removePair(pair);
+            }
+        }
+        
+//        /** Invoke ONLY UNDER THE ENTRY LOCK - as well as all modifications */
+//        public void removePair(StatePair pair, StatePair defaultPair) {
+//            incrementModCount();
+//            if (size() == 1) {
+//                data = defaultPair;
+//            } else {
+//                for (Iterator<StatePair> iter = ((Collection<StatePair>) data).iterator(); iter.hasNext(); ) {
+//                    StatePair curr = iter.next();
+//                    if (curr.equals(pair)) {
+//                        iter.remove();
+//                        return;
+//                    }
+//                }
+//            }
+//        }
+//
     }
     
     private static final CharSequence getCanonicalKey(CharSequence fileKey) {

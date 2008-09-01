@@ -60,6 +60,9 @@ public interface TraceFlags {
     public static final boolean REPORT_PARSING_ERRORS = Boolean.getBoolean("parser.report.errors");
     public static final boolean DUMP_AST = Boolean.getBoolean("parser.collect.ast");
     public static final boolean DUMP_PROJECT_ON_OPEN = DebugUtils.getBoolean("cnd.dump.project.on.open", false);
+
+
+    public static final boolean SMART_HEADERS_PARSE = DebugUtils.getBoolean("cnd.smart.parse", false);
     
     /** 
      * swithces off parsing function bodies
