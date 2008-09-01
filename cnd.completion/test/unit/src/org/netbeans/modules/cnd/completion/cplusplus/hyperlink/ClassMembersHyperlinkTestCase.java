@@ -59,18 +59,30 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#145230:Various C++ expressions don't resolve
         performTest("ClassNameAfterDeref.cc", 22, 18, "ClassNameAfterDeref.cc", 2, 5);
         performTest("ClassNameAfterDeref.cc", 23, 18, "ClassNameAfterDeref.cc", 2, 5);
-        performTest("ClassNameAfterDeref.cc", 29, 16, "ClassNameAfterDeref.cc", 2, 5);
-        performTest("ClassNameAfterDeref.cc", 30, 16, "ClassNameAfterDeref.cc", 2, 5);
-        performTest("ClassNameAfterDeref.cc", 31, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 24, 10, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 25, 10, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 32, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 34, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 35, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 38, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 39, 16, "ClassNameAfterDeref.cc", 2, 5);
     }
 
     public void testClassMembersUsageAfterDereferrencedClass() throws Exception {
         // IZ#145230:Various C++ expressions don't resolve
-//        performTest("ClassNameAfterDeref.cc", 22, 25, "ClassNameAfterDeref.cc", 8, 9);
-//        performTest("ClassNameAfterDeref.cc", 23, 25, "ClassNameAfterDeref.cc", 9, 9);
-        performTest("ClassNameAfterDeref.cc", 30, 22, "ClassNameAfterDeref.cc", 6, 9);
-        performTest("ClassNameAfterDeref.cc", 31, 22, "ClassNameAfterDeref.cc", 5, 9);
-        performNullTargetTest("ClassNameAfterDeref.cc", 29, 22);
+        performTest("ClassNameAfterDeref.cc", 22, 25, "ClassNameAfterDeref.cc", 8, 9);
+        performTest("ClassNameAfterDeref.cc", 23, 25, "ClassNameAfterDeref.cc", 9, 9);
+        performTest("ClassNameAfterDeref.cc", 24, 16, "ClassNameAfterDeref.cc", 5, 9);
+        performTest("ClassNameAfterDeref.cc", 25, 16, "ClassNameAfterDeref.cc", 8, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 27, 20);
+        performTest("ClassNameAfterDeref.cc", 32, 22, "ClassNameAfterDeref.cc", 5, 9);
+        performTest("ClassNameAfterDeref.cc", 33, 15, "ClassNameAfterDeref.cc", 16, 9);
+        performTest("ClassNameAfterDeref.cc", 34, 22, "ClassNameAfterDeref.cc", 6, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 35, 24);
+        performTest("ClassNameAfterDeref.cc", 36, 15, "ClassNameAfterDeref.cc", 6, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 37, 17);
+        performTest("ClassNameAfterDeref.cc", 38, 25, "ClassNameAfterDeref.cc", 5, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 39, 25);
     }
 
     public void testClassFwdTemplateParameters() throws Exception {
