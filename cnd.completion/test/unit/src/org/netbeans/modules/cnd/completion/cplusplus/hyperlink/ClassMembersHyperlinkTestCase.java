@@ -50,6 +50,19 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ145230() throws Exception {
+        // IZ#145230:Various C++ expressions don't resolve
+        // usage of enumerators
+        performTest("useenumerators.cc", 4, 20, "useenumerators.cc", 1, 8);
+        performTest("useenumerators.cc", 16, 40, "useenumerators.cc", 11, 5);
+        performTest("useenumerators.cc", 19, 35, "useenumerators.cc", 11, 5);
+    }
+
+    public void testIZ145822() throws Exception {
+        // IZ#145230:unresolved members of typedefed class
+        performTest("useenumerators.cc", 26, 20, "useenumerators.cc", 26, 5);
+    }
+
     public void testIZ144731() throws Exception {
         // IZ#144731: function(a->m_obj ? a->m_obj : a->m_obj);
         performTest("iz145077.cc", 132, 30, "iz145077.cc", 118, 5);
