@@ -112,7 +112,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private Map<String, String> pathMap;
     private JPopupMenu menu;
     private WeakReference<DesignComponent> svgFormReferences;
-    //private WeakHashMap<DesignComponent, String[][]> orderedMap = null;
+
     public SVGFormEditorElement() {
         paths = new HashMap<String, FileObject>();
         comboBoxModel = new DefaultComboBoxModel();
@@ -244,22 +244,17 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         final FileObject[] svgImageFileObject = new FileObject[1];
         final Boolean[] parseIt = new Boolean[1];
         parseIt[0] = Boolean.TRUE;
-        parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+        parentComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
             public void run() {
-//                DesignComponent childComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
-//                if (childComponent == null) {
-//                    return;
-//                }
-
-                PropertyValue propertyValue = childComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
-                if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
-                    //String svgImagePath = MidpTypes.getString(propertyValue);
-                    Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(parentComponent.getDocument(), MidpTypes.getString(propertyValue));
-                    Iterator<FileObject> iterator = images.keySet().iterator();
-                    svgImageFileObject[0] = iterator.hasNext() ? iterator.next() : null;
-                    parseIt[0] = Boolean.TRUE;
-                }
+                String path = (String) pathTextComboBox.getSelectedItem();
+                childComponent.writeProperty(SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(path));
+                //String svgImagePath = MidpTypes.getString(propertyValue);
+                
+                Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(parentComponent.getDocument(), path);
+                Iterator<FileObject> iterator = images.keySet().iterator();
+                svgImageFileObject[0] = iterator.hasNext() ? iterator.next() : null;
+                parseIt[0] = Boolean.TRUE;
                 DesignComponent oldComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
                 if (oldComponent == childComponent && svgImageFileObject[0] != null) {
                     parseIt[0] = Boolean.FALSE;
@@ -500,7 +495,6 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     public void run() {
-
         if (documentReferences == null || documentReferences.get() == null) {
             return;
         }
@@ -984,7 +978,6 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            
         }
 
         private void showPopup(MouseEvent e) {
