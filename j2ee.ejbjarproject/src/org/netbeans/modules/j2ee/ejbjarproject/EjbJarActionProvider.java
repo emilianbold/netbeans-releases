@@ -606,6 +606,6 @@ class EjbJarActionProvider implements ActionProvider {
     }
     
     private boolean isCosEnabled() {
-        return !Boolean.parseBoolean(project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE));
+        return !Boolean.parseBoolean(project.evaluator().getProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE));
     }
 }
