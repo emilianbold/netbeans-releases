@@ -60,6 +60,7 @@ public class JsEmbeddingModel implements IncrementalEmbeddingModel {
     static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
+    static final String GSP_TAG_MIME_TYPE = "application/x-gsp"; // NOI18N
     
     final Set<String> sourceMimeTypes = new HashSet<String>();
 
@@ -69,6 +70,7 @@ public class JsEmbeddingModel implements IncrementalEmbeddingModel {
         sourceMimeTypes.add(RHTML_MIME_TYPE);
         sourceMimeTypes.add(HTML_MIME_TYPE);
         sourceMimeTypes.add(PHP_MIME_TYPE);
+        sourceMimeTypes.add(GSP_TAG_MIME_TYPE);
     }
     
     public String getTargetMimeType() {
