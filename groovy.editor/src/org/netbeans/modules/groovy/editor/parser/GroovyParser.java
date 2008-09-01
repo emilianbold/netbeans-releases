@@ -206,21 +206,23 @@ class GroovyParser implements Parser {
                         // groovy-only, this is not done in Ruby or JavaScript sanitization
                         // look backwards if there is unfinished line with trailing dot and remove that dot
                         TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(context.document, offset);
-                        Token<? extends GroovyTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
-                        if (token.id() == GroovyTokenId.DOT) {
-                            int removeStart = ts.offset();
-                            int removeEnd = removeStart + 1;
-                            StringBuilder sb = new StringBuilder(doc.length());
-                            sb.append(doc.substring(0, removeStart));
-                            sb.append(' ');
-                            if (removeEnd < doc.length()) {
-                                sb.append(doc.substring(removeEnd, doc.length()));
+                        if (ts != null) {
+                            Token<? extends GroovyTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                            if (token.id() == GroovyTokenId.DOT) {
+                                int removeStart = ts.offset();
+                                int removeEnd = removeStart + 1;
+                                StringBuilder sb = new StringBuilder(doc.length());
+                                sb.append(doc.substring(0, removeStart));
+                                sb.append(' ');
+                                if (removeEnd < doc.length()) {
+                                    sb.append(doc.substring(removeEnd, doc.length()));
+                                }
+                                assert sb.length() == doc.length();
+                                context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
+                                context.sanitizedSource = sb.toString();
+                                context.sanitizedContents = doc.substring(removeStart, removeEnd);
+                                return true;
                             }
-                            assert sb.length() == doc.length();
-                            context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
-                            context.sanitizedSource = sb.toString();
-                            context.sanitizedContents = doc.substring(removeStart, removeEnd);
-                            return true;
                         }
                     }
 

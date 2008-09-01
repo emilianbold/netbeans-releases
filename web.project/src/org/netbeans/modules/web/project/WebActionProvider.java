@@ -1414,6 +1414,6 @@ class WebActionProvider implements ActionProvider {
     }
 
     private boolean isCosEnabled() {
-        return !Boolean.parseBoolean((String) project.getWebProjectProperties().get(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE));
+        return !Boolean.parseBoolean(project.evaluator().getProperty(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE));
     }
 }
