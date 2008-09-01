@@ -459,12 +459,21 @@ public final class SceneManager {
         if ( m_isReadOnly != isReadOnly) {
             m_isReadOnly = isReadOnly;
             updateStatusBar();
-            if ( !m_isReadOnly) {
+            /*
+             * Fix for IZ#145739 - [65cat] NullPointerException at 
+             * org.netbeans.modules.mobility.svgcore.composer.SceneManager.setReadOnly
+             * 
+             * m_perseusController could be null when image was broken 
+             * from very beginning. In this case it was not initialized .
+             */
+            if ( !m_isReadOnly && m_perseusController!= null) {
                 m_perseusController.stopAnimator();
             }
             SVGObject [] selected = getSelected();
             notifySelectionChanged(selected, selected);
-            m_screenMgr.repaint();
+            if ( m_perseusController!= null ){
+                m_screenMgr.repaint();
+            }
         }
     }
 
