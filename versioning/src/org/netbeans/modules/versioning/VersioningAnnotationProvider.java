@@ -360,7 +360,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                     }        
                     set.clear();
                     if(files.size() > 0) {
-                        fileEvents.add(new FileStatusEvent(fs, files, false, true));
+                        fileEvents.add(new FileStatusEvent(fs, files, true, true));
                     }
                     if(folders.size() > 0) {
                         folderEvents.add(new FileStatusEvent(fs, folders, true,  true));
