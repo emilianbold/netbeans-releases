@@ -44,6 +44,7 @@ package org.netbeans.modules.groovy.support.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -98,7 +99,8 @@ public final class SupportOptionsPanelController extends OptionsPanelController 
 
     private SupportPanel getPanel() {
         if (panel == null) {
-            panel = new SupportPanel(this);
+            GroovyOptionsSubpanel subpanel = Lookup.getDefault().lookup(GroovyOptionsSubpanel.class);
+            panel = new SupportPanel(this, subpanel);
         }
         return panel;
     }

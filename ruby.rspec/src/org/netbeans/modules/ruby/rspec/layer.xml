@@ -4,8 +4,6 @@
     <folder name="Editors">
         <folder name="text">
             <folder name="x-ruby">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.Bundle"/>
-
                 <folder name="CodeTemplates">
                     <file name="rspec.xml" url="codetemplates.xml">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rspec.Bundle"/>

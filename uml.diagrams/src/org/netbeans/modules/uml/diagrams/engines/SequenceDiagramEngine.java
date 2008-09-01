@@ -128,6 +128,7 @@ import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
 import org.netbeans.modules.uml.drawingarea.actions.DiscoverRelationshipAction;
 import org.netbeans.modules.uml.drawingarea.actions.HierarchicalLayoutAction;
+import org.netbeans.modules.uml.drawingarea.actions.MoveNodeKeyAction;
 import org.netbeans.modules.uml.drawingarea.actions.NavigateLinkAction;
 import org.netbeans.modules.uml.drawingarea.actions.OrthogonalLayoutAction;
 import org.netbeans.modules.uml.drawingarea.actions.SQDMessageConnectProvider;
@@ -160,6 +161,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
     private PopupMenuProvider menuProvider = new DiagramPopupMenuProvider();
     private IInteraction interaction;
     private RelationshipDiscovery relDiscovery = null;
+    private boolean trackbarusage=true;
     
     public SequenceDiagramEngine(DesignerScene scene) {
         super(scene);
@@ -271,7 +273,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
             newWidget.setPreferredLocation(newWidget.convertLocalToScene(location));
         
             //
-            if(element instanceof ILifeline)
+            if(element instanceof ILifeline && trackbarusage)
             {
                 //set properties if actor
                 ILifeline ll=(ILifeline) element;
@@ -281,6 +283,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
                     new AfterValidationExecutor(new AddCarFprPresentationElementAction((SQDDiagramTopComponent) tc,(LifelineWidget) newWidget, presentation), getScene());
                 }
             }
+            trackbarusage=true;
         }
         //
         if(element instanceof ICombinedFragment || element instanceof IInteraction)
@@ -440,7 +443,8 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         IElement  element=node.getFirstSubject();
         if(node.getFirstSubject().getExpandedElementType().equals("Lifeline"))//works for both Lifeline and ActorLifeline
         {
-            WidgetAction lifelineMoveAction=new LifelineMoveAction(new LifelineMoveStrategy(), new LifelineMoveProvider(provider));        
+            WidgetAction lifelineMoveAction=new LifelineMoveAction(new LifelineMoveStrategy(), new LifelineMoveProvider(provider));
+            selectTool.addAction(new MoveNodeKeyAction(true, false));
             selectTool.addAction(lifelineMoveAction);
         }
         else if(widget instanceof CombinedFragmentWidget)//covers combinedfragments, references, interaction boundary
@@ -1718,8 +1722,11 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
             }
             else
             {
-                Rectangle tmp=llW.getLine().convertLocalToScene(llW.getLine().getBounds());
-                tmpBot=tmp.y+100;
+                if(llW.getLine().getBounds()!=null)
+                {
+                    Rectangle tmp=llW.getLine().convertLocalToScene(llW.getLine().getBounds());
+                    tmpBot=tmp.y+100;
+                }
             }
             if(tmpBot>maxY)maxY=tmpBot;
         }
@@ -1753,5 +1760,9 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
         public void focusChanged(ObjectSceneEvent event, Object previousFocusedObject, Object newFocusedObject) {
         }
         
+    }
+
+    public void doNotUseTrackbar() {
+        this.trackbarusage=false;
     }
 }

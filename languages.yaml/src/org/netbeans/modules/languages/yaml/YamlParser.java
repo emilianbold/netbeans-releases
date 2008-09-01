@@ -116,7 +116,20 @@ public class YamlParser implements Parser {
 
             YamlParserResult result = new YamlParserResult(null, this, file);
             String message = ex.getMessage();
-            if (message != null) {
+            if (message != null && message.length() > 0) {
+                // Strip off useless prefixes to make errors more readable
+                if (message.startsWith("ScannerException null ")) { // NOI18N
+                    message = message.substring(22);
+                } else if (message.startsWith("ParserException ")) { // NOI18N
+                    message = message.substring(16);
+                }
+                // Capitalize sentences
+                char firstChar = message.charAt(0);
+                char upcasedChar = Character.toUpperCase(firstChar);
+                if (firstChar != upcasedChar) {
+                    message = upcasedChar + message.substring(1);
+                }
+
                 DefaultError error = new DefaultError(null, message, null, file.getFileObject(), pos, pos, Severity.ERROR);
                 result.addError(error);
             }

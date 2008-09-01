@@ -80,6 +80,13 @@ public final class PlatformConstants {
 
     public static final String HARDWARE_IA64 = 
             "ia64";
+
+    //this includes PA_RISC 1.0 and 1.1
+    public static final String HARDWARE_PA_RISC = 
+            "pa_risc"; 
+    
+    public static final String HARDWARE_PA_RISC20 = 
+            "pa_risc2.0";
     
     public static final String HARDWARE_SPARC = 
             "sparc";

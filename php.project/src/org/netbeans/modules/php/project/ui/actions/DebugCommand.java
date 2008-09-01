@@ -75,6 +75,7 @@ public class DebugCommand extends Command implements Displayable {
         if (isScriptSelected()) {
             debugLocalCommand.invokeAction(null);
         } else {
+            eventuallyUploadFiles();
             Runnable runnable = new Runnable() {
                 public void run() {
                         try {

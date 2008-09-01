@@ -275,7 +275,7 @@ public class SceneConnectProvider implements ExConnectProvider
         }
         
         HashSet < IPresentationElement > selected = new HashSet < IPresentationElement>(conn);
-        scene.setSelectedObjects(selected);
+        scene.userSelectionSuggested(selected, false);
     }
 
     public boolean hasTargetWidgetCreator()

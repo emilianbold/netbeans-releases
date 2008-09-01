@@ -399,9 +399,20 @@ public class DwarfSource implements SourceFileProperties{
         path = normalizePath(path);
         if (path.startsWith("/") || // NOI18N
                 path.length()>2 && path.charAt(1)==':'){
+            HashSet<String> bits = new HashSet<String>();
             for (String cp : systemIncludes){
-                if (path.startsWith(cp)){
+                if (path.equals(cp)) {
                     return true;
+                }
+                for(String sub : grepSystemFolder(cp)){
+                    bits.add(sub);
+                }
+            }
+            for (String cp : systemIncludes){
+                for(String sub : bits) {
+                    if (path.startsWith(cp+sub)){
+                        return true;
+                    }
                 }
             }
         }
@@ -441,6 +452,7 @@ public class DwarfSource implements SourceFileProperties{
         }
         return path;
     }
+    
     
     private void gatherIncludes(final CompilationUnit cu) {
         if (!ourGatherIncludes) {
@@ -603,6 +615,45 @@ public class DwarfSource implements SourceFileProperties{
         return value.equals(sysValue); // NOI18N
     }
   
+    private List<String> grepSystemFolder(String path) {
+        List<String> res = grepBase.get(path);
+        if (res != null) {
+            return res;
+        }
+        res = new ArrayList<String>();
+        File folder = new File(path);
+        if (folder.exists() && folder.canRead() && folder.isDirectory()) {
+            for(File f: folder.listFiles()){
+                if (f.exists() && f.canRead() && !f.isDirectory()){
+                    List<String> l = grepSourceFile(f.getAbsolutePath());
+                    for (String i : l){
+                        if (i.indexOf('/')>0){ // NOI18N
+                            int n = i.lastIndexOf('/'); // NOI18N
+                            String relativeDir = i.substring(0,n);
+                            String dir = "/"+relativeDir; // NOI18N
+                            if (!res.contains(dir)){
+                                res.add(dir);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        List<String> secondLevel = new ArrayList<String>();
+        for(String sub : res) {
+            for(String s : grepSystemFolder(path+sub)){
+                secondLevel.add(s);
+            }
+        }
+        for(String s: secondLevel){
+            if (!res.contains(s)){
+                res.add(s);
+            }
+        }
+        grepBase.put(path, res);
+        return res;
+    }
+    
     private List<String> grepSourceFile(String fileName){
         List<String> res = grepBase.get(fileName);
         if (res != null) {

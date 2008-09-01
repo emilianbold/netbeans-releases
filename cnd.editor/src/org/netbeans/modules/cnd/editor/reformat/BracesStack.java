@@ -665,6 +665,7 @@ class BracesStack {
     public static enum StatementContinuation {
         START,
         CONTINUE,
+        CONTINUE_INIT,
         STOP;
     }
 

@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,10 +62,13 @@ import org.netbeans.modules.glassfish.spi.Recognizer;
 import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -193,6 +197,16 @@ public class StartTask extends BasicTask<OperationState> {
             Logger.getLogger("glassfish").log(Level.FINE, "V3 Environment: " + javaEnv);
         } else {
             Logger.getLogger("glassfish").log(Level.WARNING, "Unable to set JAVA_HOME for GlassFish V3 enviroment.");
+        }
+        Locale currentLocale = Locale.getDefault();
+        if (currentLocale.equals(new Locale("tr","TR"))) {
+            // the server is just plain broken when run in a Turkish locale, so
+            // we need to start it in en_US
+            envp.add("LANG=en_US");  // NOI18N
+            envp.add("LC_ALL=en_US");  // NOI18N
+            String message = NbBundle.getMessage(StartTask.class, "MSG_LocaleSwitched");  // NOI18N
+            NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+            DialogDisplayer.getDefault().notifyLater(nd);
         }
         return (String[]) envp.toArray(new String[envp.size()]);
     }
@@ -439,7 +453,7 @@ public class StartTask extends BasicTask<OperationState> {
                 Matcher matcher = pattern.matcher(value);
                 boolean result = matcher.find();
                 if(result) {
-                    StringBuffer sb = new StringBuffer();
+                    StringBuffer sb = new StringBuffer(value.length()*2);
                     do {
                         String key = matcher.group(1);
                         String replacement = varMap.get(key);

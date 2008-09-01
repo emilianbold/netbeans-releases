@@ -197,7 +197,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.setProjectConfigurationAction());
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
-            actions.add(CommonProjectActions.openSubprojectsAction());
+            //actions.add(CommonProjectActions.openSubprojectsAction()); // does not make sense for php now
             actions.add(CommonProjectActions.closeProjectAction());
             actions.add(null);
             actions.add(CommonProjectActions.renameProjectAction());
@@ -208,8 +208,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             actions.add(SystemAction.get(FindAction.class));
             // honor 57874 contact
             actions.add(null);
-            actions.addAll(Utilities.actionsForPath("Projects/Actions"));
-            // NOI18N
+            actions.addAll(Utilities.actionsForPath("Projects/Actions")); // NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
             return actions.toArray(new Action[actions.size()]);

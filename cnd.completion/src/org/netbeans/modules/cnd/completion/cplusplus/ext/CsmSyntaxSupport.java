@@ -743,7 +743,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     public boolean needShowCompletionOnText(JTextComponent target, String typedText) throws BadLocationException {
         boolean showCompletion = false;
-        char typedChar = typedText.charAt(0);
+        char typedChar = typedText.charAt(typedText.length() - 1);
         if (typedChar == ' ' || typedChar == '>' || typedChar == ':' || typedChar == '.' || typedChar == '*') {
 
             int dotPos = target.getCaret().getDot();

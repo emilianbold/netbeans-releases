@@ -59,7 +59,6 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
 
     private PersistentList systemIncludeDirectoriesList = null;
     private PersistentList systemPreprocessorSymbolsList = null;
-    private String includeFilePrefix = null;
 
     public GNUCCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
@@ -219,24 +218,6 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     }
 
     @Override
-    public String getIncludeFilePathPrefix() {
-        if (includeFilePrefix == null) {
-            includeFilePrefix = ""; // NOI18N
-            CompilerDescriptor compiler = getDescriptor();
-            if (compiler != null) {
-                String path = getPath().replaceAll("\\\\", "/"); // NOI18N
-                if (compiler.getRemoveIncludePathPrefix() != null) {
-                    int i = path.toLowerCase().indexOf("/bin"); // NOI18N
-                    if (i > 0) {
-                        includeFilePrefix = path.substring(0, i);
-                    }
-                }
-            }
-        }
-        return includeFilePrefix;
-    }
-
-    @Override
     protected void parseCompilerOutput(BufferedReader reader) {
 
         try {
@@ -253,12 +234,10 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
                         startIncludes = false;
                         continue;
                     }
-		}
-                if (startIncludes) {
                     line = cutIncludePrefix(line.trim());
-                    systemIncludeDirectoriesList.addUnique(normalizePath(getIncludeFilePathPrefix() + line));
-                    if (getIncludeFilePathPrefix().length() > 0 && line.startsWith("/usr/lib")) // NOI18N
-                        systemIncludeDirectoriesList.addUnique(normalizePath(getIncludeFilePathPrefix() + line.substring(4)));
+                    systemIncludeDirectoriesList.addUnique(normalizePath(line));
+                    if (getDescriptor().getRemoveIncludePathPrefix()!=null && line.startsWith("/usr/lib")) // NOI18N
+                        systemIncludeDirectoriesList.addUnique(normalizePath(line.substring(4)));
                     continue;
                 }
                 parseUserMacros(line, systemPreprocessorSymbolsList);

@@ -206,6 +206,7 @@ public class Installer extends ModuleInstall implements Runnable {
         logsSizeMetrics = prefs.getInt("countMetrics", 0);
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
+        System.setProperty("nb.show.statistics.ui",USAGE_STATISTICS_ENABLED);
         logMetricsEnabled = corePref.getBoolean(USAGE_STATISTICS_ENABLED,Boolean.FALSE);
         if (logMetricsEnabled) {
             //Handler for metrics
@@ -802,7 +803,15 @@ public class Installer extends ModuleInstall implements Runnable {
 
         NodeList forms = doc.getElementsByTagName("form");
         for (int i = 0; i < forms.getLength(); i++) {
-            Form f = new Form(forms.item(i).getAttributes().getNamedItem("action").getNodeValue());
+            String action = forms.item(i).getAttributes().getNamedItem("action").getNodeValue();
+            if ((action == null) || ("".equals(action))){// logging for issue #145167
+                Logger logger = Logger.getLogger("org.netbeans.ui.logger.Installer");
+                LogRecord rec = new LogRecord(Level.WARNING, "invalid action from doc:");
+                String[] params = new String[]{forms.item(i).toString(), doc.getTextContent(), doc.getDocumentURI()};
+                rec.setParameters(params);
+                logger.log(rec);
+            }
+            Form f = new Form(action);
             NodeList inputs = doc.getElementsByTagName("input");
             for (int j = 0; j < inputs.getLength(); j++) {
                 if (isChild(inputs.item(j), forms.item(i))) {

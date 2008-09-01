@@ -26,7 +26,7 @@ NAMESPACE DEFINITOIN iz143977_2 [1:1/0-11:2/370] SCOPE: iz143977_2.cc
         BASE CLASSES:
         MEMBERS:
             TYPEDEF Impl  [8:9/256-8:48/295] TYPE: iz143977_2::FactoryImpl<class,NullType> TEXT=FactoryImpl<T1,NullType>  [8:17/264-8:42/289] SCOPE: Factory 
-            TYPEDEF Parm1  [9:9/304-9:44/339] TYPE: iz143977_2::NullType TEXT=Impl::Parm1  [9:26/321-9:37/332] SCOPE: Factory 
+            TYPEDEF Parm1  [9:9/304-9:44/339] TYPE: iz143977_2::FactoryImpl<class,NullType>::Parm1 TEXT=Impl::Parm1  [9:26/321-9:37/332] SCOPE: Factory 
 
 ========== Dumping model of PROJECT DummyProject
 NAMESPACE DEFINITIONS for iz143977_2 (iz143977_2) 
@@ -46,5 +46,5 @@ NAMESPACE iz143977_2 (iz143977_2)
         BASE CLASSES:
         MEMBERS:
             TYPEDEF Impl  [8:9/256-8:48/295] TYPE: iz143977_2::FactoryImpl<class,NullType> TEXT=FactoryImpl<T1,NullType>  [8:17/264-8:42/289] SCOPE: Factory 
-            TYPEDEF Parm1  [9:9/304-9:44/339] TYPE: iz143977_2::NullType TEXT=Impl::Parm1  [9:26/321-9:37/332] SCOPE: Factory 
+            TYPEDEF Parm1  [9:9/304-9:44/339] TYPE: iz143977_2::FactoryImpl<class,NullType>::Parm1 TEXT=Impl::Parm1  [9:26/321-9:37/332] SCOPE: Factory 
 

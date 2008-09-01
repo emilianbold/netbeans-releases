@@ -160,7 +160,67 @@ public class Resolver3 implements Resolver {
         }
         return result;
     }
-    
+
+    public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
+        if (isRecursionOnResolving(offset)) {
+            return null;
+        }
+        if (CsmKindUtilities.isClassForwardDeclaration(orig)){
+            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
+            CsmClass definition;
+            if (fd instanceof ClassForwardDeclarationImpl) {
+                definition = ((ClassForwardDeclarationImpl)fd).getCsmClass(this);
+            } else {
+                definition = fd.getCsmClass();
+            }
+            if (definition != null){
+                return definition;
+            }
+        }
+        CsmClassifier out = orig;
+        Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
+        set.add(orig);
+        while (CsmKindUtilities.isTypedef(out)) {
+            CsmType t = ((CsmTypedef)out).getType();
+            if (t instanceof Resolver.SafeClassifierProvider) {
+                orig = ((Resolver.SafeClassifierProvider)t).getClassifier(this);
+            } else {
+                orig = t.getClassifier();
+            }
+            if (orig == null) {
+                break;
+            }
+            if (set.contains(orig)) {
+                // try to recover from this error
+                CsmClassifier cls = findOtherClassifier(out);
+                out = cls == null ? out : cls;
+                break;
+            }
+            set.add(orig);
+            out = orig;
+        }
+        return out;
+        
+    }
+
+    public static CsmClassifier findOtherClassifier(CsmClassifier out) {
+        CsmNamespace ns = CsmBaseUtilities.getClassNamespace(out);
+        CsmClassifier cls = null;
+        if (ns != null) {
+            CsmUID uid = out.getUID();
+            CharSequence fqn = out.getQualifiedName();
+            for (CsmDeclaration decl : ns.getDeclarations()) {
+                if (CsmKindUtilities.isClassifier(decl) && decl.getQualifiedName().equals(fqn)) {
+                    if (!decl.getUID().equals(uid)) {
+                        cls = (CsmClassifier)decl;
+                        break;
+                    }
+                }
+            }
+        }        
+        return cls;
+    }         
+
     private void findContext(Iterator it, CsmFilter filter) {
         while(it.hasNext()) {
             CsmDeclaration decl = (CsmDeclaration) it.next();
@@ -487,12 +547,6 @@ public class Resolver3 implements Resolver {
         CsmNamespace containingNS = null;
         
         if( nameTokens.length == 1 ) {
-            if (needClassifiers()){
-                result = findClassifier(nameTokens[0]);
-            }
-            if( result == null  && needNamespaces()) {
-                result = findNamespace(nameTokens[0]);
-            }
             if( result == null && needClassifiers()) {
                 containingNS = getContainingNamespace();
                 result = findClassifier(containingNS, nameTokens[0]);
@@ -514,6 +568,15 @@ public class Resolver3 implements Resolver {
                         result = resolveInBaseClasses(cls, nameTokens[0]);
                     }
                 }
+            }
+            if( result == null  && needNamespaces()) {
+                result = findNamespace(nameTokens[0]);
+                if (result == null && getContainingNamespace() != null) {
+                    result = findNamespace(getContainingNamespace().getQualifiedName() + "::" + nameTokens[0]); // NOI18N
+                }
+            }
+            if (result == null  && needClassifiers()){
+                result = findClassifier(nameTokens[0]);
             }
             if( result == null ) {
                 currTypedef = null;
@@ -708,44 +771,6 @@ public class Resolver3 implements Resolver {
         }
         return null;
     }
-
-    private CsmClassifier getOriginalClassifier(CsmClassifier orig) {
-        if (CsmKindUtilities.isClassForwardDeclaration(orig)){
-            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
-            CsmClass definition;
-            if (fd instanceof ClassForwardDeclarationImpl) {
-                definition = ((ClassForwardDeclarationImpl)fd).getCsmClass(this);
-            } else {
-                definition = fd.getCsmClass();
-            }
-            if (definition != null){
-                return definition;
-            }
-        }
-        CsmClassifier out = orig;
-        Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
-        set.add(orig);
-        while (CsmKindUtilities.isTypedef(out)) {
-            CsmType t = ((CsmTypedef)out).getType();
-            if (t instanceof Resolver.SafeClassifierProvider) {
-                orig = ((Resolver.SafeClassifierProvider)t).getClassifier(this);
-            } else {
-                orig = t.getClassifier();
-            }
-            if (orig == null) {
-                break;
-            }
-            if (set.contains(orig)) {
-                // try to recover from this error
-                CsmClassifier cls = CsmBaseUtilities.findOtherClassifier(out);
-                out = cls == null ? out : cls;
-                break;
-            }
-            set.add(orig);
-            out = orig;
-        }
-        return out;
-    }     
 
     private CsmObject resolveInClass(CsmClass cls, CharSequence name) {
         if( cls != null && cls.isValid()) {

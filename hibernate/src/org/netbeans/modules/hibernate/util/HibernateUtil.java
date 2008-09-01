@@ -170,7 +170,7 @@ public class HibernateUtil {
 
         for (SourceGroup sourceGroup : javaSourceGroup) {
             FileObject root = sourceGroup.getRootFolder();
-            Enumeration<? extends FileObject> enumeration = root.getChildren(false);
+            Enumeration<? extends FileObject> enumeration = root.getChildren(true);
             while (enumeration.hasMoreElements()) {
                 FileObject fo = enumeration.nextElement();
                 if (fo.getNameExt() != null && fo.getMIMEType().equals(HibernateCfgDataLoader.REQUIRED_MIME)) {
@@ -181,6 +181,29 @@ public class HibernateUtil {
         return configFiles;
     }
 
+    /**
+     * Seaches cfg FileObjects under the sourceroots for given projects and returns them.
+     * 
+     * @param project the project for which Hibernate configuration files need to be searched.
+     * @return list of HibernateConfiguration FileObjects or an empty list of none found.
+     */
+    public static List<FileObject> getDefaultHibernateConfigFileObjects(Project project) {
+        List<FileObject> configFiles = new ArrayList<FileObject>();
+        SourceGroup[] javaSourceGroup = getSourceGroups(project);
+
+        for (SourceGroup sourceGroup : javaSourceGroup) {
+            FileObject root = sourceGroup.getRootFolder();
+            Enumeration<? extends FileObject> enumeration = root.getChildren(false);
+            while (enumeration.hasMoreElements()) {
+                FileObject fo = enumeration.nextElement();
+                if (fo.getNameExt() != null && fo.getNameExt().contains("cfg.xml")) {
+                    configFiles.add(fo);
+                } 
+            }
+        }
+        return configFiles;
+    }
+    
     /**
      * Seaches mapping files under the given project and returns the list of 
      * FileObjects if found.

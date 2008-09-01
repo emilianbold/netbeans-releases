@@ -53,6 +53,7 @@ import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.graph.layout.GraphLayoutListener;
 import org.netbeans.api.visual.graph.layout.UniversalGraph;
+import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.support.ContainerAgnosticLayout;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -113,6 +114,11 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
             public void animatorFinished(AnimatorEvent event) {
                 movePalette() ;
                 scene.getSceneAnimator().getPreferredLocationAnimator().removeAnimatorListener(this);
+                //set diagram dirty
+                if ((scene != null) && (scene.getTopComponent() != null) && (scene.getTopComponent() instanceof UMLDiagramTopComponent))
+                {
+                    ((UMLDiagramTopComponent)scene.getTopComponent()).setDiagramDirty(true);
+                }
             }
 
             public void animatorPreTick(AnimatorEvent event) {}

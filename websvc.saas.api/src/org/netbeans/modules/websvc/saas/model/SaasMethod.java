@@ -72,6 +72,10 @@ public class SaasMethod {
         return method.getName();
     }
 
+    public String getDisplayName() {
+        return method.getName();
+    }
+    
     protected Input getInput() {
         return method.getInput();
     }

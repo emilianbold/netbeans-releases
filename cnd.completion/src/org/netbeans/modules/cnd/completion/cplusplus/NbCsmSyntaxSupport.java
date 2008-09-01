@@ -148,7 +148,11 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
                     for (int j = 0; j <= cntM1; j++) {
 			//XXX
                         //sb.append(parms[j].getType().format(true));
-			sb.append(parms[j].getType().getText());
+                        if (parms[j].isVarArgs()) {
+                            sb.append("...");// NOI18N
+                        } else {
+                            sb.append(parms[j].getType().getText());
+                        }
                         if (j < cntM1) {
                             sb.append(", "); // NOI18N
                         }

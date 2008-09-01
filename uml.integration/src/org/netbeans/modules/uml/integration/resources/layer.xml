@@ -45,11 +45,13 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Actions">
         <folder name="UML">
+            <!--
             <folder name="Keyboard">
                 <folder name="AddToDiagram">
                     <file name="org-netbeans-modules-uml-integration-netbeans-actions-AddToDiagramAction.instance"/>
                 </folder>
             </folder>
+            -->
             <file name="org-netbeans-modules-uml-integration-netbeans-actions-ReverseEngineerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.uml.integration.netbeans.actions.ReverseEngineerAction"/>
             </file>
@@ -172,12 +174,13 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-  
+  <!--
     <folder name="Shortcuts">
         <file name="D-ENTER.shadow">
             <attr name="originalFile" stringvalue="Actions/UML/Keyboard/AddToDiagram/org-netbeans-modules-uml-integration-netbeans-actions-AddToDiagramAction.instance"/>
         </file>
     </folder>
+    -->
     <!--
     <folder name="UML">
         <folder name="UMLOptions">

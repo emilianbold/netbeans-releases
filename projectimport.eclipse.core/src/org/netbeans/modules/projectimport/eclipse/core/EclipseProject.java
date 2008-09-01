@@ -135,6 +135,11 @@ public final class EclipseProject implements Comparable {
         this.links = links;
     }
 
+    List<Link> getLinks() {
+        return links;
+    }
+
+
     void setNatures(Set<String> natures) {
         this.natures = natures;
     }
