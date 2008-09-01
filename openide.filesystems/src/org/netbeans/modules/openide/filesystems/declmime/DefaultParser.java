@@ -149,6 +149,15 @@ abstract class DefaultParser  extends DefaultHandler {
                 Logger.getLogger(DefaultParser.class.getName()).log(Level.INFO, null, sex);
                 state = ERROR;
             }
+        } catch (NullPointerException npe) {
+            // Ignore NPE at com.sun.org.apache.xerces.internal.impl.XMLEntityScanner.skipChar(XMLEntityScanner.java:1414)
+            // See http://www.netbeans.org/issues/show_bug.cgi?id=126496 and
+            // https://issues.apache.org/jira/browse/XERCESJ-1327.
+            if(!isStopException(npe) && !npe.getStackTrace()[0].getMethodName().equals("skipChar")) {  //NOI18N
+                Exceptions.attachMessage(npe, "While parsing: " + fo); // NOI18N
+                Logger.getLogger(DefaultParser.class.getName()).log(Level.INFO, null, npe);
+                state = ERROR;
+            }
         } finally {
             if (is != null) {
                 try {
