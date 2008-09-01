@@ -60,12 +60,25 @@ public class ServerInstanceDescriptorImpl implements ServerInstanceDescriptor {
     //
     public int getHttpPort() {
         int httpPort = 8080;
-        try {
-            httpPort = Integer.parseInt(sunDm.getNonAdminPortNumber());
-        } catch(NumberFormatException ex) {
+//        try {
+//            httpPort = Integer.parseInt(sunDm.getNonAdminPortNumber());
+//        } catch(NumberFormatException ex) {
+//            Logger.getLogger(ServerInstanceDescriptorImpl.class.getName()).log(
+//                    Level.WARNING, "Can't get http port, default = 8080 ("  +
+//                    ex.getLocalizedMessage() + ")", ex);
+//        }
+        String httpPortStr = sunDm.getNonAdminPortNumber();
+        if(httpPortStr != null && httpPortStr.length() > 0) {
+            try {
+                httpPort = Integer.parseInt(sunDm.getNonAdminPortNumber());
+            } catch(NumberFormatException ex) {
+                Logger.getLogger(ServerInstanceDescriptorImpl.class.getName()).log(
+                        Level.INFO, "Can't get http port, using 8080 as default ("  +
+                        ex.getLocalizedMessage() + ")", ex);
+            }
+        } else {
             Logger.getLogger(ServerInstanceDescriptorImpl.class.getName()).log(
-                    Level.WARNING, "Can't get http port, default = 8080 ("  +
-                    ex.getLocalizedMessage() + ")", ex);
+                    Level.INFO, "http port is null, using 8080 as default");
         }
         return httpPort;
     }
