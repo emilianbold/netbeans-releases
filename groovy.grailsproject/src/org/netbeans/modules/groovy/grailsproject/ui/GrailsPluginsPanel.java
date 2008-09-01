@@ -8,7 +8,10 @@ package org.netbeans.modules.groovy.grailsproject.ui;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
@@ -19,7 +22,6 @@ import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPlugin;
 import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginsManager;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * @author David Calavera
@@ -36,13 +38,19 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
     private List<GrailsPlugin> installedPluginsList = new ArrayList<GrailsPlugin>();
     private List<GrailsPlugin> availablePluginsList = new ArrayList<GrailsPlugin>();
 
+    private final ExecutorService refreshExecutor = Executors.newCachedThreadPool();
+
     /** Creates new customizer GrailsPluginsPanel */
     public GrailsPluginsPanel(Project project) {
         initComponents();
         this.project = (GrailsProject) project;
         this.pluginsManager = GrailsPluginsManager.getInstance(this.project);
     }
-    
+
+    public void dispose() {
+        refreshExecutor.shutdownNow();
+    }
+
     /** Refresh the installed plugin list */
     private void refreshInstalled() {
         assert SwingUtilities.isEventDispatchThread();
@@ -60,32 +68,48 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
         reloadInstalledButton.setEnabled(true);         
     }
     
-    private void refreshAvailable() {   
+    private void refreshAvailable() {
         assert SwingUtilities.isEventDispatchThread();
 
         final Runnable runner = new Runnable() {
             public void run() {
 
-                final List<GrailsPlugin> plugins = pluginsManager.refreshAvailablePlugins();
+                boolean interrupted = false;
 
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        // FIXME use model impl instead of private list
-                        availablePluginsList = new ArrayList<GrailsPlugin>(plugins);
-                        DefaultListModel model = new DefaultListModel();
-                        for (GrailsPlugin plugin : availablePluginsList) {
-                            if (!installedPluginsList.contains(plugin)) {
-                                model.addElement(plugin);
+                List<GrailsPlugin> plugins;
+                try {
+                    plugins = pluginsManager.refreshAvailablePlugins();
+                } catch (InterruptedException ex) {
+                    interrupted = true;
+                    plugins = Collections.emptyList();
+                }
+
+                try {
+                    final List<GrailsPlugin> pluginsToLoad = plugins;
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            // FIXME use model impl instead of private list
+                            availablePluginsList = new ArrayList<GrailsPlugin>(pluginsToLoad);
+                            DefaultListModel model = new DefaultListModel();
+                            for (GrailsPlugin plugin : availablePluginsList) {
+                                if (!installedPluginsList.contains(plugin)) {
+                                    model.addElement(plugin);
+                                }
                             }
-                        }
 
-                        availablePlugins.clearSelection();
-                        availablePlugins.setModel(model);
-                        availablePlugins.invalidate();
-                        availablePlugins.repaint();
-                        reloadAvailableButton.setEnabled(true);
+                            availablePlugins.clearSelection();
+                            availablePlugins.setModel(model);
+                            availablePlugins.invalidate();
+                            availablePlugins.repaint();
+                            reloadAvailableButton.setEnabled(true);
+                        }
+                    });
+                } finally {
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
                     }
-                });
+                }
             }
         };
         
@@ -94,7 +118,7 @@ public class GrailsPluginsPanel extends javax.swing.JPanel {
         model.addElement(NbBundle.getMessage(GrailsPluginsPanel.class, "FetchingPlugins"));
         availablePlugins.setModel(model);
             
-        RequestProcessor.getDefault().post(runner);
+        refreshExecutor.submit(runner);
     }
     
     private void uninstallPlugins() {
