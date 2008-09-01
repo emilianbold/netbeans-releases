@@ -672,7 +672,8 @@ public final class MasterMatcher {
                 try {
                     origin = matcher[0].findOrigin();
                 } catch (BadLocationException ble) {
-                    LOG.log(Level.WARNING, null, ble);
+                    // since we are not running under document lock (see #131284) there can be exceptions
+                    LOG.log(Level.FINE, null, ble);
                 }
                 
                 // Check the original area for consistency
@@ -722,10 +723,12 @@ public final class MasterMatcher {
                     }
                 }
 
-                if (origin != null) {
-                    LOG.fine("[" + origin[0] + ", " + origin[1] + "] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
-                } else {
-                    LOG.fine("[null] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    if (origin != null) {
+                        LOG.fine("[" + origin[0] + ", " + origin[1] + "] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
+                    } else {
+                        LOG.fine("[null] for caret = " + caretOffset + ", lookahead = " + (backward ? "-" : "") + lookahead); //NOI18N
+                    }
                 }
                 
                 return origin;
