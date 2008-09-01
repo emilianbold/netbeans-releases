@@ -142,7 +142,9 @@ public final class SystemUtils {
         final String osArch = System.getProperty("os.arch");
         return "64".equals(System.getProperty("sun.arch.data.model")) ||
                 "64".equals(System.getProperty("com.ibm.vm.bitmode")) || //IBM`s JDK
-                osArch.equals("ia64") || //Intel Itanium
+                osArch.equals("ia64") ||        //Windows/Linux/? on Intel Itanium
+                osArch.equals("ia64w") ||       //HP-UX on Intel Itanium
+                osArch.equals("PA_RISC2.0W") || //HP-UX on PA-RISC 2.0
                 osArch.equals("amd64") ||
                 osArch.equals("sparcv9") ||
                 osArch.equals("x86_64") ||
