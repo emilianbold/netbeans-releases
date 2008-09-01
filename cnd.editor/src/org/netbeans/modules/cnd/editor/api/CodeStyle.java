@@ -130,6 +130,11 @@ public final class CodeStyle {
                          EditorOptions.statementContinuationIndentDefault);
     }
 
+    public int getConstructorInitializerListContinuationIndent() {
+        return getOption(EditorOptions.constructorListContinuationIndent,
+                         EditorOptions.constructorListContinuationIndentDefault);
+    }
+
     public PreprocessorIndent indentPreprocessorDirectives(){
         return PreprocessorIndent.valueOf(getOption(EditorOptions.indentPreprocessorDirectives,
                                       EditorOptions.indentPreprocessorDirectivesDefault));

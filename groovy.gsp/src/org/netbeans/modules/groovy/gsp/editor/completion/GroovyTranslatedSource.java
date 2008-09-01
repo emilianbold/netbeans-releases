@@ -66,7 +66,7 @@ public class GroovyTranslatedSource implements TranslatedSource {
     }
 
     public String getSource() {
-        return model.getRubyCode();
+        return model.getGroovyCode();
     }
 
     public EmbeddingModel getModel() {
@@ -78,6 +78,6 @@ public class GroovyTranslatedSource implements TranslatedSource {
     }
 
     public int getSourceEndOffset() {
-        return model.getRubyCode().length();
+        return model.getGroovyCode().length();
     }
 }

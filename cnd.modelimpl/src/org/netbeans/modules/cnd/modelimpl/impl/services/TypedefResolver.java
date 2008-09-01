@@ -52,6 +52,9 @@ public class TypedefResolver extends CsmTypedefResolver {
 
     @Override
     public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
-        return ResolverFactory.createResolver((CsmOffsetable) orig).getOriginalClassifier(orig);
+        if (orig instanceof CsmOffsetable) {
+            return ResolverFactory.createResolver((CsmOffsetable) orig).getOriginalClassifier(orig);
+        }
+        return orig;
     }
 }

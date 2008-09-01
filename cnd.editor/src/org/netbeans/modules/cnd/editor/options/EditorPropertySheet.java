@@ -177,6 +177,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
 	set.put(new BooleanNodeProp(language, preferences, EditorOptions.expandTabToSpaces));
 	set.put(new IntNodeProp(language, preferences, EditorOptions.tabSize));
 	set.put(new IntNodeProp(language, preferences, EditorOptions.statementContinuationIndent));
+	set.put(new IntNodeProp(language, preferences, EditorOptions.constructorListContinuationIndent));
 	set.put(new PreprocessorIndentProperty(language, preferences, EditorOptions.indentPreprocessorDirectives));
 	set.put(new BooleanNodeProp(language, preferences, EditorOptions.sharpAtStartLine));
 	set.put(new BooleanNodeProp(language, preferences, EditorOptions.indentNamespace));
