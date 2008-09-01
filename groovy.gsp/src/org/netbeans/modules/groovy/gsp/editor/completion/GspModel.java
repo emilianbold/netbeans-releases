@@ -175,6 +175,7 @@ public class GspModel {
                     text = text.substring(1);
                     sourceEnd--;
                 }
+                text = text.replace("\"", "\\\"");
                 buffer.append(text);
                 buffer.append("\"\"\"\n"); // NOI18N
                 int generatedEnd = buffer.length();
