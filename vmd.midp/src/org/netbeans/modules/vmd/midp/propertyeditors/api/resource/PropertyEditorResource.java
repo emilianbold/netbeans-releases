@@ -428,8 +428,8 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
                 }
 
             }
-            final DesignComponent component_ = component.get();
-            perElement.postSaveValue(component_);
+            
+            perElement.postSaveValue(component.get());
 
         }
     }
