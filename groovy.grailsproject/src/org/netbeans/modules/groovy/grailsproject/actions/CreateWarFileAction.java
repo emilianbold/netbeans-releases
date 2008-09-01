@@ -48,6 +48,7 @@ import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.GrailsActionProvider;
+import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -98,7 +99,7 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
             });
         }
         descriptor = descriptor.postExecution(new RefreshProjectRunnable(prj));
-        descriptor = descriptor.optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N
+        descriptor = descriptor.optionsPath(GroovySettings.GROOVY_OPTIONS_CATEGORY);
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
