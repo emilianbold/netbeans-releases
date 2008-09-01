@@ -182,4 +182,9 @@ public class CollapsibleWidget extends Widget implements CollapsibleWidgetManage
         }
     }
 
+    public boolean isCompartmentCollapsed()
+    {
+        return collapsed;
+    }
+
 }

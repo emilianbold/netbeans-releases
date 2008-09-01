@@ -417,7 +417,7 @@ public final class SceneManager {
         return m_lookup;
     }
     
-    public PerseusController getPerseusController() {
+    public synchronized PerseusController getPerseusController() {
         return m_perseusController;
     }
 

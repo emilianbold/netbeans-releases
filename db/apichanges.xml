@@ -107,6 +107,20 @@ is the proper place.
     <changes>
         <change>
             <api name="database_explorer_api"/>
+            <summary>Add ability to ensure a JDBC connection is valid</summary>
+            <version major="1" minor="30"/>
+            <date day="27" month="8" year="2008"/>
+            <author login="davidvc"/>
+            <compatibility addition="yes"/>
+            <description>
+                This change allows you to ensure that the physical database connection
+                obtained from a DatabaseConnection is valid or is null  .
+            </description>
+            <class package="org.netbeans.api.db.explorer" name="DatabaseConnection"/>
+            <issue number="143837"/>
+        </change>
+        <change>
+            <api name="database_explorer_api"/>
             <summary>Add support for always quoting and for unquoting SQL identifiers.</summary>
             <version major="1" minor="29"/>
             <date day="15" month="8" year="2008"/>

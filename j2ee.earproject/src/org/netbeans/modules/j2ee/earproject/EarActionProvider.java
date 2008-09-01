@@ -42,9 +42,7 @@
 package org.netbeans.modules.j2ee.earproject;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -55,10 +53,12 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -97,11 +97,6 @@ public class EarActionProvider implements ActionProvider {
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME
-    };
-
-    private static final Set<String> actionsDisabledForCoS = new HashSet<String>(3);
-    static {
-        Collections.addAll(actionsDisabledForCoS, COMMAND_BUILD, COMMAND_COMPILE_SINGLE);
     };
 
     EarProject project;
@@ -156,13 +151,31 @@ public class EarActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
         }
+
+        String realCommand = command;
+        if (COMMAND_BUILD.equals(realCommand) && isCosEnabled()) {
+            boolean cleanAndBuild = DeployOnSaveUtils.showBuildActionWarning(project,
+                    new DeployOnSaveUtils.CustomizerPresenter() {
+
+                public void showCustomizer(String category) {
+                    CustomizerProviderImpl provider = project.getLookup().lookup(CustomizerProviderImpl.class);
+                    provider.showCustomizer(category);
+                }
+            });
+            if (cleanAndBuild) {
+                realCommand = COMMAND_REBUILD;
+            } else {
+                return;
+            }
+        }
         
+        final String commandToExecute = realCommand;
         Runnable action = new Runnable () {
             public void run () {
                 Properties p = new Properties();
                 String[] targetNames;
 
-                targetNames = getTargetNames(command, context, p);
+                targetNames = getTargetNames(commandToExecute, context, p);
                 if (targetNames == null) {
                     return;
                 }
@@ -270,8 +283,8 @@ public class EarActionProvider implements ActionProvider {
         if ( findBuildXml() == null ) {
             return false;
         }
-        boolean cos = !Boolean.parseBoolean(project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.DISABLE_DEPLOY_ON_SAVE));
-        if (cos && actionsDisabledForCoS.contains(command)) {
+
+        if (isCosEnabled() && COMMAND_COMPILE_SINGLE.equals(command)) {
             return false;
         }
 
@@ -358,5 +371,9 @@ public class EarActionProvider implements ActionProvider {
         String domain = props.getProperty("DOMAIN"); //NOI18N
         String location = props.getProperty("LOCATION"); //NOI18N
         return "".equals(domain) && "".equals(location); //NOI18N
+    }
+    
+    private boolean isCosEnabled() {
+        return !Boolean.parseBoolean(project.evaluator().getProperty(EarProjectProperties.DISABLE_DEPLOY_ON_SAVE));
     }
 }

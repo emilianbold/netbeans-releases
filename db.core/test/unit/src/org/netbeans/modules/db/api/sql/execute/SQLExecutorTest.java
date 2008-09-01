@@ -39,19 +39,18 @@
 
 package org.netbeans.modules.db.api.sql.execute;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import junit.framework.Test;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.core.test.TestBase;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.db.test.DBTestBase;
 
 /**
  *
  * @author David Van Couvering
  */
-public class SQLExecutorTest extends TestBase {
+public class SQLExecutorTest extends DBTestBase {
     
     private DatabaseConnection dbconn;
 
@@ -62,53 +61,15 @@ public class SQLExecutorTest extends TestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        
-        dbconn = getDatabaseConnection();
+        dbconn = getDatabaseConnection(true);
 
-        ConnectionManager.getDefault().disconnect(dbconn);
-        
-        ConnectionManager.getDefault().connect(dbconn);
+        createTestTable();
 
-        assertNotNull(dbconn.getJDBCConnection());
-        assert(! dbconn.getJDBCConnection().isClosed());
-
-        SQLExecutionInfo info;
-        
         if (isMySQL()) {
-            checkExecution(SQLExecutor.execute(dbconn, "DROP DATABASE IF EXISTS " + getSchema() +";"));
-            checkExecution(SQLExecutor.execute(dbconn, "CREATE DATABASE " + getSchema() + ";"));
-            checkExecution(SQLExecutor.execute(dbconn, "USE " + getSchema() +";"));
-        } else {
-            SQLExecutor.execute(dbconn, "DROP TABLE TEST");
-        }
-
-        String sql = "CREATE TABLE TEST(id integer primary key)";
-        if (isMySQL()) {
-            sql += " ENGINE=InnoDB";
             createRentalTable();
         }
-
-        info = SQLExecutor.execute(dbconn, sql);
-        checkExecution(info);
     }
     
-    @Override
-    public void tearDown() throws Exception {
-        try {
-            if (dbconn.getJDBCConnection() == null || dbconn.getJDBCConnection().isClosed()) {
-                return;
-            }
-        } catch (SQLException e) {
-            // do nothing
-        }
-        
-        if (isMySQL()) {
-            checkExecution(SQLExecutor.execute(dbconn, "DROP DATABASE IF EXISTS " + getSchema() +";"));
-        } else {
-            SQLExecutor.execute(dbconn, "DROP TABLE TEST");
-        }        
-    }
-
     private void createRentalTable() throws Exception {
         assertTrue(isMySQL());
 
@@ -129,12 +90,8 @@ public class SQLExecutorTest extends TestBase {
         checkExecution(SQLExecutor.execute(dbconn, sql));
 }
 
-    private boolean isMySQL() {
-        return dbconn.getDriverClass().equals("com.mysql.jdbc.Driver"); // NOI8N
-    }
-
     public void testExecuteOnClosedConnection() throws Exception {
-        DatabaseConnection broken = getDatabaseConnection();
+        DatabaseConnection broken = getDatabaseConnection(false);
 
         ConnectionManager.getDefault().disconnect(broken);
 
@@ -147,11 +104,11 @@ public class SQLExecutorTest extends TestBase {
     }
 
     public void testExecute() throws Exception {
-        SQLExecutionInfo info = SQLExecutor.execute(dbconn, "SELECT * FROM TEST;");
+        SQLExecutionInfo info = SQLExecutor.execute(dbconn, "SELECT * FROM " + getTestTableName() + ";");
         checkExecution(info);
         assertTrue(info.getStatementInfos().size() == 1);
 
-        info = SQLExecutor.execute(dbconn, "SELECT * FROM TEST; SELECT id FROM TEST;");
+        info = SQLExecutor.execute(dbconn, "SELECT * FROM " + getTestTableName() + "; SELECT " + getTestTableIdName() + " FROM " + getTestTableName() + ";");
         checkExecution(info);
         assertTrue(info.getStatementInfos().size() == 2);
     }
@@ -161,36 +118,11 @@ public class SQLExecutorTest extends TestBase {
 
         assertTrue(info.hasExceptions());
     }
-        
-    public void testDelimiter() throws Exception {
-        String sql = "SELECT * FROM TEST;\n--Here is a comment\nDELIMITER ??\n SELECT * FROM TEST??\n " +
-                "--Another comment\n DELIMITER ;\nSELECT * FROM TEST;";
-        SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
-        checkExecution(info);
-
-        info = SQLExecutor.execute(dbconn,
-                "DELIMITER ??\nSELECT * FROM TEST?? DELIMITER ;\nSELECT * FROM TEST;");
-        checkExecution(info);
-
-        info = SQLExecutor.execute(dbconn,
-                "/** a block comment */\nDELIMITER ??\nSELECT * FROM TEST??");
-        checkExecution(info);
-
-        info = SQLExecutor.execute(dbconn,
-                "DELIMITER ??\nSELECT * FROM TEST;");
-
-        assertTrue(info.hasExceptions());
-    }
-
-    public void testPoundComment() throws Exception {
-        checkExecution(SQLExecutor.execute(dbconn, 
-                "#This is a comment\nSELECT * FROM TEST; #This is a comment at the end of the line\n" +
-                "SELECT * FROM TEST; # Another eol comment"));
-    }
-    
+            
     private void checkExecution(SQLExecutionInfo info) throws Exception {
         assertNotNull(info);
 
+        Throwable throwable = null;
         if (info.hasExceptions()) {
             for (StatementExecutionInfo stmtinfo : info.getStatementInfos()) {
                 if (stmtinfo.hasExceptions()) {
@@ -200,12 +132,16 @@ public class SQLExecutorTest extends TestBase {
                 }
                 System.err.println(stmtinfo.getSQL());
 
-                for (Throwable t : stmtinfo.getExceptions()) {
+                for  (Throwable t : stmtinfo.getExceptions()) {
                     t.printStackTrace();
+                    
+                    throwable = t;
                 }
             }
 
-            throw new Exception("Executing SQL generated exceptions - see output for details");
+            Exception e = new Exception("Executing SQL generated exceptions - see output for details");
+            e.initCause(throwable);
+            throw e;
         }        
     }
     
@@ -261,62 +197,5 @@ public class SQLExecutorTest extends TestBase {
         checkExecution(SQLExecutor.execute(dbconn, sql));
     }
     
-    public void testNewLines() throws Exception {
-        if (! isMySQL()) {
-            return;
-        }
-
-        // In order for stored procs to be readable when querying them in the
-        // database, we have to properly propagate newlines.
-        SQLExecutor.execute(dbconn, "DROP FUNCTION inventory_held_by_customer");
-
-        String sql =
-            "DELIMITER $$\n" +
-            "CREATE FUNCTION inventory_held_by_customer(p_inventory_id INT) RETURNS INT\n" +
-            "READS SQL DATA\n" +
-            "BEGIN\n" +
-              "  DECLARE v_customer_id INT; # Testing comment in this context\n" +
-              "  DECLARE EXIT HANDLER FOR NOT FOUND RETURN NULL; # Another comment\n" +
-              "  SELECT customer_id INTO v_customer_id\n" +
-              "  FROM rental\n" +
-              "  WHERE return_date IS NULL\n" +
-              "  AND inventory_id = p_inventory_id;\n" +
-              "  RETURN v_customer_id;\n" +
-            "END$$\n" +
-            "DELIMITER ;\n";
-
-        String body = "BEGIN\n" +
-            "  DECLARE v_customer_id INT; \n" +
-            "  DECLARE EXIT HANDLER FOR NOT FOUND RETURN NULL; \n" +
-            "  SELECT customer_id INTO v_customer_id\n" +
-            "  FROM rental\n" +
-            "  WHERE return_date IS NULL\n" +
-            "  AND inventory_id = p_inventory_id;\n" +
-            "  RETURN v_customer_id;\n" +
-            "END";
-
-        SQLExecutionInfo info = SQLExecutor.execute(dbconn, sql);
-        String resultingSQL = info.getStatementInfos().get(0).getSQL();
-        if ( ! resultingSQL.contains(body)) {
-            System.err.println("Resulting SQL did not contain body - check for newlines:\n" +
-                    resultingSQL);
-            fail();
-        }
-        checkExecution(info);
-
-        Connection conn = dbconn.getJDBCConnection();
-        ResultSet rs = conn.createStatement().executeQuery("show create function inventory_held_by_customer");
-        assertTrue(rs.next());
-        String functionText = rs.getString("Create Function");
-        assertNotNull(functionText);
-
-        //It looks like the JDBC driver strips off the newlines.  How convenient - it
-        // makes the function text completely unreadable when querying the database
-        String bodyNoNewlines = body.replace("\n", " ");
-        if (! functionText.contains(bodyNoNewlines)) {
-            System.err.println("Function text did not contain body (it is likely that newlines did not match): \n" + functionText);
-            fail();
-        }
-    }
 
 }

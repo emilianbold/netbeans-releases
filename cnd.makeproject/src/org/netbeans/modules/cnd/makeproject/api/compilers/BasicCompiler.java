@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.File;
@@ -55,13 +54,32 @@ public abstract class BasicCompiler extends Tool {
     /** Creates a new instance of GenericCompiler */
     public BasicCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
-        storagePrefix += RemoteUtils.getHostName(getHostKey()) + "/"; //NOI18N
+        if (!RemoteUtils.isLocalhost(hkey)) {
+            includeFilePrefix = System.getProperty("netbeans.user") + "/var/cache/cnd2/includes-cache/" + RemoteUtils.getHostName(getHostKey()) + "/"; //NOI18N
+        } else {
+            includeFilePrefix = null;
+        }
     }
+    private String includeFilePrefix;
 
-    private String storagePrefix = System.getProperty("netbeans.user") + "/var/cache/cnd2/includes-cache/"; //NOI18N
-
-    public String getStoragePrefix() {
-        return storagePrefix;
+    @Override
+    public String getIncludeFilePathPrefix() {
+        if (includeFilePrefix == null) {
+            if (RemoteUtils.isLocalhost(getHostKey())) {
+                includeFilePrefix = ""; // NOI18N
+                CompilerDescriptor c = getDescriptor();
+                if (c != null) {
+                    String path = getPath().replaceAll("\\\\", "/"); // NOI18N
+                    if (c.getRemoveIncludePathPrefix() != null) {
+                        int i = path.toLowerCase().indexOf("/bin"); // NOI18N
+                        if (i > 0) {
+                            includeFilePrefix = path.substring(0, i);
+                        }
+                    }
+                }
+            }
+        }
+        return includeFilePrefix;
     }
 
     @Override
@@ -135,13 +153,12 @@ public abstract class BasicCompiler extends Tool {
         }
     }
 
- 
     protected String normalizePath(String path) {
+        path = getIncludeFilePathPrefix() + path;
         if (RemoteUtils.isLocalhost(getHostKey())) {
             return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
         } else {
-            //TODO: this hardly can be called normalization but this place is too handy for such kind of conversion
-            return storagePrefix + path;
+            return path;
         }
     }
 }

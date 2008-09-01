@@ -125,6 +125,11 @@ public class RubyOccurrencesFinderTest extends RubyTestBase {
     public void testParellelBlocks() throws Exception {
         checkOccurrences("testfiles/parallelblocks.rb", "foo.each { |i^| puts i } #1", true);
     }
+
+    // Doesn't work yet
+    //public void testHereDoc() throws Exception {
+    //    checkOccurrences("testfiles/postgresql_adapter.rb", "table_name, na^me = nil", true);
+    //}
     
     public void testEmpty1() throws Exception {
         checkOccurrences("testfiles/empty.rb", "^", true);

@@ -82,7 +82,7 @@ public class TranslateClassPath extends Task {
         }
         
         Project p = getProject();
-        
+
         String translated = translate(classpath);
         
         p.setProperty(targetProperty, translated);
@@ -132,7 +132,9 @@ public class TranslateClassPath extends Task {
                         continue;
                     }
                     
-                    BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), true);
+                    if (!BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), true)) {
+                        throw new UserCancel();
+                    }
                     
                     for (URL binary : BinaryForSourceQuery.findBinaryRoots(source.getURL()).getRoots()) {
                         FileObject binaryFO = URLMapper.findFileObject(binary);
@@ -156,5 +158,5 @@ public class TranslateClassPath extends Task {
 
         return new File[] {entryFile};
     }
-    
+
 }

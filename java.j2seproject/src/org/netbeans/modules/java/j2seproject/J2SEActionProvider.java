@@ -89,6 +89,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
@@ -170,8 +171,6 @@ class J2SEActionProvider implements ActionProvider {
     };
 
     private static final String[] actionsDisabledForQuickRun = {
-        COMMAND_BUILD,
-        COMMAND_CLEAN,
         COMMAND_COMPILE_SINGLE,
         JavaProjectConstants.COMMAND_DEBUG_FIX,
     };
@@ -345,6 +344,10 @@ class J2SEActionProvider implements ActionProvider {
                     return;
                 }
                 if (isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
+                    if (COMMAND_BUILD.equals(command)) {
+                        showBuildActionWarning(context);
+                        return ;
+                    }
                     Properties execProperties = new Properties();
 
                     copyValue(J2SEProjectProperties.RUN_JVM_ARGS, execProperties);
@@ -1395,6 +1398,41 @@ class J2SEActionProvider implements ActionProvider {
             return null;
         }
         return url;
+    }
+
+    private void showBuildActionWarning(Lookup context) {
+        String text = NbBundle.getMessage(J2SEActionProvider.class, "LBL_ProjectBuiltAutomatically");
+        String projectProperties = NbBundle.getMessage(J2SEActionProvider.class, "BTN_ProjectProperties");
+        String cleanAndBuild = NbBundle.getMessage(J2SEActionProvider.class, "BTN_CleanAndBuild");
+        String ok = NbBundle.getMessage(J2SEActionProvider.class, "BTN_OK");
+        String titleFormat = NbBundle.getMessage(J2SEActionProvider.class, "TITLE_BuildProjectWarning");
+        String title = MessageFormat.format(titleFormat, ProjectUtils.getInformation(project).getDisplayName());
+        DialogDescriptor dd = new DialogDescriptor(text,
+                                                   title,
+                                                   true,
+                                                   new Object[] {projectProperties, cleanAndBuild, ok},
+                                                   ok,
+                                                   DialogDescriptor.DEFAULT_ALIGN,
+                                                   null,
+                                                   null);
+
+        dd.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
+        
+        Object result = DialogDisplayer.getDefault().notify(dd);
+
+        if (result == projectProperties) {
+            CustomizerProviderImpl p = project.getLookup().lookup(CustomizerProviderImpl.class);
+
+            p.showCustomizer("Build"); //NOI18N
+            return ;
+        }
+
+        if (result == cleanAndBuild) {
+            invokeAction(COMMAND_REBUILD, context);
+            return ;
+        }
+
+        //otherwise dd.getValue() == ok
     }
 
 }

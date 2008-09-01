@@ -176,7 +176,7 @@ public class APTUtils {
         List<String> macrosSorted = new ArrayList<String>(macros.keySet());
         Collections.sort(macrosSorted);
         for (String key : macrosSorted) {
-            APTMacro macro = macros.get(APTUtils.getTokenTextKey(new APTBaseToken(key)));
+            APTMacro macro = macros.get(key);
             assert(macro != null);
             retValue.append(macro);
             retValue.append("'\n"); // NOI18N
@@ -408,12 +408,6 @@ public class APTUtils {
         assert (text.length() > 0);
         // now use text as is, but it will be faster to use textID
         return text;
-    }
-    
-    public static String getTokenTextKey(Token token) {
-        assert (token != null);
-        // now use text, but it will be faster to use textID
-        return token.getText();
     }
     
     public static APTToken createAPTToken(Token token, int ttype) {

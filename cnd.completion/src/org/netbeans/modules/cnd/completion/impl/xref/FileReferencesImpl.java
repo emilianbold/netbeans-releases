@@ -187,6 +187,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
                     break;
                 case IDENTIFIER:
                 case PREPROCESSOR_IDENTIFIER:
+                case THIS:
                 {
                     skip = !needAfterDereferenceUsages && derefToken != null;
                     if (!skip && !deadBlocks.isEmpty()) {

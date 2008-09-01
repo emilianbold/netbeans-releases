@@ -80,6 +80,7 @@ public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJava
             return EMPTY_TASK;
         }
         else {
+            ui.showWaitNode();
             return ui.getTask();
         }
     }
@@ -97,14 +98,5 @@ public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJava
     public synchronized void setLookup(Lookup l, ClassMemberPanelUI ui) {
         this.ui = ui;
         super.setLookup(l);
-    }
-
-    @Override
-    protected void lookupContentChanged() {
-          // System.out.println("lookupContentChanged");
-          if ( ui != null ) {
-            ui.showWaitNode(); // Creating new task (file changed)
-          }
-    }    
-    
+    }            
 }

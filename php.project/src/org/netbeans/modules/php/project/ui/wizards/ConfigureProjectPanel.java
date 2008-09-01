@@ -125,15 +125,15 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         // project
         switch (wizardType) {
             case NEW:
-                // set project name only for empty project
-                configureProjectPanelVisual.setProjectName(getProjectName());
-
-                // sources
+                // sources - we need them first because of free project name
                 configureProjectPanelVisual.setLocalServerModel(getLocalServers());
                 LocalServer sourcesLocation = getLocalServer();
                 if (sourcesLocation != null) {
                     configureProjectPanelVisual.selectSourcesLocation(sourcesLocation);
                 }
+
+                // set project name only for empty project
+                configureProjectPanelVisual.setProjectName(getProjectName());
                 break;
             case EXISTING:
                 // noop
@@ -256,21 +256,19 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         String projectName = (String) descriptor.getProperty(PROJECT_NAME);
         if (projectName == null) {
             // this can happen only for the first time
-            File startingLocation = null;
             switch (wizardType) {
                 case NEW:
-                    startingLocation = new File(configureProjectPanelVisual.getSourcesLocation().getSrcRoot());
+                    assert false : "Project name must be already set during getting possible sourcce directories";
                     break;
                 case EXISTING:
-                    startingLocation = ProjectChooser.getProjectsFolder();
+                    projectName = getDefaultFreeName(ProjectChooser.getProjectsFolder());
                     break;
                 default:
                     assert false : "Unknown wizard type: " + wizardType;
                     break;
             }
-            projectName = getDefaultFreeName(startingLocation);
+            assert projectName != null : "Project name must be already set during getting possible sourcce directories";
             descriptor.putProperty(PROJECT_NAME, projectName);
-            originalProjectName = projectName;
         }
         return projectName;
     }
@@ -315,11 +313,20 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private MutableComboBoxModel getOSDependentLocalServers() {
-        MutableComboBoxModel model = new LocalServer.ComboBoxModel(new LocalServer(getProjectFolder().getAbsolutePath()));
-
-        String projectName = getSourcesFolderName();
+        // first, get preferred document root because we need to find free folder name for project
+        File preferredRoot = ProjectChooser.getProjectsFolder();
         List<DocumentRoot> roots = PhpEnvironment.get().getDocumentRoots();
+        for (DocumentRoot root : roots) {
+            if (root.isPreferred()) {
+                preferredRoot = new File(root.getDocumentRoot());
+                break;
+            }
+        }
         descriptor.putProperty(ROOTS, roots);
+
+        String projectName = getDefaultFreeName(preferredRoot);
+        descriptor.putProperty(PROJECT_NAME, projectName);
+        MutableComboBoxModel model = new LocalServer.ComboBoxModel(new LocalServer(getProjectFolder().getAbsolutePath()));
         for (DocumentRoot root : roots) {
             LocalServer ls = new LocalServer(root.getDocumentRoot() + File.separator + projectName);
             ls.setHint(root.getHint());
@@ -453,13 +460,15 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     // we will do this only if the name equals to the project directory and not vice versa
     private void projectNameChanged() {
-        assert originalProjectName != null;
         String projectName = configureProjectPanelVisual.getProjectName();
         if (projectName.length() == 0) {
             // invalid situation, do not change anything
             return;
         }
-        if (originalProjectName.equals(projectName)) {
+        if (originalProjectName == null) {
+            originalProjectName = projectName;
+        }
+        if (projectName.equals(originalProjectName)) {
             // no change in project name
             return;
         }

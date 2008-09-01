@@ -100,8 +100,8 @@ public final class SemanticHighlighter extends HighlighterBase {
             newBag.clear();
             final CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
             long start = System.currentTimeMillis();
-            if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() have started for file " + csmFile.getAbsolutePath());
             if (csmFile != null && csmFile.isParsed()) {
+                if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() have started for file " + csmFile.getAbsolutePath());
                 final List<SemanticEntity> entities = new ArrayList<SemanticEntity>(SemanticEntitiesProvider.instance().get());
                 final List<ReferenceCollector> collectors = new ArrayList<ReferenceCollector>(entities.size());
                 // the following loop deals with entities without collectors
@@ -144,9 +144,9 @@ public final class SemanticHighlighter extends HighlighterBase {
                         addHighlights(newBag, collectors.get(i).getReferences(), entities.get(i));
                     }
                 }
+                if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + csmFile.getAbsolutePath());
             }
             getHighlightsBag(doc).setHighlights(newBag);
-            if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + csmFile.getAbsolutePath());
         }
     }
 

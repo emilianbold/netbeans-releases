@@ -55,6 +55,7 @@ import org.netbeans.modules.gsf.api.OccurrencesFinder;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.StructureScanner;
+import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.openide.filesystems.FileObject;
 
@@ -267,6 +268,15 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
      */
     @CheckForNull
     public SemanticAnalyzer getSemanticAnalyzer() {
+        return null;
+    }
+
+    /**
+     * An IndexSearcher which can help with the Open Type, Open Symbol etc features.
+     *
+     * @return the index searcher
+     */
+    public IndexSearcher getIndexSearcher() {
         return null;
     }
 }

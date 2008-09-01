@@ -97,11 +97,20 @@ public class DBReadWriteHelper {
             case Types.TIMESTAMP:
             case -100: // -100 = Oracle timestamp
             {
-                Timestamp tsdata = rs.getTimestamp(index);
-                if (rs.wasNull()) {
-                    return null;
-                } else {
-                    return tsdata;
+                try {
+                    Timestamp tsdata = rs.getTimestamp(index);
+
+                    if (rs.wasNull()) {
+                        return null;
+                    } else {
+                        return tsdata;
+                    }
+                } catch (SQLException sqe) {
+                    if (sqe.getSQLState().equals("S1009")) {
+                        return null;
+                    } else {
+                        throw sqe;
+                    }
                 }
             }
             case Types.BIGINT: {

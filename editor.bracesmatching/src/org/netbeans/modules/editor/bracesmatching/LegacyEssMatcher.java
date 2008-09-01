@@ -27,6 +27,7 @@
  */
 package org.netbeans.modules.editor.bracesmatching;
 
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
@@ -61,16 +62,21 @@ public final class LegacyEssMatcher implements BracesMatcher, BracesMatcherFacto
     // -----------------------------------------------------
     
     public int[] findOrigin() throws BadLocationException {
-        int offset;
-        
-        if (context.isSearchingBackward()) {
-            offset = context.getSearchOffset() - 1;
-        } else {
-            offset = context.getSearchOffset();
+        ((AbstractDocument) context.getDocument()).readLock();
+        try {
+            int offset;
+
+            if (context.isSearchingBackward()) {
+                offset = context.getSearchOffset() - 1;
+            } else {
+                offset = context.getSearchOffset();
+            }
+
+            block = ess.findMatchingBlock(offset, false);
+            return block == null ? null : new int [] { offset, offset };
+        } finally {
+            ((AbstractDocument) context.getDocument()).readUnlock();
         }
-        
-        block = ess.findMatchingBlock(offset, false);
-        return block == null ? null : new int [] { offset, offset };
     }
 
     public int[] findMatches() throws InterruptedException {
