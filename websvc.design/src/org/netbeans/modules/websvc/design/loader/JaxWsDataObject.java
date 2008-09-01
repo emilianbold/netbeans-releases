@@ -67,6 +67,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Children;
+import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
@@ -86,6 +87,21 @@ public final class JaxWsDataObject extends MultiDataObject {
         getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
             public void saveAs( FileObject folder, String fileName ) throws IOException {
                 createEditorSupport().saveAs( folder, fileName );
+            }
+        });
+        getCookieSet().add(JaxWsJavaEditorSupport.class, new CookieSet.Factory() {
+            public <T extends Cookie> T createCookie(Class<T> klass) {
+                return klass.cast(createEditorSupport());
+            }
+        });
+        getCookieSet().add(MultiViewSupport.class, new CookieSet.Factory() {
+            public <T extends Cookie> T createCookie(Class<T> klass) {
+                Cookie cake = createMultiViewCookie ();
+                if (cake != null) {
+                    return klass.cast(cake);
+                } else {
+                    return null;
+                }
             }
         });
     }
@@ -183,17 +199,6 @@ public final class JaxWsDataObject extends MultiDataObject {
         }
     }
 
-    public @Override <T extends Cookie> T getCookie(Class<T> type) {
-        if (type.isAssignableFrom(MultiViewSupport.class)) {
-            Cookie cake = createMultiViewCookie ();
-            if(cake!=null) return type.cast(cake);
-        }
-        if (type.isAssignableFrom(JaxWsJavaEditorSupport.class)) {
-            return type.cast(createEditorSupport ());
-        }
-        return super.getCookie(type);
-    }
-    
     @Override
     protected DataObject handleCopyRename(DataFolder df, String name, String ext) throws IOException {
         FileObject fo = getPrimaryEntry ().copyRename (df.getPrimaryFile (), name, ext);
