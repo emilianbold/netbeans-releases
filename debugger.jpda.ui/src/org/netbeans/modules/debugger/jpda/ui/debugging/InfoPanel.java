@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -83,26 +83,26 @@ import org.openide.util.Utilities;
 public class InfoPanel extends javax.swing.JPanel {
 
     private static final int PANEL_HEIGHT = 40;
-    
+
     private static final int FILTERS = 0;
     private static final int HITS = 1;
     private static final int DEADLOCKS = 2;
     private static final int DEADLOCKS_BY_DEBUGGER = 3;
-    
+
     private Color hitsPanelColor;
     private Color deadlockPanelColor;
     private Color filterPanelColor;
     private int tapPanelMinimumHeight;
     private TapPanel tapPanel;
     private Item[] items;
-    
+
     private RequestProcessor requestProcessor = new RequestProcessor("Debugging View Info Panel"); // NOI18N
-    
+
     private JButton arrowButton;
     private JPopupMenu arrowMenu;
     private Map<JPDAThread, JMenuItem> threadToMenuItem = new HashMap<JPDAThread, JMenuItem>();
     private JPDAThread debuggerDeadlockThread;
-    
+
     /** Creates new form InfoPanel */
     public InfoPanel(TapPanel tapPanel) {
         this.tapPanel = tapPanel;
@@ -110,15 +110,15 @@ public class InfoPanel extends javax.swing.JPanel {
         hitsPanelColor = DebuggingView.hitsColor;
         deadlockPanelColor = hitsPanelColor;
         tapPanelMinimumHeight = tapPanel.getMinimumHeight();
-        
+
         initComponents();
-        
+
         items = new Item[4];
         items[FILTERS] = new Item(filterPanelColor, PANEL_HEIGHT, createFilterToolBar()); // options and filters
         items[HITS] = new Item(hitsPanelColor, PANEL_HEIGHT, hitsInnerPanel); // breakpoint hits
         items[DEADLOCKS] = new Item(hitsPanelColor, PANEL_HEIGHT, deadlocksInnerPanel); // deadlock
         items[DEADLOCKS_BY_DEBUGGER] = new Item(deadlockPanelColor, PANEL_HEIGHT * 2, debuggerDeadlocksInnerPanel); // deadlock caused by debugger
-        
+
         items[FILTERS].getPanel().setBorder(new EmptyBorder(1, 2, 1, 5)); // [TODO]
 
         arrowButton = createArrowButton();
@@ -166,7 +166,7 @@ public class InfoPanel extends javax.swing.JPanel {
             }
         });
     }
-    
+
     void addBreakpointHit(final JPDAThread thread, final int newHitsCount) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -246,7 +246,7 @@ public class InfoPanel extends javax.swing.JPanel {
         });
         return item;
     }
-    
+
     private void setHitsText(int hitsNumber) {
         String text;
         if (hitsNumber == 1) {
@@ -256,7 +256,7 @@ public class InfoPanel extends javax.swing.JPanel {
         }
         hitsLabel.setText(text);
     }
-    
+
     void setShowDeadlock(final boolean visible) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -268,7 +268,7 @@ public class InfoPanel extends javax.swing.JPanel {
             }
         });
     }
-    
+
     void setShowThreadLocks(final JPDAThread thread, final List<JPDAThread> lockerThreads) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -333,19 +333,19 @@ public class InfoPanel extends javax.swing.JPanel {
     private void hideHitsPanel() {
         hidePanel(HITS);
     }
-    
+
     private void showHitsPanel() {
         showPanel(HITS);
     }
-    
+
     private void hideDeadlocksPanel() {
         hidePanel(DEADLOCKS);
     }
-    
+
     private void showDeadlocksPanel() {
         showPanel(DEADLOCKS);
     }
-    
+
     private void hideDebuggerDeadlockPanel() {
         hidePanel(DEADLOCKS_BY_DEBUGGER);
     }
@@ -377,7 +377,7 @@ public class InfoPanel extends javax.swing.JPanel {
                 resumeTooltipResource = "InfoPanel.resumeDebuggerDeadlockButtonThread.Method.tooltip"; // NOI18N
             }
             resumeResource = "InfoPanel.resumeDebuggerDeadlockLabelThread.text"; // NOI18N
-            debuggerDeadlocksArea.setToolTipText(null);
+            debuggerDeadlocksLabel.setToolTipText(null);
             resumeDebuggerDeadlockButton.setToolTipText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
                     resumeTooltipResource, lockerThreads.get(0).getName()));
         } else {
@@ -395,19 +395,17 @@ public class InfoPanel extends javax.swing.JPanel {
                 threadNamesBuilder.append(lockerThreads.get(i).getName());
             }
             String threadNames = threadNamesBuilder.toString();
-            debuggerDeadlocksArea.setToolTipText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
+            debuggerDeadlocksLabel.setToolTipText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
                     "InfoPanel.debuggerDeadlocksLabel.tooltip",
                     threadNames));
             resumeDebuggerDeadlockButton.setToolTipText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
                     resumeTooltipResource, threadNames));
         }
-        debuggerDeadlocksArea.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
+        debuggerDeadlocksLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
                 infoResource,
                 lockerThreads.get(0).getName()));
-        resumeDebuggerDeadlockArea.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
+        resumeDebuggerDeadlockLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class,
                 resumeResource));
-        debuggerDeadlocksArea.setBackground(deadlockPanelColor);
-        resumeDebuggerDeadlockArea.setBackground(deadlockPanelColor);
         if (items[DEADLOCKS].isVisible()) {
             // Show only if there is not a real deadlock.
             return;
@@ -436,7 +434,7 @@ public class InfoPanel extends javax.swing.JPanel {
         });
         return button;
     }
-    
+
     private JToolBar createFilterToolBar() {
         final FiltersDescriptor filtersDesc = FiltersDescriptor.getInstance();
         // configure toolbar
@@ -485,7 +483,7 @@ public class InfoPanel extends javax.swing.JPanel {
         filtersDesc.connectToggleButton(index, toggleButton);
         return toggleButton;
     }
-    
+
     private void resumeThreadToFreeMonitor(JPDAThread thread) {
         // Do not have monitor breakpoints in the API.
         // Have to do that in the implementation module.
@@ -509,8 +507,8 @@ public class InfoPanel extends javax.swing.JPanel {
 
         debuggerDeadlocksInnerPanel = new javax.swing.JPanel();
         infoIcon2 = new javax.swing.JLabel();
-        debuggerDeadlocksArea = new javax.swing.JTextArea();
-        resumeDebuggerDeadlockArea = new javax.swing.JTextArea();
+        debuggerDeadlocksLabel = new javax.swing.JLabel();
+        resumeDebuggerDeadlockLabel = new javax.swing.JLabel();
         emptyPanel2 = new javax.swing.JPanel();
         resumeDebuggerDeadlockButton = new javax.swing.JButton();
         deadlocksInnerPanel = new javax.swing.JPanel();
@@ -537,33 +535,26 @@ public class InfoPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
         debuggerDeadlocksInnerPanel.add(infoIcon2, gridBagConstraints);
 
-        debuggerDeadlocksArea.setColumns(20);
-        debuggerDeadlocksArea.setEditable(false);
-        debuggerDeadlocksArea.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
-        debuggerDeadlocksArea.setLineWrap(true);
-        debuggerDeadlocksArea.setRows(5);
-        debuggerDeadlocksArea.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.debuggerDeadlocksLabel.text")); // NOI18N
-        debuggerDeadlocksArea.setWrapStyleWord(true);
-        debuggerDeadlocksArea.setBorder(null);
+        debuggerDeadlocksLabel.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
+        debuggerDeadlocksLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.debuggerDeadlocksLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        debuggerDeadlocksInnerPanel.add(debuggerDeadlocksArea, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 9);
+        debuggerDeadlocksInnerPanel.add(debuggerDeadlocksLabel, gridBagConstraints);
 
-        resumeDebuggerDeadlockArea.setColumns(20);
-        resumeDebuggerDeadlockArea.setEditable(false);
-        resumeDebuggerDeadlockArea.setLineWrap(true);
-        resumeDebuggerDeadlockArea.setRows(5);
-        resumeDebuggerDeadlockArea.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.resumeDebuggerDeadlockLabel.text")); // NOI18N
-        resumeDebuggerDeadlockArea.setWrapStyleWord(true);
+        resumeDebuggerDeadlockLabel.setText(org.openide.util.NbBundle.getMessage(InfoPanel.class, "InfoPanel.resumeDebuggerDeadlockLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        debuggerDeadlocksInnerPanel.add(resumeDebuggerDeadlockArea, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        debuggerDeadlocksInnerPanel.add(resumeDebuggerDeadlockLabel, gridBagConstraints);
 
         emptyPanel2.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -581,7 +572,8 @@ public class InfoPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 2.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 9);
@@ -663,8 +655,8 @@ public class InfoPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel deadlocksInnerPanel;
     private javax.swing.JLabel deadlocksLabel;
-    private javax.swing.JTextArea debuggerDeadlocksArea;
     private javax.swing.JPanel debuggerDeadlocksInnerPanel;
+    private javax.swing.JLabel debuggerDeadlocksLabel;
     private javax.swing.JPanel emptyPanel;
     private javax.swing.JPanel emptyPanel1;
     private javax.swing.JPanel emptyPanel2;
@@ -673,8 +665,8 @@ public class InfoPanel extends javax.swing.JPanel {
     private javax.swing.JLabel infoIcon;
     private javax.swing.JLabel infoIcon1;
     private javax.swing.JLabel infoIcon2;
-    private javax.swing.JTextArea resumeDebuggerDeadlockArea;
     private javax.swing.JButton resumeDebuggerDeadlockButton;
+    private javax.swing.JLabel resumeDebuggerDeadlockLabel;
     // End of variables declaration//GEN-END:variables
 
     public class Item {
@@ -710,7 +702,7 @@ public class InfoPanel extends javax.swing.JPanel {
             scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             scrollPane.setViewportView(outerPanel);
         }
-        
+
         public JPanel getPanel() {
             return outerPanel;
         }
@@ -725,7 +717,7 @@ public class InfoPanel extends javax.swing.JPanel {
             panel.setPreferredSize(new java.awt.Dimension(0, tapPanelMinimumHeight));
             return panel;
         }
-        
+
         private JPanel createSeparator() {
             JPanel panel = new JPanel();
             panel.setBackground(javax.swing.UIManager.getDefaults().getColor("Separator.foreground"));
@@ -743,7 +735,7 @@ public class InfoPanel extends javax.swing.JPanel {
             }
             setTop(isTop);
         }
-        
+
         private synchronized void makeVisible(boolean animate, final boolean top, final Item lastTop) {
             if (animationRunning) {
                 return;
@@ -845,7 +837,7 @@ public class InfoPanel extends javax.swing.JPanel {
                 scrollPane.setPreferredSize(new Dimension(0, preferredHeight));
             }
         }
-        
+
     }
 
 }
