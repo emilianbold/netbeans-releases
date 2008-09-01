@@ -135,7 +135,7 @@ public final class FastJar {
         f.seek (offset);
         ZipInputStream in = new ZipInputStream (new RandomAccessFileInputStream (f));
         ZipEntry e = in.getNextEntry();
-        if (e.getCrc() == 0L && e.getMethod() == ZipEntry.STORED) {
+        if (e != null && e.getCrc() == 0L && e.getMethod() == ZipEntry.STORED) {
             long cp = f.getFilePointer();
             in.close();
             f = new RandomAccessFile (file, "r");     //NOI18N

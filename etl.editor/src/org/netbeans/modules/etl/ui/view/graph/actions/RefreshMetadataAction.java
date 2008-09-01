@@ -30,6 +30,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.sql.framework.ui.view.graph.MetaTableModel;
@@ -95,8 +96,8 @@ public class RefreshMetadataAction extends GraphAction {
                    if (!visitView.infoList.isEmpty()) {
                     ttArea.layoutChildren();
                     // Mark collab as needing to be persisted.
-                    //DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
-                    //model.setDirty(true);
+                    DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
+                    model.setDirty(true);
                     infoList.addAll(visitView.infoList);
                 }
             } catch (DBSQLException ex) {
@@ -124,8 +125,8 @@ public class RefreshMetadataAction extends GraphAction {
                         jViewGraph.setHeight(jViewGraph.getMaximumHeight());
                     }
                     // Mark collab as needing to be persisted.
-                    //DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
-                    //model.setDirty(true);
+                    DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
+                    model.setDirty(true);
                     infoList.addAll(visitView.infoList);
                 }
             } catch (DBSQLException ex) {
