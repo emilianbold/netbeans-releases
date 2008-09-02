@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import antlr.Parser;
 import antlr.RecognitionException;
@@ -93,16 +94,18 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.NotImplementedException;
 
 /**
  * CsmFile implementations
  * @author Vladimir Kvashin
  */
 public class FileImpl implements CsmFile, MutableDeclarationsContainer, 
-        ChangeListener, Disposable, Persistent, SelfPersistent {
+        Disposable, Persistent, SelfPersistent {
     
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
+    private static final boolean reportState = Boolean.getBoolean("parser.log.state");
     
     private static final boolean emptyAstStatictics = Boolean.getBoolean("parser.empty.ast.statistics");
 
@@ -136,10 +139,22 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private int errorCount = 0;
     
-    private enum State { 
-	INITIAL, 
+    private enum State {
+
+        /** The file has never been parsed */
+	INITIAL,
+
+        /** The file has been completely parsed */
 	PARSED, 
-	MODIFIED, 
+        
+        /** The file is parsed in one preprocessor state,
+            but should be parsed in one or several other states */
+        PARTIAL,
+
+        /** The file is modified and needs to be reparsed */
+	MODIFIED,
+
+        /** The file is now being parsed */
 	BEING_PARSED 
     }
     
@@ -166,6 +181,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private final ReadWriteLock  staticLock = new ReentrantReadWriteLock();
     
     private List<CsmReference> lastMacroUsages;
+    
+    private ChangeListener fileBufferChangeListener = new ChangeListener() {
+        public void stateChanged(ChangeEvent e) {
+            FileImpl.this.markReparseNeeded(false);
+        }        
+    };
     
     /** For test purposes only */
     public interface Hook {
@@ -256,36 +277,78 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
     
-    public APTPreprocHandler getPreprocHandler() {
+    @Deprecated
+public APTPreprocHandler getPreprocHandler() {
         return getProjectImpl(true)==null ? null : getProjectImpl(true).getPreprocHandler(fileBuffer.getFile());
+    }
+    
+    public Collection<APTPreprocHandler> getPreprocHandlers() {
+        throw new NotImplementedException();
     }
     
     public void setBuffer(FileBuffer fileBuffer) {
         synchronized (changeStateLock) {
             if( this.fileBuffer != null ) {
-                this.fileBuffer.removeChangeListener(this);
+                this.fileBuffer.removeChangeListener(fileBufferChangeListener);
             }
             this.fileBuffer = fileBuffer;
             if( state != State.INITIAL ) {
                 state = State.MODIFIED;
             }
-            this.fileBuffer.addChangeListener(this);
+            this.fileBuffer.addChangeListener(fileBufferChangeListener);
         }
     }
     
     public FileBuffer getBuffer() {
         return this.fileBuffer;
     }
-    
-    public void ensureParsed(APTPreprocHandler preprocHandler) {
+
+    public void ensureParsed(Collection<APTPreprocHandler> handlers) {
 	synchronized( stateLock ) {
 	    switch( state ) {
 		case INITIAL:
-		    parse(preprocHandler);
+                case PARTIAL:
+                    state = State.BEING_PARSED;
+                    try {
+                        for (APTPreprocHandler preprocHandler : handlers) {
+                            _parse(preprocHandler);
+                            if (state == State.MODIFIED) {
+                                break; // does not make sense parsing old data
+                            }
+                        }
+                    } finally {
+                        synchronized (changeStateLock) {
+                            if (state == State.BEING_PARSED) {
+                                state = State.PARSED;
+                            }  // if not, someone marked it with new state
+                        }
+                        stateLock.notifyAll();
+                    }
 		    if( TraceFlags.DUMP_PARSE_RESULTS ) new CsmTracer().dumpModel(this);
 		    break;
 		case MODIFIED:
-		    reparse(preprocHandler);
+                    state = State.BEING_PARSED;
+                    boolean first = true;
+                    try {
+                        for (APTPreprocHandler preprocHandler : handlers) {
+                            if (first) {
+                                _reparse(preprocHandler);
+                                first = false;
+                            } else {
+                                _parse(preprocHandler);
+                            }
+                            if (state == State.MODIFIED) {
+                                break; // does not make sense parsing old data
+                            }
+                        }
+                    } finally {
+                        synchronized (changeStateLock) {
+                            if (state == State.BEING_PARSED) {
+                                state = State.PARSED;
+                            } // if not, someone marked it with new state
+                        }
+                        stateLock.notifyAll();
+                    }
 		    if( TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS ) new CsmTracer().dumpModel(this);
 		    break;
 		case PARSED:
@@ -309,11 +372,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private final Object changeStateLock = new Object();
-    public void stateChanged(javax.swing.event.ChangeEvent e) {
-        stateChanged(false);
-    }
 
-    public void stateChanged(boolean invalidateCache) {
+    public void markReparseNeeded(boolean invalidateCache) {
         synchronized (changeStateLock) {
 	    if( state != State.INITIAL ) {
 		state = State.MODIFIED;
@@ -331,6 +391,20 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
     
+    public void markMoreParseNeeded() {
+        synchronized (changeStateLock) {
+            switch (state) {
+                case BEING_PARSED:
+                case PARSED:
+                    state = State.PARTIAL;
+                case INITIAL:
+                case MODIFIED:
+                case PARTIAL:
+                    // nothing
+            }
+        }
+    }
+    
     public int getErrorCount() {    
         return errorCount;
     }
@@ -342,28 +416,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public void render(AST tree) {
         new AstRenderer(this).render(tree);
     }
-    
-    /**
-     * Removes old content from te file and model,
-     * then parses the current buffer
-     */
-    public void reparse(APTPreprocHandler preprocHandler) {
-        synchronized( stateLock ) {
-            state = State.BEING_PARSED;
-            try {
-                _reparse((preprocHandler == null) ? getPreprocHandler() : preprocHandler);
-            }
-            finally {
-                synchronized (changeStateLock) {
-                    if (state != State.MODIFIED) {
-                        state = State.PARSED;
-                    }
-                }
-                stateLock.notifyAll();
-            }
-        }
-    }    
-    
+        
     private void _reparse(APTPreprocHandler preprocHandler) {
         if (! ParserThreadManager.instance().isParserThread() && ! ParserThreadManager.instance().isStandalone()) {
             String text = "Reparsing should be done only in a special Code Model Thread!!!"; // NOI18N
@@ -464,22 +517,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return new TreeSet<CsmUID<CsmInclude>>(UID_START_OFFSET_COMPARATOR);
     }
     
-    public AST parse(APTPreprocHandler preprocHandler) {
+    /** for debugging/tracing purposes only */
+    public AST debugParse() {
         synchronized( stateLock ) {
-            state = State.BEING_PARSED;
-            try {
-                return _parse((preprocHandler == null) ? getPreprocHandler() : preprocHandler);
-            }
-            finally {
-                synchronized (changeStateLock) {
-                    if (state != State.MODIFIED) {
-                        state = State.PARSED;
-                    }
-                }
-                stateLock.notifyAll();
-            }
+            return _parse(getPreprocHandler());
         }
-    }    
+    }
     
     private AST _parse(APTPreprocHandler preprocHandler) {
         
@@ -703,7 +746,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //            System.err.println("cursor.hpp");
 //        }  
         if( reportParse || TraceFlags.DEBUG ) {
-            System.err.println("# APT-based AST-cached Parsing " + fileBuffer.getFile().getPath() + " (Thread=" + Thread.currentThread().getName() + ')');
+            APTPreprocHandler.State state = preprocHandler.getState();
+            System.err.printf("# APT-based AST-cached Parsing %s (valid=%b, compile-context=%b) (Thread=%s)\n", fileBuffer.getFile().getPath(),
+                    state.isValid(), state.isCompileContext(), Thread.currentThread().getName());
+            if (reportState) {
+                System.err.printf("%s\n\n", preprocHandler.getState());
+            }
         }
         
         int flags = CPPParserEx.CPP_CPLUSPLUS;
