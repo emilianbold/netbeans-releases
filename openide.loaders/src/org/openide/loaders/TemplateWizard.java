@@ -1038,10 +1038,8 @@ public class TemplateWizard extends WizardDescriptor {
                 obj = it.next ();
                 assert obj != null : "Null DataObject provided by " + instantiatingIterator;
                 if (obj instanceof DataObject) {
-                    // XXX what?? aren't we adding it?
-                    continue;
-                }
-                if (obj instanceof FileObject) {
+                    resultSet.add ((DataObject) obj);
+                } else if (obj instanceof FileObject) {
                     try {
                         dobj = DataObject.find ((FileObject)obj);
                         resultSet.add (dobj);
