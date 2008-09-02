@@ -294,7 +294,7 @@ public final class DeepReparsingUtils {
     }
 
     private static void addToReparse(final ProjectBase project, final FileImpl parentImpl, final boolean invalidateCache) {
-        parentImpl.markModified(invalidateCache);
+        parentImpl.markReparseNeeded(invalidateCache);
         ParserQueue.instance().add(parentImpl, project.getPreprocHandler(parentImpl.getBuffer().getFile()).getState(), ParserQueue.Position.HEAD);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
             System.out.println("Add file to reparse "+parentImpl.getAbsolutePath()); // NOI18N
@@ -302,7 +302,7 @@ public final class DeepReparsingUtils {
     }
     
     private static void addToReparse(final ProjectBase project, final NativeFileItem nativeFile, final FileImpl file) {
-        file.markModified(true);
+        file.markReparseNeeded(true);
         APTPreprocHandler.State state = project.setChangedFileState(nativeFile);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
             System.out.println("Add file to reparse "+file.getAbsolutePath()); // NOI18N
@@ -315,7 +315,7 @@ public final class DeepReparsingUtils {
         if (parent.getProject() == project){
             FileImpl parentImpl = (FileImpl) parent;
             project.invalidatePreprocState(parentImpl.getBuffer().getFile());
-            parentImpl.markModified(false);
+            parentImpl.markReparseNeeded(false);
             if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
                 System.out.println("Invalidate file to reparse "+parent.getAbsolutePath()); // NOI18N
             }

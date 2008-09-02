@@ -108,12 +108,12 @@ public final class ParserQueue {
             return file;
         }
 
-        /** @deprecated - use getPreprocStates() instead */
+        @Deprecated
         public APTPreprocHandler.State getPreprocState() {
             return getPreprocStates().iterator().next(); // never empty!
         }
 
-        /** @erecated - use getPreprocStates() instead */
+        @Deprecated
         public Collection<APTPreprocHandler.State> getPreprocStates() {
             Object state = ppState;
             if (state instanceof APTPreprocHandler.State || state == null) {
@@ -314,7 +314,7 @@ public final class ParserQueue {
      * If file isn't yet enqueued, places it at the beginning of the queue,
      * otherwise moves it there
      */
-    public void add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position, boolean clearPreState) {
+    public void add(FileImpl file, Collection<APTPreprocHandler.State> ppStates, Position position, boolean clearPrevState) {
         if (ppStates.isEmpty()) {
             Utils.LOG.severe("Adding a file with an emty preprocessor state set"); //NOI18N
         }
@@ -337,10 +337,10 @@ public final class ParserQueue {
                 if( entry == null ) {
                     assert false : "ProjectData contains file " + file + ", but there is no matching entry in the queue"; // NOI18N
                 } else {
-                    if (clearPreState) {
-                        entry.addStates(ppStates);
-                    } else {
+                    if (clearPrevState) {
                         entry.setStates(ppStates);
+                    } else {
+                        entry.addStates(ppStates);
                     }
                     if (position.compareTo(entry.getPosition()) < 0) {
                         queue.remove(entry);

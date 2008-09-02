@@ -152,24 +152,13 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return impl;
     }
 
-//    /** @deprecated  - use entry */
-//    public void putPreprocConditionState(Entry entry, FilePreprocessorConditionState pcState) {
-//        if (entry != null) {
-//            MyFile f = ((MyFile) entry);
-////            if (pcState == null) {
-////                System.err.printf("Null pcState for %s\n", f.canonical);
-////            }
-//            f.setPCState(pcState);
-//        }
-//    }
-
-    /** @deprecated  - use entry */
+    @Deprecated
     public void putPreprocState(File file, APTPreprocHandler.State state) {
         MyFile f = getMyFile(file, true);
         putPreprocState(f, state);
     }
 
-    /** @deprecated  */
+    @Deprecated
     public void putPreprocState(Entry entry, APTPreprocHandler.State state) {
         if (entry == null) {
             return;
@@ -204,7 +193,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             return;
         }
         synchronized (f) {
-            f.invalidateState();
+            f.invalidateStates();
         }
         if (TRACE_PP_STATE_OUT) {
             String path = getFileKey(file, false);
@@ -212,7 +201,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
     }
     
-    /** @deprecated use  getPreprocStates() or getEntry() instead*/
+    @Deprecated
     public APTPreprocHandler.State getPreprocState(File file) {
         MyFile f = getMyFile(file, false);
         if (f == null){
@@ -231,20 +220,16 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return getMyFile(file, false);
     }
 
-    public Object getLock(Entry entry) {
-        return (entry == null) ? lock : entry;
-    }
-
     public Object getLock(File file) {
         MyFile f = getMyFile(file, false);
-        return getLock(f);
+        return f.getLock();
     }
     
     public void debugClearState(){
         List<MyFile> files;
         files = new ArrayList<MyFile>(myFiles.values());
         for (MyFile file : files){
-            synchronized (getLock(file)) {
+            synchronized (file.getLock()) {
                 file.clearState();
             }
         }
@@ -524,40 +509,31 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         public final APTPreprocHandler.State state;
         public final FilePreprocessorConditionState pcState;
         
-        private StatePair(State ppState, FilePreprocessorConditionState pcState) {
+        public StatePair(State ppState, FilePreprocessorConditionState pcState) {
             this.state = ppState;
             this.pcState = pcState;
         }
 
-//        public FilePreprocessorConditionState getPCState() {
-//            return pcState;
-//        }
-//
-//        public State getState() {
-//            return ppState;
-//        }
+        @Override
+        public String toString() {
+            return "(" + state.toString() + ',' + pcState.toString() + ')'; //NOI18N
+        }
     }
             
     public static interface Entry {
 
-        /** @deprecated  */
+        @Deprecated
         APTPreprocHandler.State getState();
-        /** @deprecated  */
+        
+        @Deprecated
         FilePreprocessorConditionState getPCState();
 
         /** Gets the states collection */
         Collection<StatePair> getStates();
         
-        void replacePairs(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
-
-        StatePair addPair(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
-        
-//        /** Should never be empty - so if the one to remove is the only one, relace it by defaultPair */
-//        void removePair(StatePair pair, StatePair defaultPair);
-        
-        void removePair(StatePair pair);
-        
-        public void removePairs(Collection<StatePair> pairsToRemove);
+        void setStates(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
+        void setStates(Collection<StatePair> pairs);
+        void setStates(Collection<StatePair> pairs, StatePair yetOneMore);
         
         int size();
 
@@ -566,6 +542,8 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
          * each modification changes mod count
          */
         int getModCount();
+        
+        public Object getLock();
     }
 
     private static final class MyFile implements Persistent, SelfPersistent, Entry {
@@ -649,51 +627,76 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         }
 
-        public final int getModCount() {
+        public final synchronized int getModCount() {
             return modCount;
         }
+
+        /**
+         * @return lock under which all sequances read-decide-modify should be done
+         * get* and replace* methods are synchronize on the same lock 
+         */
+        public Object getLock() {
+            return this;
+        }
         
-        public int size() {
+        public synchronized int size() {
             return (data instanceof Collection) ? ((Collection) data).size() : 1;
         }
 
         @Deprecated
-        public final FilePreprocessorConditionState getPCState() {
+        public final synchronized FilePreprocessorConditionState getPCState() {
             return getStates().iterator().next().pcState;
         }
 
-//        public final void setPCState(FilePreprocessorConditionState newPCState) {
-//            incrementModCount();
-//            pcState = newPCState;
-//        }
-//
-
         @Deprecated
-        public final APTPreprocHandler.State getState() {
+        public final synchronized APTPreprocHandler.State getState() {
             return getStates().iterator().next().state;
         }
 
-        private void clearState() {
+        private synchronized void clearState() {
             data = null;
         }
 
         //package
         @Deprecated
-        final void setState(APTPreprocHandler.State state) {
+        final synchronized void setState(APTPreprocHandler.State state) {
             incrementModCount();
             //assert size() <= 1 : "this method shold never be called for an entry with mltiple states"; //NOI18N
             data = new StatePair(state, null);
         }
         
-        public void replacePairs(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState) {
+        public synchronized void setStates(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState) {
+            incrementModCount();
             data = new StatePair(ppState, pcState);
         }
 
-        private void incrementModCount() {
+        public synchronized void setStates(Collection<StatePair> pairs) {
+            incrementModCount();
+            if (pairs.size() == 1) {
+                data = pairs.iterator().next();
+            } else {
+                data = new ArrayList<StatePair>(pairs);
+            }
+        }
+
+        public synchronized void setStates(Collection<StatePair> pairs, StatePair yetOneMore) {
+            incrementModCount();
+            if (pairs.size() == 0) {
+                data = yetOneMore;
+            } else {
+                ArrayList<StatePair> newData = new ArrayList<StatePair>(pairs.size()+1);
+                newData.addAll(pairs);
+                newData.add(yetOneMore);
+                data = newData;
+            }
+        }
+
+        
+        private synchronized void incrementModCount() {
             modCount = (modCount == Integer.MAX_VALUE) ? 0 : modCount+1;
         }
 
-        private void invalidateState() {
+        private synchronized void invalidateStates() {
             incrementModCount();
             if (data != null) {
                 if (data instanceof StatePair) {
@@ -720,64 +723,28 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         }
             
-        public Collection<StatePair> getStates() {
+        public synchronized Collection<StatePair> getStates() {
             if (data == null) {
                 return Collections.singleton(new StatePair(null, null));
             } else if(data instanceof StatePair) {
                 return Collections.singleton((StatePair) data);
             } else {
-                return (Collection<StatePair>) data;
+                return new ArrayList<StatePair>((Collection<StatePair>) data);
             }
         }
 
-        public StatePair addPair(State ppState, FilePreprocessorConditionState pcState) {
-            incrementModCount();
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        /** Invoke ONLY UNDER THE ENTRY LOCK - as well as all modifications */
-        public void removePair(StatePair pair) {
-            incrementModCount();
-            if (data instanceof StatePair) {
-                if (data.equals(pair)) {
-                    data = null;
-                }
-            } else {
-                for (Iterator<StatePair> iter = ((Collection<StatePair>) data).iterator(); iter.hasNext(); ) {
-                    StatePair curr = iter.next();
-                    if (curr.equals(pair)) {
-                        iter.remove();
-                        return;
-                    }
-                }
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(fileNew);
+            sb.append("states:\n");
+            for (StatePair pair : getStates()) {
+                sb.append(pair);
+                sb.append('\n');
             }
-
+            return sb.toString();
         }
 
-        /** Invoke ONLY UNDER THE ENTRY LOCK - as well as all modifications */
-        public void removePairs(Collection<StatePair> pairsToRemove) {
-            incrementModCount();
-            for (StatePair pair : pairsToRemove) {
-                removePair(pair);
-            }
-        }
-        
-//        /** Invoke ONLY UNDER THE ENTRY LOCK - as well as all modifications */
-//        public void removePair(StatePair pair, StatePair defaultPair) {
-//            incrementModCount();
-//            if (size() == 1) {
-//                data = defaultPair;
-//            } else {
-//                for (Iterator<StatePair> iter = ((Collection<StatePair>) data).iterator(); iter.hasNext(); ) {
-//                    StatePair curr = iter.next();
-//                    if (curr.equals(pair)) {
-//                        iter.remove();
-//                        return;
-//                    }
-//                }
-//            }
-//        }
-//
     }
     
     private static final CharSequence getCanonicalKey(CharSequence fileKey) {

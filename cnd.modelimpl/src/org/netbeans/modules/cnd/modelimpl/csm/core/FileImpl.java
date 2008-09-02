@@ -184,7 +184,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private ChangeListener fileBufferChangeListener = new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
-            FileImpl.this.markModified(false);
+            FileImpl.this.markReparseNeeded(false);
         }        
     };
     
@@ -277,8 +277,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
     
-    /** @deprecated use getPreprocHandlers instead */
-    public APTPreprocHandler getPreprocHandler() {
+    @Deprecated
+public APTPreprocHandler getPreprocHandler() {
         return getProjectImpl(true)==null ? null : getProjectImpl(true).getPreprocHandler(fileBuffer.getFile());
     }
     
@@ -373,7 +373,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private final Object changeStateLock = new Object();
 
-    public void markModified(boolean invalidateCache) {
+    public void markReparseNeeded(boolean invalidateCache) {
         synchronized (changeStateLock) {
 	    if( state != State.INITIAL ) {
 		state = State.MODIFIED;

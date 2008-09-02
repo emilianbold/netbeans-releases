@@ -112,7 +112,7 @@ public class RepositoryFilesCacheStress extends RepositoryAccessTestBase {
     private void invalidateProjectFiles(CsmProject project) {
 	for(CsmFile file : project.getAllFiles() ) {
 	    FileImpl impl = (FileImpl) file;
-	    impl.markModified(false);
+	    impl.markReparseNeeded(false);
 	    try {
 		file.scheduleParsing(false);
 		//sleep(500);

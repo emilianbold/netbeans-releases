@@ -108,7 +108,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
 
     protected final void reparseFile(CsmFile file) {
         if (file instanceof FileImpl) {
-            ((FileImpl) file).markModified(true);
+            ((FileImpl) file).markReparseNeeded(true);
             try {
                 ((FileImpl) file).scheduleParsing(true);
             } catch (InterruptedException ex) {
