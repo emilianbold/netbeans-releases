@@ -38,17 +38,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.core.syntax.gsf.embedding;
+package org.netbeans.modules.html.editor.gsf.embedding;
 
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.netbeans.api.jsp.lexer.JspTokenId;
-import org.netbeans.api.lexer.Token;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -58,7 +59,6 @@ import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.html.editor.gsf.embedding.CssModel;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
@@ -67,16 +67,16 @@ import org.openide.loaders.DataObject;
  * 
  * @author Tor Norbye, Marek Fukala
  */
-public class CssJspModel extends CssModel {
+public class CssTemplatedModel extends CssModel {
 
-    private static final Logger LOGGER = Logger.getLogger(CssJspModel.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CssTemplatedModel.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
-    public static CssJspModel get(Document doc) {
-        CssJspModel model = (CssJspModel) doc.getProperty(CssJspModel.class);
+    public static CssTemplatedModel get(Document doc) {
+        CssTemplatedModel model = (CssTemplatedModel) doc.getProperty(CssTemplatedModel.class);
         if (model == null) {
-            model = new CssJspModel(doc);
-            doc.putProperty(CssJspModel.class, model);
+            model = new CssTemplatedModel(doc);
+            doc.putProperty(CssTemplatedModel.class, model);
         }
 
         return model;
@@ -85,14 +85,13 @@ public class CssJspModel extends CssModel {
     private static final String PREFIX = "GENERATED_";
     private static final String POSTFIX = ";";
     
-    private static final String EL = PREFIX + "EXPRESSION_LANGUAGE" + POSTFIX;
-    private static final String JAVA = PREFIX + "GENERATED_JAVA_CODE" + POSTFIX;
+    private static final String TEMPLATING = PREFIX + "CODE" + POSTFIX;
     
     private static final String FIXED_SELECTOR = PREFIX + "FIXED_SELECTOR";
     
     private CssParserAccess.CssParserResult cachedParserResult = null;
     
-    private CssJspModel(Document doc) {
+    private CssTemplatedModel(Document doc) {
         super(doc);
     }
 
@@ -120,7 +119,7 @@ public class CssJspModel extends CssModel {
             try {
                 d.readLock();
                 List<OffsetRange> generated = new  ArrayList<OffsetRange>();
-                extractCssFromJSP(doc, buffer, generated);
+                extractCssFromTemplatedHTML(doc, buffer, generated);
 
                 if(generated.isEmpty()) {
                     code = buffer.toString();
@@ -355,80 +354,70 @@ public class CssJspModel extends CssModel {
         buff.replace(from, from + text.length(), text);
     }
 
+    private LanguagePath findHtmlPath(TokenHierarchy th) {
+        Set<LanguagePath> paths = th.languagePaths();
+        for(LanguagePath path : paths) {
+            if(path.innerLanguage() == HTMLTokenId.language()) {
+                return path;
+            }
+//            for(int i = 0; i < path.size(); i++) {
+//                if(path.language(i) == HTMLTokenId.language()) {
+//                    return path;
+//                }
+//            }
+        }
+        return null;
+    }
+    
     /** @DocumenLock(type=READ) */
-    private void extractCssFromJSP(Document doc, StringBuilder buffer, List<OffsetRange> templatingBlocks) {
+    private void extractCssFromTemplatedHTML(Document doc, StringBuilder buffer, List<OffsetRange> templatingBlocks) {
         HashMap<String, Object> state = new HashMap<String, Object>(6);
         TokenHierarchy th = TokenHierarchy.get(doc);
-        TokenSequence<JspTokenId> ts = th.tokenSequence();
-        ts.moveStart();
-        while (ts.moveNext()) {
-            Token<JspTokenId> token = ts.token();
-            if (token.id() == JspTokenId.TEXT) {
-                //content - suppose html :-|
-                TokenSequence htmlTs = ts.embedded();
-                htmlTs.moveStart();
-                extractCssFromHTML(htmlTs, buffer, state);
-            } else {
-                //TODO hey, and what about the boundaries of css sections?????
+        LanguagePath htmlPath = findHtmlPath(th);
+        if (htmlPath == null) {
+            return; //no html content
+        }
+
+        List<TokenSequence> tslist = th.tokenSequenceList(htmlPath, 0, Integer.MAX_VALUE);
+        TokenSequence last = null;
+        for (TokenSequence ts : tslist) {
+            ts.moveStart();
+            
+            if(!ts.moveNext()) {
+                //this should not happen - a token sequence without any token
+                continue;
+            }
+            
+            if (last != null) {
+                //there has been an html sequence before, we need to replace 
+                //the "hole" between the html sequences by some reasonable content
+
                 if (state.get(IN_STYLE) != null || state.get(IN_INLINED_STYLE) != null) {
                     //in css - do something to make the css parser happy
-                    if (token.id() == JspTokenId.EL || token.id() == JspTokenId.SCRIPTLET) {
-                        //expression language or java code
-                        //just one token
-                        int sourceStart = ts.offset();
-                        int sourceEnd = ts.offset() + token.length();
 
-                        int generatedStart = buffer.length();
-                        buffer.append(token.id() == JspTokenId.EL ? EL : JAVA); //NOI18N
-                        int generatedEnd = buffer.length();
-                        
-                        templatingBlocks.add(new OffsetRange(generatedStart, generatedEnd));
-                        
-                        CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
-                                generatedEnd);
-                        codeBlocks.add(blockData);
-                    } else if (token.id() == JspTokenId.TAG) {
-                        //check if it is an open tag or singleton tag
-                        String tagName = token.text().toString();
-                        int sourceStart = ts.offset() - 1; //include the '<' symbol
-                        StringBuilder tagBody = new StringBuilder();
-                        while (ts.moveNext()) {
-                            token = ts.token();
-                            if (token.id() == JspTokenId.SYMBOL && "/>".equals(token.text().toString())) {
-                                //singleton tag
+                    //expression language or java code
+                    //just one token
+                    int sourceStart = last.offset() + last.token().length();
+                    int sourceEnd = ts.offset();
 
-                                //for now just ignore, do not generate anything
-                                break;
-                            } else if (token.id() == JspTokenId.TEXT) {
-                                tagBody.append(token.text());
+                    int generatedStart = buffer.length();
+                    buffer.append(TEMPLATING); //NOI18N
+                    int generatedEnd = buffer.length();
 
-                            } else if (token.id() == JspTokenId.ENDTAG && token.text().toString().equals(tagName)) {
-                                //body tag
+                    templatingBlocks.add(new OffsetRange(generatedStart, generatedEnd));
 
-                                ts.moveNext(); //jump to the closing symbol
-
-                                //put the content to the virtual source 
-                                //TODO we likely need more heuristics here since some tags may generate output, some don't
-                                int sourceEnd = ts.offset() + ts.token().length();
-                                int generatedStart = buffer.length();
-                                buffer.append(tagBody);
-                                int generatedEnd = buffer.length();
-                                CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
-                                        generatedEnd);
-                                codeBlocks.add(blockData);
-
-                                break;
-
-                            }
-
-                        }
-
-                    }
+                    CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
+                            generatedEnd);
+                    codeBlocks.add(blockData);
+                    
                 }
             }
-        } //end of main tokens loop
+            
+            ts.moveStart(); //respsition at the beginning since the extractCssFromHTML supposes this state
+            extractCssFromHTML(ts, buffer, state);
+            last = ts;
 
-
-
+        }
     }
+        
 }

@@ -67,6 +67,7 @@ import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -98,6 +99,9 @@ import org.openide.util.RequestProcessor;
  * The implementation of JPDAThread.
  */
 public final class JPDAThreadImpl implements JPDAThread, Customizer {
+
+    private static final String PROP_LOCKER_THREADS = "lockerThreads"; // NOI18N
+    private static final String PROP_STEP_SUSPENDED_BY_BREAKPOINT = "stepSuspendedByBreakpoint"; // NOI18N
     
     private ThreadReference     threadReference;
     private JPDADebuggerImpl    debugger;
@@ -120,6 +124,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private ObjectReference     lockerThreadsMonitor;
     private List<JPDAThread>    lockerThreadsList;
     private List<ThreadReference> resumedBlockingThreads;
+    private final Object        stepBreakpointLock = new Object();
+    private JPDABreakpoint      stepSuspendedByBreakpoint;
 
     public JPDAThreadImpl (
         ThreadReference     threadReference,
@@ -611,6 +617,15 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             } catch (VMDisconnectedException ex) {
             }
         }
+        JPDABreakpoint brkp = null;
+        synchronized (stepBreakpointLock) {
+            if (stepSuspendedByBreakpoint != null) {
+                brkp = stepSuspendedByBreakpoint;
+            }
+        }
+        if (brkp != null) {
+            pch.firePropertyChange(PROP_STEP_SUSPENDED_BY_BREAKPOINT, brkp, null);
+        }
         cleanCachedFrames();
         if (suspendedToFire != null) {
             pch.firePropertyChange(PROP_SUSPENDED,
@@ -621,20 +636,20 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     public void notifyToBeResumed() {
         //System.err.println("notifyToBeResumed("+getName()+")");
-        PropertyChangeEvent evt = notifyToBeRunning(true, true);
-        if (evt != null) {
+        List<PropertyChangeEvent> evts = notifyToBeRunning(true, true);
+        for (PropertyChangeEvent evt : evts) {
             pch.firePropertyChange(evt);
         }
     }
     
-    private PropertyChangeEvent notifyToBeRunning(boolean clearVars, boolean resumed) {
+    private List<PropertyChangeEvent> notifyToBeRunning(boolean clearVars, boolean resumed) {
         Boolean suspendedToFire = null;
         synchronized (this) {
             if (resumed) {
                 waitUntilMethodInvokeDone();
             }
             //System.err.println("notifyToBeRunning("+getName()+"), resumed = "+resumed+", suspendCount = "+suspendCount+", thread's suspendCount = "+threadReference.suspendCount());
-            if (resumed && (--suspendCount > 0)) return null;
+            if (resumed && (--suspendCount > 0)) return Collections.emptyList();
             //System.err.println("  suspendCount = 0, var suspended = "+suspended);
             suspendCount = 0;
             if (clearVars) {
@@ -653,12 +668,28 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             }
         }
         cleanCachedFrames();
+        PropertyChangeEvent stepBrkpEvt = null;
+        synchronized (stepBreakpointLock) {
+            if (stepSuspendedByBreakpoint != null) {
+                stepBrkpEvt = new PropertyChangeEvent(this, PROP_STEP_SUSPENDED_BY_BREAKPOINT,
+                        stepSuspendedByBreakpoint, null);
+                stepSuspendedByBreakpoint = null;
+            }
+        }
         if (suspendedToFire != null) {
-            return new PropertyChangeEvent(this, PROP_SUSPENDED,
+            PropertyChangeEvent suspEvt = new PropertyChangeEvent(this, PROP_SUSPENDED,
                     Boolean.valueOf(!suspendedToFire.booleanValue()),
                     suspendedToFire);
+            if (stepBrkpEvt != null) {
+                return Arrays.asList(new PropertyChangeEvent[] {stepBrkpEvt, suspEvt});
+            } else {
+                return Collections.singletonList(suspEvt);
+            }
         } else {
-            return null;
+            if (stepBrkpEvt != null) {
+                return Collections.singletonList(stepBrkpEvt);
+            }
+            return Collections.emptyList();
         }
     }
     
@@ -694,7 +725,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     private boolean resumedToFinishMethodInvocation;
     
     public void notifyMethodInvoking() throws PropertyVetoException {
-        PropertyChangeEvent evt;
+        List<PropertyChangeEvent> evts;
         synchronized (this) {
             if (methodInvokingDisabledUntilResumed) {
                 throw new PropertyVetoException(
@@ -709,10 +740,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                         NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NoCurrentContext"), null);
             }
             methodInvoking = true;
-            evt = notifyToBeRunning(false, false);
+            evts = notifyToBeRunning(false, false);
             watcher = new SingleThreadWatcher(this);
         }
-        if (evt != null) {
+        for (PropertyChangeEvent evt : evts) {
             pch.firePropertyChange(evt);
         }
     }
@@ -1119,7 +1150,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 }
                 if (oldLockerThreadsList != newLockerThreadsList) { // Not fire when both null
                     //System.err.println("Fire lockerThreads: "+(oldLockerThreadsList == null || !oldLockerThreadsList.equals(newLockerThreadsList)));
-                    pch.firePropertyChange("lockerThreads", oldLockerThreadsList, newLockerThreadsList); // NOI18N
+                    pch.firePropertyChange(PROP_LOCKER_THREADS, oldLockerThreadsList, newLockerThreadsList); // NOI18N
                 }
             //}
             //setLockerThreads(lockedThreadsWithMonitors);
@@ -1214,7 +1245,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     lockerThreadsList = null;
                     threadsToSuspend = resumedBlockingThreads;
                 }
-                pch.firePropertyChange("lockerThreads", oldLockerThreadsList, null);
+                pch.firePropertyChange(PROP_LOCKER_THREADS, oldLockerThreadsList, null);
                 //System.err.println("Monitor freed, threadsToSuspend = "+threadsToSuspend);
                 if (threadsToSuspend != null) {
                     for (ThreadReference tr : threadsToSuspend) {
@@ -1277,6 +1308,13 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         } finally {
             threadReference.resume();
         }
+    }
+
+    public void setStepSuspendedBy(JPDABreakpoint breakpoint) {
+        synchronized (stepBreakpointLock) {
+            this.stepSuspendedByBreakpoint = breakpoint;
+        }
+        pch.firePropertyChange(PROP_STEP_SUSPENDED_BY_BREAKPOINT, null, breakpoint);
     }
 
     @Override

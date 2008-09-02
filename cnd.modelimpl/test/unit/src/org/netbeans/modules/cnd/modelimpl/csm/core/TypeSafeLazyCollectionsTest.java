@@ -103,7 +103,7 @@ public class TypeSafeLazyCollectionsTest extends ModelImplBaseTestCase {
         macros.add("START=");
         macros.add("END=");
         NativeProjectProvider.setUserMacros(nativeProject, macros /*Collections.<String>emptyList()*/);
-        ((FileImpl) cls.getContainingFile()).stateChanged(true);
+        ((FileImpl) cls.getContainingFile()).markReparseNeeded(true);
         cls.getContainingFile().scheduleParsing(true);
         
         project.waitParse();

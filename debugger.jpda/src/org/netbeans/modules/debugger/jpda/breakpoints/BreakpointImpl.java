@@ -54,9 +54,6 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
 
-import java.awt.Color;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,10 +61,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -86,12 +79,7 @@ import org.netbeans.modules.debugger.jpda.expr.ParseException;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
-import org.netbeans.modules.debugger.jpda.util.ThreadInfoPanel;
 
-import org.openide.DialogDescriptor;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
@@ -404,7 +392,10 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     if (resumeDecision != null) {
                         return resumeDecision.booleanValue();
                     }
-                    final String message;
+                    JPDAThreadImpl tr = (JPDAThreadImpl) debugger.getThread(thread);
+                    tr.setStepSuspendedBy(breakpoint);
+
+                    /*final String message;
                     if (thisThreadHasStep) {
                         message = NbBundle.getMessage(BreakpointImpl.class,
                                 "MSG_StepThreadInterruptedByBR",
@@ -452,7 +443,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                                 }
                             }
                         }
-                    });
+                    });*/
                     return false;
                     
                     /*
