@@ -50,6 +50,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ145828() throws Exception {
+        // IZ#145828: & breaks completion in some expressions
+        performTest("main.cc", 91, 25, "main.cc", 83, 5);
+        performTest("main.cc", 92, 16, "main.cc", 84, 5);
+        performTest("main.cc", 93, 24, "main.cc", 85, 5);
+    }
+    
     public void testIZ144880() throws Exception {
         // IZ#144880: enumerators in template arguments are not resolved
         performTest("useenumerators.cc", 33, 12, "useenumerators.cc", 32, 12);
