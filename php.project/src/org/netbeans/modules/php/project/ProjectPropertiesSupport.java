@@ -39,11 +39,13 @@
 
 package org.netbeans.modules.php.project;
 
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
 import java.nio.charset.Charset;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -56,6 +58,21 @@ import org.openide.filesystems.FileUtil;
 public final class ProjectPropertiesSupport {
 
     private ProjectPropertiesSupport() {
+    }
+
+    /**
+     * <b>This method should not be used, use other methods in this class.</b>
+     * <p>
+     * Use this method only if you don't want to show customizer automatically
+     * or if you understand what you are doing ;)
+     * @see #addWeakPropertyEvaluatorListener(org.netbeans.modules.php.project.PhpProject, java.beans.PropertyChangeListener)
+     */
+    public static PropertyEvaluator getPropertyEvaluator(PhpProject project) {
+        return project.getEvaluator();
+    }
+
+    public static void addWeakPropertyEvaluatorListener(PhpProject project, PropertyChangeListener listener) {
+        project.addWeakPropertyEvaluatorListener(listener);
     }
 
     public static FileObject getProjectDirectory(PhpProject project) {
@@ -103,39 +120,78 @@ public final class ProjectPropertiesSupport {
         return null;
     }
 
-    public static Charset getEncoding(PhpProject project) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Charset getUrl(PhpProject project) {
-        throw new UnsupportedOperationException();
-    }
-
-    public static Charset getIndexFile(PhpProject project) {
-        throw new UnsupportedOperationException();
+    public static String getEncoding(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.SOURCE_ENCODING);
     }
 
     public static Charset getIncludePath(PhpProject project) {
         throw new UnsupportedOperationException();
     }
 
-    public static Charset getArguments(PhpProject project) {
-        throw new UnsupportedOperationException();
+    /**
+     * @return run as type or <code>null</code>.
+     */
+    public static PhpProjectProperties.RunAsType getRunAs(PhpProject project) {
+        PhpProjectProperties.RunAsType runAsType = null;
+        String runAs = project.getEvaluator().getProperty(PhpProjectProperties.RUN_AS);
+        // XXX tmysik
+        assert runAs != null;
+        try {
+            runAsType = PhpProjectProperties.RunAsType.valueOf(runAs);
+        } catch (IllegalArgumentException iae) {
+            // ignored
+        }
+        return runAsType;
     }
 
-    public static Charset getRunAs(PhpProject project) {
-        throw new UnsupportedOperationException();
+    /**
+     * @return url or <code>null</code>.
+     */
+    public static String getUrl(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.URL);
     }
 
-    public static Charset getRemoteConnection(PhpProject project) {
-        throw new UnsupportedOperationException();
+    /**
+     * @return index file or <code>null</code>.
+     */
+    public static String getIndexFile(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.INDEX_FILE);
     }
 
-    public static Charset getRemoteDirectory(PhpProject project) {
-        throw new UnsupportedOperationException();
+    /**
+     * @return arguments or <code>null</code>.
+     */
+    public static String getArguments(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.ARGS);
     }
 
-    public static Charset getRemoteUpload(PhpProject project) {
-        throw new UnsupportedOperationException();
+    /**
+     * @return remote connection (configuration) name or <code>null</code>.
+     */
+    public static String getRemoteConnection(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.REMOTE_CONNECTION);
+    }
+
+    /**
+     * @return remote (upload) directory or <code>null</code>.
+     */
+    public static String getRemoteDirectory(PhpProject project) {
+        return project.getEvaluator().getProperty(PhpProjectProperties.REMOTE_DIRECTORY);
+    }
+
+    /**
+     * @return remote upload or <code>null</code>.
+     */
+    public static PhpProjectProperties.UploadFiles getRemoteUpload(PhpProject project) {
+        PhpProjectProperties.UploadFiles uploadFiles = null;
+        String remoteUpload = project.getEvaluator().getProperty(PhpProjectProperties.REMOTE_UPLOAD);
+        // XXX tmysik
+        assert remoteUpload != null;
+        try {
+            uploadFiles = PhpProjectProperties.UploadFiles.valueOf(remoteUpload);
+        } catch (IllegalArgumentException iae) {
+            // ignored
+        }
+        return uploadFiles;
     }
 }

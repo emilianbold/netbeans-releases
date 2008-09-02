@@ -86,7 +86,6 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
 
     final Category category;
     final PhpProjectProperties properties;
-    final PropertyEvaluator evaluator;
     String originalEncoding;
     boolean notified;
     private final CopyFilesVisual copyFilesVisual;
@@ -98,7 +97,6 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
 
         this.category = category;
         this.properties = properties;
-        evaluator = properties.getProject().getEvaluator();
 
         initEncoding();
         initProjectAndSources();
@@ -138,7 +136,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     }
 
     private void initEncoding() {
-        originalEncoding = evaluator.getProperty(PhpProjectProperties.SOURCE_ENCODING);
+        originalEncoding = ProjectPropertiesSupport.getEncoding(properties.getProject());
         if (originalEncoding == null) {
             originalEncoding = Charset.defaultCharset().name();
         }
@@ -169,20 +167,20 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     }
 
     private boolean initCopyFiles() {
-        return Boolean.valueOf(evaluator.evaluate(properties.getCopySrcFiles()));
+        // XXX tmysik
+        return ProjectPropertiesSupport.isCopySourcesEnabled(properties.getProject());
     }
 
     private LocalServer initCopyTarget() {
         // copy target, if any
-        String copyTarget = evaluator.evaluate(properties.getCopySrcTarget());
-        if (copyTarget == null || copyTarget.length() == 0) {
+        File copyTarget = ProjectPropertiesSupport.getCopySourcesTarget(properties.getProject());
+        if (copyTarget == null) {
             return new LocalServer(""); // NOI18N
         }
-        File resolvedFile = FileUtil.normalizeFile(new File(copyTarget));
-        FileObject resolvedFO = FileUtil.toFileObject(resolvedFile);
+        FileObject resolvedFO = FileUtil.toFileObject(copyTarget);
         if (resolvedFO == null) {
             // target directory doesn't exist?!
-            return new LocalServer(resolvedFile.getAbsolutePath());
+            return new LocalServer(copyTarget.getAbsolutePath());
         }
         return new LocalServer(FileUtil.getFileDisplayName(resolvedFO));
     }

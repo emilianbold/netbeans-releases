@@ -160,7 +160,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         this.project = project;
         this.includePathSupport = includePathSupport;
         runConfigs = readRunConfigs();
-        activeConfig = project.getEvaluator().getProperty("config"); // NOI18N
+        // XXX tmysik
+        activeConfig = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty("config"); // NOI18N
     }
 
     public String[] getConfigProperties() {
@@ -181,7 +182,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public String getCopySrcFiles() {
         if (copySrcFiles == null) {
-            copySrcFiles = project.getEvaluator().getProperty(COPY_SRC_FILES);
+            copySrcFiles = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(COPY_SRC_FILES);
         }
         return copySrcFiles;
     }
@@ -192,7 +193,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public String getCopySrcTarget() {
         if (copySrcTarget == null) {
-            copySrcTarget = project.getEvaluator().getProperty(COPY_SRC_TARGET);
+            copySrcTarget = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(COPY_SRC_TARGET);
         }
         return copySrcTarget;
     }
@@ -206,7 +207,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
      */
     public String getWebRoot() {
         if (webRoot == null) {
-            webRoot = project.getEvaluator().getProperty(WEB_ROOT);
+            webRoot = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(WEB_ROOT);
         }
         return webRoot != null ? webRoot : ""; // NOI18N
     }
@@ -220,7 +221,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public String getEncoding() {
         if (encoding == null) {
-            encoding = project.getEvaluator().getProperty(SOURCE_ENCODING);
+            encoding = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(SOURCE_ENCODING);
         }
         return encoding;
     }
@@ -231,14 +232,14 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public String getSrcDir() {
         if (srcDir == null) {
-            srcDir = project.getEvaluator().getProperty(SRC_DIR);
+            srcDir = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(SRC_DIR);
         }
         return srcDir;
     }
 
     public String getUrl() {
         if (url == null) {
-            url = project.getEvaluator().getProperty(URL);
+            url = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(URL);
         }
         return url;
     }
@@ -249,7 +250,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public String getIndexFile() {
         if (indexFile == null) {
-            indexFile = project.getEvaluator().getProperty(INDEX_FILE);
+            indexFile = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(INDEX_FILE);
         }
         return indexFile;
     }
@@ -269,7 +270,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
     public ListCellRenderer getIncludePathListRenderer() {
         if (includePathListRenderer == null) {
-            includePathListRenderer = new IncludePathUiSupport.ClassPathListCellRenderer(project.getEvaluator(),
+            includePathListRenderer = new IncludePathUiSupport.ClassPathListCellRenderer(ProjectPropertiesSupport.getPropertyEvaluator(project),
                 project.getProjectDirectory());
         }
         return includePathListRenderer;
@@ -307,10 +308,10 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
 
         // sources
         if (copySrcFiles != null) {
-            projectProperties.setProperty(COPY_SRC_FILES, copySrcFiles);
+            privateProperties.setProperty(COPY_SRC_FILES, copySrcFiles);
         }
         if (copySrcTarget != null) {
-            projectProperties.setProperty(COPY_SRC_TARGET, copySrcTarget);
+            privateProperties.setProperty(COPY_SRC_TARGET, copySrcTarget);
         }
         if (encoding != null) {
             projectProperties.setProperty(SOURCE_ENCODING, encoding);
@@ -352,7 +353,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         RemoteSettings.resetLastUpload(project);
 
         // UI log
-        logUsage(helper.getProjectDirectory(), ProjectPropertiesSupport.getSourcesDirectory(project), getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
+        logUsage(helper.getProjectDirectory(), ProjectPropertiesSupport.getSourcesDirectory(project),
+                getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
     }
 
     private String getActiveRunAsType() {
@@ -468,8 +470,8 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             if (config == null) {
                 continue;
             }
-            String sharedPath = "nbproject/configs/" + config + ".properties"; // NOI18N
 
+            String sharedPath = "nbproject/configs/" + config + ".properties"; // NOI18N
             String privatePath = "nbproject/private/configs/" + config + ".properties"; // NOI18N
 
             Map<String, String> c = entry.getValue();
@@ -498,6 +500,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     }
 
     private boolean isPrivateProperty(String property) {
-        return property.equals(ARGS) || property.equals(INTERPRETER);
+        // #145477 - all the config properties are stored in private properties because we don't want them to be versioned
+        return true;
     }
 }

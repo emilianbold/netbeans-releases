@@ -64,7 +64,6 @@ import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -190,12 +189,8 @@ public abstract class Command {
 
     }
 
-    protected final String getProperty(String propertyName) {
-        return getPropertyEvaluator().getProperty(propertyName);
-    }
-
     protected final URL getBaseURL() throws MalformedURLException {
-        String baseURLPath = getProperty(PhpProjectProperties.URL);
+        String baseURLPath = ProjectPropertiesSupport.getUrl(project);
         if (baseURLPath == null) {
             throw new MalformedURLException();
         }
@@ -231,36 +226,34 @@ public abstract class Command {
             relativePath = ""; //NOI18N
         }
         URL retval = new URL(getBaseURL(), relativePath);
-        String arguments = getProperty(PhpProjectProperties.ARGS);
+        String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
 
     protected final URL urlForContext(Lookup context) throws MalformedURLException {
-        String relativePath = relativePathForConext(context);
+        String relativePath = relativePathForContext(context);
         if (relativePath == null) {
             throw new MalformedURLException();
         }
         URL retval = new URL(getBaseURL(), relativePath);
-        String arguments = getProperty(PhpProjectProperties.ARGS);
+        String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
 
     //or null
-    protected final String relativePathForConext(Lookup context) {
-        return getCommandUtils().getRelativeWebRootPath(fileForContext(context),
-                getProperty(PhpProjectProperties.WEB_ROOT));
+    protected final String relativePathForContext(Lookup context) {
+        return getCommandUtils().getRelativeWebRootPath(fileForContext(context));
     }
 
     //or null
     protected final String relativePathForProject() {
-        return getCommandUtils().getRelativeWebRootPath(fileForProject(),
-                getProperty(PhpProjectProperties.WEB_ROOT));
+        return getCommandUtils().getRelativeWebRootPath(fileForProject());
     }
 
     //or null
     protected final FileObject fileForProject() {
         FileObject retval = null;
-        String nameOfIndexFile = getProperty(PhpProjectProperties.INDEX_FILE);
+        String nameOfIndexFile = ProjectPropertiesSupport.getIndexFile(project);
         FileObject[] srcRoots = Utils.getSourceObjects(getProject());
         for (FileObject fileObject : srcRoots) {
             retval = fileObject.getFileObject(nameOfIndexFile);
@@ -272,31 +265,29 @@ public abstract class Command {
     }
 
     protected boolean isScriptSelected() {
-        String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
-        return PhpProjectProperties.RunAsType.SCRIPT.name().equals(runAs);
+        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project);
+        return PhpProjectProperties.RunAsType.SCRIPT.equals(runAs);
     }
 
     protected boolean isRemoteConfigSelected() {
-        String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
-        return PhpProjectProperties.RunAsType.REMOTE.name().equals(runAs);
+        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project);
+        return PhpProjectProperties.RunAsType.REMOTE.equals(runAs);
     }
 
     protected String getRemoteConfigurationName() {
-        return getPropertyEvaluator().getProperty(PhpProjectProperties.REMOTE_CONNECTION);
+        return ProjectPropertiesSupport.getRemoteConnection(project);
     }
 
     protected String getRemoteDirectory() {
-        return getPropertyEvaluator().getProperty(PhpProjectProperties.REMOTE_DIRECTORY);
+        return ProjectPropertiesSupport.getRemoteDirectory(project);
     }
 
     //or null
     protected final FileObject fileForContext(Lookup context) {
         CommandUtils utils = getCommandUtils();
-        FileObject[] files = utils.phpFilesForContext(context, isScriptSelected(),
-                getProperty(PhpProjectProperties.WEB_ROOT));
+        FileObject[] files = utils.phpFilesForContext(context, isScriptSelected());
         if (files == null || files.length == 0) {
-            files = utils.phpFilesForSelectedNodes(isScriptSelected(),
-                    getProperty(PhpProjectProperties.WEB_ROOT));
+            files = utils.phpFilesForSelectedNodes(isScriptSelected());
         }
         return (files != null && files.length > 0) ? files[0] : null;
     }
@@ -373,10 +364,6 @@ public abstract class Command {
         String convert(String text);
     }
 
-    private PropertyEvaluator getPropertyEvaluator() {
-        return getProject().getEvaluator();
-    }
-
     protected void eventuallyUploadFiles() {
         eventuallyUploadFiles((FileObject[]) null);
     }
@@ -390,14 +377,9 @@ public abstract class Command {
             return;
         }
 
-        PhpProjectProperties.UploadFiles uploadFiles = null;
-        String remoteUpload = getProject().getEvaluator().getProperty(PhpProjectProperties.REMOTE_UPLOAD);
-        assert remoteUpload != null;
-        try {
-            uploadFiles = PhpProjectProperties.UploadFiles.valueOf(remoteUpload);
-        } catch (IllegalArgumentException iae) {
-            // ignored
-        }
+        PhpProjectProperties.UploadFiles uploadFiles = ProjectPropertiesSupport.getRemoteUpload(getProject());
+        // XXX tmysik
+        assert uploadFiles != null;
 
         if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
             uploadCommand.uploadFiles(new FileObject[] {ProjectPropertiesSupport.getSourcesDirectory(getProject())}, preselectedFiles);

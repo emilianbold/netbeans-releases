@@ -67,13 +67,13 @@ public class CommandUtils {
     /**
      * @return The file objects in the sources folder
      */
-    public FileObject[] phpFilesForContext(Lookup context, boolean runAsScript,String webRoot) {
+    public FileObject[] phpFilesForContext(Lookup context, boolean runAsScript) {
         FileObject dir = runAsScript ? ProjectPropertiesSupport.getSourcesDirectory(getProject()) :
             ProjectPropertiesSupport.getWebRootDirectory(getProject());
         return filter(filesForContext(context), dir);
     }
 
-    public FileObject[] phpFilesForSelectedNodes(boolean runAsScript, String webRoot) {
+    public FileObject[] phpFilesForSelectedNodes(boolean runAsScript) {
         FileObject dir = runAsScript ? ProjectPropertiesSupport.getSourcesDirectory(getProject()) :
             ProjectPropertiesSupport.getWebRootDirectory(getProject());
         return filter(Arrays.asList(filesForSelectedNodes()), dir);
@@ -112,7 +112,7 @@ public class CommandUtils {
         return getRelativePhpPath(ProjectPropertiesSupport.getSourcesDirectory(getProject()), fileObject);
     }
 
-    public String getRelativeWebRootPath(FileObject fileObject, String webRoot) {
+    public String getRelativeWebRootPath(FileObject fileObject) {
         return getRelativePhpPath(ProjectPropertiesSupport.getWebRootDirectory(getProject()), fileObject);
     }
 

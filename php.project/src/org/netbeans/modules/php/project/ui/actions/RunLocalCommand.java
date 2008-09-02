@@ -99,9 +99,9 @@ public class RunLocalCommand extends Command implements Displayable {
             processBuilder = processBuilder.addArgument(param);
         }
         processBuilder = processBuilder.addArgument(scriptFile.getName());
-        String argProperty = getProperty(PhpProjectProperties.ARGS);
+        String argProperty = ProjectPropertiesSupport.getArguments(getProject());
         if (argProperty != null && argProperty.length() > 0) {
-            for (String argument : Arrays.asList(argProperty.split(" "))) {
+            for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N
                 processBuilder = processBuilder.addArgument(argument);
             }
         }

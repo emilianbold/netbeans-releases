@@ -294,14 +294,15 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
     }
 
-    private void configureSources(AntProjectHelper helper, EditableProperties projetProperties, EditableProperties privateProperties) {
+    private void configureSources(AntProjectHelper helper, EditableProperties projectProperties, EditableProperties privateProperties) {
         File srcDir = getSources();
         File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
         assert srcPath != null : String.format("Sources must be relativized: [project: %s, sources: %s]", projectDirectory, srcDir);
-        projetProperties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
-        projetProperties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
-        projetProperties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
+        projectProperties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
+        projectProperties.setProperty(PhpProjectProperties.WEB_ROOT, "."); // NOI18N
+        privateProperties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
+        privateProperties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
     }
 
     private String getCopySrcTarget() {
@@ -315,7 +316,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     private void configureIndexFile(EditableProperties projectProperties, EditableProperties privateProperties) {
         String indexFile = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
-        projectProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
+        privateProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
     }
 
     private void configureEncoding(EditableProperties projectPoperties, EditableProperties privateProperties) {
@@ -331,7 +332,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     private void configureRunConfiguration(EditableProperties projectProperties, EditableProperties privateProperties) {
         PhpProjectProperties.RunAsType runAs = getRunAsType();
-        projectProperties.put(PhpProjectProperties.RUN_AS, runAs.name());
+        privateProperties.put(PhpProjectProperties.RUN_AS, runAs.name());
         switch (runAs) {
             case LOCAL:
                 configureRunAsLocalWeb(projectProperties, privateProperties);
@@ -355,7 +356,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     private void configureRunAsLocalWeb(EditableProperties projectProperties, EditableProperties privateProperties) {
         String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
 
-        projectProperties.put(PhpProjectProperties.URL, url);
+        privateProperties.put(PhpProjectProperties.URL, url);
     }
 
     private void configureRunAsRemoteWeb(EditableProperties projectProperties, EditableProperties privateProperties) {
@@ -364,10 +365,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         String remoteDirectory = (String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY);
         PhpProjectProperties.UploadFiles uploadFiles = (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD);
 
-        projectProperties.put(PhpProjectProperties.URL, url);
-        projectProperties.put(PhpProjectProperties.REMOTE_CONNECTION, remoteConfiguration.getName());
-        projectProperties.put(PhpProjectProperties.REMOTE_DIRECTORY, remoteDirectory);
-        projectProperties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
+        privateProperties.put(PhpProjectProperties.URL, url);
+        privateProperties.put(PhpProjectProperties.REMOTE_CONNECTION, remoteConfiguration.getName());
+        privateProperties.put(PhpProjectProperties.REMOTE_DIRECTORY, remoteDirectory);
+        privateProperties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
     }
 
     private FileObject createSourceRoot() throws IOException {

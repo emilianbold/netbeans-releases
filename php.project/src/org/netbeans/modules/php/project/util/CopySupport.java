@@ -264,8 +264,7 @@ public abstract class CopySupport {
 	private void init(PhpProject project) {
 	    if (this.project == null) {
 		this.project = project;
-		PropertyEvaluator evaluator = project.getEvaluator();
-		evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+                ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, this);
 		ConfigurationFactory factory = new ConfigurationFactory(project);
 		setConfig(factory.getConfiguration());
 	    } else {
@@ -483,12 +482,7 @@ public abstract class CopySupport {
 	}
 
 	boolean isCopyEnabled() {
-	    boolean retval = false;
-	    String copySrcFiles = project.getEvaluator().getProperty(PhpProjectProperties.COPY_SRC_FILES);
-	    if (copySrcFiles != null && copySrcFiles.trim().length() > 0) {
-		retval = Boolean.parseBoolean(copySrcFiles);
-	    }
-	    return retval;
+            return ProjectPropertiesSupport.isCopySourcesEnabled(project);
 	}
 
 	private FileObject getSourceRoot() {
@@ -504,9 +498,8 @@ public abstract class CopySupport {
 
 	private FileObject getTargetRoot(boolean create) {
 	    FileObject retval = null;
-	    String targetString = project.getEvaluator().getProperty(PhpProjectProperties.COPY_SRC_TARGET);
-	    if (targetString != null && targetString.trim().length() > 0) {
-		File target = FileUtil.normalizeFile(new File(targetString));
+	    File target = ProjectPropertiesSupport.getCopySourcesTarget(project);
+	    if (target != null) {
 		if (create) {
 		    try {
 			retval = FileUtil.createFolder(target);

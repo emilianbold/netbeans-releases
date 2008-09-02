@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
@@ -106,7 +107,7 @@ public class DebugCommand extends Command implements Displayable {
                         if (fileForProject != null) {
                             dbgStarter.start(getProject(), runnable, fileForProject, isScriptSelected());
                         } else {
-                            String idxFileName = getProperty(PhpProjectProperties.INDEX_FILE);
+                            String idxFileName = ProjectPropertiesSupport.getIndexFile(getProject());
                             String err = NbBundle.getMessage(DebugLocalCommand.class,
                                     "ERR_Missing_IndexFile", idxFileName);//NOI18N
 

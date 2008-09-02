@@ -78,6 +78,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -118,8 +119,12 @@ public class PhpProject implements Project, AntProjectListener {
         return lookup;
     }
 
-    public PropertyEvaluator getEvaluator() {
+    PropertyEvaluator getEvaluator() {
         return eval;
+    }
+
+    void addWeakPropertyEvaluatorListener(PropertyChangeListener listener) {
+        eval.addPropertyChangeListener(WeakListeners.propertyChange(listener, eval));
     }
 
     private PropertyEvaluator createEvaluator() {
