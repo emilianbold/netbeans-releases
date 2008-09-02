@@ -317,7 +317,7 @@ public final class WebProject implements Project, AntProjectListener {
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
-        buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation());
+        buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation(), refHelper);
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         updateProject = new UpdateProjectImpl(this, this.helper, aux);
         this.updateHelper = new UpdateHelper(updateProject, helper);
@@ -579,8 +579,8 @@ public final class WebProject implements Project, AntProjectListener {
     
     /** Return configured project name. */
     public String getName() {
-        return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            public String run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
@@ -597,8 +597,8 @@ public final class WebProject implements Project, AntProjectListener {
     
     /** Store configured project name. */
     public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
-            public Object run() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            public Void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
@@ -625,8 +625,8 @@ public final class WebProject implements Project, AntProjectListener {
         j2eePlatformListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(J2eePlatform.PROP_CLASSPATH)) {
-                    ProjectManager.mutex().writeAccess(new Mutex.Action() {
-                        public Object run() {
+                    ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+                        public Void run() {
                             EditableProperties ep = helper.getProperties(
                                     AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             EditableProperties projectProps = helper.getProperties(
@@ -1206,19 +1206,17 @@ public final class WebProject implements Project, AntProjectListener {
             return;
         }
         
-        ArrayList<String>templatesEE5 = new ArrayList(PRIVILEGED_NAMES_EE5.length + 1);
-        ArrayList<String>templates = new ArrayList(PRIVILEGED_NAMES.length + 1);
+        ArrayList<String>templatesEE5 = new ArrayList<String>(PRIVILEGED_NAMES_EE5.length + 1);
+        ArrayList<String>templates = new ArrayList<String>(PRIVILEGED_NAMES.length + 1);
 
         // how many templates are added
         int countTemplate = 0;
-        Collection <WebPrivilegedTemplates> pfTemplates = 
-                (Collection<WebPrivilegedTemplates>)Lookups.forPath(WEBTEMPLATE_PATH).lookupAll(WebPrivilegedTemplates.class);
         
-        for (WebPrivilegedTemplates webPrivililegedTemplates : pfTemplates) {
+        for (WebPrivilegedTemplates webPrivililegedTemplates : Lookups.forPath(WEBTEMPLATE_PATH).lookupAll(WebPrivilegedTemplates.class)) {
             String[] addedTemplates = webPrivililegedTemplates.getPrivilegedTemplates(apiWebModule);
             if (addedTemplates != null && addedTemplates.length > 0){
                 countTemplate = countTemplate + addedTemplates.length;
-                List addedList = Arrays.asList(addedTemplates);
+                List<String> addedList = Arrays.asList(addedTemplates);
                 templatesEE5.addAll(addedList);
                 templates.addAll(addedList);
             }
