@@ -44,6 +44,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -141,12 +142,20 @@ public class SystemIncludesUtils {
     private static boolean load(String storageFolder, RemoteCopySupport copySupport, Collection<String> paths, ProgressHandle handle) {
         handle.switchToDeterminate(3 * paths.size());
         int workunit = 0;
+        List<String> cleanupList = new ArrayList<String>();
         for (String path : paths) {
             log.fine("SystemIncludesUtils.load loading " + path); // NOI18N            
             //TODO: check file existence (or make shell script to rule them all ?)
             String zipRemote = "cnd" + path.replaceAll("(/|\\\\)", "-") + ".zip"; //NOI18N
             String zipRemotePath = "/tmp/" + zipRemote; // NOI18N
-            String zipLocalPath = tempDir + File.separator + zipRemote;
+            String zipLocalPath; 
+            File zipLocalFile;
+            try {
+                zipLocalFile = File.createTempFile(zipRemote, ".zip", new File(tempDir));
+                zipLocalPath = zipLocalFile.getAbsolutePath();
+            } catch (IOException ex) {
+                zipLocalPath= tempDir + File.separator + zipRemote;
+            }
 
             handle.progress(getMessage("SIU_Archiving") + " " + path, workunit++); // NOI18N
             copySupport.run("zip -r -q " + zipRemotePath + " " + path); //NOI18N
@@ -154,9 +163,13 @@ public class SystemIncludesUtils {
             copySupport.copyFrom(zipRemotePath, zipLocalPath);
             handle.progress(getMessage("SIU_Preparing") + " " + path, workunit++); // NOI18N
             unzip(storageFolder, zipLocalPath);
+            cleanupList.add(zipLocalPath);
             log.fine("SystemIncludesUtils.load loading done for " + path); // NOI18N            
         }
         copySupport.disconnect();
+        for (String toDelete : cleanupList) {
+            new File(toDelete).delete();
+        }
         return true;
     }
 
@@ -190,12 +203,11 @@ public class SystemIncludesUtils {
 
             zipFile.close();
         } catch (IOException ioe) {
-            ioe.printStackTrace();
-            log.fine("unzipping " + fileName + " to " + path + " failed");
+            log.warning("unzipping " + fileName + " to " + path + " failed");
+            log.warning(ioe.getMessage());
             return;
-        } finally {
-            log.fine("unzipping " + fileName + " to " + path + " took " + (System.currentTimeMillis() - start) + " ms");
         }
+        log.fine("unzipping " + fileName + " to " + path + " took " + (System.currentTimeMillis() - start) + " ms");
     }
 
     private static final void copyInputStream(InputStream in, OutputStream out)

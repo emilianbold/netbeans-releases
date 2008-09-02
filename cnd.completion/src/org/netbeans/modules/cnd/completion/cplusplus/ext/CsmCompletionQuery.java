@@ -210,7 +210,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             } else {
                 lastSepOffset = sup.getLastCommandSeparator(offset);
             }
-            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, sup.getLastSeparatorOffset());
+            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
             tp.setJava15(true);
             doc.readLock();
             try {
@@ -821,6 +821,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         } else {
                             kind = ExprKind.DOT;
                         }
+                        if (i == exp.getTokenCount()) {
+                            kind = exp.getTokenID(i - 1) == CppTokenId.SCOPE ? ExprKind.SCOPE : kind;
+                        }
                     }
                     ok = resolveItem(exp.getParameter(i), (i == startIdx),
                                      (!lastDot && i == parmCnt - 1),
@@ -1217,6 +1220,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         }
                                     }
                                 } else { // last and searching for completion output
+                                    scopeAccessedClassifier = (kind == ExprKind.SCOPE);
 //                                    CsmClass curCls = sup.getClass(varPos);
                                     CsmClassifier cls;
                                     if (lastType.getArrayDepth() == 0) { // Not array

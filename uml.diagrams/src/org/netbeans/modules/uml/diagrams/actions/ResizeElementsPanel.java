@@ -102,7 +102,7 @@ public class ResizeElementsPanel extends javax.swing.JPanel
         statusLabel = new javax.swing.JLabel();
 
         heightLabel.setLabelFor(heightText);
-        org.openide.awt.Mnemonics.setLocalizedText(heightLabel, "null");
+        org.openide.awt.Mnemonics.setLocalizedText(heightLabel, org.openide.util.NbBundle.getMessage(ResizeElementsPanel.class, "LBL_HeightLabel")); // NOI18N
 
         heightText.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -111,7 +111,7 @@ public class ResizeElementsPanel extends javax.swing.JPanel
         });
 
         widthLabel.setLabelFor(widthText);
-        org.openide.awt.Mnemonics.setLocalizedText(widthLabel, "null");
+        org.openide.awt.Mnemonics.setLocalizedText(widthLabel, org.openide.util.NbBundle.getMessage(ResizeElementsPanel.class, "LBL_WidthLabel")); // NOI18N
 
         widthText.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {

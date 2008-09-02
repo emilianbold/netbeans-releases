@@ -68,7 +68,7 @@ public final class TransferFile {
     private final long size; // in bytes
     private final boolean directory;
     private final boolean file;
-    private final long timestamp; // in seconds, default -1
+    private long timestamp; // in seconds, default -1
 
     private TransferFile(String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file) {
         this(name, relativePath, parentRelativePath, size, directory, file, -1);
@@ -265,9 +265,17 @@ public final class TransferFile {
 
     /**
      * @return timestamp <b>in seconds</b> of the file last modification or <code>-1</code> if not known.
+     * @see #touch()
      */
     public long getTimestamp() {
         return timestamp;
+    }
+
+    /**
+     * Set the file modification time to the current time.
+     */
+    public void touch() {
+        timestamp = TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override

@@ -442,6 +442,26 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ145286.cc", 10, 22, "IZ145286.cc", 9, 17);
     }
 
+    public void testNamesakes() throws Exception {
+        // IZ#145553 Class in the same namespace should have priority over a global one
+        // global
+        performTest("iz_145553_namesakes.cc", 14, 26, "iz_145553_namesakes.cc", 1, 1);
+        performTest("iz_145553_namesakes.cc", 15, 8, "iz_145553_namesakes.cc", 1, 1);
+        performTest("iz_145553_namesakes.cc", 18, 18, "iz_145553_namesakes.cc", 11, 5);
+        performTest("iz_145553_namesakes.cc", 19, 12, "iz_145553_namesakes.cc", 1, 1);
+        performTest("iz_145553_namesakes.cc", 19, 19, "iz_145553_namesakes.cc", 3, 5);
+        performTest("iz_145553_namesakes.cc", 20, 20, "iz_145553_namesakes.cc", 4, 9);
+        performTest("iz_145553_namesakes.cc", 22, 22, "iz_145553_namesakes.cc", 14, 1);
+        // namespace
+        performTest("iz_145553_namesakes.cc", 36, 24, "iz_145553_namesakes.cc", 28, 5);
+        performTest("iz_145553_namesakes.cc", 41, 31, "iz_145553_namesakes.cc", 28, 5);
+        performTest("iz_145553_namesakes.cc", 42, 10, "iz_145553_namesakes.cc", 28, 5);
+        performTest("iz_145553_namesakes.cc", 45, 20, "iz_145553_namesakes.cc", 38, 9);
+        performTest("iz_145553_namesakes.cc", 46, 16, "iz_145553_namesakes.cc", 28, 5);
+        performTest("iz_145553_namesakes.cc", 47, 23, "iz_145553_namesakes.cc", 31, 13);
+        performTest("iz_145553_namesakes.cc", 49, 25, "iz_145553_namesakes.cc", 41, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

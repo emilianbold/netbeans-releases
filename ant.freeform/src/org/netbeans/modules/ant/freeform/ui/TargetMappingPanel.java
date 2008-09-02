@@ -704,6 +704,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
             return 2;
         }
         
+        @Override
         public String getColumnName(int column) {
             switch (column) {
                 case 0: return NbBundle.getMessage(TargetMappingPanel.class, "LBL_TargetMappingPanel_Label");
@@ -715,6 +716,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
             return custTargets.size();
         }
         
+        @Override
         public boolean isCellEditable(int row, int column) {
             if (column == 1) {
                 FreeformProjectGenerator.CustomTarget ct = getItem(row);
@@ -731,6 +733,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
             return true;
         }
         
+        @Override
         public Class<?> getColumnClass(int column) {
             switch (column) {
                 case 0: return String.class;
@@ -750,6 +753,7 @@ public class TargetMappingPanel extends JPanel implements ActionListener, HelpCt
             }
         }
         
+        @Override
         public void setValueAt(Object val, int rowIndex, int columnIndex) {
             if (rowIndex >= custTargets.size ()) {
                 return ;

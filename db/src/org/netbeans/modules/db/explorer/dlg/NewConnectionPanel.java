@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
 
@@ -183,6 +184,27 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         setUrlField();
         updateFieldsFromUrl();
         setUpFields();
+        
+        DocumentListener docListener = new DocumentListener()
+        {
+            public void insertUpdate(DocumentEvent evt) 
+            {
+                fireChange();
+            }
+
+            public void removeUpdate(DocumentEvent evt) 
+            {
+                fireChange();
+            }
+
+            public void changedUpdate(DocumentEvent evt) 
+            {
+                fireChange();
+            }
+        };
+        
+        userField.getDocument().addDocumentListener(docListener);
+        passwordField.getDocument().addDocumentListener(docListener);
     }
 
     public void setWindow(Window window) {
@@ -796,11 +818,17 @@ private void showUrl() {
     }
 
     private void fireChange() {
+
+        // the user has changed some parameter, so if there's a connection it's
+        // no longer in sync with the field data
+        mediator.closeConnection();
+        
         firePropertyChange("argumentChanged", null, null);
         resetProgress();
     }
 
     private void updateUrlFromFields() {
+        
         JdbcUrl url = getSelectedJdbcUrl();
         if (url == null || !url.urlIsParsed()) {
             return;
@@ -888,15 +916,13 @@ private void showUrl() {
     }
 
     private void clearError() {
-        errorLabel.setText("");
-        errorLabel.setVisible(false);
+        errorLabel.setText(" ");
         mediator.setValid(true);
         resize();
     }
 
     private void displayError(String message) {
         errorLabel.setText(message);
-        errorLabel.setVisible(true);
         mediator.setValid(false);
         resize();
     }

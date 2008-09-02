@@ -372,4 +372,8 @@ public class Util
         }
         return ret;
     }    
+    
+     public static Point center (Rectangle rectangle) {
+        return new Point (rectangle.x + rectangle.width / 2, rectangle.y + rectangle.height / 2);
+    }
 }

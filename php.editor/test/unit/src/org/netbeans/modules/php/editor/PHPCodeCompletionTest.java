@@ -127,6 +127,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/nowdoc02.php", "<title>^</title>", false);
     }
     
+    public void test145692() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue145692.php", "echo $test145692Instance->tst->t^", false);
+    }
+    
     public void test145206_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145206.php", "echo TestIssue145206 :: ^", false);
     }

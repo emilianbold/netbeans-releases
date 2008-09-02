@@ -112,19 +112,20 @@ public final class ProjectFactory {
         EclipseProject project = EclipseProject.createProject(projectDir);
         if (project != null) {
             project.setWorkspace(workspace);
-            load(project);
+            loadDotProject(project);
+            loadDotClassPath(project);
         }
         return project;
     }
     
     /**
-     * Fullfill given <code>project</code> with all needed information.
+     * Fullfill given <code>project</code> with information from .project file.
      *
      * @throws ProjectImporterException if project in the given
      *     <code>projectDir</code> is not a valid Eclipse project.
      */
-    void load(EclipseProject project) throws ProjectImporterException {
-        logger.finest("Loading project: " + project.getDirectory().getAbsolutePath()); // NOI18N
+    void loadDotProject(EclipseProject project) throws ProjectImporterException {
+        logger.finest("Loading .project for project: " + project.getDirectory().getAbsolutePath()); // NOI18N
         try {
             Set<String> natures = new HashSet<String>();
             List<Link> links = new ArrayList<Link>();
@@ -137,10 +138,25 @@ public final class ProjectFactory {
             project.setName(projName);
             project.setFacets(ProjectParser.readProjectFacets(project.getDirectory(), natures));
             project.setLinks(links);
+        } catch (IOException ex) {
+            throw new ProjectImporterException(ex);
+        }
+    }
 
+    /**
+     * Fullfill given <code>project</code> with information from .classpath file.
+     * Should be called always after {@link #loadDotProject}.
+     *
+     * @throws ProjectImporterException if project in the given
+     *     <code>projectDir</code> is not a valid Eclipse project.
+     */
+    void loadDotClassPath(EclipseProject project) throws ProjectImporterException {
+        assert project.getNatures() != null; // is initialized by loadDotProject()
+        logger.finest("Loading .classpath for project: " + project.getDirectory().getAbsolutePath()); // NOI18N
+        try {
             DotClassPath dotClassPath;
             if (project.getClassPathFile() != null) {
-                dotClassPath = DotClassPathParser.parse(project.getClassPathFile(), links);
+                dotClassPath = DotClassPathParser.parse(project.getClassPathFile(), project.getLinks());
             } else {
                 dotClassPath = DotClassPathParser.empty();
             }

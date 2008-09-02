@@ -135,7 +135,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         } else if (databaseName.length() > 0 && new File(derbySystemHome, databaseName).exists()) { // NOI18N
             error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseDirectoryExists", databaseName);
         } else if (unsupportedChar >= 0) {
-            warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameUnsupportedChar", new Character((char)unsupportedChar));
+            error = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_DatabaseNameUnsupportedChar", new Character((char)unsupportedChar));
         } else if (getUser() == null || getPassword() == null) {
             warning = NbBundle.getMessage(CreateDatabasePanel.class, "ERR_UserNamePasswordRecommended");
         }

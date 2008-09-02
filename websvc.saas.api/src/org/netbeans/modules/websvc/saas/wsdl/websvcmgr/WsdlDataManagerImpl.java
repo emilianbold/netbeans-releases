@@ -55,8 +55,10 @@ import org.openide.util.RequestProcessor;
  * @author rico
  */
 public class WsdlDataManagerImpl implements WsdlDataManager, PropertyChangeListener {
+    private int precedence;
 
     public WsdlDataManagerImpl() {
+        precedence = 1;
     }
 
     public WsdlData getWsdlData(String wsdlUrl, String serviceName, boolean synchronuous) {
@@ -132,6 +134,14 @@ public class WsdlDataManagerImpl implements WsdlDataManager, PropertyChangeListe
 
     public WsdlData findWsdlData(String wsdlUrl, String serviceName) {
         return WebServiceListManager.getInstance().findWsdlData(wsdlUrl);
+    }
+
+    public void setPrecedence(int precedence) {
+        this.precedence = precedence;
+    }
+
+    public int getPrecedence() {
+        return precedence;
     }
 }
 

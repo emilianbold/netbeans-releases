@@ -127,6 +127,7 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
                 NbBundle.getMessage(PropertyEditorResource.class, "ACSN_RB_RESOURCE"));
         radioButton.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(PropertyEditorResource.class, "ACSD_RB_RESOURCE"));
+        perElement.addPropertyEditorResourceElementListener(rePanel);
         if (databinding) {
             Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(2);
             databindingElement = new DatabindingElement(this);
@@ -428,8 +429,7 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
                 }
 
             }
-            final DesignComponent component_ = component.get();
-            perElement.postSaveValue(component_);
+            perElement.postSaveValue(component.get());
 
         }
     }

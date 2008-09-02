@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.vmd.componentssupport.ui.helpers;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -60,7 +61,9 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.apisupport.project.ui.wizard.spi.ModuleTypePanel;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -107,7 +110,8 @@ public class BaseHelper {
 
     public static String getDefaultCodeNameBase(String projectName){
             //return normalizeCNB(EXAMPLE_BASE_NAME + projectName);
-            return EXAMPLE_BASE_NAME + normalizeCNB(projectName);
+            //return EXAMPLE_BASE_NAME + normalizeCNB(projectName);
+        return "";//NOI18N
     }
     
     /**
@@ -197,8 +201,22 @@ public class BaseHelper {
             }
     }
 
-    public static void copyByteAfterByte(File source, FileObject target) throws IOException {
+    public static void copyByteAfterByte(File source, FileObject target) 
+            throws IOException 
+    {
             InputStream is = new FileInputStream(source);
+            try {
+                copyByteAfterByte(is, target);
+            } finally {
+                is.close();
+            }
+    }
+
+    public static void copyByteAfterByte(String source, FileObject target) 
+            throws IOException 
+    {
+        ByteArrayInputStream is = new ByteArrayInputStream(
+                source.getBytes(UTF_8));
             try {
                 copyByteAfterByte(is, target);
             } finally {
@@ -300,5 +318,24 @@ public class BaseHelper {
         }
     }
     
+    public static boolean isSuiteComponent(WizardDescriptor wizard){
+        return ModuleTypePanel.isSuiteComponent(wizard);
+    }
+    
+    public static boolean isStandalone(WizardDescriptor wizard){
+        return ModuleTypePanel.isStandalone(wizard);
+    }
+    
+    public static boolean isNetBeansOrg(WizardDescriptor wizard){
+        return ModuleTypePanel.isNetBeansOrg(wizard);
+    }
+    
+    public static String getSuiteRoot(WizardDescriptor wizard){
+        return ModuleTypePanel.getSuiteRoot(wizard);
+    }
+    
+    public static String getActivePlatform(WizardDescriptor wizard){
+        return ModuleTypePanel.getActivePlatformId(wizard);
+    }
 
 }

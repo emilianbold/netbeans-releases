@@ -58,12 +58,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.*;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.TableModel;
@@ -79,6 +76,8 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementEvent;
+import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElementListener;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorMessageAwareness;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
@@ -98,7 +97,7 @@ import org.openide.util.NbBundle;
  *
  * @author Karol Harezlak
  */
-public class SVGFormEditorElement extends PropertyEditorResourceElement implements Runnable {
+public class SVGFormEditorElement extends PropertyEditorResourceElement implements Runnable, PropertyEditorResourceElementListener {
 
     private static final String EXTENSION = "svg"; // NOI18N
     private long componentID;
@@ -115,7 +114,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private Map<String, String> pathMap;
     private JPopupMenu menu;
     private WeakReference<DesignComponent> svgFormReferences;
-    //private WeakHashMap<DesignComponent, String[][]> orderedMap = null;
+
     public SVGFormEditorElement() {
         paths = new HashMap<String, FileObject>();
         comboBoxModel = new DefaultComboBoxModel();
@@ -125,10 +124,11 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         previewPanel.add(imageView, BorderLayout.CENTER);
         //jTable1.setModel(new Model());
         menu = new JPopupMenu();
-        menu.add(new MoveAction("Move Up", 1)); //TODO
-        menu.add(new MoveAction("Move down", -1)); //TODO
+        menu.add(new MoveAction(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle").getString("Move_Up_Action"), 1)); //NOI18N
+        menu.add(new MoveAction(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle").getString("Move_Down_Action"), -1)); //NOi18N
         jTable1.addMouseListener(new PopupListener());
         pathMap = new HashMap<String, String>();
+        jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
     @Override
@@ -246,14 +246,9 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         final FileObject[] svgImageFileObject = new FileObject[1];
         final Boolean[] parseIt = new Boolean[1];
         parseIt[0] = Boolean.TRUE;
-        parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+         parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
-//                DesignComponent childComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
-//                if (childComponent == null) {
-//                    return;
-//                }
-
                 PropertyValue propertyValue = childComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
                 if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
                     //String svgImagePath = MidpTypes.getString(propertyValue);
@@ -476,7 +471,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                 // file is inside sources
                 fullPath = fo.getPath();
                 int i = fullPath.indexOf(sourcePath) + sourcePath.length() + 1;
-                relativePath = fullPath.substring(i);
+                relativePath = "/" + fullPath.substring(i); //NOI18N
             } else if (needCopy) {
                 // somewhere outside sources - need to copy (export image)
                 File possible = new File(sourcePath + File.separator + fo.getNameExt());
@@ -502,7 +497,6 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     public void run() {
-
         if (documentReferences == null || documentReferences.get() == null) {
             return;
         }
@@ -858,8 +852,8 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     // End of variables declaration
     private class Model implements TableModel {
 
-        private String COLUMN_NAME_I = "SVG Component Type"; //TODO Localization
-        private String COLUMN_NAME_II = "SVG Component ID"; //TODO Localization
+        private String COLUMN_NAME_I = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle").getString("SVG_Component_Type_Column"); //NOI18N
+        private String COLUMN_NAME_II = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midpnb/propertyeditors/Bundle").getString("SVG_Component_ID_Column"); //NOI18N
         private String[][] values;
 
         public Model() {
@@ -979,12 +973,13 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
 
         @Override
         public void mousePressed(MouseEvent e) {
+            int selectedRow = jTable1.rowAtPoint(e.getPoint());
+            jTable1.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
             showPopup(e);
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            showPopup(e);
         }
 
         private void showPopup(MouseEvent e) {
@@ -992,5 +987,9 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                 menu.show(e.getComponent(), e.getX(), e.getY());
             }
         }
+    }
+
+    public void elementChanged(PropertyEditorResourceElementEvent event) {
+        
     }
 }

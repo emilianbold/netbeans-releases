@@ -102,7 +102,7 @@ public class YamlSemanticAnalyzer implements SemanticAnalyzer {
     }
 
     private void addHighlights(Node node, Map<OffsetRange, Set<ColoringAttributes>> highlights, int depth) {
-        if (depth > 10) {
+        if (depth > 10 || node == null) {
             // Avoid boundless recursion; some datastructures from YAML appear to be recursive
             return;
         }

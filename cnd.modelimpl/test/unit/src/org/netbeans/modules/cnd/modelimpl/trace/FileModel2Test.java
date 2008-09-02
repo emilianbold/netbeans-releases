@@ -64,6 +64,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ145280() throws Exception {
+        // IZ#145280: IDE highlights code with '__attribute__((unused))' as wrong
+        performTest("iz145280.cc");
+    }
+
     public void testIZ143977_0() throws Exception {
         // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
         performTest("iz143977_0.cc");
@@ -92,5 +97,10 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testHeaderWithCKeywords() throws Exception {
         // IZ#144403: restrict keywords are flagged as ERRORs in C header files
         performTest("testHeaderWithCKeywords.c");
+    }
+
+    public void testNamesakes() throws Exception {
+        // IZ#145553 Class in the same namespace should have priority over a global one
+        performTest("iz_145553_namesakes.cc");
     }
 }
