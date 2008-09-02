@@ -478,6 +478,14 @@ public class FileModelTest extends TraceModelTestBase {
             super(testName);
         }
 
+//        public void testParserRecover() throws Exception {
+//            performTest("parser_recover.cc");
+//        }
+
+        public void testPreProcDefinedKeyword() throws Exception {
+            performTest("preproc_defined_keyword.cc");        
+        }
+
 	@Override
 	protected void setUp() throws Exception {
 	    System.setProperty("parser.report.errors", "true");

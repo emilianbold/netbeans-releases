@@ -200,12 +200,15 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             CsmFile includeFile = target.getIncludeFile();
             List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(csmFile);
             if (includeFile == null || TRACE_INCLUDES) {
+                // append include stack
                 buf.append("<br><pre>"); // NOI18N
+                appendInclStack(buf, includeStack);
                 // append search paths
                 appendPaths(buf, i18n("SourceUserPaths"), CsmFileInfoQuery.getDefault().getUserIncludePaths(csmFile));
                 appendPaths(buf, i18n("SourceSystemPaths"), CsmFileInfoQuery.getDefault().getSystemIncludePaths(csmFile));
+                buf.append("</pre>"); // NOI18N
             }
-            // for testing put info into 
+            // for testing put info into output window
             if (TRACE_INCLUDES || NEED_TO_TRACE_UNRESOLVED_INCLUDE) {
                 InputOutput io = IOProvider.getDefault().getIO("Test Inlcudes", false); // NOI18N
                 OutputWriter out = io.getOut();
@@ -220,11 +223,6 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 }
                 out.println(buf.toString().replaceAll("<br>", "\n"));   // NOI18N             
                 out.flush();
-            }
-            if (includeFile == null) {
-                // append include stack
-                appendInclStack(buf, includeStack);
-                buf.append("</pre>"); // NOI18N
             }
             tooltip = buf.toString();           
         }

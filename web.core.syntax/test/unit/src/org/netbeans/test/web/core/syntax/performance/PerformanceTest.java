@@ -65,7 +65,7 @@ import org.openide.util.Task;
  */
 public class PerformanceTest extends NbTestCase {
 
-    private static final int TIMEOUT = 5000;
+    private static final int TIMEOUT = 10000;
     private TimerHandler timerHandler = new TimerHandler();
     private RequestProcessor.Task waiter;
     private Formatter longFormat = new XMLFormatter();
@@ -157,10 +157,13 @@ public class PerformanceTest extends NbTestCase {
 
     private void verify(LogRecord log, int expected, int boundary) {
         Object[] params = log.getParameters();
+        if (params.length < 2){
+            return;
+        }
         if (!(params[1] instanceof Number)) {
             return;
         }
-        Number nTime = (Number) log.getParameters()[1];
+        Number nTime = (Number) params[1];
         Integer time = nTime.intValue();
         if (time > expected) {
             log(longFormat.format(log));
