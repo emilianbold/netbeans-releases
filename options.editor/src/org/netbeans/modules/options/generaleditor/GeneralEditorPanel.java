@@ -224,18 +224,10 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                     .add(lCamelCaseBehavior))
                 .addContainerGap(98, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
-<<<<<<< /home/hanz/Hanz/Dev/trunk/options.editor/src/org/netbeans/modules/options/generaleditor/GeneralEditorPanel.java.orig.20830464
                 .add(138, 138, 138)
                 .add(lCamelCaseBehaviorExample)
                 .addContainerGap(196, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
-||||||| /tmp/GeneralEditorPanel.java~base.lfjVaW
-                .add(138, 138, 138)
-                .add(lCamelCaseBehaviorExample)
-                .addContainerGap(177, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-=======
->>>>>>> /tmp/GeneralEditorPanel.java~other.cyRg4x
                 .add(116, 116, 116)
                 .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 799, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()

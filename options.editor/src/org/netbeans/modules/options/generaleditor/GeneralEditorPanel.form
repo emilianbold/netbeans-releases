@@ -9,10 +9,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
-<<<<<<< /tmp/GeneralEditorPanel.form~base.hZVQb6
-=======
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
->>>>>>> /tmp/GeneralEditorPanel.form~other.1cgno8
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -65,20 +62,11 @@
               <EmptySpace pref="98" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-<<<<<<< /home/hanz/Hanz/Dev/trunk/options.editor/src/org/netbeans/modules/options/generaleditor/GeneralEditorPanel.form.orig.17494899
               <EmptySpace min="138" pref="138" max="138" attributes="0"/>
               <Component id="lCamelCaseBehaviorExample" min="-2" max="-2" attributes="0"/>
               <EmptySpace pref="196" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-||||||| /tmp/GeneralEditorPanel.form~base.hZVQb6
-              <EmptySpace min="138" pref="138" max="138" attributes="0"/>
-              <Component id="lCamelCaseBehaviorExample" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="177" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-=======
->>>>>>> /tmp/GeneralEditorPanel.form~other.1cgno8
               <EmptySpace min="-2" pref="116" max="-2" attributes="0"/>
               <Component id="jSeparator3" pref="799" max="32767" attributes="0"/>
           </Group>
