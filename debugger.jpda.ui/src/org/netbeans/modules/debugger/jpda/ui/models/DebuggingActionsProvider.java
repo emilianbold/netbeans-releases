@@ -46,12 +46,18 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -66,6 +72,7 @@ import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.Presenter;
 
 
 /**
@@ -258,16 +265,60 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     
     );
         
+    private static class LanguageSelection extends AbstractAction implements Presenter.Popup {
+
+        private Session session;
+
+        public LanguageSelection(Session session) {
+            this.session = session;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+
+        public JMenuItem getPopupPresenter() {
+            JMenu displayAsPopup = new JMenu(NbBundle.getMessage(DebuggingActionsProvider.class, "CTL_Session_Popup_Language"));
+
+            String [] languages = session.getSupportedLanguages();
+            String currentLanguage = session.getCurrentLanguage();
+            for (int i = 0; i < languages.length; i++) {
+                final String language = languages[i];
+                JRadioButtonMenuItem langItem = new JRadioButtonMenuItem(new AbstractAction(language) {
+                    public void actionPerformed(ActionEvent e) {
+                        session.setCurrentLanguage(language);
+                    }
+                });
+                if (currentLanguage.equals(language)) langItem.setSelected(true);
+                displayAsPopup.add(langItem);
+            }
+            return displayAsPopup;
+        }
+    }
+
+
+        
     private JPDADebugger debugger;
+    private Session session;
     
+    private Action LANGUAGE_SELECTION;
+
     
     public DebuggingActionsProvider (ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
+        session = lookupProvider.lookupFirst(null, Session.class);
+        LANGUAGE_SELECTION = new LanguageSelection(session);
     }
     
     public Action[] getActions (Object node) throws UnknownTypeException {
-        if (node == TreeModel.ROOT)
-            return FiltersDescriptor.getInstance().getFilterActions();
+        if (node == TreeModel.ROOT) {
+            Action[] sa = getSessionActions();
+            Action[] fa = FiltersDescriptor.getInstance().getFilterActions();
+            Action[] a = new Action[sa.length + 1 + fa.length];
+            System.arraycopy(sa, 0, a, 0, sa.length);
+            a[sa.length] = null;
+            System.arraycopy(fa, 0, a, sa.length + 1, fa.length);
+            return a;
+        }
         if (node instanceof JPDAThreadGroup) {
             return new Action [] {
                 RESUME_ACTION,
@@ -307,6 +358,10 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
             }
         } else
         throw new UnknownTypeException (node);
+    }
+
+    private Action[] getSessionActions() {
+        return new Action[] { LANGUAGE_SELECTION };
     }
     
     public void performDefaultAction (Object node) throws UnknownTypeException {

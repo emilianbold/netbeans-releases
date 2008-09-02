@@ -91,6 +91,8 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
     private static final int TYPE_PREFIX = CsmCompletionExpression.TYPE_PREFIX;
     /** "const" as type postfix in the 'char* const'*/
     private static final int TYPE_POSTFIX = CsmCompletionExpression.TYPE_PREFIX;
+    /** expr ? expr : exprt */
+    private static final int TERNARY_OPERATOR = CsmCompletionExpression.TERNARY_OPERATOR;
     /** "*" or "&" at type postfix in the 'char*' or 'int &'*/
     private static final int TYPE_REFERENCE = CsmCompletionExpression.TYPE_REFERENCE;    
     /** dereference "*" or address-of "&" operators in the '*value' or '&value'*/
@@ -610,12 +612,13 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
         if (tokenID != null){
             String category = tokenID.primaryCategory();
             if (CppTokenId.KEYWORD_CATEGORY.equals(category)){
-                if (tokenOffset+tokenLen == endScanOffset)
+                if (tokenOffset+tokenLen == endScanOffset) {
                     tokenID = CppTokenId.IDENTIFIER;
+                }
             }
         }
 
-        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER) {
+        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER || tokenID == CppTokenId.SIZEOF) {
             // change preproc identifier into normal identifier
             // to simplify handling of result expression
             tokenID = CppTokenId.IDENTIFIER;
@@ -824,6 +827,10 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             case TYPE_PREFIX:
                                 pushExp(createTokenExp(VARIABLE));
                                 break;
+                            case TERNARY_OPERATOR:
+                                popExp();
+                                pushExp(createTokenExp(VARIABLE));
+                                break;
 
                             case GENERIC_WILD_CHAR:
                                 top.setExpID(VARIABLE);
@@ -870,6 +877,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             pushExp(new CsmCompletionExpression(GENERIC_WILD_CHAR));
                         } else {
                             nrQuestions++;
+                            pushExp(new CsmCompletionExpression(TERNARY_OPERATOR));
                         }
                         break;
 
@@ -2008,6 +2016,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                         break;
                     }
                     // else continue, it was (...) ? (...) : (...)
+                case QUESTION:
                 case WHITESPACE:
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:

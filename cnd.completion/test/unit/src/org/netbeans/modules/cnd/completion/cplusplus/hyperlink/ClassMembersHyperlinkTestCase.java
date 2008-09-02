@@ -50,22 +50,57 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ145617() throws Exception {
+        // IZ#145617: IDE highlights code with 'sizeof' in array as wrong
+        performTest("main.cc", 79, 70, "main.cc", 59, 5);
+    }
+    
+    public void testIZ145230() throws Exception {
+        // IZ#145230:Various C++ expressions don't resolve
+        // usage of enumerators
+        performTest("useenumerators.cc", 4, 20, "useenumerators.cc", 1, 8);
+        performTest("useenumerators.cc", 16, 40, "useenumerators.cc", 11, 5);
+        performTest("useenumerators.cc", 19, 35, "useenumerators.cc", 11, 5);
+    }
+
+    public void testIZ145822() throws Exception {
+        // IZ#145230:unresolved members of typedefed class
+        performTest("useenumerators.cc", 26, 20, "useenumerators.cc", 26, 5);
+    }
+
+    public void testIZ144731() throws Exception {
+        // IZ#144731: function(a->m_obj ? a->m_obj : a->m_obj);
+        performTest("iz145077.cc", 132, 30, "iz145077.cc", 118, 5);
+    }
+
     public void testClassUsageAfterDereferrencedObjects() throws Exception {
         // IZ#145230:Various C++ expressions don't resolve
         performTest("ClassNameAfterDeref.cc", 22, 18, "ClassNameAfterDeref.cc", 2, 5);
         performTest("ClassNameAfterDeref.cc", 23, 18, "ClassNameAfterDeref.cc", 2, 5);
-        performTest("ClassNameAfterDeref.cc", 29, 16, "ClassNameAfterDeref.cc", 2, 5);
-        performTest("ClassNameAfterDeref.cc", 30, 16, "ClassNameAfterDeref.cc", 2, 5);
-        performTest("ClassNameAfterDeref.cc", 31, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 24, 10, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 25, 10, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 32, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 34, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 35, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 38, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 39, 16, "ClassNameAfterDeref.cc", 2, 5);
     }
 
     public void testClassMembersUsageAfterDereferrencedClass() throws Exception {
         // IZ#145230:Various C++ expressions don't resolve
-//        performTest("ClassNameAfterDeref.cc", 22, 25, "ClassNameAfterDeref.cc", 8, 9);
-//        performTest("ClassNameAfterDeref.cc", 23, 25, "ClassNameAfterDeref.cc", 9, 9);
-        performTest("ClassNameAfterDeref.cc", 30, 22, "ClassNameAfterDeref.cc", 6, 9);
-        performTest("ClassNameAfterDeref.cc", 31, 22, "ClassNameAfterDeref.cc", 5, 9);
-        performNullTargetTest("ClassNameAfterDeref.cc", 29, 22);
+        performTest("ClassNameAfterDeref.cc", 22, 25, "ClassNameAfterDeref.cc", 8, 9);
+        performTest("ClassNameAfterDeref.cc", 23, 25, "ClassNameAfterDeref.cc", 9, 9);
+        performTest("ClassNameAfterDeref.cc", 24, 16, "ClassNameAfterDeref.cc", 5, 9);
+        performTest("ClassNameAfterDeref.cc", 25, 16, "ClassNameAfterDeref.cc", 8, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 27, 20);
+        performTest("ClassNameAfterDeref.cc", 32, 22, "ClassNameAfterDeref.cc", 5, 9);
+        performTest("ClassNameAfterDeref.cc", 33, 15, "ClassNameAfterDeref.cc", 16, 9);
+        performTest("ClassNameAfterDeref.cc", 34, 22, "ClassNameAfterDeref.cc", 6, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 35, 24);
+        performTest("ClassNameAfterDeref.cc", 36, 15, "ClassNameAfterDeref.cc", 6, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 37, 17);
+        performTest("ClassNameAfterDeref.cc", 38, 25, "ClassNameAfterDeref.cc", 5, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 39, 25);
     }
 
     public void testClassFwdTemplateParameters() throws Exception {

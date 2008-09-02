@@ -45,12 +45,12 @@ import org.netbeans.api.project.ProjectUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Hejl
+ * @since 1.28
  */
 public final class DeployOnSaveUtils {
 

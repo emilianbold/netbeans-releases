@@ -860,19 +860,15 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public Connection getJDBCConnection() {
-        return getConnection();
-        /*
         try {
-            System.out.println("\nIN GETJDBCCONNECTION()");
             ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
-            System.out.println("\nIN GETJDBCCONNECTION, info is " + cni == null ? "null" : "not null");
             if (cni != null && cni.getConnection() != null) {
                 return cni.getConnection();
             }
         } catch (DatabaseException e) {
             Exceptions.printStackTrace(e);
         }
-        */
+        return null;
     }
 
     public void disconnect() throws DatabaseException {
