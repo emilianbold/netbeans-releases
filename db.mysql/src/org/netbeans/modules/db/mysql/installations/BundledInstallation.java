@@ -55,6 +55,7 @@ public class BundledInstallation implements Installation {
     private String startArgs;
     private String stopExe;
     private String stopArgs;
+    private String port;
     
     private static final BundledInstallation DEFAULT = 
             new BundledInstallation();
@@ -68,6 +69,7 @@ public class BundledInstallation implements Installation {
         startArgs = System.getProperty("com.sun.mysql.startargs");
         stopExe = System.getProperty("com.sun.mysql.stopcommand");
         stopArgs = System.getProperty("com.sun.mysql.stopargs");
+        port = System.getProperty("com.sun.mysql.port", "3306");
     }
 
     public boolean isStackInstall() {
@@ -94,7 +96,7 @@ public class BundledInstallation implements Installation {
     }
     
     public String getDefaultPort() {
-        return "3306";
+        return port;
     }
 
 }
