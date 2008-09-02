@@ -78,3 +78,17 @@ void iz137483(int param_postfix, int param){
     ehci_state* state;
     state->ehci_itd_pool_addr[sizeof(param)/sizeof(char) - 1].itd_state;
 }
+
+struct entryplus3_info {
+    int attr;
+    int fh;
+    int res;
+};
+typedef struct entryplus3_info entryplus3_info;
+
+int* iz145828(entryplus3_info *infop, int i)
+{
+    int* j = &infop[i].attr; //
+    &infop[i].fh; //
+    return &infop[i].res; // 
+}

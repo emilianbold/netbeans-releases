@@ -75,6 +75,7 @@ import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.Utilities;
@@ -246,6 +247,20 @@ final class TaskListTopComponent extends TopComponent {
     
     @Override
     public void componentOpened() {
+        if( null == model ) {
+            toolbarSeparator.setVisible(false);
+            statusSeparator.setVisible(false);
+            tableScroll.setViewportView( createNoTasksMessage() );
+        }
+
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                init();
+            }
+        });
+    }
+    
+    private void init() {
         TaskScanningScope activeScope = Settings.getDefault().getActiveScanningScope();
         
         if( null == activeScope )
@@ -264,8 +279,6 @@ final class TaskListTopComponent extends TopComponent {
             taskManager.addPropertyChangeListener( TaskManagerImpl.PROP_WORKING_STATUS, changeListener );
         }
         
-        toolbarSeparator.setVisible(false);
-        statusSeparator.setVisible(false);
         
         if( null == model ) {
             table = new TaskListTable();
@@ -300,12 +313,17 @@ final class TaskListTopComponent extends TopComponent {
                 }
             };
             taskManager.getTasks().addListener(tasksListener);
-            tableScroll.setViewportView( createNoTasksMessage() );
-            tableScroll.setBorder( BorderFactory.createEmptyBorder() );
-            
-            toolbarSeparator.setVisible(true);
-            statusSeparator.setVisible(true);
-            rebuildToolbar();
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    tableScroll.setViewportView( createNoTasksMessage() );
+                    tableScroll.setBorder( BorderFactory.createEmptyBorder() );
+
+                    toolbarSeparator.setVisible(true);
+                    statusSeparator.setVisible(true);
+                    rebuildToolbar();
+                }
+            });
         }
         ScanningScopeList.getDefault().addPropertyChangeListener( getScopeListListener() );
         ScannerList.getFileScannerList().addPropertyChangeListener( getScannerListListener() );

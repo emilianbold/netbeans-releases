@@ -1076,7 +1076,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         ModeImpl maximizedMode = getCurrentMaximizedMode();
         if(maximizedMode != null && mode != maximizedMode
            && mode.getKind() != Constants.MODE_KIND_SLIDING
-           && central.isViewMaximized() ) {
+           && (central.isViewMaximized() || mode.getKind() == Constants.MODE_KIND_EDITOR)) {
             switchMaximizedMode(null);
         }
         
