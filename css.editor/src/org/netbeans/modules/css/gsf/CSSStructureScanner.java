@@ -214,6 +214,12 @@ public class CSSStructureScanner implements StructureScanner {
         private String name;
         private CssAstElement element;
 
+        private static String escape(String s) {
+            s = s.replace("<", "&lt;");
+            s = s.replace(">", "&gt;");
+            return s;
+        }
+        
         private CssRuleStructureItem(String name, CssAstElement element) {
             this.name = name;
             this.element = element;
@@ -228,7 +234,7 @@ public class CSSStructureScanner implements StructureScanner {
         }
 
         public String getHtml(HtmlFormatter formatter) {
-            return getName();
+            return escape(getName());
         }
 
         public ElementHandle getElementHandle() {
