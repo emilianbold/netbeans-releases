@@ -43,14 +43,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.db.metadata.model.api.MetadataObject;
-import org.netbeans.modules.db.test.DBTestBase;
 
 /**
  *
  * @author Andrei Badea
  */
-public class MetadataTestBase extends DBTestBase {
+public class MetadataTestBase extends NbTestCase {
 
     public MetadataTestBase(String name) {
         super(name);
