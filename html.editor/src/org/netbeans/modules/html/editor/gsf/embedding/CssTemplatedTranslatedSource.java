@@ -37,7 +37,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.core.syntax.gsf.embedding;
+package org.netbeans.modules.html.editor.gsf.embedding;
 
 import org.netbeans.modules.css.parser.CssParserResultHolder;
 import org.netbeans.modules.css.parser.CssParserAccess.CssParserResult;
@@ -48,11 +48,11 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  *
  * @author Tor Norbye
  */
-public class CssJspTranslatedSource implements TranslatedSource, CssParserResultHolder {
-    private CssJspModel model;
-    private CssJspEmbeddingModel embeddingModel;
+public class CssTemplatedTranslatedSource implements TranslatedSource, CssParserResultHolder {
+    private CssTemplatedModel model;
+    private CssTemplatedEmbeddingModel embeddingModel;
 
-    public CssJspTranslatedSource(CssJspEmbeddingModel embeddingModel, CssJspModel model) {
+    public CssTemplatedTranslatedSource(CssTemplatedEmbeddingModel embeddingModel, CssTemplatedModel model) {
         this.embeddingModel = embeddingModel;
         this.model = model;
     }

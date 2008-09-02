@@ -251,31 +251,8 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                     Point newPt = new Point(point.x + dx, point.y + dy);
                     if (details.getWidget() instanceof ConnectionWidget)
                     {
-                        ConnectionWidget connection = (ConnectionWidget) details.getWidget();
-                        List<Point> list = new ArrayList<Point>();
-
-                        ArrayList<Point> oldList = new ArrayList<Point>(connection.getControlPoints());
-                        oldList.remove(connection.getFirstControlPoint());
-                        oldList.remove(connection.getLastControlPoint());
-                        Anchor sourceAnchor = connection.getSourceAnchor();
-                        Anchor targetAnchor = connection.getTargetAnchor();
-                        if (sourceAnchor == null || targetAnchor == null)
-                        {
-                            continue;
-                        }
-                        Point sourceP = sourceAnchor.compute(connection.getSourceAnchorEntry()).getAnchorSceneLocation();
-                        list.add(sourceP);
-
-                        for (Point p : oldList)
-                        {
-                            int ddx = p.x - connection.getFirstControlPoint().x;
-                            int ddy = p.y - connection.getFirstControlPoint().y;
-                            Point np = new Point(details.getOriginalLocation().x + dx + ddx, details.getOriginalLocation().y + dy + ddy);
-                            list.add(np);
-                        }
-                        list.add(targetAnchor.compute(connection.getTargetAnchorEntry()).getAnchorSceneLocation());
-
-                        connection.setControlPoints(list, true);
+                        // Do nothing because the adjustControlPoints will
+                        // take care of this situation.
                     }
                     else
                         details.getWidget().setPreferredLocation(newPt);
@@ -300,7 +277,15 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         
         return retVal;
     }
-    
+
+    /**
+     * Adjust the control points of all selected connection widgets attached
+     * to a node.
+     *
+     * @param widgets The list of widgets to update.
+     * @param dx The distance in the x direction.
+     * @param dy The distance in the y direction.
+     */
     public static void adjustControlPoints(List < Widget> widgets, 
                                            int dx, int dy)
     {
@@ -319,6 +304,8 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                     // Maket sure that an edge is only processed once.
                     if(alreadyProcessed.contains(connectionObj) == false)
                     {
+                        // If the connection widget is in the list of widgets
+                        // then it will be handled by the caller.
                         ConnectionWidget connection = (ConnectionWidget) scene.findWidget(connectionObj);
                         if(connection.getState().isSelected() == true)
                         {

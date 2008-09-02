@@ -481,9 +481,14 @@ public class PHPIndex {
             if ((flags & attrMask) != 0) {
                 String propName = "$" + sig.string(0);
                 int offset = sig.integer(1);
+                String type = sig.string(3);
+
+                if (type.length() == 0){
+                    type = null;
+                }
 
                 IndexedConstant prop = new IndexedConstant(propName, typeName,
-                        this, signaturesMap.get(signature), offset, flags, null);
+                        this, signaturesMap.get(signature), offset, flags, type);
 
                 properties.add(prop);
             }

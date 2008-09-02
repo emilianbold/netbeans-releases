@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 public class HostMappingProviderSolaris extends HostMappingProviderUnixAbstract {
 
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
-        return hostPlatform.isSolaris();
+        return hostPlatform.isSolaris() && otherPlatform.isUnix();
     }
 
     @Override

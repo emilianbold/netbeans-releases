@@ -210,7 +210,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             } else {
                 lastSepOffset = sup.getLastCommandSeparator(offset);
             }
-            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, sup.getLastSeparatorOffset());
+            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
             tp.setJava15(true);
             doc.readLock();
             try {

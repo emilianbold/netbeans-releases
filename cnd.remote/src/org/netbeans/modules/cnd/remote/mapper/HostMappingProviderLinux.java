@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 public class HostMappingProviderLinux extends HostMappingProviderUnixAbstract {
 
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
-        return hostPlatform.isLinux();
+        return hostPlatform.isLinux() && otherPlatform.isUnix();
     }
 
     @Override
