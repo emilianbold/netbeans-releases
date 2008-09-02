@@ -380,7 +380,7 @@ public abstract class Command {
     }
 
     protected void eventuallyUploadFiles(FileObject... preselectedFiles) {
-        if (!isRemoteConfigSelected()) {
+        if (!isRemoteConfigSelected(false)) {
             return;
         }
         UploadCommand uploadCommand = (UploadCommand) getOtherCommand(UploadCommand.ID);
