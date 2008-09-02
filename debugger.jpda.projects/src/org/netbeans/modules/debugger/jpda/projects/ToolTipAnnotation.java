@@ -42,7 +42,10 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -71,6 +74,19 @@ import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 public class ToolTipAnnotation extends Annotation implements Runnable {
     
     private static final int TO_STRING_LENGTH_LIMIT = 10000;
+
+    private static final Set<String> JAVA_KEYWORDS = new HashSet<String>(Arrays.asList(new String[] {
+        "abstract",     "continue",     "for",          "new",  	"switch",
+        "assert", 	"default", 	"goto", 	"package", 	"synchronized",
+        "boolean", 	"do",           "if",           "private", 	/*"this",*/
+        "break",        "double", 	"implements", 	"protected", 	"throw",
+        "byte",         "else", 	"import", 	"public", 	"throws",
+        "case",         "enum", 	"instanceof", 	"return", 	"transient",
+        "catch",        "extends", 	"int",          "short", 	"try",
+        "char",         "final", 	"interface", 	"static", 	"void",
+        /*"class",*/    "finally", 	"long", 	"strictfp", 	"volatile",
+        "const",        "float", 	"native", 	"super", 	"while",
+    }));
 
     private Part lp;
     private EditorCookie ec;
@@ -242,6 +258,10 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
 
             if (identStart == identEnd) return null;
             String ident = t.substring (identStart, identEnd);
+            if (JAVA_KEYWORDS.contains(ident)) {
+                // Java keyword => Do not show anything
+                return null;
+            }
             while (identEnd < lineLen &&
                    Character.isWhitespace(t.charAt(identEnd))
             ) {
