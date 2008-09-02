@@ -25,3 +25,17 @@ const char* Fad::s_styleNames[ nStyles ] = { //
 typedef struct ClassOfUnnamedTypedef {
     const char *field;
 };
+
+template <int> class AEnum {};
+
+class BVV {
+    enum { VV = 1 };
+    AEnum<VV> a;
+};
+
+void fooWW() {
+    enum { WW = 2 };
+    AEnum<WW> b;
+    ClassOfUnnamedTypedef obj;
+    obj.field;
+}

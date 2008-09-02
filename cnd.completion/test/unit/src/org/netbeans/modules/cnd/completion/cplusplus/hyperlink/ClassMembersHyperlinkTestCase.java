@@ -50,6 +50,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ144880() throws Exception {
+        // IZ#144880: enumerators in template arguments are not resolved
+        performTest("useenumerators.cc", 33, 12, "useenumerators.cc", 32, 12);
+        performTest("useenumerators.cc", 38, 12, "useenumerators.cc", 37, 12);
+    }
     public void testIZ145617() throws Exception {
         // IZ#145617: IDE highlights code with 'sizeof' in array as wrong
         performTest("main.cc", 79, 70, "main.cc", 59, 5);
@@ -66,6 +71,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ145822() throws Exception {
         // IZ#145230:unresolved members of typedefed class
         performTest("useenumerators.cc", 26, 20, "useenumerators.cc", 26, 5);
+        performTest("useenumerators.cc", 40, 10, "useenumerators.cc", 26, 5);
     }
 
     public void testIZ144731() throws Exception {
