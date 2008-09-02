@@ -39,15 +39,10 @@
 
 package org.netbeans.modules.db.api.sql.execute;
 
-import java.util.Collection;
-
 /**
  *
- * @author David Van Couvering
+ * @author David
  */
-public interface StatementExecutionInfo {
-    public String getSQL();
-    public boolean hasExceptions();
-    public Collection<Throwable> getExceptions();
-    public long getExecutionTime();
+class ProxyLogger {
+
 }
