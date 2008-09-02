@@ -558,7 +558,9 @@ public class NbServiceTagSupport {
                 LOG.log(Level.INFO,"Error: Cannot read from file:" + f, ex);
             } finally {
                 try {
-                    r.close();
+                    if (r != null) {
+                        r.close();
+                    }
                 } catch (IOException ex) {
                     LOG.log(Level.INFO,"Error: Cannot close input stream of file:" + f, ex);
                 }
@@ -577,7 +579,9 @@ public class NbServiceTagSupport {
                 LOG.log(Level.INFO,"Error: Cannot write to file:" + f, ex);
             } finally {
                 try {
-                    w.close ();
+                    if (w != null) {
+                        w.close ();
+                    }
                 } catch (IOException ex) {
                     LOG.log(Level.INFO,"Error: Cannot close writer to file:" + f, ex);
                 }
