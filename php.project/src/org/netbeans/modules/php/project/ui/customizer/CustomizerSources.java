@@ -167,7 +167,6 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
     }
 
     private boolean initCopyFiles() {
-        // XXX tmysik
         return ProjectPropertiesSupport.isCopySourcesEnabled(properties.getProject());
     }
 

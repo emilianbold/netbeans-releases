@@ -160,7 +160,6 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         this.project = project;
         this.includePathSupport = includePathSupport;
         runConfigs = readRunConfigs();
-        // XXX tmysik
         activeConfig = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty("config"); // NOI18N
     }
 

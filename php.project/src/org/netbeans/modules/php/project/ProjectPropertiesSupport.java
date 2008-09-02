@@ -43,6 +43,8 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import java.io.File;
 import java.nio.charset.Charset;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -52,7 +54,11 @@ import org.openide.filesystems.FileUtil;
 /**
  * Helper class for getting <b>all</b> the properties of a PHP project.
  * <p>
- * <b>This class should be the only way to get PHP project properties.</b>
+ * <b>This class is the preferred way to get PHP project properties.</b>
+ * <p>
+ * The most common method {@link #getRunAs(org.netbeans.modules.php.project.PhpProject) getRunAs(project)} will show the customizer
+ * if the property is unknown (this behaviour can be suppressed,
+ * see {@link #getRunAs(org.netbeans.modules.php.project.PhpProject, boolean) getRunAs(project, boolean)}).
  * @author Tomas Mysik
  */
 public final class ProjectPropertiesSupport {
@@ -89,6 +95,7 @@ public final class ProjectPropertiesSupport {
         if (webRootPath != null && webRootPath.trim().length() > 0 && !webRootPath.equals(".")) { // NOI18N
             webRoot = project.getSourcesDirectory().getFileObject(webRootPath);
         }
+        assert webRoot != null : "WebRoot must be found";
         return webRoot;
     }
 
@@ -129,13 +136,27 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * Will show the customizer if the property is unknown.
      * @return run as type or <code>null</code>.
      */
     public static PhpProjectProperties.RunAsType getRunAs(PhpProject project) {
+        return getRunAs(project, true);
+    }
+
+    /**
+     * Will show the customizer if the property is unknown and <code>showCustomizer</code> equals <code>true</code>.
+     * @return run as type or <code>null</code>.
+     */
+    public static PhpProjectProperties.RunAsType getRunAs(PhpProject project, boolean showCustomizer) {
         PhpProjectProperties.RunAsType runAsType = null;
         String runAs = project.getEvaluator().getProperty(PhpProjectProperties.RUN_AS);
-        // XXX tmysik
-        assert runAs != null;
+        if (runAs == null) {
+            // show customizer?
+            if (showCustomizer) {
+                project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
+            }
+            return null;
+        }
         try {
             runAsType = PhpProjectProperties.RunAsType.valueOf(runAs);
         } catch (IllegalArgumentException iae) {
@@ -185,7 +206,6 @@ public final class ProjectPropertiesSupport {
     public static PhpProjectProperties.UploadFiles getRemoteUpload(PhpProject project) {
         PhpProjectProperties.UploadFiles uploadFiles = null;
         String remoteUpload = project.getEvaluator().getProperty(PhpProjectProperties.REMOTE_UPLOAD);
-        // XXX tmysik
         assert remoteUpload != null;
         try {
             uploadFiles = PhpProjectProperties.UploadFiles.valueOf(remoteUpload);

@@ -264,13 +264,23 @@ public abstract class Command {
         return retval;
     }
 
+    /** eventually show the customizer */
     protected boolean isScriptSelected() {
-        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project);
+        return isScriptSelected(true);
+    }
+
+    protected boolean isScriptSelected(boolean showCustomizer) {
+        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project, showCustomizer);
         return PhpProjectProperties.RunAsType.SCRIPT.equals(runAs);
     }
 
+    /** eventually show the customizer */
     protected boolean isRemoteConfigSelected() {
-        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project);
+        return isRemoteConfigSelected(true);
+    }
+
+    protected boolean isRemoteConfigSelected(boolean showCustomizer) {
+        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project, showCustomizer);
         return PhpProjectProperties.RunAsType.REMOTE.equals(runAs);
     }
 
@@ -285,9 +295,10 @@ public abstract class Command {
     //or null
     protected final FileObject fileForContext(Lookup context) {
         CommandUtils utils = getCommandUtils();
-        FileObject[] files = utils.phpFilesForContext(context, isScriptSelected());
+        boolean scriptSelected = isScriptSelected(false);
+        FileObject[] files = utils.phpFilesForContext(context, scriptSelected);
         if (files == null || files.length == 0) {
-            files = utils.phpFilesForSelectedNodes(isScriptSelected());
+            files = utils.phpFilesForSelectedNodes(scriptSelected);
         }
         return (files != null && files.length > 0) ? files[0] : null;
     }
@@ -378,12 +389,19 @@ public abstract class Command {
         }
 
         PhpProjectProperties.UploadFiles uploadFiles = ProjectPropertiesSupport.getRemoteUpload(getProject());
-        // XXX tmysik
         assert uploadFiles != null;
 
         if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
             uploadCommand.uploadFiles(new FileObject[] {ProjectPropertiesSupport.getSourcesDirectory(getProject())}, preselectedFiles);
         }
+    }
+
+    protected boolean isIndexFileSet() {
+        return ProjectPropertiesSupport.getIndexFile(getProject()) != null;
+    }
+
+    protected boolean isUrlSet() {
+        return ProjectPropertiesSupport.getUrl(getProject()) != null;
     }
 
     private static class DebugInfo {
