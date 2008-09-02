@@ -122,7 +122,7 @@ public class WadlSaas extends Saas {
                 return Collections.EMPTY_LIST;
             }
         }
-        return Collections.unmodifiableList(resources);
+        return new ArrayList<WadlSaasResource>(resources);
     }
 
     public FileObject getLocalWadlFile() {
@@ -192,18 +192,6 @@ public class WadlSaas extends Saas {
 //        } catch (IOException ioe) {
 //            Exceptions.printStackTrace(ioe);
 //        }
-    }
-
-    /**
-     * Returns either a list of resources defined by associated WADL model or
-     * a list of filtered resource methods.
-     * @return
-     */
-    public List getResourcesOrMethods() {
-        if (getMethods() != null && getMethods().size() > 0) {
-            return getMethods();
-        }
-        return getResources();
     }
 
     public String getBaseURL() {
