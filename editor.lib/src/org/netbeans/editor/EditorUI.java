@@ -560,6 +560,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         }
 
         if (newDoc != null) {
+            coloringMap = ColoringMap.get(Utilities.getMimeType(newDoc));
             listener.preferenceChange(null);
 
             // add all document layers

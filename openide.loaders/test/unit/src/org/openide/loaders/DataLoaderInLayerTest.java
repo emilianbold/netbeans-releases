@@ -149,6 +149,17 @@ public class DataLoaderInLayerTest extends NbTestCase {
             assertEquals("One object", 1, arr.length);
             DataObject dob = arr[0];
             assertEquals(SimpleDataObject.class, dob.getClass());
+
+            DataObject copied = dob.copy(df);
+            assertEquals(SimpleDataObject.class, copied.getClass());
+
+            DataObject templ = dob.createFromTemplate(df, "ahoj");
+            assertEquals(SimpleDataObject.class, templ.getClass());
+            assertEquals("ahoj", templ.getName());
+
+            DataObject ren = dob.copyRename(df, "kuk", "simple");
+            assertEquals(SimpleDataObject.class, ren.getClass());
+            assertEquals("kuk", ren.getName());
         } finally {
             addRemoveLoader(l, false);
         }
@@ -164,6 +175,17 @@ public class DataLoaderInLayerTest extends NbTestCase {
             assertEquals("One object", 1, arr.length);
             DataObject dob = arr[0];
             assertEquals(SimpleDataObject.class, dob.getClass());
+
+            DataObject copied = dob.copy(df);
+            assertEquals(SimpleDataObject.class, copied.getClass());
+
+            DataObject templ = dob.createFromTemplate(df, "ahoj");
+            assertEquals(SimpleDataObject.class, templ.getClass());
+            assertEquals("ahoj", templ.getName());
+
+            DataObject ren = dob.copyRename(df, "kuk", "simple");
+            assertEquals(SimpleDataObject.class, ren.getClass());
+            assertEquals("kuk", ren.getName());
         } finally {
             addRemove("text/plain", SimpleFactory.class, false);
         }
@@ -204,6 +226,17 @@ public class DataLoaderInLayerTest extends NbTestCase {
             arr = df.getChildren();
             assertEquals("One object", 1, arr.length);
             assertEquals("Object is the same", dob, arr[0]);
+
+            DataObject copied = dob.copy(df);
+            assertEquals(SimpleDataObject.class, copied.getClass());
+
+            DataObject templ = dob.createFromTemplate(df, "ahoj");
+            assertEquals(SimpleDataObject.class, templ.getClass());
+            assertEquals("ahoj", templ.getName());
+
+            DataObject ren = dob.copyRename(df, "kuk", "simple");
+            assertEquals(SimpleDataObject.class, ren.getClass());
+            assertEquals("kuk", ren.getName());
         } finally {
             addRemove("text/plain", f, false);
         }
