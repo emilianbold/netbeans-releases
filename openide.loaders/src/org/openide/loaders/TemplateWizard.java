@@ -79,13 +79,6 @@ public class TemplateWizard extends WizardDescriptor {
     /** Defines custom iterator */
     private static final String CUSTOM_ITERATOR = "instantiatingIterator"; // NOI18N
     
-    /** See org.openide.WizardDescriptor.PROP_CONTENT_SELECTED_INDEX
-     */
-    private static final String PROP_CONTENT_SELECTED_INDEX = WizardDescriptor.PROP_CONTENT_SELECTED_INDEX; // NOI18N
-    /** See org.openide.WizardDescriptor.PROP_CONTENT_DATA
-     */
-    private static final String PROP_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
-
     /** prefered dimmension of the panels */
     static java.awt.Dimension PREF_DIM = new java.awt.Dimension (560, 350);
 
@@ -1048,8 +1041,9 @@ public class TemplateWizard extends WizardDescriptor {
                     }
                 } else if (obj instanceof Node) {
                     dobj = ((Node) obj).getCookie(DataObject.class);
-                    assert dobj != null : obj; // XXX assertions are not appropriate here!
-                    resultSet.add (dobj);
+                    if (dobj != null) {
+                        resultSet.add (dobj);
+                    }
                 }
             }
             return resultSet;
