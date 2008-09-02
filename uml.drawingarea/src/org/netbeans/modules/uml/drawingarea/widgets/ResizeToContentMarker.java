@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,57 +31,18 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.sun.ide.dm;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
+package org.netbeans.modules.uml.drawingarea.widgets;
 
 /**
- *
- * @author Peter Williams
+ * Marker interface to show/hide ResizeToContents action
+ * @author jyothi
  */
-public class ServerInstanceDescriptorImpl implements ServerInstanceDescriptor {
-
-    private final SunDeploymentManager sunDm;
-
-    public ServerInstanceDescriptorImpl(SunDeploymentManager dm) {
-        sunDm = dm;
-    }
-
-    // I thought about using DeploymentManagerProperties here, but it looks like
-    // that would simply resolve to this code here, except with more overhead
-    //
-    public int getHttpPort() {
-        int httpPort = 8080;
-        String httpPortStr = sunDm.getNonAdminPortNumber();
-        if(httpPortStr != null && httpPortStr.length() > 0) {
-            try {
-                httpPort = Integer.parseInt(sunDm.getNonAdminPortNumber());
-            } catch(NumberFormatException ex) {
-                Logger.getLogger(ServerInstanceDescriptorImpl.class.getName()).log(
-                        Level.INFO, "HTTP port is malformed, using 8080 as default ("  +
-                        ex.getLocalizedMessage() + ")", ex);
-            }
-        } else {
-            Logger.getLogger(ServerInstanceDescriptorImpl.class.getName()).log(
-                    Level.INFO, "HTTP port is null, using 8080 as default");
-        }
-        return httpPort;
-    }
-
-    public String getHostname() {
-        return sunDm.getHost();
-    }
-
-    public boolean isLocal() {
-        return sunDm.isLocal();
-    }
+public interface ResizeToContentMarker {
 
 }
