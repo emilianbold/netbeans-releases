@@ -42,8 +42,10 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
@@ -53,7 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
  * @author Vladimir Kvashin
  */
 public class FilePreprocessorConditionState
-        implements APTParseFileWalker.EvalCallback, Comparable {
+        implements APTParseFileWalker.EvalCallback {
 
     private static final boolean TRACE = Boolean.getBoolean("cnd.pp.condition.state.trace");
 
@@ -149,12 +151,76 @@ public class FilePreprocessorConditionState
         size++;
     }
 
-    public int compareTo(Object o) {
+    public final boolean isBetter(Object o) {
         int result = compareToImpl(o);
         if (TRACE) {
             traceComparison(o, result);
         }
-        return result;
+        return result > 0;
+    }
+    
+    public final boolean isEqual(FilePreprocessorConditionState other) {
+        // we assume that the array is ordered
+        if (this.size == other.size) {
+            for (int i = 0; i < size; i++) {
+                if (this.offsets[i] != other.offsets[i]) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public final boolean isSubset(Collection<FilePreprocessorConditionState> others) {
+        SortedSet<Integer> sorted = new TreeSet<Integer>();
+        for (FilePreprocessorConditionState state : others) {
+            for (int i = 0; i < state.size; i++) {
+                sorted.add(state.offsets[i]);
+            }
+        }
+        int[] arr = new int[sorted.size()];
+        int pos = 0;
+        for (int offset : sorted) {
+            arr[pos++] = offset;
+        }
+        return isSubset(arr, arr.length);
+    }
+
+    public final boolean isSubset(FilePreprocessorConditionState other) {
+        return isSubset(other.offsets, other.size);
+    }
+
+    public final boolean isSubset(int[] otherOffsets, int otherSize) {
+        // we assume that the array is ordered
+        if (this.size < otherSize) {
+            int thisPos = 0;
+            int otherPos = 0;
+            while (thisPos < size && otherPos < otherSize) {
+                // on each iteration we assume
+                // that all on the left of the current position
+                // this is a subset of other
+                if (this.offsets[thisPos] == otherOffsets[thisPos]) {
+                    thisPos++;
+                    otherPos++;
+                    continue;
+                } else if (this.offsets[thisPos] < otherOffsets[thisPos]) {
+                    return false;
+                } else { // this.offsets[thisPos] > other.offsets[thisPos]
+                    while (++otherPos < otherSize) {
+                        if (this.offsets[thisPos] == otherOffsets[thisPos]) {
+                            thisPos++;
+                            otherPos++;
+                            continue;
+                        }
+                    }
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     private void traceComparison(Object o, int result) {

@@ -612,12 +612,13 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
         if (tokenID != null){
             String category = tokenID.primaryCategory();
             if (CppTokenId.KEYWORD_CATEGORY.equals(category)){
-                if (tokenOffset+tokenLen == endScanOffset)
+                if (tokenOffset+tokenLen == endScanOffset) {
                     tokenID = CppTokenId.IDENTIFIER;
+                }
             }
         }
 
-        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER) {
+        if (tokenID == CppTokenId.PREPROCESSOR_IDENTIFIER || tokenID == CppTokenId.SIZEOF) {
             // change preproc identifier into normal identifier
             // to simplify handling of result expression
             tokenID = CppTokenId.IDENTIFIER;
