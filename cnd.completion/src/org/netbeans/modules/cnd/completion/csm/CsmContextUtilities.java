@@ -72,6 +72,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -580,7 +581,9 @@ public class CsmContextUtilities {
 
     public static boolean isInType(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
-        return (CsmKindUtilities.isType(last) || CsmKindUtilities.isTypedef(last))
+        // in instantianiton everything is possible
+        return ((CsmKindUtilities.isType(last) && !((CsmType)last).isInstantiation())
+                || CsmKindUtilities.isTypedef(last))
                 && CsmOffsetUtilities.isInObject(last, offset);
     }
 }

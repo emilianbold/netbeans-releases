@@ -388,6 +388,12 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (needFileLocalVars(context, offset)) {
             resImpl.fileLocalVars = contResolver.getFileLocalVariables(context, strPrefix, match, queryScope == QueryScope.LOCAL_QUERY);
             if (isEnough(strPrefix, match, resImpl.fileLocalVars)) return true;
+            if (resImpl.fileLocalEnumerators == null) {
+                resImpl.fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);
+                if (isEnough(strPrefix, match, resImpl.fileLocalEnumerators)) {
+                    return true;
+                }
+            }
         }
 
         if (needFileIncludedMacros(context, offset)) {
@@ -1369,6 +1375,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             // };
             // TODO: solve this issue in a more elegant way
             resolveTypes |= RESOLVE_GLOB_VARIABLES;
+            resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
 
             assert (context != null);
             if (CsmContextUtilities.isInFunction(context, offset)) {
@@ -1382,8 +1389,6 @@ public class CompletionResolverImpl implements CompletionResolver {
             } else {
 
                 // resolve global context as well
-                resolveTypes |= RESOLVE_GLOB_VARIABLES;
-                resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
                 resolveTypes |= RESOLVE_FILE_LOCAL_FUNCTIONS;
                 resolveTypes |= RESOLVE_GLOB_NAMESPACES;
@@ -1414,22 +1419,29 @@ public class CompletionResolverImpl implements CompletionResolver {
         CsmProject prj = file.getProject();
         CsmProject inProject = (onlyInProject || contextOnly) ? prj : null;
         Collection<CsmNamespace> namespaces = new ArrayList<CsmNamespace>();
-        if (!contextOnly) {
-            namespaces.addAll(CsmUsingResolver.getDefault().findVisibleNamespaces(file, offset, inProject));
-        }
-        // add global namespace
-        CsmNamespace globNS = prj.getGlobalNamespace();
-        namespaces.add(globNS);
+
         // add all namespaces from context
         Collection<CsmNamespace> contextNSs = getContextNamespaces(context);
         namespaces.addAll(contextNSs);
         namespaces = filterNamespaces(namespaces, inProject);
+        
+        if (!contextOnly) {
+            namespaces.addAll(CsmUsingResolver.getDefault().findVisibleNamespaces(file, offset, inProject));
+        }
+        
+        if (prj != null) {
+            // add global namespace
+            CsmNamespace globNS = prj.getGlobalNamespace();
+            namespaces.add(globNS);
+        }
+        
         return namespaces;
     }
 
-    private Collection<CsmNamespace> getContextNamespaces(CsmContext context) {
+    /** it's a list, not just collection because order matters */
+    private List<CsmNamespace> getContextNamespaces(CsmContext context) {
         CsmNamespace ns = CsmContextUtilities.getNamespace(context);
-        Collection<CsmNamespace> out = new ArrayList<CsmNamespace>();
+        List<CsmNamespace> out = new ArrayList<CsmNamespace>();
         while (ns != null && !ns.isGlobal()) {
             out.add(ns);
             ns = ns.getParent();

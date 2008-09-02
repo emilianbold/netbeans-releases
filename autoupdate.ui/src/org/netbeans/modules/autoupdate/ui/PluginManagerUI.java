@@ -558,7 +558,6 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
             }
             setSelectedTab();
         }        
-        AutoupdateCheckScheduler.runCheckAvailableUpdates (100);
     }
         
     static boolean canContinue (String message) {

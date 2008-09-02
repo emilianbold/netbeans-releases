@@ -41,21 +41,12 @@
 
 package org.netbeans.modules.groovy.support.api;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.groovy.support.options.SupportOptionsPanelController;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbCollections;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 
 /**
  * Groovy settings
@@ -64,27 +55,14 @@ import org.openide.util.Utilities;
  */
 public final class GroovySettings extends AdvancedOption {
 
-    private static final String GROOVY_HOME = "groovyHome"; // NOI18N
+    public static final String GROOVY_OPTIONS_CATEGORY = "Advanced/org-netbeans-modules-groovy-support-api-GroovySettings"; // NOI18N
+
     private static final String GROOVY_DOC  = "groovyDoc"; // NOI18N
-    private static final String GROOVY_HOME_PATH = "GROOVY_HOME"; //NOI18N    
-    private static final String GROOVY_EXECUTABLE = "groovy"; //NOI18N
 
-    public String getGroovyHome() {
-        String groovyHome = prefs().get(GROOVY_HOME, ""); // NOI18N
-        if (!(groovyHome != null && groovyHome.length() > 0)) {
-            groovyHome = findGroovyPlatform();
-        }
-        return groovyHome;
-    }
-    
-    public void setGroovyHome(String groovyHome) {
-        prefs().put(GROOVY_HOME, groovyHome);
-    }
-
-    public String getGroovyDoc() { 
+    public String getGroovyDoc() {
         return prefs().get(GROOVY_DOC, ""); // NOI18N
     }
-    
+
     public void setGroovyDoc(String groovyDoc) {
         prefs().put(GROOVY_DOC, groovyDoc);
     }
@@ -103,62 +81,6 @@ public final class GroovySettings extends AdvancedOption {
 
     private Preferences prefs() {
         return NbPreferences.forModule(GroovySettings.class);
-    }
-    
-    private String findGroovyPlatform() {
-        String groovyPath = System.getenv(GROOVY_HOME_PATH);        
-        if (groovyPath == null) {            
-            for (String dir : dirsOnPath()) {                
-                File f = null;
-                if (Utilities.isWindows()) {
-                    f = new File(dir, GROOVY_EXECUTABLE + ".exe");
-                } else {
-                    f = new File(dir, GROOVY_EXECUTABLE);
-                }                
-                if (f.isFile()) {
-                    try {
-                        groovyPath = f.getCanonicalFile().getParentFile().getParent();                        
-                        break;
-                    } catch (Exception e) {
-                        Exceptions.printStackTrace(e);
-                    }                    
-                }
-            }
-        }
-        return groovyPath;
-    }        
-    
-    /**     
-     * Returns an {@link Iterable} which will uniquely traverse all valid
-     * elements on the <em>PATH</em> environment variables. That means,
-     * duplicates and elements which are not valid, existing directories are
-     * skipped.
-     * 
-     * @return an {@link Iterable} which will traverse all valid elements on the
-     * <em>PATH</em> environment variables.
-     */
-    
-    /*FIXME: This method has been copied from the ruby.platform module. 
-     *  ruby.platform/src/org/netbeans/modules/ruby/platform/Util.java
-     * 
-     * I don't know if it could be included into a shared module.
-    */
-    public static Iterable<String> dirsOnPath() {
-        String rawPath = System.getenv("PATH"); // NOI18N
-        if (rawPath == null) {
-            rawPath = System.getenv("Path"); // NOI18N
-        }
-        if (rawPath == null) {
-            return Collections.emptyList();
-        }
-        Set<String> candidates = new LinkedHashSet<String>(Arrays.asList(rawPath.split(File.pathSeparator)));
-        for (Iterator<String> it = candidates.iterator(); it.hasNext();) {
-            String dir = it.next();
-            if (!new File(dir).isDirectory()) { // remove non-existing directories (#124562)                
-                it.remove();
-            }
-        }
-        return NbCollections.iterable(candidates.iterator());
     }
 
 }

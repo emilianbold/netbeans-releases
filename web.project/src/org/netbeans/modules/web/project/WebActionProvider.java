@@ -91,12 +91,14 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
+import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
@@ -205,13 +207,31 @@ class WebActionProvider implements ActionProvider {
             return;
         }
 
+        String realCommand = command;
+        if (COMMAND_BUILD.equals(realCommand) && isCosEnabled()) {
+            boolean cleanAndBuild = DeployOnSaveUtils.showBuildActionWarning(project,
+                    new DeployOnSaveUtils.CustomizerPresenter() {
+
+                public void showCustomizer(String category) {
+                    CustomizerProviderImpl provider = project.getLookup().lookup(CustomizerProviderImpl.class);
+                    provider.showCustomizer(category);
+                }
+            });
+            if (cleanAndBuild) {
+                realCommand = COMMAND_REBUILD;
+            } else {
+                return;
+            }
+        }
+
+        final String commandToExecute = realCommand;
         Runnable action = new Runnable() {
 
             public void run() {
                 Properties p = new Properties();
                 String[] targetNames;
 
-                targetNames = getTargetNames(command, context, p);
+                targetNames = getTargetNames(commandToExecute, context, p);
                 if (targetNames == null) {
                     return;
                 }
@@ -902,11 +922,9 @@ class WebActionProvider implements ActionProvider {
             return false;
         }
 
-        boolean cos = !Boolean.parseBoolean((String) project.getWebProjectProperties().get(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE));
         // build or compile source file (JSP compilation allowed)
-        if (cos && (COMMAND_BUILD.equals(command)
-                || (COMMAND_COMPILE_SINGLE.equals(command)
-                    && (findJavaSourcesAndPackages(context, project.getSourceRoots().getRoots()) != null || findJavaSourcesAndPackages(context, project.getTestSourceRoots().getRoots()) != null)))) {
+        if (isCosEnabled() && (COMMAND_COMPILE_SINGLE.equals(command)
+                    && (findJavaSourcesAndPackages(context, project.getSourceRoots().getRoots()) != null || findJavaSourcesAndPackages(context, project.getTestSourceRoots().getRoots()) != null))) {
 
             return false;
         }
@@ -1395,4 +1413,7 @@ class WebActionProvider implements ActionProvider {
         return foundWebServiceAnnotation[0];
     }
 
+    private boolean isCosEnabled() {
+        return !Boolean.parseBoolean(project.evaluator().getProperty(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE));
+    }
 }

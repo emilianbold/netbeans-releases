@@ -104,8 +104,8 @@ public abstract class Command {
     }
 
     //Helper|Utility methods for subclasses
-    protected final void showURLForContext(Lookup context) throws MalformedURLException {
-        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForContext(context));
+    protected final void showURL(final URL url) throws MalformedURLException {
+        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
     }
 
     protected final void showURLForProjectFile() throws MalformedURLException {
@@ -113,10 +113,21 @@ public abstract class Command {
     }
 
     protected final void showURLForDebugProjectFile() throws MalformedURLException {
-        showURLForDebugContext(null);
+        showURLForDebug(getURLForDebug(null));
     }
 
-    protected final void showURLForDebugContext(Lookup context) throws MalformedURLException {
+    protected final URL getURLForDebug(Lookup context) throws MalformedURLException {
+        DebugInfo debugInfo = getDebugInfo();
+        URL debugUrl;
+        if (context != null) {
+            debugUrl = debugInfo.debugServer ? urlForDebugContext(context) : urlForContext(context);
+        } else {
+            debugUrl = debugInfo.debugServer ? urlForDebugProjectFile() : urlForProjectFile();
+        }
+        return debugUrl;
+    }
+
+    private DebugInfo getDebugInfo() {
         boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
         boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
 
@@ -124,17 +135,13 @@ public abstract class Command {
             debugServer = true;
             debugClient = false;
         }
-
         assert debugServer || debugClient;
+        return new DebugInfo(debugClient, debugServer);
+    }
 
-        URL debugUrl;
-        if (context != null) {
-            debugUrl = (debugServer) ? urlForDebugContext(context) : urlForContext(context);
-        } else {
-            debugUrl = (debugServer) ? urlForDebugProjectFile() : urlForProjectFile();
-        }
-
-        if (debugClient) {
+    protected final void showURLForDebug(URL debugUrl) throws MalformedURLException {
+        assert debugUrl != null;
+        if (getDebugInfo().debugClient) {
             try {
                 launchJavaScriptDebugger(debugUrl);
             } catch (URISyntaxException ex) {
@@ -367,5 +374,42 @@ public abstract class Command {
 
     private PropertyEvaluator getPropertyEvaluator() {
         return getProject().getEvaluator();
+    }
+
+    protected void eventuallyUploadFiles() {
+        eventuallyUploadFiles((FileObject[]) null);
+    }
+
+    protected void eventuallyUploadFiles(FileObject... preselectedFiles) {
+        if (!isRemoteConfigSelected()) {
+            return;
+        }
+        UploadCommand uploadCommand = (UploadCommand) getOtherCommand(UploadCommand.ID);
+        if (!uploadCommand.isActionEnabled(null)) {
+            return;
+        }
+
+        PhpProjectProperties.UploadFiles uploadFiles = null;
+        String remoteUpload = getProject().getEvaluator().getProperty(PhpProjectProperties.REMOTE_UPLOAD);
+        assert remoteUpload != null;
+        try {
+            uploadFiles = PhpProjectProperties.UploadFiles.valueOf(remoteUpload);
+        } catch (IllegalArgumentException iae) {
+            // ignored
+        }
+
+        if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
+            uploadCommand.uploadFiles(new FileObject[] {getProject().getSourcesDirectory()}, preselectedFiles);
+        }
+    }
+
+    private static class DebugInfo {
+        final boolean debugClient;
+        final boolean debugServer;
+
+        public DebugInfo(boolean debugClient, boolean debugServer) {
+            this.debugClient = debugClient;
+            this.debugServer = debugServer;
+        }
     }
 }

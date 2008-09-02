@@ -179,6 +179,15 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     public List<FileObject> getAllHibernateConfigFileObjects() {
         return HibernateUtil.getAllHibernateConfigFileObjects(project);
     }
+    
+    /**
+     * Returns configuration fileobjects if any contained under the source root in this project.
+     * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
+     */
+    public List<FileObject> getDefaultHibernateConfigFileObjects() {
+        return HibernateUtil.getDefaultHibernateConfigFileObjects(project);
+    }
+    
 
     /**
      * Returns all mapping files defined under this project.
@@ -458,11 +467,11 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
                         file = InstalledFileLocator.getDefault().locate(url.getFile().substring(1), null, false);
                         logger.info("Bundled DB Driver Jar : " + file);
                     } else {
-                        file = new java.io.File(url.getFile());
+                        file = new java.io.File(url.getFile().replace("%20", " "));
                     }
                     if (file.isFile() && file.getName().endsWith(".jar")) {
                         logger.info("DB Driver Jar : " + file);
-                        driverURLs.add(new URL("jar:" + file.toURL() + "!/"));
+                        driverURLs.add(new URL("jar:" + url + "!/"));
 
                     } else {
                         logger.info("Registering DB Driver from folder : " + url);
@@ -487,5 +496,17 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         }
 
         return registeredDBDriver;
+    }
+
+    /**
+     * Prepares and returns a custom classloader for this project.
+     * The classloader is capable of loading project classes and resources.
+     * 
+     * @param classpaths, custom classpaths that are registered along with project based classpath.
+     * @return classloader which is a URLClassLoader instance.
+     */
+    public ClassLoader getProjectClassLoader(URL[] classpaths) {
+        ClassLoader customClassLoader = new CustomClassLoader(classpaths, getClass().getClassLoader());
+        return customClassLoader;
     }
 }

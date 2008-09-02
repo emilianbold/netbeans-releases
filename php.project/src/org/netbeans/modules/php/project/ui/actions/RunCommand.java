@@ -55,13 +55,13 @@ public class RunCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_RUN;
     public static final String DISPLAY_NAME=NbBundle.getMessage(RunCommand.class, "LBL_RunProject");
     private final RunLocalCommand localCommand;
-    
+
     /**
      * @param project
      */
     public RunCommand(PhpProject project) {
         super(project);
-        localCommand = new RunLocalCommand(project);        
+        localCommand = new RunLocalCommand(project);
     }
 
     @Override
@@ -69,6 +69,7 @@ public class RunCommand extends Command implements Displayable {
         if (isScriptSelected()) {
             localCommand.invokeAction(null);
         } else {
+            eventuallyUploadFiles();
             try {
                 showURLForProjectFile();
             } catch (MalformedURLException ex) {
