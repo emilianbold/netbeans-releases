@@ -75,4 +75,6 @@ void iz136894(ehci_state* state, int i){
 void iz137483(int param_postfix, int param){
     int i = param;
     int j = param_postfix;
+    ehci_state* state;
+    state->ehci_itd_pool_addr[sizeof(param)/sizeof(char) - 1].itd_state;
 }

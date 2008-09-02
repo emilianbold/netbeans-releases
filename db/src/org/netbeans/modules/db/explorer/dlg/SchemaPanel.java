@@ -242,6 +242,19 @@ public class SchemaPanel extends javax.swing.JPanel {
             return null;
     }
 
+    /**
+     * Determine if there are any schemas available
+     * 
+     * @return true if there are schemas, false otherwise
+     */
+    public boolean schemasAvailable()
+    {
+        // the schema combo box is enabled if there are schemas
+        boolean available = schemaComboBox.isEnabled();
+        
+        return available;
+    }
+    
     public boolean setSchemas(Vector items, String schema) {
         schemaComboBox.removeAllItems();
         for (int i = 0; i < items.size(); i++)

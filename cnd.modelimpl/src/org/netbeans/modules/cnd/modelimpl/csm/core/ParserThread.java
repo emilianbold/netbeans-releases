@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -74,21 +76,27 @@ public class ParserThread implements Runnable {
                         trace("parsing started: " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS)); // NOI18N
                     }
                     Diagnostic.StopWatch stw = (TraceFlags.TIMING_PARSE_PER_FILE_FLAT && ! file.isParsed()) ? new Diagnostic.StopWatch() : null;
-                    APTPreprocHandler preprocHandler = null;
                     try {
-			if( ! file.getProjectImpl().isDisposing() ) { // just in case check
-                            APTPreprocHandler.State state = entry.getPreprocState();
-                            if (state != null) {
-                                // init from entry
-                                preprocHandler = file.getProjectImpl().createEmptyPreprocHandler(file.getBuffer().getFile());
-                                if( TraceFlags.TRACE_PARSER_QUEUE ) {
-                                    System.err.println("before ensureParse on " + file.getAbsolutePath() + 
-                                            ParserQueue.tracePreprocState(state)); 
-                                }
-                                preprocHandler.setState(state);
+                        Collection<APTPreprocHandler.State> states = entry.getPreprocStates();
+                        Collection<APTPreprocHandler> preprocHandlers = new ArrayList<APTPreprocHandler>(states.size());
+                        for (APTPreprocHandler.State state : states) {
+                            if( ! file.getProjectImpl(true).isDisposing() ) { // just in case check
+                                //APTPreprocHandler preprocHandler = null;
+                                //if (state != null) { // TODO: check, is it at all possible for state to be null???
+                                    // init from entry
+                                    APTPreprocHandler preprocHandler = file.getProjectImpl(true).createEmptyPreprocHandler(file.getBuffer().getFile());
+                                    if( TraceFlags.TRACE_PARSER_QUEUE ) {
+                                        System.err.println("before ensureParse on " + file.getAbsolutePath() + 
+                                                ParserQueue.tracePreprocState(state)); 
+                                    }
+                                    preprocHandler.setState(state);
+                                //}
+                                preprocHandlers.add(preprocHandler);
                             }
-                            file.ensureParsed(preprocHandler);
-			}
+                        }
+                        if( ! file.getProjectImpl(true).isDisposing() ) {
+                            file.ensureParsed(preprocHandlers);
+                        }
                     }
                     catch( Throwable thr ) {
 			DiagnosticExceptoins.register(thr);

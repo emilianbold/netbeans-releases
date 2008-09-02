@@ -90,6 +90,13 @@ public class CodeUtils {
 
         return (name instanceof Identifier) ? ((Identifier) name).getName() : "";//NOI18N
     }
+    public static String extractClassName(ClassDeclaration clsDeclaration) {
+        return clsDeclaration.getName().getName();
+    }
+    public static String extractSuperClassName(ClassDeclaration clsDeclaration) {
+        Identifier superClass = clsDeclaration.getSuperClass();
+        return (superClass != null) ? superClass.getName():null;
+    }
 
     public static String extractVariableName(Variable var) {
         if (var.getName() instanceof Identifier) {
@@ -220,7 +227,7 @@ public class CodeUtils {
                     }
                 }
 
-                if (className != null) {
+                if (className != null && className.trim().length() > 0) {
                     for (IndexedFunction func : index.getAllMethods(context, className,
                             methodName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
 

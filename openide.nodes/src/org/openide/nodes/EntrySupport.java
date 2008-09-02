@@ -1330,7 +1330,7 @@ abstract class EntrySupport {
          */
         private List<Entry> updateOrder(Collection<? extends Entry> newEntries) {
             List<Entry> toAdd = new LinkedList<Entry>();
-            int[] perm = new int[entries.size()];
+            int[] perm = new int[visibleEntries.size()];
             int currentPos = 0;
             int permSize = 0;
             List<Entry> reorderedEntries = null;
@@ -1377,8 +1377,8 @@ abstract class EntrySupport {
                 }
 
                 // reorderedEntries are not null
-                this.entries = reorderedEntries;
-                this.visibleEntries = newVisible;
+                entries = reorderedEntries;
+                visibleEntries = newVisible;
 
                 Node p = children.parent;
                 if (p != null) {

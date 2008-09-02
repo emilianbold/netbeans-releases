@@ -284,14 +284,25 @@ public final class WebProject implements Project, AntProjectListener {
             updateFileChangeListener();
         }
 
-        public void fileRenamed(FileRenameEvent fe) {
+        public void fileRenamed(final FileRenameEvent fe) {
             if(watchRename && fileObject.isValid()) {
-                File f = new File(helper.getStandardPropertyEvaluator().getProperty(propertyName));
+                final File f = new File(helper.getStandardPropertyEvaluator().getProperty(propertyName));
                 if(f.getName().equals(fe.getName())) {
-                    EditableProperties properties = new EditableProperties(true);
-                    properties.setProperty(propertyName, new File(f.getParentFile(), fe.getFile().getName()).getPath());
-                    Utils.updateProperties(helper, AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
-                    getWebProjectProperties().store();
+                    ProjectManager.mutex().postWriteRequest(new Runnable() {
+                        public void run() {
+                            EditableProperties properties = new EditableProperties(true);
+                            properties.setProperty(propertyName, new File(f.getParentFile(), fe.getFile().getName()).getPath());
+                            Utils.updateProperties(helper, AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
+                            try {
+                                ProjectManager.getDefault().saveProject(WebProject.this);
+                                updateFileChangeListener();
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (IllegalArgumentException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
                 }
             }
             updateFileChangeListener();
@@ -566,10 +577,6 @@ public final class WebProject implements Project, AntProjectListener {
             return apiJAXWSClientSupport;
     }
     
-    public WebProjectProperties getWebProjectProperties() {
-        return new WebProjectProperties (this, updateHelper, eval, refHelper);
-    }
-
     /** Return configured project name. */
     public String getName() {
         return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
@@ -828,9 +835,8 @@ public final class WebProject implements Project, AntProjectListener {
                     genFilesHelper.refreshBuildScript(
                         getBuildXmlName(),
                         WebProject.class.getResource("resources/build.xsl"), true);
-                    
-                    WebProjectProperties wpp = getWebProjectProperties();
-                    String servInstID = (String) wpp.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
+
+                    String servInstID = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
                     String serverType = null;
                     J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
                     if (platform != null) {
@@ -839,7 +845,7 @@ public final class WebProject implements Project, AntProjectListener {
                     } else {
                         // if there is some server instance of the type which was used
                         // previously do not ask and use it
-                        serverType = (String) wpp.get(WebProjectProperties.J2EE_SERVER_TYPE);
+                        serverType = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
                         if (serverType != null) {
                             String[] servInstIDs = Deployment.getDefault().getInstancesOfServer(serverType);
                             if (servInstIDs.length > 0) {
@@ -895,7 +901,7 @@ public final class WebProject implements Project, AntProjectListener {
                 webModule.setContextPath (sysName);
             }
 
-            if (!Boolean.parseBoolean((String) getWebProjectProperties().get(
+            if (!Boolean.parseBoolean(evaluator().getProperty(
                     WebProjectProperties.DISABLE_DEPLOY_ON_SAVE))) {
                 Deployment.getDefault().enableCompileOnSaveSupport(webModule);
             }
@@ -1060,11 +1066,14 @@ public final class WebProject implements Project, AntProjectListener {
             webInfFileWatch.reset();
 
             // listen to j2ee platform classpath changes
-            WebProjectProperties wpp = getWebProjectProperties();
-            String servInstID = (String)wpp.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
-            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(servInstID);
-            if (platform != null) {
-                unregisterJ2eePlatformListener(platform);
+            String servInstID = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
+            try {
+                J2eePlatform platform = Deployment.getDefault().getServerInstance(servInstID).getJ2eePlatform();
+                if (platform != null) {
+                    unregisterJ2eePlatformListener(platform);
+                }
+            } catch (InstanceRemovedException ex) {
+                Exceptions.printStackTrace(ex);
             }
             
             // remove ServiceListener from jaxWsModel            
@@ -1103,8 +1112,8 @@ public final class WebProject implements Project, AntProjectListener {
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                helper.createSimpleAntArtifact(WebProjectConstants.ARTIFACT_TYPE_WAR, "dist.war", evaluator(), "dist", "clean"), // NOI18N
-                helper.createSimpleAntArtifact(WebProjectConstants.ARTIFACT_TYPE_WAR_EAR_ARCHIVE, "dist.ear.war", evaluator(), "dist-ear", "clean-ear") // NOI18N
+                helper.createSimpleAntArtifact(WebProjectConstants.ARTIFACT_TYPE_WAR, "dist.war", evaluator(), "dist", "clean", WebProjectProperties.BUILD_FILE), // NOI18N
+                helper.createSimpleAntArtifact(WebProjectConstants.ARTIFACT_TYPE_WAR_EAR_ARCHIVE, "dist.ear.war", evaluator(), "dist-ear", "clean-ear", WebProjectProperties.BUILD_FILE) // NOI18N
             };
         }
 

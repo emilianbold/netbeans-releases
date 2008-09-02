@@ -107,6 +107,22 @@ is the proper place.
     <changes>
         <change>
             <api name="apisupport_spi"/>
+            <summary>Introduced ModuleTypePanel</summary>
+            <version major="1" minor="23"/>
+            <date day="29" month="8" year="2008"/>
+            <author login="akorostelev"/>
+            <compatibility addition="yes"/>
+            <description>
+                Adding <code>ModuleTypePanel</code> class to create 
+                UI Panel for selecting module type (Standalone or added to Suite),
+                NetBeans Platform (for standalone modules),
+                Module Suite (for module added to Suite).
+                And to communicate with created panel through WizardDescriptor.
+            </description>
+        </change>
+        
+        <change>
+            <api name="apisupport_spi"/>
             <summary>Introduced NodeFactoryUtils</summary>
             <version major="1" minor="16"/>
             <date day="15" month="3" year="2007"/>

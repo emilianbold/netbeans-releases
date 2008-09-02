@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.editor.shell;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 

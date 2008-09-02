@@ -49,6 +49,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
 import org.netbeans.modules.gsf.api.Formatter;
+import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.InstantRenamer;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
@@ -179,5 +180,10 @@ public class RubyLanguage extends DefaultLanguageConfig {
     @Override
     public StructureScanner getStructureScanner() {
         return new RubyStructureAnalyzer();
+    }
+
+    @Override
+    public IndexSearcher getIndexSearcher() {
+        return new RubyTypeSearcher();
     }
 }

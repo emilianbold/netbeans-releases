@@ -72,6 +72,8 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
@@ -120,9 +122,8 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
         this.noneComponentAsText = noneComponentAsText;
         this.radioButton = radioButton;
         changedComponents = new HashSet<String>();
-
         initComponents(element.getJComponent());
-        element.addPropertyEditorResourceElementListener(this);
+
     }
 
     private void initComponents(JComponent component) {
@@ -131,14 +132,13 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
 
         componentsList = new JList(new DefaultListModel());
         componentsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        componentsList.addListSelectionListener(this);
         componentsList.setCellRenderer(new ComponentsListRenderer());
 
         componentsList.getAccessibleContext().setAccessibleName(
                     NbBundle.getMessage( ResourceEditorPanel.class, "ASCN_ResourcesList"));
         componentsList.getAccessibleContext().setAccessibleDescription(
                     NbBundle.getMessage( ResourceEditorPanel.class, "ASCD_ResourcesList"));
-
+        //componentsList.addListSelectionListener(this);
 //        componentsList.setPreferredSize(new Dimension(120, 140));
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setViewportView(componentsList);
@@ -207,6 +207,21 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
 
             public void focusLost(FocusEvent e) {
 
+            }
+        });
+        
+        this.addAncestorListener(new AncestorListener() {
+
+            public void ancestorAdded(AncestorEvent event) {
+                 componentsList.removeListSelectionListener(ResourceEditorPanel.this);
+                 componentsList.addListSelectionListener(ResourceEditorPanel.this);
+            }
+
+            public void ancestorRemoved(AncestorEvent event) {
+                componentsList.removeListSelectionListener(ResourceEditorPanel.this);
+            }
+
+            public void ancestorMoved(AncestorEvent event) {
             }
         });
     }
@@ -291,6 +306,8 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
     }
 
     public void valueChanged(ListSelectionEvent e) {
+        if (e.getValueIsAdjusting())
+            return;
         Object selectedName = getSelectedComponentName();
         if (selectedName == null || noneComponentAsText.equals(selectedName)) {
             element.setDesignComponentWrapper(null);
@@ -300,6 +317,7 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
             element.setDesignComponentWrapper(wrapper);
             setUserCode(isUserCodeInside(wrapper));
         }
+        element.listSelectionHappened();
     }
 
     public void elementChanged(PropertyEditorResourceElementEvent event) {
@@ -443,4 +461,5 @@ class ResourceEditorPanel extends JPanel implements PropertyEditorResourceElemen
             return renderer;
         }
     }
+ 
 }

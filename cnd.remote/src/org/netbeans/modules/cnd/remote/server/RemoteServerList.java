@@ -100,7 +100,9 @@ public class RemoteServerList implements ServerList {
         addServer(CompilerSetManager.LOCALHOST, false, RemoteServerRecord.STATE_ONLINE);
         if (slist != null) {
             for (String hkey : slist.split(",")) { // NOI18N
-                addServer(hkey, false, RemoteServerRecord.STATE_OFFLINE);
+                if (!CompilerSetManager.LOCALHOST.equals(hkey)) {
+                    addServer(hkey, false, RemoteServerRecord.STATE_OFFLINE);
+                }
             }
         }
         refresh();

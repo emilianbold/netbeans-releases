@@ -91,11 +91,14 @@ public class OpenRubyProject extends org.netbeans.modules.performance.utilities.
     @Override
     public void initialize()
     {
-        log("::initialize::");        
+        log("::initialize::");
+        closeAllModal();
     }
     
     @Override
     public void prepare() {
+        // closeProject should be here so the project is available after the test finished
+        ProjectSupport.closeProject(projectName);
         new ActionNoBlock("File|Open Project...",null).perform(); //NOI18N
         WizardOperator opd = new WizardOperator("Open Project"); //NOI18N
         JTextComponentOperator path = new JTextComponentOperator(opd,1);
@@ -114,11 +117,9 @@ public class OpenRubyProject extends org.netbeans.modules.performance.utilities.
     public void close()
     {
         log("::close");
-        ProjectSupport.closeProject(projectName);
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport        
+        closeAllModal();
     }
-    
-    
+
     public void testOpenRubyProject()
     {
         projectName = "RubyPerfTest"; //NO18N

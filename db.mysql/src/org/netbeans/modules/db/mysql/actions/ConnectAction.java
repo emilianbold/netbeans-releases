@@ -43,6 +43,7 @@ import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import org.netbeans.modules.db.mysql.*;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.mysql.util.Utils;
@@ -56,6 +57,7 @@ import org.openide.util.actions.CookieAction;
  * @author David Van Couvering
  */
 public class ConnectAction extends CookieAction {
+    private static final Logger LOGGER = Logger.getLogger(ConnectAction.class.getName());
     private static final Class[] COOKIE_CLASSES = new Class[] {
         Database.class
     };
@@ -97,14 +99,15 @@ public class ConnectAction extends CookieAction {
         if ( activatedNodes == null || activatedNodes.length == 0 ) {
             return;
         }
-        Database model = activatedNodes[0].getCookie(Database.class);        
+        Database model = activatedNodes[0].getCookie(Database.class);
         DatabaseServer server = model.getServer();
-        String dbname = model.getDbName();
         
-        List<DatabaseConnection> conns = 
+        String dbname = model.getDbName();
+
+        List<DatabaseConnection> conns =
                 DatabaseUtils.findDatabaseConnections(
                     server.getURL(dbname));
-        
+
         if ( conns.size() == 0 ) {
             ConnectionManager.getDefault().
                 showAddConnectionDialogFromEventThread(
@@ -113,7 +116,10 @@ public class ConnectAction extends CookieAction {
                     server.getUser(),
                     null);
         } else {
-            ConnectionManager.getDefault().showConnectionDialog(conns.get(0));            
-        }      
+            ConnectionManager.getDefault().showConnectionDialog(conns.get(0));
+        }
+
+        // Refresh in case the state of the server changed... (e.g. the connection was lost)
+        server.refreshDatabaseList();
     }
 }

@@ -48,7 +48,6 @@ import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlDataManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -57,6 +56,12 @@ import org.openide.util.RequestProcessor;
  * @author nam
  */
 public class WsdlDataManagerImpl implements WsdlDataManager {
+
+    private int precedence;
+
+    public WsdlDataManagerImpl() {
+        precedence = 0;
+    }
 
     public WsdlData getWsdlData(String wsdlUrl, String serviceName, boolean synchronuous) {
         return WebServiceListModel.getInstance().getWebServiceData(wsdlUrl, serviceName, synchronuous);
@@ -129,5 +134,13 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
                 }
             }
         });
+    }
+
+    public void setPrecedence(int precedence) {
+        this.precedence = precedence;
+    }
+
+    public int getPrecedence() {
+        return precedence;
     }
 }

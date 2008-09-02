@@ -55,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.DefaultComboBoxModel;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -75,7 +74,6 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditor
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
-import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGMenuImageParser;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGImageComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

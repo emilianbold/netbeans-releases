@@ -53,7 +53,8 @@ import org.openide.modules.SpecificationVersion;
  */
 public final class DummyModuleInfo extends ModuleInfo {
     
-    public static final String TOKEN_MODULE_FORMAT = "org.openide.modules.ModuleFormat1"; // NOI18N
+    public static final String TOKEN_MODULE_FORMAT1 = "org.openide.modules.ModuleFormat1"; // NOI18N
+    public static final String TOKEN_MODULE_FORMAT2 = "org.openide.modules.ModuleFormat2"; // NOI18N
     
 //    private static AutomaticDependencies autoDepsHandler = null;
 //    
@@ -99,6 +100,8 @@ public final class DummyModuleInfo extends ModuleInfo {
     
     private SpecificationVersion specVersion = null;
     private String codeName = null;
+    private String codeNameBase = null;
+    private Integer codeNameRelease = null;
     
     /** Create a new fake module based on manifest.
      * Only main attributes need be presented, so
@@ -122,7 +125,8 @@ public final class DummyModuleInfo extends ModuleInfo {
 //        getAutoDepsHandler().refineDependencies(cnb, deps); // #29577
         String providesS = attr.getValue("OpenIDE-Module-Provides"); // NOI18N
         if (cnb.equals ("org.openide.modules")) { // NOI18N
-            providesS = providesS == null ? TOKEN_MODULE_FORMAT : providesS + ", " + TOKEN_MODULE_FORMAT; // NOI18N
+            providesS = providesS == null ? TOKEN_MODULE_FORMAT1 : providesS + ", " + TOKEN_MODULE_FORMAT1; // NOI18N
+            providesS = providesS == null ? TOKEN_MODULE_FORMAT2 : providesS + ", " + TOKEN_MODULE_FORMAT2; // NOI18N
         }
         if (providesS == null) {
             provides = new String[0];
@@ -156,23 +160,29 @@ public final class DummyModuleInfo extends ModuleInfo {
     }
     
     public int getCodeNameRelease() {
-        String s = getCodeName();
-        int idx = s.lastIndexOf('/'); // NOI18N
-        if (idx == -1) {
-            return -1;
-        } else {
-            return Integer.parseInt(s.substring(idx + 1));
+        if (codeNameRelease == null) {
+            String s = getCodeName();
+            int idx = s.lastIndexOf('/'); // NOI18N
+            if (idx == -1) {
+                codeNameRelease = -1;
+            } else {
+                codeNameRelease = Integer.parseInt(s.substring(idx + 1));
+            }
         }
+        return codeNameRelease;
     }
     
     public String getCodeNameBase() {
-        String s = getCodeName();
-        int idx = s.lastIndexOf('/'); // NOI18N
-        if (idx == -1) {
-            return s;
-        } else {
-            return s.substring(0, idx);
+        if (codeNameBase == null) {
+            String s = getCodeName();
+            int idx = s.lastIndexOf('/'); // NOI18N
+            if (idx == -1) {
+                codeNameBase = s;
+            } else {
+                codeNameBase = s.substring(0, idx);
+            }
         }
+        return codeNameBase;
     }
     
     public Object getLocalizedAttribute(String a) {
