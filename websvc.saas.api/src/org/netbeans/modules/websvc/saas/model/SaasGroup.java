@@ -39,22 +39,19 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import java.awt.Image;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author nam
  */
-public class SaasGroup {
+public class SaasGroup implements Comparable<SaasGroup> {
     public static final String PROP_GROUP_NAME = "groupName";
 
     private final Group delegate;
@@ -80,7 +77,7 @@ public class SaasGroup {
     }
 
     public List<Saas> getServices() {
-        return Collections.unmodifiableList(new ArrayList<Saas>(services.values()));
+        return new ArrayList<Saas>(services.values());
     }
 
     public Saas getChildService(String name) {
@@ -188,7 +185,7 @@ public class SaasGroup {
                 children.put(sg.getName(), sg);
             }
         }
-        return Collections.unmodifiableList(new ArrayList<SaasGroup>(children.values()));
+        return new ArrayList<SaasGroup>(children.values());
     }
 
     public SaasGroup getChildGroup(String name) {
@@ -348,4 +345,7 @@ public class SaasGroup {
         return getName();
     }
 
+    public int compareTo(SaasGroup group) {
+        return getName().compareTo(group.getName());
+    }
 }
