@@ -120,9 +120,9 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
 
         showDialog(dialogDescriptor);
 
-        if(dialogDescriptor.getValue()!=permanentlyButton) {
+        if(dialogDescriptor.getValue() == permanentlyButton) {
             return ISVNPromptUserPassword.AcceptPermanently;
-        } else if(dialogDescriptor.getValue()!=temporarilyButton) {                
+        } else if(dialogDescriptor.getValue() == temporarilyButton) {
             return ISVNPromptUserPassword.AcceptTemporary;
         } else {
             return ISVNPromptUserPassword.Reject;
