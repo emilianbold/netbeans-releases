@@ -176,8 +176,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         cbCamelCaseBehavior.setText("Enable Camel Case Navigation For Java");
         cbCamelCaseBehavior.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        lCamelCaseBehaviorExample.setText("(Example: Caret stops at J, T, N in \"JavaTypeName\" when using next/previous word acctions)");
-        lCamelCaseBehaviorExample.setEnabled(false);
+        lCamelCaseBehaviorExample.setText("Example: Caret stops at J, T, N in \"JavaTypeName\" when using next/previous word acctions");
 
         cbDocsAutoPopup.setText("Auto Popup Documentation Window");
         cbDocsAutoPopup.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -220,7 +219,8 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(cbJavadocNextToCC)
                                     .add(cbGuessMethodArgs)
-                                    .add(cbDocsAutoPopup)))))
+                                    .add(cbDocsAutoPopup)))
+                            .add(lCamelCaseBehaviorExample)))
                     .add(lCamelCaseBehavior))
                 .addContainerGap(98, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()

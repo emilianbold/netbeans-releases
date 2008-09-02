@@ -80,7 +80,10 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.fine("beforeDelete " + file);
         if (file == null) return false;
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
-        
+
+        // we don't care about ignored files
+        // IMPORTANT: false means mind checking the sharability as this might cause deadlock situations
+        if(HgUtils.isIgnored(file, false)) return false; // XXX what about other events?
         return true;
     }
 

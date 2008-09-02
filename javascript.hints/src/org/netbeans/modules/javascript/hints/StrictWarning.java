@@ -133,6 +133,9 @@ public class StrictWarning extends JsErrorRule {
 
         int astOffset = error.getStartPosition();
         int lexOffset = LexUtilities.getLexerOffset(info, astOffset);
+        if (lexOffset == -1) {
+            return;
+        }
 
         if (TRAILING_COMMA.equals(key)) { // NOI18N
             // See if we're targeting the applicable browsers
@@ -146,6 +149,9 @@ public class StrictWarning extends JsErrorRule {
 
             astOffset = (Integer) error.getParameters()[0];
             lexOffset = LexUtilities.getLexerOffset(info, astOffset);
+            if (lexOffset == -1) {
+                return;
+            }
             range = new OffsetRange(lexOffset, lexOffset + 1);
         } else if (RESERVED_KEYWORD.equals(key)) {
             String keyword = (String) error.getParameters()[1];

@@ -213,4 +213,8 @@ public class WadlSaasMethod extends SaasMethod {
         }
         return wadlMethod;
     }
+    
+    public String toString() {
+        return getDisplayName();
+    }
 }

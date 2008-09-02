@@ -722,7 +722,13 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         List < IPresentationElement > lockedSet = getLockedSelected();
 
         // Build the set needed by the visual library.  Also build the ordered 
-        // set at the same time.
+        // set at the same time.  The invert selection means to add the new
+        // selection to the old selection.  So I need to keep a clone of the 
+        // original order list of selected elements so they can be put back into
+        // the selected elements list.
+        ArrayList < IPresentationElement > oldSelection = 
+                new ArrayList < IPresentationElement >(selectedElements);
+        
         selectedElements.clear();
         
         HashSet < Object > selection = new HashSet < Object >();
@@ -733,14 +739,11 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         }
         
         selection.addAll(suggestedSelectedObjects);
-        selectedElements.addAll((Collection<? extends IPresentationElement>) suggestedSelectedObjects);
-        
-        
-        // If the selection is inverted then the locked set needs to be cleared.
         if(invertSelection == true)
         {
-            clearLockedSelected();
+            selectedElements.addAll(oldSelection);
         }
+        selectedElements.addAll((Collection<? extends IPresentationElement>) suggestedSelectedObjects);
         
         super.userSelectionSuggested(selection, invertSelection);
     }

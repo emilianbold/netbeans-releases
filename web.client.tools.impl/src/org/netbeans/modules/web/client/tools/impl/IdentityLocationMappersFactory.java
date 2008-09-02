@@ -185,9 +185,30 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
     private static final class NbJSToJSLocationMapperImpl implements NbJSToJSLocationMapper {
         private final String serverPrefix;
         private final FileObject[] documentBases;
+        private FileObject welcomeFile;
         
         public NbJSToJSLocationMapperImpl(FileObject documentBase, URI applicationContext, Map<String,Object> extendedInfo) {
             this(new FileObject[] { documentBase }, applicationContext, extendedInfo);
+            
+            String welcomePath = null;
+            if (extendedInfo != null) {
+                Object r = extendedInfo.get("welcome-file"); // NOI18N
+                if (r instanceof String) {
+                    welcomePath = (String)r;
+                }
+            }
+            
+            if (welcomePath != null) {
+                this.welcomeFile = null;
+                for (FileObject base : this.documentBases) {
+                    FileObject testObj = base.getFileObject(welcomePath);
+                    if (testObj != null) {
+                        this.welcomeFile = testObj;
+                    }
+                }
+            } else {
+                this.welcomeFile = null;
+            }
         }
         
         public NbJSToJSLocationMapperImpl(FileObject[] documentBases, URI applicationContext, Map<String,Object> extendedInfo) {
@@ -211,7 +232,23 @@ public final class IdentityLocationMappersFactory implements LocationMappersFact
 
                 URI uri = fileObjectToUri(fo);
                 if (uri != null) {
-                    return new JSURILocation(uri, nbJSFileObjectLocation.getLineNumber(), nbJSFileObjectLocation.getColumnNumber());
+                    JSURILocation result = new JSURILocation(uri, nbJSFileObjectLocation.getLineNumber(), 
+                            nbJSFileObjectLocation.getColumnNumber());
+                    
+                    if (welcomeFile != null && fo.equals(welcomeFile)) {
+                        try {
+                            URI serverURI = new URI(serverPrefix);
+                            result.addEquivalentURI(serverURI);
+                            if (!serverPrefix.endsWith("/")) {
+                                URI altServerURI = new URI(serverPrefix + "/");
+                                result.addEquivalentURI(altServerURI);
+                            }
+                        } catch (URISyntaxException ex) {
+                            Log.getLogger().log(Level.INFO, "Could not transform create URI", ex);
+                        }
+                    }
+                    
+                    return result;
                 } else {
                     return null;
                 }

@@ -337,17 +337,17 @@ public class Commands {
         @Override
         public String getCommand() { 
             StringBuilder cmd = new StringBuilder(128);
-            cmd.append("deploy?path="); // NOI18N
+            cmd.append("deploy" + QUERY_SEPARATOR + "path="); // NOI18N
             cmd.append(path);
             if(name != null && name.length() > 0) {
-                cmd.append("?name="); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "name="); // NOI18N
                 cmd.append(name);
             }
             if(contextRoot != null && contextRoot.length() > 0) {
-                cmd.append("?contextroot="); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
-            cmd.append("?force=true");
+            cmd.append(PARAM_SEPARATOR + "force=true");
             return cmd.toString();
         } 
         
@@ -369,10 +369,10 @@ public class Commands {
         @Override
         public String getCommand() { 
             StringBuilder cmd = new StringBuilder(128);
-            cmd.append("redeploy?name="); // NOI18N
+            cmd.append("redeploy" + QUERY_SEPARATOR + "name="); // NOI18N
             cmd.append(name);
             if(contextRoot != null && contextRoot.length() > 0) {
-                cmd.append("?contextroot="); // NOI18N
+                cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
             return cmd.toString();
@@ -393,7 +393,7 @@ public class Commands {
         
         @Override
         public String getCommand() { 
-            return "undeploy?name=" + name; // NOI18N
+            return "undeploy" + QUERY_SEPARATOR + "name=" + name; // NOI18N
         }
         
     }
@@ -422,9 +422,9 @@ public class Commands {
             cmd.append("delete-"); // NOI18N
             cmd.append(resourceCmdSuffix);
             if(cascade) {
-                cmd.append("?cascade=true");
+                cmd.append(QUERY_SEPARATOR + "cascade=true");
             }
-            cmd.append('?');
+            cmd.append(PARAM_SEPARATOR);
             cmd.append(cmdPropertyName);
             cmd.append('=');
             cmd.append(name);

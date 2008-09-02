@@ -780,6 +780,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 type = func.getReturnType();
             }
+        } else {
+            String fieldName = tokenSequence.token().text().toString();
+
+            for (IndexedConstant field : request.index.getAllProperties(request.result, preceedingType,
+                    fieldName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
+
+                type = field.getTypeName();
+            }
         }
 
         do {

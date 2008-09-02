@@ -362,7 +362,9 @@ public final class DerbyDatabases {
             throw new IllegalStateException("The " + DerbyOptions.DRIVER_DISP_NAME_NET + " driver was not found"); // NOI18N
         }
         DatabaseConnection dbconn = DatabaseConnection.create(drivers[0], "jdbc:derby://localhost:" + RegisterDerby.getDefault().getPort() + "/" + databaseName, user, schema, password, rememberPassword); // NOI18N
-        ConnectionManager.getDefault().addConnection(dbconn);
+        if (ConnectionManager.getDefault().getConnection(dbconn.getName()) == null) {
+            ConnectionManager.getDefault().addConnection(dbconn);
+        }
         return dbconn;
     }
 
