@@ -388,6 +388,12 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (needFileLocalVars(context, offset)) {
             resImpl.fileLocalVars = contResolver.getFileLocalVariables(context, strPrefix, match, queryScope == QueryScope.LOCAL_QUERY);
             if (isEnough(strPrefix, match, resImpl.fileLocalVars)) return true;
+            if (resImpl.fileLocalEnumerators == null) {
+                resImpl.fileLocalEnumerators = contResolver.getFileLocalEnumerators(context, strPrefix, match);
+                if (isEnough(strPrefix, match, resImpl.fileLocalEnumerators)) {
+                    return true;
+                }
+            }
         }
 
         if (needFileIncludedMacros(context, offset)) {
@@ -1369,6 +1375,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             // };
             // TODO: solve this issue in a more elegant way
             resolveTypes |= RESOLVE_GLOB_VARIABLES;
+            resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
 
             assert (context != null);
             if (CsmContextUtilities.isInFunction(context, offset)) {
@@ -1382,8 +1389,6 @@ public class CompletionResolverImpl implements CompletionResolver {
             } else {
 
                 // resolve global context as well
-                resolveTypes |= RESOLVE_GLOB_VARIABLES;
-                resolveTypes |= RESOLVE_GLOB_ENUMERATORS;
                 resolveTypes |= RESOLVE_GLOB_FUNCTIONS;
                 resolveTypes |= RESOLVE_FILE_LOCAL_FUNCTIONS;
                 resolveTypes |= RESOLVE_GLOB_NAMESPACES;
