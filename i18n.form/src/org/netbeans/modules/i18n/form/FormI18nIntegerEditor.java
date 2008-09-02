@@ -67,7 +67,6 @@ import org.netbeans.modules.i18n.java.JavaI18nSupport;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
@@ -141,17 +140,20 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
 
     /** Overrides superclass method.
      * @return null as we don't support this feature */
+    @Override
     public String[] getTags() {
         return null;
     }
 
     /** Sets as text. Overrides superclass method to be dummy -> don't throw
      * <code>IllegalArgumentException</code> . */
+    @Override
     public void setAsText(String text) {}
         
     
     /** Overrides superclass method. 
      * @return text for the current value */
+    @Override
     public String getAsText() {
         FormI18nInteger formI18nInteger = (FormI18nInteger)getValue();
         DataObject dataObject = formI18nInteger.getSupport().getResourceHolder().getResource();
@@ -183,12 +185,14 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
      * <p>
      * <b>java.text.MessageFormat.format(<identifier name>getString("<key name>"), new Object[] {<code set in Parameters and Comments panel>})</b>
      */
+    @Override
     public String getJavaInitializationString() {
         return ((FormI18nInteger)getValue()).getReplaceString();
     }
     
     /** Overrides superclass method.
      * @return <code>ResourceBundlePanel</code> fed with <code>FormI18nInteger</code> value. */
+    @Override
     public Component getCustomEditor() {
         return new CustomEditor(new FormI18nInteger((FormI18nInteger)getValue()), getProject(), sourceDataObject.getPrimaryFile());
     }
@@ -200,12 +204,14 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
 
     /** Overrides superclass method. 
      * @return true since we support this feature */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
 
     /** Overrides superclass method.
      * @return <code>formI18nInteger</code> */
+    @Override
     public Object getValue() {
         if(formI18nInteger == null) {
             formI18nInteger = createFormI18nInteger();
@@ -219,6 +225,7 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
 
     /** Overrides superclass method.
      * @param value sets the new value for this editor */
+    @Override
     public void setValue(Object object) {
         if(object instanceof FormI18nInteger)
             formI18nInteger = (FormI18nInteger)object;
