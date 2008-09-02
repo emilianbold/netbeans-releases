@@ -39,3 +39,10 @@ void fooWW() {
     ClassOfUnnamedTypedef obj;
     obj.field;
 }
+
+enum auto_event { EVENT_BUFADD };
+typedef enum auto_event event_T;
+static struct event_name  {
+    char *name;
+    event_T event;
+} event_names[] = { {"BufAdd", EVENT_BUFADD} };

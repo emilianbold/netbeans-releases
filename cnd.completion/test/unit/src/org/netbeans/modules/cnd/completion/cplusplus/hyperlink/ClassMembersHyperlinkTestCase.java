@@ -50,6 +50,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ138902() throws Exception {
+        // IZ#138902: No completion and hyperl ink  to enumerator in structure init
+        performTest("useenumerators.cc", 48, 35, "useenumerators.cc", 43, 19);
+    }
+    
     public void testIZ145828() throws Exception {
         // IZ#145828: & breaks completion in some expressions
         performTest("main.cc", 91, 25, "main.cc", 83, 5);
