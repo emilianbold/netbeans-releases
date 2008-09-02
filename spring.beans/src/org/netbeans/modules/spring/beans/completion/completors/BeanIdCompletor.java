@@ -127,6 +127,9 @@ public final class BeanIdCompletor extends Completor {
         final Set<String> names = new HashSet<String>();
 
         SpringConfigModel model = SpringConfigModel.forFileObject(fileObject);
+        if (model == null) {
+            return (Collections.EMPTY_SET);
+        }
         model.runReadAction(new Action<SpringBeans>() {
 
             public void run(SpringBeans sb) {
