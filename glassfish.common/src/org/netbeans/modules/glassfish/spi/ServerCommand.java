@@ -55,6 +55,9 @@ import java.util.logging.Logger;
  */
 public abstract class ServerCommand {
 
+    public static final char QUERY_SEPARATOR = '?'; // NOI18N
+    public static final char PARAM_SEPARATOR = '&'; // NOI18N
+
     public ServerCommand() {
     }
     
@@ -198,7 +201,7 @@ public abstract class ServerCommand {
 
         @Override
         public String getCommand() {
-            return "get?pattern=" + property;
+            return "get" + QUERY_SEPARATOR + "pattern=" + property;
         }
 
         @Override
@@ -245,7 +248,7 @@ public abstract class ServerCommand {
 
         @Override
         public String getCommand() {
-            return "set?target=" + property + "?value=" + value;
+            return "set" + QUERY_SEPARATOR + "target=" + property + PARAM_SEPARATOR + "value=" + value;
         }
 
         @Override
@@ -258,8 +261,6 @@ public abstract class ServerCommand {
             if(info == null) {
                 return false;
             }
-
-            // !PW FIXME process manifest result
 
             return true;
         }
