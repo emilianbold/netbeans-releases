@@ -50,6 +50,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ145617() throws Exception {
+        // IZ#145617: IDE highlights code with 'sizeof' in array as wrong
+        performTest("main.cc", 79, 70, "main.cc", 59, 5);
+    }
+    
     public void testIZ145230() throws Exception {
         // IZ#145230:Various C++ expressions don't resolve
         // usage of enumerators

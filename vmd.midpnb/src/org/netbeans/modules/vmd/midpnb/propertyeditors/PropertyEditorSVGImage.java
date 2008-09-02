@@ -75,7 +75,6 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
     private PropertyEditorSVGImage() {
         super(NbBundle.getMessage(PropertyEditorSVGImage.class, "LBL_SVGIMAGE_UCLABEL")); // NOI18N;
         initComponents();
-
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
