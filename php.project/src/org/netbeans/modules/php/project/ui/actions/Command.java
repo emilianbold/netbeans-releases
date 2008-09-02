@@ -54,6 +54,7 @@ import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -399,7 +400,7 @@ public abstract class Command {
         }
 
         if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
-            uploadCommand.uploadFiles(new FileObject[] {getProject().getSourcesDirectory()}, preselectedFiles);
+            uploadCommand.uploadFiles(new FileObject[] {ProjectPropertiesSupport.getSourcesDirectory(getProject())}, preselectedFiles);
         }
     }
 

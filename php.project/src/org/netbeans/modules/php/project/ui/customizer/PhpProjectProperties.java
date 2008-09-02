@@ -56,6 +56,7 @@ import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.connections.RemoteSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -351,7 +352,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         RemoteSettings.resetLastUpload(project);
 
         // UI log
-        logUsage(helper.getProjectDirectory(), project.getSourcesDirectory(), getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
+        logUsage(helper.getProjectDirectory(), ProjectPropertiesSupport.getSourcesDirectory(project), getActiveRunAsType(), getNumOfRunConfigs(), Boolean.valueOf(getCopySrcFiles()));
     }
 
     private String getActiveRunAsType() {

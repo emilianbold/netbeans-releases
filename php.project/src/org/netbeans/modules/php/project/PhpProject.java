@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.project;
 
+import org.netbeans.modules.php.project.util.CopySupport;
 import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -57,7 +58,6 @@ import org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry;
 import org.netbeans.modules.php.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -147,7 +147,7 @@ public class PhpProject implements Project, AntProjectListener {
         return getHelper().getProjectDirectory();
     }
 
-    public synchronized FileObject getSourcesDirectory() {
+    synchronized FileObject getSourcesDirectory() {
         if (sourcesDirectory == null) {
             sourcesDirectory = resolveSourcesDirectory();
             assert sourcesDirectory != null : "Sources directory cannot be null";
@@ -205,23 +205,6 @@ public class PhpProject implements Project, AntProjectListener {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
-
-    public FileObject getWebRootDirectory() {
-        String webRootPath = getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT);
-        FileObject webRoot = getSourcesDirectory();
-        if (webRootPath != null && webRootPath.trim().length() > 0 && !webRootPath.equals(".")) {//NOI18N
-            webRoot = sourcesDirectory.getFileObject(webRootPath);
-        }
-        return webRoot;
-    }
-
-    public PhpInterpreter getPhpInterpreter() {
-        String interpreter = getEvaluator().getProperty(PhpProjectProperties.INTERPRETER);
-        if (interpreter != null && interpreter.length() > 0) {
-            return new PhpInterpreter(interpreter);
-        }
-        return new PhpInterpreter(PhpOptions.getInstance().getPhpInterpreter());
     }
 
     public void configurationXmlChanged(AntProjectEvent event) {

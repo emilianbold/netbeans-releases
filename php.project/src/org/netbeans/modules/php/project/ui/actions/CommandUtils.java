@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -67,14 +68,14 @@ public class CommandUtils {
      * @return The file objects in the sources folder
      */
     public FileObject[] phpFilesForContext(Lookup context, boolean runAsScript,String webRoot) {
-        FileObject dir = runAsScript ? getProject().getSourcesDirectory() :
-            getProject().getWebRootDirectory();
+        FileObject dir = runAsScript ? ProjectPropertiesSupport.getSourcesDirectory(getProject()) :
+            ProjectPropertiesSupport.getWebRootDirectory(getProject());
         return filter(filesForContext(context), dir);
     }
 
     public FileObject[] phpFilesForSelectedNodes(boolean runAsScript, String webRoot) {
-        FileObject dir = runAsScript ? getProject().getSourcesDirectory() :
-            getProject().getWebRootDirectory();                
+        FileObject dir = runAsScript ? ProjectPropertiesSupport.getSourcesDirectory(getProject()) :
+            ProjectPropertiesSupport.getWebRootDirectory(getProject());
         return filter(Arrays.asList(filesForSelectedNodes()), dir);
     }
 
@@ -108,11 +109,11 @@ public class CommandUtils {
     }
 
     public String getRelativeSrcPath(FileObject fileObject) {
-        return getRelativePhpPath(getProject().getSourcesDirectory(), fileObject);
+        return getRelativePhpPath(ProjectPropertiesSupport.getSourcesDirectory(getProject()), fileObject);
     }
 
     public String getRelativeWebRootPath(FileObject fileObject, String webRoot) {
-        return getRelativePhpPath(getProject().getWebRootDirectory(), fileObject);
+        return getRelativePhpPath(ProjectPropertiesSupport.getWebRootDirectory(getProject()), fileObject);
     }
 
     public String getRelativePhpPath(FileObject folder, FileObject fileObject) {

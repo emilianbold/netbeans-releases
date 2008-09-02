@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.environment.PhpEnvironment.DocumentRoot;
 import org.netbeans.modules.php.project.ui.CopyFilesVisual;
@@ -164,7 +165,7 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider, 
         projectFolderTextField.setText(projectPath);
 
         // sources
-        sourceFolderTextField.setText(FileUtil.getFileDisplayName(properties.getProject().getSourcesDirectory()));
+        sourceFolderTextField.setText(FileUtil.getFileDisplayName(ProjectPropertiesSupport.getSourcesDirectory(properties.getProject())));
     }
 
     private boolean initCopyFiles() {

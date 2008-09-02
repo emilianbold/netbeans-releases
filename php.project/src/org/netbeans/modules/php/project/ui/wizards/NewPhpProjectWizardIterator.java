@@ -271,15 +271,17 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         data.appendChild(nameEl);
         helper.putPrimaryConfigurationData(data, true);
 
-        EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
-        configureSources(helper, properties);
-        configureIndexFile(properties);
-        configureEncoding(properties);
-        configureIncludePath(properties);
-        configureRunConfiguration(properties);
+        configureSources(helper, projectProperties, privateProperties);
+        configureIndexFile(projectProperties, privateProperties);
+        configureEncoding(projectProperties, privateProperties);
+        configureIncludePath(projectProperties, privateProperties);
+        configureRunConfiguration(projectProperties, privateProperties);
 
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
 
         Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         ProjectManager.getDefault().saveProject(project);
@@ -292,14 +294,14 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
     }
 
-    private void configureSources(AntProjectHelper helper, EditableProperties properties) {
+    private void configureSources(AntProjectHelper helper, EditableProperties projetProperties, EditableProperties privateProperties) {
         File srcDir = getSources();
         File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
         assert srcPath != null : String.format("Sources must be relativized: [project: %s, sources: %s]", projectDirectory, srcDir);
-        properties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
-        properties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
-        properties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
+        projetProperties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
+        projetProperties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
+        projetProperties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
     }
 
     private String getCopySrcTarget() {
@@ -311,31 +313,31 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return copyTargetString;
     }
 
-    private void configureIndexFile(EditableProperties properties) {
+    private void configureIndexFile(EditableProperties projectProperties, EditableProperties privateProperties) {
         String indexFile = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
-        properties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
+        projectProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
     }
 
-    private void configureEncoding(EditableProperties properties) {
+    private void configureEncoding(EditableProperties projectPoperties, EditableProperties privateProperties) {
         Charset charset = (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING);
-        properties.setProperty(PhpProjectProperties.SOURCE_ENCODING, charset.name());
+        projectPoperties.setProperty(PhpProjectProperties.SOURCE_ENCODING, charset.name());
         // #136917
         FileEncodingQuery.setDefaultEncoding(charset);
     }
 
-    private void configureIncludePath(EditableProperties properties) {
-        properties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
+    private void configureIncludePath(EditableProperties projectProperties, EditableProperties privateProperties) {
+        projectProperties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
     }
 
-    private void configureRunConfiguration(EditableProperties properties) {
+    private void configureRunConfiguration(EditableProperties projectProperties, EditableProperties privateProperties) {
         PhpProjectProperties.RunAsType runAs = getRunAsType();
-        properties.put(PhpProjectProperties.RUN_AS, runAs.name());
+        projectProperties.put(PhpProjectProperties.RUN_AS, runAs.name());
         switch (runAs) {
             case LOCAL:
-                configureRunAsLocalWeb(properties);
+                configureRunAsLocalWeb(projectProperties, privateProperties);
                 break;
             case REMOTE:
-                configureRunAsRemoteWeb(properties);
+                configureRunAsRemoteWeb(projectProperties, privateProperties);
                 break;
             case SCRIPT:
                 // nothing to store
@@ -350,22 +352,22 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
     }
 
-    private void configureRunAsLocalWeb(EditableProperties properties) {
+    private void configureRunAsLocalWeb(EditableProperties projectProperties, EditableProperties privateProperties) {
         String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
 
-        properties.put(PhpProjectProperties.URL, url);
+        projectProperties.put(PhpProjectProperties.URL, url);
     }
 
-    private void configureRunAsRemoteWeb(EditableProperties properties) {
+    private void configureRunAsRemoteWeb(EditableProperties projectProperties, EditableProperties privateProperties) {
         String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
         RemoteConfiguration remoteConfiguration = (RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION);
         String remoteDirectory = (String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY);
         PhpProjectProperties.UploadFiles uploadFiles = (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD);
 
-        properties.put(PhpProjectProperties.URL, url);
-        properties.put(PhpProjectProperties.REMOTE_CONNECTION, remoteConfiguration.getName());
-        properties.put(PhpProjectProperties.REMOTE_DIRECTORY, remoteDirectory);
-        properties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
+        projectProperties.put(PhpProjectProperties.URL, url);
+        projectProperties.put(PhpProjectProperties.REMOTE_CONNECTION, remoteConfiguration.getName());
+        projectProperties.put(PhpProjectProperties.REMOTE_DIRECTORY, remoteDirectory);
+        projectProperties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
     }
 
     private FileObject createSourceRoot() throws IOException {

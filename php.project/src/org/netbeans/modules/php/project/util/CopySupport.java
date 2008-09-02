@@ -36,8 +36,9 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.project.util;
 
+import org.netbeans.modules.php.project.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -74,12 +75,12 @@ import org.openide.util.WeakListeners;
 public abstract class CopySupport {    
     private static boolean showMessage = true;
 
-    static CopySupport getInstance() {
+    public static CopySupport getInstance() {
 	return new CopyImpl();
     }
 
-    abstract void projectOpened(PhpProject project);
-    abstract void projectClosed(PhpProject project);
+    public abstract void projectOpened(PhpProject project);
+    public abstract void projectClosed(PhpProject project);
     public abstract void waitFinished();
 
     private static void showProblem(Exception ex) {
@@ -220,14 +221,14 @@ public abstract class CopySupport {
 	}
 
 	@Override
-	protected void projectOpened(PhpProject project) {
+	public void projectOpened(PhpProject project) {
 	    init(project);
 	    isProjectOpened = true;
 	    start(false);
 	}
 
 	@Override
-	protected void projectClosed(PhpProject project) {
+	public void projectClosed(PhpProject project) {
 	    //init(project);
 	    isProjectOpened = false;
 	    stop();

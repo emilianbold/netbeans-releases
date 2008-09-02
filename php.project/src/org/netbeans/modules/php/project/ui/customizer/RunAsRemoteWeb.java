@@ -61,6 +61,7 @@ import javax.swing.plaf.UIResource;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -227,7 +228,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
 
-        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(project.getWebRootDirectory()), indexFile, args);
+        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(ProjectPropertiesSupport.getWebRootDirectory(project)), indexFile, args);
         if (err != null) {
             validateCategory(err);
             return;
