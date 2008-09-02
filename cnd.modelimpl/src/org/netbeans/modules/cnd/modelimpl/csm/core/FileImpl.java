@@ -277,8 +277,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
     
-    @Deprecated
-public APTPreprocHandler getPreprocHandler() {
+    //@Deprecated
+    public APTPreprocHandler getPreprocHandler() {
         return getProjectImpl(true)==null ? null : getProjectImpl(true).getPreprocHandler(fileBuffer.getFile());
     }
     

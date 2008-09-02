@@ -152,13 +152,13 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return impl;
     }
 
-    @Deprecated
+    //@Deprecated
     public void putPreprocState(File file, APTPreprocHandler.State state) {
         MyFile f = getMyFile(file, true);
         putPreprocState(f, state);
     }
 
-    @Deprecated
+    //@Deprecated
     public void putPreprocState(Entry entry, APTPreprocHandler.State state) {
         if (entry == null) {
             return;
@@ -186,7 +186,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 	}
     }
 
-    @Deprecated
+    //@Deprecated
     public void invalidatePreprocState(File file) {
         MyFile f = getMyFile(file, false);
         if (f == null){
@@ -201,7 +201,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
     }
     
-    @Deprecated
+    //@Deprecated
     public APTPreprocHandler.State getPreprocState(File file) {
         MyFile f = getMyFile(file, false);
         if (f == null){
@@ -522,10 +522,10 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             
     public static interface Entry {
 
-        @Deprecated
+        //@Deprecated
         APTPreprocHandler.State getState();
         
-        @Deprecated
+        //@Deprecated
         FilePreprocessorConditionState getPCState();
 
         /** Gets the states collection */
@@ -643,12 +643,12 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             return (data instanceof Collection) ? ((Collection) data).size() : 1;
         }
 
-        @Deprecated
+        //@Deprecated
         public final synchronized FilePreprocessorConditionState getPCState() {
             return getStates().iterator().next().pcState;
         }
 
-        @Deprecated
+        //@Deprecated
         public final synchronized APTPreprocHandler.State getState() {
             return getStates().iterator().next().state;
         }
@@ -658,7 +658,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
 
         //package
-        @Deprecated
+        //@Deprecated
         final synchronized void setState(APTPreprocHandler.State state) {
             incrementModCount();
             //assert size() <= 1 : "this method shold never be called for an entry with mltiple states"; //NOI18N

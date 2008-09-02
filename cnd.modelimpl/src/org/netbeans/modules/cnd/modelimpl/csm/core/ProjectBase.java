@@ -900,7 +900,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return map;
     }
 
-    @Deprecated
+    //@Deprecated
     public final APTPreprocHandler getPreprocHandler(File file) {
         APTPreprocHandler preprocHandler = createEmptyPreprocHandler(file);
         APTPreprocHandler.State state = getFileContainer().getPreprocState(file);
@@ -917,7 +917,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 	return preprocHandler;
     }
 
-    @Deprecated
+    //@Deprecated
     public final APTPreprocHandler.State getPreprocState(FileImpl fileImpl) {
         APTPreprocHandler.State state = null;
         FileContainer fc = getFileContainer();
@@ -952,8 +952,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * This method must be called only under stateLock,
      * to get state lock use
      * Object stateLock = getFileContainer().getLock(file);
-     * @deprecated
      */
+    //@Deprecated
     private void putPreprocState(FileContainer.Entry entry, APTPreprocHandler.State state) {
 	if( state != null && ! state.isCleaned() ) {
 	    state = APTHandlersSupport.createCleanPreprocState(state);

@@ -108,12 +108,12 @@ public final class ParserQueue {
             return file;
         }
 
-        @Deprecated
+        //@Deprecated
         public APTPreprocHandler.State getPreprocState() {
             return getPreprocStates().iterator().next(); // never empty!
         }
 
-        @Deprecated
+        //@Deprecated
         public Collection<APTPreprocHandler.State> getPreprocStates() {
             Object state = ppState;
             if (state instanceof APTPreprocHandler.State || state == null) {
@@ -304,7 +304,6 @@ public final class ParserQueue {
     /**
      * If file isn't yet enqueued, places it at the beginning of the queue,
      * otherwise moves it there
-     * @deprecated use the one with clearPrevState parameter
      */
     public void add(FileImpl file, APTPreprocHandler.State ppState, Position position) {
         add(file, Collections.singleton(ppState), position, true);
