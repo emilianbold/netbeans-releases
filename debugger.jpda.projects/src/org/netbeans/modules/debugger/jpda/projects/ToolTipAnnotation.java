@@ -113,13 +113,15 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor ();
         if (ep == null) return ;
         int offset;
+        boolean[] isMethodPtr = new boolean[] { false };
         String expression = getIdentifier (
             doc, 
             ep,
             offset = NbDocument.findLineOffset (
                 doc,
                 lp.getLine ().getLineNumber ()
-            ) + lp.getColumn ()
+            ) + lp.getColumn (),
+            isMethodPtr
         );
         if (expression == null) return ;
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
@@ -145,6 +147,9 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 }
             }
             if (v == null) {
+                if (isMethodPtr[0]) {
+                    return ; // We do not evaluate methods
+                }
                 v = d.evaluate (expression);
             }
             String type = v.getType ();
@@ -194,7 +199,8 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
     private static String getIdentifier (
         StyledDocument doc, 
         JEditorPane ep, 
-        int offset
+        int offset,
+        boolean[] isMethodPtr
     ) {
         String t = null;
         if ( (ep.getSelectionStart () <= offset) &&
@@ -235,7 +241,17 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             }
 
             if (identStart == identEnd) return null;
-            return t.substring (identStart, identEnd);
+            String ident = t.substring (identStart, identEnd);
+            while (identEnd < lineLen &&
+                   Character.isWhitespace(t.charAt(identEnd))
+            ) {
+                identEnd++;
+            }
+            if (identEnd < lineLen && t.charAt(identEnd) == '(') {
+                // We're at a method call
+                isMethodPtr[0] = true;
+            }
+            return ident;
         } catch (BadLocationException e) {
             return null;
         }
