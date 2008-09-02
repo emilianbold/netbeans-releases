@@ -674,6 +674,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             JTree tree = treeView.getTree();
             int row = tree.getRowForPath(path);
             Rectangle rect = tree.getRowBounds(row);
+            if (rect == null) return ;
             JViewport viewport = mainScrollPane.getViewport();
             ((JComponent)viewport.getView()).scrollRectToVisible(rect);
         }
