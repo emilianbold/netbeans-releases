@@ -429,7 +429,6 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
                 }
 
             }
-            
             perElement.postSaveValue(component.get());
 
         }
