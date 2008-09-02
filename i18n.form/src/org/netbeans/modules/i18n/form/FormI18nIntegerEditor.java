@@ -155,22 +155,22 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
      * @return text for the current value */
     @Override
     public String getAsText() {
-        FormI18nInteger formI18nInteger = (FormI18nInteger)getValue();
-        DataObject dataObject = formI18nInteger.getSupport().getResourceHolder().getResource();
+        FormI18nInteger value = (FormI18nInteger)getValue();
+        DataObject dataObject = value.getSupport().getResourceHolder().getResource();
         
-        if (dataObject == null || formI18nInteger.getKey() == null) {
+        if (dataObject == null || value.getKey() == null) {
             return bundle.getString("TXT_InvalidValue");
         } else {
 
             String resourceName = org.netbeans.modules.i18n.Util.
-                getResourceName(formI18nInteger.getSupport().getSourceDataObject().getPrimaryFile(),
+                getResourceName(value.getSupport().getSourceDataObject().getPrimaryFile(),
                                 dataObject.getPrimaryFile(),
                                 '/', false);// NOI18N
 
             return MessageFormat.format(
                 bundle.getString("TXT_Key"),
                 new Object[] {
-                    formI18nInteger.getKey(),
+                    value.getKey(),
                     resourceName, // NOI18N
                 }
             );
@@ -283,7 +283,7 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
             throw new IOException ();
         }
         
-        FormI18nInteger formI18nInteger = createFormI18nInteger();
+        FormI18nInteger value = createFormI18nInteger();
 
         NamedNodeMap namedNodes = domNode.getAttributes ();
         
@@ -308,8 +308,8 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
                     if(fileObject != null) {
                         try {
                             DataObject dataObject = DataObject.find(fileObject);
-                            if(dataObject.getClass().equals(formI18nInteger.getSupport().getResourceHolder().getResourceClasses()[0])) // PENDING
-                                formI18nInteger.getSupport().getResourceHolder().setResource(dataObject);
+                            if(dataObject.getClass().equals(value.getSupport().getResourceHolder().getResourceClasses()[0])) // PENDING
+                                value.getSupport().getResourceHolder().setResource(dataObject);
                         } 
                         catch (IOException e) {
                         }
@@ -319,22 +319,22 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
 
             // Set the key property.
             if(key != null && key.length() > 0) {
-                formI18nInteger.setKey(key);
+                value.setKey(key);
                 
                 // Set value and comment.
-                formI18nInteger.setValue(formI18nInteger.getSupport().getResourceHolder().getValueForKey(key));
-                formI18nInteger.setComment(formI18nInteger.getSupport().getResourceHolder().getCommentForKey(key));
+                value.setValue(value.getSupport().getResourceHolder().getValueForKey(key));
+                value.setComment(value.getSupport().getResourceHolder().getCommentForKey(key));
             }
 
             // Try to get identifier value.
-            ((JavaI18nSupport)formI18nInteger.getSupport()).createIdentifier();            
+            ((JavaI18nSupport)value.getSupport()).createIdentifier();
             
             node = namedNodes.getNamedItem(ATTR_IDENTIFIER);
             if(node != null) {
                 String identifier = (node == null) ? null : node.getNodeValue();
                 
                 if(identifier != null)
-                    ((JavaI18nSupport)formI18nInteger.getSupport()).setIdentifier(identifier);
+                    ((JavaI18nSupport)value.getSupport()).setIdentifier(identifier);
             }
             
             // Try to get init format string value.
@@ -360,11 +360,11 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
                     
                     String newReplaceFormat = MapFormat.format(replaceFormat, map);
                     
-                    formI18nInteger.setReplaceFormat(newReplaceFormat);
+                    value.setReplaceFormat(newReplaceFormat);
                 }
             } else {
                 // Read was not succesful (old form or error) -> set old form replace format.
-                formI18nInteger.setReplaceFormat((String)I18nUtil.getDefaultReplaceFormat(false));
+                value.setReplaceFormat((String)I18nUtil.getDefaultReplaceFormat(false));
             }
         } catch(NullPointerException npe) {
             throw new IOException ();
@@ -419,11 +419,11 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
                     parameters[i] = ""; // NOI18N
 
             // Set the parameters.
-            formI18nInteger.setArguments(parameters);
+            value.setArguments(parameters);
         }
 
         // Set the value for this editor.
-        setValue(formI18nInteger);
+        setValue(value);
     }
 
     /**
