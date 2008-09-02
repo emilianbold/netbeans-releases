@@ -634,7 +634,16 @@ public class Utilities {
                 UpdateUnit u = DependencyAggregator.getRequested (dep);
                 boolean matched = false;
                 if (u == null) {
-                    brokenDependencies.add (dep);
+                    // last chance
+                    for (ModuleInfo m : availableInfos) {
+                        if (DependencyChecker.checkDependencyModule (dep, m)) {
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (! matched) {
+                        brokenDependencies.add (dep);
+                    }
                 } else {
                     if (u.getInstalled () != null) {
                         UpdateElementImpl reqElImpl = Trampoline.API.impl (u.getInstalled ());
