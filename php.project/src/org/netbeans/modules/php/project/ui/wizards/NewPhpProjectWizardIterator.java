@@ -296,11 +296,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         File srcDir = getSources();
         File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
-        // # 132319
-        if (srcPath == null || srcPath.startsWith("../")) { // NOI18N
-            // relative path, change to absolute
-            srcPath = srcDir.getAbsolutePath();
-        }
+        assert srcPath != null : String.format("Sources must be relativized: [project: %s, sources: %s]", projectDirectory, srcDir);
         properties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
         properties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
         properties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());

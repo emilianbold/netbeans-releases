@@ -77,7 +77,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
@@ -96,10 +95,12 @@ public class PhpProject implements Project, AntProjectListener {
     private static final Icon PROJECT_ICON = new ImageIcon(
             ImageUtilities.loadImage("org/netbeans/modules/php/project/ui/resources/phpProject.png")); // NOI18N
 
-    private final AntProjectHelper helper;
+    final AntProjectHelper helper;
     private final ReferenceHelper refHelper;
     private final PropertyEvaluator eval;
+    // @GuardedBy(this)
     private FileObject sourcesDirectory;
+    volatile boolean temporarySourcesDirectory = false;
     private Lookup lookup;
 
     PhpProject(AntProjectHelper helper) {
@@ -146,7 +147,7 @@ public class PhpProject implements Project, AntProjectListener {
         return getHelper().getProjectDirectory();
     }
 
-    public FileObject getSourcesDirectory() {
+    public synchronized FileObject getSourcesDirectory() {
         if (sourcesDirectory == null) {
             sourcesDirectory = resolveSourcesDirectory();
             assert sourcesDirectory != null : "Sources directory cannot be null";
@@ -163,8 +164,10 @@ public class PhpProject implements Project, AntProjectListener {
             return sourceObjects[0];
         }
         // #144371 - source folder probably deleted => so:
+        // #145477 (project sharability):
         //  1. try to restore it - if it fails, then
-        //  2. set it to the project directory (and save it)
+        //  2. set it to the project directory in *PRIVATE* properties (and save it)
+        //      => warn user about impossibility of creating src dir and *remove it in project closed hook*!!!
         String projectName = getName();
         File srcDir = FileUtil.normalizeFile(new File(helper.resolvePath(eval.getProperty(PhpProjectProperties.SRC_DIR))));
         if (srcDir.mkdirs()) {
@@ -173,7 +176,7 @@ public class PhpProject implements Project, AntProjectListener {
             return FileUtil.toFileObject(srcDir);
         }
         // save new sources directory
-        setSourcesToProjectDirectory();
+        setTemporarySourcesToProjectDirectory();
         informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderSetToProjectDirectory", srcDir.getAbsolutePath()));
         return helper.getProjectDirectory();
     }
@@ -188,19 +191,17 @@ public class PhpProject implements Project, AntProjectListener {
                 NotifyDescriptor.OK_OPTION));
     }
 
-    private void setSourcesToProjectDirectory() {
+    private void setTemporarySourcesToProjectDirectory() {
         try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                public Void run() throws IOException {
-                    EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    projectProperties.setProperty(PhpProjectProperties.SRC_DIR, "."); // NOI18N
-                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-                    return null;
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    privateProperties.setProperty(PhpProjectProperties.SRC_DIR, "."); // NOI18N
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+                    temporarySourcesDirectory = true;
                 }
             });
             ProjectManager.getDefault().saveProject(this);
-        } catch (MutexException e) {
-            Exceptions.printStackTrace((IOException) e.getException());
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -364,6 +365,9 @@ public class PhpProject implements Project, AntProjectListener {
 
     private final class PhpOpenedHook extends ProjectOpenedHook {
         protected void projectOpened() {
+            // #139159 - we need to hold sources FO to prevent gc
+            getSourcesDirectory();
+
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
@@ -372,9 +376,6 @@ public class PhpProject implements Project, AntProjectListener {
             if (copySupport != null) {
                 copySupport.projectOpened(PhpProject.this);
             }
-
-            // #139159 - we need to hold sources FO to prevent gc
-            getSourcesDirectory();
         }
 
         protected void projectClosed() {
@@ -385,6 +386,16 @@ public class PhpProject implements Project, AntProjectListener {
             final CopySupport copySupport = getCopySupport();
             if (copySupport != null) {
                 copySupport.projectClosed(PhpProject.this);
+            }
+
+            if (temporarySourcesDirectory) {
+                EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                privateProperties.remove(PhpProjectProperties.SRC_DIR);
+                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
+                temporarySourcesDirectory = false;
+                synchronized (PhpProject.this) {
+                    sourcesDirectory = null;
+                }
             }
             try {
                 ProjectManager.getDefault().saveProject(PhpProject.this);

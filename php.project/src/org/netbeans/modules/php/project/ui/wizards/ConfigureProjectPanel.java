@@ -54,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -407,10 +408,16 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             }
         }
 
-        // if project folder not used => validate sources as project folder
-        if (!configureProjectPanelVisual.isProjectFolderUsed()
-                && isProjectAlready(sources)) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesAlreadyProject");
+        if (configureProjectPanelVisual.isProjectFolderUsed()) {
+            // project folder used => validate relativity of sources and project folder
+            if (PropertyUtils.relativizeFile(FileUtil.normalizeFile(getProjectFolderFile()), sources) == null) {
+                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesAndProjectCannotBeRelativized");
+            }
+        } else {
+            // project folder not used => validate sources as project folder
+            if (isProjectAlready(sources)) {
+                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesAlreadyProject");
+            }
         }
 
         err = validateSourcesAndCopyTarget();
