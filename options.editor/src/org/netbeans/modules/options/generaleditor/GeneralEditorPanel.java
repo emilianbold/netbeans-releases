@@ -176,8 +176,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         cbCamelCaseBehavior.setText("Enable Camel Case Navigation For Java");
         cbCamelCaseBehavior.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        lCamelCaseBehaviorExample.setText("(Example: Caret stops at J, T, N in \"JavaTypeName\" when using next/previous word acctions)");
-        lCamelCaseBehaviorExample.setEnabled(false);
+        lCamelCaseBehaviorExample.setText("Example: Caret stops at J, T, N in \"JavaTypeName\" when using next/previous word acctions");
 
         cbDocsAutoPopup.setText("Auto Popup Documentation Window");
         cbDocsAutoPopup.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -220,14 +219,23 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(cbJavadocNextToCC)
                                     .add(cbGuessMethodArgs)
-                                    .add(cbDocsAutoPopup)))))
+                                    .add(cbDocsAutoPopup)))
+                            .add(lCamelCaseBehaviorExample)))
                     .add(lCamelCaseBehavior))
                 .addContainerGap(98, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
+<<<<<<< /home/hanz/Hanz/Dev/trunk/options.editor/src/org/netbeans/modules/options/generaleditor/GeneralEditorPanel.java.orig.20830464
                 .add(138, 138, 138)
                 .add(lCamelCaseBehaviorExample)
                 .addContainerGap(196, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
+||||||| /tmp/GeneralEditorPanel.java~base.lfjVaW
+                .add(138, 138, 138)
+                .add(lCamelCaseBehaviorExample)
+                .addContainerGap(177, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+=======
+>>>>>>> /tmp/GeneralEditorPanel.java~other.cyRg4x
                 .add(116, 116, 116)
                 .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 799, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
