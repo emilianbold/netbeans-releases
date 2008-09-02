@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -24,7 +25,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,51 +39,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.sun.ide.dm;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
-import org.netbeans.modules.j2ee.sun.api.restricted.SunMessageDestination;
+// </editor-fold>
 
 /**
- *
- * @author Nitya Doraisamy
+ * DO NOT USE THESE CLASSES, unless you are going to use them inside j2ee.sun.appsrv81.
  */
-public class SunMessageDestinationDeployment implements MessageDestinationDeployment {
-
-    private DeploymentManager dm;
-    private SunDeploymentManager sunDm;
-    
-    public SunMessageDestinationDeployment(DeploymentManager dm) {
-        this.dm = dm;
-        this.sunDm = (SunDeploymentManager)this.dm;
-    }
-
-    public Set getMessageDestinations() throws ConfigurationException {
-        return this.sunDm.getResourceConfigurator().getServerDestinations();
-    }
-
-    public void deployMessageDestinations(Set<MessageDestination> destinations) throws ConfigurationException {
-        Object[] dsources = (Object[])destinations.toArray();
-        List dirs = new ArrayList();
-        for(int i=0; i<dsources.length; i++){
-            SunMessageDestination dest = (SunMessageDestination)dsources[i];
-            dirs.add(dest.getResourceDir());
-        }
-        
-        if(! dirs.isEmpty()){
-            File[] resourceDirs = (File[])dirs.toArray(new File[dirs.size()]);
-            if(resourceDirs != null){
-                Utils.registerResources(resourceDirs, this.sunDm.getManagement());
-            }
-        }
-    }
-
-}
+package org.netbeans.modules.j2ee.sun.api.restricted;
