@@ -59,6 +59,7 @@ public class ParserThreadManager  {
     private RequestProcessor processor;
     private Set<Wrapper> wrappers = new CopyOnWriteArraySet<Wrapper>();
     private int currThread = 0;
+    private boolean started = false;
     
     private class Wrapper implements Runnable {
         
@@ -105,8 +106,12 @@ public class ParserThreadManager  {
     }
             
     // package-local
-    void startup(boolean standalone) {
-        
+    synchronized void startup(boolean standalone) {
+
+        if (started) {
+            shutdown();
+        }
+
 	ParserQueue.instance().startup();
 	
 //        int threadCount = Integer.getInteger("cnd.modelimpl.parser.wrappers",
@@ -131,11 +136,12 @@ public class ParserThreadManager  {
                 processor.post(r);
             }
         }
+        started = true;
     }
 
     
     // package-local
-    void shutdown() {
+    synchronized void shutdown() {
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== ParserThreadManager.shutdown");
             
         for (Wrapper wrapper : wrappers) {
@@ -143,6 +149,8 @@ public class ParserThreadManager  {
         }
         
 	ParserQueue.instance().shutdown();
+        currThread = 0;
+        started = false;
     }
     
     public boolean isParserThread() {

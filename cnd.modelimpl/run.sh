@@ -127,6 +127,11 @@ do
                 echo "using in-memory (hard refs) repository"
 		PARAMS="${PARAMS} -J-Dcnd.repository.hardrefs=true"
 		;;
+	--threads)
+                shift
+                echo "using $1 parser threads"
+                DEFS="${DEFS} -J-Dcnd.modelimpl.parser.threads=$1"
+		;;
 	*)
 		PARAMS="${PARAMS} $1"
 		;;
