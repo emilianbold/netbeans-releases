@@ -143,17 +143,20 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
 
     /** Overrides superclass method.
      * @return null as we don't support this feature */
+    @Override
     public String[] getTags() {
         return null;
     }
 
     /** Sets as text. Overrides superclass method to be dummy -> don't throw
      * <code>IllegalArgumentException</code> . */
+    @Override
     public void setAsText(String text) {}
         
     
     /** Overrides superclass method. 
      * @return text for the current value */
+    @Override
     public String getAsText() {
         FormI18nMnemonic formI18nMnemonic = (FormI18nMnemonic)getValue();        
         DataObject dataObject = formI18nMnemonic.getSupport().getResourceHolder().getResource();
@@ -183,24 +186,28 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
      * <p>
      * <b>java.text.MessageFormat.format(<identifier name>getString("<key name>"), new Object[] {<code set in Parameters and Comments panel>})</b>
      */
+    @Override
     public String getJavaInitializationString() {
         return ((FormI18nMnemonic)getValue()).getReplaceString();
     }
     
     /** Overrides superclass method.
      * @return <code>ResourceBundlePanel</code> fed with <code>FormI18nMnemonic</code> value. */
+    @Override
     public Component getCustomEditor() {
         return new CustomEditor(new FormI18nMnemonic((FormI18nMnemonic)getValue()), getProject(), sourceDataObject.getPrimaryFile());
     }
     
     /** Overrides superclass method. 
      * @return true since we support this feature */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
 
     /** Overrides superclass method.
      * @return <code>formI18nMnemonic</code> */
+    @Override
     public Object getValue() {
         if(formI18nMnemonic == null) {
             formI18nMnemonic = createFormI18nMnemonic();
@@ -214,6 +221,7 @@ public class FormI18nMnemonicEditor extends PropertyEditorSupport implements For
 
     /** Overrides superclass method.
      * @param value sets the new value for this editor */
+    @Override
     public void setValue(Object object) {
         if(object instanceof FormI18nMnemonic)
             formI18nMnemonic = (FormI18nMnemonic)object;
