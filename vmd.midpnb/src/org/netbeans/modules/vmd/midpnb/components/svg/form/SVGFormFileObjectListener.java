@@ -48,6 +48,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.vmd.api.io.ActiveViewSupport;
+import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
@@ -70,11 +73,12 @@ import org.openide.util.Exceptions;
  *
  * @author Karol Harezlak
  */
-public class SVGFormFileObjectListener implements FileChangeListener {
+public class SVGFormFileObjectListener implements FileChangeListener, ActiveViewSupport.Listener {
 
     private WeakReference<DesignComponent> component;
     private WeakReference<DesignComponent> imageComponent;
     private String propertyName;
+    private DataEditorView.Kind activatedView;
 
     public SVGFormFileObjectListener(DesignComponent component, DesignComponent imageComponent, String propertyName) {
         assert (component != null);
@@ -98,6 +102,8 @@ public class SVGFormFileObjectListener implements FileChangeListener {
     public void fileDeleted(FileEvent fe) {
         regenerateComponents(fe.getFile());
         fe.getFile().removeFileChangeListener(this);
+        ActiveViewSupport.getDefault().removeActiveViewListener(this);
+        activatedView = null;
     }
 
     public void fileRenamed(FileRenameEvent fe) {
@@ -111,10 +117,10 @@ public class SVGFormFileObjectListener implements FileChangeListener {
             return;
         }
         final DesignComponent svgForm = component.get();
-        regenerateSVGComponentsStructure(fe, svgForm);
+        regenerateSVGComponentsStructure(fe, svgForm, activatedView);
     }
 
-    public static synchronized void regenerateSVGComponentsStructure(FileObject fo, final DesignComponent svgForm) {
+    public static synchronized void regenerateSVGComponentsStructure(FileObject fo, final DesignComponent svgForm, final DataEditorView.Kind activatedView) {
         InputStream is = null;
         try {
             if (fo.isValid()) {
@@ -180,9 +186,17 @@ public class SVGFormFileObjectListener implements FileChangeListener {
                     addComponents(toAdd, svgForm);
                 }
             });
-            DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(svgForm.getDocument());
+            final DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(svgForm.getDocument()); 
             if (context != null && context.getDataObject() != null) {
-                IOSupport.forceUpdateCode(context.getDataObject());
+                if (DataEditorView.Kind.CODE == activatedView) {
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        public void run() {
+                            IOSupport.forceUpdateCode(context.getDataObject());
+                        }
+                    });
+                    
+                }
             }
         }
 
@@ -236,6 +250,12 @@ public class SVGFormFileObjectListener implements FileChangeListener {
             if (value != null && value.getComponent() != null && value.getComponent() == svgButton) {
                 potentialButtonEventSource.getDocument().deleteComponent(potentialButtonEventSource);
             }
+        }
+    }
+
+    public void activeViewChanged(DataEditorView deactivatedView, DataEditorView activatedView) {
+        if (activatedView != null) {
+            this.activatedView = activatedView.getKind();
         }
     }
 }
