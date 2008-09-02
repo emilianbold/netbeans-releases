@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.netbeans.api.debugger.Breakpoint;
@@ -58,7 +59,7 @@ import org.openide.text.Line;
 public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnnotationListener {
 
     private final List<NbJSURIBreakpoint> uriBreakpoints = new CopyOnWriteArrayList<NbJSURIBreakpoint>();
-    private final Map<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>> engineToBreakpointsToAnnotations = new HashMap<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>>();
+    private final Map<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>> engineToBreakpointsToAnnotations = new ConcurrentHashMap<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>>();
     
     private final Map<Annotation, Breakpoint> lingeringAnnotations = new WeakHashMap<Annotation, Breakpoint>();
 
@@ -119,9 +120,11 @@ public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnn
 
         /* Remove the engine */
         Map<NbJSURIBreakpoint, Annotation> map = engineToBreakpointsToAnnotations.get(engine);
-        if ( map != null ){
-            for (Entry<NbJSURIBreakpoint, Annotation> entry : map.entrySet()){
-                lingeringAnnotations.put(entry.getValue(), entry.getKey());
+        if (map != null) {
+            synchronized (lingeringAnnotations) {
+                for (Entry<NbJSURIBreakpoint, Annotation> entry : map.entrySet()) {
+                    lingeringAnnotations.put(entry.getValue(), entry.getKey());
+                }
             }
         }
         engineToBreakpointsToAnnotations.remove(engine);
@@ -149,14 +152,17 @@ public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnn
             removeBreakpointAnnotation((NbJSURIBreakpoint)b,engine);
             annotationFound = true;
         }
-        if ( !annotationFound && lingeringAnnotations.containsValue(b)){
-            for( Entry<Annotation, Breakpoint> entry: lingeringAnnotations.entrySet()){
-                if( entry.getValue() == b){
-                    Annotation annotation = entry.getKey();
-                    if (annotation != null ) {
-                         annotation.detach();
+        
+        synchronized (lingeringAnnotations) {
+            if (!annotationFound && lingeringAnnotations.containsValue(b)) {
+                for (Entry<Annotation, Breakpoint> entry : lingeringAnnotations.entrySet()) {
+                    if (entry.getValue() == b) {
+                        Annotation annotation = entry.getKey();
+                        if (annotation != null) {
+                            annotation.detach();
+                        }
+                        lingeringAnnotations.remove(entry.getKey());
                     }
-                    lingeringAnnotations.remove(entry.getKey());
                 }
             }
         }
