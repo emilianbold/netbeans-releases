@@ -1065,6 +1065,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
                     pressedOption = NotifyDescriptor.CLOSED_OPTION;
                 } else {
                     MenuSelectionManager.defaultManager().clearSelectedPath();
+                    return ;
                 }
             } else {
                 // handle buttons
