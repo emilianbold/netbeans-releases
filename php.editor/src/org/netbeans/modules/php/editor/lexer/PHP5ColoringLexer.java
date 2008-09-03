@@ -1436,9 +1436,13 @@ public class PHP5ColoringLexer {
                 int hash = 11;
                 hash = 31 * hash + this.zzState;
                 hash = 31 * hash + this.zzLexicalState;
-                hash = 31 * hash + this.stack.hashCode();
+                if (stack != null) {
+                    hash = 31 * hash + this.stack.hashCode();
+                }
                 hash = 31 * hash + this.heredoc_len;
-                hash = 31 * hash + this.heredoc.hashCode();
+                if (heredoc != null) {
+                    hash = 31 * hash + this.heredoc.hashCode();
+                }
                 return hash;
             }
         }
