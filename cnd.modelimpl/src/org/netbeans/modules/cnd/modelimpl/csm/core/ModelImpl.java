@@ -434,8 +434,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         // clearFileExistenceCache all opened projects, UIDs will be removed in disposeProject
         for (Iterator projIter =prjsColl.iterator(); projIter.hasNext();) {
             ProjectBase project = (ProjectBase) projIter.next();
-            disposeProject(project);
             libs.addAll(project.getLibraries());
+            disposeProject(project);
         }
         for (Iterator projIter =libs.iterator(); projIter.hasNext();) {
             disposeProject((ProjectBase) projIter.next());
