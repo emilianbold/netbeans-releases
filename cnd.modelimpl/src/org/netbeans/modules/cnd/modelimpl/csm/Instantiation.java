@@ -926,6 +926,11 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
             }
             return resolved;
         }
+
+        @Override
+        public boolean isInstantiation() {
+            return (parentType != null && parentType.isInstantiation()) || super.isInstantiation();
+        }
     }
 
     public final static class InstantiationUID<T extends CsmIdentifiable> implements CsmUID<T>, SelfPersistent {

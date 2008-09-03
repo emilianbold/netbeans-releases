@@ -25,7 +25,6 @@
 <p><b>To change the current thread:</b></p>
 <ul>
   <li>Double-click any thread in the Debugging window to make it the current thread. </li>
-  <li>In the source editor, right-click the suspended thread icon and choose Set Current Thread To &gt; <i>new_current_thread</i>.</li>
 </ul>
 
 <h3>Suspending and Resuming Threads</h3>
@@ -48,7 +47,8 @@ Alternatively, you can click the  Resume (<img src="images/resume_button_16.png"
   </ul>
 
 <h3>Editor window icons</h3>
-    <p>The following table describes the icons representing the thread states that 
+<p>A thread icon in the left margin of the source editor indicates that there is a suspended thread at that line.
+    The following table describes the icons representing the thread states that 
     appear in the source editor during a debugging session.</p>
     <table border="1" cellpadding="5" cellspacing="0">
             <tr align="left" valign="top">
@@ -65,9 +65,11 @@ Alternatively, you can click the  Resume (<img src="images/resume_button_16.png"
             </tr>
         </table>
         
-        <p>A thread icon in the left margin of the source editor indicates that there is a suspended thread at that line.
-        You can switch the current thread by right-clicking the suspended thread icon and choosing Set Current Thread To &gt; <i>new_current_thread</i>.
-        </p>
+        
+        <p><b>To switch a suspended thread to the current thread:</b></p>
+        <ul>
+          <li>In the source editor, right-click the suspended thread icon and choose Set Current Thread To &gt; <i>new_current_thread</i>.</li>
+        </ul>
 
 <h3>Multi-threaded Applications</h3>
     <p>When debugging a multi-threaded application, a step in a particular thread may be interrupted by

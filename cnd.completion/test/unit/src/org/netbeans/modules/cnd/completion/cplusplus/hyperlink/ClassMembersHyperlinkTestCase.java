@@ -54,6 +54,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#146030: set of problems for declarations in Loki
         // usecase 5)
         performTest("useenumerators.cc", 55, 20, "useenumerators.cc", 52, 9);
+        performTest("useenumerators.cc", 56, 20, "useenumerators.cc", 52, 9);
     }
     
     public void testIZ138902() throws Exception {

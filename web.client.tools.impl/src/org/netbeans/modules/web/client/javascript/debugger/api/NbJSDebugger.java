@@ -491,6 +491,7 @@ public final class NbJSDebugger {
             }
         }
         if (state.getState() == JSDebuggerState.State.SUSPENDED) {
+            setCurrentSession();
             JSCallStackFrame[] callStackFrames = getCallStackFrames();
             if (callStackFrames != null && callStackFrames.length > 0) {
                 selectFrame(callStackFrames[0]);
@@ -528,6 +529,20 @@ public final class NbJSDebugger {
         }
     }
 
+    private void setCurrentSession() {
+        DebuggerManager manager = DebuggerManager.getDebuggerManager();
+        
+        for (Session nextSession : manager.getSessions()) {
+            NbJSDebugger debuggr = nextSession.lookupFirst(null, NbJSDebugger.class);
+            if (debuggr == this) {
+                manager.setCurrentSession(nextSession);
+                return;
+            }
+        }
+        
+        Log.getLogger().warning("Could not find session for javascript debugger");
+    }
+    
     private void setBreakPoints() {
         for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
             if (bp instanceof NbJSBreakpoint) {

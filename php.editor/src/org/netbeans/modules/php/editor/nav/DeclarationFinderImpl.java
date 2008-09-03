@@ -65,6 +65,7 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
+import org.netbeans.modules.php.editor.nav.SemiAttribute.ClassMemberElement;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
 import org.openide.filesystems.FileObject;
@@ -147,7 +148,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
     static DeclarationLocation findDeclarationImpl(CompilationInfo info, final int offset) {
         List<ASTNode> path = NavUtils.underCaret(info, offset);
-        SemiAttribute a = SemiAttribute.semiAttribute(info, offset);
+        SemiAttribute a = SemiAttribute.semiAttribute(info);//, offset);
         AttributedElement el = NavUtils.findElement(info, path, offset, a);
 
         if (el != null) {
@@ -186,66 +187,92 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             case CLASS:
             case VARIABLE:
                 n = writes.get(0);
-                break;                
+                break;
             default:
                 n = writes.get(writes.size() - 1);
                 break;
         }
 
-        if (n.hasFirst()) {
-            if (n.first() == null) {
-                //cannot resolve, offer all possibilities:
-                Index i = info.getIndex(PHPLanguage.PHP_MIME_TYPE);
-                PHPIndex index = PHPIndex.get(i);
-                Collection<? extends IndexedElement> fromIndex;
+        if ((n.hasFirst() && n.first() == null) || (n.hasSecond() && n.second() != null)) {
+            //cannot resolve, offer all possibilities:
+            Index i = info.getIndex(PHPLanguage.PHP_MIME_TYPE);
+            PHPIndex index = PHPIndex.get(i);
+            Collection<? extends IndexedElement> fromIndex;
 
-                switch (el.getKind()) {
-                    case FUNC:
+            switch (el.getKind()) {
+                case FUNC:
+                    if (el.isClassMember()) {
+                        SemiAttribute.ClassMemberElement memberElement = (ClassMemberElement) el;
+                        fromIndex = index.getAllMethods(null, memberElement.getClassName(), memberElement.getName(), NameKind.PREFIX, PHPIndex.ANY_ATTR);
+                    } else {
                         fromIndex = index.getFunctions(null, el.getName(), NameKind.PREFIX);
-                        break;
-                    case CLASS:
-                        fromIndex = index.getClasses(null, el.getName(), NameKind.PREFIX);
-                        break;
-                    default:
-                        fromIndex = Collections.emptyList();
-                }
-
-                List<AlternativeLocation> locations = new LinkedList<AlternativeLocation>();
-
-                for (IndexedElement e : fromIndex) {
-                    if (el.getName().equals(e.getName())) {
-                        DeclarationLocation l = new DeclarationLocation(e.getFileObject(), e.getOffset());
-                        locations.add(new AlternativeLocationImpl(e, el.getKind(), l));
                     }
-                }
-
-                if (locations.isEmpty()) {
-                    //nothing found:
-                    return DeclarationLocation.NONE;
-                }
-
-                if (locations.size() == 1) {
-                    return locations.get(0).getLocation();
-                }
-
-                DeclarationLocation result = locations.get(0).getLocation();
-
-                for (AlternativeLocation l : locations) {
-                    result.addAlternative(l);
-                }
-
-                return result;
+                    break;
+                case CLASS:
+                    fromIndex = index.getClasses(null, el.getName(), NameKind.PREFIX);
+                    break;
+                case VARIABLE:
+                    if (el.isClassMember()) {
+                        SemiAttribute.ClassMemberElement memberElement = (ClassMemberElement) el;
+                        fromIndex = index.getAllProperties(null, memberElement.getClassName(), memberElement.getName(), NameKind.PREFIX, PHPIndex.ANY_ATTR);
+                    } else if (n.hasSecond()) {
+                        final IndexedElement indexed = n.second();
+                        FileObject file = indexed.getFileObject();
+                        assert file != null;
+                        return new DeclarationLocation(file, indexed.getOffset());
+                    } else {
+                        fromIndex = Collections.emptyList();
+                    }
+                    break;
+                case CONST:
+                    if (el.isClassMember()) {
+                        SemiAttribute.ClassMemberElement memberElement = (ClassMemberElement) el;
+                        fromIndex = index.getAllClassConstants(null, memberElement.getClassName(), memberElement.getName(), NameKind.PREFIX);
+                    } else if (n.hasSecond()) {
+                        final IndexedElement indexed = n.second();
+                        FileObject file = indexed.getFileObject();
+                        assert file != null;
+                        return new DeclarationLocation(file, indexed.getOffset());
+                    } else {
+                        fromIndex = Collections.emptyList();
+                    }
+                    break;
+                default:
+                    fromIndex = Collections.emptyList();
             }
 
-            return new DeclarationLocation(info.getFileObject(), n.first().getStartOffset());
-        } else {
-            final IndexedElement indexed = n.second();
-            FileObject file = indexed.getFileObject();
+            List<AlternativeLocation> locations = new LinkedList<AlternativeLocation>();
 
-            assert file != null;
+            for (IndexedElement e : fromIndex) {
+                String name = e.getName();
+                if (el.getKind().equals(SemiAttribute.AttributedElement.Kind.VARIABLE) && name.startsWith("$")) {//NOI18N
+                    name = name.substring(1);
+                }
+                if (el.getName().equals(name)) {
+                    DeclarationLocation l = new DeclarationLocation(e.getFileObject(), e.getOffset());
+                    locations.add(new AlternativeLocationImpl(e, el.getKind(), l));
+                }
+            }
 
-            return new DeclarationLocation(file, indexed.getOffset());
+            if (locations.isEmpty()) {
+                //nothing found:
+                return DeclarationLocation.NONE;
+            }
+
+            if (locations.size() == 1) {
+                return locations.get(0).getLocation();
+            }
+
+            DeclarationLocation result = locations.get(0).getLocation();
+
+            for (AlternativeLocation l : locations) {
+                result.addAlternative(l);
+            }
+
+            return result;
         }
+
+        return new DeclarationLocation(info.getFileObject(), n.first().getStartOffset());
     }
 
     private static final class AlternativeLocationImpl implements AlternativeLocation {

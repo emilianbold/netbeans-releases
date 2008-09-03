@@ -58,16 +58,31 @@ public abstract class ServerCommand {
     public static final char QUERY_SEPARATOR = '?'; // NOI18N
     public static final char PARAM_SEPARATOR = '&'; // NOI18N
 
-    public ServerCommand() {
+    protected final String command;
+    protected String query = null;
+
+    public ServerCommand(String command) {
+        this.command = command;
     }
     
     /**
-     * Override to provide the server command represented by this object.  Caller
-     * will prefix with http://host:port/__asadmin/ and open the server connection.
+     * Returns server command represented by this object.  Set in constructor.
+     * e.g. "deploy", "list-applications", etc.
      * 
-     * @return suffix to append to [host]/__asadmin/ for server command.
+     * @return command string represented by this object.
      */
-    public abstract String getCommand();
+    public String getCommand() {
+        return command;
+    }
+
+    /**
+     * Returns the query string for this command.  Set in constructor.
+     * 
+     * @return query string for this command.
+     */
+    public String getQuery() {
+        return query;
+    }
 
     /**
      * Override to change the type of HTTP method used for this command.
@@ -182,7 +197,7 @@ public abstract class ServerCommand {
      */
     @Override
     public String toString() {
-        return getCommand();
+        return getCommand() + QUERY_SEPARATOR + getQuery();
     }
     
     /**
@@ -190,18 +205,14 @@ public abstract class ServerCommand {
      */
     public static final class GetPropertyCommand extends ServerCommand {
 
-        private final String property;
         private Manifest info;
         private Map<String,String> propertyMap;
 
         public GetPropertyCommand(final String property) {
-            this.property = property;
+            super("get"); // NOI18N
+            
+            this.query = "pattern=" + property; // NOI18N
             this.propertyMap = new HashMap<String, String>();
-        }
-
-        @Override
-        public String getCommand() {
-            return "get" + QUERY_SEPARATOR + "pattern=" + property;
         }
 
         @Override
@@ -237,18 +248,11 @@ public abstract class ServerCommand {
      */
     public static final class SetPropertyCommand extends ServerCommand {
 
-        private final String property;
-        private final String value;
         private Manifest info;
 
         public SetPropertyCommand(final String property, final String value) {
-            this.property = property;
-            this.value = value;
-        }
-
-        @Override
-        public String getCommand() {
-            return "set" + QUERY_SEPARATOR + "target=" + property + PARAM_SEPARATOR + "value=" + value;
+            super("set"); // NOI18N
+            query = "target=" + property + PARAM_SEPARATOR + "value=" + value; // NOI18N
         }
 
         @Override
