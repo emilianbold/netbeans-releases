@@ -355,10 +355,9 @@ public final class CompositeFCS extends FontColorSettings {
             } else {
                 hints = new  HashMap<Object, Object>();
             }
-            hints.put(
-                RenderingHints.KEY_TEXT_ANTIALIASING, 
-                aaOn.booleanValue() ? RenderingHints.VALUE_TEXT_ANTIALIAS_ON : RenderingHints.VALUE_TEXT_ANTIALIAS_OFF
-            );
+            if (!aaOn.booleanValue()) {
+                hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+            } // else use system default
         }
         
         return hints;
