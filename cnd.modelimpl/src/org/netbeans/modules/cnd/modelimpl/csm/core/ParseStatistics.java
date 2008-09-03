@@ -40,7 +40,11 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -151,7 +155,7 @@ public class ParseStatistics {
     }
 
     public synchronized void printResults(PrintWriter out) {
-        out.printf("\nFILE PARSING STATISTICS\n"); //NOI18N
+        out.printf("\nPARSING STATISTICS\n"); //NOI18N
         if (enabled) {
             for (CsmUID<CsmProject> projectUID : projectMaps.keySet()) {
                 printResults(projectUID, out);
@@ -163,9 +167,21 @@ public class ParseStatistics {
     }
 
     private void printResults(CsmUID<CsmProject> projectUID, PrintWriter out) {
-        out.printf("\nFILE PARSING STATISTICS FOR PROJECT %s\n", UIDUtilities.getProjectName(projectUID)); //NOI18N
-        for (Map.Entry<CsmUID<CsmFile>, Entry> entry: getProjectMap(projectUID).entrySet()) {
-            out.printf("\t%6d %s\n", entry.getValue().cnt, UIDUtilities.getFileName(entry.getKey())); //NOI18N
+        out.printf("\nPARSING STATISTICS FOR %s\n", UIDUtilities.getProjectName(projectUID)); //NOI18N
+        List<Map.Entry<CsmUID<CsmFile>, Entry>> entries = new ArrayList<Map.Entry<CsmUID<CsmFile>, Entry>>(getProjectMap(projectUID).entrySet());
+        Collections.sort(entries, new Comparator<Map.Entry<CsmUID<CsmFile>, Entry>>() {
+            public int compare(Map.Entry<CsmUID<CsmFile>, Entry> e1, Map.Entry<CsmUID<CsmFile>, Entry> e2) {
+                return e1.getValue().cnt - e2.getValue().cnt;
+            }
+        });
+        int sum = 0;
+        for (Map.Entry<CsmUID<CsmFile>, Entry> entry: entries) {
+            int cnt = entry.getValue().cnt;
+            out.printf("\t%6d %s\n", cnt, UIDUtilities.getFileName(entry.getKey())); //NOI18N
+            sum += cnt;
         }
+        int avg = sum / entries.size();
+        out.printf("\t%6d avg", avg); //NOI18N
+        out.printf("\nEND OF PARSING STATISTICS FOR %s\n", UIDUtilities.getProjectName(projectUID)); //NOI18N
     }
 }
