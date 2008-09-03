@@ -92,9 +92,6 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         public void visit(CsmReferenceContext context) {
             CsmReference ref = context.getReference();
             if (!request.isCancelled() && ref.getReferencedObject() == null) {
-                if (CsmFileReferences.isThis(ref)) {
-                    return;
-                }
                 if (CsmFileReferences.isAfterUnresolved(context)) {
                     return;
                 }

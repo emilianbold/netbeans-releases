@@ -73,6 +73,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -581,9 +582,13 @@ public class CsmContextUtilities {
 
     public static boolean isInType(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
+        CsmType type = null;
+        if (CsmKindUtilities.isTypedef(last)) {
+            type = ((CsmTypedef)last).getType();
+        } else if (CsmKindUtilities.isType(last)) {
+            type = (CsmType) last;
+        }
         // in instantianiton everything is possible
-        return ((CsmKindUtilities.isType(last) && !((CsmType)last).isInstantiation())
-                || CsmKindUtilities.isTypedef(last))
-                && CsmOffsetUtilities.isInObject(last, offset);
+        return (type != null) && !type.isInstantiation() && CsmOffsetUtilities.isInObject(type, offset);
     }
 }

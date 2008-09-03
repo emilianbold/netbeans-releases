@@ -46,3 +46,11 @@ static struct event_name  {
     char *name;
     event_T event;
 } event_names[] = { {"BufAdd", EVENT_BUFADD} };
+
+class TypeTraits {
+    enum {
+        isFloat = 1
+    };
+
+    typedef AEnum<isFloat> ParameterType;
+};
