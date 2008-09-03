@@ -192,7 +192,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
             //"]>\n" +
 "\n" +
 "<api-answers\n" +
-  "question-version='1.25'\n" +
+  "question-version='1.22'\n" +
   "module='Input/Output System'\n" +
   "author='jglick@netbeans.org'\n" +
 ">\n" +
@@ -266,6 +266,13 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         if (s2.indexOf("question id=\"arch-overall\"") == -1) {
             fail ("There should be a answer template for arch-overall in html output: " + s2);
         }
+        if (s1.contains("1.22")) {
+            fail("Version has not been upgraded, still 1.22\n" + s1);
+        }
+        if (!s1.contains("question-version='1.25'")) {
+            fail("Version has not been upgraded, should be 1.25\n" + s1);
+        }
+
     }
     
     
@@ -819,7 +826,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         assertTrue ("File is generated", output.exists ());
         
         String content = PublicPackagesInProjectizedXMLTest.readFile(output);
-        
+
         if (content.indexOf("My Lovely Profiler - NetBeans Architecture Questions") == -1) {
             fail(content);
         }
