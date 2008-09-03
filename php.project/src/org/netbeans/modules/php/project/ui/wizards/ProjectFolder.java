@@ -78,7 +78,7 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         initComponents();
 
         init();
-        projectFolderTextArea.setVisible(false);
+        projectFolderScrollPane.setVisible(false);
         projectFolderTextArea.setFont(BOLD_FONT);
     }
 
@@ -117,7 +117,7 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         projectFolderTextField.setEnabled(enabled);
         projectFolderBrowseButton.setEnabled(enabled);
         // warning
-        projectFolderTextArea.setVisible(enabled);
+        projectFolderScrollPane.setVisible(enabled);
     }
 
     /** This method is called from within the constructor to
@@ -165,7 +165,6 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
         projectFolderTextArea.setBorder(null);
         projectFolderTextArea.setDisabledTextColor(UIManager.getDefaults().getColor("nb.warningForeground"));
         projectFolderTextArea.setEnabled(false);
-        projectFolderTextArea.setOpaque(false);
         projectFolderScrollPane.setViewportView(projectFolderTextArea);
 
         projectFolderTextArea.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ProjectFolder.class, "ProjectFolder.projectFolderTextArea.AccessibleContext.accessibleName")); // NOI18N
