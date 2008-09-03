@@ -392,6 +392,9 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             TokenHierarchy hi = TokenHierarchy.get(getDocument());
             TokenSequence<HTMLTokenId> ts = getJoinedHtmlSequence(getDocument());
             
+            if(ts == null) {
+                return  null;
+            }
             //html token found
             ts.move(offset);
             if(!ts.moveNext() && !ts.movePrevious()) return null; //no token found
@@ -480,6 +483,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         try {
             TokenHierarchy hi = TokenHierarchy.get(getDocument());
             TokenSequence ts = getJoinedHtmlSequence(getDocument());
+            if(ts == null) {
+                return  null;
+            }
+            
             ts.move(offset);
             if (!ts.moveNext())
                 return null;

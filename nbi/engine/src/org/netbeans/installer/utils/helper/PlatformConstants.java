@@ -62,6 +62,9 @@ public final class PlatformConstants {
     
     public static final String OS_FAMILY_FREEBSD = 
             "freebsd";
+
+    public static final String OS_FAMILY_OPENBSD = 
+            "openbsd";
     
     public static final String OS_FAMILY_BSD = 
             "bsd";

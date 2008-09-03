@@ -317,6 +317,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             }
                         }
                     } finally {
+                        postParse();
                         synchronized (changeStateLock) {
                             if (state == State.BEING_PARSED) {
                                 state = State.PARSED;
@@ -347,6 +348,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                 state = State.PARSED;
                             } // if not, someone marked it with new state
                         }
+                        postParse();
                         stateLock.notifyAll();
                     }
 		    if( TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS ) new CsmTracer().dumpModel(this);
@@ -357,6 +359,22 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	}
     }   
     
+    private void postParse() {
+        if (isValid()) {   // FIXUP: use a special lock here
+            RepositoryUtils.put(this);
+        }
+        if (TraceFlags.USE_DEEP_REPARSING && isValid()) {	// FIXUP: use a special lock here
+            getProjectImpl(true).getGraph().putFile(this);
+        }
+        if (isValid()) {   // FIXUP: use a special lock here
+            Notificator.instance().registerChangedFile(this);
+            Notificator.instance().flush();
+        } else {
+            // FIXUP: there should be a notificator per project instead!
+            Notificator.instance().reset();
+        }
+    }
+
     public boolean validate() {
 	synchronized (changeStateLock) {
 	    if( state == State.PARSED ) {
@@ -418,35 +436,17 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
         
     private void _reparse(APTPreprocHandler preprocHandler) {
-        if (! ParserThreadManager.instance().isParserThread() && ! ParserThreadManager.instance().isStandalone()) {
-            String text = "Reparsing should be done only in a special Code Model Thread!!!"; // NOI18N
-            Diagnostic.trace(text);
-            new Throwable(text).printStackTrace(System.err);
-        }
         if( TraceFlags.DEBUG ) Diagnostic.trace("------ reparsing " + fileBuffer.getFile().getName()); // NOI18N
-	//Notificator.instance().startTransaction();
-	try {
-            _clearIncludes();
-            _clearMacros();
-            AST ast = doParse(preprocHandler);
-            if (ast != null) {
-                disposeAll(false);
-                render(ast);
-            } else {
-                //System.err.println("null ast for file " + getAbsolutePath());
-            }
-	}
-	finally {
-	    //Notificator.instance().endTransaction();
-            // update this file and it's project     
-            RepositoryUtils.put(this);
-            if (TraceFlags.USE_DEEP_REPARSING) {
-                getProjectImpl(true).getGraph().putFile(this);
-            }
-            Notificator.instance().registerChangedFile(this);
-            Notificator.instance().flush();
-	}
-	    
+        _clearIncludes();
+        _clearMacros();
+        if( reportParse || TraceFlags.DEBUG ) logParse("ReParsing", preprocHandler); //NOI18N
+        AST ast = doParse(preprocHandler);
+        if (ast != null) {
+            disposeAll(false);
+            render(ast);
+        } else {
+            //System.err.println("null ast for file " + getAbsolutePath());
+        }
     }
 
     public void dispose() {
@@ -526,48 +526,34 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private AST _parse(APTPreprocHandler preprocHandler) {
         
-        if (reportErrors) {
-	    if (! ParserThreadManager.instance().isParserThread()  && ! ParserThreadManager.instance().isStandalone()) {
-		String text = "Reparsing should be done only in a special Code Model Thread!!!"; // NOI18N
-		Diagnostic.trace(text);
-		new Throwable(text).printStackTrace(System.err);
-	    }
-        }        
-	
 	Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
-	
-        try {
-            AST ast = doParse((preprocHandler == null) ?  getPreprocHandler() : preprocHandler);
-            if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
-            
-            if( ast != null ) {
-                Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
-                //Notificator.instance().startTransaction();
-		if( isValid() ) {   // FIXUP: use a special lock here
-		    render(ast);
-		    if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw2.stopAndReport("Rendering of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
-		}
-                return ast;
-            }
-        } finally {
-            if (isValid()) {   // FIXUP: use a special lock here
-                RepositoryUtils.put(this);
-            }
-            if (TraceFlags.USE_DEEP_REPARSING && isValid()) {	// FIXUP: use a special lock here
-                getProjectImpl(true).getGraph().putFile(this);
-            }
+        if( reportParse || TraceFlags.DEBUG ) logParse("Parsing", preprocHandler); //NOI18N
+
+        AST ast = doParse((preprocHandler == null) ?  getPreprocHandler() : preprocHandler);
+        if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
+
+        if( ast != null ) {
+            Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
             if( isValid() ) {   // FIXUP: use a special lock here
-		Notificator.instance().registerChangedFile(this);
-		Notificator.instance().flush();
-	    }
-	    else {
-		// FIXUP: there should be a notificator per project instead!
-		Notificator.instance().reset();
-	    }
+                render(ast);
+                if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw2.stopAndReport("Rendering of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
+            }
+            return ast;
         }
         return null;
     }
 
+    private void logParse(String title, APTPreprocHandler preprocHandler) {
+        if( reportParse || TraceFlags.DEBUG ) {
+            APTPreprocHandler.State state = preprocHandler.getState();
+            System.err.printf("# %s %s (valid=%b, compile-context=%b) (Thread=%s)\n", title, fileBuffer.getFile().getPath(),
+                    state.isValid(), state.isCompileContext(), Thread.currentThread().getName());
+            if (reportState) {
+                System.err.printf("%s\n\n", preprocHandler.getState());
+            }
+        }
+    }
+    
     private TokenStream createFullTokenStream() {
         APTPreprocHandler preprocHandler = getPreprocHandler();
         APTFile apt = null;
@@ -742,17 +728,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private AST doParse(APTPreprocHandler preprocHandler) {
-//        if( "cursor.hpp".equals(fileBuffer.getFile().getName()) ) {
-//            System.err.println("cursor.hpp");
-//        }  
-        if( reportParse || TraceFlags.DEBUG ) {
-            APTPreprocHandler.State state = preprocHandler.getState();
-            System.err.printf("# APT-based AST-cached Parsing %s (valid=%b, compile-context=%b) (Thread=%s)\n", fileBuffer.getFile().getPath(),
-                    state.isValid(), state.isCompileContext(), Thread.currentThread().getName());
-            if (reportState) {
-                System.err.printf("%s\n\n", preprocHandler.getState());
-            }
-        }
+        
+        if (reportErrors) {
+	    if (! ParserThreadManager.instance().isParserThread()  && ! ParserThreadManager.instance().isStandalone()) {
+		String text = "Reparsing should be done only in a special Code Model Thread!!!"; // NOI18N
+		Diagnostic.trace(text);
+		new Throwable(text).printStackTrace(System.err);
+	    }
+        }        
+        
         ParseStatistics.getInstance().fileParsed(this, preprocHandler);
         
         int flags = CPPParserEx.CPP_CPLUSPLUS;
