@@ -711,6 +711,11 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
     
     
     private static int getTokenEnd( TokenHierarchy thi, Token item ) {
+        List<Token> parts = item.joinedParts();
+        if(parts != null) {
+            //non continuos token, take end offset from the last token part
+            item = parts.get(parts.size() - 1);
+        } 
         return item.offset(thi) + item.text().length();
     }
     
