@@ -42,9 +42,11 @@
 package org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -155,14 +157,19 @@ public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnn
         
         synchronized (lingeringAnnotations) {
             if (!annotationFound && lingeringAnnotations.containsValue(b)) {
+                Set<Annotation> keysToRemove = new LinkedHashSet<Annotation>();
                 for (Entry<Annotation, Breakpoint> entry : lingeringAnnotations.entrySet()) {
                     if (entry.getValue() == b) {
                         Annotation annotation = entry.getKey();
                         if (annotation != null) {
                             annotation.detach();
                         }
-                        lingeringAnnotations.remove(entry.getKey());
+                        keysToRemove.add(annotation);
                     }
+                }
+                
+                for (Annotation annotation : keysToRemove) {
+                    lingeringAnnotations.remove(annotation);
                 }
             }
         }
