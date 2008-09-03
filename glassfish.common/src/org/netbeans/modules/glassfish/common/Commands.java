@@ -421,10 +421,11 @@ public class Commands {
             StringBuilder cmd = new StringBuilder(128);
             cmd.append("delete-"); // NOI18N
             cmd.append(resourceCmdSuffix);
+            cmd.append(QUERY_SEPARATOR);
             if(cascade) {
-                cmd.append(QUERY_SEPARATOR + "cascade=true");
+                cmd.append("cascade=true");
+                cmd.append(PARAM_SEPARATOR);
             }
-            cmd.append(PARAM_SEPARATOR);
             cmd.append(cmdPropertyName);
             cmd.append('=');
             cmd.append(name);

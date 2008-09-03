@@ -264,13 +264,15 @@ public class VisualReplicator {
 
         for (int i = 0; i < metacomps.length; i++) {
             RADVisualComponent metacomp = metacomps[i];
+            if (metacont.getContainerMenu() == metacomp) {
+                continue;
+            }
 
             Component comp = (Component) getClonedComponent(metacomp);
-            if (comp == null)
+            if (comp == null) {
                 comp = (Component) createClone(metacomp);
-            else {
-                if (comp.getParent() != null)
-                    comp.getParent().remove(comp);
+            } else if (comp.getParent() != null) {
+                comp.getParent().remove(comp);
             }
 
             // make the component visible according to the explicitly set property

@@ -78,6 +78,7 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
                 <attr name="controller" methodvalue="org.netbeans.modules.options.editor.FolderBasedController.create"/>
                 <attr name="optionsSubFolder" stringvalue="Hints/"/>
+                <attr name="helpContextId" stringvalue="netbeans.optionsDialog.editor.hints"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Hints_DisplayName"/>
                 <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Hints_ToolTip"/>
                 <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.Bundle#KW_Hints"/>
@@ -88,6 +89,7 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
                 <attr name="controller" methodvalue="org.netbeans.modules.options.editor.FolderBasedController.create"/>
                 <attr name="optionsSubFolder" stringvalue="MarkOccurences/"/>
+                <attr name="helpContextId" stringvalue="netbeans.optionsDialog.editor.markOccurences"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_MarkOccurences_DisplayName"/>
                 <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_MarkOccurences_ToolTip"/>
                 <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.Bundle#KW_Mark"/>
@@ -98,6 +100,7 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
                 <attr name="controller" methodvalue="org.netbeans.modules.options.editor.FolderBasedController.create"/>
                 <attr name="optionsSubFolder" stringvalue="TaskList/"/>
+                <attr name="helpContextId" stringvalue="netbeans.optionsDialog.editor.tasklist"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Tasklist_DisplayName"/>
                 <attr name="toolTip" bundlevalue="org.netbeans.modules.options.editor.Bundle#CTL_Tasklist_ToolTip"/>
                 <attr name="keywords" bundlevalue="org.netbeans.modules.options.editor.Bundle#KW_TaskList"/>

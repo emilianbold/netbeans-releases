@@ -17,8 +17,8 @@ token #15 PHP_VARIABLE $code
 token #16 PHP_TOKEN )
 token #17 PHP_SEMICOLON ;
 token #18 WHITESPACE \n
-token #19 PHP_CLOSETAG ?>\n
-token #20 T_INLINE_HTML --EXPECT--\n
+token #19 PHP_CLOSETAG ?>
+token #20 T_INLINE_HTML \n--EXPECT--\n
 token #21 T_INLINE_HTML <
 token #22 T_INLINE_HTML code>
 token #23 T_INLINE_HTML <

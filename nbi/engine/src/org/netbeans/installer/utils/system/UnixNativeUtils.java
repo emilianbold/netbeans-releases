@@ -139,41 +139,79 @@ public class UnixNativeUtils extends NativeUtils {
     public UnixNativeUtils() {
         initializeForbiddenFiles();
     }
+    
     @Override
     protected Platform getPlatform() {
         final String osName = System.getProperty("os.name");
-        final String osArch = System.getProperty("os.arch");
-        if (osName.endsWith("BSD")) {
-            if (osName.equals("FreeBSD")) {
-                if(osArch.contains("ppc")) {
-                    return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_PPC: Platform.FREEBSD_PPC64;
-                } else {
-                    return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_X64 : Platform.FREEBSD_X86;
-                }
-            } else {
-                if(osArch.contains("ppc")) {
-                    return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_PPC64 : Platform.BSD_PPC;
-                } else {
-                    return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_X64 : Platform.BSD_X86;
-                }
-            }
-        } else if(osName.equals("AIX")) {
-            if(osArch.contains("ppc")) {
-                return SystemUtils.isCurrentJava64Bit() ? Platform.AIX_PPC64 : Platform.AIX_PPC;
-            } else { 
-                return Platform.AIX;
-            }
-        } else if(osName.toLowerCase(Locale.ENGLISH).startsWith("hp-ux")) {
-            if(osArch.toLowerCase(Locale.ENGLISH).replace("-","_").startsWith("pa_risc")) {               
-                return osArch.startsWith("PA_RISC2.0")? Platform.HPUX_PA_RISC20 : Platform.HPUX_PA_RISC;
-            } else if (osArch.toLowerCase(Locale.ENGLISH).startsWith("ia64")) {
-                return Platform.HPUX_IA64;
-            } else {
-                return Platform.HPUX;
-            }
-            
+
+        if (osName.equals("FreeBSD")) {
+            return getPlatformFreeBSD();
+        } else if (osName.equals("OpenBSD")) {
+            return getPlatformOpenBSD();
+        } else if (osName.endsWith("BSD")) {
+            return getPlatformBSD();
+        } else if (osName.equals("AIX")) {
+            return getPlatformAIX();
+        } else if (osName.toLowerCase(Locale.ENGLISH).startsWith("hp-ux")) {
+            return getPlatformHPUX();
         } else {
             return Platform.UNIX;
+        }
+    }
+    
+    private Platform getPlatformOpenBSD() {
+        final String osArch = System.getProperty("os.arch");
+        if (osArch.contains("ppc") || osArch.contains("PowerPC")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.OPENBSD_PPC64 : Platform.OPENBSD_PPC;
+        } else if (osArch.contains("sparc")) {
+            return Platform.OPENBSD_SPARC;
+        } else if (osArch.matches("i[3-6]86|x86|amd64|x86_64")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.OPENBSD_X64 : Platform.OPENBSD_X86;
+        } else {
+            return Platform.OPENBSD;
+        }
+    }
+    private Platform getPlatformFreeBSD() {
+        final String osArch = System.getProperty("os.arch");
+        if (osArch.contains("ppc") || osArch.contains("PowerPC")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_PPC64 : Platform.FREEBSD_PPC;
+        } else if (osArch.contains("sparc")) {
+            return Platform.FREEBSD_SPARC;
+        } else if (osArch.matches("i[3-6]86|x86|amd64|x86_64")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.FREEBSD_X64 : Platform.FREEBSD_X86;
+        } else {
+            return Platform.FREEBSD;
+        }
+    }
+    private Platform getPlatformBSD() {
+        final String osArch = System.getProperty("os.arch");
+        if (osArch.contains("ppc") || osArch.contains("PowerPC")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_PPC64 : Platform.BSD_PPC;
+        } else if (osArch.contains("sparc")) {
+            return Platform.BSD_SPARC;
+        } else if (osArch.matches("i[3-6]86|x86|amd64|x86_64")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.BSD_X64 : Platform.BSD_X86;
+        } else {
+            return Platform.BSD;
+        }
+    }
+    private Platform getPlatformAIX() {
+        final String osArch = System.getProperty("os.arch");
+        if (osArch.contains("ppc") || osArch.contains("PowerPC")) {
+            return SystemUtils.isCurrentJava64Bit() ? Platform.AIX_PPC64 : Platform.AIX_PPC;
+        } else {
+            return Platform.AIX;
+        }
+    }
+    
+    private Platform getPlatformHPUX() {
+        final String osArch = System.getProperty("os.arch");
+        if (osArch.toLowerCase(Locale.ENGLISH).replace("-", "_").startsWith("pa_risc")) {
+            return osArch.startsWith("PA_RISC2.0") ? Platform.HPUX_PA_RISC20 : Platform.HPUX_PA_RISC;
+        } else if (osArch.toLowerCase(Locale.ENGLISH).startsWith("ia64")) {
+            return Platform.HPUX_IA64;
+        } else {
+            return Platform.HPUX;
         }
     }
     

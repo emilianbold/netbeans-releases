@@ -93,8 +93,9 @@ public class PatternsTest extends RestTestBase {
         public int getResourcePackageJComboIndex() {
             switch (this) {
                 case Singleton:
-                    return 1;
+                    return 2;
                 case ContainerItem:
+                    return 1;
                 case CcContainerItem:
                     return 0;
             }
@@ -337,7 +338,7 @@ public class PatternsTest extends RestTestBase {
         //TODO: have to set name because of issue 112610
         // http://www.netbeans.org/issues/show_bug.cgi?id=122610
         String name = "Item1"; //NOI18N
-        Set<File> files = createWsFromPatterns(name, Pattern.CcContainerItem, null);
+        Set<File> files = createWsFromPatterns(null, Pattern.CcContainerItem, null);
     }
 
     /**
@@ -384,6 +385,7 @@ public class PatternsTest extends RestTestBase {
         wo = new WizardOperator(patternsTypeName);
         //set resource package
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, pattern.getResourcePackageJComboIndex());
+        jcbo.clickMouse();
         jcbo.clearText();
         jcbo.typeText(getRestPackage());
         if (name != null) {
@@ -456,13 +458,21 @@ public class PatternsTest extends RestTestBase {
                 }
                 break;
             case ContainerItem:
-            case CcContainerItem:
                 if (name != null) {
                     createdFiles.add(getFileFromProject(name + "Cl")); //NOI18N
                     createdFiles.add(getFileFromProject(name + "CClass")); //NOI18N
                 } else {
                     createdFiles.add(getFileFromProject("ItemResource")); //NOI18N
                     createdFiles.add(getFileFromProject("ItemsResource")); //NOI18N
+                }
+                break;
+            case CcContainerItem:
+                if (name != null) {
+                    createdFiles.add(getFileFromProject(name + "Cl")); //NOI18N
+                    createdFiles.add(getFileFromProject(name + "CClass")); //NOI18N
+                } else {
+                    createdFiles.add(getFileFromProject("ItemResource_1")); //NOI18N
+                    createdFiles.add(getFileFromProject("ItemsResource_1")); //NOI18N
                 }
                 break;
         }
