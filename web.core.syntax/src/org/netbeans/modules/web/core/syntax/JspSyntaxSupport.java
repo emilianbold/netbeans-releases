@@ -940,7 +940,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                         new TagAttributeInfo("class", false, url + "syntaxref2027.html#10968#19433", false),      // NOI18N
                         new TagAttributeInfo("id", true, url + "syntaxref2027.html#10964#10966", false),         // NOI18N
                         new TagAttributeInfo("scope", true, url + "syntaxref2027.html#10966#10968", false),      // NOI18N
-                        new TagAttributeInfo("type", false, url + "syntaxref2027.html#19433#18019", false)})     // NOI18N
+                        new TagAttributeInfo("type", false, url + "syntaxref2027.html#19433#18019", false)}),     // NOI18N
+                        new TagInfo("declaration", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref204.html#10983#10991",                 // NOI18N
+                        null, null, new TagAttributeInfo[] {}),
+                        new TagInfo("scriptlet", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref206.html#10996#11007",                 // NOI18N
+                        null, null, new TagAttributeInfo[] {})
             };
             
             standardTagTagDatas = new TagInfo[standardJspTagDatas.length + 2 ];
@@ -969,6 +973,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             standardTagTagDatas[13] = standardJspTagDatas[11]; //"setProperty"
             standardTagTagDatas[14] = standardJspTagDatas[12]; //"text"
             standardTagTagDatas[15] = standardJspTagDatas[13]; //"useBean"
+            standardTagTagDatas[16] = standardJspTagDatas[14]; //"declaration"
+            standardTagTagDatas[17] = standardJspTagDatas[15]; //"expression"            
         }
         
         
@@ -1036,15 +1042,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         if (xmlJspTagDatas == null) {
             TagInfo[] commonXMLTagDatas;
             commonXMLTagDatas = new TagInfo[]{
-                new TagInfo("declaration", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref204.html#10983#10991",                 // NOI18N
-                        null, null, new TagAttributeInfo[] {}),
                         new TagInfo("output", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2022.html#1004130#1007521",                 // NOI18N
                         null, null, new TagAttributeInfo[] {new TagAttributeInfo("doctype-public", false, "url + syntaxref2022.html#1007534#1007521", false),  // NOI18N
                         new TagAttributeInfo("doctype-root-element", false, "url + syntaxref2022.html#1007528#1007532", false),    // NOI18N
                         new TagAttributeInfo("doctype-system", false, url + "syntaxref2022.html#1007532#1007534", false),  // NOI18N
                         new TagAttributeInfo("omit-xml-declaration", false, url + "syntaxref2022.html#1007525#1007528"   , false)}),    // NOI18N
-                        new TagInfo("scriptlet", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref206.html#10996#11007",                 // NOI18N
-                        null, null, new TagAttributeInfo[] {}),
                         new TagInfo("root", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref2024.html#1003283#1003311",                         // NOI18N
                         null, null, new TagAttributeInfo[] {new TagAttributeInfo("version", false, url+"syntaxref2024.html#1003299#1003301", false),
                         new TagAttributeInfo("xmlns:jsp", false, url+"syntaxref2024.html#1003297#1003299", false),
