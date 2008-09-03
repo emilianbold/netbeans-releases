@@ -411,6 +411,7 @@ public class CvsVersioningSystem {
     }
 
     public void versionedFilesChanged() {
+        unversionedParents.clear();        
         listenerSupport.fireVersioningEvent(EVENT_VERSIONED_FILES_CHANGED);
     }
 
