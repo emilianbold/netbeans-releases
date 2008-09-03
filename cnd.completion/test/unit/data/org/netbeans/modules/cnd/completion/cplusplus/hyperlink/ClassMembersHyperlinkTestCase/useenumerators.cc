@@ -26,7 +26,7 @@ typedef struct ClassOfUnnamedTypedef {
     const char *field;
 };
 
-template <int> class AEnum {};
+template <int> class AEnum { typedef int Type; };
 
 class BVV {
     enum { VV = 1 };
@@ -53,4 +53,5 @@ class TypeTraits {
     };
 
     typedef AEnum<isFloat> ParameterType;
+    typedef AEnum<isFloat>::Type Type;
 };
