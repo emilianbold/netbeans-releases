@@ -126,7 +126,7 @@ public class SourcePathImplementationTest extends NbTestCase {
         ClassPath cp = cps[0];
         List<ClassPath.Entry> entries = cp.entries();
         assertNotNull ("Entries can not be null", entries);
-        assertEquals ("There must be 2 src entries",2, entries.size());
+        assertEquals ("There must be 3 src entries",3, entries.size());
         assertEquals("There must be src root", entries.get(0).getRoot(), sources);
         String buildDir = (String) J2SEProjectUtil.getEvaluatedProperty(pp,"${build.dir}");
         assertNotNull ("There is no build.dir property", buildDir);
@@ -135,7 +135,13 @@ public class SourcePathImplementationTest extends NbTestCase {
         if (!f.exists()) {
             url = new URL (url.toExternalForm() + "/");
         }
-        assertEquals("There must be WSClient entry", entries.get(1).getURL(), url);
+        assertEquals("There must be WSClient entry", entries.get(1).getURL(), url);        
+        f = new File (new File (new File (pp.getAntProjectHelper().resolveFile(buildDir),"generated"),"wsimport"),"client");
+        url = f.toURI().toURL();
+        if (!f.exists()) {
+            url = new URL (url.toExternalForm() + "/");
+        }
+        assertEquals("There must be WSimport/Client entry", entries.get(2).getURL(), url);
         
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
             public Void run() throws Exception {
@@ -148,7 +154,7 @@ public class SourcePathImplementationTest extends NbTestCase {
         });                
         entries = cp.entries();
         assertNotNull ("Entries can not be null", entries);
-        assertEquals ("There must be 2 src entries",2, entries.size());
+        assertEquals ("There must be 3 src entries",3, entries.size());
         assertEquals("There must be src root", entries.get(0).getRoot(), sources);
         buildDir = (String) J2SEProjectUtil.getEvaluatedProperty(pp,"${build.dir}");
         assertNotNull ("There is no build.dir property", buildDir);
@@ -158,6 +164,12 @@ public class SourcePathImplementationTest extends NbTestCase {
             url = new URL (url.toExternalForm() + "/");
         }
         assertEquals("There must be WSClient entry", entries.get(1).getURL(), url);
+        f = new File (new File (new File (pp.getAntProjectHelper().resolveFile(buildDir),"generated"),"wsimport"),"client");
+        url = f.toURI().toURL();
+        if (!f.exists()) {
+            url = new URL (url.toExternalForm() + "/");
+        }
+        assertEquals("There must be WSimport/Client entry", entries.get(2).getURL(), url);
     }
 
     public void testIncludesExcludes() throws Exception {
@@ -201,7 +213,7 @@ public class SourcePathImplementationTest extends NbTestCase {
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
         FileOwnerQuery.markExternalOwner(src1.toURI(), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         ClassPath cp = ClassPath.getClassPath(FileUtil.toFileObject(src1), ClassPath.SOURCE);
-        assertNotNull(cp);
+        assertNotNull(cp);        
         assertEquals(2, cp.getRoots().length);
         ClassPath.Entry cpe2 = cp.entries().get(1);
         assertEquals(src2.toURI().toURL(), cpe2.getURL());
@@ -217,7 +229,7 @@ public class SourcePathImplementationTest extends NbTestCase {
         }
         L l = new L();
         cp.addPropertyChangeListener(l);
-        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty(J2SEProjectProperties.INCLUDES, "whatever/");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ProjectManager.getDefault().saveProject(p);
