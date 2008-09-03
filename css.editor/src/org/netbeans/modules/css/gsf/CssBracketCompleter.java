@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -173,37 +174,33 @@ public class CssBracketCompleter implements KeystrokeHandler {
 
     }
 
+    //this method is called within Indent.get(doc).lock() and unlock() section, no need for additional locking
     public int beforeBreak(final Document doc, final int dot, final JTextComponent jtc) throws BadLocationException {
         if (dot == 0 || dot == doc.getLength()) { //check corners
             return -1;
         }
         String context = doc.getText(dot - 1, 2); //get char before and after
-        
+
         if ("{}".equals(context)) { //NOI18N
-            final Reformat reformatter = Reformat.get(doc);
+            final Indent indent = Indent.get(doc);
             BaseDocument bdoc = (BaseDocument) doc;
 
-            reformatter.lock();
-            try {
-                bdoc.runAtomic(new Runnable() {
+            bdoc.runAtomic(new Runnable() {
 
-                    public void run() {
-                        try {
-                            //smart indent
-                            doc.insertString(dot, "\n", null); //NOI18N
-                            //move caret
-                            jtc.getCaret().setDot(dot);
-                            //and indent the line
-                            reformatter.reformat(dot - 1, dot + 2);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                public void run() {
+                    try {
+                        //smart indent
+                        doc.insertString(dot, "\n", null); //NOI18N
+                        //move caret
+                        jtc.getCaret().setDot(dot);
+                        //and indent the line
+                        indent.reindent(dot - 1, dot + 2);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                });
+                }
+            });
 
-            } finally {
-                reformatter.unlock();
-            }
 
         }
 

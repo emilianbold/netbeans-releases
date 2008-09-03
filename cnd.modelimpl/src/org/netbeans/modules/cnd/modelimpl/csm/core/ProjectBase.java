@@ -1032,11 +1032,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             AtomicBoolean oldStatesHasCompileContext = new AtomicBoolean(false);
             
             Collection<FileContainer.StatePair> statesToKeep = new ArrayList<FileContainer.StatePair>();
-            
+
+            // We need to make this pre check
+            // at least for the case of recursion
             if (newState.isValid()) {
                 synchronized (entry.getLock()) {
                     checkStates(newState, entry.getStates(), oldStatesHasCompileContext, statesToKeep, parseNeeded, cleanNeeded);
                     if (parseNeeded.get()) {
+                        // This is preliminary. We *must* set correct states later
                         entry.setStates(statesToKeep, new StatePair(newState, null));
                     }
                     entryModCount = entry.getModCount();
@@ -1049,9 +1052,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             walker.visit();
 
             if (!newState.isValid()) {
+                // we know for sure that entry wasn't changed - no need to restore
                 return csmFile;
             }
             if (!newState.isCompileContext() && oldStatesHasCompileContext.get()) {
+                // we know for sure that entry wasn't changed - no need to restore
                 return csmFile;
             }
 
@@ -1064,10 +1069,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             // 2) check preocessor conditions state (if needed)
             //
             
-            synchronized (entry.getLock()) {
+            synchronized (entry.getLock()) {                
 
-                // check that entry has not been changed since previous check
-                if (parseNeeded.get() && entry.getModCount() != entryModCount) {
+                // 1) check that entry has not been changed since previous check;
+                //    if it has, perform the check again
+                if (entry.getModCount() != entryModCount) {
                     // the entry was changed! check once more
                     statesToKeep.clear();
                     parseNeeded.set(false);
@@ -1077,6 +1083,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     checkStates(newState, entry.getStates(), oldStatesHasCompileContext, statesToKeep, parseNeeded, cleanNeeded);
 
                     if (!newState.isCompileContext() && oldStatesHasCompileContext.get()) {
+                        entry.setStates(statesToKeep);
                         return csmFile;
                     }
                 }
@@ -1091,38 +1098,42 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                                                 
                         boolean isSubset = true; // true if this state is a subset of each old state 
                         boolean isSuperset = true; // true if this state is a superset of each old state
-                        Collection<FilePreprocessorConditionState> oldPCStates = new ArrayList<FilePreprocessorConditionState>();
+                        
+                        Collection<FilePreprocessorConditionState> possibleSuperSet = new ArrayList<FilePreprocessorConditionState>();
 
                         // the checks above guarantee that
-                        // 1. all oldGoodStates are valid
+                        // 1. all statesToKeep are valid
                         // 2. either them all are compileContext
                         //    or this one and them all are NOT compileContext
+                        // so we do *not* check isValid & isCompileContext
 
                         for (FileContainer.StatePair old : statesToKeep) {
                             if (!pcState.isSubset(old.pcState)) {
                                 isSubset = false;
                             }
-                            if(!old.pcState.isSubset(pcState)) {
+                            if(old.pcState != null && !old.pcState.isSubset(pcState)) {
                                 isSuperset = false;
                             }
-                            oldPCStates.add(old.pcState);
+                            if (old.pcState != null) {
+                                possibleSuperSet.add(old.pcState);
+                            }
                         }
                         if (!isSubset) {
-                            if (pcState.isSubset(oldPCStates)) {
+                            if (pcState.isSubset(possibleSuperSet)) {
                                 isSubset = true;
                             }
                         }
 
                         if (isSubset) {
                             parseNeeded.set(false);
-                            cleanNeeded.set(false);
+                            // cleanNeeded.set(false) might be true if there were some invalid states
                         } else if (isSuperset) {
                             statesToKeep.clear();
                             parseNeeded.set(true);
                             cleanNeeded.set(true);
                         } else {
                             parseNeeded.set(true);
-                            cleanNeeded.set(false);
+                            // cleanNeeded.set(false) might be true if there were some invalid states
                         }
                         if (parseNeeded.get()) {
                             if (cleanNeeded.get()) {
@@ -1131,6 +1142,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                                 }
                             }
                             statesToKeep.add(new FileContainer.StatePair(newState, pcState));
+                            entry.setStates(statesToKeep);
+                        } else {
+                            // we probably already added this one; but then decided not to parse it
+                            // so let's restore entry to the old state
                             entry.setStates(statesToKeep);
                         }
 
@@ -1153,6 +1168,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                             cleanNeeded.set(false);
                         }
                     }
+//                    if (parseNeeded.get()) {
+//                        entry.setPCState(newState, pcState);
+//                    }
                 }
             }
 
@@ -1654,6 +1672,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             ProjectComponent.setStable(declarationsSorageKey);
             ProjectComponent.setStable(fileContainerKey);
             ProjectComponent.setStable(graphStorageKey);
+        }
+        if (TraceFlags.PARSE_STATISTICS) {
+            ParseStatistics.getInstance().printResults(this);
+            ParseStatistics.getInstance().clear(this);
         }
     }
 

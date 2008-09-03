@@ -411,6 +411,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             switch(tokenID) { 
                                 case LPAREN:
                                 case SCOPE:
+                                case LBRACKET:
                                     break;
                                 default:                            
                                     popExp();
@@ -838,15 +839,21 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                                 break;
 
                             case TYPE:
+                                if (getValidExpID(peekExp2()) != METHOD_OPEN) {
+                                    popExp();
+                                    pushExp(createTokenExp(VARIABLE));
+                                    break;
+                                }
+                                // no break;
                             case VARIABLE:
                                 if (getValidExpID(peekExp2()) == METHOD_OPEN) {
                                     //top.setExpID(VARIABLE);
                                     addTokenTo(top);
                                     //pushExp(createTokenExp(VARIABLE));
                                     // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
-                                    break;
+                                } else {
+                                    errorState = true;
                                 }
-                                errorState = true;
                                 break;
                             case TYPE_REFERENCE:
                                 if (getValidExpID(peekExp2()) == METHOD_OPEN) {
@@ -857,9 +864,9 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                                     var.addParameter(top);
                                     pushExp(var);
                                     // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
-                                    break;
+                                } else {
+                                    errorState = true;
                                 }
-                                errorState = true;
                                 break;
                             case PREPROC_DIRECTIVE_OPEN:
                                 top.setExpID(PREPROC_DIRECTIVE);
@@ -1923,6 +1930,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
 
         if (kwdType != null) { // keyword constant (in conversions)
             switch (topID) {
+            case NO_EXP: // declaration started with type name
             case NEW: // possibly new kwdType[]
             case PARENTHESIS_OPEN: // conversion
             {

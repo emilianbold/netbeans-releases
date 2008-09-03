@@ -127,6 +127,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/nowdoc02.php", "<title>^</title>", false);
     }
     
+    public void test145692() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue145692.php", "echo $test145692Instance->tst->t^", false);
+    }
+    
     public void test145206_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145206.php", "echo TestIssue145206 :: ^", false);
     }
@@ -145,9 +149,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
                 "echo TestIssue145206 :: createStatic()->create() ->create() -> c^", false);
     }
 
+    /* TEMPORARILY DISABLED
     public void test136744_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test1^", false);
-    }
+    }*/
 
     public void test136744_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test2^", false);

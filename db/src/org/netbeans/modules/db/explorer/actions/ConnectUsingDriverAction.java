@@ -213,17 +213,20 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                     if (event.getPropertyName().equals("connecting")) { // NOI18N
                         fireConnectionStarted();
                     }
-                    if (event.getPropertyName().equals("failed")) { // NOI18N
+                    else if (event.getPropertyName().equals("failed")) { // NOI18N
                         setConnected(false);
                         fireConnectionFailed();
                     }
-                    if (event.getPropertyName().equals("connected")) { //NOI18N
+                    else if (event.getPropertyName().equals("connected")) { //NOI18N
                         setConnected(true);
-                        if (retrieveSchemas(schemaPanel, cinfo, cinfo.getUser()))
-                            cinfo.setSchema(schemaPanel.getSchema());
-                        else {
+                        boolean result = retrieveSchemas(schemaPanel, cinfo, cinfo.getUser());
+                        fireConnectionFinished();
 
-                            fireConnectionFinished();
+                        if (result)
+                        {
+                            cinfo.setSchema(schemaPanel.getSchema());
+                        }
+                        else {
 
                             if (!schemaPanel.schemasAvailable())
                             {
@@ -251,33 +254,12 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                                     return;
                                 }
                             }
-                            else
-                            {
-                                //switch to schema panel
-                                dlg.setSelectedComponent(schemaPanel);
-                                return;
-                            }
                         }
                         
-                        fireConnectionFinished();
-
-                        //connected by "Get Schemas" button in the schema panel => don't create connection node
-                        //and don't close the connect dialog
-                        if (advancedPanel && !okPressed)
-                            return;
-
-                        try {
-                            ((RootNodeInfo)RootNode.getInstance().getInfo()).addConnection(cinfo);
-                        } catch (DatabaseException exc) {
-                            Logger.getLogger("global").log(Level.INFO, null, exc);
-                            DbUtilities.reportError(bundle().getString("ERR_UnableToAddConnection"), exc.getMessage()); // NOI18N
-                            closeConnection();
-                            return;
-                        }
-                        if (dlg != null) {
-                            dlg.close();
-//                        removeListeners(cinfo);
-                        }
+                        //switch to schema panel
+                        dlg.setSelectedComponent(schemaPanel);
+                        return;
+                        
                     } else
                         okPressed = false;
                 }

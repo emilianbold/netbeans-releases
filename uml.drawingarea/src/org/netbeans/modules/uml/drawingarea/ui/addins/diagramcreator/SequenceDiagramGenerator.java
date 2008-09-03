@@ -350,6 +350,10 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
                                     ((UMLNodeWidget)addedW).initializeNode(pEle);
                                     saveDrawEngineIntoMap(lifeline, pEle);
                                 }
+                                else
+                                {
+                                    System.out.println("***WARNING: attempt to add a lifeline cause addition of "+addedW);
+                                }
                                 scene.validate();
                                 horizontalOffset=addedW.getPreferredLocation().x+addedW.getPreferredBounds().x+addedW.getPreferredBounds().width;
                                 numCreated++;
@@ -549,6 +553,15 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
                     {
                         UMLNodeWidget sendLL=m_MapLifelineToEngine.get(sendLifeline);
                         UMLNodeWidget receiveLL=m_MapLifelineToEngine.get(recLifeline);
+                        //in some rare cases, not reproducible consistently nodes are missed, need to skip this message
+                        //it may be better to skip even if it's error somewhere to avoid fail in diagram creation with more worst result.
+                        if(sendLL==null || receiveLL==null)
+                        {
+                            verticalOffset += 15;
+                            System.out.println("***WARNING: source or target lifeline is missed, can't create message");
+                            continue;
+                        }
+                        //
                         Point startingPoint=new Point(0,verticalOffset);
                         Point finishingPoint=new Point(0,verticalOffset);
                         //check if need to bump down result message

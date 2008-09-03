@@ -204,8 +204,13 @@ public class HTMLCompletionQuery  {
             int len = 1;
             
             /* Character reference finder */
-            if( (id == HTMLTokenId.TEXT || id == HTMLTokenId.VALUE) && preText.endsWith( "&" ) ) { // NOI18N
-                result = translateCharRefs( offset-len, len, dtd.getCharRefList( "" ) );
+            if(id == HTMLTokenId.TEXT || id == HTMLTokenId.VALUE) {
+                int ampIndex = preText.lastIndexOf('&'); //NOI18N
+                if(ampIndex > 0) {
+                    len = preText.length() - ampIndex;
+                    String refNamePrefix = preText.substring(ampIndex + 1);
+                    result = translateCharRefs( offset-len, len, dtd.getCharRefList( refNamePrefix ) );
+                }
             } else if( id == HTMLTokenId.CHARACTER ) {
                 if( inside || !preText.endsWith( ";" ) ) { // NOI18N
                     len = offset - itemOffset;

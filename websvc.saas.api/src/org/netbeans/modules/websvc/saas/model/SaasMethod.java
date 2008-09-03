@@ -47,7 +47,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Method.Output;
  *
  * @author nam
  */
-public class SaasMethod {
+public class SaasMethod implements Comparable<SaasMethod> {
     private final Method method;
     private final Saas saas;
     
@@ -86,5 +86,9 @@ public class SaasMethod {
 
     public String getDocumentation() {
         return method.getDocumentation();
+    }
+    
+    public int compareTo(SaasMethod method) {
+        return getDisplayName().compareTo(method.getDisplayName());
     }
 }

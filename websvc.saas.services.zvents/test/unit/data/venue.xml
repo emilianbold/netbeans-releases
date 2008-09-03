@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rsp status="ok">
+    <stream_count>1</stream_count>
+    <venue id="4506">
+        <name>Tech Museum of Innovation</name>
+        <description>
+      The Tech is a cosmopolitan museum singularly focused on technology,
+      how it works and the way that it is changing every aspect of
+      the way we work, live, play and learn. Its people-and-technology
+      focus and the integration of advanced technologies into visitor
+      experiences and infrastructure, distinguishes it from other science
+      centers. The 132,000 square feet of The Tech are shared by four
+      major theme galleries packed full of one-of-a-kind exhibits, the
+      Hackworth IMAX Dome Theater, an educational center for workshops and
+      labs, an upscale cafe, and a retail store featuring books, gifts,
+      and only-in-Silicon Valley items. An estimated 650,000 visitors are
+      expected to trek to The Tech each year, making it one of California's
+      most popular destinations. The Tech began as a dream. In 1978,
+      members of the Junior League of Palo Alto, later joined by the
+      San Jose League, envisioned an exciting learning center devoted to
+      science and technology in the heart of Silicon Valley. The vision
+      for The Tech was realized in 1990 when a 20,000-square-foot temporary
+      test facility was opened in the old convention center on San Carlos
+      Street. Since then, The Tech has fine-tuned its mission of engaging
+      people of all ages in the technologies that affect their daily lives
+      and has built a reputation as a viable and necessary educational
+      resource in the area of science and technology learning. It has
+      also become a landmark for visitors seeking a glimpse of the most
+      inventive place on Earth and a showcase of the latest high-tech gizmos
+      and gadgets that put Silicon Valley on the map. Since the prototype
+      Tech opened, approximately 2,800,000 visitors from all over the world
+      have enjoyed a one-of-a-kind, up close view of Silicon Valley with
+      hands-on, interactive exhibits, workshops, labs, a speakers series,
+      an online exhibit hall and other activities, such as the annual Tech
+      Challenge. This high-tech design contest has attracted nearly 8,000
+      youth during the eleven years of the competition. Gallery Hours:
+      Tues-Sun: 10am-5pm Open Holiday Mondays. *See website for IMAX
+      showtimes and ticket prices. We are open the following Holidays:
+      Monday, February 21st Presidents' Day Monday, May 30th Memorial Day
+      Monday, July 4th Independence Day Monday, September 5th Labor Day
+      Monday, October 10th Columbus Day Friday, November 11th Veteran's
+      Day Monday, December 19th, 2005 Christmas Holiday Monday, December
+      26th, 2005 Christmas Holiday Monday, January 2th, 2006 New Years Day
+      (Observed)
+        </description>
+        <phone>(408) 294-8324</phone>
+        <link>http://www.zvents.com/venues/show/4506</link>
+        <url>http://www.thetech.org</url>
+        <creator_id>2</creator_id>
+        <address>201 S. Market St.</address>
+        <city>San Jose</city>
+        <zipcode>95113</zipcode>
+        <state>California</state>
+        <country>United States</country>
+        <timezone>US/Pacific</timezone>
+        <latitude>37.3319</latitude>
+        <longitude>-121.89</longitude>
+        <venue_types>
+            <venue_type>
+                <id>11</id>
+                <name>Museum / Planetarium</name>
+            </venue_type>
+        </venue_types>
+        <images>
+            <url>http://www.zvents.com/images/internal/img_885.jpg</url>
+        </images>
+    </venue>
+</rsp>

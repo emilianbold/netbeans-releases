@@ -354,8 +354,8 @@ public abstract class SvnCommand implements CommandNotificationListener {
             }            
             add("--username");                               		
             add(user);
-            if(psswd == null || psswd.trim().equals("")) {
-                return;
+            if(psswd == null) {
+                psswd = "\"\"";
             }
             add("--password");                               		
             add(psswd);                               		

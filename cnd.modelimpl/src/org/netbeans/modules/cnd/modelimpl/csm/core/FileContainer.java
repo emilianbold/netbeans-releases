@@ -535,6 +535,9 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         void setStates(Collection<StatePair> pairs);
         void setStates(Collection<StatePair> pairs, StatePair yetOneMore);
         
+        /** Sets (replaces) new conditions state for the existent pair */
+        void setPCState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
+        
         int size();
 
         /**
@@ -550,7 +553,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
         private final CsmUID<CsmFile> fileNew;
         private final CharSequence canonical;
-        private Object data; // either StatePair or Collection<StatePair>
+        private Object data; // either StatePair or List<StatePair>
         private int modCount;
         
         private MyFile (final DataInput input) throws IOException {
@@ -663,6 +666,32 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             incrementModCount();
             //assert size() <= 1 : "this method shold never be called for an entry with mltiple states"; //NOI18N
             data = new StatePair(state, null);
+        }
+        
+        public synchronized void setPCState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
+            assert state != null : "state should not be null"; //NOI18N
+            if (state == null) {
+                return;
+            }
+            if (data instanceof StatePair) {
+                StatePair pair = (StatePair) data;
+                if (state.equals(pair.state)) {
+                    data = new StatePair(state, new FilePreprocessorConditionState(pcState));
+                } else {
+                    assert false : "attempt to set condition state to inexistent pair"; //NOI18N
+                }
+                
+            } else {
+                List<StatePair> list = (List<StatePair>) data;
+                for (int i = 0; i < list.size(); i++) {
+                    StatePair pair = list.get(i);
+                    if (state.equals(pair.state)) {
+                        list.set(i, new StatePair(state, new FilePreprocessorConditionState(pcState)));
+                        return;
+                    }
+                }
+                assert false : "attempt to set condition state to inexistent pair"; //NOI18N
+            }
         }
         
         public synchronized void setStates(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState) {
