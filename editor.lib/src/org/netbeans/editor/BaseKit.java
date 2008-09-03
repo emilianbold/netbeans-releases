@@ -1664,13 +1664,19 @@ public class BaseKit extends DefaultEditorKit {
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                // If there is no selection then pre-select a current line including newline
-                if (!Utilities.isSelectionShowing(target)) {
-                    Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
-                            target.getCaretPosition());
-                    target.select(elem.getStartOffset(), elem.getEndOffset());
+                try {
+                    // If there is no selection then pre-select a current line including newline
+                    if (!Utilities.isSelectionShowing(target)) {
+                        Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
+                                target.getCaretPosition());
+                        if (!Utilities.isRowWhite((BaseDocument) target.getDocument(), elem.getStartOffset())) {
+                            target.select(elem.getStartOffset(), elem.getEndOffset());
+                        }
+                    }
+                    target.copy();
+                } catch (BadLocationException ble) {
+                    LOG.log(Level.FINE, null, ble);
                 }
-                target.copy();
             }
         }
     }
