@@ -39,15 +39,61 @@
 
 package org.netbeans.modules.db.api.sql.execute;
 
-import java.util.Collection;
+import java.sql.SQLException;
+import java.text.NumberFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.db.sql.loader.SQLEditorSupport;
+import org.openide.util.NbBundle;
 
 /**
+ * This logger writes everything to the log file.
  *
  * @author David Van Couvering
  */
-public interface StatementExecutionInfo {
-    public String getSQL();
-    public boolean hasExceptions();
-    public Collection<Throwable> getExceptions();
-    public long getExecutionTime();
+public class LogFileLogger implements SQLExecuteLogger {
+    private static Logger LOGGER = Logger.getLogger(LogFileLogger.class.getName());
+    
+    private int errorCount;
+
+    public void log(StatementExecutionInfo info) {
+        if (info.hasExceptions()) {
+            logException(info);
+        }
+    }
+
+    public void finish(long executionTime) {
+        LOGGER.log(Level.INFO, (NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionFinished",
+                String.valueOf(millisecondsToSeconds(executionTime)),
+                String.valueOf(errorCount))));
+    }
+
+    public void cancel() {
+        LOGGER.log(Level.INFO, NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionCancelled"));
+    }
+
+    private void logException(StatementExecutionInfo info) {
+        errorCount++;
+
+        for(Throwable e: info.getExceptions()) {
+            if (e instanceof SQLException) {
+                logSQLException((SQLException)e, info);
+            } else {
+                LOGGER.log(Level.INFO, NbBundle.getMessage(SQLExecutor.class, "MSG_SQLExecutionException", info.getSQL()), e);
+            }
+        }
+    }
+
+    private void logSQLException(SQLException e, StatementExecutionInfo info) {
+        while (e != null) {
+            LOGGER.log(Level.INFO, NbBundle.getMessage(SQLExecutor.class, "MSG_SQLExecutionException", info.getSQL()), e);
+            e = e.getNextException();
+        }
+    }
+
+    private String millisecondsToSeconds(long ms) {
+        NumberFormat fmt = NumberFormat.getInstance();
+        fmt.setMaximumFractionDigits(3);
+        return fmt.format(ms / 1000.0);
+    }
 }
