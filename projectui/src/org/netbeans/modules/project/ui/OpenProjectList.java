@@ -777,9 +777,25 @@ public final class OpenProjectList {
                 // correct loaded list.
                 try {
                     mainProject = ProjectManager.getDefault().findProject(mainProject.getProjectDirectory());
-                    if (mainProject != null && !openProjects.contains(mainProject)) {
-                        logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
-                        throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                    if (mainProject != null) {
+                        boolean fail = true;
+                        for (Project p : openProjects) {
+                            if (p.equals(mainProject)) {
+                                fail = false;
+                                break;
+                            }
+                            if (p instanceof LazyProject) {
+                                if (p.getProjectDirectory().equals(mainProject.getProjectDirectory())) {
+                                    mainProject = p;
+                                    fail = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (fail) {
+                            logProjects("setMainProject(): openProjects == ", openProjects.toArray(new Project[0])); // NOI18N
+                            throw new IllegalArgumentException("NB_REPORTER_IGNORE: Project " + ProjectUtils.getInformation(mainProject).getDisplayName() + " is not open and cannot be set as main.");
+                        }
                     }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
