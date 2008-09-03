@@ -50,6 +50,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ146030_5() throws Exception {
+        // IZ#146030: set of problems for declarations in Loki
+        // usecase 5)
+        performTest("useenumerators.cc", 55, 20, "useenumerators.cc", 52, 9);
+    }
+    
     public void testIZ138902() throws Exception {
         // IZ#138902: No completion and hyperl ink  to enumerator in structure init
         performTest("useenumerators.cc", 48, 35, "useenumerators.cc", 43, 19);
