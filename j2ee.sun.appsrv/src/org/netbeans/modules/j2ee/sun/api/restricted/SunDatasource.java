@@ -45,7 +45,7 @@
  *
  */
 
-package org.netbeans.modules.j2ee.sun.share.serverresources;
+package org.netbeans.modules.j2ee.sun.api.restricted;
 
 import java.io.File;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;

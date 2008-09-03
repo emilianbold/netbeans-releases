@@ -1,3 +1,4 @@
+// <editor-fold defaultstate="collapsed" desc=" License Header ">
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -22,6 +23,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -37,16 +39,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.lib.profiler;
-
+// </editor-fold>
 
 /**
- *
- * @author Jaroslav Bachorik
+ * DO NOT USE THESE CLASSES, unless you are going to use them inside j2ee.sun.appsrv81.
  */
-public interface ContextAware {
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    void setContext(ProfilerClient client);
-}
+package org.netbeans.modules.j2ee.sun.api.restricted;

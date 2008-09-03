@@ -207,6 +207,29 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 
             }
         }
+                
+        //reinitialize properties that are different in case of JRE or only-JDK allowance
+        final boolean jreAllowed = isJreAllowed();
+        setProperty(LOCATION_LABEL_TEXT_PROPERTY,
+                jreAllowed ? DEFAULT_LOCATION_LABEL_TEXT_JAVA : DEFAULT_LOCATION_LABEL_TEXT);
+        setProperty(LIST_LABEL_TEXT_PROPERTY,
+                jreAllowed ? DEFAULT_LIST_LABEL_TEXT_JAVA : DEFAULT_LIST_LABEL_TEXT);
+        setProperty(ERROR_NULL_PROPERTY,
+                jreAllowed ? DEFAULT_ERROR_NULL_JAVA : DEFAULT_ERROR_NULL);
+        setProperty(ERROR_NOT_VALID_PATH_PROPERTY,
+                jreAllowed ? DEFAULT_ERROR_NOT_VALID_PATH_JAVA : DEFAULT_ERROR_NOT_VALID_PATH);
+        setProperty(ERROR_PATH_NOT_EXISTS_PROPERTY,
+                jreAllowed ? DEFAULT_ERROR_PATH_NOT_EXISTS_JAVA : DEFAULT_ERROR_PATH_NOT_EXISTS);
+        setProperty(ERROR_NOT_JAVAHOME_PROPERTY,
+                jreAllowed ? DEFAULT_ERROR_NOT_JAVAHOME_JAVA : DEFAULT_ERROR_NOT_JAVAHOME);
+        setProperty(ERROR_WRONG_VERSION_OLDER_PROPERTY,
+                jreAllowed ? DEFAULT_ERROR_WRONG_VERSION_OLDER_JAVA : DEFAULT_ERROR_WRONG_VERSION_OLDER);
+        setProperty(ERROR_WRONG_VERSION_NEWER_PROPERTY,
+                jreAllowed ? DEFAULT_ERROR_WRONG_VERSION_NEWER_JAVA : DEFAULT_ERROR_WRONG_VERSION_NEWER);
+        setProperty(ERROR_WRONG_VENDOR_PROPERTY,
+                jreAllowed ? DEFAULT_ERROR_WRONG_VENDOR_JAVA : DEFAULT_ERROR_WRONG_VENDOR);
+        setProperty(ERROR_NOTHING_FOUND_PROPERTY,
+                jreAllowed ? DEFAULT_ERROR_NOTHING_FOUND_JAVA : DEFAULT_ERROR_NOTHING_FOUND);
     }
     
     public List<File> getLocations() {
@@ -543,12 +566,18 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     public static final String DEFAULT_LOCATION_LABEL_TEXT =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.location.label.text"); // NOI18N
+    public static final String DEFAULT_LOCATION_LABEL_TEXT_JAVA =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.location.label.text.java"); // NOI18N
     public static final String DEFAULT_LOCATION_BUTTON_TEXT =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.location.button.text"); // NOI18N
     public static final String DEFAULT_LIST_LABEL_TEXT =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.list.label.text"); // NOI18N
+    public static final String DEFAULT_LIST_LABEL_TEXT_JAVA =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.list.label.text.java"); // NOI18N
     
     public static final String ERROR_NULL_PROPERTY =
             "error.null"; // NOI18N
@@ -572,27 +601,48 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     public static final String DEFAULT_ERROR_NULL =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.error.null"); // NOI18N
+    public static final String DEFAULT_ERROR_NULL_JAVA =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.error.null.java"); // NOI18N
     public static final String DEFAULT_ERROR_NOT_VALID_PATH =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.error.not.valid.path"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_VALID_PATH_JAVA =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.error.not.valid.path.java"); // NOI18N
     public static final String DEFAULT_ERROR_PATH_NOT_EXISTS =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.error.path.not.exists"); // NOI18N
+    public static final String DEFAULT_ERROR_PATH_NOT_EXISTS_JAVA =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.error.path.not.exists.java"); // NOI18N
     public static final String DEFAULT_ERROR_NOT_JAVAHOME =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.error.not.javahome"); // NOI18N
+    public static final String DEFAULT_ERROR_NOT_JAVAHOME_JAVA =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.error.not.javahome.java"); // NOI18N
     public static final String DEFAULT_ERROR_NOT_JDK =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.error.not.jdk"); // NOI18N
     public static final String DEFAULT_ERROR_WRONG_VERSION_OLDER =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.error.wrong.version.older"); // NOI18N
+    public static final String DEFAULT_ERROR_WRONG_VERSION_OLDER_JAVA =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.error.wrong.version.older.java"); // NOI18N
     public static final String DEFAULT_ERROR_WRONG_VERSION_NEWER =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.error.wrong.version.newer"); // NOI18N
+    public static final String DEFAULT_ERROR_WRONG_VERSION_NEWER_JAVA =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.error.wrong.version.newer.java"); // NOI18N
     public static final String DEFAULT_ERROR_WRONG_VENDOR =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.error.wrong.vendor"); // NOI18N
+    public static final String DEFAULT_ERROR_WRONG_VENDOR_JAVA =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.error.wrong.vendor.java"); // NOI18N
     
     public static final String DEFAULT_ERROR_UNKNOWN =
             ResourceUtils.getString(JdkLocationPanel.class,
@@ -600,6 +650,9 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     public static final String DEFAULT_ERROR_NOTHING_FOUND =
             ResourceUtils.getString(JdkLocationPanel.class,
             "JLP.error.nothing.found"); // NOI18N
+    public static final String DEFAULT_ERROR_NOTHING_FOUND_JAVA =
+            ResourceUtils.getString(JdkLocationPanel.class,
+            "JLP.error.nothing.found.java"); // NOI18N
     
     public static final String DEFAULT_MINIMUM_JDK_VERSION =
             ResourceUtils.getString(JdkLocationPanel.class,

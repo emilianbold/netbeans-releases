@@ -45,7 +45,7 @@
  * Created on September 17, 2003, 11:54 AM
  */
 
-package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
+package org.netbeans.modules.j2ee.sun.api.restricted;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -55,7 +55,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 import java.util.List;
 import java.util.Vector;
@@ -93,8 +92,11 @@ import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
-import org.netbeans.modules.j2ee.sun.share.serverresources.SunDatasource;
-import org.netbeans.modules.j2ee.sun.share.serverresources.SunMessageDestination;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ConnPoolBean;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.DataSourceBean;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JMSBean;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.JavaMailSessionBean;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.PersistenceManagerBean;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.DatabaseUtils;
 
 /*

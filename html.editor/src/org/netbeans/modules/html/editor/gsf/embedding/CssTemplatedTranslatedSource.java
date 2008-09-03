@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,40 +31,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.sun.share.serverresources;
 
-import java.io.File;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+package org.netbeans.modules.html.editor.gsf.embedding;
+
+import org.netbeans.modules.css.parser.CssParserResultHolder;
+import org.netbeans.modules.css.parser.CssParserAccess.CssParserResult;
+import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
  *
- * @author Nitya Doraisamy
+ * @author Tor Norbye
  */
-public class SunMessageDestination implements MessageDestination {
-    private String name;
-    private Type type;
-    private File resourceDir;
-    
-    public SunMessageDestination(String name, Type type) {
-        this.name = name;
-        this.type = type;
+public class CssTemplatedTranslatedSource implements TranslatedSource, CssParserResultHolder {
+    private CssTemplatedModel model;
+    private CssTemplatedEmbeddingModel embeddingModel;
+
+    public CssTemplatedTranslatedSource(CssTemplatedEmbeddingModel embeddingModel, CssTemplatedModel model) {
+        this.embeddingModel = embeddingModel;
+        this.model = model;
     }
 
-    public String getName() {
-        return this.name;
+    public int getAstOffset(int lexicalOffset) {
+        return model.sourceToGeneratedPos(lexicalOffset);
     }
 
-    public Type getType() {
-        return this.type;
-    }
-   
-    public File getResourceDir() {
-        return resourceDir;
+    public int getLexicalOffset(int astOffset) {
+        return model.generatedToSourcePos(astOffset);
     }
 
-    public void setResourceDir(File resourceDir) {
-        this.resourceDir = resourceDir;
+    public String getSource() {
+        return model.getCode();
     }
-    
+
+    public EmbeddingModel getModel() {
+        return embeddingModel;
+    }
+
+    public int getSourceStartOffset() {
+        return 0;
+    }
+
+    public int getSourceEndOffset() {
+        return model.getCode().length();
+    }
+
+    public CssParserResult result() {
+        return model.getCachedParserResult();
+    }
 }

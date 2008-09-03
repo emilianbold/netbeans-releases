@@ -66,34 +66,23 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
 
     @Override
     public void setUp() throws Exception {
-        super.setUp();
-
-        if (! isDerby()) {
-            return;
-        }
-        
-        conn = getConnection();
-
+        clearWorkDir();
+        Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+        conn = DriverManager.getConnection("jdbc:derby:" + getWorkDirPath() + "/test;create=true");
         Statement stmt = conn.createStatement();
         stmt.executeUpdate("CREATE TABLE FOO (" +
                 "ID INT NOT NULL PRIMARY KEY, " +
                 "FOO_NAME VARCHAR(16))");
-
         stmt.executeUpdate("CREATE TABLE BAR (" +
                 "\"i+d\" INT NOT NULL PRIMARY KEY, " +
                 "FOO_ID INT NOT NULL, " +
                 "BAR_NAME VARCHAR(16), " +
                 "FOREIGN KEY (FOO_ID) REFERENCES FOO(ID))");
-        
         stmt.close();
-        metadata = new JDBCMetadata(conn, getSchema());
+        metadata = new JDBCMetadata(conn, "APP");
     }
 
     public void testRunReadAction() throws Exception {
-        if (! isDerby()) {
-            return;
-        }
-
         Catalog defaultCatalog = metadata.getDefaultCatalog();
         assertEquals(1, metadata.getCatalogs().size());
         assertTrue(metadata.getCatalogs().contains(defaultCatalog));
@@ -101,9 +90,9 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         assertNotNull(defaultCatalog.getSchema("NULLID"));
         assertNotNull(defaultCatalog.getSchema("SYSCAT"));
 
-        Schema appSchema = defaultCatalog.getSchema(getSchema());
+        Schema appSchema = defaultCatalog.getSchema("APP");
         assertSame(appSchema, defaultCatalog.getDefaultSchema());
-        assertEquals(getSchema(), appSchema.getName());
+        assertEquals("APP", appSchema.getName());
         assertFalse(appSchema.isSynthetic());
         assertTrue(appSchema.isDefault());
 
@@ -125,9 +114,6 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
     }
 
     public void testRefresh() throws Exception {
-        if (! isDerby()) {
-            return;
-        }
         assertNull(metadata.getDefaultCatalog().getSchema("FOOBAR"));
         Statement stmt = conn.createStatement();
         stmt.executeUpdate("CREATE SCHEMA FOOBAR");
@@ -137,10 +123,6 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
     }
 
     public void testRefreshTable() throws Exception {
-        if (! isDerby()) {
-            return;
-        }
-
         Table fooTable = metadata.getDefaultCatalog().getDefaultSchema().getTable("FOO");
         assertNames(Arrays.asList("ID", "FOO_NAME"), fooTable.getColumns());
         Statement stmt = conn.createStatement();

@@ -37,51 +37,60 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.core.syntax.gsf.embedding;
+package org.netbeans.modules.html.editor.gsf.embedding;
 
-import org.netbeans.modules.css.parser.CssParserResultHolder;
-import org.netbeans.modules.css.parser.CssParserAccess.CssParserResult;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.text.Document;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 
+
 /**
+ * An implementation of EmbeddingModel providing CSS virtual source for JSP files.
  *
- * @author Tor Norbye
+ * @author Marek Fukala
  */
-public class CssJspTranslatedSource implements TranslatedSource, CssParserResultHolder {
-    private CssJspModel model;
-    private CssJspEmbeddingModel embeddingModel;
+public class CssTemplatedEmbeddingModel implements EmbeddingModel {
 
-    public CssJspTranslatedSource(CssJspEmbeddingModel embeddingModel, CssJspModel model) {
-        this.embeddingModel = embeddingModel;
-        this.model = model;
+    static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
+    static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
+    static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
+    static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
+    static final String GSP_MIME_TYPE = "application/x-gsp"; // NOI18N
+    
+    
+    final Set<String> sourceMimeTypes = new HashSet<String>();
+
+    public CssTemplatedEmbeddingModel() {
+        sourceMimeTypes.add(JSP_MIME_TYPE);
+        sourceMimeTypes.add(TAG_MIME_TYPE);
+        sourceMimeTypes.add(PHP_MIME_TYPE);
+        sourceMimeTypes.add(RHTML_MIME_TYPE);
+        sourceMimeTypes.add(GSP_MIME_TYPE);
+        
+    }
+    
+    public String getTargetMimeType() {
+        return "text/x-css";
     }
 
-    public int getAstOffset(int lexicalOffset) {
-        return model.sourceToGeneratedPos(lexicalOffset);
+    public Set<String> getSourceMimeTypes() {
+        return sourceMimeTypes;
     }
 
-    public int getLexicalOffset(int astOffset) {
-        return model.generatedToSourcePos(astOffset);
+    public Collection<? extends TranslatedSource> translate(Document doc) {
+        // This will cache
+        CssTemplatedModel model = CssTemplatedModel.get(doc);
+        return Collections.singletonList(new CssTemplatedTranslatedSource(this, model));
     }
 
-    public String getSource() {
-        return model.getCode();
+    @Override
+    public String toString() {
+        return "CssJspEmbeddingModel(target=" + getTargetMimeType() + ",sources=" + getSourceMimeTypes() + ")";
     }
-
-    public EmbeddingModel getModel() {
-        return embeddingModel;
-    }
-
-    public int getSourceStartOffset() {
-        return 0;
-    }
-
-    public int getSourceEndOffset() {
-        return model.getCode().length();
-    }
-
-    public CssParserResult result() {
-        return model.getCachedParserResult();
-    }
+    
+    
 }

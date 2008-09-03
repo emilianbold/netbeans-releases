@@ -51,7 +51,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
-import junit.framework.TestSuite;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -59,7 +58,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.hints.TestUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -360,6 +358,15 @@ public class IntroduceHintTest extends NbTestCase {
                        "package test; public class Test { static final int NAME = 3 + 4; int y = NAME; int z = NAME;}",
                        new DialogDisplayerImpl(null, true, false, true, EnumSet.noneOf(Modifier.class)),
                        1, 0);
+    }
+
+    public void testConstantFix130938() throws Exception {
+        performFixTest("package test;import java.util.logging.Level;import java.util.logging.Logger;public class Test {public void foo() { Logger.getLogger(Test.class.getName()).log(Level.FINEST, \"foo\");}}",
+                       140 - 25,
+                       178 - 25,
+                       "package test;import java.util.logging.Level;import java.util.logging.Logger;public class Test { static final Logger LOGGER = Logger.getLogger(Test.class.getName()); public void foo() { LOGGER.log(Level.FINEST, \"foo\");}}",
+                       new DialogDisplayerImpl(null, true, true, true, EnumSet.noneOf(Modifier.class)),
+                       4, 1);
     }
     
     public void testIntroduceFieldFix1() throws Exception {
@@ -1112,7 +1119,16 @@ public class IntroduceHintTest extends NbTestCase {
         public DialogDisplayerImpl(String name, Boolean replaceAll, Boolean declareFinal, boolean ok) {
             this(name, replaceAll, declareFinal, ok, EnumSet.of(Modifier.PRIVATE));
         }
-        
+
+        /**
+         * Uses introduce dialog
+         *
+         * @param name name of newly created name/constant
+         * @param replaceAll replace all occurences?
+         * @param declareFinal should be declared as final?
+         * @param ok confirm the dialog?
+         * @param modifiers list of modifiers
+         */
         public DialogDisplayerImpl(String name, Boolean replaceAll, Boolean declareFinal, boolean ok, Set<Modifier> modifiers) {
             this.name = name;
             this.replaceAll = replaceAll;
