@@ -317,6 +317,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             }
                         }
                     } finally {
+                        postParse();
                         synchronized (changeStateLock) {
                             if (state == State.BEING_PARSED) {
                                 state = State.PARSED;
@@ -347,6 +348,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                 state = State.PARSED;
                             } // if not, someone marked it with new state
                         }
+                        postParse();
                         stateLock.notifyAll();
                     }
 		    if( TraceFlags.DUMP_PARSE_RESULTS || TraceFlags.DUMP_REPARSE_RESULTS ) new CsmTracer().dumpModel(this);
@@ -357,6 +359,22 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	}
     }   
     
+    private void postParse() {
+        if (isValid()) {   // FIXUP: use a special lock here
+            RepositoryUtils.put(this);
+        }
+        if (TraceFlags.USE_DEEP_REPARSING && isValid()) {	// FIXUP: use a special lock here
+            getProjectImpl(true).getGraph().putFile(this);
+        }
+        if (isValid()) {   // FIXUP: use a special lock here
+            Notificator.instance().registerChangedFile(this);
+            Notificator.instance().flush();
+        } else {
+            // FIXUP: there should be a notificator per project instead!
+            Notificator.instance().reset();
+        }
+    }
+
     public boolean validate() {
 	synchronized (changeStateLock) {
 	    if( state == State.PARSED ) {
@@ -419,30 +437,16 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         
     private void _reparse(APTPreprocHandler preprocHandler) {
         if( TraceFlags.DEBUG ) Diagnostic.trace("------ reparsing " + fileBuffer.getFile().getName()); // NOI18N
-	//Notificator.instance().startTransaction();
-	try {
-            _clearIncludes();
-            _clearMacros();
-            if( reportParse || TraceFlags.DEBUG ) logParse("ReParsing", preprocHandler); //NOI18N
-            AST ast = doParse(preprocHandler);
-            if (ast != null) {
-                disposeAll(false);
-                render(ast);
-            } else {
-                //System.err.println("null ast for file " + getAbsolutePath());
-            }
-	}
-	finally {
-	    //Notificator.instance().endTransaction();
-            // update this file and it's project     
-            RepositoryUtils.put(this);
-            if (TraceFlags.USE_DEEP_REPARSING) {
-                getProjectImpl(true).getGraph().putFile(this);
-            }
-            Notificator.instance().registerChangedFile(this);
-            Notificator.instance().flush();
-	}
-	    
+        _clearIncludes();
+        _clearMacros();
+        if( reportParse || TraceFlags.DEBUG ) logParse("ReParsing", preprocHandler); //NOI18N
+        AST ast = doParse(preprocHandler);
+        if (ast != null) {
+            disposeAll(false);
+            render(ast);
+        } else {
+            //System.err.println("null ast for file " + getAbsolutePath());
+        }
     }
 
     public void dispose() {
@@ -523,36 +527,18 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private AST _parse(APTPreprocHandler preprocHandler) {
         
 	Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
-	
-        try {
-            if( reportParse || TraceFlags.DEBUG ) logParse("Parsing", preprocHandler); //NOI18N
-            AST ast = doParse((preprocHandler == null) ?  getPreprocHandler() : preprocHandler);
-            if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
-            
-            if( ast != null ) {
-                Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
-                //Notificator.instance().startTransaction();
-		if( isValid() ) {   // FIXUP: use a special lock here
-		    render(ast);
-		    if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw2.stopAndReport("Rendering of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
-		}
-                return ast;
-            }
-        } finally {
-            if (isValid()) {   // FIXUP: use a special lock here
-                RepositoryUtils.put(this);
-            }
-            if (TraceFlags.USE_DEEP_REPARSING && isValid()) {	// FIXUP: use a special lock here
-                getProjectImpl(true).getGraph().putFile(this);
-            }
+        if( reportParse || TraceFlags.DEBUG ) logParse("Parsing", preprocHandler); //NOI18N
+
+        AST ast = doParse((preprocHandler == null) ?  getPreprocHandler() : preprocHandler);
+        if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
+
+        if( ast != null ) {
+            Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
             if( isValid() ) {   // FIXUP: use a special lock here
-		Notificator.instance().registerChangedFile(this);
-		Notificator.instance().flush();
-	    }
-	    else {
-		// FIXUP: there should be a notificator per project instead!
-		Notificator.instance().reset();
-	    }
+                render(ast);
+                if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw2.stopAndReport("Rendering of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
+            }
+            return ast;
         }
         return null;
     }
