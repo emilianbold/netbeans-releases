@@ -64,6 +64,7 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
         super (name);
     }
 
+    @Override
     protected void setUp () throws Exception {
         log = Log.enable("org.openide.loaders", Level.WARNING);
         
@@ -89,6 +90,7 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
         lock.releaseLock ();
     }
     
+    @Override
     protected void tearDown () throws Exception {
         super.tearDown ();
         TestUtilHid.destroyLocalFileSystem (getName());
@@ -117,7 +119,7 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
         org.w3c.dom.Element e = doc.getDocumentElement ();
         assertNotNull ("Document parsed", doc);
         
-        assertEquals ("status is ok", xml.STATUS_OK, xml.getStatus ());
+        assertEquals ("status is ok", XMLDataObject.STATUS_OK, xml.getStatus ());
         
         assertNotNull("Has open cookie", xml.getCookie(OpenCookie.class));
         assertNotNull("Has open cookie in lookup", xml.getLookup().lookup(OpenCookie.class));
