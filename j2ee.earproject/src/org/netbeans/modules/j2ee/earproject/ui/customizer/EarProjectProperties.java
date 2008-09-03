@@ -252,7 +252,7 @@ public final class EarProjectProperties {
     /** Utility field used by bound properties. */
     private final PropertyChangeSupport propertyChangeSupport =  new PropertyChangeSupport(this);
 
-    public EarProjectProperties(EarProject project, UpdateHelper updateHelper, 
+    EarProjectProperties(EarProject project, UpdateHelper updateHelper, 
             PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
         this.updateHelper = project.getUpdateHelper();

@@ -112,7 +112,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Petr Hrebejk, Radko Najman
  */
-public class WebProjectProperties {
+final public class WebProjectProperties {
     
     public static final String J2EE_1_4 = "1.4"; // NOI18N
     public static final String J2EE_1_3 = "1.3"; // NOI18N

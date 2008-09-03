@@ -123,7 +123,7 @@ import org.w3c.dom.Text;
  *
  * @author vince kraemer
  */
-public final class EarProject implements Project, AntProjectListener, ProjectPropertyProvider {
+public final class EarProject implements Project, AntProjectListener {
     
     private static final Icon EAR_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/j2ee/earproject/ui/resources/projectIcon.gif")); // NOI18N
     public static final String ARTIFACT_TYPE_EAR = "ear";
@@ -658,10 +658,6 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
     
     public String getJ2eePlatformVersion() {
         return  helper.getStandardPropertyEvaluator().getProperty(EarProjectProperties.J2EE_PLATFORM);
-    }
-    
-    public EarProjectProperties getProjectProperties() {
-        return new EarProjectProperties(this, updateHelper, eval, refHelper);
     }
     
     public GeneratedFilesHelper getGeneratedFilesHelper() {
