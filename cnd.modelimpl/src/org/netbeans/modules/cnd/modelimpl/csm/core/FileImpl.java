@@ -418,16 +418,12 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
         
     private void _reparse(APTPreprocHandler preprocHandler) {
-        if (! ParserThreadManager.instance().isParserThread() && ! ParserThreadManager.instance().isStandalone()) {
-            String text = "Reparsing should be done only in a special Code Model Thread!!!"; // NOI18N
-            Diagnostic.trace(text);
-            new Throwable(text).printStackTrace(System.err);
-        }
         if( TraceFlags.DEBUG ) Diagnostic.trace("------ reparsing " + fileBuffer.getFile().getName()); // NOI18N
 	//Notificator.instance().startTransaction();
 	try {
             _clearIncludes();
             _clearMacros();
+            if( reportParse || TraceFlags.DEBUG ) logParse("ReParsing", preprocHandler); //NOI18N
             AST ast = doParse(preprocHandler);
             if (ast != null) {
                 disposeAll(false);
@@ -526,17 +522,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     private AST _parse(APTPreprocHandler preprocHandler) {
         
-        if (reportErrors) {
-	    if (! ParserThreadManager.instance().isParserThread()  && ! ParserThreadManager.instance().isStandalone()) {
-		String text = "Reparsing should be done only in a special Code Model Thread!!!"; // NOI18N
-		Diagnostic.trace(text);
-		new Throwable(text).printStackTrace(System.err);
-	    }
-        }        
-	
 	Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
 	
         try {
+            if( reportParse || TraceFlags.DEBUG ) logParse("Parsing", preprocHandler); //NOI18N
             AST ast = doParse((preprocHandler == null) ?  getPreprocHandler() : preprocHandler);
             if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) sw.stopAndReport("Parsing of " + fileBuffer.getFile().getName() + " took \t"); // NOI18N
             
@@ -568,6 +557,17 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return null;
     }
 
+    private void logParse(String title, APTPreprocHandler preprocHandler) {
+        if( reportParse || TraceFlags.DEBUG ) {
+            APTPreprocHandler.State state = preprocHandler.getState();
+            System.err.printf("# %s %s (valid=%b, compile-context=%b) (Thread=%s)\n", title, fileBuffer.getFile().getPath(),
+                    state.isValid(), state.isCompileContext(), Thread.currentThread().getName());
+            if (reportState) {
+                System.err.printf("%s\n\n", preprocHandler.getState());
+            }
+        }
+    }
+    
     private TokenStream createFullTokenStream() {
         APTPreprocHandler preprocHandler = getPreprocHandler();
         APTFile apt = null;
@@ -742,17 +742,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     private AST doParse(APTPreprocHandler preprocHandler) {
-//        if( "cursor.hpp".equals(fileBuffer.getFile().getName()) ) {
-//            System.err.println("cursor.hpp");
-//        }  
-        if( reportParse || TraceFlags.DEBUG ) {
-            APTPreprocHandler.State state = preprocHandler.getState();
-            System.err.printf("# APT-based AST-cached Parsing %s (valid=%b, compile-context=%b) (Thread=%s)\n", fileBuffer.getFile().getPath(),
-                    state.isValid(), state.isCompileContext(), Thread.currentThread().getName());
-            if (reportState) {
-                System.err.printf("%s\n\n", preprocHandler.getState());
-            }
-        }
+        
+        if (reportErrors) {
+	    if (! ParserThreadManager.instance().isParserThread()  && ! ParserThreadManager.instance().isStandalone()) {
+		String text = "Reparsing should be done only in a special Code Model Thread!!!"; // NOI18N
+		Diagnostic.trace(text);
+		new Throwable(text).printStackTrace(System.err);
+	    }
+        }        
+        
         ParseStatistics.getInstance().fileParsed(this, preprocHandler);
         
         int flags = CPPParserEx.CPP_CPLUSPLUS;
