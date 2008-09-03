@@ -194,7 +194,7 @@ public class CRUDTest extends RestTestBase {
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, 1);
         jcbo.clickMouse();
         //choose jdbc/sample connection
-        jcbo.selectItem(1);
+        jcbo.selectItem("jdbc/sample"); //NOI18N
         //skip Connecting to Database dialog
         //wait only for Please Wait dialog
         String waitTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.util.Bundle", "MSG_PleaseWait");
