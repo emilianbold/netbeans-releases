@@ -178,6 +178,9 @@ public class J2SEProjectProperties {
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
     // Main build.xml location
     public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
+    
+    //NB 6.1 tracking of files modifications
+    public static final String TRACK_FILE_CHANGES="track.file.changes"; //NOI18N
 
     
     // Well known paths
