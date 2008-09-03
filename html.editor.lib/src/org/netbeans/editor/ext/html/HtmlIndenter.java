@@ -147,6 +147,12 @@ public class HtmlIndenter {
         //lets try to find the pair lexically.
         //it is very likely that the text near of the end tag position contains the open tag if there is any
         //so we do not need a stack to properly filter closed tags
+        
+        if(htmlTokenSequence == null) {
+            //no html content
+            return ;
+        }
+        
         int limit = 50; //limit the backward search to some reasonable range; 50 tokens seems to be enought
         htmlTokenSequence.move(offset);
         //lexer bug hack
@@ -185,6 +191,10 @@ public class HtmlIndenter {
 
 
     private static String getCloseTagName(TokenSequence sequence, int offset) {
+        if(sequence == null) {
+            return  null;
+        }
+        
         sequence.move(offset);
 
         if (!sequence.moveNext()) {
