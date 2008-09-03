@@ -798,7 +798,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
                 prevBnd=recCur;
             }
         }
-        //
+        //case where no operands was handlled by previous section so entire cf need to be handled by boundary limits
         if(bounds==null)
         {
             //have no children, will look for neighbors
