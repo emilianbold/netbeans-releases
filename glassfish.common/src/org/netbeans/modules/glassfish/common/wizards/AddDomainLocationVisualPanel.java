@@ -148,11 +148,14 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
 
         domainFieldLabel = new javax.swing.JLabel();
         domainField = new javax.swing.JComboBox();
+        explanationLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(domainFieldLabel, org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.domainFieldLabel.text")); // NOI18N
 
         domainField.setEditable(true);
         domainField.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        explanationLabel.setText(org.openide.util.NbBundle.getMessage(AddDomainLocationVisualPanel.class, "AddDomainLocationVisualPanel.explanationLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -161,7 +164,8 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(domainFieldLabel)
                 .add(18, 18, 18)
-                .add(domainField, 0, 150, Short.MAX_VALUE))
+                .add(domainField, 0, 256, Short.MAX_VALUE))
+            .add(explanationLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -169,6 +173,8 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(domainFieldLabel)
                     .add(domainField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(explanationLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -177,6 +183,7 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox domainField;
     private javax.swing.JLabel domainFieldLabel;
+    private javax.swing.JLabel explanationLabel;
     // End of variables declaration//GEN-END:variables
 
 }
