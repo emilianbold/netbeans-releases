@@ -450,6 +450,7 @@ public class CvsVersioningSystem {
             if (Utils.containsMetadata(file)) {
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 topmost = file;
+                done.clear();   // all folders added before must be removed, they ARE in fact managed by CVS
             } else {
                 LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
                 if(file.exists()) { // could be created later ...
