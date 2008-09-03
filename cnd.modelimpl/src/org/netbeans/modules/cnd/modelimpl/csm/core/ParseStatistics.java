@@ -180,7 +180,7 @@ public class ParseStatistics {
             out.printf("\t%6d %s\n", cnt, UIDUtilities.getFileName(entry.getKey())); //NOI18N
             sum += cnt;
         }
-        int avg = sum / entries.size();
+        int avg = (entries.size() == 0) ? 0 : (sum / entries.size());
         out.printf("\t%6d avg", avg); //NOI18N
         out.printf("\nEND OF PARSING STATISTICS FOR %s\n", UIDUtilities.getProjectName(projectUID)); //NOI18N
     }
