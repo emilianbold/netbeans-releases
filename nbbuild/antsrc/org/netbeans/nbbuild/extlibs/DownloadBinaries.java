@@ -171,7 +171,9 @@ public class DownloadBinaries extends Task {
                                     if (!cacheFile.exists()) {
                                         download(cacheName, cacheFile);
                                     }
-                                    if (!f.delete()) throw new BuildException("Could not delete " + f);
+                                    if (f.isFile() && !f.delete()) {
+                                        throw new BuildException("Could not delete " + f);
+                                    }
                                     try {
                                         FileUtils.getFileUtils().copyFile(cacheFile, f);
                                     } catch (IOException x) {
