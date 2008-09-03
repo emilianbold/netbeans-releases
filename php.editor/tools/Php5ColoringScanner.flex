@@ -856,6 +856,9 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 <ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"?>"{WHITESPACE}? {
         //popState();
         yybegin(YYINITIAL);
+        if (yylength() > 2) {
+            yypushback(yylength()-2);
+        }
         stack.clear();
 	return PHPTokenId.PHP_CLOSETAG;
 }
