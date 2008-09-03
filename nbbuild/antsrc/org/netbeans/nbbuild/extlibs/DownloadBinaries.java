@@ -52,7 +52,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.channels.FileChannel;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -146,7 +145,9 @@ public class DownloadBinaries extends Task {
                 File manifest = new File(basedir, include);
                 log("Scanning: " + manifest, Project.MSG_VERBOSE);
                 try {
-                    BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(manifest), "UTF-8"));
+                    InputStream is = new FileInputStream(manifest);
+                    try {
+                    BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
                     String line;
                     while ((line = r.readLine()) != null) {
                         if (line.startsWith("#")) {
@@ -170,6 +171,7 @@ public class DownloadBinaries extends Task {
                                     if (!cacheFile.exists()) {
                                         download(cacheName, cacheFile);
                                     }
+                                    if (!f.delete()) throw new BuildException("Could not delete " + f);
                                     try {
                                         FileUtils.getFileUtils().copyFile(cacheFile, f);
                                     } catch (IOException x) {
@@ -196,6 +198,9 @@ public class DownloadBinaries extends Task {
                                 f.delete();
                             }
                         }
+                    }
+                    } finally {
+                        is.close();
                     }
                 } catch (IOException x) {
                     throw new BuildException("Could not open " + manifest + ": " + x, x, getLocation());
@@ -261,7 +266,11 @@ public class DownloadBinaries extends Task {
         try {
             FileInputStream is = new FileInputStream(f);
             try {
-                digest.update(is.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, f.length()));
+                byte[] buf = new byte[4096];
+                int r;
+                while ((r = is.read(buf)) != -1) {
+                    digest.update(buf, 0, r);
+                }
             } finally {
                 is.close();
             }
