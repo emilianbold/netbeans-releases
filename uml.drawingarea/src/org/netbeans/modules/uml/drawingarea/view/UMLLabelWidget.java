@@ -43,8 +43,10 @@ package org.netbeans.modules.uml.drawingarea.view;
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.HashMap;
+import javax.accessibility.AccessibleRole;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
@@ -67,11 +69,13 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
     public UMLLabelWidget(Scene scene) {
         super(scene);
         setForeground(null);
+        initAccessibleContext();
     }
     
     public UMLLabelWidget(Scene scene, String label) {
         super(scene, label);
         setForeground(null);
+        initAccessibleContext();
     }
     
     public UMLLabelWidget(Scene scene, String propertyID, String displayName) {
@@ -93,6 +97,7 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
         id = propertyID;
         ResourceValue.initResources(propertyID, this);
         this.displayName = displayName;
+        initAccessibleContext();
     }
      
     
@@ -156,6 +161,36 @@ public class UMLLabelWidget extends LabelWidget implements DiagramEdgeWriter, Di
     {
         if (persistenceProperties != null && key != null && value != null)
             persistenceProperties.put(key, value);
+    }
+
+
+    ///////////// 
+    // Accessible
+    /////////////       
+
+    private void initAccessibleContext() 
+    {
+        setAccessibleContext(new UMLLabelWidgetAccessibleContext(this));
+    }
+
+    public class UMLLabelWidgetAccessibleContext extends UMLWidgetAccessibleContext
+    {
+        public UMLLabelWidgetAccessibleContext(Widget w) 
+        {
+            super(w);
+        }
+
+        public AccessibleRole getAccessibleRole () {
+            return AccessibleRole.LABEL;
+        }
+
+        public String getAccessibleName() {
+            if (getLabel() != null) 
+            {
+                return getLabel();
+            }
+            return getDisplayName();
+        }
     }
     
 }

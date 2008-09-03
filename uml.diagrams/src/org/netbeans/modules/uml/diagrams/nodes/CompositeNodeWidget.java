@@ -40,26 +40,37 @@ package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.Collection;
+import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.diagrams.actions.CompositeWidgetSelectProvider;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
+import org.netbeans.modules.uml.drawingarea.actions.ResizeStrategyProvider;
+import org.netbeans.modules.uml.drawingarea.actions.WindowStyleResizeProvider;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.drawingarea.widgets.ContainerWithCompartments;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Sheryl Su
  */
-public abstract class CompositeNodeWidget extends UMLNodeWidget implements CompositeWidget
+public abstract class CompositeNodeWidget extends UMLNodeWidget implements ContainerWithCompartments
 {
+    private ResizeStrategyProvider resizeProvider = null;
+    
     public CompositeNodeWidget(Scene scene)
     {
         super(scene, true);
@@ -106,21 +117,19 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Compo
 
         DesignerScene targetScene = (DesignerScene) target.getScene();
         DesignerScene sourceScene = (DesignerScene) getScene();
-        super.duplicate(setBounds, target);
-        CompositeWidget cloned = (CompositeWidget) target;
+        
+        
+        CompositeNodeWidget cloned = (CompositeNodeWidget) target;
+        cloned.clear();
+        cloned.setOrientation(getOrientation());
         for (CompartmentWidget w : getCompartmentWidgets())
         {
-            for (CompartmentWidget rw : cloned.getCompartmentWidgets())
-            {
-                if (rw.getElement().equals(w.getElement()))
-                {
-                    Rectangle rec = w.getBounds();
-                    rw.setPreferredSize(new Dimension(rec.width, rec.height));
-                    w.getContainerWidget().duplicate(setBounds, rw.getContainerWidget());
-                    rw.revalidate();
-                    break;
-                }
-            }
+            CompartmentWidget rw = cloned.addCompartment(w.getElement());
+
+            Rectangle rec = w.getBounds();
+            rw.setPreferredSize(new Dimension(rec.width, rec.height));
+            w.getContainerWidget().duplicate(setBounds, rw.getContainerWidget());
+            rw.revalidate();
         }
 
         targetScene.validate();
@@ -188,11 +197,145 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Compo
                 ((UMLEdgeWidget) originalCW).duplicate(clonedEdge);
             }
         }
-
+        super.duplicate(setBounds, target);
         target.revalidate();
     }
     
     
+    @Override
+    public ResizeStrategyProvider getResizeStrategyProvider()
+    {
+        if (resizeProvider == null)
+        {
+            resizeProvider = new CompositeNodeResizeProvider(getResizeControlPoints());
+        }
+        return resizeProvider;
+    }
+    
+    private Rectangle calculateMinimumBounds()
+    {
+        Rectangle clientArea = new Rectangle(getBounds().x, getBounds().y);
+        clientArea.add(getNameWidget().getPreferredBounds());
+        
+        for (CompartmentWidget w : getCompartmentWidgets())
+        {
+            Rectangle bounds = w.calculateMinimumBounds();
+            Point location = w.getLocation();
+            bounds.translate(location.x, location.y);
+            bounds.translate(w.getParentWidget().getLocation().x, w.getParentWidget().getLocation().y);
+            clientArea.add(bounds);
+        }
+        
+        Insets insets = getBorder().getInsets();
+        clientArea.x -= insets.left;
+        clientArea.y -= insets.top;
+        clientArea.width += insets.left + insets.right;
+        clientArea.height += insets.top + insets.bottom;
+
+
+        return clientArea;
+    }
+    
     public abstract String getContextPalettePath();
     public abstract UMLNameWidget getNameWidget();
+    public abstract void setOrientation(SeparatorWidget.Orientation orientation);
+    public abstract SeparatorWidget.Orientation getOrientation();
+    public abstract CompartmentWidget addCompartment(IElement element);
+    public abstract Collection<CompartmentWidget> getCompartmentWidgets();    
+    public abstract void removeCompartment(CompartmentWidget widget);
+    public abstract void clear();
+    
+  
+    public class CompositeNodeResizeProvider extends WindowStyleResizeProvider
+    {
+        Rectangle minimumBounds;
+        
+        public CompositeNodeResizeProvider(ResizeProvider.ControlPoint points[])
+        {
+            super(points);
+        }
+
+        @Override
+        public void resizingStarted(Widget widget)
+        {
+            super.resizingStarted(widget);
+            minimumBounds = calculateMinimumBounds(); 
+            for (CompartmentWidget w : getCompartmentWidgets())
+            {
+                
+                Object constraint = w.getParentWidget().getChildConstraint(w);
+                if (constraint instanceof Number)
+                {
+                    if (((Number) constraint).intValue() != 1)
+                    {
+                        int width = w.getBounds().width;
+                        int height = w.getBounds().height;
+                        if (getOrientation() == SeparatorWidget.Orientation.HORIZONTAL)
+                        {
+                            height = 0;
+                        } else
+                        {
+                            width = 0;
+                        }
+                        w.setMinimumSize(new Dimension(width, height));
+                    }
+                    else
+                        w.setPreferredSize(null);
+                    w.setPreferredBounds(null);
+                }
+            }       
+        }
+        
+        @Override
+        public Rectangle boundsSuggested(Widget widget, Rectangle originalBounds, Rectangle suggestedBounds, ControlPoint controlPoint)
+        {
+            Rectangle suggested = suggestedBounds;
+
+            if (minimumBounds.width < suggestedBounds.width)
+            {
+                if (minimumBounds.height < suggestedBounds.height)
+                {
+                    suggested = suggestedBounds;
+                } else
+                {
+                    suggested = new Rectangle(suggestedBounds.x, widget.getBounds().y,
+                            Math.max(minimumBounds.width, suggestedBounds.width),
+                            Math.max(minimumBounds.height, suggestedBounds.height));
+                }
+
+            } else
+            {
+                if (minimumBounds.height < suggestedBounds.height)
+                {
+                    suggested = new Rectangle(widget.getBounds().x, suggestedBounds.y,
+                            Math.max(minimumBounds.width, suggestedBounds.width),
+                            Math.max(minimumBounds.height, suggestedBounds.height));
+                } else
+                {
+                    suggested = new Rectangle(widget.getBounds().x, widget.getBounds().y,
+                            Math.max(minimumBounds.width, suggestedBounds.width),
+                            Math.max(minimumBounds.height, suggestedBounds.height));;
+                }
+            }
+            return suggested;
+        }
+        
+        public void resizingFinished(Widget widget)
+        {
+            super.resizingFinished(widget);
+            for (CompartmentWidget w : getCompartmentWidgets())
+            {
+                Object constraint = w.getParentWidget().getChildConstraint(w);
+                if (constraint instanceof Number)
+                {
+                    if (((Number) constraint).intValue() != 1)
+                    {
+                        w.setPreferredBounds(w.getBounds());
+                    }
+                }
+                w.setMinimumSize(null);
+                w.revalidate();
+            }
+        }
+    }
 }
