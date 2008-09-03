@@ -246,18 +246,9 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                 // the connection point values from before the move started.
                 // 
                 // Therefore use the reference widget to determine the dx.
-                
-                 Point widgetSceneLoc = widget.getParentWidget().convertLocalToScene(widget.getPreferredLocation());
-                int edgeDx1 = location.x - widgetSceneLoc.x;
-                int edgeDy1 = location.y -widgetSceneLoc.y;
-                System.out.printf("Edge Calculation 1: dx = %d, dy = %d\n", edgeDx1, edgeDy1);
-                 
-                int edgeDx = location.x - widget.getPreferredLocation().x;
-                int edgeDy = location.y - widget.getPreferredLocation().y;
-                System.out.printf("Edge Calculation 2: dx = %d, dy = %d\n", edgeDx, edgeDy);
 
-                edgeDx = location.x - lastPoint.x;
-                edgeDy = location.y - lastPoint.y;
+                int edgeDx = location.x - lastPoint.x;
+                int edgeDy = location.y - lastPoint.y;
                 lastPoint = location;
                 adjustControlPoints(getMovingWidgetList(), edgeDx, edgeDy);
                 for(MovingWidgetDetails details : movingWidgets)
@@ -304,6 +295,10 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     public static void adjustControlPoints(List < Widget> widgets, 
                                            int dx, int dy)
     {
+        // Since child nodes are not part of the widgets (since they are moved
+        // when the parent widget is moved), we need to first make sure
+        // that we get not only the selected set of widgets, but also the
+        // edges attached to all child nodes.  This is mostly for containers.
         List < ConnectionWidget > connections = includeAllConnections(widgets);
         
         ArrayList < Object > alreadyProcessed = new ArrayList < Object >();
@@ -326,6 +321,21 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                         pt.y += dy;
                     }
                 }
+                
+                // Each node also needs to be revalidated so that the anchor 
+                // gets a chance to update the end point
+                Anchor sourceAnchor = connection.getSourceAnchor();
+                if(sourceAnchor != null)
+                {
+                    sourceAnchor.getRelatedWidget().revalidate();
+                }
+                
+                Anchor targetAnchor = connection.getTargetAnchor();
+                if(targetAnchor != null)
+                {
+                    targetAnchor.getRelatedWidget().revalidate();
+                }
+                
                 alreadyProcessed.add(data);
             }
         }
