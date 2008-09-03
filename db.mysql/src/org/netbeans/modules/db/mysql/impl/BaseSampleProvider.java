@@ -45,8 +45,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.mysql.SampleExecuteLogger;
 import org.netbeans.modules.db.api.sql.execute.SQLExecutor;
 import org.netbeans.modules.db.mysql.spi.sample.SampleProvider;
 import org.netbeans.modules.db.mysql.util.Utils;
@@ -61,6 +63,8 @@ import org.openide.util.NbBundle;
  * @author David Van Couvering
  */
 public class BaseSampleProvider implements SampleProvider {
+    private static final Logger LOGGER = Logger.getLogger(BaseSampleProvider.class.getName());
+
     private static final BaseSampleProvider DEFAULT = new BaseSampleProvider();
 
     private static ArrayList<String> SAMPLES;
@@ -95,7 +99,7 @@ public class BaseSampleProvider implements SampleProvider {
 
         String sql = getSqlText(sampleName);
 
-        SQLExecutor.execute(dbconn, sql);
+        SQLExecutor.execute(dbconn, sql, new SampleExecuteLogger(sampleName));
     }
 
     public boolean supportsSample(String name) {
@@ -107,11 +111,6 @@ public class BaseSampleProvider implements SampleProvider {
     }
 
 
-    /**
-     * TODO - Don't read it all in at once, if the SQL file are honkin' big
-     * we're in trouble.  This means knowing a good stopping place, which one
-     * could assume is a semicolon, but not always.
-     */
     private static String getSqlText(String sampleName) throws DatabaseException {
         FileObject sqlfile = getSampleFile(sampleName);
         StringBuilder builder = new StringBuilder();
@@ -158,5 +157,4 @@ public class BaseSampleProvider implements SampleProvider {
             throw dbe;
         }
     }
-
 }
