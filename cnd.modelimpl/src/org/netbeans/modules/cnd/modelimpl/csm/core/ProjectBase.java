@@ -1671,6 +1671,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             ProjectComponent.setStable(fileContainerKey);
             ProjectComponent.setStable(graphStorageKey);
         }
+        if (TraceFlags.PARSE_STATISTICS) {
+            ParseStatistics.getInstance().printResults(this);
+            ParseStatistics.getInstance().clear(this);
+        }
     }
 
     /**
