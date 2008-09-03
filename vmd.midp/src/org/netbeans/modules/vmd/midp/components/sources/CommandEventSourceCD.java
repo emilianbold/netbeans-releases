@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.vmd.midp.components.sources;
 
-import java.nio.channels.Pipe.SourceChannel;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
@@ -63,8 +62,6 @@ import org.netbeans.modules.vmd.midp.screen.CommandEventSourceSRItemPresenter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
-import org.netbeans.modules.vmd.api.codegen.CodeSupport;
 
 
 /**
