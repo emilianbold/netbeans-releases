@@ -73,7 +73,10 @@ import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
@@ -226,6 +229,22 @@ public class ImportWebProjectWizardIterator implements WizardDescriptor.Progress
         UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
 
         handle.progress(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 3);
+        
+        Object[] parameters2 = new Object[5];
+        parameters2[0] = ""; // NOI18N
+        try {
+            if (serverInstanceID != null) {
+                parameters2[0] = Deployment.getDefault().getServerInstance(serverInstanceID).getServerDisplayName();
+            }
+        }
+        catch (InstanceRemovedException ire) {
+            // ignore
+        }
+        parameters2[1] = createData.getJavaEEVersion();
+        parameters2[2] = createData.getSourceLevel();
+        parameters2[3] = createData.getSourceStructure();
+        parameters2[4] = new StringBuffer();
+        Utils.logUsage(NewWebProjectWizardIterator.class, "USG_PROJECT_CREATE_WEB", parameters2); // NOI18N
         
         return resultSet;
     }
