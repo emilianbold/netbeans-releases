@@ -46,6 +46,8 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -70,10 +72,12 @@ import org.openide.util.NbBundle;
 *
 * @author Petr Hrebejk
 */
-public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
+public abstract class BiFeature implements IconBases, Node.Cookie, Comparable<BiFeature> {
 
     /** generated Serialized Version UID */
     //static final long serialVersionUID = -8680621542479107034L;
+
+    private static final Logger LOG = Logger.getLogger(BiFeature.class.getName());
 
     // Function names for code generation and reconition
     private static final String TEXT_EXPERT = "setExpert"; // NOI18N
@@ -388,6 +392,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         private String declaringClassName;
         private String getterName;
         private String setterName;
+        String debugTooltip;
 
         Property( PropertyPattern pp, CompilationInfo javac, BiAnalyser bia ) throws GenerateBeanException {
             super( pp, bia );
@@ -400,6 +405,34 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
             getterName = getterHandle == null? null: getterHandle.resolve(javac).getSimpleName().toString();
             ElementHandle<ExecutableElement> setterHandle = pattern.getSetterMethod();
             setterName = setterHandle == null? null: setterHandle.resolve(javac).getSimpleName().toString();
+
+            if (LOG.isLoggable(Level.FINE) && getClass() == Property.class) {
+                debugTooltip = String.format("<html><body><b>Field:</b> %s<br><b>Getter:</b> %s<br><b>Setter:</b> %s</body></html>", // NOI18N
+                        pp.getEstimatedField() == null
+                                ? null
+                                : ElementHeaders.getHeader(pp.getEstimatedField().resolve(javac), javac, ElementHeaders.NAME +
+                                        " : " + ElementHeaders.TYPE) + " :: " + // NOI18N
+                                        ((TypeElement) pp.getEstimatedField().resolve(javac).getEnclosingElement()).getQualifiedName(),
+                        printMethodHandleTip(getterHandle, javac),
+                        printMethodHandleTip(setterHandle, javac)
+                        );
+            }
+        }
+
+        static String printMethodHandleTip(ElementHandle<ExecutableElement> handle, CompilationInfo javac) {
+            if (handle == null) {
+                return null;
+            }
+            ExecutableElement method = handle.resolve(javac);
+            return ElementHeaders.getHeader(method, javac,
+                    ElementHeaders.NAME + ElementHeaders.PARAMETERS + " : " + ElementHeaders.TYPE) + // NOI18N
+                    " :: " + ((TypeElement) method.getEnclosingElement()).getQualifiedName(); // NOI18N
+            
+        }
+
+        @Override
+        public String getToolTip() {
+            return debugTooltip != null ? debugTooltip : super.getToolTip();
         }
 
         protected final String getDeclaringClassName() {
@@ -582,6 +615,20 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
             indexedSetterName = indexedSetterHandle == null
                     ? null
                     : indexedSetterHandle.resolve(javac).getSimpleName().toString();
+
+            if (LOG.isLoggable(Level.FINE)) {
+                debugTooltip = String.format("<html><body><b>Field:</b> %s<br><b>Getter:</b> %s<br><b>Setter:</b> %s<br><b>Indexed Getter:</b> %s<br><b>Indexed Setter:</b> %s</body></html>", // NOI18N
+                        pp.getEstimatedField() == null
+                                ? null
+                                : ElementHeaders.getHeader(pp.getEstimatedField().resolve(javac), javac, ElementHeaders.NAME +
+                                        " : " + ElementHeaders.TYPE) + " :: " +
+                                        ((TypeElement) pp.getEstimatedField().resolve(javac).getEnclosingElement()).getQualifiedName(), // NOI18N
+                            printMethodHandleTip(pattern.getGetterMethod(), javac),
+                            printMethodHandleTip(pattern.getGetterMethod(), javac),
+                            printMethodHandleTip(indexedGetterHandle, javac),
+                            printMethodHandleTip(indexedSetterHandle, javac)
+                        );
+            }
         }
 
         boolean isNiGetter() {
@@ -861,7 +908,9 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         
         private static String initToolTip(ExecutableElement element, CompilationInfo javac) {
             return ElementHeaders.getHeader(element, javac,
-                    ElementHeaders.NAME + ElementHeaders.PARAMETERS);
+                    ElementHeaders.NAME + ElementHeaders.PARAMETERS + " : " + ElementHeaders.TYPE)
+                    + " :: " // NOI18N
+                    + ((TypeElement) element.getEnclosingElement()).getQualifiedName();
         }
         
         ElementHandle<ExecutableElement> getElement() {
@@ -931,10 +980,7 @@ public abstract class BiFeature implements IconBases, Node.Cookie, Comparable {
         
     }
 
-    public int compareTo(Object other) {
-        if (!(other instanceof BiFeature))
-            return -1;
-        BiFeature bf = (BiFeature)other;
-        return getName().compareToIgnoreCase(bf.getName());
+    public int compareTo(BiFeature other) {
+        return getName().compareToIgnoreCase(other.getName());
     }
 }

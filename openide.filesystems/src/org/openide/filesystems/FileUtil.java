@@ -1096,8 +1096,8 @@ public final class FileUtil extends Object {
     * to a case-insensitive match.
     * @param ext the extension: <code>"jar"</code>, <code>"zip"</code>, etc.
     * @return the MIME type for the extension, or <code>null</code> if the extension is unrecognized
-    * @deprecated use {@link #getMIMEType(FileObject) getMIMEType(FileObject)} as MIME cannot
-    * be generally detected by file object extension.
+    * @deprecated use {@link #getMIMEType(FileObject)} or {@link #getMIMEType(FileObject, String[])}
+    * as MIME cannot be generally detected by file object extension.
     */
     @Deprecated
     public static String getMIMEType(String ext) {
@@ -1118,6 +1118,28 @@ public final class FileUtil extends Object {
     */
     public static String getMIMEType(FileObject fo) {
         String retVal = MIMESupport.findMIMEType(fo, null);
+
+        if (retVal == null) {
+            retVal = getMIMEType(fo.getExt());
+        }
+
+        return retVal;
+    }
+
+    /** Resolves MIME type. Registered resolvers are invoked and used to achieve this goal.
+     * Resolvers must subclass MIMEResolver. If resolvers don't recognize MIME type then
+     * MIME type is obtained  for a well-known extension.
+     * @param fo whose MIME type should be recognized
+     * @param withinMIMETypes an array of MIME types. Only resolvers whose
+     * {@link MIMEResolver#getMIMETypes} contain one or more of the requested
+     * MIME types will be asked if they recognize the file. It is possible for
+     * the resulting MIME type to not be a member of this list.
+     * @return the MIME type for the FileObject, or <code>null</code> if the FileObject is unrecognized
+     * @since 7.13
+     */
+    public static String getMIMEType(FileObject fo, String... withinMIMETypes) {
+        Parameters.notNull("withinMIMETypes", withinMIMETypes);  //NOI18N
+        String retVal = MIMESupport.findMIMEType(fo, null, withinMIMETypes);
 
         if (retVal == null) {
             retVal = getMIMEType(fo.getExt());

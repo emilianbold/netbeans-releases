@@ -45,8 +45,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
@@ -74,23 +77,40 @@ import org.openide.util.Union2;
  * @author Radek Matous
  */
 public final class VarTypeResolver {
-    private final PHPCompletionItem.CompletionRequest request;
     private final String varName;
     private final List<ASTNode> pathUnderCaret;
     private final ASTNode blockOfCaret;
+    private int anchor;
+    private PHPIndex index;
+    private CompilationInfo info;
+    private PHPParseResult result;
     private VarTypeResolver(final PHPCompletionItem.CompletionRequest request,
             final String varName) {
-        this.request = request;
-        this.varName = varName;
-        pathUnderCaret = NavUtils.underCaret(request.info, request.anchor);
-        blockOfCaret = findNearestBlock(pathUnderCaret);
-
+        this(varName,request.anchor,request.index, request.info, request.result);
     }
 
+    private VarTypeResolver(final String varName,int anchor,PHPIndex index,CompilationInfo info,PHPParseResult result) {
+        this.result = result;
+        this.anchor = anchor;
+        this.index = index;
+        this.info = info;
+        this.varName = varName;
+        pathUnderCaret = NavUtils.underCaret(info, anchor);
+        blockOfCaret = findNearestBlock(pathUnderCaret);
+    }
+
+    private VarTypeResolver(final CompilationInfo info, final int offset, final String varName)  {
+        this(varName,offset,PHPIndex.get(info.getIndex(PHPLanguage.PHP_MIME_TYPE)), info,
+                (PHPParseResult)info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, offset));
+    }
     public static VarTypeResolver getInstance(final PHPCompletionItem.CompletionRequest request,
             final String varName)  {
 
         return new VarTypeResolver(request, varName);
+    }
+
+    public static VarTypeResolver getInstance(final CompilationInfo info, final int offset, final String varName)  {
+        return new VarTypeResolver(info, offset, varName);
     }
 
     public String resolveType() {
@@ -115,7 +135,7 @@ public final class VarTypeResolver {
 
             @Override
             public void visit(FunctionDeclaration node) {
-                int offset = request.anchor;
+                int offset = anchor;
                 if ((offset != (-1) && offset >= node.getStartOffset())) {
                     if (isValidBlock(path)) {
                         List<FormalParameter> formalParameters = node.getFormalParameters();
@@ -140,7 +160,7 @@ public final class VarTypeResolver {
 
 
             public void visit(Assignment node) {
-                int offset = request.anchor;
+                int offset = anchor;
                 if ((offset != (-1) && offset >= node.getStartOffset())) {
                     VariableBase leftHandSide = node.getLeftHandSide();
                     Expression rightHandSide = node.getRightHandSide();
@@ -166,20 +186,20 @@ public final class VarTypeResolver {
                                         VariableBase varBase = stack.pop();
                                         if (typeName == null) {
                                             if (varBase instanceof FunctionInvocation) {
-                                                typeName = getReturnType((FunctionInvocation) varBase, request);
+                                                typeName = getReturnType((FunctionInvocation) varBase, result,index);
                                             } else if (varBase instanceof Variable) {
                                                 typeName = findPrecedingType((Variable) varBase, assignments);
                                             } else if (varBase instanceof StaticFieldAccess) {
-                                                typeName = getReturnType((StaticFieldAccess)varBase, request);
+                                                typeName = getReturnType((StaticFieldAccess)varBase, result,index);
                                             } else if (varBase instanceof StaticMethodInvocation) {
-                                                typeName = getReturnType((StaticMethodInvocation)varBase, request);
+                                                typeName = getReturnType((StaticMethodInvocation)varBase, result,index);
                                             }
                                             if (typeName == null) {
                                                 break;
                                             }
                                         } else {
                                             if (varBase instanceof MethodInvocation) {
-                                                typeName = getReturnType(typeName, (MethodInvocation) varBase, request);
+                                                typeName = getReturnType(typeName, (MethodInvocation) varBase, result,index);
                                             } else {
                                                 typeName = null;
                                                 break;
@@ -200,7 +220,7 @@ public final class VarTypeResolver {
                     super.visit(node);
                 }
             }
-        }.scan(Utils.getRoot(request.info));
+        }.scan(Utils.getRoot(info));
         return findPrecedingType(varName, assignments);
     }
     private static void createVariableBaseChain(VariableBase node, Stack<VariableBase> stack) {
@@ -209,30 +229,28 @@ public final class VarTypeResolver {
             createVariableBaseChain(((MethodInvocation)node).getDispatcher(), stack);
         }
     }
-    private static String getReturnType(FunctionInvocation node, final PHPCompletionItem.CompletionRequest request) {
-        PHPIndex index = request.index;
-        Collection<IndexedFunction> functions = index.getFunctions(request.result, CodeUtils.extractFunctionName(node), NameKind.EXACT_NAME);
+    private static String getReturnType(FunctionInvocation node,PHPParseResult result,PHPIndex index) {
+        Collection<IndexedFunction> functions = index.getFunctions(result, CodeUtils.extractFunctionName(node), NameKind.EXACT_NAME);
         if (!functions.isEmpty()) {
             IndexedFunction fnc = functions.iterator().next();
             return fnc.getReturnType();
         }
         return null;
     }
-    private static String getReturnType(StaticMethodInvocation node, final PHPCompletionItem.CompletionRequest request) {
-        PHPIndex index = request.index;
+    private static String getReturnType(StaticMethodInvocation node,PHPParseResult result,PHPIndex index) {
         StaticMethodInvocation staticMethodInvocation = (StaticMethodInvocation) node;
         String clsName = staticMethodInvocation.getClassName().getName();
         FunctionInvocation method = staticMethodInvocation.getMethod();
         String fncName = CodeUtils.extractFunctionName(method);
         Collection<IndexedFunction> functions =
-                index.getAllMethods(request.result, clsName, fncName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
+                index.getAllMethods(result, clsName, fncName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
         if (!functions.isEmpty()) {
             IndexedFunction fnc = functions.iterator().next();
             return fnc.getReturnType();
         }
         return null;
     }
-    private static String getReturnType(StaticFieldAccess node, final PHPCompletionItem.CompletionRequest request) {
+    private static String getReturnType(StaticFieldAccess node,PHPParseResult result,PHPIndex index) {
         StaticFieldAccess staticFieldAccess = (StaticFieldAccess) node;
         String clsName = staticFieldAccess.getClassName().getName();
         Variable var = staticFieldAccess.getField();
@@ -240,9 +258,8 @@ public final class VarTypeResolver {
         varName = (varName.startsWith("$")) //NOI18N
                 ? varName.substring(1) : varName;
 
-        PHPIndex index = request.index;
         Collection<IndexedConstant> constants =
-                index.getAllProperties(request.result, clsName, varName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
+                index.getAllProperties(result, clsName, varName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
 
         if (!constants.isEmpty()) {
             IndexedConstant con = constants.iterator().next();
@@ -250,16 +267,15 @@ public final class VarTypeResolver {
         }
         return null;
     }
-    private static String getReturnType(String className, VariableBase v, final PHPCompletionItem.CompletionRequest request) {
+    private static String getReturnType(String className, VariableBase v,PHPParseResult result, PHPIndex index) {
         return null;
     }
 
-    private static String getReturnType(String className, MethodInvocation methodInvocation, final PHPCompletionItem.CompletionRequest request) {
-        PHPIndex index = request.index;
+    private static String getReturnType(String className, MethodInvocation methodInvocation,PHPParseResult result,PHPIndex index) {
         FunctionInvocation method = methodInvocation.getMethod();
         String fncName = CodeUtils.extractFunctionName(method);
         Collection<IndexedFunction> functions =
-                index.getAllMethods(request.result, className, fncName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
+                index.getAllMethods(result, className, fncName, NameKind.EXACT_NAME, PHPIndex.ANY_ATTR);
         if (!functions.isEmpty()) {
             IndexedFunction fnc = functions.iterator().next();
             return fnc.getReturnType();

@@ -22,6 +22,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -38,15 +39,40 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.profiler;
+package org.netbeans.modules.xslt.core.text.completion.support.grammar;
 
+import org.w3c.dom.*;
 
 /**
- *
- * @author Jaroslav Bachorik
+ * @author  asgeir@dimonsoftware.com
  */
-public interface ContextAware {
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
+public class ResultAttr extends ResultNode implements Attr {
 
-    void setContext(ProfilerClient client);
+    private Attr attr;
+
+    /** Creates a new instance of ResultAttr */
+    public ResultAttr(Attr peer, String ignorePrefix, String onlyUsePrefix) {
+        super(peer, ignorePrefix, onlyUsePrefix);
+        attr = peer;
+    }
+
+    public String getName() {
+        return attr.getName();
+    }
+
+    public Element getOwnerElement() {
+        return new ResultElement(attr.getOwnerElement(), ignorePrefix, onlyUsePrefix);
+    }
+    
+    public boolean getSpecified() {
+        return attr.getSpecified();
+    }
+    
+    public String getValue() {
+        return attr.getValue();
+    }
+    
+    public void setValue(String value) throws DOMException {
+        attr.setValue(value);
+    }
 }
