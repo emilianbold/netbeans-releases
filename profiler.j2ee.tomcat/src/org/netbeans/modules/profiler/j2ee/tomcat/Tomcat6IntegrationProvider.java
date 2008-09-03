@@ -68,4 +68,9 @@ public class Tomcat6IntegrationProvider extends Tomcat5IntegrationProvider {
     protected int getMagicNumber() {
         return 40;
     }
+
+    protected String getTomcatName() {
+        return "Tomcat6";
+    }
+
 }

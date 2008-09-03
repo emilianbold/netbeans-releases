@@ -123,7 +123,7 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
         ValidationResult retValue = super.validateInstallation(targetOS, path);
 
         if (!retValue.isValid()) {
-            if (isTomcatExeUsed(path) && IntegrationUtils.isWindowsPlatform(targetOS)) { // Tomcat5 installed by the windows installer has no catalina.bat; check for tomcat5.exe instead
+            if (isTomcatExeUsed(path) && IntegrationUtils.isWindowsPlatform(targetOS)) { // Tomcat installed by the windows installer has no catalina.bat; check for tomcat*.exe instead
                 retValue = new ValidationResult(true, "No CATALINA script found. Using " + getTomcatExe() + " instead"); // NOI18N
             }
         }
