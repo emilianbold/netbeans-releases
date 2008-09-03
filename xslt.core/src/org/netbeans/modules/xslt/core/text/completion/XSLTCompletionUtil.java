@@ -47,11 +47,8 @@ import javax.swing.text.Document;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xslt.core.XSLTDataEditorSupport;
 import org.netbeans.modules.xslt.model.XslModel;
-import org.netbeans.modules.xslt.model.spi.XslModelFactory;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
 /**
