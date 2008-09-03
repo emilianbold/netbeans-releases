@@ -46,7 +46,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
@@ -75,6 +77,9 @@ public class CurrentEditorScanningScope extends TaskScanningScope
     /** Creates a new instance of CurrentEditorScope */
     public CurrentEditorScanningScope( String displayName, String description, Image icon ) {
         super( displayName, description, icon );
+        Map<String,String> labels = new HashMap<String,String>(1);
+        labels.put( "StatusBarLabel", "in currently edited files" );
+        lookupContent.add( labels );
     }
     
     public static CurrentEditorScanningScope create() {

@@ -41,25 +41,30 @@
 
 package org.netbeans.modules.tasklist.ui;
 
-import java.util.HashMap;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JLabel;
 import org.netbeans.modules.tasklist.impl.TaskList;
+import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
 import org.netbeans.spi.tasklist.Task;
-import org.netbeans.modules.tasklist.trampoline.TaskGroup;
+import org.netbeans.spi.tasklist.TaskScanningScope;
 
 /**
  *
  * @author S. Aubrecht
  */
-class StatusBar extends JLabel {
+class ScopeStatusBar extends JLabel implements PropertyChangeListener {
 
-    private TaskList tasks;
+    private TaskManagerImpl taskManager;
     private TaskList.Listener listener;
     
     /** Creates a new instance of StatusBar */
-    public StatusBar( TaskList tasks ) {
-        this.tasks = tasks;
+    public ScopeStatusBar( TaskManagerImpl taskManager ) {
+        this.taskManager = taskManager;
+        setEnabled(false);
+        updateText();
         listener = new TaskList.Listener() {
             public void tasksAdded(List<? extends Task> tasks) {
                 updateText();
@@ -73,37 +78,38 @@ class StatusBar extends JLabel {
                 updateText();
             }
         };
-        
-        updateText();
     }
 
     private void updateText() {
         StringBuffer buffer = new StringBuffer();
-        for( TaskGroup tg : TaskGroup.getGroups() ) {
-            int count = tasks.countTasks( tg );
-            if( count > 0 ) {
-                if( buffer.length() > 0 )
-                    buffer.append( "  " ); //NOI18N
-                else 
-                    buffer.append( ' ' );
-                buffer.append( tg.getDisplayName() );
-                buffer.append( ": " ); //NOI18N
-                buffer.append( count );
+        TaskScanningScope scope = taskManager.getScope();
+        Map<String, String> descriptions = scope.getLookup().lookup(Map.class);
+        if( null != descriptions ) {
+            String label = descriptions.get("StatusBarLabel"); //NOI18N
+            if( null != label ) {
+                buffer.append( label );
             }
         }
-        buffer.append( ' ' );
         setText( buffer.toString() );
     }
     
+    @Override
     public void removeNotify() {
         super.removeNotify();
         
-        tasks.removeListener( listener );
+        taskManager.removePropertyChangeListener( TaskManagerImpl.PROP_SCOPE, this );
+        taskManager.getTasks().removeListener( listener );
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         
-        tasks.addListener( listener );
+        taskManager.addPropertyChangeListener( TaskManagerImpl.PROP_SCOPE, this );
+        taskManager.getTasks().addListener( listener );
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        updateText();
     }
 }

@@ -45,7 +45,9 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -83,6 +85,10 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
      */
     private OpenedProjectsScanningScope( String displayName, String description, Image icon ) {
         super( displayName, description, icon, true );
+        Map<String,String> labels = new HashMap<String,String>(1);
+        labels.put( Utils.KEY_STATUS_BAR_LABEL, 
+                NbBundle.getMessage(OpenedProjectsScanningScope.class, "LBL_OpenedProjectsStatusBar") ); //NOI18N
+        lookupContent.add( labels );
     }
         
     /**
