@@ -348,7 +348,6 @@ final class NewLoaderIterator extends BasicWizardIterator {
                     actions.add("org.openide.actions.OpenAction"); // NOI18N
                 }
                 actions.addAll(Arrays.asList(new String[] {
-                    "org.openide.actions.FileSystemAction", // NOI18N
                     null,
                     "org.openide.actions.CutAction", // NOI18N
                     "org.openide.actions.CopyAction", // NOI18N
@@ -357,6 +356,8 @@ final class NewLoaderIterator extends BasicWizardIterator {
                     "org.openide.actions.RenameAction", // NOI18N
                     null,
                     "org.openide.actions.SaveAsTemplateAction", // NOI18N
+                    null,
+                    "org.openide.actions.FileSystemAction", // NOI18N
                     null,
                     "org.openide.actions.ToolsAction", // NOI18N
                     "org.openide.actions.PropertiesAction", // NOI18N
