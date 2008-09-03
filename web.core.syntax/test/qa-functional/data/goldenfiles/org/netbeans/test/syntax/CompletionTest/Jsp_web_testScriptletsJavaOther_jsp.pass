@@ -1,4 +1,4 @@
-[<% request.getSession().|, void setAttribute (String name , Object value ), <% request.getSession().setAttribute(arg0, arg1);, 518]
+[<% request.getSession().|, void setAttribute (String name , Object value ), <% request.getSession().setAttribute(name, value);, 519]
 boolean equals (Object obj )
 Object getAttribute (String name )
 Enumeration getAttributeNames ()
@@ -25,11 +25,8 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-EE: unexpected CC result:
-< <% request.getSession().setAttribute(name, value);
-> <% request.getSession().setAttribute(arg0, arg1);
-End cursor position = 560
-[<% session.|, Object getAttribute (String name ), <% session.getAttribute(name), 654]
+End cursor position = 561
+[<% session.|, Object getAttribute (String name ), <% session.getAttribute(name), 655]
 boolean equals (Object obj )
 Object getAttribute (String name )
 Enumeration getAttributeNames ()
@@ -56,8 +53,8 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 683
-[<%! void f() { this.|, ServletConfig getServletConfig (), <%! void f() { this.getServletConfig(), 831]
+End cursor position = 684
+[<%! void f() { this.|, ServletConfig getServletConfig (), <%! void f() { this.getServletConfig(), 832]
 long serialVersionUID
 Object clone ()
 void destroy ()
@@ -92,8 +89,8 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 870
-[<%= request.|, String getContextPath (), <%= request.getContextPath(), 980]
+End cursor position = 871
+[<%= request.|, String getContextPath (), <%= request.getContextPath(), 981]
 String BASIC_AUTH
 String CLIENT_CERT_AUTH
 String DIGEST_AUTH
@@ -161,4 +158,4 @@ void setCharacterEncoding (String env )
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int nanos )
-End cursor position = 1009
+End cursor position = 1010
