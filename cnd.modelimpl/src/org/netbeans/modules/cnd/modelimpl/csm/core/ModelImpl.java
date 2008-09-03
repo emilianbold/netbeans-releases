@@ -238,8 +238,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
     
     private void _closeProject(final ProjectBase csmProject, final Object platformProjectKey, final boolean cleanRepository) {
+        _closeProject2_pre(csmProject, platformProjectKey);
         if (SwingUtilities.isEventDispatchThread()) {
-            _closeProject2_pre(csmProject, platformProjectKey);
             Runnable task = new Runnable() {
                                 public void run() {
                                     _closeProject2(csmProject, platformProjectKey, cleanRepository);
@@ -247,7 +247,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                             };
             this.enqueueModelTask(task, "Closing Project "); // NOI18N
         } else {
-            _closeProject2_pre(csmProject, platformProjectKey);
             _closeProject2(csmProject, platformProjectKey, cleanRepository);
         }           
     }
@@ -410,7 +409,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
     
     public void shutdown() {
-
+        
 	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("ModelImpl.shutdown");
         setState(CsmModelState.CLOSING);
 
