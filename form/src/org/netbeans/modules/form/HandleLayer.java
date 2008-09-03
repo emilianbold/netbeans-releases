@@ -166,7 +166,6 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
     public void suspend() {
         draggingSuspended = true;
-        StatusDisplayer.getDefault().setStatusText(""); // NOI18N            
     }
 
     public void resume() {
