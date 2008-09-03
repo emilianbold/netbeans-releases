@@ -335,7 +335,7 @@ final class ResultView extends TopComponent {
                                                 0,          //row
                                                 true)       //hasFocus
                           .getPreferredSize()
-                          .height);
+                          .height + 2);
 
         tree.putClientProperty("JTree.lineStyle", "Angled");            //NOI18N
         
