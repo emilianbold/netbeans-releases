@@ -44,7 +44,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.websvc.saas.model.CustomSaas;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
@@ -86,9 +88,15 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
 
     protected void updateKeys() {
         ArrayList<Object> keys = new ArrayList<Object>();
-        keys.addAll(group.getChildrenGroups());
-        keys.addAll(group.getServices());
-        setKeys(keys.toArray());
+        List<SaasGroup> groups = group.getChildrenGroups();
+        Collections.sort(groups);
+        keys.addAll(groups);
+        
+        List<Saas> services = group.getServices();
+        Collections.sort(services);
+        keys.addAll(services);
+        
+        setKeys(keys);
     }
 
     @Override

@@ -69,6 +69,7 @@ import java.util.*;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.io.IOException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.ui.DialogBinding;
@@ -187,8 +188,12 @@ public class WatchPanel {
         JScrollPane sp = createScrollableLineEditor(editorPane);
         FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
         int size = 2*fm.getLeading() + fm.getMaxAscent() + fm.getMaxDescent() + 2;
-        editorPane.setPreferredSize(new Dimension(30*size, (int) (1*size)));
-        sp.setPreferredSize(new Dimension(30*size, (int) (1*size) + 2));
+        Insets eInsets = editorPane.getInsets();
+        Insets spInsets = sp.getInsets();
+        sp.setPreferredSize(new Dimension(30*size,
+                size + 2 +
+                eInsets.bottom + eInsets.top +
+                spInsets.bottom + spInsets.top));
         
         textLabel.setBorder (new EmptyBorder (0, 0, 5, 0));
         panel.setLayout (new BorderLayout ());
@@ -221,7 +226,7 @@ public class WatchPanel {
             new EmptyBorder (0, 0, 0, 0))
         );
         
-        JTextField referenceTextField = new JTextField();
+        JTextField referenceTextField = new JTextField("M");
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(referenceTextField.getBackground());
         sp.setBorder(referenceTextField.getBorder());

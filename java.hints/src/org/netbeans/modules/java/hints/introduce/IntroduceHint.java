@@ -52,6 +52,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
@@ -587,11 +588,27 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                    && checkConstantExpression(info, new TreePath(path, bt.getRightOperand()));
         }
 
-        if (expr.getKind() == Kind.IDENTIFIER || expr.getKind() == Kind.MEMBER_SELECT) {
+        if (expr.getKind() == Kind.IDENTIFIER || expr.getKind() == Kind.MEMBER_SELECT || expr.getKind() == Kind.METHOD_INVOCATION) {
             Element e = info.getTrees().getElement(path);
 
             if (e == null)
                 return false;
+
+            if (e.getKind() == ElementKind.METHOD) {
+                List<? extends ExpressionTree> arguments = ((MethodInvocationTree) expr).getArguments();
+                for (ExpressionTree et : arguments) {
+                    Element element = info.getTrees().getElement(new TreePath(path, et));
+                    if (element != null && element.getKind() == ElementKind.FIELD && !info.getTrees().getElement(new TreePath(path, et)).getModifiers().contains(Modifier.STATIC)) {
+                        return false;
+                    }
+                }
+
+                if (e.getModifiers().contains(Modifier.STATIC)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
 
             if (e.getKind() != ElementKind.FIELD)
                 return false;

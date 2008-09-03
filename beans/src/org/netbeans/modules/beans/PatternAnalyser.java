@@ -94,10 +94,17 @@ public final class PatternAnalyser {
     private ArrayList<EventSetPattern> currentEventSetPatterns =  new ArrayList<EventSetPattern>();
 
     final AtomicBoolean canceled = new AtomicBoolean();
+    /** deep introspection analyzes also super classes; useful for bean info*/
+    private boolean deepIntrospection = false;
 
     public PatternAnalyser( FileObject fileObject, BeanPanelUI ui ) {
+        this(fileObject, ui, false);
+    }
+
+    public PatternAnalyser( FileObject fileObject, BeanPanelUI ui, boolean deepIntrospection ) {
         this.fileObject = fileObject;
         this.ui = ui;
+        this.deepIntrospection = deepIntrospection;
     }
     
     public PatternAnalyser(FileObject fileObject, BeanPanelUI ui, Collection<ClassPattern> classes) {
@@ -213,7 +220,7 @@ public final class PatternAnalyser {
 
         
     }
-    
+
     /** This method analyses the ClassElement for "property patterns".
     * The method is analogous to JavaBean Introspector methods for classes
     * without a BeanInfo.
@@ -221,7 +228,7 @@ public final class PatternAnalyser {
     private void resolveMethods(Parameters p) {
 
         // First get all methods in classElement
-        List<ExecutableElement> methods = ElementFilter.methodsIn(p.element.getEnclosedElements());
+        List<? extends ExecutableElement> methods = methodsIn(p.element, p.ci);
                 
         // Temporary structures for analysing EventSets
         Map<String,ExecutableElement> adds = new HashMap<String, ExecutableElement>();
@@ -271,6 +278,12 @@ public final class PatternAnalyser {
             EventSet esp = new EventSet( p.ci, addMethod, removeMethod );
             addEventSet( p, esp );
         }
+    }
+
+    private List<? extends ExecutableElement> methodsIn(TypeElement clazz, CompilationInfo javac) {
+        return deepIntrospection
+                ? BeanUtils.methodsIn(clazz, javac)
+                : ElementFilter.methodsIn(clazz.getEnclosedElements());
     }
 
     private void resolveFields(Parameters p) {
@@ -323,11 +336,11 @@ public final class PatternAnalyser {
             if ( params.length == 0 ) {
                 if (name.startsWith( GET_PREFIX )) {
                     // SimpleGetter
-                    pp = new Property( method, null);
+                    pp = new Property( p.ci, method, null );
                 }
                 else if ( returnType.getKind() == TypeKind.BOOLEAN && name.startsWith( IS_PREFIX )) {
                     // Boolean getter
-                    pp = new Property( method, null );
+                    pp = new Property( p.ci, method, null );
                 }
             }
             else if ( params.length == 1 ) {
@@ -335,7 +348,7 @@ public final class PatternAnalyser {
                     pp = new IdxProperty( p.ci, null, null, method, null );
                 }
                 else if ( returnType.getKind() == TypeKind.VOID && name.startsWith( SET_PREFIX )) {
-                    pp = new Property( null, method );
+                    pp = new Property( p.ci, null, method );
                     // PENDING vetoable => constrained
                 }
             }
@@ -409,7 +422,7 @@ public final class PatternAnalyser {
         // If the property type has changed, use new property pattern
         TypeMirror opt = old.type;
         TypeMirror npt = property.type;
-        if (  opt != null && npt != null && !opt.equals(npt) ) {
+        if (  opt != null && npt != null && !p.ci.getTypes().isSameType(opt, npt) ) {
             hm.put( name, property );
             return;
         }
@@ -423,11 +436,11 @@ public final class PatternAnalyser {
             else if ( !isIndexed && isOldIndexed ) {
                 p.idxPropertyPatterns.remove( old.name ); // Remove old from indexed
             }
-            IdxProperty composite = new IdxProperty( old, property );
+            IdxProperty composite = new IdxProperty( p.ci, old, property );
             p.idxPropertyPatterns.put( name, composite );
         }
         else {
-            Property composite = new Property( old, property );
+            Property composite = new Property( p.ci, old, property );
             p.propertyPatterns.put( name, composite );
         }
 
