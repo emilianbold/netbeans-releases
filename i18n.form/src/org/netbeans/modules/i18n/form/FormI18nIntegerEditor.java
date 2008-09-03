@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -491,13 +491,24 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
         public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
                     && isVisible()) {
+                String errMsgKey = null;
                 I18nString i18nString = getI18nString();
-                if (i18nString == null 
-                    || !(i18nString instanceof FormI18nInteger)
-                    || i18nString.getSupport().getResourceHolder().getResource() == null 
-                    || i18nString.getKey() == null) {
+                if (i18nString == null || !(i18nString instanceof FormI18nInteger)) {
+                    errMsgKey = "MSG_InvalidValue";                     //NOI18N
+                } else {
+                    if (i18nString.getSupport().getResourceHolder().getResource()
+                            == null) {
+                        errMsgKey = "MSG_BundleNotSpecified";           //NOI18N
+                    } else if (i18nString.getKey() == null) {
+                        errMsgKey = "MSG_KeyNotSpecified";              //NOI18N
+                    } else {
+                        errMsgKey = checkMnemonicIndex(i18nString.getValue());
+                    }
+                }
+                if (errMsgKey != null) {
                     // Notify user that invalid value set.
-                    throw new PropertyVetoException(bundle.getString("MSG_InvalidValue"), evt); // NOI18N
+                    throw new PropertyVetoException(bundle.getString(errMsgKey),
+                                                    evt);
                 }
                 // Try to add new key into resource bundle first.
                 i18nString.getSupport().getResourceHolder().addProperty(
@@ -509,7 +520,39 @@ public class FormI18nIntegerEditor extends PropertyEditorSupport implements Form
                 FormI18nIntegerEditor.this.setValue(i18nString);
             }
         }
+
+        private String checkMnemonicIndex(String value) {
+            if ((value == null) || (value.length() == 0)) {
+                return "MSG_MnemonicIndexNotSpecified";                 //NOI18N
+            }
+
+            if (!isNonNegativeInteger(value)) {
+                return "MSG_MnemonicIndexIsInvalid";                    //NOI18N
+            }
+
+            return null;
+        }
+
+    }
+    
+    private static boolean isNonNegativeInteger(String value) {
+        if ((value == null) || (value.length() == 0)) {
+            return false;
+        }
+
+        char ch = value.charAt(0);
+        if ((ch < '0') || (ch > '9')) {
+            return false;
+        } else if (value.length() == 1) {
+            return true;
+        }
+
+        for (char c : value.toCharArray()) {
+            if ((c < '0') || (c > '9')) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    
 }
