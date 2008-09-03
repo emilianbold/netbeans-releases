@@ -279,6 +279,8 @@ public abstract class CompositeNodeWidget extends UMLNodeWidget implements Conta
                         }
                         w.setMinimumSize(new Dimension(width, height));
                     }
+                    else
+                        w.setPreferredSize(null);
                     w.setPreferredBounds(null);
                 }
             }       
