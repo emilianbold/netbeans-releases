@@ -47,8 +47,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
-import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
 
 /**
  * A class that tracks states of the preprocessor conditionals within file
@@ -66,7 +64,7 @@ public class FilePreprocessorConditionState
     private int size;
 
     /** for debugging purposes */
-    private CharSequence fileName;
+    private transient CharSequence fileName;
 
     private static final int MIN_SIZE = 16;
 
@@ -78,6 +76,12 @@ public class FilePreprocessorConditionState
         //this.isCpp = preprocHandler.getMacroMap().isDefined("__cplusplus");
     }
 
+    public FilePreprocessorConditionState(FilePreprocessorConditionState state2copy) {
+        offsets = new int[state2copy.size];
+        System.arraycopy(state2copy.offsets, 0, offsets, 0, offsets.length);
+        this.fileName = state2copy.fileName;
+    }
+    
     public FilePreprocessorConditionState(DataInput input) throws IOException {
         size = input.readInt();
         if (size > 0) {
@@ -88,7 +92,7 @@ public class FilePreprocessorConditionState
         } else {
             offsets = new int[MIN_SIZE];
         }
-        fileName = FileNameCache.getManager().getString(PersistentUtils.readUTF(input));
+        fileName = null;
     }
 
     public void write(DataOutput output) throws IOException {
@@ -98,7 +102,6 @@ public class FilePreprocessorConditionState
                 output.writeInt(offsets[i]);
             }
         }
-        PersistentUtils.writeUTF(fileName, output);
     }
 
     public void clear() {
@@ -151,10 +154,10 @@ public class FilePreprocessorConditionState
         size++;
     }
 
-    public final boolean isBetter(Object o) {
-        int result = compareToImpl(o);
+    public final boolean isBetter(FilePreprocessorConditionState other) {
+        int result = compareToImpl(other);
         if (TRACE) {
-            traceComparison(o, result);
+            traceComparison(other, result);
         }
         return result > 0;
     }
@@ -176,6 +179,9 @@ public class FilePreprocessorConditionState
     public final boolean isSubset(Collection<FilePreprocessorConditionState> others) {
         SortedSet<Integer> sorted = new TreeSet<Integer>();
         for (FilePreprocessorConditionState state : others) {
+            if (state == null) {
+                return false;
+            }
             for (int i = 0; i < state.size; i++) {
                 sorted.add(state.offsets[i]);
             }
@@ -189,14 +195,15 @@ public class FilePreprocessorConditionState
     }
 
     public final boolean isSubset(FilePreprocessorConditionState other) {
-        return isSubset(other.offsets, other.size);
+        return (other == null) ? false : isSubset(other.offsets, other.size);
     }
 
     public final boolean isSubset(int[] otherOffsets, int otherSize) {
         // we assume that the array is ordered
-        if (this.size < otherSize) {
+        if (this.size <= otherSize) {
             int thisPos = 0;
             int otherPos = 0;
+            outer:
             while (thisPos < size && otherPos < otherSize) {
                 // on each iteration we assume
                 // that all on the left of the current position
@@ -209,10 +216,10 @@ public class FilePreprocessorConditionState
                     return false;
                 } else { // this.offsets[thisPos] > other.offsets[thisPos]
                     while (++otherPos < otherSize) {
-                        if (this.offsets[thisPos] == otherOffsets[thisPos]) {
+                        if (this.offsets[thisPos] == otherOffsets[otherPos]) {
                             thisPos++;
                             otherPos++;
-                            continue;
+                            continue outer;
                         }
                     }
                     return false;
@@ -223,32 +230,18 @@ public class FilePreprocessorConditionState
         return false;
     }
 
-    private void traceComparison(Object o, int result) {
-        if (o != null) {
-            if (o instanceof FilePreprocessorConditionState) {
-                CharSequence otherFileName = ((FilePreprocessorConditionState) o).fileName;
-                if (!fileName.equals(otherFileName)) {
-                    System.err.printf("ERROR: Attempt to compare different files: %s and %s\n", fileName, otherFileName);
-                    return;
-                }
-            } else {
-                System.err.printf("ERROR: %s is not instanceof %s\n", o.getClass().getName(), getClass().getName());
-                return;
-            }
-        }
-
+    private void traceComparison(FilePreprocessorConditionState other, int result) {
         System.err.printf("compareTo (%s): %s %s %s \n", fileName, toStringBrief(this),
                 (result < 0) ? "<" : ((result > 0) ? ">" : "="), // NOI18N
-                toStringBrief((FilePreprocessorConditionState) o)); //NOI18N
+                toStringBrief(other)); //NOI18N
     }
 
-    private int compareToImpl(Object o) {
-        if (o == this) {
+    private int compareToImpl(FilePreprocessorConditionState other) {
+        if (other == this) {
             return 0;
-        } else if (o == null) {
+        } else if (other == null) {
             return (size > 0) ? 1 : 0; // null and empty are the same
-        } else if (o instanceof FilePreprocessorConditionState) {
-            FilePreprocessorConditionState other = (FilePreprocessorConditionState) o;
+        } else {
             if (this.size != other.size) {
                 // longer is the array, more branches were active
                 return this.size - other.size;
@@ -262,17 +255,14 @@ public class FilePreprocessorConditionState
                 }
                 return 0;
             }
-        } else {
-            return 1;
         }
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(); // "FilePreprocessorConditionState "
-        if (fileName != null) {
-            sb.append(fileName);
-        }
+        sb.append(fileName);
+        sb.append(' ');
         sb.append(toStringBrief(this));
         sb.append(" size=" + size); //NOI18N
         return sb.toString();

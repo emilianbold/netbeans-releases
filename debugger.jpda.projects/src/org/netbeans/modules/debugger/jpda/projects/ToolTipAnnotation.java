@@ -42,7 +42,10 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
@@ -71,6 +74,19 @@ import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 public class ToolTipAnnotation extends Annotation implements Runnable {
     
     private static final int TO_STRING_LENGTH_LIMIT = 10000;
+
+    private static final Set<String> JAVA_KEYWORDS = new HashSet<String>(Arrays.asList(new String[] {
+        "abstract",     "continue",     "for",          "new",  	"switch",
+        "assert", 	"default", 	"goto", 	"package", 	"synchronized",
+        "boolean", 	"do",           "if",           "private", 	/*"this",*/
+        "break",        "double", 	"implements", 	"protected", 	"throw",
+        "byte",         "else", 	"import", 	"public", 	"throws",
+        "case",         "enum", 	"instanceof", 	"return", 	"transient",
+        "catch",        "extends", 	"int",          "short", 	"try",
+        "char",         "final", 	"interface", 	"static", 	"void",
+        /*"class",*/    "finally", 	"long", 	"strictfp", 	"volatile",
+        "const",        "float", 	"native", 	"super", 	"while",
+    }));
 
     private Part lp;
     private EditorCookie ec;
@@ -113,13 +129,15 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor ();
         if (ep == null) return ;
         int offset;
+        boolean[] isMethodPtr = new boolean[] { false };
         String expression = getIdentifier (
             doc, 
             ep,
             offset = NbDocument.findLineOffset (
                 doc,
                 lp.getLine ().getLineNumber ()
-            ) + lp.getColumn ()
+            ) + lp.getColumn (),
+            isMethodPtr
         );
         if (expression == null) return ;
         DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager ().
@@ -145,6 +163,9 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 }
             }
             if (v == null) {
+                if (isMethodPtr[0]) {
+                    return ; // We do not evaluate methods
+                }
                 v = d.evaluate (expression);
             }
             String type = v.getType ();
@@ -194,7 +215,8 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
     private static String getIdentifier (
         StyledDocument doc, 
         JEditorPane ep, 
-        int offset
+        int offset,
+        boolean[] isMethodPtr
     ) {
         String t = null;
         if ( (ep.getSelectionStart () <= offset) &&
@@ -235,7 +257,21 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             }
 
             if (identStart == identEnd) return null;
-            return t.substring (identStart, identEnd);
+            String ident = t.substring (identStart, identEnd);
+            if (JAVA_KEYWORDS.contains(ident)) {
+                // Java keyword => Do not show anything
+                return null;
+            }
+            while (identEnd < lineLen &&
+                   Character.isWhitespace(t.charAt(identEnd))
+            ) {
+                identEnd++;
+            }
+            if (identEnd < lineLen && t.charAt(identEnd) == '(') {
+                // We're at a method call
+                isMethodPtr[0] = true;
+            }
+            return ident;
         } catch (BadLocationException e) {
             return null;
         }

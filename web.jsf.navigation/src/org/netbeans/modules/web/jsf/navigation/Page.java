@@ -213,7 +213,8 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
             original.destroy();
             destroyListeners();
         } else if (input == DialogDescriptor.NO_OPTION) {
-            pc.removeSceneNodeEdges(this);
+            // XXX #142726 In case of deleting the node via PageFlowDeleteAction, do not delete the edges.
+//            pc.removeSceneNodeEdges(this);
             //            if ( removePageName2NodeReference ) {  //HACK Should I remove the node myself until Petr fixes this bug?
             //                //                pc.removePageName2Node(displayName);
             //                destroy();

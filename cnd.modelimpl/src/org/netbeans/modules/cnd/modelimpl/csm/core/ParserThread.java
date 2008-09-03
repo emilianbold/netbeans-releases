@@ -53,13 +53,26 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  * @author vk155633
  */
 public class ParserThread implements Runnable {
-    private boolean stopped = false;
+    private volatile boolean stopped = false;
+    private boolean isStoped = false;
 
     public void stop() {
         this.stopped = true;
     }
     
     public void run() {
+        try {
+            _run();
+        } finally {
+            isStoped = true;
+        }
+    }
+    
+    public boolean isStoped(){
+        return isStoped;
+    }
+    
+    private void _run() {
 	if( TraceFlags.TRACE_PARSER_QUEUE ) trace("started"); // NOI18N
         ParserQueue queue = ParserQueue.instance();
         while( !stopped ) {
@@ -68,7 +81,9 @@ public class ParserThread implements Runnable {
                 ParserQueue.Entry entry = queue.poll();
                 if( entry == null ) {
                     if( TraceFlags.TRACE_PARSER_QUEUE ) trace("waiting"); // NOI18N
+                    isStoped = true;
                     queue.waitReady();
+                    isStoped = false;
                 }
                 else {
                     FileImpl file = entry.getFile();
@@ -106,7 +121,7 @@ public class ParserThread implements Runnable {
 			try {
                             queue.onFileParsingFinished(file);
                             if( TraceFlags.TRACE_PARSER_QUEUE ) trace("parsing done: " + file.getAbsolutePath()); // NOI18N
-			    Notificator.instance().flush();
+                            Notificator.instance().flush();
 			    if( TraceFlags.TRACE_PARSER_QUEUE ) trace("model event flushed"); // NOI18N
 			} catch( Throwable thr ) {
 			    thr.printStackTrace(System.err);

@@ -45,6 +45,7 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -73,6 +74,11 @@ public class ParserThreadManager  {
         public void stop() {
             assert this.delegate != null;
             this.delegate.stop();
+        }
+
+        public boolean isStoped() {
+            assert this.delegate != null;
+            return this.delegate.isStoped();
         }
         
         public void run() {
@@ -146,6 +152,18 @@ public class ParserThreadManager  {
             
         for (Wrapper wrapper : wrappers) {
             wrapper.stop();
+        }
+        for (Wrapper wrapper : wrappers) {
+            while (true) {
+                if (wrapper.isStoped()){
+                    break;
+                }
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
         
 	ParserQueue.instance().shutdown();

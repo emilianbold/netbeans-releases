@@ -628,7 +628,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (evt.getNewValue().equals(STATE_READY)) {
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     gdb.break_insert("dlopen"); // NOI18N
-                } else {
+                } else if (gdbVersion < 6.8) {
                     gdb.gdb_set("stop-on-solib-events", "1"); // NOI18N
                 }
                 if (continueAfterFirstStop) {
@@ -1652,7 +1652,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         setStopped();
                     }
                 }
-                if (dlopenPending) { // who stops here?
+                if (dlopenPending) { // who stops here? (Linux - see IZ #145868)
                     dlopenPending = false;
                     checkSharedLibs();
                 }
@@ -1832,9 +1832,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     checkNextFrame = true;
                 } else {
                     gdb.stack_select_frame(i);
-                    gdb.gdb_set("stop-on-solib-event"  , "0"); // NOI18N
-                    gdb.exec_finish();
-                    gdb.gdb_set("stop-on-solib-event"  , "1"); // NOI18N
+                    if (gdbVersion < 6.8) {
+                        gdb.gdb_set("stop-on-solib-event"  , "0"); // NOI18N
+                        gdb.exec_finish();
+                        gdb.gdb_set("stop-on-solib-event"  , "1"); // NOI18N
+                    } else {
+                        gdb.exec_finish();
+                    }
                     gdb.exec_next();
                     state = oldState;
                 return;

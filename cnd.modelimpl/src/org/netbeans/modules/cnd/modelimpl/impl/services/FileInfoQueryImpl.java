@@ -221,27 +221,29 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
             ProjectBase startProject = ProjectBase.getStartProject(startEntry);
             if (startProject != null) {
                 CsmFile startFile = startProject.getFile(new File(startEntry.getStartFile()));
-                List<CsmInclude> res = new ArrayList<CsmInclude>();
-                for(APTIncludeHandler.IncludeInfo info : reverseInclStack){
-                    int line = info.getIncludeDirectiveLine();
-                    CsmInclude find = null;
-                    for(CsmInclude inc : startFile.getIncludes()){
-                        if (line == inc.getEndPosition().getLine()){
-                            find = inc;
+                if (startFile != null) {
+                    List<CsmInclude> res = new ArrayList<CsmInclude>();
+                    for(APTIncludeHandler.IncludeInfo info : reverseInclStack){
+                        int line = info.getIncludeDirectiveLine();
+                        CsmInclude find = null;
+                        for(CsmInclude inc : startFile.getIncludes()){
+                            if (line == inc.getEndPosition().getLine()){
+                                find = inc;
+                                break;
+                            }
+                        }
+                        if (find != null) {
+                            res.add(find);
+                            startFile = find.getIncludeFile();
+                            if (startFile == null) {
+                                break;
+                            }
+                        } else {
                             break;
                         }
                     }
-                    if (find != null) {
-                        res.add(find);
-                        startFile = find.getIncludeFile();
-                        if (startFile == null) {
-                            break;
-                        }
-                    } else {
-                        break;
-                    }
+                    return res;
                 }
-                return res;
             }
         }
         return Collections.<CsmInclude>emptyList();

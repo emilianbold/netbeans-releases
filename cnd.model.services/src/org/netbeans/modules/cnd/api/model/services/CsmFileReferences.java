@@ -140,7 +140,7 @@ public abstract class CsmFileReferences {
         if (2 <= context.size() && isDereference(context.getToken())) {
             CsmReference ref = context.getReference(context.size() - 2);
             if (ref != null) {
-                if (isThis(ref)) {
+                if (getDefault().isThis(ref)) {
                     return hasTemplateBasedAncestors(findContextClass(context));
                 }
                 CsmObject refObj = ref.getReferencedObject();
@@ -267,7 +267,7 @@ public abstract class CsmFileReferences {
     public static boolean isAfterUnresolved(CsmReferenceContext context) {
         if (2 <= context.size() && isDereference(context.getToken())) {
             CsmReference ref = context.getReference(context.size() - 2);
-            if (ref != null && !isThis(ref)) {
+            if (ref != null && !getDefault().isThis(ref)) {
                 if (ref.getReferencedObject() == null) {
                     return true;
                 }
@@ -315,7 +315,7 @@ public abstract class CsmFileReferences {
         }
     }
 
-    public static boolean isThis(CsmReference ref) {
+    protected boolean isThis(CsmReference ref) {
         return ref != null && "this".equals(ref.getText()); //NOI18N
     }
 }

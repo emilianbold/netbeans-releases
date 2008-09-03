@@ -1280,7 +1280,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     
     public ResourceConfiguratorInterface getResourceConfigurator() {
         if(resourceConfigurator == null){
-            org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator r = new org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator();
+            org.netbeans.modules.j2ee.sun.api.restricted.ResourceConfigurator r = new org.netbeans.modules.j2ee.sun.api.restricted.ResourceConfigurator();
             r.setDeploymentManager(this);
             resourceConfigurator = r;
 //            try{

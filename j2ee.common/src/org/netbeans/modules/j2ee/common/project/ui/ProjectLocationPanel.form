@@ -31,8 +31,8 @@
                       <Component id="librariesLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lblHint" alignment="0" pref="296" max="32767" attributes="0"/>
-                          <Component id="librariesLocation" alignment="0" pref="296" max="32767" attributes="0"/>
+                          <Component id="lblHint" alignment="0" pref="323" max="32767" attributes="0"/>
+                          <Component id="librariesLocation" alignment="0" pref="323" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
@@ -44,7 +44,7 @@
               <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-              <Component id="jPanel1" pref="479" max="32767" attributes="0"/>
+              <Component id="jPanel1" pref="481" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
@@ -56,13 +56,13 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="createdFolderTextField" pref="297" max="32767" attributes="0"/>
+                      <Component id="createdFolderTextField" pref="330" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="76" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="projectNameTextField" alignment="0" pref="297" max="32767" attributes="0"/>
-                          <Component id="projectLocationTextField" alignment="0" pref="297" max="32767" attributes="0"/>
+                          <Component id="projectNameTextField" alignment="0" pref="321" max="32767" attributes="0"/>
+                          <Component id="projectLocationTextField" alignment="0" pref="321" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="browseButton" min="-2" max="-2" attributes="0"/>

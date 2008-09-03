@@ -177,7 +177,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         
         @Override
         public String getCommand() {
-            return "add-resources?xml_file_name=" + sunResourcesXmlPath;
+            return "add-resources" + QUERY_SEPARATOR + "xml_file_name=" + sunResourcesXmlPath;
         }
         
     }
