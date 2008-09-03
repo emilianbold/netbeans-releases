@@ -46,19 +46,19 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Bachorik
  */
-public class Tomcat55IntegrationProvider extends Tomcat5IntegrationProvider {
+public class Tomcat6IntegrationProvider extends Tomcat5IntegrationProvider {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
-    private final String TOMCAT_55_TITLE = NbBundle.getMessage(this.getClass(), "TomcatIntegrationProvider_Tomcat55String"); // NOI18N
+    private final String TOMCAT_60_TITLE = NbBundle.getMessage(this.getClass(), "TomcatIntegrationProvider_Tomcat6String"); // NOI18N
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public String getTitle() {
-        return TOMCAT_55_TITLE;
+        return TOMCAT_60_TITLE;
     }
 
     protected int getAttachWizardPriority() {
-        return 11;
+        return 10;
     }
 
     protected String getCatalinaScriptName() {
@@ -66,6 +66,6 @@ public class Tomcat55IntegrationProvider extends Tomcat5IntegrationProvider {
     }
 
     protected int getMagicNumber() {
-        return 30;
+        return 40;
     }
 }
