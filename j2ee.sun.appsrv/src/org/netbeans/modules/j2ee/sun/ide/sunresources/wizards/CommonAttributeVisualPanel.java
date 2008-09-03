@@ -54,8 +54,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeListener;
 
 //import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
-
+import org.netbeans.modules.j2ee.sun.api.restricted.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
