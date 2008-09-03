@@ -188,7 +188,7 @@
 	<mapID target="previous" url="images/previous.png"/>
 	<mapID target="UsagesWindow" url="EditingSourceFiles/UsagesWindow.html"/>
 	<mapID target="Attaching" url="CandC++ProjectBasics/Attaching.html"/>
-	<mapID target="CofiguringCodeStyle" url="WorkingWithCandC++Projects/ConfiguringCodeStyle.html"/>
+	<mapID target="ConfiguringCodeStyle" url="WorkingWithCandC++Projects/ConfiguringCodeStyle.html"/>
 	<mapID target="ConfiguringSemanticHighlighting" url="WorkingWithCandC++Projects/ConfiguringSemanticHighlighting.html"/>
 	<mapID target="ConfiguringFileExtensions" url="WorkingWithCandC++Projects/ConfiguringFileExtensions.html"/>
 	<mapID target="CandC++Options" url="CandC++ProjectBasics/CandC++Options.html"/>
