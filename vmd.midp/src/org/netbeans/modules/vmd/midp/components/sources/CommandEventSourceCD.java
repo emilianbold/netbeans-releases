@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.midp.components.sources;
 
+import java.nio.channels.Pipe.SourceChannel;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
@@ -62,6 +63,8 @@ import org.netbeans.modules.vmd.midp.screen.CommandEventSourceSRItemPresenter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
+import org.netbeans.modules.vmd.api.codegen.CodeSupport;
 
 
 /**
@@ -106,13 +109,13 @@ public final class CommandEventSourceCD extends ComponentDescriptor {
             // info
             InfoPresenter.create (EventSourceSupport.createCommandEventSourceInfoResolver ()),
             // general
-            GoToSourcePresenter.createForwarder (PROP_COMMAND),
-            new SecondaryGoToSourcePresenter() {
+            new GoToSourcePresenter() {
                 protected boolean matches (GuardedSection section) {
                     DesignComponent listener = MidpDocumentSupport.getCommandListener (getComponent ().getDocument (), CommandListenerCD.TYPEID);
                     return MultiGuardedSection.matches (section, listener.getComponentID () + "-commandAction", getComponent ().getComponentID () + "-postAction"); // NOI18N
                 }
             },
+            SecondaryGoToSourcePresenter.createForwarder(PROP_COMMAND),
             // flow
             new CommandEventSourceFlowPinPresenter (),
             // properties
