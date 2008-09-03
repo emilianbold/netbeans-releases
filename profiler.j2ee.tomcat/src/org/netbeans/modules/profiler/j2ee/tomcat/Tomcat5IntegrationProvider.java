@@ -204,7 +204,7 @@ public class Tomcat5IntegrationProvider extends AbstractTomcatIntegrationProvide
 
         catalinaScript.append(getQuotedPath(this.getInstallationPath() + separator + "bin" + separator + getTomcatExe()))
                       .append(" //TS//" + getTomcatName()); // NOI18N
-        catalinaScript.append("--JavaHome=").append(getQuotedPath(getTargetJavaHome())).append(' '); // NOI18N
+        catalinaScript.append(" ").append("--JavaHome=").append(getQuotedPath(getTargetJavaHome())).append(' '); // NOI18N
         catalinaScript.append("--JvmOptions %CATALINA_OPTS%").append(catalinaBaseOption); // NOI18N
 
         return catalinaScript;
