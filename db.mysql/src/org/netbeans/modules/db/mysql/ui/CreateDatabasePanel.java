@@ -161,7 +161,8 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                         try {
                             SampleManager.createSample(dbname, dbconn);
                         } catch (DatabaseException dbe) {
-                            Exceptions.printStackTrace(dbe);
+                            LOGGER.log(Level.INFO, dbe.getMessage(), dbe);
+                            Utils.displayErrorMessage(dbe.getMessage());
                         }
                     }
 
