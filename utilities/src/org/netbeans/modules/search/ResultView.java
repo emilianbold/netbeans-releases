@@ -79,7 +79,6 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openidex.search.SearchType;
-import static java.lang.Thread.NORM_PRIORITY;
 
 /**
  * Panel which displays search results in explorer like manner.
