@@ -59,6 +59,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.anchor.Anchor;
@@ -187,7 +189,8 @@ public abstract class UMLNodeWidget extends Widget
         if(childLayer.getFont()!=null)setFont(childLayer.getFont());//notify/set to handle possible changes, it's not possible to override or easy add handler to chld layer, so pass to main node layer
         
         addToLookup(new ObjectSelectable());
-        
+
+        setAccessibleContext(new UMLNodeWidgetAccessibleContext(this));
     }
     
     public ResizeStrategyProvider getResizeStrategyProvider()
@@ -1192,4 +1195,24 @@ public abstract class UMLNodeWidget extends Widget
         }
         return null;
     }
+
+    ///////////// 
+    // Accessible
+    /////////////
+
+
+    public class UMLNodeWidgetAccessibleContext extends UMLWidgetAccessibleContext
+    {
+        public UMLNodeWidgetAccessibleContext(Widget w) 
+        {
+            super(w);
+        }
+
+        public AccessibleRole getAccessibleRole () {
+            return AccessibleRole.PANEL;
+        }
+        
+    }
+
+
 }
