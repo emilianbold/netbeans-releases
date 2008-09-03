@@ -99,7 +99,7 @@ public class BaseSampleProvider implements SampleProvider {
 
         String sql = getSqlText(sampleName);
 
-        SQLExecutor.execute(dbconn, sql, new SampleExecuteLogger(sampleName));
+        SQLExecutor.execute(dbconn, sql);
     }
 
     public boolean supportsSample(String name) {
