@@ -62,7 +62,6 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
@@ -101,7 +100,6 @@ public class PhpProject implements Project, AntProjectListener {
     private final PropertyEvaluator eval;
     // @GuardedBy(this)
     private FileObject sourcesDirectory;
-    volatile boolean temporarySourcesDirectory = false;
     private Lookup lookup;
 
     PhpProject(AntProjectHelper helper) {
@@ -155,9 +153,8 @@ public class PhpProject implements Project, AntProjectListener {
     synchronized FileObject getSourcesDirectory() {
         if (sourcesDirectory == null) {
             sourcesDirectory = resolveSourcesDirectory();
-            assert sourcesDirectory != null : "Sources directory cannot be null";
         }
-        assert sourcesDirectory != null;
+        assert sourcesDirectory != null : "Sources directory cannot be null";
         return sourcesDirectory;
     }
 
@@ -177,39 +174,22 @@ public class PhpProject implements Project, AntProjectListener {
         File srcDir = FileUtil.normalizeFile(new File(helper.resolvePath(eval.getProperty(PhpProjectProperties.SRC_DIR))));
         if (srcDir.mkdirs()) {
             // original sources restored
-            informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderRestored", srcDir.getAbsolutePath()));
+            informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderRestored", srcDir.getAbsolutePath()), NotifyDescriptor.INFORMATION_MESSAGE);
             return FileUtil.toFileObject(srcDir);
         }
-        // save new sources directory
-        setTemporarySourcesToProjectDirectory();
-        informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderSetToProjectDirectory", srcDir.getAbsolutePath()));
+        // temporary set sources to project directory, do not store it anywhere
+        informUser(projectName, NbBundle.getMessage(PhpProject.class, "MSG_SourcesFolderTemporaryToProjectDirectory", srcDir.getAbsolutePath()), NotifyDescriptor.ERROR_MESSAGE);
         return helper.getProjectDirectory();
     }
 
-    private void informUser(String title, String message) {
+    private void informUser(String title, String message, int type) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor(
                 message,
                 title,
                 NotifyDescriptor.DEFAULT_OPTION,
-                NotifyDescriptor.INFORMATION_MESSAGE,
+                type,
                 new Object[] {NotifyDescriptor.OK_OPTION},
                 NotifyDescriptor.OK_OPTION));
-    }
-
-    private void setTemporarySourcesToProjectDirectory() {
-        try {
-            ProjectManager.mutex().writeAccess(new Runnable() {
-                public void run() {
-                    EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    privateProperties.setProperty(PhpProjectProperties.SRC_DIR, "."); // NOI18N
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-                    temporarySourcesDirectory = true;
-                }
-            });
-            ProjectManager.getDefault().saveProject(this);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }
 
     public void configurationXmlChanged(AntProjectEvent event) {
@@ -376,15 +356,11 @@ public class PhpProject implements Project, AntProjectListener {
                 copySupport.projectClosed(PhpProject.this);
             }
 
-            if (temporarySourcesDirectory) {
-                EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                privateProperties.remove(PhpProjectProperties.SRC_DIR);
-                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
-                temporarySourcesDirectory = false;
-                synchronized (PhpProject.this) {
-                    sourcesDirectory = null;
-                }
+            // clear reference so the next time the project is opened we can check it again
+            synchronized (PhpProject.this) {
+                sourcesDirectory = null;
             }
+
             try {
                 ProjectManager.getDefault().saveProject(PhpProject.this);
             } catch (IOException e) {
