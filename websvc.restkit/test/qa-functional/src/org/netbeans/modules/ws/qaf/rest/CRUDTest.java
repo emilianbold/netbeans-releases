@@ -170,6 +170,8 @@ public class CRUDTest extends RestTestBase {
         //Generating RESTful Web Services from Entity Classes
         String restGenTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestSevicicesFromEntitiesProgress");
         waitDialogClosed(restGenTitle);
+        // wait classpath scanning finished
+        org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
         Set<File> files = getFiles("service"); //NOI18N
         files.addAll(getFiles("converter")); //NOI18N
         assertEquals("Some files were not generated", 6, files.size()); //NOI18N
