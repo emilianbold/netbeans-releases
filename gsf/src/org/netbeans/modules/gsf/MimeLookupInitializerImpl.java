@@ -129,10 +129,6 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
                     return null;
                 }
 
-                // TODO - finer granularity. What is really initialized here is layer stuff
-                // related to the language.
-                LanguageRegistry.getInstance().initializeLanguageForEditor(language);
-
                 Integer[] supportedOps = null;
                 if (language.hasFormatter()) {
                     supportedOps = new Integer[]{Integer.valueOf(EDITOR_KIT_ID), Integer.valueOf(INDENT_ID), Integer.valueOf(FORMAT_ID) };

@@ -148,7 +148,7 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
 
         protected void updateOrientation()
         {
-            activityPartitionWidget.setOrientation(Orientation.VERTICAL);
+            activityPartitionWidget.setOrientation(Orientation.HORIZONTAL);
         }
 
         public void actionPerformed(ActionEvent e)
@@ -170,7 +170,7 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
                 {
                     activityPartitionWidget.getParentPartition().addSubPartition(subPartition);
                     // add sub parttion widget to main widget.
-                    activityPartitionWidget.addSubPartition(subPartition);
+                    activityPartitionWidget.addCompartment(subPartition);
                 }
             }
         }
@@ -187,7 +187,7 @@ public final class PartitionActions extends SceneNodeAction implements ContextAw
         @Override
         protected void updateOrientation()
         {
-            activityPartitionWidget.setOrientation(Orientation.HORIZONTAL);
+            activityPartitionWidget.setOrientation(Orientation.VERTICAL);
         }
     }  
 }

@@ -507,7 +507,7 @@ public class FileStatusCache {
 
         long r2 = -2;
         if (e2 != null) {
-            SVNRevision r = e1.getRevision();
+            SVNRevision r = e2.getRevision();
             r2 = r != null ? e2.getRevision().getNumber() : r2;
         }
         

@@ -196,6 +196,48 @@ public class SQLExecutorTest extends DBTestBase {
 
         checkExecution(SQLExecutor.execute(dbconn, sql));
     }
+
+    public void testExecuteLogger() throws Exception {
+        String tablename = getTestTableName();
+        String sql = "INSERT INTO " + tablename + " values(1); " +
+                "INSERT INTO " + tablename + " values(2); " +
+                "INSERT INTO FOO values('this should fail'); " +
+                "SELECT * FROM " + tablename + ";";
+
+        TestLogger logger = new TestLogger();
+
+        SQLExecutor.execute(dbconn, sql, logger);
+        assertEquals(4, logger.statementCount);
+        assertEquals(1, logger.errorCount);
+        assertEquals(3, logger.errorStatement);
+        assertTrue(logger.gotFinish);
+        assertFalse(logger.gotCancel);
+    }
+
+    private static class TestLogger implements SQLExecuteLogger {
+        public int statementCount = 0;
+        public int errorCount = 0;
+        public int errorStatement = 0;
+        public boolean gotFinish = false;
+        public boolean gotCancel = false;
+
+        public void log(StatementExecutionInfo info) {
+            statementCount++;
+            if (info.hasExceptions()) {
+                errorCount++;
+                errorStatement = statementCount;
+            }
+        }
+
+        public void finish(long executionTime) {
+            gotFinish = true;
+        }
+
+        // I'm not sure how to trigger a cancel...
+        public void cancel() {
+            gotCancel = true;
+        }
+    }
     
 
 }

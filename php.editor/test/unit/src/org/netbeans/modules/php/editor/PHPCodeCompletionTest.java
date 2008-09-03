@@ -119,6 +119,18 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_static_method->^", false);
     }
     
+    public void testTypesInPHPDOC1() throws Exception {
+        checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @var TypesinPHPDo^", false);
+    }
+    
+    public void testTypesInPHPDOC2() throws Exception {
+        checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @return TypesinPHPD^", false);
+    }
+    
+    public void testTypesInPHPDOC3() throws Exception {
+        checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @return TypesinPHPDoc des^", false);
+    }
+    
     public void testPhpContext2() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
