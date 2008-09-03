@@ -64,15 +64,20 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
         super (name);
     }
 
+//    public static Test suite() {
+//        return new XMLDataObjectTest("testWrongUTFCharacer");
+//    }
+
     @Override
     protected void setUp () throws Exception {
+        clearWorkDir();
+        
         log = Log.enable("org.openide.loaders", Level.WARNING);
         
         super.setUp ();
         System.setProperty ("org.openide.util.Lookup", "org.openide.loaders.XMLDataObjectTest$Lkp");
         String fsstruct [] = new String [] {
         };
-        TestUtilHid.destroyLocalFileSystem (getName());
         FileSystem fs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
         data = FileUtil.createData (
             fs.getRoot (),
@@ -228,6 +233,29 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
             XMLDataObject.registerInfo (id, null);
             lck.releaseLock ();
         }
+    }
+
+    public void testWrongUTFCharacer() throws Exception {
+        FileLock lck;
+        DataObject obj;
+
+        FileObject d = data.getParent().createData("wrongutfchar.xml");
+
+        lck = d.lock();
+
+
+        OutputStream os = d.getOutputStream(lck);
+        os.write(0xc5); // multibyte
+        os.write(0x00); // wrong char after multibyte
+        os.close();
+
+        obj = DataObject.find(d);
+
+        XMLDataObject xml = (XMLDataObject)obj;
+        String id = xml.getDocument().getDoctype().getPublicId();
+        assertEquals("No ID", null, id);
+        
+        assertEquals("No warnings\n" + log, 0, log.length());
     }
     
     
