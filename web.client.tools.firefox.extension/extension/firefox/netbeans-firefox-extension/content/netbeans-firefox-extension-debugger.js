@@ -1582,7 +1582,8 @@
         const delayShutdownIfDebugging = function() {
             disable();
             NetBeans.Debugger.shutdown();
-            window.close();
+            // #144937 - why did we close the window on shutdown anyway?
+            //window.close();
         };
 
         if (debugging) {
