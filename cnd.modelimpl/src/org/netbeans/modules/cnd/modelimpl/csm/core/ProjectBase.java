@@ -1111,10 +1111,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                             if (!pcState.isSubset(old.pcState)) {
                                 isSubset = false;
                             }
-                            if(!old.pcState.isSubset(pcState)) {
+                            if(old.pcState != null && !old.pcState.isSubset(pcState)) {
                                 isSuperset = false;
                             }
-                            possibleSuperSet.add(old.pcState);
+                            if (old.pcState != null) {
+                                possibleSuperSet.add(old.pcState);
+                            }
                         }
                         if (!isSubset) {
                             if (pcState.isSubset(possibleSuperSet)) {
