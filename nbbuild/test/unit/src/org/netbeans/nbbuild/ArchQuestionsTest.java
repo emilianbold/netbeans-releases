@@ -479,19 +479,6 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         }
         
         assertEquals("Warnings are not included if defaultanswer is present: " + txt[0], -1, txt[0].indexOf("Default answer to this question"));
-        
-       
-        // the api tags are also included in comment
-        // like this one:
-        // <api type='import' group='java' category='private' name='org.openide.util' url='@org-openide-util@/overview-summary.html'></api>
-        Matcher m = Pattern.compile("<!--[^-\"']*<api *type..import. *group..java. *"
-            + "category=.private. *"
-            + "name=.org.openide.util.*url=..org-openide-util./overview-summary.*>"
-            + "[^-]*</api>"
-        ).matcher(txt[0]);
-        if (!m.find()) {
-            fail("<api/> should be in comment\n" + txt[0]);
-        }
     }
 
     public void testReadNbDepsFromProjectXMLWhenDefaultAnswerProhibited () throws Exception {
