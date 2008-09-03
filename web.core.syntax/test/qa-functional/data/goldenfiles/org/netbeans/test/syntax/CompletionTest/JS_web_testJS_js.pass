@@ -1,6 +1,4 @@
 [c|, const, const, 85]
-Arguments callee
-Arguments caller
 Array concat ( value1 , value2 , valueN ) : Array
 Array constructor
 Boolean constructor
@@ -17,52 +15,17 @@ CSS2Properties cueAfter : String
 CSS2Properties cueBefore : String
 CSS2Properties cursor : String
 CSSMediaRule cssRules : CSSRuleList
-CSSRule cssText : String
+CSSRule cssText
 CSSStyleDeclaration cssText : String
 CSSStyleSheet cssRules : CSSRuleList
 CSSValue cssText : String
 CSSValue cssValueType : Number
-CanvasR > createLinearGradient ( Number x0 , Num 
-CanvasR > createPattern ( HTMLImageElement|HTML 
-CanvasR > createRadialGradient ( Number x0 , Num 
-CanvasRenderingContext2D canvas : HTMLCanvas
-CanvasRenderingContext2D clearRect ( Number x , 
-CanvasRenderingContext2D clip () : void
-CanvasRenderingContext2D closePath () : void
-CanvasRenderingContext2D createImageData ( Num 
 DOM cssRule : CSSRule
 DOMConfiguration canSetParameter ( String name 
-DOMException code : Number
-DOMImpl > createDocument ( String namespaceURI , 
-DOMImpl > createDocumentType ( String qualified 
 DOMImplementat > createCSSStyleSheet ( String t 
 DOMLocator columnNumber : Number
-DOMStringList contains ( String str ) : void
 Date constructor
-Documen > createNodeIterator ( Node root , Numbe 
-Documen > createTreeWalker ( Node root , Number 
-Document characterSet
-Document clear () : void
-Document close () : void
-Document compatMode
-Document contentType
-Document cookie
-Document createAttribute ( String name ) : Attr
-Document createAttributeNS ( String namespaceU 
-Document createCDATASection ( String data ) : C
-Document createComment ( comment ) : Comment
-Document createDocumentFragment () : Document
-Document createElement ( String tagName ) : Ele
-Document createElementNS ( String namespaceURI 
-Document createEntityReference ( String name ) 
-Document createEvent ( type ) : Event
-Document createNSResolver ( node ) : void
-Document createProcessingInstruction ( String 
-Document createRange () : Range
-Document createTextNode ( String data ) : Text
-Document createTreeWalker ( root , whatToShow , 
 DocumentEvent createEvent ( String eventType ) 
-DocumentRange createRange () : Range
 Element childNodes
 Element className
 Element click () : void
@@ -81,11 +44,6 @@ Event clientY
 Event ctrlKey
 Event currentTarget : EventTarget
 EventException code : Number
-Function call ( thisArg , arg1 , arg2 ) : void
-Function caller
-Function constructor
-HTMLAnchorElement charset : String
-HTMLAnchorElement coords : String
 HTMLAppletElement code : String
 HTMLAppletElement codeBase : String
 HTMLAreaElement coords : String
@@ -93,18 +51,12 @@ HTMLBRElement clear : String
 HTMLBaseFontElement color : String
 HTMLBlockquoteElement cite : String
 HTMLDListElement compact : Boolean
-HTMLDirectoryElement compact : Boolean
-HTMLDocument close () : void
-HTMLDocument cookie : String
-HTMLElement className : String
 HTMLFontElement color : String
-HTMLFrameElement contentDocument : Document
 HTMLFrameSetElement cols : String
 HTMLIFrameElement contentDocument : Document
 HTMLInputElement checked : Boolean
 HTMLInputElement click () : void
 HTMLLinkElement charset : String
-HTMLMenuElement compact : Boolean
 HTMLMetaElement content : String
 HTMLModElement cite : String
 HTMLOListElement compact : Boolean
@@ -118,8 +70,6 @@ HTMLTableCellElement cellIndex : Number
 HTMLTableCellElement ch : String
 HTMLTableCellElement chOff : String
 HTMLTableCellElement colSpan : Number
-HTMLTableColElement ch : String
-HTMLTableColElement chOff : String
 HTMLTableElement caption : HTMLTableCaptionE
 HTMLTableElement cellPadding : String
 HTMLTableElement cellSpacing : String
@@ -131,13 +81,9 @@ HTMLTableRowElement ch : String
 HTMLTableRowElement chOff : String
 HTMLTableSectionElement ch : String
 HTMLTableSectionElement chOff : String
-HTMLTextAreaElement cols : Number
 HTMLUListElement compact : Boolean
 Math ceil ( x ) : Number
 Math cos ( x ) : Number
-MouseEvent clientX : Number
-MouseEvent clientY : Number
-MouseEvent ctrlKey : Boolean
 NameList contains ( String str ) : void
 NameList containsNS ( String namespaceURI , Str 
 Node childNodes : NodeList
@@ -145,40 +91,22 @@ Node cloneNode ( Boolean deep ) : Node
 Node compareDocumentPosition ( Node other ) : void
 Number constructor
 Object constructor
-Packages className
 Range cloneContents () : DocumentFragment
-Range cloneRange () : Range
-Range collapse ( Boolean toStart ) : void
-Range collapsed : Boolean
-Range commonAncestorContainer : Node
-Range compareBoundaryPoints ( Number how , Rang 
-Range compareNode ( referenceNode ) : void
-Range comparePoint ( referenceNode , offset ) : 
-Range createContextualFragment ( tagString ) : 
-RangeError constructor
-RangeException code : Number
 ReferenceError constructor
 RegExp constructor
 Screen colorDepth
-Selection collapse ( parentNode , offset ) : void
-Selection collapseToEnd () : void
-Selection collapseToStart () : void
-Selection containsNode ( aNode , aPartlyContain 
+Some results omitted. Type more to narrow se 
 String charAt ( index ) : String
 String charCodeAt ( index ) : Number
 String concat ( string2 , string3 , stringN ) : S
 String constructor
 Stylesheet cssRules
-SyntaxError constructor
 Table caption
 Table cellPadding
 Table cellSpacing
 Table createCaption () : void
 Table createTFoot () : void
 Table createTHead () : void
-TableRow cells
-TableRow ch
-TableRow chOff
 TreeWalker currentNode : Node
 TypeError constructor
 URIError constructor
@@ -284,7 +212,6 @@ short
 static
 super
 switch
-switch switch ( v ) {
 synchronized
 End cursor position = 148
 [my|, testJS.js myfunction () : void, myfunction(), 206]

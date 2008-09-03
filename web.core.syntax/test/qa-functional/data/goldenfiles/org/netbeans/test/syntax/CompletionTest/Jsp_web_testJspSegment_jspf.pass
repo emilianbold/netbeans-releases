@@ -45,18 +45,18 @@ End cursor position = 895
 < jsp:expression >
 < jsp:fallback >
 < jsp:forward >
-< jsp:getProperty />
+< jsp:getProperty / >
 < jsp:include >
-< jsp:param />
+< jsp:param / >
 < jsp:params >
 < jsp:plugin >
-< jsp:setProperty />
+< jsp:setProperty / >
 < jsp:text >
 < jsp:useBean >
 End cursor position = 941
 [${p|, pageContext, ${pageContext, 975]
 pageContext
-pageScope
-paramValues
-param
+pageScope[]
+paramValues[]
+param[]
 End cursor position = 989

@@ -1,9 +1,9 @@
-[<%@|, <%@ attribute %>, <%@ attribute  %>, 122]
-<%@ attribute %>
-<%@ include %>
-<%@ tag %>
-<%@ taglib %>
-<%@ variable %>
+[<%@|, <%@ attribute % >, <%@attribute  %>, 122]
+<%@ attribute % >
+<%@ include % >
+<%@ tag % >
+<%@ taglib % >
+<%@ variable % >
 End cursor position = 137
 [<%@tag |, large-icon, <%@tag large-icon="", 216]
 body-content
