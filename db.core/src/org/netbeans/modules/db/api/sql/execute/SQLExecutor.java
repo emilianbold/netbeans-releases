@@ -40,11 +40,9 @@
 package org.netbeans.modules.db.api.sql.execute;
 
 import java.sql.SQLException;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -53,11 +51,6 @@ import org.netbeans.modules.db.sql.execute.SQLExecuteHelper;
 import org.netbeans.modules.db.sql.execute.SQLExecutionLogger;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResult;
 import org.netbeans.modules.db.sql.execute.SQLExecutionResults;
-import org.netbeans.modules.db.sql.loader.SQLEditorSupport;
-import org.netbeans.modules.db.sql.loader.SQLExecutionLoggerImpl;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 /**
  * Support execution of SQL scripts without bringing up the editor
@@ -82,7 +75,7 @@ public class SQLExecutor {
      */
     public static SQLExecutionInfo execute(DatabaseConnection dbconn, String sql)
             throws DatabaseException {
-            return execute(dbconn, sql, new LogFileExecuteLogger());
+        return execute(dbconn, sql, new LogFileLogger());
     }
 
     /**
@@ -186,53 +179,6 @@ public class SQLExecutor {
 
     }
 
-    /**
-     * This logger writes everything to the log file.
-     */
-    private static class LogFileExecuteLogger implements SQLExecuteLogger {
-        private int errorCount;
-
-        public void log(StatementExecutionInfo info) {
-            if (info.hasExceptions()) {
-                logException(info);
-            }
-        }
-
-        public void finish(long executionTime) {
-            LOGGER.log(Level.INFO, (NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionFinished",
-                    String.valueOf(millisecondsToSeconds(executionTime)),
-                    String.valueOf(errorCount))));
-        }
-
-        public void cancel() {
-            LOGGER.log(Level.INFO, NbBundle.getMessage(SQLEditorSupport.class, "LBL_ExecutionCancelled"));
-        }
-
-        private void logException(StatementExecutionInfo info) {
-            errorCount++;
-
-            for(Throwable e: info.getExceptions()) {
-                if (e instanceof SQLException) {
-                    logSQLException((SQLException)e, info);
-                } else {
-                    LOGGER.log(Level.INFO, NbBundle.getMessage(SQLExecutor.class, "MSG_SQLExecutionException", info.getSQL()), e);
-                }
-            }
-        }
-
-        private void logSQLException(SQLException e, StatementExecutionInfo info) {
-            while (e != null) {
-                LOGGER.log(Level.INFO, NbBundle.getMessage(SQLExecutor.class, "MSG_SQLExecutionException", info.getSQL()), e);
-                e = e.getNextException();
-            }
-        }
-        
-        private String millisecondsToSeconds(long ms) {
-            NumberFormat fmt = NumberFormat.getInstance();
-            fmt.setMaximumFractionDigits(3);
-            return fmt.format(ms / 1000.0);
-        }
-    }
 
     private static class LoggerProxy implements SQLExecutionLogger {
         private final SQLExecuteLogger delegate;
