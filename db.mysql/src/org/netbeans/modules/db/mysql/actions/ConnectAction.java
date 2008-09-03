@@ -108,13 +108,20 @@ public class ConnectAction extends CookieAction {
                 DatabaseUtils.findDatabaseConnections(
                     server.getURL(dbname));
 
-        if ( conns.size() == 0 ) {
+        if ( conns.size() == 0 ) 
+        {
+            String pw = null;
+            if (server.isSavePassword())
+            {
+                pw = server.getPassword();
+            }
+            
             ConnectionManager.getDefault().
                 showAddConnectionDialogFromEventThread(
                     DatabaseUtils.getJDBCDriver(),
                     server.getURL(dbname),
                     server.getUser(),
-                    null);
+                    pw);
         } else {
             ConnectionManager.getDefault().showConnectionDialog(conns.get(0));
         }
