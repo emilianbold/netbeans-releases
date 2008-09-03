@@ -207,7 +207,7 @@ class DropTargetLayer extends JComponent {
                 g2.translate(payload.getX(), payload.getY());
                 g2.setStroke(SELECTION_STROKE);
                 g2.setColor(SELECTION_COLOR);
-                g2.drawRect(0, 0, payload.getWidth(), 3);
+                g2.drawRect(0, -1, payload.getWidth(), payload.getHeight());
                 g2.translate(-payload.getX(), -payload.getY());
                 
                 // suspend drawing of underlaying handle layer,
