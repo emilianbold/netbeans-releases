@@ -277,9 +277,10 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         
         Map<String, String> ip = getInstanceProperties();
         String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
-        String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
+        String adminPort = !"false".equals(System.getProperty("glassfish.useadminport")) ?
+            ip.get(GlassfishModule.ADMINPORT_ATTR) : ip.get(GlassfishModule.HTTPPORT_ATTR);
         if(host != null && host.length() > 0) {
-            result = "http://" + host + ":" + httpPort;
+            result = "http://" + host + ":" + adminPort;
         }
         
         return result;
