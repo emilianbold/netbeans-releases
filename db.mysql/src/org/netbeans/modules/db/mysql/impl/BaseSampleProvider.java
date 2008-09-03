@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.SampleExecuteLogger;
 import org.netbeans.modules.db.api.sql.execute.SQLExecutor;
 import org.netbeans.modules.db.mysql.spi.sample.SampleProvider;
 import org.netbeans.modules.db.mysql.util.Utils;
