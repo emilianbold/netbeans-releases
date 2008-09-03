@@ -39,15 +39,34 @@
 
 package org.netbeans.modules.db.api.sql.execute;
 
-import java.util.Collection;
-
 /**
+ * This interface defines a logger that can log information about each
+ * statement as it is executed
  *
  * @author David Van Couvering
  */
-public interface StatementExecutionInfo {
-    public String getSQL();
-    public boolean hasExceptions();
-    public Collection<Throwable> getExceptions();
-    public long getExecutionTime();
+public interface SQLExecuteLogger {
+
+    /**
+     * A statement has completed executing, and this method can be used
+     * to log information about the statement
+     * 
+     * @param info information about the statement that was executed
+     */
+    public void log(StatementExecutionInfo info);
+
+    /**
+     * This method is called when all statements have been executed.
+     *
+     * @param executionTime the time it took in milliseconds for all statements
+     *   to be executed.
+     */
+    public void finish(long executionTime);
+
+
+    /**
+     * This method is called when execution is cancelled.
+     */
+    public void cancel();
+
 }
