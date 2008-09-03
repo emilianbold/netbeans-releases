@@ -80,7 +80,7 @@ public class IndentCasesTest extends J2eeTestCase {
             openProjects(projectDir.getAbsolutePath());
             resolveServer(projectDir.getName());
             Thread.sleep(10000);
-//            setIndent(2);
+            setIndent(2);
             projectsOpened = true;
             openFile("indentationTest.jsp");
             openFile("indentationTest.html");

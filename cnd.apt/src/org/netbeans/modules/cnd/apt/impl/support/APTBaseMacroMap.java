@@ -141,11 +141,11 @@ public abstract class APTBaseMacroMap {
     }
     
     protected void defineImpl(Token name, Collection<Token> params, List<Token> value) {
-        active.macros.put(APTUtils.getTokenTextKey(name), createMacro(name, params, value));
+        active.macros.put(name.getText(), createMacro(name, params, value));
     }
     
     protected void undef(Token name) {
-        active.macros.put(APTUtils.getTokenTextKey(name), APTMacroMapSnapshot.UNDEFINED_MACRO);
+        active.macros.put(name.getText(), APTMacroMapSnapshot.UNDEFINED_MACRO);
     }
     
     /** method to implement in children */
@@ -158,8 +158,16 @@ public abstract class APTBaseMacroMap {
         return getMacro(token) != null;
     } 
 
+    public final boolean isDefined(CharSequence token) {
+        return getMacro(token) != null;
+    } 
+
     protected APTMacro getMacro(Token token) {
         return active.getMacro(token);
+    }
+
+    protected APTMacro getMacro(CharSequence token) {
+        return active.getMacro(token.toString());
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -297,6 +305,11 @@ public abstract class APTBaseMacroMap {
         public boolean isDefined(Token token) {
             return false;
         }
+        
+        public boolean isDefined(CharSequence token) {
+            return false;
+        }
+
 
         public APTMacro getMacro(Token token) {
             return null;

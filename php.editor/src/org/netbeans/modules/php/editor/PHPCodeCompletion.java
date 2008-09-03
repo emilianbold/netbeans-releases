@@ -154,14 +154,22 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR},
         new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_STRING},
         new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_VARIABLE},
-        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_TOKEN}
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_TOKEN},
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE},
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
         );
 
     private static final List<PHPTokenId[]> STATIC_CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM},
         new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_STRING},
         new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_VARIABLE},
-        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_TOKEN}
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_TOKEN},
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE},
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
         );
 
     private static final PHPTokenId[] COMMENT_TOKENS = new PHPTokenId[]{
@@ -608,8 +616,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
    
     private String findLHSExpressionType(TokenSequence<PHPTokenId> tokenSequence,
             PHPCompletionItem.CompletionRequest request){
-        int startPos = tokenSequence.offset();
+        
         // find the beginning of the left hand side expression
+        
+        while (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
+            if (!tokenSequence.movePrevious()){
+                return null;
+            }
+        }
+        
+        int startPos = tokenSequence.offset();
         
         while (!CTX_DELIMITERS.contains(tokenSequence.token().id())
                 && findLHSExpressionType_skipArgs(tokenSequence)
@@ -764,9 +780,21 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 type = func.getReturnType();
             }
+        } else {
+            String fieldName = tokenSequence.token().text().toString();
+
+            for (IndexedConstant field : request.index.getAllProperties(request.result, preceedingType,
+                    fieldName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
+
+                type = field.getTypeName();
+            }
         }
 
-        tokenSequence.moveNext();
+        do {
+            if (!tokenSequence.moveNext()){
+                return null;
+            }
+        } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
         
         if (type == null || tokenSequence.offset() == startPos)
         {
@@ -890,7 +918,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             tokenSequence.move(request.anchor);
 
-            if (typeName == null && tokenSequence.movePrevious()){
+            if (tokenSequence.movePrevious()){
+                // typeName is unconditionally overriden on purpose!
                 typeName = findLHSExpressionType(tokenSequence, request);
             }
 

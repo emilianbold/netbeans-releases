@@ -120,7 +120,9 @@ public class PhpMimeResolver extends MIMEResolver {
                 inputStream.close();
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            IOException wrappedEx = new IOException("IOException while resolving FileObject "+fo);  //NOI18N
+            wrappedEx.initCause(ex);
+            Exceptions.printStackTrace(wrappedEx);
         }
         return returnMimeType(fo, UNKNOWN_MIME_TYPE);
     }

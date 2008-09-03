@@ -44,10 +44,8 @@ import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
-import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.ui.trackbar.JTrackBar;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
-import org.openide.windows.TopComponent;
 
 /**
  * lifeline provider which handle movement by external provider and additionally handle cars on track bar
@@ -76,14 +74,6 @@ public class LifelineMoveProvider implements MoveProvider {
                     }
                     IPresentationElement el=(IPresentationElement) scene.findObject(widget);
                     tb.moveObject(el);
-                    if (widget.getScene() instanceof DesignerScene) 
-                    {
-                        TopComponent topComp = ((DesignerScene) widget.getScene()).getTopComponent();
-                        if (topComp instanceof UMLDiagramTopComponent) 
-                        {
-                            ((UMLDiagramTopComponent) topComp).setDiagramDirty(true);
-                        }
-                    }
                 }
 
                 public Point getOriginalLocation(Widget widget) {

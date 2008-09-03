@@ -2938,13 +2938,18 @@ public class HgCommand {
 
     private static String getHgCommand() {
         String defaultPath = HgModuleConfig.getDefault().getExecutableBinaryPath();
-        if (defaultPath == null || defaultPath.length() == 0){
+        if (defaultPath == null || defaultPath.length() == 0) {
             return HG_COMMAND;
-        }else{
-            if(Utilities.isWindows()){
-                return defaultPath + File.separatorChar + HG_COMMAND + HG_WINDOWS_EXE;
-            }else{
-                return defaultPath + File.separatorChar + HG_COMMAND;
+        } else {
+            File f = new File(defaultPath);
+            if(f.isFile()) {
+                return f.getAbsolutePath();
+            } else {
+                if(Utilities.isWindows()){
+                    return defaultPath + File.separatorChar + HG_COMMAND + HG_WINDOWS_EXE;
+                } else {
+                    return defaultPath + File.separatorChar + HG_COMMAND;
+                }
             }
         }
     }

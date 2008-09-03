@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 /** C indentation engine that delegates to java formatter */
 public class CIndentEngine extends BaseIndentEngine {

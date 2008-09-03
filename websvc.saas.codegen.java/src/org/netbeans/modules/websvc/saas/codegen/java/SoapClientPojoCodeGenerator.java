@@ -437,10 +437,6 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     }
     
     public static final String SET_HEADER_PARAMS_CALL = SET_HEADER_PARAMS + "(port); \n";
-    
-    public static final String INDENT_2 = "             ";
-    
-    public static final String INDENT = "        ";
 
     protected String getJavaInvocationBody(WSOperation operation, 
             boolean insertServiceDef, String serviceJavaName, String portJavaName, 

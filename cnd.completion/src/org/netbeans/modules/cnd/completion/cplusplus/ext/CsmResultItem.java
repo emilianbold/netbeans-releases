@@ -754,25 +754,12 @@ public abstract class CsmResultItem
         private static CsmPaintComponent.MethodPaintComponent globFunComponent = null;
         private String typeName;
         private Color typeColor;
-        private String mtdName;
         
         
         public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity, boolean isDeclaration){
             super(mtd, substituteExp, priotity, isDeclaration);
             typeName = CsmResultItem.getTypeName(mtd.getReturnType());
-            mtdName = mtd.getName().toString();
             typeColor = CsmResultItem.getTypeColor(mtd.getReturnType());
-        }
-        
-        @Override
-        public String getName(){
-            return mtdName;
-        }
-        
-        
-        @Override
-        public String getItemText() {
-            return getName();
         }
         
         public String getTypeName() {
@@ -836,13 +823,18 @@ public abstract class CsmResultItem
         private static CsmPaintComponent.ConstructorPaintComponent ctrComponent = null;
         private int activeParameterIndex = -1;
         private int varArgIndex = -1;
-        
+        private final String mtdName;
         public ConstructorResultItem(CsmFunction ctr, CsmCompletionExpression substituteExp, int priority, boolean isDeclaration) {
             super(ctr, priority);
             this.ctr = ctr;
             this.substituteExp = substituteExp;
             this.isDeclaration = isDeclaration;
             this.modifiers = convertCsmModifiers(ctr);
+            if (CsmKindUtilities.isTemplate(ctr)) {
+                mtdName = ((CsmTemplate)ctr).getDisplayName().toString();
+            } else {
+                mtdName = ctr.getName().toString();
+            }
             int i = 0;
             for (Object prm : ctr.getParameters() ) {
                 if (prm == null){
@@ -895,7 +887,7 @@ public abstract class CsmResultItem
         
         public String getName(){
             // TODO review the output
-            return ctr.getName().toString();
+            return mtdName;
         }
         
         public List getParams(){

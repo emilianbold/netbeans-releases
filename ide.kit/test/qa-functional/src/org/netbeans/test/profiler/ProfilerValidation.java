@@ -40,6 +40,8 @@
  */
 package org.netbeans.test.profiler;
 
+import java.awt.Container;
+import javax.swing.JCheckBox;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
@@ -53,6 +55,7 @@ import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OptionsViewAction;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -64,6 +67,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.ide.WatchProjects;
 
@@ -72,13 +76,13 @@ import org.netbeans.test.ide.WatchProjects;
  * @author Alexandr Scherbatiy, Jiri Skrivanek
  */
 public class ProfilerValidation extends JellyTestCase {
-    
+
     //private static final String SAMPLE_PROJECT_NAME = "AnagramGame";
 
     protected static final String  PROFILER_ACTIONS_BUNDLE = "org.netbeans.modules.profiler.actions.Bundle";
     protected static final String  PROFILER_UI_PANELS_BUNDLE = "org.netbeans.modules.profiler.ui.panels.Bundle";
     protected static final String  PROFILER_LIB_BUNDLE = "org.netbeans.lib.profiler.Bundle";
-    
+
     static String[] tests = new String[]{
             "testProfilerMenus",
             "testProfilerProperties",
@@ -91,7 +95,7 @@ public class ProfilerValidation extends JellyTestCase {
     public ProfilerValidation(String name){
         super(name);
     }
-    
+
     /** Defaine order of test cases.
      * @return NbTestSuite instance
      */
@@ -141,16 +145,16 @@ public class ProfilerValidation extends JellyTestCase {
         //Profile|Stop Profiling Session
         new ActionNoBlock(ProfileMenu + "|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
                                         "LBL_StopAction"), null).isEnabled();
-        
+
     }
-    
+
     /** Test Profiler Properties. */
     public void testProfilerProperties(){
         new OptionsViewAction().performMenu();
-        
+
         OptionsOperator options = new OptionsOperator();
         options.selectMiscellaneous();// "Miscellaneous"
-        
+
         JTabbedPaneOperator tabbedPane = new JTabbedPaneOperator(options);
         tabbedPane.selectPage( Bundle.getStringTrimmed("org.netbeans.modules.profiler.options.Bundle", "ProfilerOptionsCategory_Title") ); //"Profiler"
 
@@ -175,11 +179,11 @@ public class ProfilerValidation extends JellyTestCase {
 
         JButtonOperator reset = new JButtonOperator(options, Bundle.getStringTrimmed(PROFILER_UI_PANELS_BUNDLE,
                                                                 "ProfilerOptionsPanel_ResetButtonName") ); //"Reset"
-        
+
         options.ok();
         //java.util.logging.Logger.getLogger("global").log( java.util.logging.Level.SEVERE, "ok pushed" );
     }
-    
+
     /** Test profiler calibration
      * - run profiler calibration Profile|Advanced Commands|Run Profiler Calibration
      * - wait for calibration results and confirm information dialog */
@@ -201,7 +205,7 @@ public class ProfilerValidation extends JellyTestCase {
         new JLabelOperator(infoDlg, lbl.substring(0, lbl.indexOf("\n") ) ); // The calibration was successful.
         infoDlg.ok();
     }
-    
+
     /** Test profiler
      * - create sample project to be tested
      * - call Profile|Profile Main Project
@@ -233,6 +237,25 @@ public class ProfilerValidation extends JellyTestCase {
         //wait project appear in projects view
         //wait 30 second
         JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 30000); // NOI18N
+        
+        //disable the compile on save:
+        ProjectsTabOperator.invoke().getProjectRootNode(anagramGamePrName).properties();
+        // "Project Properties"
+        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Customizer_Title");
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+        // select "Compile" category
+        String buildCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "Projects/org-netbeans-modules-java-j2seproject/Customizer/BuildCategory");
+        String compileCategoryTitle = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "LBL_Config_Build");
+        new Node(new Node(new JTreeOperator(propertiesDialogOper), buildCategoryTitle), compileCategoryTitle).select();
+        // actually disable the quick run:
+        String compileOnSaveLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.customizer.Bundle", "CustomizerCompile.CompileOnSave");
+        JCheckBox cb = JCheckBoxOperator.waitJCheckBox((Container) propertiesDialogOper.getSource(), compileOnSaveLabel, true, true);
+        if (cb.isSelected()) {
+            cb.doClick();
+        }
+        // confirm properties dialog
+        propertiesDialogOper.ok();
+        
         ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(anagramGamePrName);
         //wait classpath scanning finished
         WatchProjects.waitScanFinished();
@@ -245,18 +268,17 @@ public class ProfilerValidation extends JellyTestCase {
         new NbDialogOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.j2se.Bundle",
                         "J2SEProjectTypeProfiler_ModifyBuildScriptCaption") ).ok(); //"Enable Profiling of {0}"
         //wait
-        new EventTool().waitNoEvent(10000);
         // click Run in Profile AnagramGame dialog
-        NbDialogOperator profileOper = new NbDialogOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.ui.stp.Bundle", 
+        NbDialogOperator profileOper = new NbDialogOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.ui.stp.Bundle",
                                         "SelectProfilingTask_ProfileDialogCaption") ); // "Profile "+anagramGamePrName
-        new JButtonOperator(profileOper, Bundle.getStringTrimmed("org.netbeans.modules.profiler.ui.stp.Bundle", 
+        new JButtonOperator(profileOper, Bundle.getStringTrimmed("org.netbeans.modules.profiler.ui.stp.Bundle",
                                         "SelectProfilingTask_RunButtonText") ).push(); //"Run"
         profileOper.waitClosed();
         waitProgressDialog( Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle",
                             "NetBeansProfiler_ProgressDialogCaption"), 50000); // "Progress ..."
-        new TopComponentOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", 
+        new TopComponentOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle",
                                     "LAB_ControlPanelName") ); // "Profiler"
-        //new OutputTabOperator(anagramGamePrName).waitText( Bundle.getStringTrimmed(PROFILER_LIB_BUNDLE, 
+        //new OutputTabOperator(anagramGamePrName).waitText( Bundle.getStringTrimmed(PROFILER_LIB_BUNDLE,
         //                            "ProfilerServer_LocalConnectionMsg") ); //"Established local connection with the tool"
         Action takeSnapshotAction = new Action(ProfileMenu + "|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
                                         "LBL_TakeSnapshotAction"), null);
@@ -268,18 +290,24 @@ public class ProfilerValidation extends JellyTestCase {
                 return("Wait menu item is enabled."); // NOI18N
             }
         }).waitAction(takeSnapshotAction);
-        new EventTool().waitNoEvent(30000);
+        new EventTool().waitNoEvent(5000);
         takeSnapshotAction.perform();
-        TopComponentOperator collectedResults = new TopComponentOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle", 
+        TopComponentOperator collectedResults;
+	try {
+            collectedResults = new TopComponentOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle",
                                                         "CPUSnapshotPanel_PanelTitle") ); //"CPU"
-        //collectedResults.maximize();
+	} catch (Exception e) {
+	    issue144699Hack();
+	    collectedResults = new TopComponentOperator( Bundle.getStringTrimmed("org.netbeans.modules.profiler.Bundle",
+                                                        "CPUSnapshotPanel_PanelTitle") ); //"CPU"
+	}
         collectedResults.saveDocument();
         // call "Profile|Stop Profiling Session"
         new Action(ProfileMenu + "|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
                                         "LBL_StopAction"), null).perform();
     }
-    
-    
+
+
     public void waitProgressDialog(String title, int milliseconds){
         try {
             // wait at most 120 second until progress dialog dismiss
@@ -288,6 +316,19 @@ public class ProfilerValidation extends JellyTestCase {
             openingOper.waitClosed();
         } catch (TimeoutExpiredException e) {
             // ignore when progress dialog was closed before we started to wait for it
-        }        
+        }
+    }
+
+    public void issue144699Hack(){
+        try {
+            NbDialogOperator errDlg = new NbDialogOperator(Bundle.getStringTrimmed("org.openide.Bundle",
+                                                            "NTF_ErrorTitle")); //"Error"
+            errDlg.ok();
+            String ProfileMenu = org.netbeans.jellytools.Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE, "Menu/Profile"); //"Profile"
+            new Action(ProfileMenu + "|" + Bundle.getStringTrimmed(PROFILER_ACTIONS_BUNDLE,
+                                        "LBL_TakeSnapshotAction"), null).perform(); // "Take Snapshot of Collected Results"
+        } catch (TimeoutExpiredException e) {
+            // ignore when Error dialog did not appear (not 100% reproducible)
+        }
     }
 }

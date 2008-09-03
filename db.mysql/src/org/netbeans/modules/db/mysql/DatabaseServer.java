@@ -251,4 +251,11 @@ public interface DatabaseServer extends Cookie {
      * against the cached list of database so may not be completely accurate.
      */
     boolean databaseExists(String dbname) throws DatabaseException;
+
+    /**
+     * Throws a DatabaseException if the database connection is invalid.
+     * This may result in a communication with the database server
+     * and can be slow, particularly with remote servers, so use with caution.
+     */
+    void validateConnection() throws DatabaseException;
 }

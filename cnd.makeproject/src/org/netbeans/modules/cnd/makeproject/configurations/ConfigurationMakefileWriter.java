@@ -711,6 +711,9 @@ public class ConfigurationMakefileWriter {
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             writePackagingScriptBodySVR4(bw, conf);
         }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+            ; // FIXUP
+        }
         else {
             assert false;
         }
@@ -829,7 +832,7 @@ public class ConfigurationMakefileWriter {
         bw.write("rm -f $PKGINFOFILE $PROTOTYPEFILE\n"); // NOI18N
         bw.write("\n"); // NOI18N        
         bw.write("cd \"$TOP\"\n"); // NOI18N
-        List<InfoElement> infoList = packagingConfiguration.getHeader().getValue();
+        List<InfoElement> infoList = packagingConfiguration.getSvr4Header().getValue();
         for (InfoElement elem : infoList) {
             bw.write("echo \'" + elem.getName() + "=\"" + packagingConfiguration.expandMacros(elem.getValue()) + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
         }

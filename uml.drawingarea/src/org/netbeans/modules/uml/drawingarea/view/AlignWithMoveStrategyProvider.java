@@ -127,7 +127,9 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
             point.x -= insets.left;
             point.y -= insets.top;
         }
-        return parent.convertSceneToLocal (point);
+        
+        Point localPt = parent.convertSceneToLocal (point);
+        return localPt;
     }
 
     public void movementStarted (Widget widget) {
@@ -235,37 +237,22 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                     initializeMovingWidgets(widget.getScene(), widget);
                 }
                 
+                // The dx is calcuated using a start location of when the move
+                // first started.  However for connection points we do not have
+                // the connection point values from before the move started.
+                // 
+                // Therefore use the reference widget to determine the dx.
+                int edgeDx = location.x - widget.getPreferredLocation().x;
+                int edgeDy = location.y - widget.getPreferredLocation().y;
+                adjustControlPoints(getMovingWidgetList(), edgeDx, edgeDy);
                 for(MovingWidgetDetails details : movingWidgets)
                 {
                     Point point = details.getOriginalLocation();
                     Point newPt = new Point(point.x + dx, point.y + dy);
                     if (details.getWidget() instanceof ConnectionWidget)
                     {
-                        ConnectionWidget connection = (ConnectionWidget) details.getWidget();
-                        List<Point> list = new ArrayList<Point>();
-
-                        ArrayList<Point> oldList = new ArrayList<Point>(connection.getControlPoints());
-                        oldList.remove(connection.getFirstControlPoint());
-                        oldList.remove(connection.getLastControlPoint());
-                        Anchor sourceAnchor = connection.getSourceAnchor();
-                        Anchor targetAnchor = connection.getTargetAnchor();
-                        if (sourceAnchor == null || targetAnchor == null)
-                        {
-                            continue;
-                        }
-                        Point sourceP = sourceAnchor.compute(connection.getSourceAnchorEntry()).getAnchorSceneLocation();
-                        list.add(sourceP);
-
-                        for (Point p : oldList)
-                        {
-                            int ddx = p.x - connection.getFirstControlPoint().x;
-                            int ddy = p.y - connection.getFirstControlPoint().y;
-                            Point np = new Point(details.getOriginalLocation().x + dx + ddx, details.getOriginalLocation().y + dy + ddy);
-                            list.add(np);
-                        }
-                        list.add(targetAnchor.compute(connection.getTargetAnchorEntry()).getAnchorSceneLocation());
-
-                        connection.setControlPoints(list, true);
+                        // Do nothing because the adjustControlPoints will
+                        // take care of this situation.
                     }
                     else
                         details.getWidget().setPreferredLocation(newPt);
@@ -277,6 +264,65 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     protected ArrayList<MovingWidgetDetails> getMovingDetails()
     {
         return movingWidgets;
+    }
+
+    protected List < Widget > getMovingWidgetList()
+    {
+        ArrayList < Widget > retVal = new ArrayList < Widget >();
+        
+        for(MovingWidgetDetails details : movingWidgets)
+        {
+            retVal.add(details.getWidget());
+        }
+        
+        return retVal;
+    }
+
+    /**
+     * Adjust the control points of all selected connection widgets attached
+     * to a node.
+     *
+     * @param widgets The list of widgets to update.
+     * @param dx The distance in the x direction.
+     * @param dy The distance in the y direction.
+     */
+    public static void adjustControlPoints(List < Widget> widgets, 
+                                           int dx, int dy)
+    {
+        // Nodes are only put onto this list of widgets.  Therefore I need 
+        // to check there associated connection widgets to see if any are selected.
+        ArrayList < Object > alreadyProcessed = new ArrayList < Object >();
+        for(Widget widget : widgets)
+        {
+            GraphScene scene = (GraphScene)widget.getScene();
+            Object data = scene.findObject(widget);
+            
+            if(scene.isNode(data) == true)
+            {
+                for (Object connectionObj : scene.findNodeEdges(data, true, true))
+                {
+                    // Maket sure that an edge is only processed once.
+                    if(alreadyProcessed.contains(connectionObj) == false)
+                    {
+                        // If the connection widget is in the list of widgets
+                        // then it will be handled by the caller.
+                        ConnectionWidget connection = (ConnectionWidget) scene.findWidget(connectionObj);
+                        if(connection.getState().isSelected() == true)
+                        {
+                            //for(Point pt : connection.getControlPoints())
+                            List < Point > points = connection.getControlPoints();
+                            for(int index = 1; index < points.size() - 1; index++)
+                            {
+                                Point pt = points.get(index);
+                                pt.x += dx;
+                                pt.y += dy;
+                            }
+                        }
+                        alreadyProcessed.add(connectionObj);
+                    }
+                }
+            }
+        }
     }
     
     private boolean checkIfAccepted(Widget widget,
@@ -600,6 +646,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         {
             return widget;
         }
+        
         
         public int getOriginalIndex()
         {

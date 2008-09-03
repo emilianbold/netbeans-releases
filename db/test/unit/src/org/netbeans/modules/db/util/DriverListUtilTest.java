@@ -179,9 +179,11 @@ public class DriverListUtilTest extends TestCase {
     }
 
     public void testMySQL() throws Exception {
+        ArrayList<String> requiredProps = new ArrayList<String>();
+        requiredProps.add(JdbcUrl.TOKEN_DB);
         JdbcUrl url = checkUrl(getDriverName("DRIVERNAME_MySQL"), null, "com.mysql.jdbc.Driver", 
-                "jdbc:mysql://[<HOST>[:<PORT>]]/[<DB>][?<ADDITIONAL>]",
-                STD_SUPPORTED_PROPS, new ArrayList<String>());
+                "jdbc:mysql://[<HOST>[:<PORT>]]/<DB>[?<ADDITIONAL>]",
+                STD_SUPPORTED_PROPS, requiredProps);
         
         HashMap<String, String> propValues = buildPropValues(STD_SUPPORTED_PROPS);
         
@@ -195,18 +197,6 @@ public class DriverListUtilTest extends TestCase {
         
         propValues.remove(JdbcUrl.TOKEN_HOST);
         testUrlString(url, propValues, "jdbc:mysql:///" + DB); 
-        
-        propValues.remove(JdbcUrl.TOKEN_DB);
-        testUrlString(url, propValues, "jdbc:mysql:///");
-        
-        propValues.put(JdbcUrl.TOKEN_HOST, HOST);
-        testUrlString(url, propValues, "jdbc:mysql://" + HOST + "/");
-        
-        propValues.put(JdbcUrl.TOKEN_PORT, PORT);
-        testUrlString(url, propValues, "jdbc:mysql://" + HOST + ":" + PORT + "/");
-        
-        propValues.put(JdbcUrl.TOKEN_ADDITIONAL, ADDITIONAL);
-        testUrlString(url, propValues, "jdbc:mysql://" + HOST + ":" + PORT + "/?" + ADDITIONAL);
     }
     
     enum DB2Types { DB2, IDS, CLOUDSCAPE };

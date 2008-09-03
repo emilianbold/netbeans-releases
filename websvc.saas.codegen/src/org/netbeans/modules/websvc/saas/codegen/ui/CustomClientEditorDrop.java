@@ -128,8 +128,8 @@ public class CustomClientEditorDrop implements ActiveEditorDrop {
                                 "LBL_CustomizeSaasService", displayName));
                         Object response = DialogDisplayer.getDefault().notify(desc);
 
-                        if (response.equals(NotifyDescriptor.CANCEL_OPTION)) {
-                            // cancel
+                        if (response.equals(NotifyDescriptor.CANCEL_OPTION) ||
+                                response.equals(NotifyDescriptor.CLOSED_OPTION)) {
                             return;
                         }
                     }

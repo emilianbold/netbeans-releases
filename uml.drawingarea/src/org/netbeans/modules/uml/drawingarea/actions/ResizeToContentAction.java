@@ -53,6 +53,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.netbeans.modules.uml.drawingarea.widgets.Container;
+import org.netbeans.modules.uml.drawingarea.widgets.ResizeToContentMarker;
 
 /**
  *
@@ -128,7 +129,11 @@ public class ResizeToContentAction extends SceneNodeAction
                     if (widget instanceof Container || !((UMLNodeWidget)widget).isResizable())
                     {
                         return false;
-                    }                
+                    }
+                    if (widget instanceof ResizeToContentMarker)
+                    {
+                        return false;
+                    }
                 }
                 return true;
             }

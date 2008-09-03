@@ -724,6 +724,23 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
                 y+=ioHeight;
             }
         }
+        //look for all missed operands (i.e. not handled, need at least 0 size even if it will not look good)
+        //some normalization will be done later, so final 0 height isn't likely to happen, 
+        //anyway there will be no npe(in normalization logic) and broken diagram creation other cases should remain as was.
+        if(bounds!=null)
+        {
+            Rectangle prevRec=new Rectangle(bounds.x,bounds.y,bounds.width,0);//start with upper bounds of cf
+            for(IInteractionOperand io:operandInCf)
+            {
+                Rectangle recCur=operandsBounds.get(io);
+                if(recCur==null)
+                {
+                    //make 0 height at position after prev.
+                    operandsBounds.put(io, new Rectangle(prevRec.x,prevRec.y+prevRec.height,prevRec.width,0));
+                }
+                prevRec=recCur;
+            }
+        }
         //TBD: need to handle all expressions too at least for width, but better for operands too
         //
         if(bounds!=null)

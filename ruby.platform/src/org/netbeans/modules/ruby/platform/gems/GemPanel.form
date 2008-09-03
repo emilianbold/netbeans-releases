@@ -168,6 +168,9 @@
                   <ResourceString bundle="org/netbeans/modules/ruby/platform/gems/Bundle.properties" key="GemPanel.searchUpdatedText.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchUpdatedTextActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="searchUpdatedLbl">
               <Properties>
@@ -383,6 +386,9 @@
                   <ResourceString bundle="org/netbeans/modules/ruby/platform/gems/Bundle.properties" key="GemPanel.instSearchText.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchInstTextActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="searchInstLbl">
               <Properties>
@@ -588,6 +594,9 @@
                   <ResourceString bundle="org/netbeans/modules/ruby/platform/gems/Bundle.properties" key="GemPanel.searchNewText.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="searchNewTextActionPerformed"/>
+              </Events>
             </Component>
             <Component class="javax.swing.JLabel" name="searchNewLbl">
               <Properties>
@@ -743,7 +752,7 @@
                           <Component id="proxyButton" min="-2" max="-2" attributes="0"/>
                           <Component id="allVersionsCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="463" max="32767" attributes="0"/>
+                      <EmptySpace pref="459" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
