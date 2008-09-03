@@ -42,6 +42,7 @@
 package org.netbeans.modules.beans.beaninfo;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.util.concurrent.Future;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
@@ -59,6 +60,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -128,15 +130,26 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
 
         FileObject javaFile = findFileObject(nodes[0]);
         final BeanInfoWorker performer = new BeanInfoWorker(javaFile, biPanel);
-        performer.analyzePatterns();
+        
+        class Task implements TaskListener, Runnable {
 
-        performer.waitFinished();
-        if (performer.error != null) {
-            DialogDisplayer.getDefault().notify(performer.error);
+            public void taskFinished(org.openide.util.Task task) {
+                EventQueue.invokeLater(this);
+            }
+
+            public void run() {
+                if (performer.error != null) {
+                    DialogDisplayer.getDefault().notify(performer.error);
+                }
+                if (performer.bia != null) {
+                    performer.bia.openSource();
+                }
+            }
+            
         }
-        if (performer.bia != null) {
-            performer.bia.openSource();
-        }
+
+        performer.analyzePatterns().addTaskListener(new Task());
+
     }
 
     @Override
@@ -183,7 +196,8 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
             waitFinished();
             checkState(1);
             state = 2;
-            fillBiPanel();
+//            fillBiPanel();
+            EventQueue.invokeLater(this);
         }
         
         public void generateSources() {
@@ -265,7 +279,7 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
                 return;
             }
             
-            PatternAnalyser pa = new PatternAnalyser(javaFile, null);
+            PatternAnalyser pa = new PatternAnalyser(javaFile, null, true);
             pa.analyzeAll(javac, clselm);
             // XXX analyze also superclasses here
             try {
