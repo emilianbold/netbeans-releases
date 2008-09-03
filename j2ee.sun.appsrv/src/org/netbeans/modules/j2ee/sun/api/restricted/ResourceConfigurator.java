@@ -44,7 +44,7 @@
  * Created on August 22, 2005, 12:43 PM
  */
 
-package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
+package org.netbeans.modules.j2ee.sun.api.restricted;
 
 import java.io.File;
 import java.io.IOException;
@@ -78,8 +78,6 @@ import org.netbeans.modules.j2ee.sun.dd.api.serverresources.JdbcResource;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.ConnectorResource;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.PropertyElement;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.JdbcConnectionPool;
-import org.netbeans.modules.j2ee.sun.share.serverresources.SunDatasource;
-import org.netbeans.modules.j2ee.sun.share.serverresources.SunMessageDestination;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.DatabaseUtils;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;

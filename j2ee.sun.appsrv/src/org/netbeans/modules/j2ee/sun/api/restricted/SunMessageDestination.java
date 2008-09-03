@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.sun.share.serverresources;
+package org.netbeans.modules.j2ee.sun.api.restricted;
 
 import java.io.File;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;

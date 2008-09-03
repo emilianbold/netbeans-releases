@@ -149,9 +149,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
                 "echo TestIssue145206 :: createStatic()->create() ->create() -> c^", false);
     }
 
+    /* TEMPORARILY DISABLED
     public void test136744_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test1^", false);
-    }
+    }*/
 
     public void test136744_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test2^", false);
