@@ -62,6 +62,6 @@ public class UsageConnector extends DependencyConnector
     @Override
     protected LabelManager createLabelManager()
     {
-        return new KeywordLabelManager(this, "usage");
+        return new KeywordLabelManager(this, "usage"); //NOI18N
     }
 }

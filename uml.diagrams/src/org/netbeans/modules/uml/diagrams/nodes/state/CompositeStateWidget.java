@@ -183,7 +183,7 @@ public class CompositeStateWidget extends CompositeNodeWidget
             }
             if (!found)
             {
-                addRegion(region);
+                addCompartment(region);
             }
         }
 
@@ -230,8 +230,12 @@ public class CompositeStateWidget extends CompositeNodeWidget
         scene.validate();
     }
 
-    public void addRegion(IRegion region)
+    
+    public CompartmentWidget addCompartment(IElement element)
     {
+        assert element instanceof IRegion;
+        IRegion region = (IRegion)element;
+        
         RegionWidget regionWidget = new RegionWidget(scene, region, this);
 
         IPresentationElement pe = Util.createNodePresentationElement();
@@ -246,6 +250,7 @@ public class CompositeStateWidget extends CompositeNodeWidget
         setFont(getFont());
         updateConstraint();
         updateSize();
+        return regionWidget;
     }
 
     private void updateSize()
@@ -407,7 +412,7 @@ public class CompositeStateWidget extends CompositeNodeWidget
         {
             IRegion region = new TypedFactoryRetriever<IRegion>().createType("Region");
             state.addContent(region);
-            addRegion(region);
+            addCompartment(region);
         }
         updateConstraint();
     }
@@ -436,6 +441,25 @@ public class CompositeStateWidget extends CompositeNodeWidget
     public String getContextPalettePath()
     {
         return "UML/context-palette/State";
+    }
+
+    @Override
+    public void setOrientation(SeparatorWidget.Orientation orientation)
+    {
+        setHorizontalLayout(orientation == SeparatorWidget.Orientation.HORIZONTAL? true: false);
+    }
+
+    @Override
+    public SeparatorWidget.Orientation getOrientation()
+    {
+        return isHorizontalLayout()? SeparatorWidget.Orientation.HORIZONTAL:SeparatorWidget.Orientation.VERTICAL;
+    }
+
+    @Override
+    public void clear()
+    {
+        regionWidgets.clear();
+        bodyWidget.removeChildren();
     }
 
 }
