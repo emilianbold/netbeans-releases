@@ -753,6 +753,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 System.err.printf("%s\n\n", preprocHandler.getState());
             }
         }
+        ParseStatistics.getInstance().fileParsed(this, preprocHandler);
         
         int flags = CPPParserEx.CPP_CPLUSPLUS;
         if( ! reportErrors ) {
@@ -950,6 +951,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     public CsmProject getProject() {
         return _getProject(false);
+    }
+
+    public CsmUID<CsmProject> getProjectUID() {
+        return projectUID;
     }
 
     /** Just a convenient shortcut to eliminate casts */
