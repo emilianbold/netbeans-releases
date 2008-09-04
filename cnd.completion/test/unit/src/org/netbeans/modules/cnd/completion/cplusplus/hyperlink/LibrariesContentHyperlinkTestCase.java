@@ -85,6 +85,12 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
 
+//    public void testDuplicationConstructions() throws Exception {
+//        performTest("src/testDup1.cc", 7, 6, "src/dup1.h", 9, 1);
+//        performTest("src/testDup1.cc", 7, 6, "sys_include/sys1dup.h", 9, 1);
+//        performTest("src/testDup1.cc", 7, 6, "sys_include2/sys2dup.h", 9, 1);
+//    }
+
     public void testLibraryClass() throws Exception {
         performTest("src/main.cc", 7, 6, "sys_include2/include2.h", 9, 1);
     }
