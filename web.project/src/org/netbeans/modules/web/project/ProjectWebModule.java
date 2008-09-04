@@ -383,7 +383,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         WebProjectProperties.setServerInstance(project, helper, severInstanceID);
     }
     
-    public Iterator getArchiveContents () throws java.io.IOException {
+    public Iterator<J2eeModule.RootedEntry> getArchiveContents () throws java.io.IOException {
         FileObject content = getContentDirectory();
         content.refresh();
         return new IT(content);
@@ -581,7 +581,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         
-        List roots = new LinkedList();
+        List<FileObject> roots = new LinkedList<FileObject>();
         FileObject documentBase = getDocumentBase();
         if (documentBase != null)
             roots.add(documentBase);
@@ -591,7 +591,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         
         FileObject[] rootArray = new FileObject[roots.size()];
-        return (FileObject[])roots.toArray(rootArray);        
+        return roots.toArray(rootArray);
     }
     
     private boolean isProjectOpened() {
@@ -650,12 +650,12 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return propertyChangeSupport;
     }
     
-    private static class IT implements Iterator {
-        ArrayList ch;
+    private static class IT implements Iterator<J2eeModule.RootedEntry> {
+        ArrayList<FileObject> ch;
         FileObject root;
         
         private IT (FileObject f) {
-            this.ch = new ArrayList ();
+            this.ch = new ArrayList<FileObject>();
             ch.add (f);
             this.root = f;
         }
@@ -664,8 +664,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
             return ! ch.isEmpty();
         }
         
-        public Object next () {
-            FileObject f = (FileObject) ch.get(0);
+        public J2eeModule.RootedEntry next () {
+            FileObject f = ch.get(0);
             ch.remove(0);
             if (f.isFolder()) {
                 f.refresh();

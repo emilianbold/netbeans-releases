@@ -58,19 +58,11 @@
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <Component id="lRightMargin" min="-2" pref="195" max="-2" attributes="0"/>
-                                  <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="lTabSize" pref="223" max="32767" attributes="1"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="lNumberOfSpacesPerIndent" pref="223" max="32767" attributes="2"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="lNumberOfSpacesPerIndent" pref="223" max="32767" attributes="2"/>
+                              <Component id="lRightMargin" alignment="0" pref="223" max="32767" attributes="0"/>
+                              <Component id="lTabSize" alignment="1" pref="223" max="32767" attributes="1"/>
                           </Group>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="1" attributes="0">
                               <Component id="sNumberOfSpacesPerIndent" linkSize="1" alignment="0" pref="42" max="32767" attributes="1"/>
                               <Component id="sTabSize" linkSize="1" alignment="1" pref="42" max="32767" attributes="1"/>
@@ -115,9 +107,6 @@
               <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                 <EmptyBorder bottom="0" left="0" right="0" top="0"/>
               </Border>
-            </Property>
-            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-              <Insets value="[0, 0, 0, 0]"/>
             </Property>
           </Properties>
           <AuxValues>

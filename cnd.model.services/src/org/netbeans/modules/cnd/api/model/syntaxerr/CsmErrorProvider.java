@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.api.model.syntaxerr;
 import org.netbeans.modules.cnd.modelutil.NamedEntity;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
@@ -69,6 +70,8 @@ public abstract class CsmErrorProvider implements NamedEntity {
 
         /** Determines whether the caller wants to cancel the processing of the request */
         boolean isCancelled();
+
+        Document getDocument();
     }
 
     /** Response for adding errors for a particular file */
