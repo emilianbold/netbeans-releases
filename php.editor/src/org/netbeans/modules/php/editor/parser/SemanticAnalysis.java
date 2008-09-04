@@ -303,9 +303,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             }
             if (!node.getField().isDollared()) {
                 Expression expr = node.getField().getName();
-                (new FieldAccessVisitor()).scan(expr);
-                OffsetRange or = new OffsetRange(expr.getStartOffset(), expr.getEndOffset());
-                highlights.put(or, ColoringAttributes.FIELD_SET);
+                (new FieldAccessVisitor(ColoringAttributes.FIELD_SET)).scan(expr);
             }
         }
 
@@ -331,12 +329,16 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         @Override
         public void visit(StaticFieldAccess node) {
             Expression expr = node.getField().getName();
-            (new FieldAccessVisitor()).scan(expr);
-            OffsetRange or = new OffsetRange(expr.getStartOffset(), expr.getEndOffset());
-            highlights.put(or, ColoringAttributes.STATIC_FIELD_SET);
+            (new FieldAccessVisitor(ColoringAttributes.STATIC_FIELD_SET)).scan(expr);
         }
 
         private class FieldAccessVisitor extends DefaultVisitor {
+            private final Set<ColoringAttributes> coloring;
+
+            public FieldAccessVisitor(Set<ColoringAttributes> coloring) {
+                this.coloring = coloring;
+            }
+
             @Override
             public void visit(Identifier identifier) {
                 //remove the field, because is used
@@ -346,6 +348,8 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                     OffsetRange or = new OffsetRange(removed.identifier.getStartOffset(), removed.identifier.getEndOffset());
                     highlights.put(or, removed.coloring);
                 }
+                OffsetRange or = new OffsetRange(identifier.getStartOffset(), identifier.getEndOffset());
+                highlights.put(or, coloring);
             }
         }
     }
