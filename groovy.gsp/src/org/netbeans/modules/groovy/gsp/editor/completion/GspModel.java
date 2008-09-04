@@ -148,7 +148,8 @@ public class GspModel {
                 int sourceEnd = sourceStart + token.length();
                 int generatedStart = buffer.length();
 
-                String text = token.text().toString();
+                CharSequence charSequence = token.text();
+                String text = charSequence == null ? "" : charSequence.toString();
 
                 // If there is leading whitespace in this token followed by a newline,
                 // emit it directly first, then insert my buffer append. Otherwise,
