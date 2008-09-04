@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,58 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.wizard.api;
+package org.netbeans.modules.cnd.makeproject.api;
 
+import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.openide.util.Lookup;
 
 /**
- *
+ * Provider of additional actions in the build log window
+ * 
  * @author Alexander Simon
  */
-public interface DiscoveryDescriptor {
+public abstract class BuildActionsProvider {
+    private static BuildActionsProvider DEFAULT = new Default();
 
-    Project getProject();
-    void setProject(Project project);
+    public abstract List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events);
     
-    DiscoveryProvider getProvider();
-    String getProviderID();
-    void setProvider(DiscoveryProvider provider);
-
-    String getRootFolder();
-    void setRootFolder(String root);
-
-    String getBuildResult();
-    void setBuildResult(String binaryPath);
-
-    String getAditionalLibraries();
-    void setAditionalLibraries(String binaryPath);
-
-    String getBuildLog();
-    void setBuildLog(String logFile);
-
-    String getLevel();
-    void setLevel(String level);
-
-    List<ProjectConfiguration> getConfigurations();
-    void setConfigurations(List<ProjectConfiguration> configuration);
-
-    List<String> getIncludedFiles();
-    void setIncludedFiles(List<String> includedFiles);
-
-    boolean isInvokeProvider();
-    void setInvokeProvider(boolean invoke);
+    protected BuildActionsProvider() {
+    }
     
-    boolean isSimpleMode();
-    void setSimpleMode(boolean simple);
-
-    //boolean isCutResult();
-    //void setCutResult(boolean cutResult);
+    /**
+     * Static method to obtain the BuildActionsProvider implementation.
+     * @return the BuildActionsProvider
+     */
+    public static synchronized BuildActionsProvider getDefault() {
+        return DEFAULT;
+    }
     
-    void setMessage(String message);
+    public interface BuildAction extends Action, ExecutionListener {
+        void setStep(int step);
+    }
+    
+    /**
+     * Implementation of the default BuildActionsProvider
+     */  
+    private static final class Default extends BuildActionsProvider {
+        private final Lookup.Result<BuildActionsProvider> res;
+        
+        Default() {
+            res = Lookup.getDefault().lookupResult(BuildActionsProvider.class);
+        }
 
-    void clean();
+        @Override
+        public List<BuildAction> getActions(String ioTabName, ProjectActionEvent[] events) {
+            List<BuildAction> list = new ArrayList<BuildAction>();
+            for (BuildActionsProvider provider : res.allInstances()) {
+                list.addAll(provider.getActions(ioTabName, events));
+            }
+            return list;
+        }
+    }
 }
