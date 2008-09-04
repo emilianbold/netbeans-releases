@@ -113,12 +113,10 @@ public class CodeUtils {
         } else if (var.getName() instanceof Variable) {
             Variable name = (Variable) var.getName();
             return extractVariableName(name);
-        } else {
-            assert false : "unsupported type returned by Variable.getName():"
-                    + var.getName().getClass().toString();
         }
-
-        return null;
+        
+        throw new IllegalStateException("unsupported type returned by Variable.getName():"
+                    + var.getName().getClass().toString());
     }
     
     public static boolean isVariableTypeResolved(IndexedConstant var){

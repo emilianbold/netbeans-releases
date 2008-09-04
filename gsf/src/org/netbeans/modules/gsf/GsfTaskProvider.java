@@ -138,8 +138,12 @@ public class GsfTaskProvider extends PushTaskScanner  {
         }
         
         for (Project p : scope.getLookup().lookupAll(Project.class)) {
+            // Performance: Only do project scanning for GSF-enabled projects! (See issue 141514)
+            if (p.getLookup().lookup(org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider.class) == null) {
+                continue;
+            }
+
             // TODO - find out which subgroups to use
-            
             for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
                 enqueue(new Work(sg.getRootFolder(), callback));
             }

@@ -163,6 +163,9 @@ public class FilePreprocessorConditionState
     }
     
     public final boolean isEqual(FilePreprocessorConditionState other) {
+        if (this == other) {
+            return true;
+        }
         // we assume that the array is ordered
         if (this.size == other.size) {
             for (int i = 0; i < size; i++) {

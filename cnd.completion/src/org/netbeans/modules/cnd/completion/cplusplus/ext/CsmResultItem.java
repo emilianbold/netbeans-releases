@@ -1342,7 +1342,7 @@ public abstract class CsmResultItem
         
         @Override
         protected String getReplaceText(){
-            String text = getItemText();
+            String text = cls.getName().toString();
             if (classDisplayOffset > 0
                     && classDisplayOffset < text.length()
                     ) { // Only the last name for inner classes

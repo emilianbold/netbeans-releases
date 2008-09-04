@@ -2545,15 +2545,27 @@ statement_list
 statement
 	:
 	(	
-
-//              Issue 83496   C++ parser does not allow class definition inside function
-//              Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
-                
-                ( (LITERAL_enum (ID)? LCURLY) | class_head ) => 
-                {if (statementTrace>=1) 
-			printf("statement_1[%d]: declaration\n", LT(1).getLine());
+                // Issue 83496   C++ parser does not allow class definition inside function
+                ((  storage_class_specifier
+		|   cv_qualifier 
+		|   LITERAL_typedef
+		)* class_head) =>
+		{if (statementTrace>=1) 
+			printf("statement_1[%d]: Class definition\n",
+				LT(1).getLine());
 		}
-                member_declaration                 
+		declaration
+		{ #statement = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #statement); }
+	|  
+                // Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
+		// Enum definition (don't want to backtrack over this in other alts)
+		(LITERAL_enum (ID)? LCURLY)=>
+		{if (statementTrace>=1) 
+			printf("statement_2[%d]: Enum definition\n",
+				LT(1).getLine());
+		}
+		enum_specifier (member_declarator_list)? SEMICOLON!	//{end_of_stmt();}
+		{ #statement = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #statement); }
 	|
 		( LITERAL_typedef ) =>
 		// TODO: external_declaration is too generic here. Refactor this!

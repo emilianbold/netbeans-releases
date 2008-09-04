@@ -238,6 +238,18 @@ final class Importer {
                 EclipseProjectReference.write(p, ref);
                 ProjectManager.getDefault().saveProject(p);
             }
+            if (p != null) {
+                // type: java / web
+                // naked or workspace
+                // imported to separate folder
+                // number of import issues
+                // TODO: add eg. eclipse version  (not available now)
+                Util.logUsage(Importer.class, "USG_PROJECT_ECLIPSE_IMPORT",  // NOI18N
+                        eclProject.getProjectTypeFactory().getProjectTypeName(),
+                        eclProject.getWorkspace() != null ? "true" : "false", // NOI18N
+                        destination == null ? "true" : "false", // NOI18N
+                        projectImportProblems.size());
+            }
         }
         return p;
     }

@@ -45,6 +45,7 @@
 
 package org.netbeans.modules.subversion.client;
 
+import java.awt.Color;
 import java.awt.Font;
 import javax.swing.JLabel;
 import javax.swing.text.html.HTMLEditorKit;
@@ -78,6 +79,8 @@ public class MissingClientPanel extends javax.swing.JPanel {
             css2.addStyleSheet(css);
             kit.setStyleSheet(css2);
         }
+        Color c = jLabel1.getBackground();
+        textPane.setBackground(new Color(c.getRed(), c.getGreen(), c.getBlue()));
     }
 
     /** This method is called from within the constructor to

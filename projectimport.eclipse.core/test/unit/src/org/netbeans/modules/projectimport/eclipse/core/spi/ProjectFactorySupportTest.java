@@ -49,6 +49,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.projectimport.eclipse.core.DotClassPath;
@@ -64,6 +65,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.test.MockLookup;
 
+@RandomlyFails // NB-Core-Build #1293: "No project found to correspond to .../spcp/eclipse/src" from ProjectClassPathModifier.findExtensible
 public class ProjectFactorySupportTest extends NbTestCase {
     
     public ProjectFactorySupportTest(String testName) {
