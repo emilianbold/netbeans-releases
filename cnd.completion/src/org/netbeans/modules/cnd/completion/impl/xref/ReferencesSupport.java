@@ -419,7 +419,7 @@ public final class ReferencesSupport {
         return null;
     }
 
-    private static Token getRefTokenIfPossible(CsmReference ref) {
+    /*package*/static Token getRefTokenIfPossible(CsmReference ref) {
         if (ref instanceof ReferenceImpl) {
             return ((ReferenceImpl)ref).getToken();
         } else {

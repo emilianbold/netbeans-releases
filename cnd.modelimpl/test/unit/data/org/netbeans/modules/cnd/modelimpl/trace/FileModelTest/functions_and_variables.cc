@@ -68,3 +68,7 @@ int main(int argc, char** argv) {
     foo = zxczxc;
     return foo;
 }
+
+//Some more variables
+int pBa(*bbbb);
+int ba(&bbbbb);
