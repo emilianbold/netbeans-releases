@@ -1263,7 +1263,10 @@
             throw new Error("Can't get a source command arguments out of [" + command + "]");
         }
         var sourceURI = matches[1];
-        var data = currentFirebugContext.sourceCache.load(sourceURI);
+        var data;
+        if (currentFirebugContext && currentFirebugContext.sourceCache && currentFirebugContext.sourceCache.load) {
+          data = currentFirebugContext.sourceCache.load(sourceURI);
+        }
         if (data) {
             // Firebug converts sources to Unicode, but we
             // transmit them in UTF-8 - the default XML encoding.
@@ -1579,7 +1582,8 @@
         const delayShutdownIfDebugging = function() {
             disable();
             NetBeans.Debugger.shutdown();
-            window.close();
+            // #144937 - why did we close the window on shutdown anyway?
+            //window.close();
         };
 
         if (debugging) {

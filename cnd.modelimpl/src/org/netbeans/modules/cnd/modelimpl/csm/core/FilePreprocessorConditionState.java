@@ -179,6 +179,9 @@ public class FilePreprocessorConditionState
     public final boolean isSubset(Collection<FilePreprocessorConditionState> others) {
         SortedSet<Integer> sorted = new TreeSet<Integer>();
         for (FilePreprocessorConditionState state : others) {
+            if (state == null) {
+                return false;
+            }
             for (int i = 0; i < state.size; i++) {
                 sorted.add(state.offsets[i]);
             }
@@ -192,7 +195,7 @@ public class FilePreprocessorConditionState
     }
 
     public final boolean isSubset(FilePreprocessorConditionState other) {
-        return isSubset(other.offsets, other.size);
+        return (other == null) ? false : isSubset(other.offsets, other.size);
     }
 
     public final boolean isSubset(int[] otherOffsets, int otherSize) {

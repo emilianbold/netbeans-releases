@@ -4,7 +4,7 @@
  *
  * @author petr
  */
-class Man {
+class Man implements Person {
     private $firstName;
     private $lastName;
 

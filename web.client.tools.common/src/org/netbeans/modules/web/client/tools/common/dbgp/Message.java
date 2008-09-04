@@ -331,8 +331,10 @@ public abstract class Message {
             return null;
         }
         try {
-            Document doc = BUILDER.parse( new ByteArrayInputStream( bytes ) );
-            return doc.getDocumentElement();
+            synchronized (BUILDER) {
+                Document doc = BUILDER.parse(new ByteArrayInputStream(bytes));
+                return doc.getDocumentElement();
+            }
         } catch (SAXException e) {
             notifyPacketError(e);
         }

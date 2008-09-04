@@ -198,20 +198,19 @@ public class ParameterInfo {
     }
     
     private Object generateDefaultValue() {
-        if (type == Integer.class || type == Short.class || type == Long.class ||
-                type == Float.class || type == Double.class) {
-            try {
-                return type.getConstructor(String.class).newInstance("0"); //NOI18N
-            } catch (Exception ex) {
-                return null;
-            }
-        }
-        
-        if (type == Boolean.class) {
+        if (type == Integer.class || type == Integer.TYPE) {
+            return new Integer(0);
+        } else if (type == Short.class || type == Short.TYPE) {
+            return new Short((short) 0);
+        } else if (type == Long.class || type == Long.TYPE) {
+            return new Long(0);
+        } else if (type == Float.class || type == Float.TYPE) {
+            return new Float(0);
+        } else if (type == Double.class || type == Double.TYPE) {
+            return new Double(0);
+        } else if (type == Boolean.class || type == Boolean.TYPE) {
             return Boolean.FALSE;
-        }
-    
-        if (type == Character.class) {
+        } else if (type == Character.class || type == Character.TYPE) {
             return new Character('\0');
         }
         

@@ -22,8 +22,9 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -37,16 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.uml.drawingarea.view;
 
-package org.netbeans.lib.profiler;
+import javax.accessibility.AccessibleRole;
 
+public class UMLAccessibleRole extends AccessibleRole 
+{
 
-/**
- *
- * @author Jaroslav Bachorik
- */
-public interface ContextAware {
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
+    protected UMLAccessibleRole(String key) {
+        super(key);        
+    }
 
-    void setContext(ProfilerClient client);
+    public static final UMLAccessibleRole GRAPH_EDGE = new UMLAccessibleRole("graph_edge");
+    
 }

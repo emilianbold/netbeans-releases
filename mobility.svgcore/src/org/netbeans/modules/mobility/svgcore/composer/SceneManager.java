@@ -488,6 +488,7 @@ public final class SceneManager {
                 action.actionCompleted();
             }
 
+            SVGObject [] newSelection = null;
             if ( id != null) {
                 SVGObject selectedObj = m_perseusController.getObjectById(id);
 
@@ -497,17 +498,21 @@ public final class SceneManager {
                     }
                     ActionMouseCursor cursor = m_selectActionFactory.getMouseCursor(null, false);
                     m_screenMgr.setCursor(cursor != null ? cursor.getCursor() : null);
+                    newSelection = getSelected();
                 } else {
                     // TODO Revisit: Hack! Do not send the notification about selection change
                     // if the selected object if not SVGLocatableElement, to allow
                     // SVG tree traversal in the navigator. Correct way is to allow
                     // selection of other SVG elements as well.
-                    return;
+                    //return;
+                    // fix for #145987 - send null in selection changed notification
+                    // Persejus has selected object (getSelected() returns not null),
+                    // but we do not want to display this selection.
+                    newSelection = null;
                 }
                 
             }
             //TODO implement better selection change handling
-            SVGObject [] newSelection = getSelected();
             if (!SVGObject.areSame(newSelection, oldSelection)) {
                 selectionChanged(newSelection, oldSelection);
             }        

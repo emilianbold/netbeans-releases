@@ -168,8 +168,6 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
 
             public void run() {
                   oldValue[0] = component_.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
-                  System.out.println("Property oldValue " +  oldValue[0]);
-                  System.out.println("Property new Value " +  text);
             }
         });
         component_.getDocument().getTransactionManager().writeAccess(new Runnable() {
