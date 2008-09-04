@@ -78,7 +78,8 @@ public class CurrentEditorScanningScope extends TaskScanningScope
     public CurrentEditorScanningScope( String displayName, String description, Image icon ) {
         super( displayName, description, icon );
         Map<String,String> labels = new HashMap<String,String>(1);
-        labels.put( "StatusBarLabel", "in currently edited files" );
+        labels.put( "StatusBarLabel", //NOI18N
+                NbBundle.getMessage(CurrentEditorScanningScope.class, "LBL_CurrentFileStatusMessage") ); //NOI18N
         lookupContent.add( labels );
     }
     
@@ -123,10 +124,15 @@ public class CurrentEditorScanningScope extends TaskScanningScope
         }
         if( null != newCallback && newCallback != this.callback ) {
             this.callback = newCallback;
+            Runnable noRefershRunnable = new Runnable() {
+                public void run() {
+                    switchCurrentFile(false);
+                }
+            };
             if( SwingUtilities.isEventDispatchThread() ) {
-                run();
+                noRefershRunnable.run();
             } else {
-                SwingUtilities.invokeLater( this );
+                SwingUtilities.invokeLater( noRefershRunnable );
             }
         }
         this.callback = newCallback;
@@ -142,6 +148,10 @@ public class CurrentEditorScanningScope extends TaskScanningScope
     }
     
     public void run() {
+        switchCurrentFile(true);
+    }
+    
+    private void switchCurrentFile( boolean callbackRefresh ) {
         FileObject newActiveFile = getCurrentFile();
         if( (null == currentFile && null != newActiveFile)
             || (null != currentFile && null == newActiveFile )
@@ -154,7 +164,7 @@ public class CurrentEditorScanningScope extends TaskScanningScope
                 lookupContent.add( newActiveFile );
             currentFile = newActiveFile;
             //notify the TaskManager that user activated other file
-            if( null != callback )
+            if( null != callback && callbackRefresh )
                 callback.refresh();
         } else {
             currentFile = newActiveFile;
