@@ -56,6 +56,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -479,9 +480,12 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     private static void goToSource(final CallStackFrame frame) {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                String language = DebuggerManager.getDebuggerManager ().
-                    getCurrentSession ().getCurrentLanguage ();
-                SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+                Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
+                if (session == null) return ;
+                String language = session.getCurrentLanguage ();
+                DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+                if (engine == null) return ;
+                SourcePath sp = engine.lookupFirst(null, SourcePath.class);
                 sp.showSource (frame, language);
             }
         });
@@ -490,9 +494,12 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     private static void goToSource(final JPDAThread thread) {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                String language = DebuggerManager.getDebuggerManager ().
-                    getCurrentSession ().getCurrentLanguage ();
-                SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+                Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
+                if (session == null) return ;
+                String language = session.getCurrentLanguage ();
+                DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+                if (engine == null) return ;
+                SourcePath sp = engine.lookupFirst(null, SourcePath.class);
                 sp.showSource (thread, language);
             }
         });
