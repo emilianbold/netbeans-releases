@@ -43,6 +43,9 @@ import java.awt.event.KeyEvent;
 import org.netbeans.api.visual.action.MoveProvider;
 import org.netbeans.api.visual.action.MoveStrategy;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.graph.GraphScene;
+import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.openide.util.Utilities;
 
@@ -90,46 +93,54 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
            (event.getKeyCode() == KeyEvent.VK_LEFT) ||
            (event.getKeyCode() == KeyEvent.VK_RIGHT)))
         {
-            movingWidget = widget;
-            
-            initialWidgetLocation = getWidgetLocation(widget);
-            
-            originalSceneLocation = provider.getOriginalLocation(widget);
-            if (originalSceneLocation == null)
+            movingWidget = getNodeWidget(widget);
+            if(movingWidget != null)
             {
-                originalSceneLocation = new Point();
+                initialWidgetLocation = getWidgetLocation(movingWidget);
+
+                originalSceneLocation = provider.getOriginalLocation(movingWidget);
+                if (originalSceneLocation == null)
+                {
+                    originalSceneLocation = new Point();
+                }
+
+                // TODO: I do not think I need the dragSceneLocation any longer
+                dragSceneLocation = initialWidgetLocation;
+                provider.movementStarted(movingWidget);
+                return State.createLocked(widget, this);
             }
-            
-            // TODO: I do not think I need the dragSceneLocation any longer
-            dragSceneLocation = initialWidgetLocation;
-            provider.movementStarted(widget);
-            return State.createLocked(widget, this);
         }
         return State.REJECTED;
     }
 
     public State keyReleased (Widget widget, WidgetKeyEvent event)
     {
-        boolean state;
-        Point newWidgetLocation = getNewLocation(widget, event);
+        boolean state = false;
         
-        if (initialWidgetLocation != null && initialWidgetLocation.equals(newWidgetLocation))
+        if(movingWidget != null)
         {
-            state = true;
+            Point newWidgetLocation = getNewLocation(movingWidget, event);
+
+            if (initialWidgetLocation != null && initialWidgetLocation.equals(newWidgetLocation))
+            {
+                state = true;
+            }
+            else
+            {
+                state = move(movingWidget, newWidgetLocation);
+            }
+
+            if (state)
+            {
+                provider.movementFinished(movingWidget);
+                
+                movingWidget = null;
+                dragSceneLocation = null;
+                originalSceneLocation = null;
+                initialWidgetLocation = null;
+            }
         }
-        else
-        {
-            state = move(widget, newWidgetLocation);
-        }
-        
-        if (state)
-        {
-            movingWidget = null;
-            dragSceneLocation = null;
-            originalSceneLocation = null;
-            initialWidgetLocation = null;
-            provider.movementFinished(widget);
-        }
+
         return state ? State.CONSUMED : State.REJECTED;
     }
 
@@ -157,6 +168,58 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
         return location;
     }
 
+    /**
+     * A connection widget can not be moved.  Therefore if the focused widget 
+     * is a connection widget get one of the ends and base the movement on the
+     * nodes.  A node widget will only returned if one of the nodes are selected.
+     * 
+     * @param widget The target of the key event.
+     * @return The node widget.  If no node widget is selected, then null is
+     *         returned.
+     */
+    private Widget getNodeWidget(Widget widget) 
+    {
+        Widget retVal = widget;
+        
+        if (widget instanceof ConnectionWidget) 
+        {
+            retVal = null;
+            
+            ConnectionWidget connection = (ConnectionWidget) widget;
+            Widget source = connection.getSourceAnchor().getRelatedWidget();
+            if((source != null) && (source.getState().isSelected() == true))
+            {
+                retVal = source;
+            }
+            else
+            {
+                Widget target = connection.getTargetAnchor().getRelatedWidget();
+                if((target != null) && (target.getState().isSelected() == true))
+                {
+                    retVal = target;
+                }
+            }
+            
+            if(retVal == null)
+            {
+                if (widget.getScene() instanceof GraphScene)
+                {
+                    GraphScene scene = (GraphScene) widget.getScene();
+                    for(Object select : scene.getSelectedObjects())
+                    {
+                        if(scene.isNode(select) == true)
+                        {
+                            retVal = scene.findWidget(select);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return retVal;
+    }
+
     private Point getWidgetLocation(Widget widget)
     {
 
@@ -171,12 +234,12 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
     
     private boolean move(Widget widget, Point newLocation)
     {
-        if (movingWidget != widget)
+        if ((movingWidget != widget) || (widget == null))
         {
             return false;
         }
         initialWidgetLocation = null;
-        newLocation = widget.getParentWidget().convertLocalToScene(newLocation);
+        //newLocation = widget.getParentWidget().convertLocalToScene(newLocation);
         Point location = new Point(originalSceneLocation.x + newLocation.x - dragSceneLocation.x, originalSceneLocation.y + newLocation.y - dragSceneLocation.y);
         provider.setNewLocation(widget, strategy.locationSuggested(widget, originalSceneLocation, location));
         return true;
