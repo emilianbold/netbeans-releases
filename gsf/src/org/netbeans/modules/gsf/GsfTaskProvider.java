@@ -56,6 +56,8 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
@@ -139,13 +141,16 @@ public class GsfTaskProvider extends PushTaskScanner  {
         
         for (Project p : scope.getLookup().lookupAll(Project.class)) {
             // Performance: Only do project scanning for GSF-enabled projects! (See issue 141514)
-            if (p.getLookup().lookup(org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider.class) == null) {
+            ClassPathProvider provider = p.getLookup().lookup(ClassPathProvider.class);
+            if (provider == null) {
                 continue;
             }
 
-            // TODO - find out which subgroups to use
-            for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
-                enqueue(new Work(sg.getRootFolder(), callback));
+            ClassPath cp = provider.findClassPath(p.getProjectDirectory(), ClassPath.SOURCE);
+            if (cp != null) {
+                for (FileObject root : cp.getRoots()) {
+                    enqueue(new Work(root, callback));
+                }
             }
         }
     }
