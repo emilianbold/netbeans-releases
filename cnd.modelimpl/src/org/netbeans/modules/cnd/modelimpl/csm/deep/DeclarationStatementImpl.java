@@ -109,7 +109,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 	public void render(AST tree, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
 	    if( tree != null ) {
 		AST token = tree;
-		switch( token.getType() ) {
+                switch( token.getType() ) {
 		    case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
 		    case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
 			if (!renderVariable(token, currentNamespace, container)){
@@ -141,34 +141,6 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 			renderVariableInClassifier(token, csmEnum, currentNamespace, container);
 			break;
 		    }
-		    case CPPTokenTypes.CSM_TYPE_BUILTIN:
-		    case CPPTokenTypes.CSM_TYPE_COMPOUND:
-			AST typeToken = token;
-			AST next = token.getNextSibling();
-			if( next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-			    do {
-				TypeImpl type;
-				if( typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
-				    type = TypeFactory.createBuiltinType(typeToken.getText(), null, 0, typeToken, getContainingFile());
-				}
-				else {
-				    type = TypeFactory.createType(typeToken, getContainingFile(), null, 0);
-				}
-				String name = next.getText();
-				VariableImpl var = createVariable(next, getContainingFile(), type, name, false, currentNamespace, container, getScope());
-				// we ignore both currentNamespace and container; <= WHY?
-				// eat all tokens up to the comma that separates the next decl
-				next = next.getNextSibling();
-				if( next != null && next.getType() == CPPTokenTypes.CSM_PARMLIST ) {
-				    next = next.getNextSibling();
-				}
-				if( next != null && next.getType() == CPPTokenTypes.COMMA ) {
-				    next = next.getNextSibling();
-				}
-			    }
-			    while( next != null && next.getType() ==  CPPTokenTypes.CSM_QUALIFIED_ID );
-			}
-			break;
                     case CPPTokenTypes.CSM_GENERIC_DECLARATION:
                         CsmTypedef[] typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope());
 			if( typedefs != null && typedefs.length > 0 ) {
@@ -176,7 +148,39 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 				declarators.add(typedefs[i]);
                             }
                         }
-		}
+                        break;
+                    default:
+                        boolean _static = false;
+                        if (isQualifier(token.getType())) {
+                            _static = AstUtil.hasChildOfType(token, CPPTokenTypes.LITERAL_static);
+                            token = getFirstSiblingSkipQualifiers(token);
+                        }
+                        if (token != null && (token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
+                            AST typeToken = token;
+                            AST next = token.getNextSibling();
+                            if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                                do {
+                                    TypeImpl type;
+                                    if (typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                                        type = TypeFactory.createBuiltinType(typeToken.getText(), null, 0, typeToken, getContainingFile());
+                                    } else {
+                                        type = TypeFactory.createType(typeToken, getContainingFile(), null, 0);
+                                    }
+                                    String name = next.getText();
+                                    VariableImpl var = createVariable(next, getContainingFile(), type, name, _static, currentNamespace, container, getScope());
+                                    // we ignore both currentNamespace and container; <= WHY?
+                                    // eat all tokens up to the comma that separates the next decl
+                                    next = next.getNextSibling();
+                                    if (next != null && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                                        next = next.getNextSibling();
+                                    }
+                                    if (next != null && next.getType() == CPPTokenTypes.COMMA) {
+                                        next = next.getNextSibling();
+                                    }
+                                } while (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID);
+                            }
+                        }
+                }
 	    }
 	}
 
