@@ -84,6 +84,7 @@ public class UniqueVariableNameFinder {
         if (p == null) {
             return "";
         }
+      
         return p.getTypeName() + " " + p.getName();
     }
     
@@ -114,8 +115,9 @@ public class UniqueVariableNameFinder {
         }
     }
     
-    public String findNewName(String pattern, String oldName) {
+    public String findNewName(String pattern, String oldName) {      
         Integer pCount = varDeclMap.get(pattern);
+  
         if (pCount != null) {
             return oldName + pCount.intValue();
         }
@@ -131,6 +133,7 @@ public class UniqueVariableNameFinder {
                     Constants.HTTP_SERVLET_RESPONSE_VARIABLE.equals(oldName))) {
                 newName = findNewName(getVariableDecl(p), oldName);
             }
+    
             if (!newName.equals(oldName)) {
                 ParameterInfo clone = clone(p, newName, p.getType());
                 returnParams.add(clone);
