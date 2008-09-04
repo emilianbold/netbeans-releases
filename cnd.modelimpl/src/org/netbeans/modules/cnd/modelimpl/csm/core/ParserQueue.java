@@ -97,7 +97,7 @@ public final class ParserQueue {
             if (ppStates.size() == 1) {
                 this.ppState = ppStates.iterator().next();
             } else {
-                this.ppState = ppStates;
+                this.ppState = new ArrayList(ppStates);
             }
             
             this.position = position;
@@ -178,7 +178,7 @@ public final class ParserQueue {
                         " as " + tracePreprocStates(ppStates) + " with current " + tracePreprocStates(getPreprocStates())); // NOI18N
             }
             // we don't need check here - all logic is in ProjectBase.onFileIncluded
-            this.ppState = ppStates;
+            this.ppState = new ArrayList(ppStates);
         }
 
         public int compareTo(Entry that) {
