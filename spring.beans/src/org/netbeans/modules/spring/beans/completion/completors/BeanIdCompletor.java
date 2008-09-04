@@ -124,12 +124,11 @@ public final class BeanIdCompletor extends Completor {
     }
 
     private Set<String> getForbiddenNames(final FileObject fileObject) throws IOException {
-        final Set<String> names = new HashSet<String>();
-
         SpringConfigModel model = SpringConfigModel.forFileObject(fileObject);
         if (model == null) {
             return (Collections.EMPTY_SET);
         }
+        final Set<String> names = new HashSet<String>();
         model.runReadAction(new Action<SpringBeans>() {
 
             public void run(SpringBeans sb) {
