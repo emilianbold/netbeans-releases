@@ -689,9 +689,6 @@ public class Utilities {
                             break;
                         }
                     }
-                    if (! passed) {
-                        brokenDependencies.add (dep);
-                    }
                 } else {
                     passed = true;
                     if (! p.getAvailableUpdates ().isEmpty ()) {
