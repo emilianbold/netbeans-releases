@@ -103,17 +103,12 @@ final class TestMethodNodeChildren extends Children.Array {
     @Override
     protected void addNotify() {
         Report.Trouble trouble = testcase.trouble;
-        String topFrameInfo = (trouble.stackTrace != null)
-                                    && (trouble.stackTrace.length != 0)
-                                            ? trouble.stackTrace[0]
-                                            : null;
-
         if (trouble.message != null) {
-            childNodes.add(new CallstackFrameNode(topFrameInfo,
+            childNodes.add(new CallstackFrameNode(trouble,
                                                   trouble.message));
         }
         if (trouble.exceptionClsName != null) {
-            childNodes.add(new CallstackFrameNode(topFrameInfo,
+            childNodes.add(new CallstackFrameNode(trouble,
                                                   trouble.exceptionClsName));
         }
         if (trouble.stackTrace != null) {
@@ -126,9 +121,6 @@ final class TestMethodNodeChildren extends Children.Array {
             trouble = trouble.nestedTrouble;
             do {
                 String[] stackTrace = trouble.stackTrace;
-                topFrameInfo = (stackTrace != null) && (stackTrace.length != 0)
-                               ? stackTrace[0]
-                               : null;
                 StringBuilder topNodeDispName = new StringBuilder(200);
                 topNodeDispName.append(NESTED_EXCEPTION_PREFIX);
                 topNodeDispName.append(trouble.exceptionClsName);
@@ -136,7 +128,7 @@ final class TestMethodNodeChildren extends Children.Array {
                     topNodeDispName.append(": ")                        //NOI18N
                                    .append(trouble.message);
                 }
-                childNodes.add(new CallstackFrameNode(topFrameInfo,
+                childNodes.add(new CallstackFrameNode(trouble,
                                                       topNodeDispName.toString()));
                 if (stackTrace != null) {
                     for (String frameInfo : stackTrace) {
