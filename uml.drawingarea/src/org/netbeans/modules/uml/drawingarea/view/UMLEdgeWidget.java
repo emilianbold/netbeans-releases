@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import javax.accessibility.AccessibleRole;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.AnchorShapeFactory;
@@ -85,6 +86,7 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
     {
         super(scene);
         this.scene = (DesignerScene) scene;
+        setAccessibleContext(new UMLEdgeWidgetAccessibleContext(this));
     }
 
     protected LabelManager getLabelManager()
@@ -274,4 +276,25 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         }
     }
     abstract public void initialize(IPresentationElement element);
+
+
+
+    ///////////// 
+    // Accessible
+    /////////////
+   
+
+    public class UMLEdgeWidgetAccessibleContext extends UMLWidgetAccessibleContext
+    {
+        public UMLEdgeWidgetAccessibleContext(Widget w) 
+        {
+            super(w);
+        }
+
+        public AccessibleRole getAccessibleRole () {
+            return UMLAccessibleRole.GRAPH_EDGE;
+        }
+        
+    }
+    
 }

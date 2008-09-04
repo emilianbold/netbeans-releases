@@ -215,33 +215,34 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         return platformCache;
     }
 
-    private static class PlatformContentChildren extends Children.Keys {
+    private static class PlatformContentChildren extends Children.Keys<SourceGroup> {
 
         private ClassPathSupport cs;
         PlatformContentChildren (ClassPathSupport cs) {
             this.cs = cs;
         }
 
+        @Override
         protected void addNotify() {
             this.setKeys (this.getKeys());
         }
 
+        @Override
         protected void removeNotify() {
-            this.setKeys(Collections.EMPTY_SET);
+            this.setKeys(Collections.<SourceGroup>emptySet());
         }
 
-        protected Node[] createNodes(Object key) {
-            SourceGroup sg = (SourceGroup) key;
+        protected Node[] createNodes(SourceGroup sg) {
             return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null, null, null, null, null, null)};
         }
 
-        private List getKeys () {
-            List result;
+        private List<SourceGroup> getKeys () {
+            List<SourceGroup> result;
             
             J2eePlatform j2eePlatform = ((J2eePlatformNode)this.getNode()).getPlatform();
             if (j2eePlatform != null) {
                 File[] classpathEntries = j2eePlatform.getClasspathEntries();
-                result = new ArrayList(classpathEntries.length);
+                result = new ArrayList<SourceGroup>(classpathEntries.length);
                 for (int i = 0; i < classpathEntries.length; i++) {
                     FileObject file = FileUtil.toFileObject(classpathEntries[i]);
                     if (file != null) {
@@ -252,7 +253,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
                     }
                 }
             } else {
-                result = Collections.EMPTY_LIST;
+                result = Collections.<SourceGroup>emptyList();
             }
             
             return result;

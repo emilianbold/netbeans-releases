@@ -763,7 +763,6 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         } else {
             FloatingWindowTransparencyManager.getDefault().stop();
         }
-        SwingUtilities.invokeLater(exclusive);
         central.setVisible(visible);
     }
     
@@ -1264,6 +1263,10 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             return false;
         ModeImpl modeImpl = findModeImpl( mode.getName() );
         return null != modeImpl && modeImpl.getKind() == Constants.MODE_KIND_EDITOR;
+    }
+
+    public final void mainWindowPainted () {
+        SwingUtilities.invokeLater(exclusive);
     }
 
     /** Handles exclusive invocation of Runnables.

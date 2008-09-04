@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,15 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.uml.drawingarea.view;
 
-package org.netbeans.modules.j2ee.earproject;
+import javax.accessibility.AccessibleRole;
 
-import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+public class UMLAccessibleRole extends AccessibleRole 
+{
 
-/**
- * @author  vkraemer
- */
-public interface ProjectPropertyProvider {
+    protected UMLAccessibleRole(String key) {
+        super(key);        
+    }
 
-    public EarProjectProperties getProjectProperties();
+    public static final UMLAccessibleRole GRAPH_EDGE = new UMLAccessibleRole("graph_edge");
+    
 }

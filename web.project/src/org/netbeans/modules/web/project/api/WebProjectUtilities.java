@@ -337,7 +337,7 @@ public class WebProjectUtilities {
     }
     
     public static Set<FileObject> ensureWelcomePage(FileObject webRoot, FileObject dd) throws IOException {
-        Set resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
         try {
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
@@ -486,8 +486,8 @@ public class WebProjectUtilities {
         
         final File[] testFolders = tstFolders;
         try {
-            ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction() {
-                public Object run() throws Exception {
+            ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction<Void>() {
+                public Void run() throws Exception {
                     Element data = antProjectHelper.getPrimaryConfigurationData(true);
                     Document doc = data.getOwnerDocument();
 

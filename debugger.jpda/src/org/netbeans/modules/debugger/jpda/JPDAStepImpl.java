@@ -80,6 +80,7 @@ import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.actions.StepIntoActionProvider;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
 
@@ -87,6 +88,8 @@ import org.openide.ErrorManager;
 public class JPDAStepImpl extends JPDAStep implements Executor {
     
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N
+
+    private static final String INIT = "<init>"; // NOI18N
 
     /** The source tree with location info of this step */
     //private ASTL stepASTL;
@@ -243,7 +246,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         if (lastOperation != null) {
              // Set the method exit breakpoint to get the return value
             String methodName = lastOperation.getMethodName();
-            if (methodName != null && MethodBreakpointImpl.canGetMethodReturnValues(vm)) {
+            // We can not get return values from constructors. Do not submit method exit breakpoint.
+            if (methodName != null && !INIT.equals(methodName) &&
+                MethodBreakpointImpl.canGetMethodReturnValues(vm)) {
+
                 // TODO: Would be nice to know which ObjectReference we're executing the method on
                 MethodBreakpoint mb = MethodBreakpoint.create(lastOperation.getMethodClassType(), methodName);
                 mb.setClassFilters(createClassFilters(vm, lastOperation.getMethodClassType(), methodName));
@@ -352,6 +358,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 lastMethodExitBreakpointListener.destroy();
                 lastMethodExitBreakpointListener = null;
                 lastOperation.setReturnValue(returnValue);
+            } else if (lastOperation != null && INIT.equals(lastOperation.getMethodName())) {
+                // Set Void as a return value of constructor:
+                lastOperation.setReturnValue(new ReturnVariableImpl((JPDADebuggerImpl) debugger, /*vm.mirrorOfVoid() - JDK 6 and newer only!!!*/null, "", INIT));
             }
             if (lastOperation != null) {
                 tr.addLastOperation(lastOperation);

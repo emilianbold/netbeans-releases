@@ -380,22 +380,22 @@ public class Util {
     public static Class getPrimitiveType(String typeName) {
         if (primitiveTypes == null) {
             primitiveTypes = new HashMap<String, Class>();
-            primitiveTypes.put("int", Integer.class);
-            primitiveTypes.put("int[]", Integer[].class);
-            primitiveTypes.put("boolean", Boolean.class);
-            primitiveTypes.put("boolean[]", Boolean[].class);
-            primitiveTypes.put("byte", Byte.class);
-            primitiveTypes.put("byte[]", Byte[].class);
-            primitiveTypes.put("char", Character.class);
-            primitiveTypes.put("char[]", Character[].class);
-            primitiveTypes.put("double", Double.class);
-            primitiveTypes.put("double[]", Double[].class);
-            primitiveTypes.put("float", Float.class);
-            primitiveTypes.put("float[]", Float[].class);
-            primitiveTypes.put("long", Long.class);
-            primitiveTypes.put("long[]", Long[].class);
-            primitiveTypes.put("short", Short.class);
-            primitiveTypes.put("short[]", Short[].class);
+            primitiveTypes.put("int", Integer.TYPE);
+            primitiveTypes.put("int[]", int[].class);
+            primitiveTypes.put("boolean", Boolean.TYPE);
+            primitiveTypes.put("boolean[]", boolean[].class);
+            primitiveTypes.put("byte", Byte.TYPE);
+            primitiveTypes.put("byte[]", byte[].class);
+            primitiveTypes.put("char", Character.TYPE);
+            primitiveTypes.put("char[]", char[].class);
+            primitiveTypes.put("double", Double.TYPE);
+            primitiveTypes.put("double[]", double[].class);
+            primitiveTypes.put("float", Float.TYPE);
+            primitiveTypes.put("float[]", float[].class);
+            primitiveTypes.put("long", Long.TYPE);
+            primitiveTypes.put("long[]", long[].class);
+            primitiveTypes.put("short", Short.TYPE);
+            primitiveTypes.put("short[]", short[].class);
         }
         return primitiveTypes.get(typeName);
     }
