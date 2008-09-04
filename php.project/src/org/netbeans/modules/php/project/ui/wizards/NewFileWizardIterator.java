@@ -107,6 +107,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
             Project project = Templates.getProject(wizard);
             assert project instanceof PhpProject;
             PhpProject phpProject = (PhpProject) project;
+            // XXX - sources directory is remembered in project
             FileObject srcDir = getFileObject(phpProject.getHelper(), PhpProjectProperties.SRC_DIR);
             if (srcDir != null) {
                 targetFolder = srcDir;

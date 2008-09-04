@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.java.navigation;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.java.source.CancellableTask;
@@ -49,7 +48,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.LookupBasedJavaSourceTaskFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**

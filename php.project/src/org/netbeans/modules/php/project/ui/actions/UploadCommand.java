@@ -40,8 +40,6 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
@@ -97,8 +95,6 @@ public class UploadCommand extends FtpCommand implements Displayable {
     void uploadFiles(FileObject[] filesToUpload, FileObject[] preselectedFiles) {
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
-
-        // XXX project name could be cached - but is it correct?
 
         InputOutput ftpLog = getFtpLog(getRemoteConfiguration().getDisplayName());
         RemoteClient remoteClient = getRemoteClient(ftpLog);

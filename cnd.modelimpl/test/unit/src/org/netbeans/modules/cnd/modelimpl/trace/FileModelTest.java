@@ -468,6 +468,11 @@ public class FileModelTest extends TraceModelTestBase {
     public void testIZ144968() throws Exception {
         performTest("IZ144968.cc"); // NOI18N
     }
+    
+    // #144009 wrong error highlighting for inline structure
+    public void testIZ144009() throws Exception {
+        performTest("IZ144009.cc"); // NOI18N
+    }   
 
     /////////////////////////////////////////////////////////////////////
     // FAILS

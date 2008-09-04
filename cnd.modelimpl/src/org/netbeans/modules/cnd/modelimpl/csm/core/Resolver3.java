@@ -648,6 +648,10 @@ public class Resolver3 implements Resolver {
             if (needClassifiers()) {
                 result = findClassifier(sb.toString());
             }
+            if( result == null && needClassifiers()) {
+                containingNS = getContainingNamespace();
+                result = findClassifier(containingNS, sb.toString());                
+            }
             if( result == null && needNamespaces()) {
 //                containingNS = getContainingNamespace();
 //                result = findClassifier(containingNS, sb.toString());
