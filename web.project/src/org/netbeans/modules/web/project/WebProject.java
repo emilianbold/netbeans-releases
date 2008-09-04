@@ -123,6 +123,7 @@ import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
@@ -1067,13 +1068,15 @@ public final class WebProject implements Project, AntProjectListener {
 
             // listen to j2ee platform classpath changes
             String servInstID = evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
-            try {
-                J2eePlatform platform = Deployment.getDefault().getServerInstance(servInstID).getJ2eePlatform();
-                if (platform != null) {
-                    unregisterJ2eePlatformListener(platform);
+            if (servInstID != null) {
+                try {
+                    J2eePlatform platform = Deployment.getDefault().getServerInstance(servInstID).getJ2eePlatform();
+                    if (platform != null) {
+                        unregisterJ2eePlatformListener(platform);
+                    }
+                } catch (InstanceRemovedException ex) {
+                    // ignore in this case
                 }
-            } catch (InstanceRemovedException ex) {
-                Exceptions.printStackTrace(ex);
             }
             
             // remove ServiceListener from jaxWsModel            
