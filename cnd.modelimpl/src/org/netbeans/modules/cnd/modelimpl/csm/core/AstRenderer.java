@@ -656,6 +656,8 @@ public class AstRenderer {
                     String name = "";
 
                     EnumImpl ei = null;
+                    
+                    ClassForwardDeclarationImpl cfdi = null;
 
                     for (AST curr = ast.getFirstChild(); curr != null; curr = curr.getNextSibling()) {
                         switch (curr.getType()) {
@@ -680,6 +682,9 @@ public class AstRenderer {
                                 AST next = curr.getNextSibling();
                                 if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
                                     classifier = next;
+                                    cfdi = new ClassForwardDeclarationImpl(ast, file);
+                                    file.addDeclaration(cfdi);
+                                    cfdi.init(ast, container);
                                 }
                                 break;
                             case CPPTokenTypes.CSM_PTR_OPERATOR:
@@ -700,7 +705,9 @@ public class AstRenderer {
                             case CPPTokenTypes.COMMA:
                             case CPPTokenTypes.SEMICOLON:
                                 TypeImpl typeImpl = null;
-                                if (classifier != null) {
+                                if(cfdi != null) {
+                                    typeImpl = TypeFactory.createType(cfdi, ptrOperator, arrayDepth, ast, file);
+                                } else if (classifier != null) {
                                     typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, container);
                                 } else if (ei != null) {
                                     typeImpl = TypeFactory.createType(ei, ptrOperator, arrayDepth, ast, file);
