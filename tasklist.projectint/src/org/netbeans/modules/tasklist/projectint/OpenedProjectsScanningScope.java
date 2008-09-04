@@ -131,29 +131,33 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
     }
     
     public void attach( Callback newCallback ) {
-        if( null != newCallback && null == callback ) {
-            OpenProjects.getDefault().addPropertyChangeListener( this );
-            TopComponent.getRegistry().addPropertyChangeListener( this );
-            setLookupContent( OpenProjects.getDefault().getOpenProjects() );
-            if( SwingUtilities.isEventDispatchThread() ) {
-                run();
-            } else {
-                SwingUtilities.invokeLater( this );
+        synchronized( this ) {
+            if( null != newCallback && null == callback ) {
+                OpenProjects.getDefault().addPropertyChangeListener( this );
+                TopComponent.getRegistry().addPropertyChangeListener( this );
+                setLookupContent( OpenProjects.getDefault().getOpenProjects() );
+                if( SwingUtilities.isEventDispatchThread() ) {
+                    run();
+                } else {
+                    SwingUtilities.invokeLater( this );
+                }
+            } else if( null == newCallback && null != callback ) {
+                OpenProjects.getDefault().removePropertyChangeListener( this );
+                TopComponent.getRegistry().removePropertyChangeListener( this );
+                editedFiles = null;
+                setLookupContent( null );
             }
-        } else if( null == newCallback && null != callback ) {
-            OpenProjects.getDefault().removePropertyChangeListener( this );
-            TopComponent.getRegistry().removePropertyChangeListener( this );
-            editedFiles = null;
-            setLookupContent( null );
+            this.callback = newCallback;
         }
-        this.callback = newCallback;
     }
     
-    public void propertyChange( PropertyChangeEvent e ) {
+    public synchronized void propertyChange( PropertyChangeEvent e ) {
         if( OpenProjects.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
-            if( null != callback ) {
-                setLookupContent( OpenProjects.getDefault().getOpenProjects() );
-                callback.refresh();
+            synchronized( this ) {
+                if( null != callback ) {
+                    setLookupContent( OpenProjects.getDefault().getOpenProjects() );
+                    callback.refresh();
+                }
             }
         } else if( TopComponent.Registry.PROP_OPENED.equals( e.getPropertyName() ) ) {
             //remember which files are opened so that they can be scanned first
