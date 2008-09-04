@@ -117,7 +117,6 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
             try {
                 return perform (
                     event,
-                    null,
                     ((ClassPrepareEvent) event).thread (),
                     ((ClassPrepareEvent) event).referenceType (),
                     ((ClassPrepareEvent) event).referenceType ().classObject ()
@@ -127,7 +126,6 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
                 // ReferenceType.classObject ()
                 return perform (
                     event,
-                    null,
                     ((ClassPrepareEvent) event).thread (),
                     ((ClassPrepareEvent) event).referenceType (),
                     null
@@ -138,9 +136,12 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
                 event,
                 null,
                 null,
-                null,
                 null
             );
+    }
+
+    public boolean processCondition(Event event) {
+        return true; // Empty condition, always satisfied.
     }
 
 }
