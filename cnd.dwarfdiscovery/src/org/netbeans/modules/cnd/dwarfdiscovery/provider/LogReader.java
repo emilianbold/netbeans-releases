@@ -89,7 +89,6 @@ public class LogReader {
                 int nFoundFiles = 0;
                 while(true){
                     String line = in.readLine();
-                    System.out.println(line);
                     if (line == null){
                         break;
                     }

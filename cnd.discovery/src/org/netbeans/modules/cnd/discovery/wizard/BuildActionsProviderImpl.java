@@ -43,16 +43,13 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -131,7 +128,6 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             setEnabled(false);
             JEditorPane pane = findPane();
             if (pane != null && step >= 0 && step < events.length) {
-                Collection collection = TopComponent.getRegistry().getActivated().getLookup().lookupResult(Object.class).allInstances();
                 Project project = events[step].getProject();
                 String fileName = saveLog(pane);
                 if (fileName != null) {
