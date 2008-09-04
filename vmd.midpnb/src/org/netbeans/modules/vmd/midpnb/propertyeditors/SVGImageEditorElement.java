@@ -384,10 +384,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
                 } catch (IOException ex) {
                     Debug.warning("SVGImageEditorElement.convertFile()", "can't copy file", fullPath, ex); // NOI18N
                 }
-                if (!fo.getPath().startsWith("/", 0)) //NOI18N
-                    relativePath = "/" + fo.getNameExt(); // NOI18N
-                else
-                    relativePath = fo.getPath();
+                relativePath = "/" + fo.getNameExt(); // NOI18N
             } else {
                 // somewhere outside sources, no need to copy - folder attached to resources
                 relativePath = relPath;
