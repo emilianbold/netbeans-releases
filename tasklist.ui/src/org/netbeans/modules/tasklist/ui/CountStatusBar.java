@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,74 +41,72 @@
 
 package org.netbeans.modules.tasklist.ui;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.ImageIcon;
-import javax.swing.JToggleButton;
-import javax.swing.ToolTipManager;
-import org.netbeans.modules.tasklist.impl.Accessor;
-import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
-import org.netbeans.spi.tasklist.TaskScanningScope;
+import java.util.List;
+import javax.swing.JLabel;
+import org.netbeans.modules.tasklist.impl.TaskList;
+import org.netbeans.spi.tasklist.Task;
+import org.netbeans.modules.tasklist.trampoline.TaskGroup;
 
 /**
  *
  * @author S. Aubrecht
  */
-class ScopeButton extends JToggleButton implements PropertyChangeListener {
+class CountStatusBar extends JLabel {
+
+    private TaskList tasks;
+    private TaskList.Listener listener;
     
-    private TaskManagerImpl tm;
-    private TaskScanningScope scope;
-    
-    /** Creates a new instance of ScopeButton */
-    public ScopeButton( TaskManagerImpl tm, TaskScanningScope scope ) {
-        this.tm = tm;
-        this.scope = scope;
-        setText( null );
-        setIcon( new ImageIcon( Accessor.getIcon( scope ) ) );
-        ToolTipManager.sharedInstance().registerComponent(this);
-        setSelected( scope.equals( tm.getScope() ) );
-        setFocusable( false );
+    /** Creates a new instance of StatusBar */
+    public CountStatusBar( TaskList tasks ) {
+        this.tasks = tasks;
+        listener = new TaskList.Listener() {
+            public void tasksAdded(List<? extends Task> tasks) {
+                updateText();
+            }
+
+            public void tasksRemoved(List<? extends Task> tasks) {
+                updateText();
+            }
+
+            public void cleared() {
+                updateText();
+            }
+        };
+        
+        updateText();
     }
 
-    @Override
-    public String getToolTipText() {
-        return null == scope ? null : Accessor.getDescription( scope );
-    }
-    
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        tm.addPropertyChangeListener( TaskManagerImpl.PROP_SCOPE, this );
-        setSelected( scope.equals( tm.getScope() ) );
+    private void updateText() {
+        StringBuffer buffer = new StringBuffer();
+        for( TaskGroup tg : TaskGroup.getGroups() ) {
+            int count = tasks.countTasks( tg );
+            if( count > 0 ) {
+                if( buffer.length() > 0 )
+                    buffer.append( "  " ); //NOI18N
+                else 
+                    buffer.append( ' ' );
+                buffer.append( tg.getDisplayName() );
+                buffer.append( ": " ); //NOI18N
+                buffer.append( count );
+            }
+        }
+        if( buffer.length() == 0 ) 
+            buffer.append("<no tasks>");
+        buffer.append( ' ' );
+        setText( buffer.toString() );
     }
     
     @Override
     public void removeNotify() {
         super.removeNotify();
-        tm.removePropertyChangeListener( TaskManagerImpl.PROP_SCOPE, this );
+        
+        tasks.removeListener( listener );
     }
     
     @Override
-    protected void fireActionPerformed( ActionEvent event ) {
-//        if( isSelected() ) {
-//            return;
-//        }
-        super.fireActionPerformed( event );
-        switchScope();
-    }
-    
-    private void switchScope() {
-        if( scope.equals( tm.getScope() ) ) {
-            setSelected( true );
-            return;
-        }
-        tm.observe( scope, tm.getFilter() );
-        setSelected( true );
-        Settings.getDefault().setActiveScanningScope( scope );
-    }
-
-    public void propertyChange( PropertyChangeEvent e ) {
-        setSelected( scope.equals( tm.getScope() ) );
+    public void addNotify() {
+        super.addNotify();
+        
+        tasks.addListener( listener );
     }
 }
