@@ -508,7 +508,7 @@ public class GsfJar extends JarWithModuleAttributes {
         // Hyperlinks
         Element hyperlinkFolder = mkdirs(doc, "Editors/" + mimeType + "/HyperlinkProviders"); // NOI18N
         Element file = createFile(doc, hyperlinkFolder, "GsfHyperlinkProvider.instance"); // NOI18N
-        setFileAttribute(doc, file, "instanceCreate", STRINGVALUE, "org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider"); // NOI18N
+        setFileAttribute(doc, file, "instanceClass", STRINGVALUE, "org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider"); // NOI18N
         setFileAttribute(doc, file, "instanceOf", STRINGVALUE, "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"); // NOI18N
 
         // Code Completion
