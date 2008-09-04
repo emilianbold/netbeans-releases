@@ -310,7 +310,11 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         File file = FileUtil.toFile(fo);
         if (file == null) {
             // abstract FO - zip/jar...
-            relativePath = "/" + fo.getPath(); // NOI18N
+            if (!fo.getPath().startsWith("/", 0)) {
+                relativePath = "/" + fo.getPath(); // NOI18N
+            } else {
+                relativePath = fo.getPath();
+            }
         } else {
             String fullPath = file.getAbsolutePath();
             if (fullPath.contains(sourcePath)) {
