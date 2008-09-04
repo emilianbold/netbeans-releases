@@ -183,7 +183,7 @@ public class FileStatusCache {
         for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();                                   
             FileInformation info = (FileInformation) allFiles.get(file);
-            if ((info.getStatus() & includeStatus) == 0) continue;
+            if ((info != null && (info.getStatus() & includeStatus) == 0)) continue;
             File [] roots = context.getRootFiles();
             for (int j = 0; j < roots.length; j++) {
                 File root = roots[j];
