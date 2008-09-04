@@ -84,7 +84,7 @@ static int numOptions, maxOptions;
 static char *progArgv[1024];
 static int progArgc = 0;
 
-static void runClass(char *mainclass, bool deleteAUClustersFile);
+static void runClass(char *mainclass, bool deleteAUClustersFile, DWORD *retCode);
 
 static void fatal(const char *str);
 static char *findJavaExeInDirectory(char *dir);
@@ -177,6 +177,7 @@ int main(int argc, char *argv[]) {
     
     parseArgs(argc - 1, argv + 1); // skip progname
 
+    DWORD retCode = 0;
     if (!runnormal && !runupdater) {
         char **newargv = (char**) malloc((argc+8) * sizeof (char*));
         int i;
@@ -218,7 +219,7 @@ int main(int argc, char *argv[]) {
         // run IDE
 
         newargv[1] = RUN_NORMAL;
-        _spawnv(_P_WAIT, exepath, newargv);
+        retCode = _spawnv(_P_WAIT, exepath, newargv);
 
         // check for patches again (for updater first)
         checkForNewUpdater(plathome);
@@ -233,18 +234,17 @@ int main(int argc, char *argv[]) {
         argc -= 2;
         argv += 2;
         if (bootclass != NULL) {
-            runClass(bootclass, TRUE);
+            runClass(bootclass, TRUE, &retCode);
         }
         else {
-            runClass(IDE_MAIN_CLASS, TRUE);
+            runClass(IDE_MAIN_CLASS, TRUE, &retCode);
         }
     } else if (runupdater) {
         argc -= 2;
         argv += 2;
-        runClass(UPDATER_MAIN_CLASS, FALSE);
+        runClass(UPDATER_MAIN_CLASS, FALSE, &retCode);
     }
-
-    return 0;
+    return retCode;
 }
 
 bool runAutoUpdaterOnClusters(bool firstStart) {
@@ -314,7 +314,7 @@ bool runAutoUpdater(bool firstStart, const char * root) {
     return false;
 }
 
-void runClass(char *mainclass, bool deleteAUClustersFile) {
+void runClass(char *mainclass, bool deleteAUClustersFile, DWORD *retCode) {
     char buf[10240];
 
 #ifdef DEBUG
@@ -440,8 +440,7 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
 #endif
     //_spawnv(_P_WAIT, javapath, args);
     double start = getPreciseTime();
-    DWORD retCode = 0;
-    if (!createProcessNoVirt(javapath, args, &retCode) && retCode == 1 && (getPreciseTime() - start < 2))
+    if (!createProcessNoVirt(javapath, args, retCode) && *retCode == 1 && (getPreciseTime() - start < 2))
     {
         // workaround for 64-bit java
         int i = 0;
@@ -464,7 +463,7 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
         if (optionClient)
         {
             printf("Rerunnig without \"-client\" option...\n");
-            createProcessNoVirt(javapath, args);
+            createProcessNoVirt(javapath, args, retCode);
         }
     }
 }
