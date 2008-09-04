@@ -60,7 +60,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.hqleditor.ui.HQLEditorTopComponent;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
@@ -102,8 +101,9 @@ public class HQLEditorController {
             for (FileObject mappingFO : env.getAllHibernateMappingFileObjects()) {
                 localResourcesURLList.add(mappingFO.getURL());
             }
-            final CustomClassLoader customClassLoader = new CustomClassLoader(localResourcesURLList.toArray(new URL[]{}),
-                    this.getClass().getClassLoader());
+            final ClassLoader customClassLoader = env.getProjectClassLoader(
+                    localResourcesURLList.toArray(new URL[]{})
+                    );
 
             Thread t = new Thread() {
 
@@ -149,7 +149,7 @@ public class HQLEditorController {
     public SessionFactory getHibernateSessionFactoryForThisContext(FileObject configFileObject,
             List<FileObject> mappingFOList,
             List<Class> annotatedClassList,
-            CustomClassLoader customClassLoader) throws Exception {
+            ClassLoader customClassLoader) throws Exception {
 
         AnnotationConfiguration customConfiguration = null;
         try {
@@ -245,7 +245,7 @@ public class HQLEditorController {
     }
 
     public SessionFactory processAndConstructSessionFactory(String hql, FileObject configFileObject,
-            CustomClassLoader customClassLoader, Project project) throws Exception {
+            ClassLoader customClassLoader, Project project) throws Exception {
         HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
 
         StringTokenizer hqlTokenizer = new StringTokenizer(hql, " \n\r\f\t(),"); //NOI18N
@@ -323,14 +323,14 @@ public class HQLEditorController {
     }
 
     private List<Class> getRelatedPOJOClasses(Class clazz, List<String> annotatedPOJOClassNameList,
-            CustomClassLoader ccl, Project project) {
+            ClassLoader ccl, Project project) {
         List<Class> relatedPOJOClasses = new ArrayList<Class>();
         getRelatedPOJOClassesByType(clazz, annotatedPOJOClassNameList, relatedPOJOClasses, ccl, project);
         return relatedPOJOClasses;
     }
 
     private void getRelatedPOJOClassesByType(Class clazz, List<String> annotatedPOJOClassNameList, List<Class> relatedPOJOClasses,
-            CustomClassLoader ccl, Project project) {
+            ClassLoader ccl, Project project) {
 
         AnnotationAccessType annotationAccessType = findAnnotationAccessType(clazz);
         if (annotationAccessType == AnnotationAccessType.METHOD_TYPE) {
@@ -356,7 +356,7 @@ public class HQLEditorController {
     }
 
     private void getRelatedPOJOClassesByMethodType(Class clazz, List<String> annotatedPOJOClassNameList, List<Class> relatedPOJOClasses,
-            CustomClassLoader ccl, Project project) {
+            ClassLoader ccl, Project project) {
 
         for (java.lang.reflect.Method m : clazz.getMethods()) {
             if (m.isAnnotationPresent(javax.persistence.ManyToOne.class) || m.isAnnotationPresent(javax.persistence.OneToOne.class) ||
@@ -453,7 +453,7 @@ public class HQLEditorController {
     }
 
     private void getRelatedPOJOClassesByFieldType(Class clazz, List<String> annotatedPOJOClassNameList,
-            List<Class> relatedPOJOClasses, CustomClassLoader ccl, Project project) {
+            List<Class> relatedPOJOClasses, ClassLoader ccl, Project project) {
         // Process declared variables.
         for (java.lang.reflect.Field field : clazz.getDeclaredFields()) {
             if (field.isAnnotationPresent(javax.persistence.ManyToOne.class) || field.isAnnotationPresent(javax.persistence.OneToOne.class) ||
@@ -616,13 +616,13 @@ public class HQLEditorController {
         return foundMatch;
     }
 
-    private Class processMatchingClass(String className, CustomClassLoader customClassLoader, Project project) {
+    private Class processMatchingClass(String className, ClassLoader customClassLoader, Project project) {
         FileObject clazzFO = HibernateUtil.findJavaFileObjectInProject(className, project);
         FileObject buildFolderFO = HibernateUtil.getBuildFO(project);
         return checkAndCompile(className, clazzFO, buildFolderFO, customClassLoader, project);
     }
 
-    private Class checkAndCompile(String className, FileObject sourceFO, FileObject buildFolderFO, CustomClassLoader customClassLoader, Project project) {
+    private Class checkAndCompile(String className, FileObject sourceFO, FileObject buildFolderFO, ClassLoader customClassLoader, Project project) {
         Class clazz = null;
 
         try {

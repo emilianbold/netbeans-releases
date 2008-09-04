@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project.ui.actions;
 
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
@@ -49,6 +50,7 @@ import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterSer
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -69,12 +71,27 @@ public class DebugSingleCommand extends DebugCommand {
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
         if (isScriptSelected()) {
+            // we don't need to check anything here, because if the customizer show, then scriptSelected == false
             debugLocalCommand.invokeAction(context);
         } else {
+            if (!isUrlSet()) {
+                return;
+            }
+            // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
+            final FileObject startFile = fileForContext(context);
+            final URL[] url = new URL[1];
+            try {
+                url[0] = getURLForDebug(context);
+            } catch (MalformedURLException ex) {
+                //TODO improve error handling
+                Exceptions.printStackTrace(ex);
+            }
+
+            eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
             Runnable runnable = new Runnable() {
                 public void run() {
                     try {
-                        showURLForDebugContext(context);
+                        showURLForDebug(url[0]);
                     } catch (MalformedURLException ex) {
                         //TODO improve error handling
                         Exceptions.printStackTrace(ex);
@@ -96,7 +113,7 @@ public class DebugSingleCommand extends DebugCommand {
                             invokeAction(context);
                         }
                     } else {
-                        dbgStarter.start(getProject(), runnable, fileForContext(context), isScriptSelected());
+                        dbgStarter.start(getProject(), runnable, startFile, isScriptSelected());
                     }
                 }
             } else {

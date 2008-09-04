@@ -601,7 +601,10 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
 
         <typedef name="exportedapi" classname="org.netbeans.nbbuild.ExportedAPICondition" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <condition property="sigtest.mail" value="api-changes@netbeans.org">
-            <exportedapi/>
+            <or>
+                <exportedapi/>
+                <not><isset property="nbm.domain"/></not>
+            </or>
         </condition>
         <property name="sigtest.mail" value="cvs@${nbm.domain}.netbeans.org"/>
 
@@ -610,12 +613,14 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
 
     <target name="gen-sigtest" depends="-sigtest-init">
         <property name="sigtest.gen.fail.on.error" value="${sigtest.fail.on.error}"/>
+        <mkdir dir="${sigtest.output.dir}"/>
         <sigtest fileName="${sigtest.file}"
                  sigtestJar="${sigtest.jar}"
                  classpath="${sigtest.class.path}"
                  version="${mf.OpenIDE-Module-Specification-Version}"
                  action="generate"
                  packages="${sigtest.public.packages}"
+                 report="${sigtest.output.dir}/generate-${code.name.base.dashes}.xml"
                  failonerror="${sigtest.gen.fail.on.error}"
         />
     </target>

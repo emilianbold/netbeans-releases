@@ -66,11 +66,14 @@ public class MessageMoveProvider implements MoveProvider {
     Point origExSource;
     
     private ArrangeMoveWithBumping moveHelper;
+    
+    private boolean wasMoved;
 
     public void movementStarted(Widget widget) {
         //
         orig=widget.getPreferredLocation();
         if(orig==null)orig=widget.getLocation();
+        wasMoved=false;
         //
         connection=(ConnectionWidget) widget;
         pinSource=(MessagePinWidget) connection.getSourceAnchor().getRelatedWidget();
@@ -93,16 +96,18 @@ public class MessageMoveProvider implements MoveProvider {
         DesignerScene scene=(DesignerScene) widget.getScene();
         SequenceDiagramEngine engine=(SequenceDiagramEngine) scene.getEngine();
         engine.normalizeLifelines(true, false, null);//move messages are always considered down, to avoid collaps of manually expanded lifelines
-        if (widget.getScene() instanceof DesignerScene) 
-        {
-            TopComponent topComp = ((DesignerScene) widget.getScene()).getTopComponent();
-            if (topComp instanceof UMLDiagramTopComponent) 
+        if(wasMoved)
+            if (widget.getScene() instanceof DesignerScene) 
             {
-                ((UMLDiagramTopComponent) topComp).setDiagramDirty(true);
+                TopComponent topComp = ((DesignerScene) widget.getScene()).getTopComponent();
+                if (topComp instanceof UMLDiagramTopComponent) 
+                {
+                    ((UMLDiagramTopComponent) topComp).setDiagramDirty(true);
+                }
             }
-        }
         //new AfterValidationExecutor(new UpdateMessagesInModel(moveHelper.getAllMovedMessages()),widget.getScene());
         moveHelper=null;
+        wasMoved=false;
     }
 
     public Point getOriginalLocation(Widget widget) {
@@ -120,10 +125,12 @@ public class MessageMoveProvider implements MoveProvider {
         {
             //move up
             moved=moveHelper.moveUp(dy);
+            wasMoved=true;
         }
         else if (dy>0)
         {
             moved=moveHelper.moveDown(dy);
+            wasMoved=true;
         }
         widget.getScene().validate();
         orig.y+=moved;

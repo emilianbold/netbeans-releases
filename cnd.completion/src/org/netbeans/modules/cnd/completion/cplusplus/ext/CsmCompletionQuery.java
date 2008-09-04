@@ -210,7 +210,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             } else {
                 lastSepOffset = sup.getLastCommandSeparator(offset);
             }
-            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, sup.getLastSeparatorOffset());
+            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
             tp.setJava15(true);
             doc.readLock();
             try {
@@ -480,7 +480,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
     }
 
     static List findFieldsAndMethods(CsmFinder finder, CsmOffsetableDeclaration context, CsmClassifier classifier, String name,
-                                     boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses,boolean scopeAccessedClassifier,boolean sort) {
+                                     boolean exactMatch, boolean staticOnly, boolean inspectOuterClasses, boolean inspectParentClasses,boolean scopeAccessedClassifier,boolean skipConstructors,boolean sort) {
         // Find inner classes
         List ret = new ArrayList();
         classifier = CsmBaseUtilities.getOriginalClassifier(classifier);
@@ -519,7 +519,16 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         // Add methods
         res = finder.findMethods(context, cls, name, exactMatch, staticOnly, inspectOuterClasses, inspectParentClasses, scopeAccessedClassifier,sort);
         if (res != null) {
-            ret.addAll(res);
+            if (!skipConstructors) {
+                ret.addAll(res);
+            } else {
+                // add all but skip constructors
+                for (Object mtd : res) {
+                    if (!CsmKindUtilities.isConstructor(((CsmObject)mtd))) {
+                        ret.add(mtd);
+                    }
+                }
+            }
         }
         return ret;
     }
@@ -812,6 +821,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         } else {
                             kind = ExprKind.DOT;
                         }
+                        if (i == exp.getTokenCount()) {
+                            kind = exp.getTokenID(i - 1) == CppTokenId.SCOPE ? ExprKind.SCOPE : kind;
+                        }
                     }
                     ok = resolveItem(exp.getParameter(i), (i == startIdx),
                                      (!lastDot && i == parmCnt - 1),
@@ -844,7 +856,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls),
 //                                    cls, "", false, staticOnly, false); // NOI18N
-                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true,this.scopeAccessedClassifier,sort); // NOI18N
+                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true,this.scopeAccessedClassifier,true,sort); // NOI18N
                         }
                         // Get all fields and methods of the cls
                         result = new CsmCompletionResult(component, getBaseDocument(), res, formatType(lastType, true, true, true),
@@ -922,7 +934,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //                            CsmClass curCls = sup.getClass(exp.getTokenOffset(tokenCntM1));
 //                            res = findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls),
 //                                    cls, "", false, staticOnly, false); // NOI18N
-                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true,this.scopeAccessedClassifier,sort); // NOI18N
+                            res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly, false, true,this.scopeAccessedClassifier,true,sort); // NOI18N
                             List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, "", false, true, sort);
                             res.addAll(nestedClassifiers);
                         }
@@ -1002,7 +1014,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         boolean resolveItem(CsmCompletionExpression item, boolean first, boolean last, ExprKind kind) {
             boolean cont = true; // whether parsing should continue or not
             boolean methodOpen = false; // helper flag for unclosed methods
-
+            boolean skipConstructors = (kind != ExprKind.NONE);
             switch (item.getExpID()) {
             case CsmCompletionExpression.CONSTANT: // Constant item
                 if (first) {
@@ -1174,16 +1186,27 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                             CsmClassifier classifier = CsmBaseUtilities.getOriginalClassifier(lastType.getClassifier());
                                             if (CsmKindUtilities.isClass(classifier)) {
                                                 CsmClass clazz = (CsmClass)classifier;
-                                                List fldList = finder.findFields(clazz, clazz, var, true, staticOnly, true, true,scopeAccessedClassifier, this.sort);
+                                                List elemList = finder.findFields(contextElement, clazz, var, true, staticOnly, true, true,scopeAccessedClassifier, this.sort);
 //                                                // add enumerators
 //                                                List enumerators = finder.findEnumerators(clazz, clazz, var, true, true, true, this.sort);
 //                                                if (enumerators != null) {
 //                                                    fldList.addAll(enumerators);
 //                                                }
-                                                if (fldList != null && fldList.size() > 0) { // match found
-                                                    CsmField fld = (CsmField)fldList.get(0);
-                                                    lastType = fld.getType();
+                                                if (kind == ExprKind.ARROW || kind == ExprKind.DOT) {
+                                                    // try base classes names like in this->Base::foo()
+                                                    // or like in a.Base::foo()
+                                                    List baseClasses = finder.findBaseClasses(contextElement, clazz, var, true, this.sort);
+                                                    if (elemList == null) {
+                                                        elemList = baseClasses;
+                                                    } else if (baseClasses != null) {
+                                                        elemList.addAll(baseClasses);
+                                                    }
+                                                }
+                                                if (elemList != null && elemList.size() > 0) { // match found
+                                                    CsmObject csmObj = (CsmObject)elemList.get(0);
+                                                    lastType = CsmCompletion.getObjectType(csmObj);
                                                     staticOnly = false;
+                                                } else if (kind == ExprKind.ARROW) {
                                                 } else { // no match found
                                                     lastType = null;
                                                     cont = false;
@@ -1197,6 +1220,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         }
                                     }
                                 } else { // last and searching for completion output
+                                    scopeAccessedClassifier = (kind == ExprKind.SCOPE);
 //                                    CsmClass curCls = sup.getClass(varPos);
                                     CsmClassifier cls;
                                     if (lastType.getArrayDepth() == 0) { // Not array
@@ -1208,9 +1232,16 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         lastType = null;
                                         cont = false;
                                     } else {
-                                        List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly, false, true,this.scopeAccessedClassifier,sort);
+                                        List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly, false, true,this.scopeAccessedClassifier,skipConstructors,sort);
                                         List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, false, true, sort);
                                         res.addAll(nestedClassifiers);
+                                        // add base classes as well
+                                        if (kind == ExprKind.ARROW || kind == ExprKind.DOT) {
+                                            // try base classes names like in this->Base::foo()
+                                            // or like in a.Base::foo()
+                                            List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, cls, var, false, sort);
+                                            res.addAll(baseClasses);
+                                        }
                                         result = new CsmCompletionResult(
                                                      component, getBaseDocument(),
     //                                                 findFieldsAndMethods(finder, curCls == null ? null : getNamespaceName(curCls), cls, var, false, staticOnly, false),

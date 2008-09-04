@@ -67,6 +67,7 @@ import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.netbeans.modules.hibernate.wizards.Util;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.InstalledFileLocator;
@@ -178,6 +179,14 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
      */
     public List<FileObject> getAllHibernateConfigFileObjects() {
         return HibernateUtil.getAllHibernateConfigFileObjects(project);
+    }
+
+    /**
+     * Returns configuration fileobjects if any contained under the source root in this project.
+     * @return list of FileObjects for configuration files if found in this project, otherwise empty list.
+     */
+    public List<FileObject> getDefaultHibernateConfigFileObjects() {
+        return HibernateUtil.getDefaultHibernateConfigFileObjects(project);
     }
 
     /**
@@ -453,23 +462,23 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         for (JDBCDriver jdbcDriver : jdbcDrivers) {
             for (URL url : jdbcDriver.getURLs()) {
                 java.io.File file = null;
-                try {
-                    if (url.getProtocol().equals("nbinst")) { //NOI18N
+                if (url.getProtocol().equals("nbinst")) { //NOI18N
+                    try {
                         file = InstalledFileLocator.getDefault().locate(url.getFile().substring(1), null, false);
                         logger.info("Bundled DB Driver Jar : " + file);
-                    } else {
-                        file = new java.io.File(url.getFile());
+                        if(file != null) {
+                            url = file.toURL();
+                        }
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                    if (file.isFile() && file.getName().endsWith(".jar")) {
-                        logger.info("DB Driver Jar : " + file);
-                        driverURLs.add(new URL("jar:" + file.toURL() + "!/"));
-
-                    } else {
-                        logger.info("Registering DB Driver from folder : " + url);
-                        driverURLs.add(url);
-                    }
-                } catch (MalformedURLException ex) {
-                    logger.log(Level.INFO, "Problem in converting file url to jar url.", ex);
+                } else {
+                    logger.info("User provided DB Driver Jar : " + url);
+                }
+                if (FileUtil.isArchiveFile(url)) {
+                    driverURLs.add(FileUtil.getArchiveRoot(url));
+                } else {
+                    driverURLs.add(url);
                 }
             }
         }
@@ -487,5 +496,17 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         }
 
         return registeredDBDriver;
+    }
+
+    /**
+     * Prepares and returns a custom classloader for this project.
+     * The classloader is capable of loading project classes and resources.
+     * 
+     * @param classpaths, custom classpaths that are registered along with project based classpath.
+     * @return classloader which is a URLClassLoader instance.
+     */
+    public ClassLoader getProjectClassLoader(URL[] classpaths) {
+        ClassLoader customClassLoader = new CustomClassLoader(classpaths, getClass().getClassLoader());
+        return customClassLoader;
     }
 }

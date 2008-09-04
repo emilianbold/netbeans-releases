@@ -49,8 +49,8 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
+import org.netbeans.modules.j2ee.sun.api.restricted.SunDatasource;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
-import org.netbeans.modules.j2ee.sun.share.serverresources.SunDatasource;
 
 /**
  *

@@ -46,6 +46,36 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileUtil.getMIMEType.withinMIMETypes">
+            <api name="filesystems"/>
+            <summary>FileUtil.getMIMEType() can be restricted by listed MIME types</summary>
+            <version major="7" minor="13"/>
+            <date day="3" month="9" year="2008"/>
+            <author login="jskrivanek"/>
+            <compatibility addition="yes">
+                <p>
+                    If you have a <code>MIMEResolver</code> subclass, be sure to use the new super constructor.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    To speed up MIME type recognition it is added an extra parameter
+                    to method <a href="@TOP@/org/openide/filesystems/FileUtil.html#getMIMEType(org.openide.filesystems.FileObject,%20java.lang.String...)">FileUtil.getMIMEType(FileObject, String...)</a>.
+                    We can supply one or more MIME types which we are only interested in.
+                    Module writers have to override
+                    <a href="@TOP@/org/openide/filesystems/MIMEResolver.html">MIMEResolver</a>
+                    default constructor and call <code>super(String...)</code>, e.g.:
+                </p>
+                <pre>
+                    public MyResolver() {
+                        super("text/plain", "text/sh");
+                    }
+                </pre>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <class package="org.openide.filesystems" name="MIMEResolver"/>
+            <issue number="137734"/>
+        </change>
         <change id="getAttribute.class">
             <api name="filesystems"/>
             <summary>XMLFileSystem attributes can be queried for instance class</summary>

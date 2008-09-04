@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.php.project.ui.logicalview;
 
-import org.netbeans.modules.php.project.*;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +52,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.Utils;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;

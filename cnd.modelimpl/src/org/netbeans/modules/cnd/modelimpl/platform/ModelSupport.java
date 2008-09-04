@@ -60,7 +60,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -390,19 +390,6 @@ public class ModelSupport implements PropertyChangeListener {
         openedProjects.remove(project);
     }    
     
-    private void removeProject(Project project) {
-        if( TraceFlags.DEBUG ) Diagnostic.trace("### ModelSupport.removeProject: " + toString(project)); // NOI18N
-	ModelImpl model = theModel;
-	if( model == null ) {
-	    return;
-	}
-        NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
-        if (nativeProject != null) {
-            model.removeProject(nativeProject);
-        }
-        openedProjects.remove(project);
-    }
-    
     public static FileBuffer getFileBuffer(File file) {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if( fo != null ) {
@@ -681,7 +668,7 @@ public class ModelSupport implements PropertyChangeListener {
                     CsmFile[] files = CsmUtilities.getCsmFiles(fo);
                     for (int i = 0; i < files.length; i++) {
                         FileImpl file = (FileImpl) files[i];
-                        file.getProjectImpl().onFileExternalChange(file);
+                        file.getProjectImpl(true).onFileExternalChange(file);
                     }
                 }
             }

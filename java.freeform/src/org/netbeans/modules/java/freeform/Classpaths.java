@@ -377,7 +377,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                 type.equals(ClassPath.EXECUTE) || type.equals(ClassPath.BOOT)) {
             List<String> packageRootNames = findPackageRootNames(compilationUnitEl);
             Map<List<String>,MutableClassPathImplementation> mutablePathImplsByType;
-            synchronized (mutablePathImpls) {
+            synchronized (this) {
                 mutablePathImplsByType = mutablePathImpls.get(type);
                 if (mutablePathImplsByType == null) {
                     mutablePathImplsByType = new HashMap<List<String>,MutableClassPathImplementation>();

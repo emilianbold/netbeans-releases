@@ -99,6 +99,7 @@
             this.output.write(outputData, outputData.length);
 
             this.output.flush();
+            socket.sentFlag = true;
         };
 
         var inputStreamPump = {

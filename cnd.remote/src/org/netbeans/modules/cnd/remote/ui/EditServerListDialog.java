@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUserInfo;
@@ -239,7 +240,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
     
     private void showPathMapper() {
-        EditPathMapDialog.showMe((String) lstDevHosts.getSelectedValue(), null);
+        EditPathMapDialog.showMe((String) lstDevHosts.getSelectedValue(), getHostKeyList());
     }
     
     private void setButtons(boolean enable) {
@@ -277,7 +278,16 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             tfStatus.setText(record.getStateAsText());
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
             btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled && !isEmptyToolchains(key));
-            btPathMapper.setEnabled(!CompilerSetManager.LOCALHOST.equals(lstDevHosts.getSelectedValue()) && buttonsEnabled);
+
+            boolean enablePathMapper = false;
+            if (buttonsEnabled && !RemoteUtils.isLocalhost(key)) {
+                ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                if (registry.get(key)!=null)  {
+                    enablePathMapper = true;
+                }
+            }
+
+            btPathMapper.setEnabled(enablePathMapper);
             if (!record.isOnline()) {
                 showReason(record.getReason());
                 btRetry.setEnabled(true);
