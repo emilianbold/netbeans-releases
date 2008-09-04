@@ -103,6 +103,26 @@ public class DeclarationFinderImplTest extends TestBase {
                 );
         performTestSimpleFindDeclaration(-1, animalTest);
     }
+    public void testStaticFieldAccessArrayIndex() throws Exception {
+        String animalTest = prepareTestFile(
+                "testfiles/animalTest.php",
+                "static $animalSpecies = array();",
+                "^static $animalSpecies = array();",
+                "$species = self::$animalSpecies;",
+                "$species = self::$animalSpec|ies;"
+                );
+        performTestSimpleFindDeclaration(-1, animalTest);
+    }
+    public void testStaticFieldAccessArrayIndex2() throws Exception {
+        String animalTest = prepareTestFile(
+                "testfiles/animalTest.php",
+                "static $animalSpecies = array();",
+                "^static $animalSpecies = array();",
+                "$first = self::$animalSpecies[0];",
+                "$first = self::$animalSpec|ies[0];"
+                );
+        performTestSimpleFindDeclaration(-1, animalTest);
+    }
     public void testStaticFieldAccessRef() throws Exception {
         String animalTest = prepareTestFile(
                 "testfiles/animalTest.php",
