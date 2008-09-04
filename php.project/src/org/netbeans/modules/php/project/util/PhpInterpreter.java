@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.project.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;

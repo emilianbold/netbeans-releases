@@ -54,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -64,7 +65,8 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>, SourcesFolderProvider, ChangeListener {
+public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor>,
+        SourcesFolderProvider, ChangeListener {
 
     static final String PROJECT_NAME = "projectName"; // NOI18N
     static final String PROJECT_DIR = "projectDir"; // NOI18N
@@ -186,6 +188,10 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             return null;
         }
         return new File(projectFolder);
+    }
+
+    public boolean isFinishPanel() {
+        return isRunConfigurationStepValid();
     }
 
     public boolean isValid() {
@@ -407,10 +413,16 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             }
         }
 
-        // if project folder not used => validate sources as project folder
-        if (!configureProjectPanelVisual.isProjectFolderUsed()
-                && isProjectAlready(sources)) {
-            return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesAlreadyProject");
+        if (configureProjectPanelVisual.isProjectFolderUsed()) {
+            // project folder used => validate relativity of sources and project folder
+            if (PropertyUtils.relativizeFile(FileUtil.normalizeFile(getProjectFolderFile()), sources) == null) {
+                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesAndProjectCannotBeRelativized");
+            }
+        } else {
+            // project folder not used => validate sources as project folder
+            if (isProjectAlready(sources)) {
+                return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesAlreadyProject");
+            }
         }
 
         err = validateSourcesAndCopyTarget();
@@ -429,8 +441,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     // #131023
     private String validateSourcesAndCopyTarget() {
-        Boolean isValid = (Boolean) descriptor.getProperty(RunConfigurationPanel.VALID);
-        if (isValid != null && !isValid) {
+        if (!isRunConfigurationStepValid()) {
             // some error there, need to be fixed, so do not compare
             return null;
         }
@@ -444,6 +455,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         File normalized = FileUtil.normalizeFile(new File(copyTarget.getSrcRoot()));
         String cpTarget = normalized.getAbsolutePath();
         return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, cpTarget);
+    }
+
+    private boolean isRunConfigurationStepValid() {
+        Boolean isValid = (Boolean) descriptor.getProperty(RunConfigurationPanel.VALID);
+        if (isValid != null) {
+            return isValid;
+        }
+        return true;
     }
 
     // type - Project | Sources

@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.project.ui.logicalview;
 
-import org.netbeans.modules.php.project.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -46,6 +45,8 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.php.project.PhpActionProvider;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
