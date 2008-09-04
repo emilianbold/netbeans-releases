@@ -47,9 +47,8 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import java.awt.Component;
 import java.io.File;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -62,7 +61,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
     private ServerWizardIterator wizardIterator;
     private AddDomainLocationVisualPanel component;
     private WizardDescriptor wizard;
-    private transient Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private transient List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     private String gfRoot;
 
     /**
@@ -151,29 +150,17 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
         fireChangeEvent(ev);
     }
 
-    /**
-     * 
-     * @param l 
-     */
     public void addChangeListener(ChangeListener l) {
         listeners.add(l);
     }
 
-    /**
-     * 
-     * @param l 
-     */
     public void removeChangeListener(ChangeListener l) {
         listeners.remove(l);
     }
 
     private void fireChangeEvent(ChangeEvent ev) {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+        for(ChangeListener listener: listeners) {
+            listener.stateChanged(ev);
         }
     }
 
@@ -216,4 +203,5 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      */
     public void storeSettings(Object settings) {
     }
+    
 }

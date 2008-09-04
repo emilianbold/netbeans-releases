@@ -46,13 +46,10 @@ import org.openide.util.HelpCtx;
 import java.awt.Component;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,7 +76,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
     private ServerWizardIterator wizardIterator;
     private AddServerLocationVisualPanel component;
     private WizardDescriptor wizard;
-    private transient Set <ChangeListener>listeners = new HashSet<ChangeListener>(1);
+    private transient List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     
     /**
      * 
@@ -99,12 +96,8 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
     }
     
     private void fireChangeEvent(ChangeEvent ev) {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+        for(ChangeListener listener: listeners) {
+            listener.stateChanged(ev);
         }
     }
     
@@ -232,24 +225,12 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         return dir != null ? dir.canRead() && dir.canWrite() : false;
     }
     
-    /**
-     * 
-     * @param l 
-     */
     public void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        listeners.remove(l);
     }
     
-    /**
-     * 
-     * @param l 
-     */
     public void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        listeners.add(l);
     }
     
     /**
