@@ -15,17 +15,18 @@
         
         <h2>Creating the Hibernate Configuration File</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>To use Hibernate your application must have the <tt>hibernate.cfg.xml</tt> 
-         configuration file. 
-         The <tt>hibernate.cfg.xml</tt> configuration file contains the database connection details 
-         enabling the application to connect to a database.
+        <p>To use Hibernate your application must have a Hibernate configuration file 
+         that contains the database connection details enabling the application to connect to a database.
          The file also contains information about the location of Hibernate mapping files.
-         Edit this file if you need to change the database connection details.</p>
+         You can edit this file if you need to change the database connection details.
+         You can have multiple Hibernate configuration files, but the default name for the 
+         configuration file used by Hibernate is <tt>hibernate.cfg.xml</tt>.</p>
 
-         <p>The Hibernate configuration file is created automatically if you create a web application and 
-         you select the Hibernate framework in the New Project wizard.</p>
+         <p>A Hibernate configuration file is created automatically if you create a web application and 
+         you select the Hibernate framework in the New Project wizard.
+         </p>
          
-         <p>You can also create this file using the New File wizard
+         <p>You can also create a Hibernate configuration file using the New File wizard
          if you want to use Hibernate in your application, for example in
          a Java SE application.</p>
            
@@ -33,7 +34,7 @@
             <ol>
                <li>Open the New File wizard.</li>
                <li>Select Hibernate from the Categories list and Hibernate Configuration File from the File Types list. Click Next.</li>
-               <li>Type hibernate.cfg for the class name and specify a location. Click Next.</li>
+               <li>Type hibernate.cfg for the name and specify a location. Click Next.</li>
                <li>Select a Database Connection from the drop down list. Click Finish.</li>
             </ol>
         
