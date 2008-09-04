@@ -48,6 +48,10 @@
 #include <commdlg.h>
 #include <errno.h>
 #include <winuser.h>
+#include <set>
+#include <string>
+
+using namespace std;
 
 #define PROG_FULLNAME "Error"
 #define IDE_MAIN_CLASS "org/netbeans/Main"
@@ -84,7 +88,7 @@ static int numOptions, maxOptions;
 static char *progArgv[1024];
 static int progArgc = 0;
 
-static void runClass(char *mainclass, bool deleteAUClustersFile);
+static void runClass(char *mainclass, bool deleteAUClustersFile, DWORD *retCode);
 
 static void fatal(const char *str);
 static char *findJavaExeInDirectory(char *dir);
@@ -95,7 +99,7 @@ static void addLauncherJarsToClassPath();
 
 static void addToClassPath(const char *pathprefix, const char *path);
 static void addToClassPathIfExists(const char *pathprefix, const char *path);
-static void addAllFilesToClassPath(const char *dir, const char *pattern);
+static void addAllFilesToClassPath(const char *dir, const char *subdir, const char *pattern);
 
 static void parseArgs(int argc, char *argv[]);
 static void addOption(char *str);
@@ -177,6 +181,7 @@ int main(int argc, char *argv[]) {
     
     parseArgs(argc - 1, argv + 1); // skip progname
 
+    DWORD retCode = 0;
     if (!runnormal && !runupdater) {
         char **newargv = (char**) malloc((argc+8) * sizeof (char*));
         int i;
@@ -218,7 +223,7 @@ int main(int argc, char *argv[]) {
         // run IDE
 
         newargv[1] = RUN_NORMAL;
-        _spawnv(_P_WAIT, exepath, newargv);
+        retCode = _spawnv(_P_WAIT, exepath, newargv);
 
         // check for patches again (for updater first)
         checkForNewUpdater(plathome);
@@ -233,18 +238,17 @@ int main(int argc, char *argv[]) {
         argc -= 2;
         argv += 2;
         if (bootclass != NULL) {
-            runClass(bootclass, TRUE);
+            runClass(bootclass, TRUE, &retCode);
         }
         else {
-            runClass(IDE_MAIN_CLASS, TRUE);
+            runClass(IDE_MAIN_CLASS, TRUE, &retCode);
         }
     } else if (runupdater) {
         argc -= 2;
         argv += 2;
-        runClass(UPDATER_MAIN_CLASS, FALSE);
+        runClass(UPDATER_MAIN_CLASS, FALSE, &retCode);
     }
-
-    return 0;
+    return retCode;
 }
 
 bool runAutoUpdaterOnClusters(bool firstStart) {
@@ -314,7 +318,7 @@ bool runAutoUpdater(bool firstStart, const char * root) {
     return false;
 }
 
-void runClass(char *mainclass, bool deleteAUClustersFile) {
+void runClass(char *mainclass, bool deleteAUClustersFile, DWORD *retCode) {
     char buf[10240];
 
 #ifdef DEBUG
@@ -353,7 +357,7 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
 
     addLauncherJarsToClassPath();
     addJdkJarsToClassPath(jdkhome);
-
+    
     char *proxy = 0, *nonProxyHosts = 0;
     char *socksProxy = 0;
     if (0 == findHttpProxyFromEnv(&proxy, &nonProxyHosts)) {
@@ -440,8 +444,7 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
 #endif
     //_spawnv(_P_WAIT, javapath, args);
     double start = getPreciseTime();
-    DWORD retCode = 0;
-    if (!createProcessNoVirt(javapath, args, &retCode) && retCode == 1 && (getPreciseTime() - start < 2))
+    if (!createProcessNoVirt(javapath, args, retCode) && *retCode == 1 && (getPreciseTime() - start < 2))
     {
         // workaround for 64-bit java
         int i = 0;
@@ -464,7 +467,7 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
         if (optionClient)
         {
             printf("Rerunnig without \"-client\" option...\n");
-            createProcessNoVirt(javapath, args);
+            createProcessNoVirt(javapath, args, retCode);
         }
     }
 }
@@ -730,18 +733,14 @@ void addJdkJarsToClassPath(const char *jdkhome)
 
 void addJarsToClassPathFrom(const char *dir)
 {
-    char buf[1024];
-    strcat(strcpy(buf, dir), "\\lib\\patches");
-    addAllFilesToClassPath(buf, "*.jar");
-    addAllFilesToClassPath(buf, "*.zip");
+    addAllFilesToClassPath(dir, "lib\\patches", "*.jar");
+    addAllFilesToClassPath(dir, "lib\\patches", "*.zip");
 
-    strcat(strcpy(buf, dir), "\\lib");
-    addAllFilesToClassPath(buf, "*.jar");
-    addAllFilesToClassPath(buf, "*.zip");
+    addAllFilesToClassPath(dir, "lib", "*.jar");
+    addAllFilesToClassPath(dir, "lib", "*.zip");
 
-    strcat(strcpy(buf, dir), "\\lib\\locale");
-    addAllFilesToClassPath(buf, "*.jar");
-    addAllFilesToClassPath(buf, "*.zip");    
+    addAllFilesToClassPath(dir, "lib\\locale", "*.jar");
+    addAllFilesToClassPath(dir, "lib\\locale", "*.zip");    
 }
 
 void addLauncherJarsToClassPath()
@@ -749,7 +748,6 @@ void addLauncherJarsToClassPath()
     addJarsToClassPathFrom(userdir);
     addJarsToClassPathFrom(plathome);
 
-    char buf[1024];
     if (runupdater) {
         char userUpdater[MAX_PATH] = "";
         _snprintf(userUpdater, MAX_PATH, "%s\\modules\\ext\\updater.jar", userdir);
@@ -757,25 +755,28 @@ void addLauncherJarsToClassPath()
         if (fileExists(userUpdater))
             baseUpdaterPath = userdir;
         addToClassPath(baseUpdaterPath, "\\modules\\ext\\updater.jar");
-        strcat(strcpy(buf, baseUpdaterPath), "\\modules\\ext\\locale");
-        addAllFilesToClassPath(buf, "updater_*.jar");
+        addAllFilesToClassPath(baseUpdaterPath, "\\modules\\ext\\locale", "updater_*.jar");
     }
 }
 
-void addAllFilesToClassPath(const char *dir,
-                            const char *pattern) {
-    char buf[1024];
+set<string> addedToCP;
+
+void addAllFilesToClassPath(const char *dir, const char *subdir, const char *pattern) {
+    char path[1024];
+    char pathPattern[1024];
     struct _finddata_t fileinfo;
     long hFile;
+    snprintf(path, 1024, "%s\\%s", dir, subdir);
+    snprintf(pathPattern, 1024, "%s\\%s", path, pattern);
 
-    strcat(strcat(strcpy(buf, dir), "\\"), pattern);
-  
-    if ((hFile = _findfirst(buf, &fileinfo)) != -1L) {
-        addToClassPath(dir, fileinfo.name);
-
-        while (0 == _findnext(hFile, &fileinfo))
-            addToClassPath(dir, fileinfo.name);
-    
+    if ((hFile = _findfirst(pathPattern, &fileinfo)) != -1L) {
+        do {
+            string name = subdir;
+            name += fileinfo.name;
+            if (addedToCP.insert(name).second) {
+                addToClassPath(path, fileinfo.name);
+            }
+        } while (0 == _findnext(hFile, &fileinfo));
         _findclose(hFile);
     }
 }
