@@ -202,7 +202,7 @@ public class XmlFoldManager implements FoldManager {
                     fht.commit();
                 }
             } finally {
-                printFoldHierarchy(foldHierarchy.getRootFold(),"");
+                //printFoldHierarchy(foldHierarchy.getRootFold(),"");
                 foldHierarchy.unlock();
             }
         } finally {
