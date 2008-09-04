@@ -136,7 +136,7 @@ public class GspModel {
             TokenHierarchy<Document> tokenHierarchy,            
             TokenSequence<GspTokenId> tokenSequence) {
         StringBuilder buffer = outputBuffer;
-        buffer.append("def _buf =''\n"); // NOI18N
+        buffer.append("def _buf ='';"); // NOI18N
         codeBlocks.add(new CodeBlockData(0, 0, 0, buffer.length()));
 
         boolean skipNewline = false;
@@ -148,7 +148,8 @@ public class GspModel {
                 int sourceEnd = sourceStart + token.length();
                 int generatedStart = buffer.length();
 
-                String text = token.text().toString();
+                CharSequence charSequence = token.text();
+                String text = charSequence == null ? "" : charSequence.toString();
 
                 // If there is leading whitespace in this token followed by a newline,
                 // emit it directly first, then insert my buffer append. Otherwise,
@@ -177,7 +178,7 @@ public class GspModel {
                 }
                 text = text.replace("\"", "\\\"");
                 buffer.append(text);
-                buffer.append("\"\"\"\n"); // NOI18N
+                buffer.append("\"\"\";"); // NOI18N
                 int generatedEnd = buffer.length();
 
                 CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart, generatedEnd);
@@ -191,12 +192,8 @@ public class GspModel {
 
                 String text = token.text().toString();
                 skipNewline = false;
-                if (text.endsWith("-")) { // NOI18N
-                    text = text.substring(0, text.length()-1);
-                    skipNewline = true;
-                }
-
                 buffer.append(text);
+                buffer.append(';');
 
                 int generatedEnd = buffer.length();
 
@@ -212,11 +209,8 @@ public class GspModel {
 
                 String text = token.text().toString();
                 skipNewline = false;
-                if (text.endsWith("-")) { // NOI18N
-                    text = text.substring(0, text.length()-1);
-                    skipNewline = true;
-                }
                 buffer.append(text);
+                buffer.append(';');
                 int generatedEnd = buffer.length();
 
                 CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart, generatedEnd);

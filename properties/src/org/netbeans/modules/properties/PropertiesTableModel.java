@@ -91,6 +91,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     }     
 
     /** Gets the class for a model. Overrides column class. */
+    @Override
     public Class getColumnClass(int columnIndex) {
         return StringPair.class;
     }
@@ -152,6 +153,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     /** Gets name for column. Overrides superclass method.
      * @param column model index of column
      * @return name for column */
+    @Override
     public String getColumnName(int column) {
         String leading;
         
@@ -175,6 +177,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     }
 
     /** Sets the value at rowIndex and columnIndex. Overrides superclass method. */
+    @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         // If values equals -> no change was made -> return immediatelly.
         if (aValue.equals(getValueAt(rowIndex, columnIndex))) {
@@ -249,6 +252,7 @@ public class PropertiesTableModel extends AbstractTableModel {
 
     /** Overrides superclass method. Overrides superclass method.
      * @return true for all cells */
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         if (columnIndex == 0) {
             return !structure.isReadOnly();
@@ -281,6 +285,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     }
 
     /** Overrides superclass method. */
+    @Override
     public String toString() {
         StringBuffer result = new StringBuffer();
         result.append("------------------------------ TABLE MODEL DUMP -----------------------\n"); // NOI18N
@@ -489,6 +494,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         }
 
         /** Overrides superclass method. */
+        @Override
         public boolean equals(Object obj) {
             if(obj == null || !(obj instanceof StringPair))
                 return false;
@@ -516,8 +522,17 @@ public class PropertiesTableModel extends AbstractTableModel {
             
             return str1.equals(str2);
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 19 * hash + (comment != null ? comment.hashCode() : 0);
+            hash = 19 * hash + (value != null ? value.hashCode() : 0);
+            return hash;
+        }
         
         /** Overrides superclass method. */
+        @Override
         public String toString() {
             return value;
         }

@@ -119,12 +119,28 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_static_method->^", false);
     }
     
+    public void testTypesInPHPDOC1() throws Exception {
+        checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @var TypesinPHPDo^", false);
+    }
+    
+    public void testTypesInPHPDOC2() throws Exception {
+        checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @return TypesinPHPD^", false);
+    }
+    
+    public void testTypesInPHPDOC3() throws Exception {
+        checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @return TypesinPHPDoc des^", false);
+    }
+    
     public void testPhpContext2() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
 
     public void testHTML() throws Exception {
         checkCompletion("testfiles/completion/lib/nowdoc02.php", "<title>^</title>", false);
+    }
+    
+    public void test145692() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue145692.php", "echo $test145692Instance->tst->t^", false);
     }
     
     public void test145206_1() throws Exception {
@@ -145,9 +161,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
                 "echo TestIssue145206 :: createStatic()->create() ->create() -> c^", false);
     }
 
+    /* TEMPORARILY DISABLED
     public void test136744_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test1^", false);
-    }
+    }*/
 
     public void test136744_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test2^", false);

@@ -542,7 +542,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 autoCompleteClassMembers(proposals, request, true);
                 break;
             case PHPDOC:
-                PHPDOCCodeCompletion.complete(proposals, request);
+                if (PHPDOCCodeCompletion.isTypeCtx(request)){
+                    autoCompleteClassNames(proposals, request);
+                    autoCompleteInterfaceNames(proposals, request);
+                } else {
+                    PHPDOCCodeCompletion.complete(proposals, request);
+                }
                 break;
             case CLASS_CONTEXT_KEYWORDS:
                 autoCompleteKeywords(proposals, request, CLASS_CONTEXT_KEYWORD_PROPOSAL);
@@ -779,6 +784,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     methodName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
 
                 type = func.getReturnType();
+            }
+        } else {
+            String fieldName = tokenSequence.token().text().toString();
+
+            for (IndexedConstant field : request.index.getAllProperties(request.result, preceedingType,
+                    fieldName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
+
+                type = field.getTypeName();
             }
         }
 

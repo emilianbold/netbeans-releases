@@ -192,7 +192,7 @@ final class XMLMapAttr implements Map {
         Object retVal = null;
         if (attr == null && origAttrName.startsWith("class:")) { // NOI18N
             attr = (Attr) map.get(origAttrName.substring(6));
-            retVal = attr.getType(params);
+            retVal = attr != null ? attr.getType(params) : null;
         } else {
             try {
                 retVal = (attr == null) ? attr : attr.get(params);

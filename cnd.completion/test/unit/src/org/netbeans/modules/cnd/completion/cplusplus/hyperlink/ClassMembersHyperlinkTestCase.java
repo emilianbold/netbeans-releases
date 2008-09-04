@@ -50,6 +50,30 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ146030_5() throws Exception {
+        // IZ#146030: set of problems for declarations in Loki
+        // usecase 5)
+        performTest("useenumerators.cc", 55, 20, "useenumerators.cc", 52, 9);
+        performTest("useenumerators.cc", 56, 20, "useenumerators.cc", 52, 9);
+    }
+    
+    public void testIZ138902() throws Exception {
+        // IZ#138902: No completion and hyperl ink  to enumerator in structure init
+        performTest("useenumerators.cc", 48, 35, "useenumerators.cc", 43, 19);
+    }
+    
+    public void testIZ145828() throws Exception {
+        // IZ#145828: & breaks completion in some expressions
+        performTest("main.cc", 91, 25, "main.cc", 83, 5);
+        performTest("main.cc", 92, 16, "main.cc", 84, 5);
+        performTest("main.cc", 93, 24, "main.cc", 85, 5);
+    }
+    
+    public void testIZ144880() throws Exception {
+        // IZ#144880: enumerators in template arguments are not resolved
+        performTest("useenumerators.cc", 33, 12, "useenumerators.cc", 32, 12);
+        performTest("useenumerators.cc", 38, 12, "useenumerators.cc", 37, 12);
+    }
     public void testIZ145617() throws Exception {
         // IZ#145617: IDE highlights code with 'sizeof' in array as wrong
         performTest("main.cc", 79, 70, "main.cc", 59, 5);
@@ -66,6 +90,7 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ145822() throws Exception {
         // IZ#145230:unresolved members of typedefed class
         performTest("useenumerators.cc", 26, 20, "useenumerators.cc", 26, 5);
+        performTest("useenumerators.cc", 40, 10, "useenumerators.cc", 26, 5);
     }
 
     public void testIZ144731() throws Exception {

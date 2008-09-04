@@ -100,7 +100,11 @@ public class BasePropertiesPanel extends javax.swing.JPanel {
         }
         txtPort.setText(port);
         
-        txtPassword.setText(server.getPassword());        
+        if (server.isSavePassword())
+        {
+            txtPassword.setText(server.getPassword());        
+        }
+        
         chkSavePassword.setSelected(server.isSavePassword());
     }
 

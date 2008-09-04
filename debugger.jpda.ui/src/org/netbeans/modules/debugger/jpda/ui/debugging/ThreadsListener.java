@@ -104,6 +104,7 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             InfoPanel infoPanel = debuggingView.getInfoPanel();
             infoPanel.setShowDeadlock(false);
             infoPanel.setShowThreadLocks(null, null);
+            infoPanel.setShowStepBrkp(null, null, null);
         }
         if (deb != null) {
             InfoPanel infoPanel = debuggingView.getInfoPanel();
@@ -115,6 +116,7 @@ public class ThreadsListener extends DebuggerManagerAdapter {
                     infoPanel.setShowDeadlock(true);
                 }
                 infoPanel.setShowThreadLocks(listener.lockedThread, listener.lockerThreads);
+                infoPanel.setShowStepBrkp(listener.debugger, listener.stepBrkpThread, listener.stepBrkpBreakpoint);
             }
             infoPanel.recomputeMenuItems(getHits());
         }
@@ -229,6 +231,8 @@ public class ThreadsListener extends DebuggerManagerAdapter {
         Set<JPDAThread> threads = new HashSet<JPDAThread>();
         List<JPDAThread> lockerThreads;
         JPDAThread lockedThread;
+        JPDAThread stepBrkpThread;
+        JPDABreakpoint stepBrkpBreakpoint;
 
         DebuggerListener(JPDADebugger debugger) {
             this.debugger = debugger;
@@ -309,6 +313,8 @@ public class ThreadsListener extends DebuggerManagerAdapter {
                         currLockerThreads = null;
                     }
                     setShowThreadLocks(thread, currLockerThreads);
+                } else if ("stepSuspendedByBreakpoint".equals(propName)) {
+                    setShowStepBrkp(thread, (JPDABreakpoint) evt.getNewValue());
                 }
             } else if (source instanceof DeadlockDetector) {
                 if (DeadlockDetector.PROP_DEADLOCK.equals(propName)) {
@@ -360,6 +366,14 @@ public class ThreadsListener extends DebuggerManagerAdapter {
             }
         }
         
+        private void setShowStepBrkp(JPDAThread thread, JPDABreakpoint breakpoint) {
+            stepBrkpThread = thread;
+            stepBrkpBreakpoint = breakpoint;
+            if (debugger == currentDebugger && debuggingView != null) {
+                debuggingView.getInfoPanel().setShowStepBrkp(debugger, thread, breakpoint);
+            }
+        }
+
     }
 
     static class BreakpointHits {

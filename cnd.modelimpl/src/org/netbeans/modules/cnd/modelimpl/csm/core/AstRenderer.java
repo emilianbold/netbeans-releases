@@ -302,6 +302,9 @@ public class AstRenderer {
 	
 	// AST structure is different for int f1(A) and int f2(*A)
 	if( child != null && child.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
+        // we know it's variable initialization => no need to look for variable
+        // TODO: why we need to go deeper after * or & ? I'd prefer to return 'true'
+        if (true) return true;
 	    while( child != null && child.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
 		child = child.getNextSibling();
 	    }

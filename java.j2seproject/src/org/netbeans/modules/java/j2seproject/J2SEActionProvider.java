@@ -43,6 +43,8 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +53,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,7 +66,6 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.Elements;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -98,7 +98,6 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
@@ -114,7 +113,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -200,6 +198,8 @@ class J2SEActionProvider implements ActionProvider {
     // is different from null it will be returned instead.
     String unitTestingSupport_fixClasses;
     
+    private volatile Boolean allowsFileTracking;
+    
     public J2SEActionProvider(J2SEProject project, UpdateHelper updateHelper) {
 
         commands = new HashMap<String,String[]>();
@@ -228,6 +228,34 @@ class J2SEActionProvider implements ActionProvider {
         this.updateHelper = updateHelper;
         this.project = project;
         this.evaluator = project.evaluator();
+        this.evaluator.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(final PropertyChangeEvent evt) {
+                synchronized (J2SEActionProvider.class) {
+                    final String propName = evt.getPropertyName();
+                    if (propName == null || J2SEProjectProperties.TRACK_FILE_CHANGES.equals(propName)) {
+                        allowsFileTracking = null;
+                        dirty = null;
+                    }
+                }
+            }
+        });
+    }
+    
+    
+    private boolean allowsFileChangesTracking () {
+        //allowsFileTracking is volatile primitive, fine to do double checking        
+        synchronized (this) {
+            if (allowsFileTracking != null) {
+                return allowsFileTracking.booleanValue();
+            }
+        }
+        final String val = evaluator.getProperty(J2SEProjectProperties.TRACK_FILE_CHANGES);                    
+        synchronized (this) {
+            if (allowsFileTracking == null) {
+                allowsFileTracking = "true".equals(val) ? Boolean.TRUE : Boolean.FALSE;  //NOI18N
+            }            
+            return allowsFileTracking.booleanValue();
+        }
     }
 
     private final FileChangeListener modificationListener = new FileChangeAdapter() {
@@ -253,7 +281,9 @@ class J2SEActionProvider implements ActionProvider {
         //Listener has to be started when the project's lookup is initialized
         try {
             FileSystem fs = project.getProjectDirectory().getFileSystem();
-            // XXX would be more efficient to only listen while DO_DEPEND=false (though this is the default)
+            // XXX would be more efficient to only listen while TRACK_FILE_CHANGES is set,
+            // but it needs adding and removing of listeners depending on PropertyEvaluator events,
+            // the file event handling is cheap when TRACK_FILE_CHANGES is disabled.
             fs.addFileChangeListener(FileUtil.weakFileChangeListener(modificationListener, fs));
         } catch (FileStateInvalidException x) {
             Exceptions.printStackTrace(x);
@@ -261,6 +291,9 @@ class J2SEActionProvider implements ActionProvider {
     }
 
     private void modification(FileObject f) {
+        if (!allowsFileChangesTracking()) {
+            return;
+        }
         final Iterable <? extends FileObject> roots = getRoots();
         assert roots != null;
         for (FileObject root : roots) {
@@ -703,8 +736,10 @@ class J2SEActionProvider implements ActionProvider {
         File buildClassesDir = project.getAntProjectHelper().resolveFile(buildClassesDirValue);
         synchronized (this) {
             if (dirty == null) {
-                // #119777: the first time, build everything.
-                dirty = new TreeSet<String>();
+                if (allowsFileChangesTracking()) {
+                    // #119777: the first time, build everything.                
+                    dirty = new TreeSet<String>();                    
+                }
                 return;
             }
             for (DataObject d : DataObject.getRegistry().getModified()) {

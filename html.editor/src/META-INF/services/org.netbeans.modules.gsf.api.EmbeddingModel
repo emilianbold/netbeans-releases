@@ -1,2 +1,3 @@
 org.netbeans.modules.html.editor.gsf.embedding.HtmlEmbeddingModel
+org.netbeans.modules.html.editor.gsf.embedding.CssTemplatedEmbeddingModel
 org.netbeans.modules.html.editor.gsf.embedding.CssEmbeddingModel

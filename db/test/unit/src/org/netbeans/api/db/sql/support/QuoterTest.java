@@ -158,11 +158,12 @@ public class QuoterTest extends DDLTestBase {
     }
 
     public void testUnquote() {
+        String quoteString = quoter.getQuoteString();
         assertEquals("", quoter.unquote(""));
-        assertEquals("", quoter.unquote("\"\""));
+        assertEquals("", quoter.unquote(quoteString + quoteString));
         assertEquals("id", quoter.unquote("id"));
-        assertEquals("id", quoter.unquote("\"id"));
-        assertEquals("id", quoter.unquote("id\""));
-        assertEquals("id", quoter.unquote("\"id"));
+        assertEquals("id", quoter.unquote(quoteString + "id"));
+        assertEquals("id", quoter.unquote("id" + quoteString));
+        assertEquals("id", quoter.unquote(quoteString + "id" + quoteString));
     }
 }

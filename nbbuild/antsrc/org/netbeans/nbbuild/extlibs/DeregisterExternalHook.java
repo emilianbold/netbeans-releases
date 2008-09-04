@@ -91,10 +91,10 @@ public class DeregisterExternalHook extends Task {
                 }
                 String config = baos.toString();
                 String newConfig = config.
-                        replaceAll("(?m)^external *=.+\n", "").
-                        replaceAll("(?m)^\\*/external/\\*\\.\\{zip,jar,gz,bz2,gem,dll\\} = (up|down)load:.+\n", "").
-                        replace("# To preauthenticate, use: https://jhacker:secret@hg.netbeans.org/binaries/upload\n", "").
-                        replaceAll("(^|\n)\n*(\\[(extensions|encode|decode)\\]\n+)+(?=\\[|$)", "$1");
+                        replaceAll("(?m)^external *=.+\r?\n", "").
+                        replaceAll("(?m)^\\*/external/\\*\\.\\{zip,jar,gz,bz2,gem,dll\\} = (up|down)load:.+\r?\n", "").
+                        replace("# To preauthenticate, use: https://jhacker:secret@hg.netbeans.org/binaries/upload", "").
+                        replaceAll("(^|\r?\n)(\r?\n)*(\\[(extensions|encode|decode)\\](\r?\n)+)+(?=\\[|$)", "$1");
                 if (!newConfig.equals(config)) {
                     log("Unregistering external hook from " + hgrc);
                     OutputStream os = new FileOutputStream(hgrc);

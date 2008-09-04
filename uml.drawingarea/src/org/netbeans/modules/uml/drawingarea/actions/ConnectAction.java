@@ -217,8 +217,7 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
             return State.CONSUMED;
         }
         else if((event.isControlDown() == true) && 
-                ((event.getKeyChar() == KeyEvent.VK_ENTER) ||
-                 (event.getKeyChar() == '\r')))
+                (event.getKeyCode() == KeyEvent.VK_ENTER))
         {
             if (widget.getScene() instanceof DesignerScene)
             {

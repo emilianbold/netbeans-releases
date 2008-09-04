@@ -80,6 +80,7 @@ import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel.ColumnData;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityClass;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityMember;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.EntityRelation.CollectionType;
@@ -96,7 +97,6 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -924,55 +924,67 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 if (role.isCascade()) {
                     annArguments.add(genUtils.createAnnotationArgument("cascade", "javax.persistence.CascadeType", "ALL")); // NOI18N
                 }
-                if (role.equals(role.getParent().getRoleB())) {
+                if (role.equals(role.getParent().getRoleB())) { // Role B
                     annArguments.add(genUtils.createAnnotationArgument("mappedBy", role.getParent().getRoleA().getFieldName())); // NOI18N
-                } else {
-                    if (role.isMany() && role.isToMany()) {
+                } else {  // Role A
+                    if (role.isMany() && role.isToMany()) { // ManyToMany
                         List<ExpressionTree> joinTableAnnArguments = new ArrayList<ExpressionTree>();
                         joinTableAnnArguments.add(genUtils.createAnnotationArgument("name", (String) dbMappings.getJoinTableMapping().get(role.getFieldName()))); //NOI18N
 
                         CMPMappingModel.JoinTableColumnMapping joinColumnMap = dbMappings.getJoinTableColumnMppings().get(role.getFieldName());
 
                         List<AnnotationTree> joinCols = new ArrayList<AnnotationTree>();
-                        String[] colNames = joinColumnMap.getColumns();
-                        String[] refColNames = joinColumnMap.getReferencedColumns();
-                        for(int colIndex = 0; colIndex < colNames.length; colIndex++) {
+                        ColumnData[] columns = joinColumnMap.getColumns();
+                        ColumnData[] refColumns = joinColumnMap.getReferencedColumns();
+                        for(int colIndex = 0; colIndex < columns.length; colIndex++) {
                             List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
-                            attrs.add(genUtils.createAnnotationArgument("name", colNames[colIndex])); //NOI18N
-                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", refColNames[colIndex])); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("name", columns[colIndex].getColumnName())); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", refColumns[colIndex].getColumnName())); //NOI18N
+                            if(regenTablesAttrs && !columns[colIndex].isNullable()) {
+                                attrs.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
+                            }
                             joinCols.add(genUtils.createAnnotation("javax.persistence.JoinColumn", attrs)); //NOI18N
                         }
                         joinTableAnnArguments.add(genUtils.createAnnotationArgument("joinColumns", joinCols)); // NOI18N
 
                         List<AnnotationTree> inverseCols = new ArrayList<AnnotationTree>();
-                        String[] invColNames = joinColumnMap.getInverseColumns();
-                        String[] refInvColNames = joinColumnMap.getReferencedInverseColumns();
-                        for(int colIndex = 0; colIndex < invColNames.length; colIndex++) {
+                        ColumnData[] invColumns = joinColumnMap.getInverseColumns();
+                        ColumnData[] refInvColumns = joinColumnMap.getReferencedInverseColumns();
+                        for(int colIndex = 0; colIndex < invColumns.length; colIndex++) {
                             List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
-                            attrs.add(genUtils.createAnnotationArgument("name", invColNames[colIndex])); //NOI18N
-                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", refInvColNames[colIndex])); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("name", invColumns[colIndex].getColumnName())); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", refInvColumns[colIndex].getColumnName())); //NOI18N
+                            if(regenTablesAttrs && !invColumns[colIndex].isNullable()) {
+                                attrs.add(genUtils.createAnnotationArgument("nullable", false)); //NOI18N
+                            }
                             inverseCols.add(genUtils.createAnnotation("javax.persistence.JoinColumn", attrs)); // NOI18N
                         }
                         joinTableAnnArguments.add(genUtils.createAnnotationArgument("inverseJoinColumns", inverseCols)); // NOI18N
 
                         annotations.add(genUtils.createAnnotation("javax.persistence.JoinTable", joinTableAnnArguments)); // NOI18N
-                    } else {
-                        String[] colNames = (String[]) dbMappings.getCmrFieldMapping().get(role.getFieldName());
+                    } else { // ManyToOne, OneToMany, OneToOne
+                        ColumnData[] columns = (ColumnData[]) dbMappings.getCmrFieldMapping().get(role.getFieldName());
                         CMPMappingModel relatedMappings = beanMap.get(role.getParent().getRoleB().getEntityName()).getCMPMapping();
-                        String[] invColNames = (String[]) relatedMappings.getCmrFieldMapping().get(role.getParent().getRoleB().getFieldName());
-                        if (colNames.length == 1) {
+                        ColumnData[] invColumns = (ColumnData[]) relatedMappings.getCmrFieldMapping().get(role.getParent().getRoleB().getFieldName());
+                        if (columns.length == 1) {
                             List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
-                            attrs.add(genUtils.createAnnotationArgument("name", colNames[0])); //NOI18N
-                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", invColNames[0])); //NOI18N
-                            makeReadOnlyIfNecessary(pkColumnNames, colNames[0], attrs);
+                            attrs.add(genUtils.createAnnotationArgument("name", columns[0].getColumnName())); //NOI18N
+                            attrs.add(genUtils.createAnnotationArgument("referencedColumnName", invColumns[0].getColumnName())); //NOI18N
+                            if(regenTablesAttrs && !columns[0].isNullable()) {
+                                attrs.add(genUtils.createAnnotationArgument("nullable", false));
+                            }
+                            makeReadOnlyIfNecessary(pkColumnNames, columns[0].getColumnName(), attrs);
                             annotations.add(genUtils.createAnnotation("javax.persistence.JoinColumn", attrs)); //NOI18N
                         } else {
                             List<AnnotationTree> joinCols = new ArrayList<AnnotationTree>();
-                            for(int colIndex = 0; colIndex < colNames.length; colIndex++) {
+                            for(int colIndex = 0; colIndex < columns.length; colIndex++) {
                                 List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
-                                attrs.add(genUtils.createAnnotationArgument("name", colNames[colIndex])); //NOI18N
-                                attrs.add(genUtils.createAnnotationArgument("referencedColumnName", invColNames[colIndex])); //NOI18N
-                                makeReadOnlyIfNecessary(pkColumnNames, colNames[colIndex], attrs);
+                                attrs.add(genUtils.createAnnotationArgument("name", columns[colIndex].getColumnName())); //NOI18N
+                                attrs.add(genUtils.createAnnotationArgument("referencedColumnName", invColumns[colIndex].getColumnName())); //NOI18N
+                                if(regenTablesAttrs && !columns[colIndex].isNullable()) {
+                                    attrs.add(genUtils.createAnnotationArgument("nullable", false));
+                                }
+                                makeReadOnlyIfNecessary(pkColumnNames, columns[colIndex].getColumnName(), attrs);
                                 joinCols.add(genUtils.createAnnotation("javax.persistence.JoinColumn", attrs)); // NOI18N
                             }
                             ExpressionTree joinColumnsNameAttrValue = genUtils.createAnnotationArgument(null, joinCols);
@@ -1012,6 +1024,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                 properties.add(new Property(Modifier.PRIVATE, annotations, fieldType, memberName));
             }
+            
+            
 
             /**
              * Creates the <code>serialVersionUID</code> field with

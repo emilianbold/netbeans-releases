@@ -44,6 +44,8 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.datatransfer.Transferable;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
 import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade;
@@ -147,6 +149,18 @@ public class UMLClassWidget  extends SwitchableWidget
         operations = null;
         parameterWidget = null;
         
+        for(ElementListWidget widget : operationRedefinedMap.values())
+        {
+            widget.removeFromParent();
+        }
+        operationRedefinedMap.clear();
+        
+        for(ElementListWidget widget : attributeRedefinedMap.values())
+        {
+            widget.removeFromParent();
+        }
+        attributeRedefinedMap.clear();
+        
         //cleanup lookup: remove CollapsibleWidgetManager from lookup
         Collection<? extends CollapsibleWidgetManager> mgrList = getLookup().lookupAll(CollapsibleWidgetManager.class);
         CollapsibleWidgetManager[] mgrArray = new CollapsibleWidgetManager[mgrList.size()];
@@ -168,7 +182,7 @@ public class UMLClassWidget  extends SwitchableWidget
     public void selectOperationAfterCreation(IOperation op) {
         this.operationToSelect=op;
     }
-
+    
     protected Widget initializeContents(IClassifier clazz)
     {
         Widget retVal = classView;

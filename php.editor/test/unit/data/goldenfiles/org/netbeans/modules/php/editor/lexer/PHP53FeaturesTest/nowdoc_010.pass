@@ -38,5 +38,5 @@ token #36 PHP_CURLY_CLOSE }
 token #37 PHP_CONSTANT_ENCAPSED_STRING "
 token #38 PHP_SEMICOLON ;
 token #39 WHITESPACE \n\n
-token #40 PHP_CLOSETAG ?>\n
-token #41 T_INLINE_HTML --EXPECT--\n{$fooledYou}ENDOFNOWDOC{$fooledYou}\nENDOFNOWDOC{$fooledYou}\n{$fooledYou}ENDOFNOWDOC\n{$fooledYou}ENDOFNOWDOC{$fooledYou}\nENDOFNOWDOC{$fooledYou}\n{$fooledYou}ENDOFNOWDOC\n\n
+token #40 PHP_CLOSETAG ?>
+token #41 T_INLINE_HTML \n--EXPECT--\n{$fooledYou}ENDOFNOWDOC{$fooledYou}\nENDOFNOWDOC{$fooledYou}\n{$fooledYou}ENDOFNOWDOC\n{$fooledYou}ENDOFNOWDOC{$fooledYou}\nENDOFNOWDOC{$fooledYou}\n{$fooledYou}ENDOFNOWDOC\n\n

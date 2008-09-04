@@ -66,14 +66,18 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
 
     @Override
     public void setUp() throws Exception {
-        super.setUp();
-
-        if (! isMySQL()) {
-            return;
-        }
-
-        Connection conn = getConnection();
+        String mysqlHost = System.getProperty("mysql.host", "localhost");
+        int mysqlPort = Integer.getInteger("mysql.port", 3306);
+        String mysqlDatabase = System.getProperty("mysql.database", "test");
+        String mysqlUser = System.getProperty("mysql.user", "test");
+        String mysqlPassword = System.getProperty("mysql.password", "test");
+        clearWorkDir();
+        Class.forName("com.mysql.jdbc.Driver");
+        Connection conn = DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort + "/" + mysqlDatabase, mysqlUser, mysqlPassword);
         Statement stmt = conn.createStatement();
+        stmt.executeUpdate("DROP DATABASE test");
+        stmt.executeUpdate("CREATE DATABASE test");
+        stmt.executeUpdate("USE test");
         stmt.executeUpdate("CREATE TABLE foo (" +
                 "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, " +
                 "FOO_NAME VARCHAR(16))");
@@ -83,13 +87,10 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
                 "bar_name  VARCHAR(16), " +
                 "FOREIGN KEY (foo_id) REFERENCES foo(id))");
         metadata = new JDBCMetadata(conn, null);
-        defaultCatalogName = getSchema();
+        defaultCatalogName = mysqlDatabase;
     }
 
     public void testRunReadAction() throws Exception {
-        if (! isMySQL()) {
-            return;
-        }
         Collection<Catalog> catalogs = metadata.getCatalogs();
         Catalog defaultCatalog = metadata.getDefaultCatalog();
         assertEquals(defaultCatalogName, defaultCatalog.getName());
