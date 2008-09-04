@@ -746,6 +746,13 @@ public class IntroduceHintTest extends NbTestCase {
                        "package test; public class Test {public static int test(int y) { y = name(y); return y;} private static int name(int y) { y += 5; return y; } }",
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
     }
+
+    /** Return statement inside anonymous class should not be considered */
+    public void testIntroduceMethodFix132434() throws Exception {
+        performFixTest("package test;import java.awt.event.MouseAdapter;import java.awt.event.MouseEvent;import javax.swing.JPanel;public class Test {public static void main(String[] args) {JPanel p = new JPanel();|p.addMouseListener(new MouseAdapter() {public void mousePressed(MouseEvent e) {if (e.getX() > 100) {return;} else {System.out.println(e.getX());}}});|}}",
+                       "package test;import java.awt.event.MouseAdapter;import java.awt.event.MouseEvent;import javax.swing.JPanel;public class Test {public static void main(String[] args) {JPanel p = new JPanel(); foo(p);} private static void foo(JPanel p) { p.addMouseListener(new MouseAdapter() { public void mousePressed(MouseEvent e) { if (e.getX() > 100) { return; } else { System.out.println(e.getX()); } } }); } }", 
+                       new DialogDisplayerImpl3("foo", EnumSet.of(Modifier.PRIVATE), true));
+    }
     
     public void testIntroduceMethod109663a() throws Exception {
         performErrorMessageTest("package test; public class Test {public static void test(int y) {while (y < 10) {if (y == 0) break; else y++; int u = y;}}}",
