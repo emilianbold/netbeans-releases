@@ -17,6 +17,8 @@ cd  $NB_ALL
 #
 ###################################################################
 
+mkdir -p nbbuild/netbeans
+
 #Build source packages
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=full build-source-config
 ERROR_CODE=$?

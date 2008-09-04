@@ -539,7 +539,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             if (serverList != null) {
                 record = serverList.get(hkey);
             }            
-            boolean devhostValid = serverList == null || (record != null & record.isOnline());            
+            boolean devhostValid = serverList == null || (record != null && record.isOnline());            
             String errorMsg = "";
             if (!devhostValid) {
                 errorMsg = NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey);
@@ -702,7 +702,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             if (serverList != null) {
                 record = serverList.get(hkey);
             }
-            boolean devhostValid = serverList == null || (record != null & record.isOnline());
+            boolean devhostValid = serverList == null || (record != null && record.isOnline());
 
             if (!initialized) {
                 valid = !(csmValid && makeValid && gdbValid && cValid && cppValid && fortranValid && devhostValid);

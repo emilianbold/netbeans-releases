@@ -40,11 +40,9 @@
 package org.netbeans.modules.ant.freeform.ui;
 
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
-
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 

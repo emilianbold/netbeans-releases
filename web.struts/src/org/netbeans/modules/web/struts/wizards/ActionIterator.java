@@ -218,9 +218,12 @@ public class ActionIterator implements TemplateWizard.Iterator {
             }
             action.setAttributeValue("parameter",(String) wizard.getProperty(WizardProperties.ACTION_PARAMETER));       //NOI18N
 
-            if (config != null && config.getActionMappings() == null)
-                config.setActionMappings(new ActionMappings());
-            config.getActionMappings().addAction(action);
+            if (config != null) {
+                if (config.getActionMappings() == null) {
+                    config.setActionMappings(new ActionMappings());
+                }
+                config.getActionMappings().addAction(action);
+            }
             BaseDocument doc = (BaseDocument)configDO.getEditorSupport().getDocument();
             if (doc == null){
                 ((OpenCookie)configDO.getCookie(OpenCookie.class)).open();

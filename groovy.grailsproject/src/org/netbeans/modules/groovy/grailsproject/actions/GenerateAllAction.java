@@ -24,6 +24,7 @@ import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.openide.awt.Actions;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
+import org.netbeans.modules.groovy.support.api.GroovySettings;
 
 public final class GenerateAllAction extends NodeAction {
     
@@ -50,7 +51,7 @@ public final class GenerateAllAction extends NodeAction {
         ExecutionDescriptor descriptor = new ExecutionDescriptor()
                 .controllable(true).frontWindow(true).inputVisible(true).showProgress(true);
         descriptor = descriptor.postExecution(new RefreshProjectRunnable(prj));
-        descriptor = descriptor.optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N
+        descriptor = descriptor.optionsPath(GroovySettings.GROOVY_OPTIONS_CATEGORY);
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();

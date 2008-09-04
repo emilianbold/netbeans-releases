@@ -250,7 +250,7 @@ public class AstRenderer {
             for (int i = 0; i < typedefs.length; i++) {
                 // It could be important to register in project before add as member...
 //                if (!isRenderingLocalContext()) {
-                    file.getProjectImpl().registerDeclaration(typedefs[i]);
+                    file.getProjectImpl(true).registerDeclaration(typedefs[i]);
 //                }
                 if (container != null) {
                     container.addDeclaration(typedefs[i]);
@@ -302,6 +302,9 @@ public class AstRenderer {
 	
 	// AST structure is different for int f1(A) and int f2(*A)
 	if( child != null && child.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
+        // we know it's variable initialization => no need to look for variable
+        // TODO: why we need to go deeper after * or & ? I'd prefer to return 'true'
+        if (true) return true;
 	    while( child != null && child.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
 		child = child.getNextSibling();
 	    }
@@ -656,6 +659,8 @@ public class AstRenderer {
                     String name = "";
 
                     EnumImpl ei = null;
+                    
+                    ClassForwardDeclarationImpl cfdi = null;
 
                     for (AST curr = ast.getFirstChild(); curr != null; curr = curr.getNextSibling()) {
                         switch (curr.getType()) {
@@ -680,6 +685,9 @@ public class AstRenderer {
                                 AST next = curr.getNextSibling();
                                 if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
                                     classifier = next;
+                                    cfdi = new ClassForwardDeclarationImpl(ast, file);
+                                    file.addDeclaration(cfdi);
+                                    cfdi.init(ast, container);
                                 }
                                 break;
                             case CPPTokenTypes.CSM_PTR_OPERATOR:
@@ -700,7 +708,9 @@ public class AstRenderer {
                             case CPPTokenTypes.COMMA:
                             case CPPTokenTypes.SEMICOLON:
                                 TypeImpl typeImpl = null;
-                                if (classifier != null) {
+                                if(cfdi != null) {
+                                    typeImpl = TypeFactory.createType(cfdi, ptrOperator, arrayDepth, ast, file);
+                                } else if (classifier != null) {
                                     typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, container);
                                 } else if (ei != null) {
                                     typeImpl = TypeFactory.createType(ei, ptrOperator, arrayDepth, ast, file);
@@ -1421,7 +1431,7 @@ public class AstRenderer {
     
     public CsmCondition renderCondition(AST ast, CsmScope scope) {
         if( ast != null && ast.getType() == CPPTokenTypes.CSM_CONDITION ) {
-            AST first = ast.getFirstChild();
+            AST first = getFirstChildSkipQualifiers(ast);
             if( first != null ) {
                 int type = first.getType();
                 if( isExpression(type) ) {

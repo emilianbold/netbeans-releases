@@ -381,7 +381,7 @@ public final class UiUtils {
                 try {
                     LogManager.logIndent("... dumping UIManger L&F defaults: ");
                     Hashtable hash = (Hashtable) UIManager.getLookAndFeelDefaults();
-                    Enumeration<Object> keys = hash.keys();
+                    Enumeration keys = hash.keys();
                     while (keys.hasMoreElements()) {
                         Object key = keys.nextElement();
                         LogManager.log("" + key + " = " + hash.get(key));

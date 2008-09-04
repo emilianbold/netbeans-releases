@@ -43,7 +43,10 @@ package org.netbeans.modules.websvc.wsitconf.ui.service;
 
 import java.awt.Color;
 import java.awt.Dialog;
+import java.util.Collection;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.swing.undo.UndoManager;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -82,6 +85,10 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AddressingModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMSequenceBinding;
 import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -110,6 +117,8 @@ public class BindingPanel extends SectionInnerPanel {
 
     private boolean updateServiceUrl = true;
 
+    private SortedSet<ConfigVersion> supportedConfigVersions = new TreeSet<ConfigVersion>();
+
     public BindingPanel(SectionView view, Node node, Project p, Binding binding, UndoManager undoManager, JaxWsModel jaxwsmodel) {
         super(view);
         this.model = binding.getModel();
@@ -118,6 +127,7 @@ public class BindingPanel extends SectionInnerPanel {
         this.undoManager = undoManager;
         this.binding = binding;
         this.jaxwsmodel = jaxwsmodel;
+        
         initComponents();
 
         REGULAR = profileInfoField.getForeground();
@@ -154,11 +164,47 @@ public class BindingPanel extends SectionInnerPanel {
         cfgVersionCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         addrChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
 
+        // detect and fill appropriate config options
+        J2eePlatform platform = Util.getJ2eePlatform(project);
+        WSStack<JaxWs> wsStack = platform == null ? null : JaxWsStackProvider.getJaxWsStack(platform);
         inSync = true;
         for (ConfigVersion cfgVersion : ConfigVersion.values()) {
-            cfgVersionCombo.addItem(cfgVersion);
+            if ((wsStack == null) || (cfgVersion.isSupported(wsStack.getVersion()))) {
+                supportedConfigVersions.add(cfgVersion);
+                cfgVersionCombo.addItem(cfgVersion);
+            }
         }
         inSync = false;
+
+        String CONVERT = NbBundle.getMessage(BindingPanel.class, "LBL_Convert");
+        String LEAVE = NbBundle.getMessage(BindingPanel.class, "LBL_LeaveIntact");
+        String[] OPTIONS = new String[] {CONVERT, LEAVE};
+
+        ConfigVersion configVersion = PolicyModelHelper.getWrittenConfigVersion(binding);
+        if ((configVersion != null) && (!supportedConfigVersions.contains(configVersion))) {
+            NotifyDescriptor dlgDesc = new NotifyDescriptor(
+                NbBundle.getMessage(BindingPanel.class, "TXT_UnsupportedProfileDetected"),
+                new NotifyDescriptor.Confirmation("test").getTitle(),
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                OPTIONS, LEAVE);
+            DialogDisplayer.getDefault().notify(dlgDesc);
+            if (CONVERT.equals(dlgDesc.getValue())) {
+                PolicyModelHelper.setConfigVersion(binding,
+                    (ConfigVersion) supportedConfigVersions.toArray()[supportedConfigVersions.size() - 1],
+                    project);
+            } else if (LEAVE.equals(dlgDesc.getValue())) {
+                cfgVersionCombo.addItem(configVersion);
+                supportedConfigVersions.add(configVersion);
+                enableDisable();
+            } else {
+                this.setVisible(false);
+            }
+        } else if (configVersion == null) {
+            PolicyModelHelper.setConfigVersion(binding,
+                (ConfigVersion) supportedConfigVersions.toArray()[supportedConfigVersions.size() - 1],
+                project);
+        }
 
         addImmediateModifier(cfgVersionCombo);
         addImmediateModifier(mtomChBox);
@@ -212,49 +258,51 @@ public class BindingPanel extends SectionInnerPanel {
     private ConfigVersion getUserExpectedConfigVersion() {
         return (ConfigVersion) cfgVersionCombo.getSelectedItem();
     }
-
+    
     private void sync() {
-        inSync = true;
+        inSync = true; doNotSync = true;
+        try {            
+            ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(binding);
+            cfgVersionCombo.setSelectedItem(configVersion);
 
-        ConfigVersion configVersion = PolicyModelHelper.getConfigVersion(binding);
-        cfgVersionCombo.setSelectedItem(configVersion);
+            boolean addrEnabled = AddressingModelHelper.isAddressingEnabled(binding);
+            setChBox(addrChBox, addrEnabled);
 
-        boolean addrEnabled = AddressingModelHelper.isAddressingEnabled(binding);
-        setChBox(addrChBox, addrEnabled);
+            boolean mtomEnabled = TransportModelHelper.isMtomEnabled(binding);
+            setChBox(mtomChBox, mtomEnabled);
 
-        boolean mtomEnabled = TransportModelHelper.isMtomEnabled(binding);
-        setChBox(mtomChBox, mtomEnabled);
+            boolean fiEnabled = TransportModelHelper.isFIEnabled(binding);
+            setChBox(fiChBox, !fiEnabled);
 
-        boolean fiEnabled = TransportModelHelper.isFIEnabled(binding);
-        setChBox(fiChBox, !fiEnabled);
+            boolean tcpEnabled = TransportModelHelper.isTCPEnabled(binding);
+            setChBox(tcpChBox, tcpEnabled);
 
-        boolean tcpEnabled = TransportModelHelper.isTCPEnabled(binding);
-        setChBox(tcpChBox, tcpEnabled);
+            boolean rmEnabled = RMModelHelper.getInstance(configVersion).isRMEnabled(binding);
+            setChBox(rmChBox, rmEnabled);
+            setChBox(orderedChBox, RMModelHelper.getInstance(configVersion).isOrderedEnabled(binding));
 
-        boolean rmEnabled = RMModelHelper.getInstance(configVersion).isRMEnabled(binding);
-        setChBox(rmChBox, rmEnabled);
-        setChBox(orderedChBox, RMModelHelper.getInstance(configVersion).isOrderedEnabled(binding));
+            boolean stsEnabled = ProprietarySecurityPolicyModelHelper.isSTSEnabled(binding);
+            setChBox(stsChBox, stsEnabled);
 
-        boolean stsEnabled = ProprietarySecurityPolicyModelHelper.isSTSEnabled(binding);
-        setChBox(stsChBox, stsEnabled);
+            fillProfileCombo(stsEnabled);
 
-        fillProfileCombo(stsEnabled);
+            boolean securityEnabled = SecurityPolicyModelHelper.isSecurityEnabled(binding);
+            setChBox(securityChBox, securityEnabled);
+            if (securityEnabled) {
+                String profile = ProfilesModelHelper.getSecurityProfile(binding);
+                setSecurityProfile(profile);
+                boolean defaults = ProfilesModelHelper.isServiceDefaultSetupUsed(profile, binding, project);
+                setChBox(devDefaultsChBox, defaults);
+                oldProfile = profile;
+            } else {
+                setSecurityProfile(ComboConstants.PROF_USERNAME);
+                setChBox(devDefaultsChBox, true);
+            }
 
-        boolean securityEnabled = SecurityPolicyModelHelper.isSecurityEnabled(binding);
-        setChBox(securityChBox, securityEnabled);
-        if (securityEnabled) {
-            String profile = ProfilesModelHelper.getSecurityProfile(binding);
-            setSecurityProfile(profile);
-            boolean defaults = ProfilesModelHelper.isServiceDefaultSetupUsed(profile, binding, project);
-            setChBox(devDefaultsChBox, defaults);
-            oldProfile = profile;
-        } else {
-            setSecurityProfile(ComboConstants.PROF_USERNAME);
-            setChBox(devDefaultsChBox, true);
+            enableDisable();
+        } finally {
+            inSync = false; doNotSync = false;
         }
-
-        enableDisable();
-        inSync = false;
     }
 
     @Override
@@ -455,6 +503,9 @@ public class BindingPanel extends SectionInnerPanel {
 
     private void enableDisable() {
 
+        cfgVersionCombo.setEnabled(cfgVersionCombo.getItemCount() > 1);
+        cfgVersionLabel.setEnabled(cfgVersionCombo.getItemCount() > 1);
+
         boolean relSelected = rmChBox.isSelected();
         orderedChBox.setEnabled(relSelected);
         rmAdvanced.setEnabled(relSelected);
@@ -578,18 +629,25 @@ public class BindingPanel extends SectionInnerPanel {
             profileInfoField.setForeground(RED);
             profileInfoField.setText(NbBundle.getMessage(BindingPanel.class, "TXT_AMSecSelected"));
             addrChBox.setEnabled(false);
+            cfgVersionLabel.setEnabled(false);
+            cfgVersionCombo.setEnabled(false);
         }
     }
-
 
     private boolean isJsr109Supported(){
         J2eePlatform j2eePlatform = Util.getJ2eePlatform(project);
-        if (j2eePlatform != null) {
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
+        if (j2eePlatform != null){
+            Collection<WSStack> wsStacks = (Collection<WSStack>)
+                    j2eePlatform.getLookup().lookupAll(WSStack.class);
+            for (WSStack stack : wsStacks) {
+                if (stack.isFeatureSupported(JaxWs.Feature.JSR109)) {
+                    return true;
+                }
+            }
         }
         return false;
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

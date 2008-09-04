@@ -154,6 +154,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         if (existingSources) {
             // we have sources => try to find index file and open it
             String indexName = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
+            if (indexName == null) {
+                // run configuration panel not shown at all
+                indexName = RunConfigurationPanel.DEFAULT_INDEX_FILE;
+            }
             FileObject indexFile = sourceDir.getFileObject(indexName);
             if (indexFile != null && indexFile.isValid()) {
                 resultSet.add(indexFile);
@@ -166,13 +170,18 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
             FileObject template = null;
             RunAsType runAsType = (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
-            switch (runAsType) {
-                case SCRIPT:
-                    template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Scripting/EmptyPHP"); // NOI18N
-                    break;
-                default:
-                    template = Templates.getTemplate(descriptor);
-                    break;
+            if (runAsType == null) {
+                // run configuration panel not shown at all
+                template = Templates.getTemplate(descriptor);
+            } else {
+                switch (runAsType) {
+                    case SCRIPT:
+                        template = Repository.getDefault().getDefaultFileSystem().findResource("Templates/Scripting/EmptyPHP"); // NOI18N
+                        break;
+                    default:
+                        template = Templates.getTemplate(descriptor);
+                        break;
+                }
             }
             assert template != null : "Template for Index PHP file cannot be null";
             DataObject indexDO = createIndexFile(template, sourceDir);
@@ -271,15 +280,22 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         data.appendChild(nameEl);
         helper.putPrimaryConfigurationData(data, true);
 
-        EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
-        configureSources(helper, properties);
-        configureIndexFile(properties);
-        configureEncoding(properties);
-        configureIncludePath(properties);
-        configureRunConfiguration(properties);
+        configureSources(helper, projectProperties, privateProperties);
+        configureEncoding(projectProperties, privateProperties);
+        configureIncludePath(projectProperties, privateProperties);
 
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
+        if (getRunAsType() != null) {
+            // run configuration panel shown
+            configureCopySources(projectProperties, privateProperties);
+            configureIndexFile(projectProperties, privateProperties);
+            configureRunConfiguration(projectProperties, privateProperties);
+        }
+
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
 
         Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
         ProjectManager.getDefault().saveProject(project);
@@ -292,18 +308,18 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return FileUtil.normalizeFile(new File(localServer.getSrcRoot()));
     }
 
-    private void configureSources(AntProjectHelper helper, EditableProperties properties) {
+    private void configureSources(AntProjectHelper helper, EditableProperties projectProperties, EditableProperties privateProperties) {
         File srcDir = getSources();
         File projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
-        // # 132319
-        if (srcPath == null || srcPath.startsWith("../")) { // NOI18N
-            // relative path, change to absolute
-            srcPath = srcDir.getAbsolutePath();
-        }
-        properties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
-        properties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
-        properties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
+        assert srcPath != null : String.format("Sources must be relativized: [project: %s, sources: %s]", projectDirectory, srcDir);
+        projectProperties.setProperty(PhpProjectProperties.SRC_DIR, srcPath);
+        projectProperties.setProperty(PhpProjectProperties.WEB_ROOT, "."); // NOI18N
+    }
+
+    private void configureCopySources(EditableProperties projectProperties, EditableProperties privateProperties) {
+        privateProperties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(isCopyFiles()));
+        privateProperties.put(PhpProjectProperties.COPY_SRC_TARGET, getCopySrcTarget());
     }
 
     private String getCopySrcTarget() {
@@ -315,31 +331,31 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return copyTargetString;
     }
 
-    private void configureIndexFile(EditableProperties properties) {
+    private void configureIndexFile(EditableProperties projectProperties, EditableProperties privateProperties) {
         String indexFile = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
-        properties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
+        privateProperties.setProperty(PhpProjectProperties.INDEX_FILE, indexFile);
     }
 
-    private void configureEncoding(EditableProperties properties) {
+    private void configureEncoding(EditableProperties projectPoperties, EditableProperties privateProperties) {
         Charset charset = (Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING);
-        properties.setProperty(PhpProjectProperties.SOURCE_ENCODING, charset.name());
+        projectPoperties.setProperty(PhpProjectProperties.SOURCE_ENCODING, charset.name());
         // #136917
         FileEncodingQuery.setDefaultEncoding(charset);
     }
 
-    private void configureIncludePath(EditableProperties properties) {
-        properties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
+    private void configureIncludePath(EditableProperties projectProperties, EditableProperties privateProperties) {
+        projectProperties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
     }
 
-    private void configureRunConfiguration(EditableProperties properties) {
+    private void configureRunConfiguration(EditableProperties projectProperties, EditableProperties privateProperties) {
         PhpProjectProperties.RunAsType runAs = getRunAsType();
-        properties.put(PhpProjectProperties.RUN_AS, runAs.name());
+        privateProperties.put(PhpProjectProperties.RUN_AS, runAs.name());
         switch (runAs) {
             case LOCAL:
-                configureRunAsLocalWeb(properties);
+                configureRunAsLocalWeb(projectProperties, privateProperties);
                 break;
             case REMOTE:
-                configureRunAsRemoteWeb(properties);
+                configureRunAsRemoteWeb(projectProperties, privateProperties);
                 break;
             case SCRIPT:
                 // nothing to store
@@ -354,22 +370,22 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
     }
 
-    private void configureRunAsLocalWeb(EditableProperties properties) {
+    private void configureRunAsLocalWeb(EditableProperties projectProperties, EditableProperties privateProperties) {
         String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
 
-        properties.put(PhpProjectProperties.URL, url);
+        privateProperties.put(PhpProjectProperties.URL, url);
     }
 
-    private void configureRunAsRemoteWeb(EditableProperties properties) {
+    private void configureRunAsRemoteWeb(EditableProperties projectProperties, EditableProperties privateProperties) {
         String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
         RemoteConfiguration remoteConfiguration = (RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION);
         String remoteDirectory = (String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY);
         PhpProjectProperties.UploadFiles uploadFiles = (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD);
 
-        properties.put(PhpProjectProperties.URL, url);
-        properties.put(PhpProjectProperties.REMOTE_CONNECTION, remoteConfiguration.getName());
-        properties.put(PhpProjectProperties.REMOTE_DIRECTORY, remoteDirectory);
-        properties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
+        privateProperties.put(PhpProjectProperties.URL, url);
+        privateProperties.put(PhpProjectProperties.REMOTE_CONNECTION, remoteConfiguration.getName());
+        privateProperties.put(PhpProjectProperties.REMOTE_DIRECTORY, remoteDirectory);
+        privateProperties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
     }
 
     private FileObject createSourceRoot() throws IOException {
@@ -378,6 +394,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     private DataObject createIndexFile(FileObject template, FileObject sourceDir) throws IOException {
         String indexFileName = getIndexFileName(template.getExt());
+        assert indexFileName != null;
 
         DataFolder dataFolder = DataFolder.findFolder(sourceDir);
         DataObject dataTemplate = DataObject.find(template);
@@ -386,6 +403,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     private String getIndexFileName(String plannedExt) {
         String name = (String) descriptor.getProperty(RunConfigurationPanel.INDEX_FILE);
+        if (name == null) {
+            // run configuration panel not shown at all
+            name = RunConfigurationPanel.DEFAULT_INDEX_FILE;
+        }
         String ext = "." + plannedExt; // NOI18N
         if (name.endsWith(ext)) {
             return name.substring(0, name.length() - ext.length());
@@ -393,9 +414,12 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return name;
     }
 
-    private boolean isCopyFiles() {
-        boolean copyFiles = false;
+    private Boolean isCopyFiles() {
         PhpProjectProperties.RunAsType runAs = getRunAsType();
+        if (runAs == null) {
+            return null;
+        }
+        boolean copyFiles = false;
         switch (runAs) {
             case LOCAL:
                 Boolean tmp = (Boolean) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_FILES);
@@ -411,16 +435,19 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     // http://wiki.netbeans.org/UsageLoggingSpecification
-    private void logUsage(FileObject projectDir, FileObject sourceDir, RunAsType runAs, boolean copyFiles) {
+    private void logUsage(FileObject projectDir, FileObject sourceDir, RunAsType runAs, Boolean copyFiles) {
+        assert projectDir != null;
+        assert sourceDir != null;
+
         LogRecord logRecord = new LogRecord(Level.INFO, "USG_PROJECT_CREATE_PHP"); // NOI18N
         logRecord.setLoggerName(PhpProject.USG_LOGGER_NAME);
         logRecord.setResourceBundle(NbBundle.getBundle(NewPhpProjectWizardIterator.class));
         logRecord.setResourceBundleName(NewPhpProjectWizardIterator.class.getPackage().getName() + ".Bundle"); // NOI18N
         logRecord.setParameters(new Object[] {
             FileUtil.isParentOf(projectDir, sourceDir),
-            runAs.name(),
+            runAs != null ? runAs.name() : "", // NOI18N
             "1", // NOI18N
-            copyFiles
+            copyFiles != null ? copyFiles : "" // NOI18N
         });
         Logger.getLogger(PhpProject.USG_LOGGER_NAME).log(logRecord);
     }

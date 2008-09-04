@@ -53,6 +53,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.dtd.*;
@@ -84,7 +85,10 @@ public class HTMLCompletionQuery  {
     private static final String SCRIPT_TAG_NAME = "SCRIPT"; //NOI18N
     private static final String STYLE_TAG_NAME = "STYLE"; //NOI18N
     
+    private static final String XHTML_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Strict//EN";
+    
     private static boolean lowerCase;
+    private static boolean isXHTML = false;
     
     private static final HTMLCompletionQuery DEFAULT = new HTMLCompletionQuery();
     
@@ -120,6 +124,11 @@ public class HTMLCompletionQuery  {
         
         DTD dtd = sup.getDTD();
         if( dtd == null ) return null; // We have no knowledge about the structure!
+        
+        if(XHTML_PUBLIC_ID.equalsIgnoreCase(dtd.getIdentifier())) {
+            //we are completing xhtml document
+            isXHTML = true;
+        }
         
         doc.readLock();
         try {
@@ -172,7 +181,7 @@ public class HTMLCompletionQuery  {
                 for(int i = 0;i < tagName.length(); i++) {
                     char ch = tagName.charAt(i);
                     if(Character.isLetter(ch)) {
-                        lowerCase = !Character.isUpperCase(tagName.charAt(i));
+                        lowerCase = isXHTML || !Character.isUpperCase(tagName.charAt(i));
                         break;
                     }
                 }
@@ -195,8 +204,13 @@ public class HTMLCompletionQuery  {
             int len = 1;
             
             /* Character reference finder */
-            if( (id == HTMLTokenId.TEXT || id == HTMLTokenId.VALUE) && preText.endsWith( "&" ) ) { // NOI18N
-                result = translateCharRefs( offset-len, len, dtd.getCharRefList( "" ) );
+            if(id == HTMLTokenId.TEXT || id == HTMLTokenId.VALUE) {
+                int ampIndex = preText.lastIndexOf('&'); //NOI18N
+                if(ampIndex > 0) {
+                    len = preText.length() - ampIndex;
+                    String refNamePrefix = preText.substring(ampIndex + 1);
+                    result = translateCharRefs( offset-len, len, dtd.getCharRefList( refNamePrefix ) );
+                }
             } else if( id == HTMLTokenId.CHARACTER ) {
                 if( inside || !preText.endsWith( ";" ) ) { // NOI18N
                     len = offset - itemOffset;
@@ -726,6 +740,21 @@ public class HTMLCompletionQuery  {
             //disable instant substitution
             return null;
         }
+
+        @Override
+        public boolean instantSubstitution(JTextComponent c) {
+            return false; //do not complete even if we are the only item in the completion
+        }
+        
+        
+    }
+    
+    static class NonHTMLEndTagItem extends EndTagItem {
+        
+        public NonHTMLEndTagItem( String baseText, int offset, int length, int order ) {
+            super( baseText, offset, length, null, order );
+            this.baseText = baseText; //ufff, ugly ... reset the original text back in super we change the case 
+        }
         
     }
     
@@ -770,32 +799,44 @@ public class HTMLCompletionQuery  {
         
         @Override
         protected void reformat(JTextComponent component, String text) {
-
             final BaseDocument doc = (BaseDocument) component.getDocument();
             final int dotPos = component.getCaretPosition();
-            final Indent indent = Indent.get(doc);
-            indent.lock();
 
-            try {
-                doc.runAtomic(new Runnable() {
-
-                    public void run() {
-                        try {
-                            int startOffset = Utilities.getRowStart(doc, dotPos);
-                            int endOffset = Utilities.getRowEnd(doc, dotPos);
-                            indent.reindent(startOffset, endOffset);
-                        } catch (BadLocationException ex) {
-                            //ignore
+            TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
+            for (final LanguagePath languagePath : (Set<LanguagePath>) tokenHierarchy.languagePaths()) {
+                if (languagePath.innerLanguage() == HTMLTokenId.language()) {
+                    doc.runAtomic(new Runnable() {
+                        public void run() {
+                            HtmlIndenter.indentEndTag(doc, languagePath, dotPos, baseText);
                         }
-                    }
-                });
-            } finally {
-                indent.unlock();
-            }
+                    });
 
+//            //PUT BACK ONCE WE PROPERY IMPLEMENT HTML INDENT TASK
+//            final Indent indent = Indent.get(doc);
+//            indent.lock();
+//            try {
+//                doc.runAtomic(new Runnable() {
+//
+//                    public void run() {
+//                        try {
+//                            int startOffset = Utilities.getRowStart(doc, dotPos);
+//                            int endOffset = Utilities.getRowEnd(doc, dotPos);
+//                            indent.reindent(startOffset, endOffset);
+//                        } catch (BadLocationException ex) {
+//                            //ignore
+//                        }
+//                    }
+//                });
+//            } finally {
+//                indent.unlock();
+//            }
+
+                }
+
+            }
         }
-        
     }
+        
     
     private static class CharRefItem extends HTMLResultItem {
         

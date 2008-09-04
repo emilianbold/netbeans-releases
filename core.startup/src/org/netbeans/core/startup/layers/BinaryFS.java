@@ -570,7 +570,7 @@ public class BinaryFS extends FileSystem {
             int i = method.lastIndexOf('.');
             if (i != -1) {
                 // Cf. XMLMapAttr.Attr.methodValue:
-                Class cls = findClass(method.substring(0, i));
+                Class<?> cls = findClass(method.substring(0, i));
                 String methodName = method.substring(i + 1);
                 Class[][] paramArray = {
                     {FileObject.class, String.class}, {String.class, FileObject.class},

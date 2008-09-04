@@ -259,11 +259,11 @@ public class QueryBuilder extends TopComponent
     private final transient DeleteActionPerformer deleteActionPerformer = new DeleteActionPerformer();
 
     /** copy action performer */
-    protected final transient CopyCutActionPerformer copyActionPerformer =
+    final transient CopyCutActionPerformer copyActionPerformer =
         new CopyCutActionPerformer(true);
 
     /** cut action performer */
-    protected final transient CopyCutActionPerformer cutActionPerformer =
+    final transient CopyCutActionPerformer cutActionPerformer =
         new CopyCutActionPerformer(false);
 
     

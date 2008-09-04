@@ -42,13 +42,10 @@
 package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -61,9 +58,11 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -111,11 +110,6 @@ class EjbJarActionProvider implements ActionProvider {
         COMMAND_COPY,
         COMMAND_MOVE,
         COMMAND_RENAME
-    };
-
-    private static final Set<String> actionsDisabledForCoS = new HashSet<String>(3);
-    static {
-        Collections.addAll(actionsDisabledForCoS, COMMAND_BUILD, COMMAND_COMPILE_SINGLE);
     };
     
     // Project
@@ -179,13 +173,31 @@ class EjbJarActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
         }
+
+        String realCommand = command;
+        if (COMMAND_BUILD.equals(realCommand) && isCosEnabled()) {
+            boolean cleanAndBuild = DeployOnSaveUtils.showBuildActionWarning(project,
+                    new DeployOnSaveUtils.CustomizerPresenter() {
+
+                public void showCustomizer(String category) {
+                    CustomizerProviderImpl provider = project.getLookup().lookup(CustomizerProviderImpl.class);
+                    provider.showCustomizer(category);
+                }
+            });
+            if (cleanAndBuild) {
+                realCommand = COMMAND_REBUILD;
+            } else {
+                return;
+            }
+        }
         
+        final String commandToExecute = realCommand;
         Runnable action = new Runnable() {
             public void run() {
                 Properties p = new Properties();
                 String[] targetNames;
                 
-                targetNames = getTargetNames(command, context, p);
+                targetNames = getTargetNames(commandToExecute, context, p);
                 if (targetNames == null) {
                     return;
                 }
@@ -388,8 +400,8 @@ class EjbJarActionProvider implements ActionProvider {
         if (buildXml == null || !buildXml.isValid()) {
             return false;
         }
-        boolean cos = !Boolean.parseBoolean(project.getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE));
-        if (cos && actionsDisabledForCoS.contains(command)) {
+
+        if (isCosEnabled() && COMMAND_COMPILE_SINGLE.equals(command)) {
             return false;
         }
 
@@ -593,4 +605,7 @@ class EjbJarActionProvider implements ActionProvider {
         EjbJarProjectProperties.setServerInstance(project, antProjectHelper, serverInstanceId);
     }
     
+    private boolean isCosEnabled() {
+        return !Boolean.parseBoolean(project.evaluator().getProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE));
+    }
 }

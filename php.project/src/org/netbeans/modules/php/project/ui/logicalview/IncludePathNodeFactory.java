@@ -46,9 +46,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.php.project.*;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
@@ -67,7 +68,6 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -98,7 +98,7 @@ public class IncludePathNodeFactory implements NodeFactory {
         public IncludePathRootNode(PhpProject project) {
             super(createChildren(project));
             this.project = project;
-            project.getEvaluator().addPropertyChangeListener(this);
+            ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, this);
         }
 
         @Override

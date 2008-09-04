@@ -42,9 +42,7 @@ package org.netbeans.editor.ext.html.parser;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -58,7 +56,6 @@ import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -192,7 +189,7 @@ public final class SyntaxParser {
         parse();
     }
     
-    List<SyntaxElement> elements() {
+    public List<SyntaxElement> elements() {
         return parsedElements;
     }
     

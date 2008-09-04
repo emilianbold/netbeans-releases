@@ -151,19 +151,44 @@ public class IdentityValidation extends WsValidation {
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(IdentityValidation.class),
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(IdentityValidation.class);
+        addServerTests(Server.GLASSFISH, conf, IdentityValidation.class,
                 "prepareWSProject",
-                "prepareWSClientProject",
+                "prepareWSClientProject");
+        addServerTests(Server.GLASSFISH, conf, IdentityValidationInEJB.class,
                 "prepareWSProject",
-                "prepareWSClientProject",
+                "prepareWSClientProject");
+        addServerTests(Server.GLASSFISH, conf, IdentitySamplesTest.class,
                 "testStockQuoteService",
-                "testStockQuoteClient",
+                "testStockQuoteClient");
+        addServerTests(Server.GLASSFISH, conf, IdentityValidation.class,
                 "checkAMProfiles",
-                "testAMSecurityInWeb",
-                "testAMSecurityInEJB",
-                "testUndeployAll",
-                "stopSDKGlassfish"
-                ).enableModules(".*").clusters(".*"));
+                "testAMSecurityInWeb");
+        addServerTests(Server.GLASSFISH, conf, IdentityValidationInEJB.class,
+                "testAMSecurityInEJB");
+        addServerTests(Server.GLASSFISH, conf, IdentitySamplesTest.class,
+               "testUndeployAll");
+        addServerTests(Server.GLASSFISH, conf, IdentityValidation.class,
+                "stopSDKGlassfish");
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
+
+
+
+//
+//        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(IdentityValidation.class),
+//                "prepareWSProject",
+//                "prepareWSClientProject",
+//                "prepareWSProject",
+//                "prepareWSClientProject",
+//                "testStockQuoteService",
+//                "testStockQuoteClient",
+//                "checkAMProfiles",
+//                "testAMSecurityInWeb",
+//                "testAMSecurityInEJB",
+//                "testUndeployAll",
+//                "stopSDKGlassfish"
+//                ).enableModules(".*").clusters(".*"));
     }
 
 //    public static TestSuite suite() {

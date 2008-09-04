@@ -207,7 +207,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         
         // test if referencing class is injection target
         final boolean[] isInjectionTarget = {false};
-        CancellableTask task = new CancellableTask<CompilationController>() {
+        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     Elements elements = controller.getElements();
                     TypeElement thisElement = elements.getTypeElement(referencingClass);
