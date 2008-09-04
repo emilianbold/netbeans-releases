@@ -931,6 +931,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 	return preprocHandler;
     }
 
+    
+    public final Collection<APTPreprocHandler> getPreprocHandlers(File file) {
+        Collection<APTPreprocHandler.State> states = getFileContainer().getPreprocStates(file);
+        Collection<APTPreprocHandler> result = new ArrayList<APTPreprocHandler>(states.size());
+        for (APTPreprocHandler.State state : states) {
+            APTPreprocHandler preprocHandler = createEmptyPreprocHandler(file);
+            if( state != null ) {
+                if( state.isCleaned() ) {
+                    preprocHandler = restorePreprocHandler(file, preprocHandler, state);
+                } else {
+                    if (TRACE_PP_STATE_OUT) System.err.println("copying state for " + file);
+                    preprocHandler.setState(state);
+                }
+            }
+            if (TRACE_PP_STATE_OUT) System.err.printf("null state for %s, returning default one", file);
+            result.add(preprocHandler);
+        }
+        return result;
+    }
+
     //@Deprecated
     public final APTPreprocHandler.State getPreprocState(FileImpl fileImpl) {
         APTPreprocHandler.State state = null;
@@ -940,6 +960,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             state = fc.getPreprocState(file);
         }
         return state;
+    }
+
+    public final Collection<APTPreprocHandler.State> getPreprocStates(FileImpl fileImpl) {
+        FileContainer fc = getFileContainer();
+        if (fc != null) {
+            return fc.getPreprocStates(fileImpl.getFile());
+        }
+        return Collections.emptyList();
     }
 
     /**
