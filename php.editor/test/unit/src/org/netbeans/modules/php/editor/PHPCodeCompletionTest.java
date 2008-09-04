@@ -139,6 +139,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/nowdoc02.php", "<title>^</title>", false);
     }
     
+    public void test146176() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue146176.php", "echo oddlyNamedMetho^", false);
+    }
+    
     public void test145692() throws Exception {
         checkCompletion("testfiles/completion/lib/issue145692.php", "echo $test145692Instance->tst->t^", false);
     }
