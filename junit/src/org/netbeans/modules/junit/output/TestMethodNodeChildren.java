@@ -116,8 +116,10 @@ final class TestMethodNodeChildren extends Children.Array {
             childNodes.add(new CallstackFrameNode(topFrameInfo,
                                                   trouble.exceptionClsName));
         }
-        for (String frameInfo : trouble.stackTrace) {
-            childNodes.add(new CallstackFrameNode(frameInfo));
+        if (trouble.stackTrace != null) {
+            for (String frameInfo : trouble.stackTrace) {
+                childNodes.add(new CallstackFrameNode(frameInfo));
+            }
         }
         
         if (trouble.nestedTrouble != null) {
