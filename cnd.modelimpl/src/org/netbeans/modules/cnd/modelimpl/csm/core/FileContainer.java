@@ -209,6 +209,14 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
         return f.getState();
     }
+    
+    public Collection<APTPreprocHandler.State> getPreprocStates(File file) {
+        MyFile f = getMyFile(file, false);
+        if (f == null){
+            return null;
+        }
+        return f.getPrerocStates();
+    }
 
 // unused    
 //    public FilePreprocessorConditionState getPreprocessorConditionState(File file) {
@@ -767,6 +775,21 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 return Collections.singleton((StatePair) data);
             } else {
                 return new ArrayList<StatePair>((Collection<StatePair>) data);
+            }
+        }
+        
+        public synchronized Collection<APTPreprocHandler.State> getPrerocStates() {
+            if (data == null) {
+                return Collections.emptyList();
+            } else if(data instanceof StatePair) {
+                return Collections.singleton(((StatePair) data).state);
+            } else {
+                Collection<StatePair> pairs = (Collection<StatePair>) data;
+                Collection<APTPreprocHandler.State> result = new ArrayList<State>(pairs.size());
+                for (StatePair pair : pairs) {
+                    result.add(pair.state);
+                }
+                return result;
             }
         }
 
