@@ -121,6 +121,12 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         return Arrays.asList(ImageCD.PROP_RESOURCE_PATH);
     }
 
+    @Override
+    public void setDesignComponent(DesignComponent component) {
+        init(component.getDocument());
+        super.setDesignComponent(component);
+    }
+
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         this.wrapper = wrapper;
         
@@ -339,7 +345,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     public void init(DesignDocument document) {
         documentReferences = new WeakReference<DesignDocument>(document);
     }
-
+    
     public void run() {
         if (documentReferences == null || documentReferences.get() == null) {
             return;
