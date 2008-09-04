@@ -42,8 +42,9 @@ import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorF
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
 import org.netbeans.modules.extexecution.api.input.InputProcessor;
-import org.netbeans.modules.php.project.PhpInterpreter;
+import org.netbeans.modules.php.project.util.PhpInterpreter;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
@@ -70,7 +71,7 @@ public class RunLocalCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        PhpInterpreter phpInterpreter = getProject().getPhpInterpreter();
+        PhpInterpreter phpInterpreter = ProjectPropertiesSupport.getPhpInterpreter(getProject());
         final FileObject scriptFo = (context == null) ? fileForProject() : fileForContext(context);
         final File scriptFile = (scriptFo != null) ? FileUtil.toFile(scriptFo) : null;
         if (!phpInterpreter.isValid() || scriptFile == null) {
@@ -98,9 +99,9 @@ public class RunLocalCommand extends Command implements Displayable {
             processBuilder = processBuilder.addArgument(param);
         }
         processBuilder = processBuilder.addArgument(scriptFile.getName());
-        String argProperty = getProperty(PhpProjectProperties.ARGS);
+        String argProperty = ProjectPropertiesSupport.getArguments(getProject());
         if (argProperty != null && argProperty.length() > 0) {
-            for (String argument : Arrays.asList(argProperty.split(" "))) {
+            for (String argument : Arrays.asList(argProperty.split(" "))) { // NOI18N
                 processBuilder = processBuilder.addArgument(argument);
             }
         }
