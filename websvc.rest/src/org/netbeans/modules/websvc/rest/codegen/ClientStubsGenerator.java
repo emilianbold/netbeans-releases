@@ -135,7 +135,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private Project p;
     private boolean overwrite;
     private String projectName;
-    private ClientStubModel model;
+    private ResourceModel model;
     private FileObject rjsDir;
     private InputStream wis;
     private String folderName;
@@ -197,7 +197,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return projectName;
     }
     
-    public ClientStubModel getModel() {
+    public ResourceModel getModel() {
         return model;
     }
     
@@ -240,11 +240,11 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 if(path != null && path.startsWith(DEFAULT_HOST) &&
                         i+1 < paths.length && paths[i+1] != null &&
                         paths[i+1].trim().length() > 0) {
-                    return paths[i+1];
+                    return ClientStubModel.normalizeName(paths[i+1]);
                 }
             }
         }
-        return ClientStubModel.normailizeName(appName);
+        return ClientStubModel.normalizeName(appName);
     }
     
     private String findBaseUrl(Project p) {
@@ -263,6 +263,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     }
     
     private String findBaseEncoding(Project p) {
+        if(p == null)
+            return null;
         FileObject projProp = p.getProjectDirectory().getFileObject("nbproject/project.properties");
         return getProperty(projProp, "source.encoding");
     }
@@ -291,13 +293,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         if(pHandle != null)
             initProgressReporting(pHandle, false);
-        this.model = new ClientStubModel();
+        Project targetPrj = FileOwnerQuery.getOwner(getRootFolder());
         if(p != null) {
-            getModel().buildModel(p);
+            this.model = new ClientStubModel().createModel(p);
+            this.model.build();
             String url = findBaseUrl(p);
             if(url == null)
                 url = getDefaultBaseUrl();
-            Project targetPrj = FileOwnerQuery.getOwner(getRootFolder());
             String proxyUrl2 = findBaseUrl(targetPrj);
             if(proxyUrl2 == null)
                 proxyUrl2 = url;
@@ -309,15 +311,18 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 path = path.substring(0, path.length()-2);
             setBaseUrl((url.endsWith("/")?url:url+"/") + getProjectName() + (path.startsWith("/")?path:"/"+path));
             setProxyUrl((proxyUrl2.endsWith("/")?proxyUrl2:proxyUrl2+"/") + ProjectUtils.getInformation(targetPrj).getName() + PROXY_URL);
-            setBaseEncoding(findBaseEncoding(p));
         } else if(wis != null) {
-            String url = getModel().buildModel(wis);
+            this.model = new ClientStubModel().createModel(wis);
+            this.model.build();
+            String url = ((WadlModeler)this.model).getBaseUrl();
             if(url == null)
                 url = getDefaultBaseUrl();
             setBaseUrl(url);
             setProxyUrl(url+".."+PROXY_URL);
             this.projectName = getApplicationNameFromUrl(url);
         }
+        if(targetPrj != null)
+            setBaseEncoding(findBaseEncoding(targetPrj));
         List<Resource> resourceList = getModel().getResources();
         
         rjsDir = getStubFolder();

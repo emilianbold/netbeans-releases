@@ -460,7 +460,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         super.componentOpened();
         Mode debuggingMode = WindowManager.getDefault().findMode(this);
         lastSelectedTCRef = new WeakReference(debuggingMode.getSelectedTopComponent());
-        requestActive();
+        requestVisible();
     }
 
     @Override
@@ -674,6 +674,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             JTree tree = treeView.getTree();
             int row = tree.getRowForPath(path);
             Rectangle rect = tree.getRowBounds(row);
+            if (rect == null) return ;
             JViewport viewport = mainScrollPane.getViewport();
             ((JComponent)viewport.getView()).scrollRectToVisible(rect);
         }

@@ -54,7 +54,9 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -72,7 +74,7 @@ public abstract class CsmFileTaskFactory {
     private final Map<CsmFile, Pair> csm2task = new HashMap<CsmFile, Pair>();
     private final ProgressListener progressListener = new ProgressListener();
     private final ModelListener modelListener = new ModelListener();
-
+   
     protected CsmFileTaskFactory() {
         CsmListeners.getDefault().addProgressListener(progressListener);
         CsmListeners.getDefault().addModelListener(modelListener);
@@ -87,7 +89,7 @@ public abstract class CsmFileTaskFactory {
         final long id = Math.round(100.0*Math.random());
         final String name = this.getClass().getName();
         if (OpenedEditors.SHOW_TIME) System.err.println("CsmFileTaskFactory: POST worker " + id);
-        WORKER.post(new Runnable() {
+        DECISION_WORKER.post(new Runnable() {
 
             public void run() {
                 long start = System.currentTimeMillis();
@@ -96,6 +98,16 @@ public abstract class CsmFileTaskFactory {
                 if (OpenedEditors.SHOW_TIME) System.err.println("CsmFileTaskFactory: DONE worker " + id + " after " + (System.currentTimeMillis() - start) + "ms.");
             }
         });
+    }
+
+    private boolean checkMimeType(FileObject fileObject) {
+        if (fileObject == null) {
+            return false;
+        } else {
+            String mimeType = fileObject.getMIMEType();
+            return MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType) 
+                    || MIMENames.C_MIME_TYPE.equals(mimeType);
+        }
     }
 
     private void stateChangedImpl(Collection<FileObject> currentFiles) {
@@ -129,8 +141,15 @@ public abstract class CsmFileTaskFactory {
                 if (!fileObject.isValid()) {
                     continue;
                 }
+                if (!checkMimeType(fileObject)) {
+                    continue;
+                }
+                        
                 CsmFile csmFile = CsmUtilities.getCsmFile(fileObject, false);
-
+                if (csmFile == null) {
+                    csmFile = CsmStandaloneFileProvider.getDefault().getCsmFile(fileObject);
+                }
+                
                 if (csmFile != null) {
                     PhaseRunner task = createTask(fileObject);
                     Pair pair = new Pair(task);
@@ -154,6 +173,9 @@ public abstract class CsmFileTaskFactory {
                 }
                 post(e.getValue(), e.getKey(), PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
             }
+            // it isn't necessary to check mime type here -
+            // we checked it when adding task
+            CsmStandaloneFileProvider.getDefault().notifyClosed(e.getKey());
         }
 
         for (Entry<CsmFile, Pair> e : toAdd.entrySet()) {
@@ -208,6 +230,7 @@ public abstract class CsmFileTaskFactory {
     
     private static RequestProcessor WORKER = new RequestProcessor("CsmFileTaskFactory", 1); //NOI18N
     private static RequestProcessor HIGH_PRIORITY_WORKER = new RequestProcessor("CsmHighPriorityFileTaskFactory", 1); //NOI18N
+    private static RequestProcessor DECISION_WORKER = new RequestProcessor("CsmDecisionFileTaskFactory", 1); //NOI18N
 
     static {
         CsmFileTaskFactoryManager.ACCESSOR = new CsmFileTaskFactoryManager.Accessor() {

@@ -461,6 +461,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             Set<Object> annotationsToRemove;
             Set<JPDAThread> threadsToAnnotate;
             Map<JPDAThread, FutureAnnotation> futureAnnotations;
+            SourcePath theCurrentSourcePath;
             synchronized (this) {
                 //System.err.println("TASK threadsToAnnotate: "+this.threadsToAnnotate);
                 annotationsToRemove = new HashSet<Object>(this.annotationsToRemove);
@@ -469,6 +470,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 this.threadsToAnnotate.clear();
                 futureAnnotations = new HashMap<JPDAThread, FutureAnnotation>(this.futureAnnotations);
                 this.futureAnnotations.clear();
+                theCurrentSourcePath = currentSourcePath;
                 /*for (JPDAThread t : threadsToAnnotate) {
                     FutureAnnotation future = (FutureAnnotation) this.threadAnnotations.get(t);
                     //this.threadAnnotations.put(t, future);
@@ -490,8 +492,8 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             Set<JPDAThread> removeFutures = new HashSet<JPDAThread>();
             for (JPDAThread t : threadsToAnnotate) {
                 Object annotation;
-                if (currentSourcePath != null) {
-                    annotation = currentSourcePath.annotate(t, currentLanguage, false);
+                if (theCurrentSourcePath != null) {
+                    annotation = theCurrentSourcePath.annotate(t, currentLanguage, false);
                 } else {
                     annotation = null;
                 }

@@ -60,23 +60,29 @@ import org.openide.util.lookup.Lookups;
 public final class FolderBasedController extends OptionsPanelController implements PropertyChangeListener {
 
     private static final String OPTIONS_SUB_FOLDER = "optionsSubFolder"; //NOI18N
+    private static final String HELP_CTX_ID = "helpContextId"; //NOI18N
     private static final String BASE_FOLDER = "OptionsDialog/Editor/"; //NOI18N
 
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final String folder;
+    private final HelpCtx helpCtx;
     private Lookup masterLookup;
     private FolderBasedOptionPanel panel;
     private Map<String, OptionsPanelController> mimeType2delegates;
     
     public static OptionsPanelController create (Map args) {
-        FolderBasedController folderBasedController = new FolderBasedController ((String) args.get (OPTIONS_SUB_FOLDER));
+        FolderBasedController folderBasedController = new FolderBasedController(
+                (String) args.get (OPTIONS_SUB_FOLDER),
+                (String) args.get (HELP_CTX_ID)
+        );
         if (folderBasedController.getMimeTypes ().iterator().hasNext ())
             return folderBasedController;
         return null;
     }
 
-    private FolderBasedController(String subFolder) {
+    private FolderBasedController(String subFolder, String helpCtxId) {
         folder = subFolder != null ? BASE_FOLDER + subFolder : BASE_FOLDER;
+        helpCtx = helpCtxId != null ? new HelpCtx(helpCtxId) : null;
     }    
     
     public final synchronized void update() {
@@ -123,7 +129,7 @@ public final class FolderBasedController extends OptionsPanelController implemen
     }
     
     public final HelpCtx getHelpCtx() {
-        return null;
+        return helpCtx;
     }
 
     @Override

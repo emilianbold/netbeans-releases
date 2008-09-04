@@ -65,6 +65,8 @@ import org.openide.util.NbBundle;
 public class NbJSBreakpointCustomizer  extends JPanel implements Customizer, Controller{
     Breakpoint b;
 
+
+
     public static void customize(Breakpoint b) {
         JComponent c = getCustomizerPanel(b);
         HelpCtx helpCtx = HelpCtx.findHelp(c);
@@ -136,7 +138,9 @@ public class NbJSBreakpointCustomizer  extends JPanel implements Customizer, Con
     
     public static JComponent getCustomizerPanel(Breakpoint b) {
         JComponent c = null;
-        if (b instanceof NbJSBreakpoint) {
+        if ( b == null ){
+            c = new NbJSBreakpointPanel();
+        } else if (b instanceof NbJSBreakpoint) {
             c = new NbJSBreakpointPanel((NbJSBreakpoint)b);
         }
         c.getAccessibleContext().setAccessibleDescription(

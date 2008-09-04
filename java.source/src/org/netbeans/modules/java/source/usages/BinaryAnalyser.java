@@ -638,21 +638,26 @@ public class BinaryAnalyser implements LowMemoryListener {
      * @param archiveUrl url of an archive
      */
     private static void prebuildArgs (final ZipFile archiveFile, final URL archiveUrl) {
-        final ZipEntry e = archiveFile.getEntry(FileObjects.convertPackage2Folder(javax.swing.JComponent.class.getName())+'.'+FileObjects.CLASS);   //NOI18N
-        if (e != null) {                                   //NOI18N
-            ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
-                ClassPathSupport.createClassPath(new URL[0]),
-                ClassPathSupport.createClassPath(new URL[0]));
-            final JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, null, null);            
-            TreeLoader.preRegister(jt.getContext(), cpInfo);
-            TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
-            if (jc != null) {
-                List<ExecutableElement> methods = ElementFilter.methodsIn(jc.getEnclosedElements());
-                for (ExecutableElement method : methods) {
-                    List<? extends VariableElement> params = method.getParameters();
-                    if (!params.isEmpty()) {
-                        params.get(0).getSimpleName();
-                        break;
+        final ZipEntry jce = archiveFile.getEntry(FileObjects.convertPackage2Folder(javax.swing.JComponent.class.getName())+'.'+FileObjects.CLASS);   //NOI18N
+        if (jce != null) {                                   //NOI18N
+            //On the IBM VMs the swing is in separate jar (graphics.jar) where no j.l package exists, don't prebuild such an archive.
+            //The param names will be created on deamand
+            final ZipEntry oe = archiveFile.getEntry(FileObjects.convertPackage2Folder(Object.class.getName())+'.'+FileObjects.CLASS);   //NOI18N
+            if (oe != null) {
+                ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
+                    ClassPathSupport.createClassPath(new URL[0]),
+                    ClassPathSupport.createClassPath(new URL[0]));
+                final JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, null, null);            
+                TreeLoader.preRegister(jt.getContext(), cpInfo);
+                TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
+                if (jc != null) {
+                    List<ExecutableElement> methods = ElementFilter.methodsIn(jc.getEnclosedElements());
+                    for (ExecutableElement method : methods) {
+                        List<? extends VariableElement> params = method.getParameters();
+                        if (!params.isEmpty()) {
+                            params.get(0).getSimpleName();
+                            break;
+                        }
                     }
                 }
             }

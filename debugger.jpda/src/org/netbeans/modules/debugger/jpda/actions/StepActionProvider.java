@@ -354,6 +354,10 @@ implements Executor {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;
         }
+        setLastOperation(tr, getDebuggerImpl(), returnValue);
+    }
+
+    public static void setLastOperation(ThreadReference tr, JPDADebuggerImpl debugger, Variable returnValue) {
         Location loc;
         try {
             loc = tr.frame(0).location();
@@ -363,9 +367,9 @@ implements Executor {
         }
         Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
         String language = currentSession == null ? null : currentSession.getCurrentLanguage();
-        SourcePath sourcePath = getDebuggerImpl().getEngineContext();
+        SourcePath sourcePath = debugger.getEngineContext();
         String url = sourcePath.getURL(loc, language);
-        ExpressionPool exprPool = getDebuggerImpl().getExpressionPool();
+        ExpressionPool exprPool = debugger.getExpressionPool();
         ExpressionPool.Expression expr = exprPool.getExpressionAt(loc, url);
         if (expr == null) {
             return ;
@@ -387,7 +391,7 @@ implements Executor {
             return ;
         }
         lastOperation.setReturnValue(returnValue);
-        JPDAThreadImpl jtr = (JPDAThreadImpl) getDebuggerImpl().getThread(tr);
+        JPDAThreadImpl jtr = (JPDAThreadImpl) debugger.getThread(tr);
         jtr.addLastOperation(lastOperation);
         jtr.setCurrentOperation(lastOperation);
     }

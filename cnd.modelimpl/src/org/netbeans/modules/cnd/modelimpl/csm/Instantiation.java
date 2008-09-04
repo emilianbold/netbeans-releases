@@ -55,9 +55,13 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
-import org.netbeans.modules.cnd.api.model.services.CsmMemberResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
+import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
+import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
@@ -105,6 +109,10 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         return mapping;
     }
 
+    public boolean isValid() {
+        return CsmBaseUtilities.isValid(declaration);
+    }
+    
     /*
      * The only public method to create a new instantiation
      */
@@ -178,7 +186,8 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
     
     //////////////////////////////
     ////////////// STATIC MEMBERS
-    private static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate {
+    public static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate,
+                                    SelectImpl.FilterableMembers {
         public Class(CsmClass clazz, CsmType type) {
             super(clazz, type);
             assert type.isInstantiation() : "Instantiation without parameters"; // NOI18N
@@ -186,10 +195,6 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         
         public Class(CsmClass clazz, Map<CsmTemplateParameter, CsmType> mapping) {
             super(clazz, mapping);
-        }
-        
-        public boolean isValid() {
-            return ((CsmClass)declaration).isValid();
         }
 
         public Collection<CsmScopeElement> getScopeElements() {
@@ -231,6 +236,15 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
             return res;
         }
 
+        public Iterator<CsmMember> getMembers(CsmFilter filter) {
+            Collection<CsmMember> res = new ArrayList<CsmMember>();
+            Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers((CsmClass) declaration, filter);
+            while(it.hasNext()){
+                res.add(createMember(it.next()));
+            }
+            return res.iterator();
+        }
+        
         public int getLeftBracketOffset() {
             return ((CsmClass)declaration).getLeftBracketOffset();
         }
@@ -622,7 +636,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
 
         public Parameter(CsmParameter parameter, CsmInstantiation instantiation) {
             super(parameter, instantiation.getMapping());
-            this.type = createType(parameter.getType(), instantiation);
+            this.type = parameter.isVarArgs() ? TypeFactory.getVarArgType() : createType(parameter.getType(), instantiation);
         }
 
         public boolean isExtern() {
@@ -664,6 +678,8 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
             CsmType instantiatedType = instantiation.getMapping().get(((CsmTemplateParameterType) type).getParameter());
             if (instantiatedType == null || CsmKindUtilities.isTemplateParameterType(instantiatedType)) {
                 return new TemplateParameterType(type, instantiation);
+//            } else {
+//                type = instantiatedType;
             }
         }
         if (type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
@@ -752,7 +768,7 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         }
 
         public boolean isTemplateBased() {
-            return true;
+            return (instantiatedType == null) ? true : instantiatedType.isTemplateBased();
         }
 
         public boolean isReference() {
@@ -890,8 +906,8 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
                     } else {
                         parentClassifier = parentType.getClassifier();
                     }
-                    if (CsmKindUtilities.isValidable(parentClassifier) && ((CsmValidable) parentClassifier).isValid()) {
-                        CsmMemberResolver memberResolver = CsmMemberResolver.getDefault();
+                    if (CsmBaseUtilities.isValid(parentClassifier)) {
+                        MemberResolverImpl memberResolver = new MemberResolverImpl(resolver);
                         if (instantiatedType instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
                             Iterator<CsmClassifier> iter = memberResolver.getNestedClassifiers(parentClassifier, ((org.netbeans.modules.cnd.modelimpl.csm.NestedType) instantiatedType).getOwnText());
                             if (iter.hasNext()) {
@@ -909,6 +925,11 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
                 }
             }
             return resolved;
+        }
+
+        @Override
+        public boolean isInstantiation() {
+            return (parentType != null && parentType.isInstantiation()) || super.isInstantiation();
         }
     }
 

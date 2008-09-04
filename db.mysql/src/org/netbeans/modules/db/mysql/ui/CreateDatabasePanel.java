@@ -1,15 +1,14 @@
 /*
  * CreateDatabasePanel.java
  *
- * Created on February 15, 2008, 12:59 PM
+ * Created on August 28, 2008, 11:49 AM
  */
 
 package org.netbeans.modules.db.mysql.ui;
 
-import org.netbeans.modules.db.mysql.util.DatabaseUtils;
-import org.netbeans.modules.db.mysql.util.Utils;
 import java.awt.Color;
 import java.awt.Dialog;
+import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
@@ -17,26 +16,28 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.*;
 import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.DatabaseUser;
 import org.netbeans.modules.db.mysql.impl.SampleManager;
+import org.netbeans.modules.db.mysql.util.DatabaseUtils;
+import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Dialog for creating a new MySQL database
- * 
- * @author  David Van Couvering
+ *
+ * @author  rob
  */
 public class CreateDatabasePanel extends javax.swing.JPanel {
 
@@ -58,7 +59,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 
         if ( Utils.isEmpty(databaseName) ) {
             error = NbBundle.getMessage(CreateDatabasePanel.class,
-                        "CreateDatabasePanel.MSG_SpecifyDatabase");
+                        "CreateNewDatabasePanel.MSG_SpecifyDatabase");
         }
 
         if (error != null) {
@@ -70,12 +71,13 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         }
     }
         
-    public static DatabaseConnection showCreateDatabaseDialog(DatabaseServer server) {
-        assert SwingUtilities.isEventDispatchThread();
+    public static DatabaseConnection showCreateDatabaseDialog(DatabaseServer server) throws DatabaseException {
+        // DialogDescriptor handles running on a background thread
+        // assert SwingUtilities.isEventDispatchThread();
         
         CreateDatabasePanel panel = new CreateDatabasePanel(server);
         String title = NbBundle.getMessage(CreateDatabasePanel.class, 
-                "CreateDatabasePanel.LBL_CreateDatabaseTitle");
+                "CreateNewDatabasePanel.LBL_CreateDatabaseTitle");
 
         DialogDescriptor desc = new DialogDescriptor(panel, title);
         panel.setDialogDescriptor(desc);
@@ -83,7 +85,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         for (;;) {                    
             Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
             String acsd = NbBundle.getMessage(CreateDatabasePanel.class, 
-                    "CreateDatabasePanel.ACSD_CreateDatabasePanel");
+                    "CreateNewDatabasePanel.ACSD_CreateNewDatabasePanel");
             dialog.getAccessibleContext().setAccessibleDescription(acsd);
             dialog.setVisible(true);
             dialog.dispose();
@@ -96,7 +98,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             if ( Utils.isEmpty(panel.getDatabaseName())) {
                 Utils.displayErrorMessage(
                     NbBundle.getMessage(CreateDatabasePanel.class,
-                    "CreateDatabasePanel.MSG_EmptyDatabaseName"));
+                    "CreateNewDatabasePanel.MSG_EmptyDatabaseName"));
                 continue;
             }
                         
@@ -147,12 +149,20 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             final DatabaseConnection dbconn = result;
 
             if (result != null && SampleManager.isSample(dbname)) {
+                boolean create = Utils.displayConfirmDialog(NbBundle.getMessage(CreateDatabasePanel.class, 
+                        "CreateDatabasePanel.MSG_ConfirmCreateSample", dbname));
+
+                if (! create) {
+                    return dbconn;
+                }
+
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
                             SampleManager.createSample(dbname, dbconn);
                         } catch (DatabaseException dbe) {
-                            Exceptions.printStackTrace(dbe);
+                            LOGGER.log(Level.INFO, dbe.getMessage(), dbe);
+                            Utils.displayErrorMessage(dbe.getMessage());
                         }
                     }
 
@@ -169,15 +179,15 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     private static void displayCreateFailure(DatabaseServer server,
             DatabaseException ex, String dbname, boolean dbCreated) {
         Utils.displayError(NbBundle.getMessage(CreateDatabasePanel.class,
-                "CreateDatabasePanel.MSG_CreateFailed"), ex);
+                "CreateNewDatabasePanel.MSG_CreateFailed"), ex);
 
         if ( dbCreated ) {
             NotifyDescriptor ndesc = new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(CreateDatabasePanel.class,
-                        "CreateDatabasePanel.MSG_DeleteCreatedDatabase",
+                        "CreateNewDatabasePanel.MSG_DeleteCreatedDatabase",
                         dbname),
                     NbBundle.getMessage(CreateDatabasePanel.class,
-                        "CreateDatabasePanel.STR_DeleteCreatedDatabaseTitle"),
+                        "CreateNewDatabasePanel.STR_DeleteCreatedDatabaseTitle"),
                     NotifyDescriptor.YES_NO_OPTION);
             
             Object response = DialogDisplayer.getDefault().notify(ndesc);
@@ -203,10 +213,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
              
        NotifyDescriptor ndesc = new NotifyDescriptor.Message(
                 NbBundle.getMessage(CreateDatabasePanel.class, 
-                        "CreateDatabasePanel.MSG_DatabaseAlreadyExists",
+                        "CreateNewDatabasePanel.MSG_DatabaseAlreadyExists",
                     dbname));
        ndesc.setTitle(NbBundle.getMessage(CreateDatabasePanel.class,
-                    "CreateDatabasePanel.STR_DatabaseExistsTitle"));
+                    "CreateNewDatabasePanel.STR_DatabaseExistsTitle"));
 
        DialogDisplayer.getDefault().notify(ndesc);
 
@@ -231,26 +241,30 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             user = grantUser;
         }
         
-        String url = server.getURL(dbname);
-        
-        return ConnectionManager.getDefault().
-            showAddConnectionDialogFromEventThread(
-                DatabaseUtils.getJDBCDriver(), url, user, null);        
+        final String url = server.getURL(dbname);
+        final String finalUser = user;
+
+        return Mutex.EVENT.readAccess(new Action<DatabaseConnection>() {
+            public DatabaseConnection run() {
+                return ConnectionManager.getDefault().showAddConnectionDialogFromEventThread(
+                        DatabaseUtils.getJDBCDriver(), url, finalUser, null);
+            }
+
+        });
     }
 
     
-
     /** Creates new form CreateDatabasePanel */
-    public CreateDatabasePanel(DatabaseServer server) {
+    public CreateDatabasePanel(DatabaseServer server) throws DatabaseException {
         this.server = server;
         nbErrorForeground = UIManager.getColor("nb.errorForeground"); //NOI18N
         if (nbErrorForeground == null) {
             //nbErrorForeground = new Color(89, 79, 191); // RGB suggested by Bruce in #28466
             nbErrorForeground = new Color(255, 0, 0); // RGB suggested by jdinga in #65358
         }
-        
+
         initComponents();
-        
+
         comboDatabaseName.setModel(new DatabaseComboModel());
         
         comboDatabaseName.getEditor().getEditorComponent().addKeyListener(
@@ -292,8 +306,7 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         messageLabel.setBackground(getBackground());
         messageLabel.setText(" ");        
     }
-
-
+    
     private String getDatabaseName() {
         String dbname = (String)comboDatabaseName.getSelectedItem();
         if ( dbname != null ) {
@@ -323,74 +336,46 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         return server;
     }
 
-
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
-     */
+     */    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        messageLabel = new javax.swing.JLabel();
-        comboDatabaseName = new javax.swing.JComboBox();
-        jLabel1 = new javax.swing.JLabel();
+        nameLabel = new javax.swing.JLabel();
         chkGrantAccess = new javax.swing.JCheckBox();
+        comboDatabaseName = new javax.swing.JComboBox();
         comboUsers = new javax.swing.JComboBox();
+        messageLabel = new javax.swing.JLabel();
 
-        messageLabel.setForeground(new java.awt.Color(255, 0, 51));
-        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.text")); // NOI18N
-
-        comboDatabaseName.setEditable(true);
-        comboDatabaseName.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        comboDatabaseName.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                comboDatabaseNameItemStateChanged(evt);
-            }
-        });
-        comboDatabaseName.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comboDatabaseNameActionPerformed(evt);
-            }
-        });
-        comboDatabaseName.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                comboDatabaseNameFocusLost(evt);
-            }
-        });
-        comboDatabaseName.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
-                comboDatabaseNameInputMethodTextChanged(evt);
-            }
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
-        });
-        comboDatabaseName.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                comboDatabaseNameKeyTyped(evt);
-            }
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                comboDatabaseNameKeyPressed(evt);
-            }
-        });
-        comboDatabaseName.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                comboDatabaseNameMouseReleased(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.jLabel1.text")); // NOI18N
+        nameLabel.setLabelFor(comboDatabaseName);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.nameLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(chkGrantAccess, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.chkGrantAccess.text")); // NOI18N
+        chkGrantAccess.setToolTipText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.chkGrantAccess.AccessibleContext.accessibleDescription")); // NOI18N
         chkGrantAccess.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 chkGrantAccessItemStateChanged(evt);
             }
         });
 
+        comboDatabaseName.setEditable(true);
+        comboDatabaseName.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboDatabaseName.setToolTipText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.comboDatabaseName.AccessibleContext.accessibleDescription")); // NOI18N
+        comboDatabaseName.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                comboDatabaseNameItemStateChanged(evt);
+            }
+        });
+
         comboUsers.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboUsers.setToolTipText(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.comboUsers.AccessibleContext.accessibleDescription")); // NOI18N
+
+        messageLabel.setForeground(new java.awt.Color(255, 0, 51));
+        org.openide.awt.Mnemonics.setLocalizedText(messageLabel, org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -398,89 +383,55 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(messageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(chkGrantAccess)
-                        .add(18, 18, 18)
-                        .add(comboUsers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 216, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .add(18, 18, 18)
-                        .add(comboDatabaseName, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(messageLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 344, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, nameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, chkGrantAccess, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(comboUsers, 0, 323, Short.MAX_VALUE)
+                            .add(comboDatabaseName, 0, 323, Short.MAX_VALUE))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
+                    .add(nameLabel)
                     .add(comboDatabaseName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(chkGrantAccess)
                     .add(comboUsers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(18, 18, 18)
                 .add(messageLabel)
-                .add(22, 22, 22))
+                .addContainerGap(30, Short.MAX_VALUE))
         );
 
-        messageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.messageLabel.AccessibleContext.accessibleName")); // NOI18N
-        chkGrantAccess.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatabasePanel.chkGrantAccess.AccessibleContext.accessibleDescription")); // NOI18N
+        comboDatabaseName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.comboDatabaseName.AccessibleContext.accessibleName")); // NOI18N
+        comboDatabaseName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateDatabasePanel.class, "CreateNewDatabasePanel.comboDatabaseName.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-private void comboDatabaseNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboDatabaseNameActionPerformed
-                                                 
-}                                                 
+    private void comboDatabaseNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_comboDatabaseNameItemStateChanged
+    
+        if (evt.getStateChange() == ItemEvent.SELECTED)
+        {
+            validatePanel(evt.getItem().toString().trim());
+        }
+    }//GEN-LAST:event_comboDatabaseNameItemStateChanged
 
-private void comboDatabaseNameItemStateChanged(java.awt.event.ItemEvent evt) {                                                      
-    validatePanel(evt.getItem().toString().trim());                                                 
-}                                                       
-
-private void comboDatabaseNameMouseReleased(java.awt.event.MouseEvent evt) {//GEN-HEADEREND:event_comboDatabaseNameActionPerformed
-//GEN-LAST:event_comboDatabaseNameActionPerformed
-}                                               
-
-private void comboDatabaseNameKeyTyped(java.awt.event.KeyEvent evt) {                                                    
-                                               
-}                                          
-
-private void comboDatabaseNameFocusLost(java.awt.event.FocusEvent evt) {                                               
-                                          
-}//GEN-HEADEREND:event_comboDatabaseNameMouseReleased
-//GEN-LAST:event_comboDatabaseNameMouseReleased
-private void chkGrantAccessItemStateChanged(java.awt.event.ItemEvent evt) {                                                
-    if ( isGrantAccess() ) {                                           
-        comboUsers.setEnabled(true);
-    } else {                                                    
-        comboUsers.setEnabled(false);
-    }
-}                                               
-
-private void comboDatabaseNameKeyPressed(java.awt.event.KeyEvent evt) {                                               
-//GEN-FIRST:event_comboDatabaseNameKeyPressed
-}                                            
-
-private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {                                                 
-                                            
-}                                                        
-
-
-
-    // Variables declaration - do not modify                                                             
-    private javax.swing.JCheckBox chkGrantAccess;//GEN-HEADEREND:event_comboDatabaseNameKeyPressed
-    private javax.swing.JComboBox comboDatabaseName;//GEN-LAST:event_comboDatabaseNameKeyPressed
-    private javax.swing.JComboBox comboUsers;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel messageLabel;
-    // End of variables declaration                   
-
+    private void chkGrantAccessItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_chkGrantAccessItemStateChanged
+        comboUsers.setEnabled(isGrantAccess());
+    }//GEN-LAST:event_chkGrantAccessItemStateChanged
+    
     private static class DatabaseComboModel implements ComboBoxModel {
         static final List<String> SAMPLES = SampleManager.getSampleNames();
         static final String samplePrefix =
                 NbBundle.getMessage(CreateDatabasePanel.class, 
-                    "CreateDatabasePanel.STR_SampleDatabase") + ": ";
+                    "CreateNewDatabasePanel.STR_SampleDatabase") + ": ";
         
         String selected = null;
         final ArrayList<ListDataListener> listeners = new ArrayList<ListDataListener>();
@@ -524,11 +475,11 @@ private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodE
 
         ArrayList<DatabaseUser> users= new ArrayList<DatabaseUser>();
         DatabaseUser selected;
-                
-        public UsersComboModel(DatabaseServer server) {
+
+        public UsersComboModel(DatabaseServer server) throws DatabaseException {
             this.server = server;
                         
-            try {            
+            try {
                 users.addAll(server.getUsers());
                 
                 // Remove the root user, this user always has full access
@@ -546,7 +497,11 @@ private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodE
                     users.remove(rootUser);
                 }
             } catch ( DatabaseException dbe )  {
-                // This can be caused by permission problems.  Log the error
+                if (! server.isConnected()) {
+                    throw dbe;
+                }
+
+                // If we're still connected, log the error
                 // and continue with an empty user list
                 LOGGER.log(Level.INFO, null, dbe);
                 users.clear();
@@ -575,4 +530,13 @@ private void comboDatabaseNameInputMethodTextChanged(java.awt.event.InputMethodE
         public void removeListDataListener(ListDataListener arg0) {
         }
     }
+    
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox chkGrantAccess;
+    private javax.swing.JComboBox comboDatabaseName;
+    private javax.swing.JComboBox comboUsers;
+    private javax.swing.JLabel messageLabel;
+    private javax.swing.JLabel nameLabel;
+    // End of variables declaration//GEN-END:variables
+    
 }

@@ -104,6 +104,13 @@ import org.openide.util.WeakSet;
 
 public class BaseKit extends DefaultEditorKit {
 
+    /**
+     * Flag indicating that the JTextComponent.paste() is in progress.
+     * Checked in BaseDocument.read() to ignore clearing of the regions
+     * for trailing-whitespace-removal.
+     */
+    static ThreadLocal<Boolean> IN_PASTE = new ThreadLocal<Boolean>();
+
     private static final Logger LOG = Logger.getLogger(BaseKit.class.getName());
     
     /** split the current line at cursor position */
@@ -1033,6 +1040,7 @@ public class BaseKit extends DefaultEditorKit {
         public DefaultKeyTypedAction() {
             super(defaultKeyTypedAction, MAGIC_POSITION_RESET | CLEAR_STATUS_TEXT);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
+            LOG.fine("DefaultKeyTypedAction with enhanced logging, see issue #145306"); //NOI18N
         }
 
         private static final boolean isMac = System.getProperty("mrj.version") != null; //NOI18N
@@ -1079,6 +1087,8 @@ public class BaseKit extends DefaultEditorKit {
                             try {
                                 char ch = cmd.charAt(0);
                                 if ((ch >= 0x20) && (ch != 0x7F)) { // valid character
+                                    LOG.fine("Processing command char: " + Integer.toHexString(ch)); //NOI18N
+
                                     editorUI.getWordMatch().clear(); // reset word matching
                                     Boolean overwriteMode = (Boolean)editorUI.getProperty(
                                                                 EditorUI.OVERWRITE_MODE_PROPERTY);
@@ -1105,8 +1115,11 @@ public class BaseKit extends DefaultEditorKit {
                                             }
                                         }
                                     } catch (BadLocationException e) {
+                                        LOG.log(Level.FINE, null, e);
                                         target.getToolkit().beep();
                                     }
+                                } else {
+                                    LOG.fine("Invalid command char: " + Integer.toHexString(ch)); //NOI18N
                                 }
 
                                 checkIndent(target, cmd);
@@ -1115,6 +1128,18 @@ public class BaseKit extends DefaultEditorKit {
                             }
                         }
                     });
+                } else {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        StringBuilder sb = new StringBuilder();
+                        for(int i = 0; i < cmd.length(); i++) {
+                            String hex = Integer.toHexString(cmd.charAt(i));
+                            sb.append(hex);
+                            if (i + 1 < cmd.length()) {
+                                sb.append(" ");
+                            }
+                        }
+                        LOG.fine("Invalid command: '" + sb + "'"); //NOI18N
+                    }                    
                 }
             }
         }
@@ -1639,13 +1664,19 @@ public class BaseKit extends DefaultEditorKit {
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                // If there is no selection then pre-select a current line including newline
-                if (!Utilities.isSelectionShowing(target)) {
-                    Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
-                            target.getCaretPosition());
-                    target.select(elem.getStartOffset(), elem.getEndOffset());
+                try {
+                    // If there is no selection then pre-select a current line including newline
+                    if (!Utilities.isSelectionShowing(target)) {
+                        Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
+                                target.getCaretPosition());
+                        if (!Utilities.isRowWhite((BaseDocument) target.getDocument(), elem.getStartOffset())) {
+                            target.select(elem.getStartOffset(), elem.getEndOffset());
+                        }
+                    }
+                    target.copy();
+                } catch (BadLocationException ble) {
+                    LOG.log(Level.FINE, null, ble);
                 }
-                target.copy();
             }
         }
     }
@@ -1689,7 +1720,12 @@ public class BaseKit extends DefaultEditorKit {
                         try {
                             Caret caret = target.getCaret();
                             int startOffset = target.getSelectionStart();
-                            target.paste();
+                            IN_PASTE.set(true);
+                            try {
+                                target.paste();
+                            } finally {
+                                IN_PASTE.set(false);
+                            }
                             int endOffset = caret.getDot();
                             if (formatted) {
                                 formatter.reformat(doc, startOffset, endOffset);

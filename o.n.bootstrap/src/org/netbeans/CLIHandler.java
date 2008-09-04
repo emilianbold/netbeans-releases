@@ -625,6 +625,14 @@ public abstract class CLIHandler extends Object {
                     if (port != -1) {
                         try {
                             enterState(94, block);
+                            try {
+                                Socket socket = new Socket(localHostAddress (), port);
+                                socket.close();
+                            } catch (Exception ex3) {
+                                // socket is not open, remove the file and try once more
+                                lockFile.delete();
+                                continue;
+                            }
                             // just wait a while
                             Thread.sleep(2000);
                         } catch (InterruptedException inter) {

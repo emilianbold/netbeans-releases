@@ -57,12 +57,13 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 
 /**
  * Implements CsmClass
  * @author Vladimir Kvashin
  */
-public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate {
+public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate, SelectImpl.FilterableMembers {
 
     private final CsmDeclaration.Kind kind;
 
@@ -143,7 +144,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         if( typedefs != null && typedefs.length > 0 ) {
                             for (int i = 0; i < typedefs.length; i++) {
                                 // It could be important to register in project before add as member...
-                                ((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
+                                ((FileImpl)getContainingFile()).getProjectImpl(true).registerDeclaration(typedefs[i]);
                                 addMember((MemberTypedef) typedefs[i]);
                             }
                         }
@@ -200,7 +201,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             if( typedefs != null && typedefs.length > 0 ) {
                                 for (int i = 0; i < typedefs.length; i++) {
                                     // It could be important to register in project before add as member...
-                                    ((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
+                                    ((FileImpl)getContainingFile()).getProjectImpl(true).registerDeclaration(typedefs[i]);
                                     addMember((MemberTypedef) typedefs[i]);
                                 }
                                 break;
@@ -459,10 +460,18 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 
         @Override
         public CsmClass getCsmClass() {
+            CsmClass cls = null;
             if (classDefinition != null){
-                return classDefinition.getObject();
+                cls = classDefinition.getObject();
             }
-            return  super.getCsmClass();
+            // we need to replace i.e. ForwardClass stub
+            if (cls != null && cls.isValid()) {
+                return cls;
+            } else {
+                cls = super.getCsmClass();
+                setCsmClass(cls);
+            }
+            return cls;
         }
 
         @Override
@@ -476,7 +485,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         }
         
         public void setCsmClass(CsmClass cls) {
-            classDefinition = cls.getUID();
+            classDefinition = cls == null ? null : cls.getUID();
         }
 
         @Override

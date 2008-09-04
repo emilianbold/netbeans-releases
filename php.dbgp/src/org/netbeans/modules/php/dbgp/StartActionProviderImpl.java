@@ -292,13 +292,20 @@ public class StartActionProviderImpl {
                     }
                 }
                 if (!isStopped.get() && sessionSocket != null) {
-                    DebugSession session = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, DebugSession.class);
-                    if (session != null) {
-                        session.start(sessionSocket);
-                        setupCurrentSession( session );
+                    DebugSession xdebugSession = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, DebugSession.class);
+                    if (xdebugSession != null) {
+                        xdebugSession.start(sessionSocket);
+                        setupCurrentSession( xdebugSession );
                         sessionSocket = null;
                         break;
                     } else {
+                        Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
+                        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+                        for (Session session : sessions) {
+                            if (session != currentSession) {
+                                DebuggerManager.getDebuggerManager().setCurrentSession(session);
+                            }
+                        }
                         log(new AssertionError(sessionSocket));//NOI18N
                     }
                 }

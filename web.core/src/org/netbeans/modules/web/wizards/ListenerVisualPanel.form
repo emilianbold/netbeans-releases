@@ -274,7 +274,7 @@
                   <ResourceString bundle="org/netbeans/modules/web/wizards/Bundle.properties" key="LBL_RequestListener" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/web/wizards/Bundle.properties" key="TTT_requestListener" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/web/wizards/Bundle.properties" key="TTT_requestListener_short" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
                   <Insets value="[0, 2, 0, 2]"/>
@@ -307,7 +307,7 @@
                   <ResourceString bundle="org/netbeans/modules/web/wizards/Bundle.properties" key="LBL_RequestAttrListener" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/web/wizards/Bundle.properties" key="TTT_requestAttrListener" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/web/wizards/Bundle.properties" key="TTT_requestAttrListener_short" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
                   <Insets value="[0, 2, 0, 2]"/>

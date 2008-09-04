@@ -114,6 +114,11 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleMethodFieldBreakpointAction.instance"/>
             <file name="org-netbeans-modules-debugger-jpda-ui-actions-EvaluateAction.instance"/>
             <file name="org-netbeans-modules-debugger-jpda-ui-debugging-ThreadsHistoryAction.instance"/>
+            <file name="org-netbeans-modules-debugger-jpda-ui-actions-SetCurrentThreadFromHistoryAction.instance"/>
+                <!--attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.debugger.jpda.ui.actions.SetCurrentThreadFromHistoryAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.jpda.ui.actions.Bundle#CTL_SetCurrentThreadFromHistoryAction"/>
+            </file-->
             <!--file name="org-netbeans-modules-debugger-jpda-ui-actions-GoToHitAction.instance"/-->
         </folder>
         <folder name="Window">
@@ -200,6 +205,10 @@ made subject to such option by the copyright holder.
             <file name="Separator4.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="2000"/>
+            </file>
+            <file name="org-netbeans-modules-debugger-jpda-ui-actions-SetCurrentThreadFromHistoryAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SetCurrentThreadFromHistoryAction.instance"/>
+                <attr name="position" intvalue="2050"/>
             </file>
             <folder name="Stack">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.jpda.ui.Bundle"/>

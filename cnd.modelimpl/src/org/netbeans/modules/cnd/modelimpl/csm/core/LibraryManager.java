@@ -288,7 +288,7 @@ public final class LibraryManager {
             }
             if (needFire){
                 final LibraryEntry passEntry = entry;
-                CsmModelAccessor.getModel().enqueue(new Runnable() {
+                ModelImpl.instance().enqueueModelTask(new Runnable() {
                     public void run() {
                         ListenersImpl.getImpl().fireProjectOpened((ProjectBase)passEntry.getLibrary().getObject());
                     }

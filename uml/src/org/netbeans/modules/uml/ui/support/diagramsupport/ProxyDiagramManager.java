@@ -189,19 +189,19 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
             if(proxyDiagram != null)
             {
                 diagram = proxyDiagram.getDiagram();
-                if(diagram != null)
+                if(diagram != null) // the diagram is opened
                 {
                     diagram.setDirty(false);
                     lock=diagram.setReadOnly(true);
                 }
-            }
-            
-            IProductDiagramManager manager = ProductHelper.getProductDiagramManager();
-            if(manager != null)
-            {
-                if(diagram!=null)manager.setDiagramDirty(diagram,false);
-                manager.closeDiagram3(proxyDiagram);
-                closedDiagram(proxyDiagram,lock);
+                IProductDiagramManager manager = ProductHelper.getProductDiagramManager();
+                if(manager != null)
+                {
+                    //if(diagram!=null)manager.setDiagramDirty(diagram,false);
+                    manager.closeDiagram3(proxyDiagram);
+                    closedDiagram(proxyDiagram,lock);
+                    fileList.remove(sDiagramFullFilename);
+                }
             }
         }
     }

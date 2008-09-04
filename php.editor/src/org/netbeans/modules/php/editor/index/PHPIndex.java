@@ -481,9 +481,14 @@ public class PHPIndex {
             if ((flags & attrMask) != 0) {
                 String propName = "$" + sig.string(0);
                 int offset = sig.integer(1);
+                String type = sig.string(3);
+
+                if (type.length() == 0){
+                    type = null;
+                }
 
                 IndexedConstant prop = new IndexedConstant(propName, typeName,
-                        this, signaturesMap.get(signature), offset, flags, null);
+                        this, signaturesMap.get(signature), offset, flags, type);
 
                 properties.add(prop);
             }
@@ -850,13 +855,6 @@ public class PHPIndex {
     private static String fileURLToAbsPath(String url){
         assert url.startsWith("file:") : url + " doesn't start with 'file:'"; //NOI18N
         return url.substring("file:".length()); //NOI18N
-    }
-    
-    static String dequote(String string){
-        assert string.length() >= 2;
-        assert string.startsWith("\"") || string.startsWith("'");
-        assert string.endsWith("\"") || string.endsWith("'");
-        return string.substring(1, string.length() - 1);
     }
     
     // copied from JspUtils

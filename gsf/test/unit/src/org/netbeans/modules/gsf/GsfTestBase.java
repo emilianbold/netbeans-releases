@@ -192,9 +192,13 @@ public abstract class GsfTestBase extends NbTestCase {
             assertTrue("success to create " + dir, dir.mkdirs());
         }
         FileObject dirFO = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
-        return FileUtil.createData(dirFO, path);
+        return touch(dirFO, path);
     }
     
+    protected FileObject touch(final FileObject dir, final String path) throws IOException {
+        return FileUtil.createData(dir, path);
+    }
+
     public static final FileObject copyStringToFileObject(FileObject fo, String content) throws IOException {
         OutputStream os = fo.getOutputStream();
         try {

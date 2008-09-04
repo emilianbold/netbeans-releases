@@ -108,7 +108,6 @@ public class OpenBPELproject extends PerformanceTestCase {
     @Override
     public void close(){
         ProjectSupport.closeProject(projectName);
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
     
     public static Test suite() {
@@ -117,6 +116,7 @@ public class OpenBPELproject extends PerformanceTestCase {
             .addTest("measureTime")
             .enableModules(".*")
             .clusters(".*")
+            .reuseUserDir(true)
         );    
     }
 }

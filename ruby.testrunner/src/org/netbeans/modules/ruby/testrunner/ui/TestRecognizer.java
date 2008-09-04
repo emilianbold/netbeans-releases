@@ -57,7 +57,6 @@ public final class TestRecognizer extends OutputRecognizer {
     private TestSession session;
     private final FileLocator fileLocator;
     private final SessionType sessionType;
-            
     private final List<TestRecognizerHandler> handlers;
 
     public TestRecognizer(Manager manager, 
@@ -72,21 +71,21 @@ public final class TestRecognizer extends OutputRecognizer {
         this.session = new TestSession(fileLocator, sessionType);
     }
 
-    public void refreshSession() {
+    public synchronized void refreshSession() {
         // workaround for making re-run work correctly, need to rethink
         // when migrating to the new Execution API
         this.session = new TestSession(fileLocator, sessionType);
     }
     
     @Override
-    public void start() {
+    public synchronized void start() {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Session starting: " + session);
         }
     }
 
     @Override
-    public RecognizedOutput processLine(String line) {
+    public synchronized RecognizedOutput processLine(String line) {
 
         for (TestRecognizerHandler handler : handlers) {
             if (handler.matches(line)) {
@@ -117,7 +116,7 @@ public final class TestRecognizer extends OutputRecognizer {
     }
     
     @Override
-    public void finish() {
+    public synchronized void finish() {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Session finished: " + session);
         }

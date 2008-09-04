@@ -126,11 +126,14 @@ public final class WebServiceManager {
 
             File localWsdlFile = new File(wsData.getWsdlFile());
             URL wsdlUrl = localWsdlFile.toURI().toURL();
-
+            File catalogFile = new File(wsData.getCatalog());
+            URL catalogUrl = catalogFile.toURI().toURL();
+      
             WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlUrl);
             if (wsData.getPackageName() != null && wsData.getPackageName().trim().length() > 0) {
                 wsdlModeler.setPackageName(wsData.getPackageName());
             }
+            wsdlModeler.setCatalog(catalogUrl);
             WsdlModel model = wsdlModeler.getAndWaitForWsdlModel();
 
             boolean dataInModel = listModel.webServiceExists(wsData);

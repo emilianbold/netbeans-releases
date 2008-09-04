@@ -46,6 +46,7 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
@@ -84,7 +85,7 @@ public class Resolver3 implements Resolver {
     private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequenceKey.empty();
     }
-    
+
     private CsmNamespace containingNamespace;
     private CsmClass containingClass;
     private boolean contextFound = false;
@@ -129,10 +130,10 @@ public class Resolver3 implements Resolver {
         this.project = (ProjectBase) context.getContainingFile().getProject();
     }
     
-    private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qulifiedNamePart) {
+    private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qualifiedNamePart) {
         CsmClassifier result = null;
         while ( ns != null  && result == null) {
-            String fqn = ns.getQualifiedName() + "::" + qulifiedNamePart; // NOI18N
+            String fqn = ns.getQualifiedName() + "::" + qualifiedNamePart; // NOI18N
             result = findClassifier(fqn);
             ns = ns.getParent();
         }
@@ -159,7 +160,67 @@ public class Resolver3 implements Resolver {
         }
         return result;
     }
-    
+
+    public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
+        if (isRecursionOnResolving(offset)) {
+            return null;
+        }
+        if (CsmKindUtilities.isClassForwardDeclaration(orig)){
+            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
+            CsmClass definition;
+            if (fd instanceof ClassForwardDeclarationImpl) {
+                definition = ((ClassForwardDeclarationImpl)fd).getCsmClass(this);
+            } else {
+                definition = fd.getCsmClass();
+            }
+            if (definition != null){
+                return definition;
+            }
+        }
+        CsmClassifier out = orig;
+        Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
+        set.add(orig);
+        while (CsmKindUtilities.isTypedef(out)) {
+            CsmType t = ((CsmTypedef)out).getType();
+            if (t instanceof Resolver.SafeClassifierProvider) {
+                orig = ((Resolver.SafeClassifierProvider)t).getClassifier(this);
+            } else {
+                orig = t.getClassifier();
+            }
+            if (orig == null) {
+                break;
+            }
+            if (set.contains(orig)) {
+                // try to recover from this error
+                CsmClassifier cls = findOtherClassifier(out);
+                out = cls == null ? out : cls;
+                break;
+            }
+            set.add(orig);
+            out = orig;
+        }
+        return out;
+        
+    }
+
+    public static CsmClassifier findOtherClassifier(CsmClassifier out) {
+        CsmNamespace ns = CsmBaseUtilities.getClassNamespace(out);
+        CsmClassifier cls = null;
+        if (ns != null) {
+            CsmUID uid = out.getUID();
+            CharSequence fqn = out.getQualifiedName();
+            for (CsmDeclaration decl : ns.getDeclarations()) {
+                if (CsmKindUtilities.isClassifier(decl) && decl.getQualifiedName().equals(fqn)) {
+                    if (!decl.getUID().equals(uid)) {
+                        cls = (CsmClassifier)decl;
+                        break;
+                    }
+                }
+            }
+        }        
+        return cls;
+    }         
+
     private void findContext(Iterator it, CsmFilter filter) {
         while(it.hasNext()) {
             CsmDeclaration decl = (CsmDeclaration) it.next();
@@ -376,7 +437,7 @@ public class Resolver3 implements Resolver {
                 // it declares using itself
                 usedNamespaces.add(nsd.getQualifiedName());
             }
-            if( this.offset < end ) {
+            if (this.offset < end || isInContext(nsd)) {
                 //currentNamespace = nsd.getNamespace();
                 gatherMaps(nsd.getDeclarations());
             } else if (needClassifiers()){
@@ -405,8 +466,8 @@ public class Resolver3 implements Resolver {
             if( ds.getStartOffset() < this.offset ) {
                 gatherMaps( ((CsmDeclarationStatement) element).getDeclarators());
             }
-        } else if( element instanceof CsmScope ) {
-            if( this.offset < end ) {
+        } else if (CsmKindUtilities.isScope(element)) {
+            if (this.offset < end || isInContext((CsmScope) element)) {
                 gatherMaps( ((CsmScope) element).getScopeElements());
             }
         } else if( kind == CsmDeclaration.Kind.TYPEDEF && needClassifiers()){
@@ -416,7 +477,36 @@ public class Resolver3 implements Resolver {
             }
         }
     }
-    
+
+    private boolean isInContext(CsmScope scope) {
+        if (!CsmKindUtilities.isClass(scope) && !CsmKindUtilities.isNamespace(scope)) {
+            return false;
+        }
+        CsmQualifiedNamedElement el = (CsmQualifiedNamedElement)scope;
+        CsmNamespace ns = getContainingNamespace();
+        if (ns != null && startsWith(ns.getQualifiedName(), el.getQualifiedName())) {
+            return true;
+        }
+        CsmClass cls = getContainingClass();
+        if (cls != null && startsWith(cls.getQualifiedName(), el.getQualifiedName())) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean startsWith(CharSequence qname, CharSequence prefix) {
+        if (qname.length() < prefix.length()) {
+            return false;
+        }
+        for (int i = 0; i < prefix.length(); ++i) {
+            if (qname.charAt(i) != prefix.charAt(i)) {
+                return false;
+            }
+        }
+        return qname.length() == prefix.length()
+                || qname.charAt(prefix.length()) == ':'; // NOI18N
+    }
+
     private CsmDeclaration resolveUsingDeclaration(CsmUsingDeclaration udecl){
         CsmDeclaration decl = null;
         if (udecl instanceof UsingDeclarationImpl) {
@@ -457,15 +547,18 @@ public class Resolver3 implements Resolver {
         CsmNamespace containingNS = null;
         
         if( nameTokens.length == 1 ) {
-            if (needClassifiers()){
-                result = findClassifier(nameTokens[0]);
-            }
-            if( result == null  && needNamespaces()) {
-                result = findNamespace(nameTokens[0]);
-            }
             if( result == null && needClassifiers()) {
                 containingNS = getContainingNamespace();
                 result = findClassifier(containingNS, nameTokens[0]);
+                if (result == null && containingNS != null) {
+                    for (CsmUsingDirective udir : CsmUsingResolver.getDefault().findUsingDirectives(containingNS)) {
+                        String fqn = udir.getName() + "::" + nameTokens[0]; // NOI18N
+                        result = findClassifier(fqn);
+                        if (result != null) {
+                            break;
+                        }
+                    }
+                }
             }
             if( result == null && needClassifiers()) {
                 CsmClass cls = getContainingClass();
@@ -475,6 +568,15 @@ public class Resolver3 implements Resolver {
                         result = resolveInBaseClasses(cls, nameTokens[0]);
                     }
                 }
+            }
+            if( result == null  && needNamespaces()) {
+                result = findNamespace(nameTokens[0]);
+                if (result == null && getContainingNamespace() != null) {
+                    result = findNamespace(getContainingNamespace().getQualifiedName() + "::" + nameTokens[0]); // NOI18N
+                }
+            }
+            if (result == null  && needClassifiers()){
+                result = findClassifier(nameTokens[0]);
             }
             if( result == null ) {
                 currTypedef = null;
@@ -500,6 +602,18 @@ public class Resolver3 implements Resolver {
                         result = findClassifier(fqn);
                         if (result == null) {
                             result = findClassifier(containingNS, fqn);
+                        }
+                        if (result == null) {
+                            CsmNamespace ns = findNamespace(nsp);
+                            if (ns != null) {
+                                for (CsmUsingDirective udir : CsmUsingResolver.getDefault().findUsingDirectives(ns)) {
+                                    fqn = udir.getName() + "::" + nameTokens[0]; // NOI18N
+                                    result = findClassifier(fqn);
+                                    if (result != null) {
+                                        break;
+                                    }
+                                }
+                            }
                         }
                         if( result != null ) {
                             break;
@@ -657,44 +771,6 @@ public class Resolver3 implements Resolver {
         }
         return null;
     }
-
-    private CsmClassifier getOriginalClassifier(CsmClassifier orig) {
-        if (CsmKindUtilities.isClassForwardDeclaration(orig)){
-            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
-            CsmClass definition;
-            if (fd instanceof ClassForwardDeclarationImpl) {
-                definition = ((ClassForwardDeclarationImpl)fd).getCsmClass(this);
-            } else {
-                definition = fd.getCsmClass();
-            }
-            if (definition != null){
-                return definition;
-            }
-        }
-        CsmClassifier out = orig;
-        Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
-        set.add(orig);
-        while (CsmKindUtilities.isTypedef(out)) {
-            CsmType t = ((CsmTypedef)out).getType();
-            if (t instanceof Resolver.SafeClassifierProvider) {
-                orig = ((Resolver.SafeClassifierProvider)t).getClassifier(this);
-            } else {
-                orig = t.getClassifier();
-            }
-            if (orig == null) {
-                break;
-            }
-            if (set.contains(orig)) {
-                // try to recover from this error
-                CsmClassifier cls = CsmBaseUtilities.findOtherClassifier(out);
-                out = cls == null ? out : cls;
-                break;
-            }
-            set.add(orig);
-            out = orig;
-        }
-        return out;
-    }     
 
     private CsmObject resolveInClass(CsmClass cls, CharSequence name) {
         if( cls != null && cls.isValid()) {

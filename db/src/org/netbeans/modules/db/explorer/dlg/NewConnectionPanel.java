@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
 
@@ -78,6 +79,10 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     private boolean updatingUrl = false;
     private boolean updatingFields = false;
 
+    // keeps track of the user's last selection of whether or not to
+    // show the jdbc url.  
+    private boolean userSpecifiedShowUrl = false;
+    
     private final LinkedHashMap<String, UrlField> urlFields =
             new LinkedHashMap<String, UrlField>();
 
@@ -137,8 +142,11 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         mediator.addConnectionProgressListener(progressListener);
 
         userField.setText(connection.getUser());
-        passwordField.setText(connection.getPassword());
-
+        
+        String pw = connection.getPassword();
+        passwordField.setText(pw);
+        passwordCheckBox.setSelected(pw.length() > 0);
+        
         String driver = connection.getDriver();
         String driverName = connection.getDriverName();
         if (driver != null && driverName != null) {
@@ -179,6 +187,27 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         setUrlField();
         updateFieldsFromUrl();
         setUpFields();
+        
+        DocumentListener docListener = new DocumentListener()
+        {
+            public void insertUpdate(DocumentEvent evt) 
+            {
+                fireChange();
+            }
+
+            public void removeUpdate(DocumentEvent evt) 
+            {
+                fireChange();
+            }
+
+            public void changedUpdate(DocumentEvent evt) 
+            {
+                fireChange();
+            }
+        };
+        
+        userField.getDocument().addDocumentListener(docListener);
+        passwordField.getDocument().addDocumentListener(docListener);
     }
 
     public void setWindow(Window window) {
@@ -531,6 +560,8 @@ private void showUrlCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
 }
 
 private void showUrl() {
+    userSpecifiedShowUrl = showUrlCheckBox.isSelected();
+    
     if (showUrlCheckBox.isSelected()) {
         updateUrlFromFields();
     }
@@ -616,7 +647,6 @@ private void showUrl() {
                 entry.getValue().getLabel().setVisible(false);
             }
 
-            showUrlCheckBox.setVisible(false);
             urlField.setVisible(false);
 
             checkValid();
@@ -644,10 +674,13 @@ private void showUrl() {
         }
 
         if (! jdbcurl.urlIsParsed()) {
-            showUrlCheckBox.setVisible(false);
+            showUrlCheckBox.setEnabled(false);
+            showUrlCheckBox.setSelected(true);
             urlField.setVisible(true);
             setUrlField();
         } else {
+            showUrlCheckBox.setEnabled(true);
+            showUrlCheckBox.setSelected(userSpecifiedShowUrl);
             showUrl();
         }
 
@@ -788,11 +821,17 @@ private void showUrl() {
     }
 
     private void fireChange() {
+
+        // the user has changed some parameter, so if there's a connection it's
+        // no longer in sync with the field data
+        mediator.closeConnection();
+        
         firePropertyChange("argumentChanged", null, null);
         resetProgress();
     }
 
     private void updateUrlFromFields() {
+        
         JdbcUrl url = getSelectedJdbcUrl();
         if (url == null || !url.urlIsParsed()) {
             return;
@@ -880,15 +919,13 @@ private void showUrl() {
     }
 
     private void clearError() {
-        errorLabel.setText("");
-        errorLabel.setVisible(false);
+        errorLabel.setText(" ");
         mediator.setValid(true);
         resize();
     }
 
     private void displayError(String message) {
         errorLabel.setText(message);
-        errorLabel.setVisible(true);
         mediator.setValid(false);
         resize();
     }

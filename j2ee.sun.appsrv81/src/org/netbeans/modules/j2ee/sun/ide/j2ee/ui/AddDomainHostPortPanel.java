@@ -42,9 +42,6 @@
 package org.netbeans.modules.j2ee.sun.ide.j2ee.ui;
 
 import java.awt.Component;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -76,7 +73,6 @@ class AddDomainHostPortPanel implements WizardDescriptor.FinishablePanel,
         if (component == null) {
             component = new AddInstanceVisualHostPortPanel();
             component.addChangeListener(this);
-            
         }
         return component;
     }
@@ -95,29 +91,30 @@ class AddDomainHostPortPanel implements WizardDescriptor.FinishablePanel,
     public boolean isValid() {
         String h = component.getHost();
         if (h.length() < 1) {
-            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+            wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
                     NbBundle.getMessage(AddDomainHostPortPanel.class, 
-                    "MSG_EnterHost",h));                                     //NOI18N
+                    "MSG_EnterHost"));                                     //NOI18N
             return false;            
         }
-        if (h.indexOf("://") > -1) {
+        if (h.indexOf("://") > -1) {  //NOI18N
             // IZ 77187
-            wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(AddDomainHostPortPanel.class, 
-                    "MSG_exclude_protocol",h));                                 //NOI18N
+                    "MSG_exclude_protocol"));                                 //NOI18N
             return false;                        
         }
         int p = component.getPort();
         // TODO verify no listener OR listener is an admin instance
-        wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,null);
-        wiz.putProperty(AddDomainWizardIterator.HOST,h);
-        wiz.putProperty(AddDomainWizardIterator.PORT,p+"");
+        wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
+        wiz.putProperty(AddDomainWizardIterator.HOST, h);
+        wiz.putProperty(AddDomainWizardIterator.PORT, p+"");  //NOI18N
         return true;
     }
     
     // Event handling
     //
-    private final Set/*<ChangeListener> */listeners = new HashSet/*<ChangeListener>*/(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -129,13 +126,13 @@ class AddDomainHostPortPanel implements WizardDescriptor.FinishablePanel,
         }
     }
     protected final void fireChangeEvent() {
-        Iterator/*<ChangeListener>*/ it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
-            it = new HashSet/*<ChangeListener>*/(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener)it.next()).stateChanged(ev);
+            it.next().stateChanged(ev);
         }
     }
 

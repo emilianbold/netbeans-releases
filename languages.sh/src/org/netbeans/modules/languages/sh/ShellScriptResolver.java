@@ -28,12 +28,8 @@
 
 package org.netbeans.modules.languages.sh;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 
@@ -43,20 +39,22 @@ import org.openide.filesystems.MIMEResolver;
 public class ShellScriptResolver extends MIMEResolver {
 
     /** Default constructor for lookup. */
-    public ShellScriptResolver() {}
+    public ShellScriptResolver() {
+        super("text/sh");  //NOI18N
+    }
 
     public String findMIMEType(FileObject fo) {
-        if (fo.hasExt("sh")) {
-            return "text/sh";
+        if (fo.hasExt("sh")) {  //NOI18N
+            return "text/sh";  //NOI18N
         }
         if (fo.isData() && fo.hasExt("")) {
             try {
                 InputStream is = fo.getInputStream();
                 try {
-                    BufferedReader r = new BufferedReader(new InputStreamReader(is));
-                    String line = r.readLine(); // could be null
-                    if ("#!/bin/sh".equals(line) || "#!/bin/bash".equals(line)) {
-                        return "text/sh";
+                    byte[] bytes = new byte[12];
+                    int len = is.read(bytes);
+                    if (len > 0 && (startsWith(bytes, "#!/bin/sh") || startsWith(bytes, "#!/bin/bash"))) {  //NOI18N
+                        return "text/sh";  //NOI18N
                     }
                 } finally {
                     is.close();
@@ -67,4 +65,16 @@ public class ShellScriptResolver extends MIMEResolver {
         return null;
     }
 
+    /** Checks whether byte array starts with given string.
+     * @return true if byte array starts with given prefix, false otherwise
+     */
+    private static boolean startsWith(byte[] bytes, String prefix) {
+        byte[] prefixBytes = prefix.getBytes();
+        for (int i = 0; i < prefixBytes.length; i++) {
+            if (i > bytes.length-1 || bytes[i] != prefixBytes[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

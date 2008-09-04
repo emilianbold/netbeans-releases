@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.editor.nav;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -54,10 +53,9 @@ import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.Index.SearchScope;
 import org.netbeans.modules.gsf.api.NameKind;
-import org.netbeans.modules.gsf.api.TypeSearcher;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.gsf.api.IndexSearcher;
+import org.netbeans.modules.gsf.api.IndexSearcher.Descriptor;
 import org.netbeans.modules.php.editor.index.IndexedClass;
-import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.NbUtilities;
@@ -69,9 +67,9 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Jan Lahoda
  */
-public class PHPTypeSearcher implements TypeSearcher {
+public class PHPTypeSearcher implements IndexSearcher {
 
-    public Set<? extends GsfTypeDescriptor> getDeclaredTypes(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
+    public Set<? extends Descriptor> getTypes(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
         PHPIndex index = PHPIndex.get(gsfIndex);
         
         if (index == null) {
@@ -110,7 +108,11 @@ public class PHPTypeSearcher implements TypeSearcher {
         return result;
     }
 
-    private class PHPTypeDescriptor extends GsfTypeDescriptor {
+    public Set<? extends Descriptor> getSymbols(Index gsfIndex, String textForQuery, NameKind kind, EnumSet<SearchScope> scope, Helper helper) {
+        return getTypes(gsfIndex, textForQuery, kind, scope, helper);
+    }
+
+    private class PHPTypeDescriptor extends Descriptor {
         private final IndexedElement element;
         private final IndexedElement enclosingClass;
         private String projectName;
@@ -192,8 +194,6 @@ public class PHPTypeSearcher implements TypeSearcher {
                 sb.append(FileUtil.getFileDisplayName(file));
             }
             if (sb.length() > 0) {
-                sb.append(")");
-                sb.insert(0, " (");
                 return sb.toString();
             }
             return null;
@@ -214,11 +214,5 @@ public class PHPTypeSearcher implements TypeSearcher {
         public String getOuterName() {
             return null;
         }
-
     }
-    
-    public String getMimetype() {
-        return PHPLanguage.PHP_MIME_TYPE;
-    }
-
 }

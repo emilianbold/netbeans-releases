@@ -9,3 +9,5 @@ int foo() {
     
     return i;
 }
+
+__extension__ extern signed long long int bigVal;

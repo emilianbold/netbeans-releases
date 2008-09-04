@@ -250,7 +250,7 @@ public class AstRenderer {
             for (int i = 0; i < typedefs.length; i++) {
                 // It could be important to register in project before add as member...
 //                if (!isRenderingLocalContext()) {
-                    file.getProjectImpl().registerDeclaration(typedefs[i]);
+                    file.getProjectImpl(true).registerDeclaration(typedefs[i]);
 //                }
                 if (container != null) {
                     container.addDeclaration(typedefs[i]);
@@ -302,6 +302,9 @@ public class AstRenderer {
 	
 	// AST structure is different for int f1(A) and int f2(*A)
 	if( child != null && child.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
+        // we know it's variable initialization => no need to look for variable
+        // TODO: why we need to go deeper after * or & ? I'd prefer to return 'true'
+        if (true) return true;
 	    while( child != null && child.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
 		child = child.getNextSibling();
 	    }
@@ -1421,7 +1424,7 @@ public class AstRenderer {
     
     public CsmCondition renderCondition(AST ast, CsmScope scope) {
         if( ast != null && ast.getType() == CPPTokenTypes.CSM_CONDITION ) {
-            AST first = ast.getFirstChild();
+            AST first = getFirstChildSkipQualifiers(ast);
             if( first != null ) {
                 int type = first.getType();
                 if( isExpression(type) ) {

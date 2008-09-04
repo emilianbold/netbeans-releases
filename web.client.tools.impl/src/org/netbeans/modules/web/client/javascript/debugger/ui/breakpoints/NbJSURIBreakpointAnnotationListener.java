@@ -42,8 +42,13 @@
 package org.netbeans.modules.web.client.javascript.debugger.ui.breakpoints;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.netbeans.api.debugger.Breakpoint;
@@ -56,8 +61,10 @@ import org.openide.text.Line;
 public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnnotationListener {
 
     private final List<NbJSURIBreakpoint> uriBreakpoints = new CopyOnWriteArrayList<NbJSURIBreakpoint>();
-    private final Map<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>> engineToBreakpointsToAnnotations = new HashMap<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>>();
+    private final Map<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>> engineToBreakpointsToAnnotations = new ConcurrentHashMap<DebuggerEngine, Map<NbJSURIBreakpoint, Annotation>>();
     
+    private final Map<Annotation, Breakpoint> lingeringAnnotations = new WeakHashMap<Annotation, Breakpoint>();
+
     @Override
     public String[] getProperties() {
         return new String[] { DebuggerManager.PROP_BREAKPOINTS, DebuggerManager.PROP_DEBUGGER_ENGINES };
@@ -111,7 +118,17 @@ public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnn
 
     @Override
     public void engineRemoved(DebuggerEngine engine){
+        assert engine != null;
+
         /* Remove the engine */
+        Map<NbJSURIBreakpoint, Annotation> map = engineToBreakpointsToAnnotations.get(engine);
+        if (map != null) {
+            synchronized (lingeringAnnotations) {
+                for (Entry<NbJSURIBreakpoint, Annotation> entry : map.entrySet()) {
+                    lingeringAnnotations.put(entry.getValue(), entry.getKey());
+                }
+            }
+        }
         engineToBreakpointsToAnnotations.remove(engine);
         
         /* I don't think I need to remove the annotation because it is closing. */
@@ -130,8 +147,31 @@ public final class NbJSURIBreakpointAnnotationListener extends NbJSBreakpointAnn
     @Override
     protected final void removeBreakpointAnnotation(final NbJSBreakpoint b){
         assert b instanceof NbJSURIBreakpoint;
+
+        boolean annotationFound = false;
+
         for( DebuggerEngine engine : engineToBreakpointsToAnnotations.keySet()){ 
             removeBreakpointAnnotation((NbJSURIBreakpoint)b,engine);
+            annotationFound = true;
+        }
+        
+        synchronized (lingeringAnnotations) {
+            if (!annotationFound && lingeringAnnotations.containsValue(b)) {
+                Set<Annotation> keysToRemove = new LinkedHashSet<Annotation>();
+                for (Entry<Annotation, Breakpoint> entry : lingeringAnnotations.entrySet()) {
+                    if (entry.getValue() == b) {
+                        Annotation annotation = entry.getKey();
+                        if (annotation != null) {
+                            annotation.detach();
+                        }
+                        keysToRemove.add(annotation);
+                    }
+                }
+                
+                for (Annotation annotation : keysToRemove) {
+                    lingeringAnnotations.remove(annotation);
+                }
+            }
         }
         assert enableBreakpointPropertyChangeListener != null;
         b.removePropertyChangeListener(enableBreakpointPropertyChangeListener);

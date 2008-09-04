@@ -321,7 +321,7 @@ public class Hk2PluginProperties {
     public static String buildPath(List<URL> path) {
         String PATH_SEPARATOR = System.getProperty("path.separator"); // NOI18N
 
-        StringBuffer sb = new StringBuffer(path.size() * 16);
+        StringBuilder sb = new StringBuilder(path.size() * 16);
         for (Iterator<URL> i = path.iterator(); i.hasNext();) {
             sb.append(urlToString(i.next()));
             if (i.hasNext()) {

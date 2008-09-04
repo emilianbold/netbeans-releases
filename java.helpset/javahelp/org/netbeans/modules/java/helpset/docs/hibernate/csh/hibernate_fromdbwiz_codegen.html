@@ -29,7 +29,8 @@
             <li><strong>General Settings.</strong>
             The General Settings apply to the code of the generated POJOs.
                 <ul>
-                    <li><strong>Java 5 Syntax.</strong></li>
+                    <li><strong>Java 5 Syntax.</strong> When selected the generated code will take advantage of
+                    Java language features such as generics and static imports that are supported by JDK 5.</li>
                     <li><strong>EJB 3 Annotations.</strong> When selected the generated POJOs use
                     annotations for mapping information.</li>
                 </ul>
@@ -40,7 +41,7 @@
                     <li><strong>Domain Code (.java).</strong> When selected the IDE generates a POJO for each of the
                     tables you specified in the wizard. 
                     When deselected no POJOs are generated.</li>
-                    <li><strong>Hibernate XML Mapping (.hbm.xml).</strong> When selected the IDE generates a mapping file
+                    <li><strong>Hibernate XML Mappings (.hbm.xml).</strong> When selected the IDE generates a mapping file
                     (<tt>.hbm.xml</tt>) for each of the tables you specified in the wizard. 
                     When deselected no mapping files are generated.</li>
                 </ul>
@@ -51,7 +52,7 @@
             <li><strong>Project.</strong> Specifies the name of the project. (read only)</li>
             <li><strong>Location.</strong> Specifies the location of the package containing the generated mapping files and POJOs.</li>
             <li><strong>Package.</strong> Specified the name of the package where the mapping files and POJOs are created.
-            Select an existing package from the drop-down menu or type the name of a new package.</li>
+            Select an existing package from the drop down list or type the name of a new package.</li>
         </ul>
             
             
@@ -59,10 +60,13 @@
         <p>When you click Finish, the IDE generates the files you selected in the Code Generation Settings.
         The IDE also generates the <tt>hibernate.reveng</tt> reverse engineering file
         in the location you specified in the first page of the wizard.
+        The <tt>hibernate.reveng</tt> is not necessary for compiling your project and can be deleted if desired.
         </p>
         
         <dl>
             <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../hibernate_fromdb.html">Generating Hibernate Mapping Files and POJOs from a Database</a> </dd>
+            <dd><a href="../hibernate_workingwith.html">Working with Hibernate</a> </dd>
             <dd><a href="../hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
             <dd><a href="../hibernate_about.html">About Hibernate Support</a> </dd>
             <dd><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a></dd>

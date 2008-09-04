@@ -98,13 +98,26 @@
     const PROP_ERROR        = NetBeans.Constants.jsdIPropertyIF.FLAG_ERROR;
     const PROP_HINTED       = NetBeans.Constants.jsdIPropertyIF.FLAG_HINTED;
     const PROP_CONST        = 0x8000;
-
+    
     // patterns
     const CONSTANTS_FILTER    = new RegExp("^[A-Z][A-Z_]*$");
     const JAVA_OBJECT_PATTERN = new RegExp("^Java(Array|Member|Object|Package)$");
     const WATCH_SRCIPT = '[Watch-script]';
     const FUNCTION_ASSIGNMENT_PATTERN = new RegExp("([\\w\\.]+)\\s*[:=]\\s*$");
-
+    
+    var RESPONSE_CMDS = {
+        feature_set : true,
+        breakpoint_set : true,
+        breakpoint_remove : true,
+        breakpoint_update : true,
+        stack_depth : true,
+        stack_get : true,
+        property_get : true,
+        property_set : true,
+        eval : true,
+        source : true
+    };
+    
     var topWindow;
     var browser;
 
@@ -135,8 +148,6 @@
     var socket = null;
 
     var enabled = false;
-
-    var transactionId;
 
     var hookReturn;
 
@@ -241,17 +252,15 @@
         port = _port;
         sessionId = _sessionId;
 
-        jsDebuggerService = FBL.jsd;
+        jsDebuggerService = NetBeans.Utils.CCSV(
+        NetBeans.Constants.jsdIDebuggerServiceCID,
+        NetBeans.Utils.CI("jsdIDebuggerService"));
 
-        firebugDebuggerService = FBL.fbs;
+        firebugDebuggerService = NetBeans.Utils.CC(NetBeans.Constants.FirebugCID).getService().wrappedJSObject;
 
         const socketListener = {
             onDBGPCommand: function(command) {
-                try {
-                    processCommand(command);
-                } catch (e) {
-                    window.NetBeans.Logger.logException(e);
-                }
+                handleCommand(command);
             },
             onDBGPClose: function() {
                 window.NetBeans.Debugger.shutdown();
@@ -550,20 +559,62 @@
     // command handling
     const commandRegularExpression = /^\s*(\w+)\s*-i\s*(\d+)\s*(.*)$/;
 
-    function processCommand(command) {
-        command = command.replace(/\r\n|\r|\n/g, '');
-
-        var matches = commandRegularExpression.exec(command);
-        if (!matches) {
-            throw new Error("Can't get a command out of [" + command + "]");
+    // process command w/ error handling
+    function handleCommand(command) {
+        socket.sentFlag = false;
+        var cmd;
+        var transactionId;
+        var excMsg = "Unknown error";
+        try {
+            var matches = preprocessCommand(command);
+            if (!matches) {
+                throw new Error("Can't get a command out of [" + command + "]");
+            }
+            cmd = matches[1];
+            transactionId = matches[2];
+            
+            processCommand(matches);
+        } catch (e) {
+            window.NetBeans.Logger.logException(e);
+            excMsg = e.message;
+        } finally {
+            if (transactionId && !socket.sentFlag && wantsAcknowledgment(cmd)) {
+                var errorResponse =
+                    <response command="runtime_error"
+                    transaction_id={
+                        transactionId
+                    }
+                    message={
+                        excMsg
+                    }
+                    />;
+                socket.send(errorResponse);
+                socket.sentFlag = false;
+            }
         }
+    }
+    
+    function wantsAcknowledgment(cmd) {
+        if (!cmd) {
+            return false;
+        }
+        
+        return RESPONSE_CMDS[cmd];
+    }
+    
+    function preprocessCommand(command) {
+        command = command.replace(/\r\n|\r|\n/g, '');
+        return commandRegularExpression.exec(command);
+    }
+    
+    function processCommand(matches) {
         var cmd = matches[1];
-        transactionId = matches[2];
+        var transactionId = matches[2];
 
         //NetBeans.Logger.log("debugger.commandRegularExpress cmd:" +cmd);
 
         if (cmd == "feature_set") {
-            feature_set(matches[3]);
+            feature_set(transactionId, matches[3]);
         } else if (cmd == "breakpoint_set") {
             breakpoint_set(transactionId, matches[3]);
         } else if (cmd == "breakpoint_remove") {
@@ -574,50 +625,42 @@
             open_uri(matches[3]);
         } else if (cmd == "run") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is already running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is already running");
             }
             resume("resume");
         } else if (cmd == "pause") {
             if ( debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is already suspended");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is already suspended");
             }
             suspend("suspend");
         } else if (cmd == "step_into" || cmd == "step_over" || cmd == "step_out") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is already running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is already running");
             }
             step(cmd);
         } else if (cmd == "stack_depth") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is running");
             }
             sendStackDepthResponse(transactionId);
         } else if (cmd == "stack_get") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is running");
             }
             sendStackGetResponse(transactionId);
         } else if (cmd == "property_get") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is running");
             }
             property_get(transactionId, matches[3]);
         } else if (cmd == "property_set") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is running");
             }
             property_set(transactionId, matches[3]);
         } else if (cmd == "eval") {
             if ( !debugging ) {
-                NetBeans.Logger.log("Invalid Command: " + cmd  + " - debuggee is running");
-                return;
+                throw new Error("Invalid Command: " + cmd  + " - debuggee is running");
             }
             onEval(transactionId, matches[3]);
         } else if (cmd == "source") {
@@ -625,7 +668,6 @@
         }   else if (cmd == "stop") {
             terminate();
         }
-        transactionId = -1;
     }
 
     // TODO: Call Shutdown
@@ -635,7 +677,7 @@
 
     // 1. feature_set
     const feature_setCommandRegularExpression = /^\s*-n\s*(\w+)\s*-v\s*(.+)\s*$/;
-    function feature_set(command) {
+    function feature_set(transactionId, command) {
         var matches = feature_setCommandRegularExpression.exec(command);
         if (!matches) {
             throw new Error("Can't get a feature_set command arguments out of [" + command + "]");
@@ -1221,7 +1263,10 @@
             throw new Error("Can't get a source command arguments out of [" + command + "]");
         }
         var sourceURI = matches[1];
-        var data = currentFirebugContext.sourceCache.load(sourceURI);
+        var data;
+        if (currentFirebugContext && currentFirebugContext.sourceCache && currentFirebugContext.sourceCache.load) {
+          data = currentFirebugContext.sourceCache.load(sourceURI);
+        }
         if (data) {
             // Firebug converts sources to Unicode, but we
             // transmit them in UTF-8 - the default XML encoding.
@@ -1537,7 +1582,8 @@
         const delayShutdownIfDebugging = function() {
             disable();
             NetBeans.Debugger.shutdown();
-            window.close();
+            // #144937 - why did we close the window on shutdown anyway?
+            //window.close();
         };
 
         if (debugging) {

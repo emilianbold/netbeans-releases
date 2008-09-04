@@ -176,9 +176,13 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 int hash = 11;
                 hash = 31 * hash + this.zzState;
                 hash = 31 * hash + this.zzLexicalState;
-                hash = 31 * hash + this.stack.hashCode();
+                if (stack != null) {
+                    hash = 31 * hash + this.stack.hashCode();
+                }
                 hash = 31 * hash + this.heredoc_len;
-                hash = 31 * hash + this.heredoc.hashCode();
+                if (heredoc != null) {
+                    hash = 31 * hash + this.heredoc.hashCode();
+                }
                 return hash;
             }
         }
@@ -856,6 +860,9 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 <ST_PHP_IN_SCRIPTING,ST_PHP_LINE_COMMENT>"?>"{WHITESPACE}? {
         //popState();
         yybegin(YYINITIAL);
+        if (yylength() > 2) {
+            yypushback(yylength()-2);
+        }
         stack.clear();
 	return PHPTokenId.PHP_CLOSETAG;
 }
