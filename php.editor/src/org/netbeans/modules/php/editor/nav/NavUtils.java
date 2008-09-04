@@ -161,8 +161,12 @@ public class NavUtils {
                 continue;
             }
 
-            if (leaf instanceof ArrayAccess && result == null) {
-                return a.getElement(leaf);
+            if (leaf instanceof ArrayAccess) {
+                if (result == null) {
+                    return a.getElement(leaf);
+                } else {
+                    continue;
+                }
             }
 
             if (leaf instanceof FunctionInvocation) {
