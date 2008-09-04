@@ -251,7 +251,7 @@ public class Utils {
      * @return the components of the path
      */
     private static final String [] split(String path, String pat) {
-        Vector comps = new Vector();
+        Vector<String> comps = new Vector<String>();
         int pos = path.indexOf(pat);
         int start = 0;
         while( pos >= 0 ) {
@@ -267,7 +267,7 @@ public class Utils {
         }
         String [] result = new String[comps.size()];
         for(int i=0; i < comps.size(); i++) {
-            result[i] = (String)comps.elementAt(i);
+            result[i] = comps.elementAt(i);
         }
         return result;
     }

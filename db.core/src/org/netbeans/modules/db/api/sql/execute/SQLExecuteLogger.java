@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,16 +31,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.earproject;
-
-import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+package org.netbeans.modules.db.api.sql.execute;
 
 /**
- * @author  vkraemer
+ * This interface defines a logger that can log information about each
+ * statement as it is executed
+ *
+ * @author David Van Couvering
  */
-public interface ProjectPropertyProvider {
+public interface SQLExecuteLogger {
 
-    public EarProjectProperties getProjectProperties();
+    /**
+     * A statement has completed executing, and this method can be used
+     * to log information about the statement
+     * 
+     * @param info information about the statement that was executed
+     */
+    public void log(StatementExecutionInfo info);
+
+    /**
+     * This method is called when all statements have been executed.
+     *
+     * @param executionTime the time it took in milliseconds for all statements
+     *   to be executed.
+     */
+    public void finish(long executionTime);
+
+
+    /**
+     * This method is called when execution is cancelled.
+     */
+    public void cancel();
+
 }
