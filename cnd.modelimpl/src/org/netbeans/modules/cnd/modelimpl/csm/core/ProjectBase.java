@@ -59,7 +59,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
@@ -70,7 +69,6 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.StatePair;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -1027,23 +1025,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             // store new information in the entry
             //
 
-            AtomicBoolean parseNeeded = new AtomicBoolean(false);
-            AtomicBoolean cleanNeeded = new AtomicBoolean(false);
-            AtomicBoolean oldStatesHasCompileContext = new AtomicBoolean(false);
-            
             Collection<FileContainer.StatePair> statesToKeep = new ArrayList<FileContainer.StatePair>();
+            int comparisonResult;
+            AtomicBoolean newStateFound = new AtomicBoolean();
 
             // We need to make this pre check
             // at least for the case of recursion
-            if (newState.isValid()) {
-                synchronized (entry.getLock()) {
-                    checkStates(newState, entry.getStates(), oldStatesHasCompileContext, statesToKeep, parseNeeded, cleanNeeded);
-                    if (parseNeeded.get()) {
-                        // This is preliminary. We *must* set correct states later
-                        entry.setStates(statesToKeep, new StatePair(newState, null));
+            synchronized (entry.getLock()) {
+                comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
+                if (comparisonResult == BETTER) {
+                    // some of the old states are worse than the new one; we'll deinitely parse
+                    if (TraceFlags.SMART_HEADERS_PARSE) {
+                        entry.setStates(statesToKeep, new FileContainer.StatePair(newState, null));
+                    } else {
+                        entry.setStates(newState, null);
                     }
-                    entryModCount = entry.getModCount();
                 }
+                entryModCount = entry.getModCount();
             }
             
             // gather macro map from all includes
@@ -1051,146 +1049,88 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, pcState);
             walker.visit();
 
-            if (!newState.isValid()) {
-                // we know for sure that entry wasn't changed - no need to restore
-                return csmFile;
-            }
-            if (!newState.isCompileContext() && oldStatesHasCompileContext.get()) {
-                // we know for sure that entry wasn't changed - no need to restore
+            if (comparisonResult == WORSE) {
                 return csmFile;
             }
 
-            Collection<APTPreprocHandler.State> statesToParse = new ArrayList<APTPreprocHandler.State>();
-            statesToParse.add(newState);
-
-            //
-            // 1) check that entry has not been changed since previous check;
+            // 1) check that the entry has not been changed since previous check;
             //    if it has, perform the check again
             // 2) check preocessor conditions state (if needed)
-            //
-            
-            synchronized (entry.getLock()) {                
 
-                // 1) check that entry has not been changed since previous check;
-                //    if it has, perform the check again
+            synchronized (entry.getLock()) {            
+                // if the entry has been changed since previous check, check again
                 if (entry.getModCount() != entryModCount) {
-                    // the entry was changed! check once more
-                    statesToKeep.clear();
-                    parseNeeded.set(false);
-                    cleanNeeded.set(false);
-                    oldStatesHasCompileContext.set(false);
-
-                    checkStates(newState, entry.getStates(), oldStatesHasCompileContext, statesToKeep, parseNeeded, cleanNeeded);
-
-                    if (!newState.isCompileContext() && oldStatesHasCompileContext.get()) {
-                        entry.setStates(statesToKeep);
+                    comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
+                    if (comparisonResult == WORSE) {
+                        return csmFile;
+                    }
+                    if (!newStateFound.get()) {
+                        // our state was removed => it was invalidated => no need to parse
                         return csmFile;
                     }
                 }
+                // from that point we are NOT interested in what is in the entry:
+                // it's locked; "good" states are are in statesToKeep, "bad" states don't matter
+
+                // it's better than rely on pcStates check -
+                // somebody could place state, but not yet calculate pcState
+                if (comparisonResult == SAME && newStateFound.get() && csmFile.isParsed()) {
+                    return csmFile;
+                }
                 
-                if (statesToKeep.isEmpty()) {
-                    entry.setStates(newState, pcState);
-                    cleanNeeded.set(true);
-                    parseNeeded.set(true);
-                } else {
-                    // 2. check condition states
+                assert comparisonResult != WORSE;
+                
+                boolean parse;
+                boolean clean;
+
+                Collection<APTPreprocHandler.State> statesToParse = new ArrayList<APTPreprocHandler.State>();
+                statesToParse.add(newState);
+                
+                if (comparisonResult == BETTER) {
+                    parse = clean = true;
+                } else {  // comparisonResult == SAME
                     if (TraceFlags.SMART_HEADERS_PARSE) {
-                                                
-                        boolean isSubset = true; // true if this state is a subset of each old state 
-                        boolean isSuperset = true; // true if this state is a superset of each old state
-                        
-                        Collection<FilePreprocessorConditionState> possibleSuperSet = new ArrayList<FilePreprocessorConditionState>();
-
-                        // the checks above guarantee that
-                        // 1. all statesToKeep are valid
-                        // 2. either them all are compileContext
-                        //    or this one and them all are NOT compileContext
-                        // so we do *not* check isValid & isCompileContext
-
-                        for (FileContainer.StatePair old : statesToKeep) {
-                            if (!pcState.isSubset(old.pcState)) {
-                                isSubset = false;
-                            }
-                            if(old.pcState != null && !old.pcState.isSubset(pcState)) {
-                                isSuperset = false;
-                            }
-                            if (old.pcState != null) {
-                                possibleSuperSet.add(old.pcState);
-                            }
-                        }
-                        if (!isSubset) {
-                            if (pcState.isSubset(possibleSuperSet)) {
-                                isSubset = true;
-                            }
-                        }
-
-                        if (isSubset) {
-                            parseNeeded.set(false);
-                            // cleanNeeded.set(false) might be true if there were some invalid states
-                        } else if (isSuperset) {
-                            statesToKeep.clear();
-                            parseNeeded.set(true);
-                            cleanNeeded.set(true);
-                        } else {
-                            parseNeeded.set(true);
-                            // cleanNeeded.set(false) might be true if there were some invalid states
-                        }
-                        if (parseNeeded.get()) {
-                            if (cleanNeeded.get()) {
-                                for (FileContainer.StatePair old : statesToKeep) {
-                                    statesToParse.add(old.state);
-                                }
-                            }
-                            statesToKeep.add(new FileContainer.StatePair(newState, pcState));
-                            entry.setStates(statesToKeep);
-                        } else {
-                            // we probably already added this one; but then decided not to parse it
-                            // so let's restore entry to the old state
-                            entry.setStates(statesToKeep);
-                        }
-
-                    } else {
-                        // we either replace them all with this one
-                        // or do nothing
-                        boolean newIsTheBest = true;
-                        for (FileContainer.StatePair pair : statesToKeep) {
-                            if (isSecondStateBetter(newState, pair.state) || !isSecondPCStateBetter(pair.pcState, pcState)) {
-                                newIsTheBest = false;
+                        comparisonResult = fillStatesToKeep(newState, pcState, new ArrayList(statesToKeep), statesToKeep);
+                        switch (comparisonResult) {
+                            case BETTER:
+                                parse = clean = true;
                                 break;
-                            }
+                            case SAME:
+                                parse = true;
+                                clean = false;
+                                break;
+                            case WORSE:
+                                parse = clean = false;
+                                break;
+                            default: 
+                                assert false : "unexpected comparison result: " + comparisonResult; //NOI18N
+                                parse = clean = false;
+                                break;
                         }
-                        if (newIsTheBest) {
-                            entry.setStates(newState, pcState);
-                            parseNeeded.set(true);
-                            cleanNeeded.set(true);
+                    } else {
+                        if( isBetterThanAll(pcState, statesToKeep)) {
+                            parse = clean = true;
                         } else {
-                            parseNeeded.set(false);
-                            cleanNeeded.set(false);
+                            parse = clean = false;
                         }
                     }
-//                    if (parseNeeded.get()) {
-//                        entry.setPCState(newState, pcState);
-//                    }
                 }
-            }
-
-            // TODO: think over, what if we aready changed entry, 
-            // but now deny parsing, because base, but not this project, is disposing?!
-            if (parseNeeded.get() && !isDisposing() && !base.isDisposing()) {
-                if (cleanNeeded.get()) {
-                    for (FileContainer.StatePair pair : entry.getStates()) {
-                        if (pair.state != newState) {
-                            if (!isSecondStateBetter(pair.state, newState)) {
+                // TODO: think over, what if we aready changed entry,
+                // but now deny parsing, because base, but not this project, is disposing?!
+                if (parse && !isDisposing() && !base.isDisposing()) {
+                    if (clean) {
+                        if (TraceFlags.SMART_HEADERS_PARSE) {
+                            for (FileContainer.StatePair pair : statesToKeep) {
                                 statesToParse.add(pair.state);
                             }
                         }
+                        csmFile.markReparseNeeded(false);
+                    } else {
+                        csmFile.markMoreParseNeeded();
                     }
-                    csmFile.markReparseNeeded(false);
-                } else {
-                    csmFile.markMoreParseNeeded();
+                    entry.setStates(statesToKeep, new FileContainer.StatePair(newState, pcState));
+                    scheduleIncludedFileParsing(csmFile, statesToParse, clean);
                 }
-                assert statesToParse != null;
-                scheduleIncludedFileParsing(csmFile, statesToParse, cleanNeeded.get());
             }
             return csmFile;
         } finally {
@@ -1198,60 +1138,150 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    private void checkStates(
-            State newState, Collection<FileContainer.StatePair> oldStates,
-            AtomicBoolean oldStatesHasCompileContext, Collection<StatePair> statesToKeep,
-            AtomicBoolean parseNeeded, AtomicBoolean cleanNeeded) {
+    private static final int BETTER = 1;
+    private static final int SAME = 0;
+    private static final int WORSE = -1;
+
+
+    /**
+     * Checks old states and new one, decides
+     * 1. which states to keep
+     *    (returns collection of these states)
+     * 2. is new state better, worse, or ~same than old ones
+     *
+     * NB: all OUT parameters are set in this function, so their initial values don't matter
+     *
+     * @param newState  IN:  new proprocessor state
+     *
+     * @param oldStates IN:  a collection of old states;
+     *                       it might contain newState as well
+     * 
+     * @param statesToKeep  OUT: aray to fill with of old states
+     *                      (except for new state! - it isnt copied here)
+     *                      Unpredictable in the case function returns WORSE 
+     *
+     * @param  newStateFound  OUT: set to true if new state is found among old ones
+     *
+     * @return  BETTER - new state is better than old ones 
+     *          SAME - new state is more or less  the same :) as old ones
+     *          WORSE - new state is worse than old ones
+     *
+     * NB: if exit is true, the return value is unpredictable and shouldn't be used.
+     */
+    private int fillStatesToKeep(
+            APTPreprocHandler.State newState, 
+            Collection<FileContainer.StatePair> oldStates,
+            Collection<FileContainer.StatePair> statesToKeep,
+            AtomicBoolean newStateFound) {
         
-        // we assume that
-        // newState isn't null and is valid
+        if (newState == null || !newState.isValid()) {
+            return WORSE;
+        }
+        
+        statesToKeep.clear();
+        newStateFound.set(false);
+        int result = SAME;
 
         for (FileContainer.StatePair pair : oldStates) {
-            boolean keep = false;
-            if (pair.state != null && pair.state.isValid()) {
-                if (pair.state.isCompileContext()) {
-                    oldStatesHasCompileContext.set(true);
-                    keep = true;
-                } else if (!newState.isCompileContext()) {
-                    keep = true;
+            // newState might already be contained in oldStates
+            // it should NOT be added to result
+            if (newState.equals(pair.state)) {
+                newStateFound.set(true);
+            } else {
+                boolean keep = false;
+                if (pair.state != null && pair.state.isValid()) {
+                    if (pair.state.isCompileContext()) {
+                        keep = true;
+                        if (!newState.isCompileContext()) {
+                            return WORSE;
+                        }
+                    } else {
+                        keep = !newState.isCompileContext();
+                    }
+                }
+                if (keep) {
+                    statesToKeep.add(pair);
+                } else {
+                    result = BETTER;
                 }
             }
-            if (keep) {
-                statesToKeep.add(pair);
-            } else {
-                cleanNeeded.set(true);
-                parseNeeded.set(true);
+        }
+        return result;
+    }
+    
+    
+    private boolean isBetterThanAll(
+            FilePreprocessorConditionState pcState,
+            Collection<FileContainer.StatePair> oldStates) {
+        
+        boolean newIsTheBest = true;
+        for (FileContainer.StatePair pair : oldStates) {
+            if (!pcState.isBetter(pair.pcState)) {
+                newIsTheBest = false;
             }
         }
+        return newIsTheBest;
     }
 
-//    private static <T> Collection<T> join(Collection<T> collection, T value) {
-//        Collection<T> result = new ArrayList<T>(collection.size() + 1);
-//        result.add(value);
-//        return result;
-//    }
+    /**
+     * If it returns EXIT, statesToKeep content is unpredictable!
+     * 
+     * @param newState
+     * @param pcState
+     * @param oldStates
+     * @param statesToKeep
+     * @return
+     */
+    private int fillStatesToKeep(
+            APTPreprocHandler.State newState,
+            FilePreprocessorConditionState pcState,
+            Collection<FileContainer.StatePair> oldStates,
+            Collection<FileContainer.StatePair> statesToKeep) {
+        
+        boolean isSubset = true; // true if this state is a subset of each old state 
+        boolean isSuperset = true; // true if this state is a superset of each old state
+
+        Collection<FilePreprocessorConditionState> possibleSuperSet = new ArrayList<FilePreprocessorConditionState>();
+
+        // we assume that
+        // 1. all statesToKeep are valid
+        // 2. either them all are compileContext
+        //    or this one and them all are NOT compileContext
+        // so we do *not* check isValid & isCompileContext
+
+        statesToKeep.clear();
+        
+        for (FileContainer.StatePair old : statesToKeep) {
+            if( pcState.isSubset(old.pcState)) {
+                return WORSE;
+            }
+            if (old.pcState == null) {
+                isSuperset = false;
+                // not yet filled - keep it
+                statesToKeep.add(old);
+            } else {
+                possibleSuperSet.add(old.pcState);
+                if (!old.pcState.isSubset(pcState)) {
+                    isSuperset = false;
+                    statesToKeep.add(old);
+                }
+            }
+        }
+        if (pcState.isSubset(possibleSuperSet)) {
+            return WORSE;
+        }        
+        if (isSuperset) {
+            statesToKeep.clear();
+            return BETTER;
+        } else {
+            return SAME;
+        }
+    }
     
     private static final boolean isValid(APTPreprocHandler.State state) {
         return state != null && state.isValid();
     }
     
-    private static boolean isSecondStateBetter(APTPreprocHandler.State first, APTPreprocHandler.State second) {
-        if (first == null || !first.isValid()) {
-            return true;
-        } else if (!first.isCompileContext() && second.isCompileContext()) {
-            return true;
-        }
-        return false;
-    }
-
-    private static boolean isSecondPCStateBetter(FilePreprocessorConditionState first, FilePreprocessorConditionState second) {
-        if (second == null) {
-            return false;
-        } else {
-            return second.isBetter(first);
-        }
-    }
-
     public ProjectBase findFileProject(CharSequence absPath) {
         // check own files
         // Wait while files are created. Otherwise project file will be recognized as library file.
