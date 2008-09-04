@@ -33,12 +33,14 @@
             <ol>
                <li>Open the New File wizard.</li>
                <li>Select Hibernate from the Categories list and Hibernate Configuration File from the File Types list. Click Next.</li>
-               <li>Type hibernate.cfg for the class name. Click Next.</li>
+               <li>Type hibernate.cfg for the class name and specify a location. Click Next.</li>
                <li>Select a Database Connection from the drop down list. Click Finish.</li>
             </ol>
         
-            <p>When you click Finish, the file <tt>hibernate.cfg.xml</tt> is created in a source package with the name
-            <tt>&lt;default package&gt;</tt> and the file opens in the Source Editor.
+            <p>When you click Finish, the file <tt>hibernate.cfg.xml</tt> is created in the location you specified 
+            and the file opens in the Source Editor.
+            If you did not specify a location the file is created in a source package with the name
+            <tt>&lt;default package&gt;</tt>.
             The wizard also adds the Hibernate library to the classpath
             if it has not already been added.</p>
             <ul class="note">
