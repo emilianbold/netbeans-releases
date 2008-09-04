@@ -50,6 +50,7 @@ import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
@@ -302,7 +303,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             }
             if (!node.getField().isDollared()) {
                 Expression expr = node.getField().getName();
-                processFieldAccess(expr);
+                (new FieldAccessVisitor()).scan(expr);
                 OffsetRange or = new OffsetRange(expr.getStartOffset(), expr.getEndOffset());
                 highlights.put(or, ColoringAttributes.FIELD_SET);
             }
@@ -330,16 +331,16 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         @Override
         public void visit(StaticFieldAccess node) {
             Expression expr = node.getField().getName();
-            processFieldAccess(expr);
+            (new FieldAccessVisitor()).scan(expr);
             OffsetRange or = new OffsetRange(expr.getStartOffset(), expr.getEndOffset());
             highlights.put(or, ColoringAttributes.STATIC_FIELD_SET);
         }
 
-        private void processFieldAccess(Expression expr) {
-            if (expr instanceof Identifier) {
-                String name = ((Identifier) expr).getName();
+        private class FieldAccessVisitor extends DefaultVisitor {
+            @Override
+            public void visit(Identifier identifier) {
                 //remove the field, because is used
-                IdentifierColoring removed = privateFieldsUsed.remove(name);
+                IdentifierColoring removed = privateFieldsUsed.remove(identifier.getName());
                 if (removed != null) {
                     // if it was removed, marked as normal field
                     OffsetRange or = new OffsetRange(removed.identifier.getStartOffset(), removed.identifier.getEndOffset());
