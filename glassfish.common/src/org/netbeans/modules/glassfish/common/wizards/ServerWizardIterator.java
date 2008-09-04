@@ -45,10 +45,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -79,20 +80,16 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     private transient int index = 0;
     private transient WizardDescriptor.Panel[] panels = null;
         
-    private transient Set <ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private transient List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     private String domainsDir;
     private String domainName;
     
     public void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        listeners.remove(l);
     }
     
     public void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        listeners.add(l);
     }
     
     public void uninitialize(WizardDescriptor wizard) {
@@ -123,7 +120,6 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
                 DialogDisplayer.getDefault().notify(d);
             }
         });
-        
     }
     
     public Set instantiate() throws IOException {
@@ -131,15 +127,13 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
         File dFile = new File(domainsDir+File.separator+domainName);
         if (!dFile.exists() && AddServerLocationPanel.canCreate(dFile)) {
             // Need to create a domain right here!
-                        Map<String, String> ip = new HashMap<String, String>();
-                        ip.put(GlassfishModule.INSTALL_FOLDER_ATTR,
-                                installRoot);
-                        ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR,
-                                glassfishRoot);
-                            ip.put(GlassfishModule.DISPLAY_NAME_ATTR,
-                                (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
-                            ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
-                            ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
+            Map<String, String> ip = new HashMap<String, String>();
+            ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
+            ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot);
+            ip.put(GlassfishModule.DISPLAY_NAME_ATTR,
+                    (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
+            ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
+            ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
             CreateDomain cd = new CreateDomain("anonymous","", new File(glassfishRoot), ip);
             cd.start();
             result.add(GlassfishInstanceProvider.getDefault().getInstance(domainsDir));
@@ -219,13 +213,9 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     }
     
     protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
         ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+        for(ChangeListener listener: listeners) {
+            listener.stateChanged(ev);
         }
     }
     
