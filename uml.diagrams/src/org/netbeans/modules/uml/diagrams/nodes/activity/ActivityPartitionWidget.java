@@ -92,7 +92,7 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
     private UMLNameWidget nameWidget;
     private Widget partitionPanel;
     private static ResourceBundle bundle = NbBundle.getBundle(ContainerNode.class);
-    private SeparatorWidget.Orientation orientation = SeparatorWidget.Orientation.VERTICAL;
+    private SeparatorWidget.Orientation orientation = SeparatorWidget.Orientation.HORIZONTAL;
     private ArrayList<IElement> elements = new ArrayList<IElement>();
     private ArrayList<CompartmentWidget> compartmentWidgets = new ArrayList<CompartmentWidget>();
 
@@ -151,8 +151,7 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         partitionPanel.setMinimumSize(new Dimension(100, 85));
         partitionPanel.setForeground(null);
         
-        // TODO: need to find a way to figure out the exisiting orientation of sub parttition
-        setOrientation(SeparatorWidget.Orientation.VERTICAL); 
+        setOrientation(orientation); 
         if (!PersistenceUtil.isDiagramLoading())
         {
             initializeSubPartitions(partitionElement);
@@ -177,7 +176,7 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
     public void setOrientation(SeparatorWidget.Orientation orientation)
     {
         this.orientation = orientation;
-        if (orientation == SeparatorWidget.Orientation.VERTICAL)
+        if (orientation == SeparatorWidget.Orientation.HORIZONTAL)
         {
             partitionPanel.setLayout(LayoutFactory.createHorizontalFlowLayout(LayoutFactory.SerialAlignment.JUSTIFY, 0));
         } else
@@ -186,16 +185,10 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         }
         for (CompartmentWidget widget : compartmentWidgets)
         {
-            widget.updateOrientation(orientation == SeparatorWidget.Orientation.VERTICAL);
+            widget.updateOrientation(isHorizontalLayout());
         }
     }
 
-
-    public void addSubPartition(IActivityPartition subPart)
-    {
-        SubPartitionWidget subPartWidget = createSubPartitionWidget(subPart);
-        addSubPartition(subPartWidget);
-    }
 
     public void addSubPartition(SubPartitionWidget subPartWidget)
     {
@@ -322,11 +315,9 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
             ETList<IActivityPartition> partitions = parentPartition.getSubPartitions();
             if (partitions != null && partitions.size() > 0)
             {
-                IActivityPartition subPart = null;
                 for (int i = 0; i < partitions.size(); i++)
                 {
-                    subPart = partitions.get(i);
-                    addSubPartition(subPart);
+                    addCompartment(partitions.get(i));
                 }
             }
             else // there's no subPartition, create one
@@ -334,7 +325,7 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
                 TypedFactoryRetriever<IActivityPartition> ret = new TypedFactoryRetriever<IActivityPartition>();
                 IActivityPartition subPartition = ret.createType("ActivityPartition");
                 parentPartition.addSubPartition(subPartition);
-                addSubPartition(subPartition);              
+                addCompartment(subPartition);              
             }
         }
     }
@@ -484,7 +475,7 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
 
     public boolean isHorizontalLayout()
     {
-        return getOrientation() == SeparatorWidget.Orientation.VERTICAL;
+        return getOrientation() == SeparatorWidget.Orientation.HORIZONTAL;
     }
 
     public void removeCompartment(CompartmentWidget widget)
@@ -503,5 +494,22 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
     public UMLNameWidget getNameWidget()
     {
         return nameWidget;
+    }
+
+    @Override
+    public CompartmentWidget addCompartment(IElement element)
+    {
+        assert element instanceof IActivityPartition;
+        IActivityPartition subPart = (IActivityPartition)element;
+        SubPartitionWidget subPartWidget = createSubPartitionWidget(subPart);
+        addSubPartition(subPartWidget);
+        return subPartWidget;
+    }
+
+    @Override
+    public void clear()
+    {
+        compartmentWidgets.clear();
+        partitionPanel.removeChildren();
     }
 }

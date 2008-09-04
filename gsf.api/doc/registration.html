@@ -54,6 +54,24 @@
             for example are trying to mix and match GSF with Schliemann or you have existing code
             you are trying to integrate; that will be described later in this document.)
         </p>
+        <h3>Build Modification</h3>
+        <p>
+            In addition, you also need to add the following target to your project's build file,
+            such that at build time, GSF gets a chance to interject some things into your layer file.
+            In earlier version, GSF would do this at runtime, by modifying your user directory
+            such that it would merge content into the layer file, but this has had several disadvantages.
+            An extra build step avoids this problem. It does however mean that when GSF changes incompatibly,
+            it cannot easily account for older module registrations. Until this issue is resolved, you
+            may have to regenerate your module when versions change.
+        </p>
+        <pre style="background: #ffffcc; color: black; border: solid 1px black; padding: 5px">
+            &lt;target name="jar" depends="init,compile,jar-prep" unless="is.jar.uptodate"&gt;
+                &lt;taskdef name="gsfjar" classname="org.netbeans.modules.gsf.GsfJar" classpath="${nb_all}/gsf.api/anttask/gsfanttask.jar:${nb_all}/nbbuild/nbantext.jar"/&gt;
+                &lt;gsfjar jarfile="${cluster}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}" stamp="${cluster}/.lastModified"&gt;
+                    &lt;fileset dir="${build.classes.dir}"/&gt;
+                &lt;/gsfjar&gt;
+            &lt;/target&gt;
+        </pre>
         <h3>The Language Configuration</h3>
         <p>
             In the above registration, we have named the <code>JsLanguage</code> class as the language

@@ -100,7 +100,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
+                        <release-version>2</release-version>
                         <specification-version>1.6.0</specification-version>
                     </run-dependency>
                 </dependency>

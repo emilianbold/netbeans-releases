@@ -192,6 +192,7 @@ derby\.log
 ^j2ee.sun.dd/src/org/netbeans/modules/j2ee/sun/dd/impl/verifier$
 ^j2ee.sun.dd/src/org/netbeans/modules/j2ee/sun/dd/impl/serverresources/model$
 ^j2ee.weblogic9/src/org/netbeans/modules/j2ee/weblogic9/config/gen$
+^gsf.api/anttask/gsfanttask\.jar$
 ^testtools/.*\.nbm$
 ^testtools/testtools-bundle\.zip$
 ^testtools/javahelp/org/netbeans/modules/usersguide$
