@@ -311,18 +311,15 @@ final class NewLoaderIterator extends BasicWizardIterator {
                 fileChanges.createLayerEntry(path, null, null, null, attrs)
             );
             
-            // How to create test for xml-based data object? 
-            // Cannot access org.netbeans.core.filesystems.MIMEResolverImpl.
-            if (model.isExtensionBased()) {
-                // 7a. create test
-                String testName = model.getDefaultPackagePath(namePrefix + "DataObjectTest.java", false, true); // NOI18N
-                FileObject t = CreatedModifiedFiles.getTemplate("templateDataObjectInLayerTest.java");//NOI18N
+            // 7a. create test
+            String testName = model.getDefaultPackagePath(namePrefix + "DataObjectTest.java", false, true); // NOI18N
+            FileObject t = CreatedModifiedFiles.getTemplate("templateDataObjectInLayerTest.java");//NOI18N
 
-                Map<String, String> testTokens = new HashMap<String, String>(replaceTokens);
-                testTokens.put("EXTENSION", getFirstExtension(model.getExtension()));//NOI18N
+            Map<String, String> testTokens = new HashMap<String, String>(replaceTokens);
+            String extension = model.isExtensionBased() ? getFirstExtension(model.getExtension()) : "xml";    // NOI18N
+            testTokens.put("EXTENSION", extension);//NOI18N
 
-                fileChanges.add(fileChanges.createFileWithSubstitutions(testName, t, testTokens));
-            }
+            fileChanges.add(fileChanges.createFileWithSubstitutions(testName, t, testTokens));
             
         } else {
             // 7. register manifest entry
