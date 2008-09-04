@@ -87,7 +87,7 @@ public final class WebProjectType implements AntBasedProjectType {
         return shared ? PROJECT_CONFIGURATION_NAMESPACE : PRIVATE_CONFIGURATION_NAMESPACE;
     }
 
-    private Collection<WebProjectImplementationFactory> getProjectFactories() {
-        return Lookup.getDefault().lookup(new Lookup.Template(WebProjectImplementationFactory.class)).allInstances();
+    private Collection<? extends WebProjectImplementationFactory> getProjectFactories() {
+        return Lookup.getDefault().lookupAll(WebProjectImplementationFactory.class);
     }
 }

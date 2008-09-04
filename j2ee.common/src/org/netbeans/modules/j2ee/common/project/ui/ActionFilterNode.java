@@ -152,7 +152,7 @@ class ActionFilterNode extends FilterNode {
 
     private Action[] initActions () {
         if (actionCache == null) {
-            List result = new ArrayList(2);
+            List<Action> result = new ArrayList<Action>(2);
             if (mode == MODE_FILE) {
                 Action[] superActions = super.getActions(false);
                 for (int i=0; i<superActions.length; i++) {
@@ -174,7 +174,7 @@ class ActionFilterNode extends FilterNode {
                     result.add (SystemAction.get(RemoveClassPathRootAction.class));
                 }
             }            
-            actionCache = (Action[]) result.toArray(new Action[result.size()]);
+            actionCache = result.toArray(new Action[result.size()]);
         }
         return actionCache;
     }
@@ -295,7 +295,7 @@ class ActionFilterNode extends FilterNode {
             boolean removed = false;
             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String raw = props.getProperty (classPathId);
-            List resources = cs.itemsList( raw, webModuleElementName );
+            List<ClassPathSupport.Item> resources = cs.itemsList( raw, webModuleElementName );
             for (Iterator i = resources.iterator(); i.hasNext();) {
                 ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
                 if (entryId.equals(CommonProjectUtils.getAntPropertyName(item.getReference()))) {
