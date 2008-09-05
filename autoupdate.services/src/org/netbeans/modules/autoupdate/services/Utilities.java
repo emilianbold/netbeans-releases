@@ -703,22 +703,6 @@ public class Utilities {
         return requested;
     }
     
-    private static Collection<UpdateElement> checkUpdateTokenProvider (Collection<Dependency> deps) {
-        Collection<UpdateElement> elems = new HashSet<UpdateElement> ();
-        UpdateManagerImpl updateMgr = UpdateManagerImpl.getInstance ();
-        for (Dependency dep : deps) {
-            if (updateMgr.getInstalledProviders (dep.getName ()).isEmpty ()) {
-                for (ModuleInfo mi : updateMgr.getAvailableProviders (dep.getName ())) {
-                    UpdateUnit u = toUpdateUnit (mi.getCodeNameBase ());
-                    assert u != null : "UpdateUnit found with codeName " + mi.getCodeNameBase ();
-                    assert u.getAvailableUpdates ().size () > 0 : "UpdateUnit " + u + " has available updates.";
-                    elems.add (u.getAvailableUpdates ().get (0));
-                }
-            }
-        }
-        return elems;
-    }
-    
     static Set<String> getBrokenDependencies (UpdateElement element, List<ModuleInfo> infos) {
         assert element != null : "UpdateElement cannot be null";
         Set<Dependency> brokenDependencies = new HashSet<Dependency> ();
