@@ -5,7 +5,7 @@
 <toc version="2.0">
     <tocitem text="IDE Basics">
         <tocitem text="Getting Started">
-            <tocitem text="Web Applications" target="webapps_process_top" />
+            <tocitem text="Web Applications" target="webapps_process" />
         </tocitem>
     </tocitem>
     <tocitem text="Web Applications" expand="false">
