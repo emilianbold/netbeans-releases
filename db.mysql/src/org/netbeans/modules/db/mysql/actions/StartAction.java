@@ -38,14 +38,20 @@
  */
 package org.netbeans.modules.db.mysql.actions;
 
+import java.util.MissingResourceException;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.CookieAction;
 
 /**
@@ -86,7 +92,7 @@ public class StartAction extends CookieAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
+        final DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
         String path = server.getStartPath();
         String message = Utils.getMessage("MSG_NoStartPath");
         PropertiesDialog dialog = new PropertiesDialog(server);
@@ -107,15 +113,14 @@ public class StartAction extends CookieAction {
 
         try { 
             server.start();
-            boolean connect = Utils.displayYesNoDialog(NbBundle.getMessage(StartAction.class, "MSG_ConfirmConnectAfterStart"));
-            if (connect) {
-                server.reconnect(false, true);
-            }
         } catch ( DatabaseException dbe ) {
             Utils.displayError(Utils.getMessage("MSG_UnableToStartServer"), dbe);
+            return;
         }
+
+        waitForStartAndConnect(server);
     }
-    
+
     @Override
     protected int mode() {
         return MODE_EXACTLY_ONE;
@@ -124,5 +129,70 @@ public class StartAction extends CookieAction {
     @Override
     protected Class<?>[] cookieClasses() {
         return COOKIE_CLASSES;
+    }
+
+    private void waitForStartAndConnect(final DatabaseServer server) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                ProgressHandle handle = ProgressHandleFactory.createHandle(
+                        NbBundle.getMessage(StartAction.class, "MSG_WaitingForServerToStart"));
+                handle.start();
+                handle.switchToIndeterminate();
+                try {
+                    waitForStart();
+                } finally {
+                    handle.finish();
+                }
+
+                // Reconnect if the user changes a connection parameter
+                server.addPropertyChangeListener(WeakListeners.propertyChange(new ReconnectPropertyChangeListener(server), server));
+
+                if (!server.isRunning()) {
+                    boolean editAdminProps = Utils.displayYesNoDialog(NbBundle.getMessage(StartAction.class, 
+                            "MSG_ServerDoesNotAppearToHaveStarted"));
+                    if (editAdminProps) {
+                        Mutex.EVENT.postReadRequest(new Runnable() {
+
+                            public void run() {
+                                PropertiesDialog dlg = new PropertiesDialog(server);
+                                dlg.displayDialog(PropertiesDialog.Tab.ADMIN);
+                            }
+                        });
+                    }
+                    return;
+                } else {
+                    try {
+                        server.reconnect();
+                    } catch (DatabaseException dbe) {
+                        boolean editProps = Utils.displayYesNoDialog(NbBundle.getMessage(StartAction.class, 
+                                "MSG_UnableToConnectToServerAfterStart", dbe.getMessage()));
+                        if (editProps) {
+                            Mutex.EVENT.postReadRequest(new Runnable() {
+
+                                public void run() {
+                                    PropertiesDialog dlg = new PropertiesDialog(server);
+                                    dlg.displayDialog();
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+
+            private void waitForStart() {
+                int tries = 0;
+                while (tries <= 3) {
+                    tries++;
+                    if (server.isRunning()) {
+                        return;
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ie) {
+                        return;
+                    }
+                }
+            }
+        });
     }
 }
