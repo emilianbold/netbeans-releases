@@ -1130,7 +1130,9 @@ public class Utilities {
             KeyStore ks = null;
             try {
                 File f = new File (getCacheDirectory (), fileName);
-                assert f.exists () : f + " exists.";
+                if (! f.exists ()) {
+                    return null;
+                }
                 is = new BufferedInputStream (new FileInputStream (f));
                 ks = KeyStore.getInstance (KeyStore.getDefaultType ());
                 ks.load (is, KS_USER_PASSWORD.toCharArray ());
