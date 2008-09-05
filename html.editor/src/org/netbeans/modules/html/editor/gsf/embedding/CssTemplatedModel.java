@@ -87,7 +87,7 @@ public class CssTemplatedModel extends CssModel {
     
     private static final String TEMPLATING = PREFIX + "CODE" + POSTFIX;
     
-    private static final String FIXED_SELECTOR = PREFIX + "FIXED_SELECTOR";
+    private static final String FIXED_SELECTOR = PREFIX + "SLTR";
     
     private CssParserAccess.CssParserResult cachedParserResult = null;
     
@@ -213,8 +213,19 @@ public class CssTemplatedModel extends CssModel {
                                     int from = siblingBefore.startOffset();
                                     int curlyBracketIndex = buff.indexOf("{", from);
                                     if(curlyBracketIndex > 0) {
-                                        clearAndWrite(buff, from, curlyBracketIndex, FIXED_SELECTOR);
-                                        cleared[0] = true;
+                                        //test if there is a generated virtual code
+                                        String selectorListText = buff.substring(from, curlyBracketIndex);
+                                        int idx = selectorListText.indexOf(TEMPLATING);
+                                        if(idx >= 0) {
+                                            StringBuilder fixedText = new StringBuilder(selectorListText);
+                                            clear(fixedText, idx, idx + TEMPLATING.length());
+                                            clearAndWrite(buff, from, curlyBracketIndex, fixedText.toString());
+                                            cleared[0] = true;
+                                        } else {
+                                            //probably not necessary?!?! should be covered by the 'true' if block
+                                            clearAndWrite(buff, from, curlyBracketIndex, FIXED_SELECTOR);
+                                            cleared[0] = true;
+                                        }
                                     }
                                     
                                 }
