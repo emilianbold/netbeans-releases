@@ -13,3 +13,6 @@ public:
 
 };
 
+typedef struct OuterStruct TOuter;
+
+TOuter outerGlobalVar;
