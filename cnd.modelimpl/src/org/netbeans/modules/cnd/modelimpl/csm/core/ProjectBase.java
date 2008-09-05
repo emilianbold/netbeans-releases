@@ -931,6 +931,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 	return preprocHandler;
     }
 
+    
+    public final Collection<APTPreprocHandler> getPreprocHandlers(File file) {
+        Collection<APTPreprocHandler.State> states = getFileContainer().getPreprocStates(file);
+        Collection<APTPreprocHandler> result = new ArrayList<APTPreprocHandler>(states.size());
+        for (APTPreprocHandler.State state : states) {
+            APTPreprocHandler preprocHandler = createEmptyPreprocHandler(file);
+            if( state != null ) {
+                if( state.isCleaned() ) {
+                    preprocHandler = restorePreprocHandler(file, preprocHandler, state);
+                } else {
+                    if (TRACE_PP_STATE_OUT) System.err.println("copying state for " + file);
+                    preprocHandler.setState(state);
+                }
+            }
+            if (TRACE_PP_STATE_OUT) System.err.printf("null state for %s, returning default one", file);
+            result.add(preprocHandler);
+        }
+        return result;
+    }
+
     //@Deprecated
     public final APTPreprocHandler.State getPreprocState(FileImpl fileImpl) {
         APTPreprocHandler.State state = null;
@@ -940,6 +960,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             state = fc.getPreprocState(file);
         }
         return state;
+    }
+
+    public final Collection<APTPreprocHandler.State> getPreprocStates(FileImpl fileImpl) {
+        FileContainer fc = getFileContainer();
+        if (fc != null) {
+            return fc.getPreprocStates(fileImpl.getFile());
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -1146,6 +1174,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     }
                     entry.setStates(statesToKeep, new FileContainer.StatePair(newState, pcState));
                     scheduleIncludedFileParsing(csmFile, statesToParse, clean);
+                    if (TraceFlags.TRACE_PC_STATE) {
+                        traceIncludeScheduling(csmFile, newState, pcState, clean,
+                                statesToParse, statesToKeep);
+                    }
                 }
             }
             return csmFile;
@@ -1154,6 +1186,30 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
+    private static void traceIncludeScheduling(
+            CsmFile file, APTPreprocHandler.State newState, FilePreprocessorConditionState pcState,
+            boolean clean, Collection<APTPreprocHandler.State> statesToParse, Collection<FileContainer.StatePair> statesToKeep) {
+        
+        System.err.printf("scheduling %s (1) %s valid %b context %b %s\n",
+                (clean ? "reparse" : "  parse"), file.getAbsolutePath(),
+                newState.isValid(), newState.isCompileContext(), pcState);
+        
+        for (APTPreprocHandler.State state : statesToParse) {
+            if (!newState.equals(state)) {
+                FilePreprocessorConditionState currPcState = null;
+                for (FileContainer.StatePair pair : statesToKeep) {
+                    if (newState.equals(pair.state)) {
+                        currPcState = pair.pcState;
+                        break;
+                    }
+                }
+                System.err.printf("scheduling %s (2) %s valid %b context %b %s\n",
+                        "  parse", file.getAbsolutePath(),
+                        state.isValid(), state.isCompileContext(), currPcState);
+            }
+        }
+    }
+    
     private static final int BETTER = 1;
     private static final int SAME = 0;
     private static final int WORSE = -1;
@@ -1229,7 +1285,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private boolean isBetterThanAll(
             FilePreprocessorConditionState pcState,
             Collection<FileContainer.StatePair> oldStates) {
-        
+
+        if (TraceFlags.NO_HEADERS_REPARSE) {
+            return false;
+        }
         boolean newIsTheBest = true;
         for (FileContainer.StatePair pair : oldStates) {
             if (!pcState.isBetter(pair.pcState)) {
@@ -1267,7 +1326,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         statesToKeep.clear();
         
-        for (FileContainer.StatePair old : statesToKeep) {
+        for (FileContainer.StatePair old : oldStates) {
             if( pcState.isSubset(old.pcState)) {
                 return WORSE;
             }
