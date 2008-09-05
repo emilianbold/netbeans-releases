@@ -175,6 +175,8 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         lazyDependingTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 JPanel body = null;
+                // init required elements
+                model.getRequiredUpdateElements ();
                 if (model instanceof InstallUnitWizardModel) {
                     ((InstallUnitWizardModel) model).allLicensesApproved ();
                     ((InstallUnitWizardModel) model).hasCustomComponents ();
