@@ -105,7 +105,7 @@ public class UtilitiesTest extends TestCase {
 
     public void testGetUnknownOperatingSystem () {
         System.setProperty ("os.name", "Unknown");
-        if (File.separatorChar == ':') {
+        if (File.pathSeparatorChar == ':') {
             assertTrue("Unknown os.name should be recognized as Unix.", Utilities.isUnix());
         } else {
             assertEquals("Unknown os.name not OS_OTHER.", Utilities.OS_OTHER, Utilities.getOperatingSystem());
