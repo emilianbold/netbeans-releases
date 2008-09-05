@@ -456,7 +456,7 @@ public final class ModuleUpdater extends Thread {
         }
     }
     
-    private static boolean trickyDeleteOnWindows(File destFile) {
+    public static boolean trickyDeleteOnWindows(File destFile) {
         assert isWindows() : "Call it only on Windows but system is " + System.getProperty("os.name");
         File f = new File(destFile.getParentFile(), destFile.getName());
         assert f.exists() : "The file " + f + " must exists.";        
@@ -464,6 +464,7 @@ public final class ModuleUpdater extends Thread {
             File tmpFile = File.createTempFile(TEMP_FILE_NAME, null, f.getParentFile());
             if (tmpFile.delete()) {
                 f.renameTo(tmpFile);
+                tmpFile.deleteOnExit ();
             }
         } catch (IOException ex) {
             //no special handling needed
@@ -471,7 +472,7 @@ public final class ModuleUpdater extends Thread {
         return !f.exists();
     }
     
-    private static boolean isWindows() {
+    public static boolean isWindows() {
         String os = System.getProperty("os.name"); // NOI18N
         return (os != null && os.toLowerCase().startsWith("windows"));//NOI18N
     }
