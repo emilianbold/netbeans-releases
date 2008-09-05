@@ -220,7 +220,7 @@ public class SessionImpl extends PersistentObject implements Session {
                 annotatedRemoteInterfaces.size() == 0)
             {
                 businessLocal = new String[] { interfaces.get(0).getQualifiedName().toString() };
-            } else if (beanLocalAnnotation == null && beanRemoteAnnotation != null &&
+            } else if (beanLocalAnnotation == null && /*beanRemoteAnnotation != null &&*/
                 annotatedLocalInterfaces.size() == 0 /*&& annotatedRemoteInterfaces.size() == 0*/)
             {
                 businessRemote = new String[] { interfaces.get(0).getQualifiedName().toString() };
