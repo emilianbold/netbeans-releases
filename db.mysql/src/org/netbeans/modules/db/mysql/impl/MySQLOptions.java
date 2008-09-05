@@ -124,31 +124,20 @@ public class MySQLOptions {
     }
 
     protected final void putProperty(String key, boolean value) {
-        boolean oldval;
-        synchronized(this) {
-            oldval = getBooleanProperty(key);
-            NbPreferences.forModule(MySQLOptions.class).putBoolean(key, value);
-        }
-        
+        boolean oldval = getBooleanProperty(key);
+        NbPreferences.forModule(MySQLOptions.class).putBoolean(key, value);
         notifyPropertyChange(key, oldval, value);
     }
     
     protected final void putProperty(String key, long value, long def) {
-        long oldval;
-        synchronized(this) {
-            oldval = getLongProperty(key, def);
-            NbPreferences.forModule(MySQLOptions.class).putLong(key, value);
-        }
-        
+        long oldval = getLongProperty(key, def);
+        NbPreferences.forModule(MySQLOptions.class).putLong(key, value);
         notifyPropertyChange(key, oldval, value);
     }
     
     protected final void clearProperty(String key) {
-        String oldval;
-        synchronized(this) {
-            oldval = getProperty(key);
-            NbPreferences.forModule(MySQLOptions.class).remove(key);
-        }
+        String oldval = getProperty(key);
+        NbPreferences.forModule(MySQLOptions.class).remove(key);
         notifyPropertyChange(key, oldval, null);
     }
     
@@ -173,8 +162,7 @@ public class MySQLOptions {
     }
     
     private void notifyPropertyChange(String key, Object oldval, Object newval) {
-        PropertyChangeEvent event = new PropertyChangeEvent(
-                this, key, oldval, newval);
+        PropertyChangeEvent event = new PropertyChangeEvent(this, key, oldval, newval);
 
         pcs.firePropertyChange(event);
     }
