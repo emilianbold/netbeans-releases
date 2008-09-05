@@ -153,29 +153,13 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
 
 
-    //@Deprecated
+    /** 
+     * This should only be called if we are sure this is the only correct state:
+     * e.g., when creating new file, when invalidating state of a *source* (not a header) file, etc
+     */
     public void putPreprocState(File file, APTPreprocHandler.State state) {
         MyFile f = getMyFile(file, true);
-        //assert f.size() <= 1 : "this method shold never be called for an entry with mltiple states"; //NOI18N
-	if (f.getState() == null || !f.getState().isValid()) {
-	    f.setState(state);
-	} else {
-	    if (f.getState().isCompileContext()) {
-		if (state.isCompileContext()) {
-		    f.setState(state);
-		} else {
-		    if (TRACE_PP_STATE_OUT) {
-			System.err.println("Do not reset correct state to incorrect " + f.canonical);
-		    }
-		}
-	    } else {
-		f.setState(state);
-	    }
-	}
-	if (TRACE_PP_STATE_OUT) {
-	    System.err.println("\nPut state for file" + f.canonical + "\n");
-	    System.err.println(state);
-	}
+        f.setState(state);
     }
 
     public void invalidatePreprocState(File file) {
@@ -221,7 +205,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     public Object getLock(File file) {
         MyFile f = getMyFile(file, false);
-        return f.getLock();
+        return f == null ? lock : f.getLock();
     }
     
     public void debugClearState(){
@@ -521,16 +505,15 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             
     public static interface Entry {
 
-        //@Deprecated
-        APTPreprocHandler.State getState();
-        
         /** Gets the states collection */
         Collection<StatePair> getStates();
         
         void setStates(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
         void setStates(Collection<StatePair> pairs);
         void setStates(Collection<StatePair> pairs, StatePair yetOneMore);
-        
+
+        public void invalidateStates();
+
         /**
          * Sets (replaces) new conditions state for the existent pair
          * @return true in the case of success, otherwise (if no ppState found) false
@@ -646,7 +629,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
 
         //@Deprecated
-        public final synchronized APTPreprocHandler.State getState() {
+        private final synchronized APTPreprocHandler.State getState() {
             return getStates().iterator().next().state;
         }
 
@@ -654,11 +637,47 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             data = null;
         }
 
-        //package
-        //@Deprecated
-        final synchronized void setState(APTPreprocHandler.State state) {
+        /** 
+         * This should only be called if we are sure this is the only correct state:
+         * e.g., when creating new file, when invalidating state of a *source* (not a header) file, etc
+         */
+        private final synchronized void setState(APTPreprocHandler.State state) {
+            State oldState = null;
+            if ((data instanceof Collection)) {
+                Collection<APTPreprocHandler.State> states = (Collection<APTPreprocHandler.State>) data;
+                if (states.size() > 1) {
+                    assert false : "Attempt to set state while there are multiple states: " + canonical; //NOI18N
+                    return;
+                }
+                if (states.size() > 0) {
+                    oldState = states.iterator().next();
+                }
+            } else if(data instanceof State) {
+                oldState = (State) data;
+            }
+            
             incrementModCount();
-            //assert size() <= 1 : "this method shold never be called for an entry with mltiple states"; //NOI18N
+            
+            if (oldState == null || !oldState.isValid()) {
+                data = state;
+            } else {
+                if (oldState.isCompileContext()) {
+                    if (state.isCompileContext()) {
+                        data = state;
+                    } else {
+                        if (TRACE_PP_STATE_OUT) {
+                            System.err.println("Do not reset correct state to incorrect " + canonical);
+                        }
+                    }
+                } else {
+                    data = state;
+                }
+            }
+            if (TRACE_PP_STATE_OUT) {
+                System.err.println("\nPut state for file" + canonical + "\n");
+                System.err.println(state);
+            }
+            
             data = new StatePair(state, null);
         }
         
@@ -724,7 +743,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             modCount = (modCount == Integer.MAX_VALUE) ? 0 : modCount+1;
         }
 
-        private synchronized void invalidateStates() {
+        public synchronized void invalidateStates() {
             incrementModCount();
             if (data != null) {
                 if (data instanceof StatePair) {
