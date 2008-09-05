@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.db.mysql.actions;
 
-import java.util.MissingResourceException;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.api.db.explorer.DatabaseException;
@@ -145,7 +145,8 @@ public class StartAction extends CookieAction {
                 }
 
                 // Reconnect if the user changes a connection parameter
-                server.addPropertyChangeListener(WeakListeners.propertyChange(new ReconnectPropertyChangeListener(server), server));
+                PropertyChangeListener pcl = new ReconnectPropertyChangeListener(server);
+                server.addPropertyChangeListener(WeakListeners.propertyChange(pcl, server));
 
                 if (!server.isRunning()) {
                     boolean editAdminProps = Utils.displayYesNoDialog(NbBundle.getMessage(StartAction.class, 

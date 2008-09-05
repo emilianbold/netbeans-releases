@@ -41,6 +41,8 @@ package org.netbeans.modules.db.mysql.actions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.mysql.DatabaseServer;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
@@ -55,8 +57,9 @@ import org.openide.util.RequestProcessor;
  * @author David
  */
 public class ReconnectPropertyChangeListener implements PropertyChangeListener {
+    private static final Logger LOGGER = Logger.getLogger(ReconnectPropertyChangeListener.class.getName());
     private final DatabaseServer server;
-    private boolean reconnecting;
+    private boolean reconnecting = false;
 
     public ReconnectPropertyChangeListener(DatabaseServer server) {
         this.server = server;
@@ -90,10 +93,11 @@ public class ReconnectPropertyChangeListener implements PropertyChangeListener {
                         server.reconnect();
                         setReconnecting(false);
                     } catch (DatabaseException dbe) {
+                        LOGGER.log(Level.INFO, dbe.getMessage(), dbe);
                         setReconnecting(false);
 
                         boolean displayProperties = Utils.displayYesNoDialog(
-                                NbBundle.getMessage(ReconnectPropertyChangeListener.class, "MSG_ReconnectFailed"));
+                                NbBundle.getMessage(ReconnectPropertyChangeListener.class, "MSG_ReconnectFailed", dbe.getMessage()));
 
                         if (displayProperties) {
                             Mutex.EVENT.postReadRequest(new Runnable() {

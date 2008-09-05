@@ -80,8 +80,8 @@ public class PropertiesAction extends CookieAction {
         
         PropertiesDialog dlg = new PropertiesDialog(server);
 
-        server.addPropertyChangeListener(
-                WeakListeners.propertyChange(new ReconnectPropertyChangeListener(server), server));
+        ReconnectPropertyChangeListener pcl = new ReconnectPropertyChangeListener(server);
+        server.addPropertyChangeListener(WeakListeners.propertyChange(pcl, server));
         
         dlg.displayDialog();
     }
