@@ -52,7 +52,7 @@ import java.io.IOException;
 /*package*/
 abstract class ProjectNameBasedKey extends AbstractKey {
     
-    protected final int unitIndex;
+    private final int unitIndex;
     
     protected ProjectNameBasedKey(String project) {
 	assert project != null;
@@ -65,6 +65,10 @@ abstract class ProjectNameBasedKey extends AbstractKey {
     
     public int hashCode() {
 	return unitIndex;
+    }
+    
+    public final int getUnitId() {
+        return unitIndex;
     }
     
     @Override
