@@ -669,18 +669,6 @@ public class MySQLDatabaseServer implements DatabaseServer {
             public void execute() throws Exception {
                 try {
                     runProcess(getStartPath(), getStartArgs(), true, Utils.getMessage("LBL_StartOutputTab"));
-
-                    try {
-                        Thread.sleep(3000);
-                    } catch ( InterruptedException e ) {
-                        return;
-                    }
-
-                    try {
-                        reconnect();
-                    } catch ( DatabaseException e ) {
-                        LOGGER.log(Level.INFO, null, e);
-                    }
                 } finally {
                     refreshDatabaseList();
                 }

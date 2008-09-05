@@ -107,9 +107,12 @@ public class StartAction extends CookieAction {
 
         try { 
             server.start();
+            boolean connect = Utils.displayYesNoDialog(NbBundle.getMessage(StartAction.class, "MSG_ConfirmConnectAfterStart"));
+            if (connect) {
+                server.reconnectAsync();
+            }
         } catch ( DatabaseException dbe ) {
-            Utils.displayError(Utils.getMessage("MSG_UnableToStartServer"), 
-                    dbe);
+            Utils.displayError(Utils.getMessage("MSG_UnableToStartServer"), dbe);
         }
     }
     
