@@ -278,13 +278,13 @@ public class RepositoryUtils {
     }
     
     public static void openUnit(Key key) {
-	openUnit(key.getUnit().toString());
+	openUnit(key.getUnitId(), key.getUnit().toString());
     }
     
-    private static void openUnit(String unitName) {
+    private static void openUnit(int unitId, String unitName) {
 	// TODO explicit open should be called here: 
 	RepositoryListenerImpl.instance().onExplicitOpen(unitName);
-	RepositoryAccessor.getRepository().openUnit(unitName);
+	RepositoryAccessor.getRepository().openUnit(unitId, unitName);
     }
     
     public static void unregisterRepositoryListener(RepositoryListener listener) {
