@@ -152,18 +152,10 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return impl;
     }
 
+
     //@Deprecated
     public void putPreprocState(File file, APTPreprocHandler.State state) {
         MyFile f = getMyFile(file, true);
-        putPreprocState(f, state);
-    }
-
-    //@Deprecated
-    public void putPreprocState(Entry entry, APTPreprocHandler.State state) {
-        if (entry == null) {
-            return;
-        }
-        MyFile f = (MyFile) entry;
         //assert f.size() <= 1 : "this method shold never be called for an entry with mltiple states"; //NOI18N
 	if (f.getState() == null || !f.getState().isValid()) {
 	    f.setState(state);
@@ -186,7 +178,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 	}
     }
 
-    //@Deprecated
     public void invalidatePreprocState(File file) {
         MyFile f = getMyFile(file, false);
         if (f == null){
@@ -533,9 +524,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         //@Deprecated
         APTPreprocHandler.State getState();
         
-        //@Deprecated
-        FilePreprocessorConditionState getPCState();
-
         /** Gets the states collection */
         Collection<StatePair> getStates();
         
@@ -655,11 +643,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         
         public synchronized int size() {
             return (data instanceof Collection) ? ((Collection) data).size() : 1;
-        }
-
-        //@Deprecated
-        public final synchronized FilePreprocessorConditionState getPCState() {
-            return getStates().iterator().next().pcState;
         }
 
         //@Deprecated

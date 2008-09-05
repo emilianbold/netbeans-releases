@@ -983,24 +983,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * to get state lock use
      * Object stateLock = getFileContainer().getLock(file);
      */
-    protected final void putPreprocState(File file, APTPreprocHandler.State state) {
+    private final void putPreprocState(File file, APTPreprocHandler.State state) {
 	if( state != null && ! state.isCleaned() ) {
 	    state = APTHandlersSupport.createCleanPreprocState(state);
 	}
         getFileContainer().putPreprocState(file, state);
-    }
-
-    /**
-     * This method must be called only under stateLock,
-     * to get state lock use
-     * Object stateLock = getFileContainer().getLock(file);
-     */
-    //@Deprecated
-    private void putPreprocState(FileContainer.Entry entry, APTPreprocHandler.State state) {
-	if( state != null && ! state.isCleaned() ) {
-	    state = APTHandlersSupport.createCleanPreprocState(state);
-	}
-        getFileContainer().putPreprocState(entry, state);
     }
 
     protected final APTPreprocHandler.State setChangedFileState(NativeFileItem nativeFile) {
