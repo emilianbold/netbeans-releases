@@ -950,9 +950,9 @@ public class ConfigurationMakefileWriter {
         bw.write("echo " + "BuildRoot: ${TOP}/${TMPDIR} >> ${SPEC_FILE}\n"); // NOI18N
         List<InfoElement> infoList = packagingConfiguration.getRpmHeader().getValue();
         for (InfoElement elem : infoList) {
-            if (elem.getName().startsWith("%")) {
+            if (elem.getName().startsWith("%")) { // NOI18N
                 bw.write("echo \'" + elem.getName() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
-                bw.write("echo " + elem.getValue() + " >> ${SPEC_FILE}\n"); // NOI18N 
+                bw.write("echo \'" + elem.getValue() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
                 bw.write("echo " + " >> ${SPEC_FILE}\n"); // NOI18N 
             }
             else {
@@ -962,7 +962,16 @@ public class ConfigurationMakefileWriter {
         
         bw.write("echo \'%files\' >> ${SPEC_FILE}\n"); // NOI18N 
         for (FileElement elem : fileList) {
+            if (elem.getType() == FileElement.FileType.FILE || elem.getType() == FileElement.FileType.SOFTLINK) {
                 bw.write("echo " + "/" + elem.getTo() + " >> ${SPEC_FILE}\n"); // NOI18N
+            }
+        }
+        
+        bw.write("echo \'%dir\' >> ${SPEC_FILE}\n"); // NOI18N 
+        for (FileElement elem : fileList) {
+            if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                bw.write("echo " + "/" + elem.getTo() + " >> ${SPEC_FILE}\n"); // NOI18N
+            }
         }
         
         bw.write("\n"); // NOI18N
