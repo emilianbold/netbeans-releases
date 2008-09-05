@@ -106,6 +106,7 @@ final class CallstackFrameNode extends AbstractNode {
         }
     }
     
+    @Override
     public SystemAction[] getActions(boolean context) {
         return new SystemAction[0];
     }
