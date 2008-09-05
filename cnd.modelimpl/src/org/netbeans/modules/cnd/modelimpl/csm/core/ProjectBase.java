@@ -1402,7 +1402,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         DeepReparsingUtils.reparseOnEdit(file, this);
    }
 
-    public CsmFile findFile(CharSequence absolutePath) {
+    public CsmFile findFile(Object absolutePathOrNativeFileItem) {
+        if (absolutePathOrNativeFileItem instanceof CharSequence) {
+            return findFileByPath((CharSequence)absolutePathOrNativeFileItem);
+        } else if (absolutePathOrNativeFileItem instanceof NativeFileItem) {
+            return findFileByItem((NativeFileItem)absolutePathOrNativeFileItem);
+        }
+        return null;
+    }
+    
+    private CsmFile findFileByPath(CharSequence absolutePath) {
         File file = new File(absolutePath.toString());
         APTPreprocHandler preprocHandler = null;
         if (getFileContainer().getPreprocState(file) == null){
@@ -1420,6 +1429,25 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     if( ! acceptNativeItem(nativeFile) ) {
                         return null;
                     }
+                    preprocHandler = createPreprocHandler(nativeFile);
+                }
+            }
+            if (preprocHandler != null) {
+                return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, preprocHandler.getState(), nativeFile);
+            }
+        }
+	// if getPreprocState(file) isn't null, the file alreasy exists, so we may not pass nativeFile
+        return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, null, null);
+    }
+
+    private CsmFile findFileByItem(NativeFileItem nativeFile) {
+        File file = nativeFile.getFile().getAbsoluteFile();
+        APTPreprocHandler preprocHandler = null;
+        if (getFileContainer().getPreprocState(file) == null){
+            // Try to find native file
+            if (getPlatformProject() instanceof NativeProject){
+                NativeProject prj = nativeFile.getNativeProject();
+                if (prj != null){
                     preprocHandler = createPreprocHandler(nativeFile);
                 }
             }
