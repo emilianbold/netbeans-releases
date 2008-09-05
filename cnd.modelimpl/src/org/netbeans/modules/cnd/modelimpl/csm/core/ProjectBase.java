@@ -994,10 +994,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         APTPreprocHandler.State state;
         state = createPreprocHandler(nativeFile).getState();
         File file = nativeFile.getFile();
-        Object stateLock = getFileContainer().getLock(file);
-        synchronized (stateLock) {
-            getFileContainer().invalidatePreprocState(file);
-            putPreprocState(file, state);
+        FileContainer.Entry entry = getFileContainer().getEntry(file);
+        synchronized (entry.getLock()) {
+            entry.invalidateStates();
+            entry.setStates(state, null);
         }
         return state;
     }
@@ -1473,10 +1473,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         } else if (fileType == FileImpl.HEADER_FILE && !impl.isHeaderFile()){
             impl.setHeaderFile();
         }
-        Object stateLock = getFileContainer().getLock(file);
-        synchronized (stateLock) {
-            if (initial != null && getFileContainer().getPreprocState(file)==null){
-                putPreprocState(file, initial);
+        if (initial != null) {
+            synchronized (getFileContainer().getLock(file)) {
+                Collection<APTPreprocHandler.State> states = getFileContainer().getPreprocStates(file);
+                if (states == null || states.isEmpty() || (states.size() == 1 && states.iterator().next() == null)) {
+                    putPreprocState(file, initial);
+                }
             }
         }
         return impl;
