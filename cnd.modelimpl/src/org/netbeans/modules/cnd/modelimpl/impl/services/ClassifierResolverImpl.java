@@ -39,16 +39,22 @@
 
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.services.CsmTypedefResolver;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 
 /**
  *
  * @author Alexander Simon
  */
-public class TypedefResolver extends CsmTypedefResolver {
+public class ClassifierResolverImpl extends CsmClassifierResolver {
 
     @Override
     public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
@@ -56,5 +62,47 @@ public class TypedefResolver extends CsmTypedefResolver {
             return ResolverFactory.createResolver((CsmOffsetable) orig).getOriginalClassifier(orig);
         }
         return orig;
+    }
+
+    @Override
+    public CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, CsmFile file, boolean checkLibs) {
+        CsmProject project = file.getProject();
+        if (project == null) {
+            return null;
+        }
+        AtomicBoolean visible = new AtomicBoolean(false);
+        CsmClassifier result = findVisibleDeclaration(project, qualifiedName, file, visible);
+        if (visible.get()) {
+            assert result != null : "how can visible be true without a result?";
+            return result;
+        }
+        // continue in libs
+        for (Iterator iter = project.getLibraries().iterator(); iter.hasNext();) {
+            CsmProject lib = (CsmProject) iter.next();
+            CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, file, visible);
+            if (visible.get()) {
+                return (CsmClassifier) visibleDecl;
+            }
+            if (result == null) {
+                result = visibleDecl;
+            }
+        }
+        return result;
+    }
+
+    private CsmClassifier findVisibleDeclaration(CsmProject project, CharSequence uniqueName,
+            CsmFile file, AtomicBoolean visible) {
+        Collection<CsmClassifier> decls = project.findClassifiers(uniqueName);
+        CsmClassifier first = null;
+        for (CsmClassifier decl : decls) {
+            if (first == null) {
+                first = decl;
+            }
+            if (CsmIncludeResolver.getDefault().isObjectVisible(file, decl)) {
+                visible.set(true);
+                return (CsmClassifier) decl;
+            }
+        }
+        return first;
     }
 }
