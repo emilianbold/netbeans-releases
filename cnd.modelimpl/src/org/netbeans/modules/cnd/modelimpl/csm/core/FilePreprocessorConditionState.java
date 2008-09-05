@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 
 /**
@@ -54,8 +55,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
  */
 public class FilePreprocessorConditionState
         implements APTParseFileWalker.EvalCallback {
-
-    private static final boolean TRACE = Boolean.getBoolean("cnd.pp.condition.state.trace");
 
     /** a SORTED array of offsets for which conditionals were evaluated to true */
     private int[] offsets;
@@ -156,7 +155,7 @@ public class FilePreprocessorConditionState
 
     public final boolean isBetter(FilePreprocessorConditionState other) {
         int result = compareToImpl(other);
-        if (TRACE) {
+        if (TraceFlags.TRACE_PC_STATE) {
             traceComparison(other, result);
         }
         return result > 0;
@@ -263,12 +262,13 @@ public class FilePreprocessorConditionState
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(); // "FilePreprocessorConditionState "
-        sb.append(fileName);
-        sb.append(' ');
-        sb.append(toStringBrief(this));
-        sb.append(" size=" + size); //NOI18N
-        return sb.toString();
+//        StringBuilder sb = new StringBuilder(); // "FilePreprocessorConditionState "
+//        sb.append(fileName);
+//        sb.append(' ');
+//        sb.append(toStringBrief(this));
+//        sb.append(" size=" + size); //NOI18N
+//        return sb.toString();
+        return toStringBrief(this);
     }
 
     private static String toStringBrief(FilePreprocessorConditionState state) {

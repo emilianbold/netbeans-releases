@@ -47,12 +47,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import junit.framework.Assert;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
@@ -61,13 +61,7 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Help set up org.netbeans.api.project.*Test.
@@ -106,7 +100,8 @@ public final class TestUtil {
     public static FileObject makeScratchDir(NbTestCase test) throws IOException {
         test.clearWorkDir();
         File root = test.getWorkDir();
-        assert root.isDirectory() && root.list().length == 0;
+        assert root.isDirectory() : root;
+        assert root.list().length == 0 : Arrays.toString(root.list());
         MockLookup.init(); // URLMapper asks for default lookup
         FileObject fo = FileUtil.toFileObject(root);
         if (fo != null) {

@@ -109,6 +109,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
                     assert false : "Unknown wizard type: " + wizardType;
                     break;
             }
+            addListeners();
         }
         return configureProjectPanelVisual;
     }
@@ -120,9 +121,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     public void readSettings(WizardDescriptor settings) {
         getComponent();
         descriptor = settings;
-
-        // do not fire events now
-        removeListeners();
 
         // project
         switch (wizardType) {
@@ -148,9 +146,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         // encoding
         configureProjectPanelVisual.setEncoding(getEncoding());
-
-        addListeners();
-        stateChanged(null);
     }
 
     private void addListeners() {

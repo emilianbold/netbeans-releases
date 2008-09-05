@@ -136,7 +136,7 @@ public class LibraryTest extends J2eeTestCase {
      * if all necessary changes in manifest files are done
      * and if final EAR application contains all modules and libraries
      */
-    public void testDDandManifests() {
+    public void testDDMs() {
         //add library to EJB module
         addLibrary(pto, ejbName, libName);
         //call EJB from websvc in web => should add ejbs on web's classpath
@@ -147,7 +147,7 @@ public class LibraryTest extends J2eeTestCase {
         GenerateCodeOperator.openDialog(
                 Bundle.getStringTrimmed(ejbjar_bundle, "LBL_CallEjbAction"), eo);
         NbDialogOperator ndo = new NbDialogOperator(
-                Bundle.getStringTrimmed(ejbjar_bundle, "LBL_CallEjbAction"));
+                Bundle.getStringTrimmed(ejbjar_bundle, "LBL_CallEjbActionTitle"));
         Node n = new Node(new JTreeOperator(ndo), "MultiSrcRootEjb|LocalSessionSB");
         n.select();
         JRadioButtonOperator jrbo = new JRadioButtonOperator(ndo, 0);
