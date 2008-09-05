@@ -791,7 +791,12 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                                 lexerState = INIT;
                                 return token(HTMLTokenId.DECLARATION);
                             }
-                        case '-':
+                        
+                    }
+                    break;
+                    
+                case ISI_SGML_DECL_WS:
+                    if(actChar == '-') {
                             if( input.readLength() == 1 ) {
                                 lexerState = ISA_SGML_DECL_DASH;
                                 break;
@@ -801,11 +806,7 @@ public final class HTMLLexer implements Lexer<HTMLTokenId> {
                                     return token(HTMLTokenId.DECLARATION);
                                 }
                             }
-                    }
-                    break;
-                    
-                case ISI_SGML_DECL_WS:
-                    if(!Character.isWhitespace(actChar)) {
+                    } else if(!Character.isWhitespace(actChar)) {
                         lexerState = ISI_SGML_DECL;
                         input.backup(1);
                         return token(HTMLTokenId.WS);

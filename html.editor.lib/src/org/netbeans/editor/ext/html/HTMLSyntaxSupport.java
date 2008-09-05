@@ -815,6 +815,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 
                 if(tag != null) {
                     tagName = tag.getName();
+                    
+                    if(tag.isEmpty()) {
+                        continue;
+                    }
                 }
                 
                 if( stack.empty() ) {           // empty stack - we are on the same tree deepnes - can close this tag
