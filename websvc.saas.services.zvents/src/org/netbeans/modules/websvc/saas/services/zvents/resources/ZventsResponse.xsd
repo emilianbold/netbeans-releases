@@ -154,7 +154,9 @@
             <xsd:element name="depth" type="xsd:int" minOccurs="0"/>
             <xsd:element name="id" type="xsd:string" minOccurs="0"/>
         </xsd:all>
+        <!--
         <xsd:attribute name="id" type="xsd:string"/>
+        -->
     </xsd:complexType>
     <xsd:complexType name="userType">
         <xsd:sequence>
@@ -191,7 +193,9 @@
             <xsd:element name="id" type="xsd:string" minOccurs="0"/>
             <xsd:element name="name" type="xsd:string" minOccurs="0"/>
         </xsd:sequence>
+        <!--
         <xsd:attribute name="id" type="xsd:string"/>
+        -->
     </xsd:complexType>
     <xsd:complexType name="externalUrlType">
         <xsd:all>

@@ -4602,7 +4602,11 @@ public class UMLParsingIntegrator
         return isCreated;
     }
     
-    protected boolean isTypeAllowedInAssociation(Node pAttrNode, Node owner, String typeName)
+    protected boolean isTypeAllowedInAssociation(Node pAttrNode, 
+                                                 Node owner, 
+                                                 IClassifier clazzObj, 
+                                                 INamespace classSpace, 
+                                                 String typeName)
     {
         boolean isAllowed = false;
         try
@@ -4647,7 +4651,9 @@ public class UMLParsingIntegrator
                             }
 			    else 
 			    { 
-                                INamedElement supplier = retrieveType(owner, m_Namespace, typeName, false);
+                                INamedElement supplier = resolveType(owner, clazzObj, 
+                                                                     classSpace, typeName, 
+                                                                     false);
                                 if (supplier instanceof IClassifier 
                                     && ! (supplier instanceof IDataType)) 
                                 {
@@ -5004,12 +5010,12 @@ public class UMLParsingIntegrator
                                             getUndecoratedName(typeName);
                                     
                                     String actualType = dec.getParamTwo();
-                                    
+
                                     if (actualType != null &&
                                             actualType.length() > 0 &&
                                             isTypeAllowedInAssociation(attr, 
-                                                                       clazz, 
-                                                                       actualType))
+                                                                       clazz, clazzObj, 
+                                                                       classSpace, actualType))
                                     {
                                         establishAssociation(
                                                 attr, clazz, clazzObj,

@@ -103,7 +103,7 @@ public final class EntitySelectionPanel extends AbstractPanel {
     static PersistenceUnit getPersistenceUnit(WizardDescriptor wizard, Project project) {
         PersistenceUnit pu = (PersistenceUnit) wizard.getProperty(WizardProperties.PERSISTENCE_UNIT);
         if (pu == null) {
-            pu = PersistenceHelper.getPersistenceUnit(project);
+            pu = new PersistenceHelper(project).getPersistenceUnit();
             wizard.putProperty(WizardProperties.PERSISTENCE_UNIT, pu);
         }
         return pu;
