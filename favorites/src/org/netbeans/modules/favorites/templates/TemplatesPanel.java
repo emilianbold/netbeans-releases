@@ -189,7 +189,12 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private static DataObject [] orderFolders (DataObject [] original) {
         SortedSet<DataObject> sorted = new TreeSet<DataObject> (new Comparator<DataObject> () {
             public int compare (DataObject o1, DataObject o2) {
-                return o1.getNodeDelegate ().getDisplayName ().compareTo (o2.getNodeDelegate ().getDisplayName ());
+                int res = o1.getNodeDelegate ().getDisplayName ().compareTo (o2.getNodeDelegate ().getDisplayName ());
+                // compare primary files if display names are equals
+                if (res == 0 && o1 != o2) {
+                    res = o1.getPrimaryFile ().getPath ().compareTo (o2.getPrimaryFile ().getPath ());
+                }
+                return res;
             }
         });
         for (DataObject o : original) {

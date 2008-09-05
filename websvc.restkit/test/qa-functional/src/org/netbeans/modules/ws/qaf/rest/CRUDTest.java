@@ -177,7 +177,7 @@ public class CRUDTest extends RestTestBase {
         assertEquals("Some files were not generated", 6, files.size()); //NOI18N
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view
-        assertEquals("missing nodes?", 16, getRestNode().getChildren().length);
+        assertEquals("missing nodes?", 16, getRestNode().getChildren().length); //NOI18N
     }
 
     public void testCreateRestClient() throws IOException {
@@ -237,11 +237,11 @@ public class CRUDTest extends RestTestBase {
 
     public static Test suite() {
         return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(CRUDTest.class),
-                "testRfE",
-                "testPropAccess",
-                "testDeploy",
-                "testCreateRestClient",
-                "testUndeploy"
-                ).enableModules(".*").clusters(".*"));
+                "testRfE", //NOI18N
+                "testPropAccess", //NOI18N
+                "testDeploy", //NOI18N
+                "testCreateRestClient", //NOI18N
+                "testUndeploy" //NOI18N
+                ).enableModules(".*").clusters(".*")); //NOI18N
     }
 }

@@ -96,12 +96,15 @@ public final class UiUtils {
                 } else if (messageType == MessageType.CRITICAL) {
                     intMessageType = JOptionPane.ERROR_MESSAGE;
                 }
-                
+                LogManager.logIndent("... show message dialog");
+                LogManager.log("title: "+ title);
+                LogManager.log("message: " + message);                
                 JOptionPane.showMessageDialog(
                         null,
                         message,
                         title,
                         intMessageType);
+                LogManager.logUnindent("... dialog closed");
                 break;
             case SILENT:
                 LogManager.log(message);
@@ -134,11 +137,15 @@ public final class UiUtils {
         
         switch (UiMode.getCurrentUiMode()) {
             case SWING:
+                LogManager.logIndent("... showing Yes/No dialog");
+                LogManager.log("title: " + title);
+                LogManager.log("message: " + message);
                 final int result = JOptionPane.showConfirmDialog(
                         null,
                         message,
                         title,
                         YES_NO_OPTION);
+                LogManager.logUnindent("... dialog closed, choice : " + (result == YES_OPTION ? "yes" : (result == NO_OPTION ? "no" : "closed")));
                 return result == YES_OPTION;
                 
             case SILENT:
@@ -170,11 +177,16 @@ public final class UiUtils {
         
         switch (UiMode.getCurrentUiMode()) {
             case SWING:
-                return JOptionPane.showConfirmDialog(
+                LogManager.logIndent("... show Yes/No/Cancel dialog");
+                LogManager.log("title: " + title);
+                LogManager.log("message: " + message);
+                int result = JOptionPane.showConfirmDialog(
                         null,
                         message,
                         title,
-                        YES_NO_CANCEL_OPTION);                
+                        YES_NO_CANCEL_OPTION);
+                LogManager.logUnindent("... dialog closed, choice : " + (result == YES_OPTION ? "yes" : (result == NO_OPTION ? "no" : (result==CANCEL_OPTION ? "cancel" : "closed"))));
+                return result;
                 
             case SILENT:
                 LogManager.log(message);               

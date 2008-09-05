@@ -874,7 +874,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx("ProjectProperties"); // NOI18N
+            return new HelpCtx("ProjectPropsBuild"); // NOI18N
         }
     }
     

@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.repository.util.Pair;
  * @author Vladimir Kvashin
  */
 public class MemoryCache {
+    private static final boolean STATISTIC = false;
     
     private static class SoftValue extends SoftReference {
         private final Object key;
@@ -109,7 +110,7 @@ public class MemoryCache {
     }
     
     public Persistent get(Key key) {
-        readCnt++;
+        if (STATISTIC) readCnt++;
         Object value;
         r.lock();
         try{
@@ -118,12 +119,12 @@ public class MemoryCache {
             r.unlock();
         }
         if (value instanceof Persistent) {
-            readHitCnt++;
+            if (STATISTIC) readHitCnt++;
             return (Persistent) value;
         } else if (value instanceof SoftReference) {
             Persistent result = ((SoftReference<Persistent>) value).get();
             if( result != null ) {
-                readHitCnt++;
+                if (STATISTIC) readHitCnt++;
             }
             return result;
         }
@@ -219,7 +220,7 @@ public class MemoryCache {
         return result;
     }
     
-    public void printStatistics(String name) {
+    private void printStatistics(String name) {
         int hitPercentage = (readCnt == 0) ? 0 : readHitCnt*100/readCnt;
         System.out.printf("\n\nMemory cache statistics %s: %d reads,  %d hits (%d%%)\n\n", // NOI18N
                 name, readCnt, readHitCnt, hitPercentage);

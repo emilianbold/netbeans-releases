@@ -17,17 +17,17 @@ import javax.ws.rs.Produces;
  * @author lukas
  */
 
-@Path("/Item1ContainerURI")
-public class Item1CClass {
+@Path("/Items")
+public class ItemsResource_1 {
     @Context
     private UriInfo context;
 
-    /** Creates a new instance of Item1CClass */
-    public Item1CClass() {
+    /** Creates a new instance of ItemsResource_1 */
+    public ItemsResource_1() {
     }
 
     /**
-     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.Item1CClass
+     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.ItemsResource_1
      * @return an instance of java.lang.String
      */
     @GET
@@ -38,10 +38,10 @@ public class Item1CClass {
     }
 
     /**
-     * Sub-resource locator method for  {Item1URI}
+     * Sub-resource locator method for  {name}
      */
-    @Path("{Item1URI}")
-    public Item1Cl getItem1Cl() {
-        return new Item1Cl();
+    @Path("{name}")
+    public ItemResource_1 getItemResource_1() {
+        return new ItemResource_1();
     }
 }

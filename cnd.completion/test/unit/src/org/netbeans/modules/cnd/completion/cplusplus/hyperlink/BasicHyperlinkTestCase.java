@@ -466,6 +466,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#145071 : forward declarations marked as error
         performTest("IZ145071.cc", 2, 20, "IZ145071.cc", 2, 1);
     }
+    
+    public void testIZ136731() throws Exception {
+        // IZ#136731 : No hyper link on local extern function
+        performTest("IZ136731_local_extern_function.cc", 4, 18, "IZ136731_local_extern_function.cc", 3, 5);
+        performTest("IZ136731_local_extern_function.cc", 3, 40, "IZ136731_local_extern_function.cc", 3, 32);
+    }
 
     public static class Failed extends HyperlinkBaseTestCase {
 

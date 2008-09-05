@@ -39,71 +39,57 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.tasklist.ui;
-
-import java.util.HashMap;
-import java.util.List;
-import javax.swing.JLabel;
-import org.netbeans.modules.tasklist.impl.TaskList;
-import org.netbeans.spi.tasklist.Task;
-import org.netbeans.modules.tasklist.trampoline.TaskGroup;
+package org.netbeans.modules.tasklist.impl;
 
 /**
- *
+ * A hack into Java Parser to get notifications when classpath scanning started/finished
+ * so that we can pause task scanning at that time.
+ * 
  * @author S. Aubrecht
  */
-class StatusBar extends JLabel {
+class ScanMonitor {
 
-    private TaskList tasks;
-    private TaskList.Listener listener;
+    private static ScanMonitor INSTANCE;
     
-    /** Creates a new instance of StatusBar */
-    public StatusBar( TaskList tasks ) {
-        this.tasks = tasks;
-        listener = new TaskList.Listener() {
-            public void tasksAdded(List<? extends Task> tasks) {
-                updateText();
-            }
-
-            public void tasksRemoved(List<? extends Task> tasks) {
-                updateText();
-            }
-
-            public void cleared() {
-                updateText();
-            }
-        };
+    private final Object LOCK = new Object();
+    private boolean locked = false;
+    
+    private ScanMonitor() {
         
-        updateText();
     }
-
-    private void updateText() {
-        StringBuffer buffer = new StringBuffer();
-        for( TaskGroup tg : TaskGroup.getGroups() ) {
-            int count = tasks.countTasks( tg );
-            if( count > 0 ) {
-                if( buffer.length() > 0 )
-                    buffer.append( "  " ); //NOI18N
-                else 
-                    buffer.append( ' ' );
-                buffer.append( tg.getDisplayName() );
-                buffer.append( ": " ); //NOI18N
-                buffer.append( count );
+    
+    public static ScanMonitor getDefault() {
+        if( null == INSTANCE ) {
+            INSTANCE = new ScanMonitor();
+        }
+        return INSTANCE;
+    }
+    
+    /**
+     * The method is blocking as long as classpath scanning is in progress.
+     */
+    public void waitEnabled() {
+        synchronized( LOCK ) {
+            if( locked ) {
+                try {
+                    LOCK.wait();
+                } catch (InterruptedException ex) {
+                   //ignore
+                }
             }
         }
-        buffer.append( ' ' );
-        setText( buffer.toString() );
     }
     
-    public void removeNotify() {
-        super.removeNotify();
-        
-        tasks.removeListener( listener );
+    private void lock() {
+        synchronized( LOCK ) {
+            locked = true;
+        }
     }
     
-    public void addNotify() {
-        super.addNotify();
-        
-        tasks.addListener( listener );
+    private void unlock() {
+        synchronized( LOCK ) {
+            locked = false;
+            LOCK.notifyAll();
+        }
     }
 }

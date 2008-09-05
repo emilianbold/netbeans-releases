@@ -462,7 +462,8 @@ public abstract class CopySupport {
 	    final boolean copyEnabled = isCopyEnabled();
 	    final FileObject sourceRoot = getSourceRoot();
 	    final FileObject targetRoot = isCopyEnabled() ? getTargetRoot(true) : getTargetRoot(false);
-	    if (sourceRoot != null && targetRoot != null && sourceRoot != targetRoot && targetRoot.canWrite()) {
+	    if (sourceRoot != null && targetRoot != null && sourceRoot != targetRoot
+                    && org.netbeans.modules.php.project.ui.Utils.isFolderWritable(FileUtil.toFile(targetRoot))) {
                 showMessage = true;
 		config = SourceTargetPair.forConfig(sourceRoot, targetRoot, copyEnabled);
 	    } else {

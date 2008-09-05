@@ -107,9 +107,9 @@ public class VWPContentModel extends PageContentModel {
     private Collection<PageContentItem> pageContentItems = new ArrayList<PageContentItem>();
     private VWPContentModelProvider provider;
     private static final Logger LOGGER = Logger.getLogger(VWPContentModel.class.getName());
-    static {
-        LOGGER.setLevel(Level.FINEST);
-    }
+    // static {
+    //    LOGGER.setLevel(Level.FINEST);
+    // }
 
     /** Creates a new instance of VWPContentModel
      * @param facesModel can not be null

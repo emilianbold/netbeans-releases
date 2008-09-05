@@ -1,6 +1,7 @@
 <?php
 abstract class Animal {
     const KIND=1;
+    static $animalSpecies = array();
     public static $count = 0, $animal;
     public abstract function isMammal();
     function __construct() {
@@ -14,6 +15,8 @@ abstract class Animal {
         return Animal::$count;
     }
     public static function getAnimal() {
+        $species = self::$animalSpecies;
+        $first = self::$animalSpecies[0];
         return self::$animal;
     }
 

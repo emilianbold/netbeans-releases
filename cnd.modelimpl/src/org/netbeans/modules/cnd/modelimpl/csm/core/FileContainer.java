@@ -152,18 +152,10 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         return impl;
     }
 
+
     //@Deprecated
     public void putPreprocState(File file, APTPreprocHandler.State state) {
         MyFile f = getMyFile(file, true);
-        putPreprocState(f, state);
-    }
-
-    //@Deprecated
-    public void putPreprocState(Entry entry, APTPreprocHandler.State state) {
-        if (entry == null) {
-            return;
-        }
-        MyFile f = (MyFile) entry;
         //assert f.size() <= 1 : "this method shold never be called for an entry with mltiple states"; //NOI18N
 	if (f.getState() == null || !f.getState().isValid()) {
 	    f.setState(state);
@@ -186,7 +178,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 	}
     }
 
-    //@Deprecated
     public void invalidatePreprocState(File file) {
         MyFile f = getMyFile(file, false);
         if (f == null){
@@ -208,6 +199,14 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             return null;
         }
         return f.getState();
+    }
+    
+    public Collection<APTPreprocHandler.State> getPreprocStates(File file) {
+        MyFile f = getMyFile(file, false);
+        if (f == null){
+            return null;
+        }
+        return f.getPrerocStates();
     }
 
 // unused    
@@ -516,7 +515,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
         @Override
         public String toString() {
-            return "(" + state.toString() + ',' + pcState.toString() + ')'; //NOI18N
+            return "(" + pcState.toString() + "\n" + state.toString() + ')'; //NOI18N
         }
     }
             
@@ -525,9 +524,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         //@Deprecated
         APTPreprocHandler.State getState();
         
-        //@Deprecated
-        FilePreprocessorConditionState getPCState();
-
         /** Gets the states collection */
         Collection<StatePair> getStates();
         
@@ -535,8 +531,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         void setStates(Collection<StatePair> pairs);
         void setStates(Collection<StatePair> pairs, StatePair yetOneMore);
         
-        /** Sets (replaces) new conditions state for the existent pair */
-        void setPCState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
+        /**
+         * Sets (replaces) new conditions state for the existent pair
+         * @return true in the case of success, otherwise (if no ppState found) false
+         */
+        boolean setPCState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
         
         int size();
 
@@ -554,7 +553,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         private final CsmUID<CsmFile> fileNew;
         private final CharSequence canonical;
         private Object data; // either StatePair or List<StatePair>
-        private int modCount;
+        private volatile int modCount;
         
         private MyFile (final DataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);
@@ -647,11 +646,6 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
 
         //@Deprecated
-        public final synchronized FilePreprocessorConditionState getPCState() {
-            return getStates().iterator().next().pcState;
-        }
-
-        //@Deprecated
         public final synchronized APTPreprocHandler.State getState() {
             return getStates().iterator().next().state;
         }
@@ -668,17 +662,22 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             data = new StatePair(state, null);
         }
         
-        public synchronized void setPCState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
+        /**
+         * Sets (replaces) new conditions state for the existent pair
+         * @return true in the case of success, otherwise (if no ppState found) false
+         */
+        public synchronized boolean setPCState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
             assert state != null : "state should not be null"; //NOI18N
             if (state == null) {
-                return;
+                return false;
             }
             if (data instanceof StatePair) {
                 StatePair pair = (StatePair) data;
                 if (state.equals(pair.state)) {
                     data = new StatePair(state, new FilePreprocessorConditionState(pcState));
+                    return true;
                 } else {
-                    assert false : "attempt to set condition state to inexistent pair"; //NOI18N
+                    return false;
                 }
                 
             } else {
@@ -687,10 +686,10 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                     StatePair pair = list.get(i);
                     if (state.equals(pair.state)) {
                         list.set(i, new StatePair(state, new FilePreprocessorConditionState(pcState)));
-                        return;
+                        return true;
                     }
                 }
-                assert false : "attempt to set condition state to inexistent pair"; //NOI18N
+                return false;
             }
         }
         
@@ -759,6 +758,21 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 return Collections.singleton((StatePair) data);
             } else {
                 return new ArrayList<StatePair>((Collection<StatePair>) data);
+            }
+        }
+        
+        public synchronized Collection<APTPreprocHandler.State> getPrerocStates() {
+            if (data == null) {
+                return Collections.emptyList();
+            } else if(data instanceof StatePair) {
+                return Collections.singleton(((StatePair) data).state);
+            } else {
+                Collection<StatePair> pairs = (Collection<StatePair>) data;
+                Collection<APTPreprocHandler.State> result = new ArrayList<State>(pairs.size());
+                for (StatePair pair : pairs) {
+                    result.add(pair.state);
+                }
+                return result;
             }
         }
 

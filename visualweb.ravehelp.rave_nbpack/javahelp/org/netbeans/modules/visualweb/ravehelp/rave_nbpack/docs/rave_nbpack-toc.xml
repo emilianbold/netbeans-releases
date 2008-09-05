@@ -66,7 +66,7 @@
                     <tocitem text="Binding a Table Component to an Enterprise JavaBean Method" target="projrave_ejb_howtoejbs_ejb_bind_table" />
                     <tocitem text="Deleting an Enterprise JavaBean Component" target="projrave_ejb_howtoejbs_ejb_delete" />
                     <tocitem text="Exporting a Set of Enterprise JavaBean Components" target="projrave_ejb_howtoejbs_ejb_export" />
-                    <tocitem text="Importing a Set of Enterprise JavaBean Components" />
+                    <tocitem text="Importing a Set of Enterprise JavaBean Components" target="projrave_ejb_howtoejbs_import" />
                 </tocitem>
                 <tocitem text="Web Services">
                     <tocitem text="About Web Services" target="projrave_web_svc_aboutwebservices" />
@@ -257,6 +257,10 @@
             <tocitem text="Struts">
                 <tocitem text="Creating a New Application with Struts Support" target="framework_struts_create" />
                 <tocitem text="Adding Struts Support to an Existing Application" target="framework_struts_add" />
+            </tocitem>
+            <tocitem text="Hibernate">
+                <tocitem text="Creating a New Web Application with Hibernate Support" target="framework_hibernate_create" />
+                <tocitem text="Adding Hibernate Support to a Project" target="framework_hibernate_addsupport" />
             </tocitem>
         </tocitem>
     </tocitem>

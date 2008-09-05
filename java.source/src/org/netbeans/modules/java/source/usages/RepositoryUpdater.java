@@ -3064,6 +3064,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
 
                             //check for classes living elsewhere:
                             for (TypeElement topLevel : types) {
+                                if (topLevel==null) {
+                                    //workaround for 6443073
+                                    //see Symbol.java:601
+                                    //see JavacTaskImpl.java:367
+                                    //see also #144315
+                                    continue;
+                                }
+
                                 if (!expectedTopLevelClassName.equals(topLevel.getSimpleName().toString())) {
                                     List<String> classes = new LinkedList<String>();
                                     JavacElements elements = JavacElements.instance(jt.getContext());
