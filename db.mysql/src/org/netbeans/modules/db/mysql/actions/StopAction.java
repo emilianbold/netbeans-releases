@@ -102,7 +102,7 @@ public class StopAction extends CookieAction {
                 return;
             }
             
-            path = server.getAdminPath();
+            path = server.getStopPath();
         }
 
         RequestProcessor.getDefault().post(new Runnable() {

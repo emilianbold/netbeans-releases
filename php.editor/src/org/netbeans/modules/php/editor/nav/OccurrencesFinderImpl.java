@@ -340,7 +340,7 @@ public class OccurrencesFinderImpl implements OccurrencesFinder {
             ArrayAccess arrayAccess = (ArrayAccess) n;
             Expression index = arrayAccess.getIndex();
             retval = forNode(index, kind);
-        } else {
+        } else if (n != null) {
             retval = new OffsetRange(n.getStartOffset(), n.getEndOffset());
         }
         return retval;

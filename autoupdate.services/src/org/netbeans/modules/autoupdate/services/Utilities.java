@@ -681,7 +681,15 @@ public class Utilities {
             case Dependency.TYPE_RECOMMENDS :
                 UpdateUnit p = DependencyAggregator.getRequested (dep);
                 boolean passed = false;
-                if (p != null) {
+                if (p == null) {
+                    // look on availableInfos as well
+                    for (ModuleInfo m : availableInfos) {
+                        if (Arrays.asList (m.getProvides ()).contains (dep.getName ())) {
+                            passed = true;
+                            break;
+                        }
+                    }
+                } else {
                     passed = true;
                     if (! p.getAvailableUpdates ().isEmpty ()) {
                         requested = p.getAvailableUpdates ().get (0);

@@ -690,7 +690,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         org.netbeans.junit.ide.ProjectSupport.waitScanFinished();
     }
 
-    private File getProjectsRootDir() throws IOException {
+    protected File getProjectsRootDir() throws IOException {
         File f = getWorkDir();
         LOGGER.fine("Working directory is set to: " + f.getAbsolutePath());
         if (f != null) {

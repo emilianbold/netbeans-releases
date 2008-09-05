@@ -97,6 +97,7 @@ public class GlassfishInstance implements ServerInstanceImplementation {
     public static final int DEFAULT_HTTP_PORT = 8080;
     public static final int DEFAULT_HTTPS_PORT = 8181;
     public static final int DEFAULT_ADMIN_PORT = 4848;
+    public static final String DEFAULT_DOMAINS_FOLDER = "domains"; //NOI18N
     public static final String DEFAULT_DOMAIN_NAME = "domain1"; // NOI18N
 
     
