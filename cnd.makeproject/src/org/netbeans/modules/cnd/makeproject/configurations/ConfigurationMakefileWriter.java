@@ -991,8 +991,11 @@ public class ConfigurationMakefileWriter {
         bw.write("rpmbuild -bb ${SPEC_FILE} > ${LOG_FILE}\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
         bw.write("cat ${LOG_FILE}\n"); // NOI18N
-        bw.write("RPM_FILE=`cat $LOG_FILE | grep Wrote | awk -F: '{ print $2 }'`\n"); // NOI18N
-        bw.write("mv ${RPM_FILE} " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
+        bw.write("RPM_PATH=`cat $LOG_FILE | grep .rpm | tail -1 |awk -F: '{ print $2 }'`\n"); // NOI18N
+        bw.write("RPM_NAME=`basename ${RPM_PATH}`\n"); // NOI18N
+        bw.write("mv ${RPM_PATH} " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+        bw.write("checkReturnCode\n"); // NOI18N
+        bw.write("echo RPM Package: " + packagingConfiguration.getOutputValue() + "/" + "${RPM_NAME}" + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Cleanup\n"); // NOI18N
