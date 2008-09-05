@@ -44,6 +44,7 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -158,6 +159,9 @@ public class Installer extends ModuleInstall implements Runnable {
     private static Object[] selectedExcParams;
 
     private static boolean logMetricsEnabled = false;
+    /** Flag to store status of last metrics upload */
+    private static boolean logMetricsUploadFailed = false;
+    
     private static String USAGE_STATISTICS_ENABLED = "usageStatisticsEnabled"; // NOI18N
     private static String CORE_PREF_NODE = "org/netbeans/core"; // NOI18N
     private static Preferences corePref = NbPreferences.root().node (CORE_PREF_NODE);
@@ -204,6 +208,7 @@ public class Installer extends ModuleInstall implements Runnable {
         all.addHandler(handler);
         logsSize = prefs.getInt("count", 0);
         logsSizeMetrics = prefs.getInt("countMetrics", 0);
+        logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", Boolean.FALSE); // NOI18N
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
         System.setProperty("nb.show.statistics.ui",USAGE_STATISTICS_ENABLED);
@@ -333,7 +338,31 @@ public class Installer extends ModuleInstall implements Runnable {
                 MetricsHandler.waitFlushed();
                 closeLogStreamMetrics();
                 File f = logFileMetrics(0);
-                f.renameTo(new File(f.getParentFile(), f.getName() + ".1"));
+                File f1 = logFileMetrics(1);
+                if (f1.exists()) {
+                    if (logMetricsUploadFailed) {
+                        //If last metrics upload failed first check size of backup file
+                        if (f1.length() > MetricsHandler.MAX_LOGS_SIZE) {
+                            //Size is over limit delete file
+                            f1.delete();
+                            if (!f.renameTo(f1)) {
+                                LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
+                            }
+                        } else {
+                            //Size is below limit, append data
+                            appendFile(f, f1);
+                        }
+                    } else {
+                        f1.delete();
+                        if (!f.renameTo(f1)) {
+                            LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
+                        }
+                    }
+                } else {
+                    if (!f.renameTo(f1)) {
+                        LOG.log(Level.INFO, "Failed to rename file:" + f + " to:" + f1); // NOI18N
+                    }
+                }
                 logsSizeMetrics = 0;
                 if (preferencesWritable) {
                     prefs.putInt("countMetrics", logsSizeMetrics);
@@ -349,6 +378,36 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         } catch (IOException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    /** Apend content of source to target */
+    private static void appendFile (File source, File target) {
+        try {
+            FileInputStream is = null;
+            FileOutputStream os = null;
+            try {
+                is = new FileInputStream(source);
+                BufferedInputStream bis = new BufferedInputStream(is);
+
+                os = new FileOutputStream(target, true);
+                BufferedOutputStream bos = new BufferedOutputStream(os);
+
+                int c;
+                while ((c = bis.read()) != -1) {
+                    bos.write(c);
+                }
+                bos.flush();
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
+                if (os != null) {
+                    os.close();
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -1450,17 +1509,30 @@ public class Installer extends ModuleInstall implements Runnable {
             }
 
             try {
+                if (dataType == DataType.DATA_METRICS) {
+                    logMetricsUploadFailed = false;
+                }
                 nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs, dataType);
             } catch (IOException ex) {
                 LOG.log(Level.INFO, null, ex);
-                String txt;
-                if (!report){
-                    txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm());
-                }else{
-                    txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm());
+                if (dataType == DataType.DATA_METRICS) {
+                    logMetricsUploadFailed = true;
                 }
-                NotifyDescriptor nd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notifyLater(nd);
+                if (dataType != DataType.DATA_METRICS) {
+                    String txt;
+                    if (!report) {
+                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm());
+                    } else {
+                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm());
+                    }
+                    NotifyDescriptor nd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notifyLater(nd);
+                }
+            }
+            if (dataType == DataType.DATA_METRICS) {
+                if (preferencesWritable) {
+                    prefs.putBoolean("metrics.upload.failed", logMetricsUploadFailed); // NOI18N
+                }
             }
             if (nextURL != null) {
                 clearLogs();
@@ -1794,6 +1866,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         log.setUseParentHandlers(true);
                         log.setLevel(Level.FINEST);
                         log.addHandler(metrics);
+                        MetricsHandler.setFlushOnRecord(false);
                     } else {
                         MetricsHandler.flushImmediatelly();
                         closeLogStreamMetrics();
