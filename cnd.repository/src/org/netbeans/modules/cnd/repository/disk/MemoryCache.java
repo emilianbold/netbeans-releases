@@ -123,8 +123,8 @@ public class MemoryCache {
             return (Persistent) value;
         } else if (value instanceof SoftReference) {
             Persistent result = ((SoftReference<Persistent>) value).get();
-            if( result != null ) {
-                if (STATISTIC) readHitCnt++;
+            if( STATISTIC && result != null ) {
+                readHitCnt++;
             }
             return result;
         }
