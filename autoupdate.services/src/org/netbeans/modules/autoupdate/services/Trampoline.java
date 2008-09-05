@@ -91,7 +91,7 @@ public abstract class Trampoline<Support> extends Object {
     // api.OperationContainer
     protected abstract OperationContainerImpl impl (OperationContainer container);
     protected abstract OperationInfoImpl impl (OperationInfo info);
-    protected abstract OperationInfo createOperationInfo (OperationInfoImpl impl);
+    protected abstract OperationInfo<Support> createOperationInfo (OperationInfoImpl impl);
     
     // api.UpdateUnitProvider
     protected abstract UpdateUnitProvider createUpdateUnitProvider (UpdateUnitProviderImpl impl);

@@ -78,6 +78,17 @@ public final class MIMEResolverImpl {
         return new Impl(fo);
     }
 
+    /** Check whether given resolver is declarative. */
+    public static boolean isDeclarative(MIMEResolver resolver) {
+        return resolver instanceof Impl;
+    }
+
+    /** Returns resolvable MIME Types for given declarative resolver. */
+    public static String[] getMIMETypes(MIMEResolver resolver) {
+        return ((Impl)resolver).implResolvableMIMETypes;
+    }
+    
+
     /** Returns list of extension and MIME type pairs for given MIMEResolver
      * FileObject. The list can contain duplicates and also [null, MIME] pairs.
      * @param fo MIMEResolver FileObject
@@ -120,6 +131,7 @@ public final class MIMEResolverImpl {
             public @Override void fileChanged(FileEvent fe) {
                 synchronized (Impl.this) {
                     state = DescParser.INIT;
+                    implResolvableMIMETypes = null;
                 }
             }
         };
@@ -128,33 +140,25 @@ public final class MIMEResolverImpl {
         private FileElement[] smell = null;
                 
         private short state = DescParser.INIT;
-        
+
+        private String[] implResolvableMIMETypes = null;
+
+        @SuppressWarnings("deprecation")
         Impl(FileObject obj) {
             if (ERR.isLoggable(Level.FINE)) ERR.fine("MIMEResolverImpl.Impl.<init>(" + obj + ")");  // NOI18N
             data = obj;
             data.addFileChangeListener(FileUtil.weakFileChangeListener(listener, data));
         }
-        
-        /**
-         * Resolves FileObject and returns recognized MIME type
-         * @param fo is FileObject which should be resolved
-         * @return  recognized MIME type or null if not recognized
-         */
+
         public String findMIMEType(FileObject fo) {
             if (fo.hasExt("xml") && fo.getPath().startsWith("Services/MIMEResolver")) { // NOI18N
                 // do not try to check ourselves!
                 return null;
             }
 
-            synchronized (this) {  // lazy init
-
-                if (state == DescParser.INIT) {
-                    state = parseDesc();
-                }
-                
-                if (state == DescParser.ERROR) {                    
-                    return null;
-                }                
+            init();
+            if (state == DescParser.ERROR) {
+                return null;
             }
 
             // smell is filled in reverse order
@@ -168,6 +172,14 @@ public final class MIMEResolverImpl {
             }
             
             return null;
+        }
+
+        private void init() {
+            synchronized (this) {  // lazy init
+                if (state == DescParser.INIT) {
+                    state = parseDesc();
+                }
+            }
         }
 
         // description document is parsed in the same thread
@@ -187,6 +199,15 @@ public final class MIMEResolverImpl {
                     ERR.fine(buf.toString());
                 }
             }
+            // fill resolvableMIMETypes array with available MIME types
+            if(parser.state != DescParser.ERROR) {
+                for (int i = 0; i < smell.length; i++) {
+                    String mimeType = smell[i].getMimeType();
+                    if(mimeType != null) {
+                        implResolvableMIMETypes = Util.addString(implResolvableMIMETypes, mimeType);
+                    }
+                }
+            }
             return parser.state;
         }
         
@@ -195,7 +216,7 @@ public final class MIMEResolverImpl {
             return "MIMEResolverImpl.Impl[" + data + ", " + smell + "]";  // NOI18N
         }
 
-        
+
     }
 
     

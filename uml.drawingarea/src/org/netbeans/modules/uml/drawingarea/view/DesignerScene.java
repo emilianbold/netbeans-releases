@@ -48,6 +48,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -135,8 +136,21 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
     private Router selfLinkRouter;
     public static String SceneDefaultWidgetID = "default";
     
-    private HashSet < IPresentationElement > lockedSelected = 
-            new HashSet < IPresentationElement >();
+    private ArrayList < IPresentationElement > lockedSelected = 
+            new ArrayList < IPresentationElement >();
+    
+    /**
+     * The visual library uses a HashSet to manage the selected objects.  The 
+     * problem is that the HashSet uses the hash code to determine the order of 
+     * the elements in the list.  Therefore, the getSelectedObject does not 
+     * return a list in the order in which they where selected.  
+     * 
+     * Since some operations require the list to be in the order of the selection
+     * I am going to create a second list that can be accessed for the 
+     * special operations that need a list that contains the selected order.
+     */
+    private ArrayList < IPresentationElement > selectedElements = 
+            new ArrayList < IPresentationElement >();
             
 
     public DesignerScene(IDiagram diagram,UMLDiagramTopComponent topcomponent)
@@ -191,6 +205,8 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         
         setActiveTool(DesignerTools.SELECT);
         setKeyEventProcessingType (EventProcessingType.FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS);
+        
+        setAccessibleContext(new UMLWidgetAccessibleContext(this));
     }
     
     
@@ -688,9 +704,9 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         lockedSelected.remove(element);
     }
     
-    public Set < IPresentationElement > getLockedSelected()
+    public List < IPresentationElement > getLockedSelected()
     {
-        return Collections.unmodifiableSet(lockedSelected);
+        return Collections.unmodifiableList(lockedSelected);
     }
     
     public void clearLockedSelected()
@@ -698,23 +714,41 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         lockedSelected.clear();
     }
     
+    public List < IPresentationElement > getOrderedSelection()
+    {
+        return selectedElements;
+    }
+    
     public void userSelectionSuggested (Set<?> suggestedSelectedObjects, boolean invertSelection)
     {
-        Set < IPresentationElement > lockedSet = getLockedSelected();
+        List < IPresentationElement > lockedSet = getLockedSelected();
 
+        // Build the set needed by the visual library.  Also build the ordered 
+        // set at the same time.  The invert selection means to add the new
+        // selection to the old selection.  So I need to keep a clone of the 
+        // original order list of selected elements so they can be put back into
+        // the selected elements list.
+        ArrayList < IPresentationElement > oldSelection = 
+                new ArrayList < IPresentationElement >(selectedElements);
+        
+        selectedElements.clear();
+        
         HashSet < Object > selection = new HashSet < Object >();
         if(lockedSet.size() > 0)
         {
             selection.addAll(lockedSet);
+            selectedElements.addAll(lockedSet);
         }
-        selection.addAll(suggestedSelectedObjects);
         
-        // If the selection is inverted then the locked set needs to be cleared.
+        selection.addAll(suggestedSelectedObjects);
         if(invertSelection == true)
         {
-            clearLockedSelected();
+            selectedElements.addAll(oldSelection);
         }
+        selectedElements.addAll((Collection<? extends IPresentationElement>) suggestedSelectedObjects);
         
         super.userSelectionSuggested(selection, invertSelection);
     }
+
+
 }

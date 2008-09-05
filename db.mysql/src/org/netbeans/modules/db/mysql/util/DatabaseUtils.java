@@ -395,8 +395,8 @@ public class DatabaseUtils {
             if ( port == null ) {
                 if ( url.indexOf(":") >= 0 ) {
                     port = url.split(":")[1];
-                    if ( url.indexOf("/") >= 0) {
-                        port = url.split("/")[0];
+                    if ( port.indexOf("/") >= 0) {
+                        port = port.split("/")[0];
                     }
                 } else {
                    port = "";

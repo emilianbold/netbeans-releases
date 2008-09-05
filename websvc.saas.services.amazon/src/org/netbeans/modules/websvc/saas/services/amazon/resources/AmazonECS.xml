@@ -62,6 +62,7 @@
         
         <code-gen>
             <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/apikey.properties"/>
+            <artifacts targets="php" profile="Templates/SaaSServices/apikey.php"/>
         </code-gen>
 
         <authentication>

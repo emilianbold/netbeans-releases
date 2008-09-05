@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
@@ -86,6 +87,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
@@ -1128,16 +1130,21 @@ public class TraceXRef extends TraceModel {
     }
     
     private final static class RefLink implements OutputListener {
-        private final CsmReference ref;
+        private final CsmUID<CsmFile> fileUID;
+        private final int offset;
         RefLink(CsmReference ref) {
-            this.ref = ref;
+            this.fileUID = ref.getContainingFile().getUID();
+            this.offset = ref.getStartOffset();
         }
         
         public void outputLineSelected(OutputEvent ev) {
         }
 
         public void outputLineAction(OutputEvent ev) {
-            CsmUtilities.openSource(ref);
+            CsmFile file = fileUID.getObject();
+            if (file != null) {
+                CsmUtilities.openSource(new OffsetableBase(file, offset, offset));
+            }
         }
 
         public void outputLineCleared(OutputEvent ev) {

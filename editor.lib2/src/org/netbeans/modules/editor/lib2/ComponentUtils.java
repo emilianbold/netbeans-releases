@@ -60,7 +60,7 @@ public final class ComponentUtils {
     private static final Logger LOG = Logger.getLogger(Logger.class.getName());
     
     public static boolean isGuardedException(BadLocationException exc) {
-        return exc.getClass().getName().equals("GuardedException");
+        return exc.getClass().getName().equals("org.netbeans.editor.GuardedException");
     }
 
     public static void returnFocus() {

@@ -292,7 +292,8 @@ public class SQLStatementAnalyzer {
         CharSequence keyword = seq.token().text();
         return StringUtils.textEqualsIgnoreCase("WHERE", keyword) || // NOI18N
                StringUtils.textEqualsIgnoreCase("HAVING", keyword) || // NOI18N
-               StringUtils.textEqualsIgnoreCase("ORDER", keyword); // NOI18N
+               StringUtils.textEqualsIgnoreCase("ORDER", keyword) || // NOI18N
+               StringUtils.textEqualsIgnoreCase("GROUP", keyword); // NOI18N
     }
 
     private String getUnquotedIdentifier() {

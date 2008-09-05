@@ -54,6 +54,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void testIZ145280() throws Exception {
+        // IZ#145280: IDE highlights code with '__attribute__((unused))' as wrong
+        performStaticTest("iz145280.cc");
+    }
+    
     public void testSimple() throws Exception {
         performStaticTest("simple.cpp");
     }

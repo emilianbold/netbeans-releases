@@ -44,6 +44,7 @@ package org.netbeans.modules.server.ui.wizard;
 import java.awt.Dialog;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -52,10 +53,13 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.spi.server.ServerWizardProvider;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -106,6 +110,27 @@ public class AddServerInstanceWizard extends WizardDescriptor {
 
 
     public static ServerInstance showAddServerInstanceWizard() {
+        Collection<? extends ServerWizardProvider> providers = Lookups.forPath(
+                ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class);
+        // this will almost never happen if this module will be autoload
+        if (providers.isEmpty()) {
+            // display the warning dialog - no server plugins
+            String close = NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Close");
+            DialogDescriptor descriptor = new DialogDescriptor(
+                    NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Text"),
+                    NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_NoServerPlugins_Title"),
+                    true,
+                    new Object[] {close},
+                    close,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null,
+                    null);
+
+            // TODO invoke plugin manager once API to do that will be available
+            DialogDisplayer.getDefault().notify(descriptor);
+            return null;
+        }
+
         AddServerInstanceWizard wizard = new AddServerInstanceWizard();
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizard);

@@ -212,7 +212,7 @@ public final class CodeStylePreferences {
         this.projectPrefs = null;
         this.useProject = false;
 
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
+        ProjectManager.mutex().postReadRequest(new Runnable() {
             public void run() {
                 synchronized (CodeStylePreferences.this) {
                     if (CodeStylePreferences.this.projectRoot != null) {

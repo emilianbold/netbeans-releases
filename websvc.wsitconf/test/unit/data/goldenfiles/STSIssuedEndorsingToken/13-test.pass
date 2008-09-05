@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
- name="NewWebServiceService" targetNamespace="http://policy/" xmlns:tns="http://policy/" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsaw="http://www.w3.org/2005/08/addressing" xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy" xmlns:t="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:wsp1="http://www.w3.org/ns/ws-policy" xmlns:sp1="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702" xmlns:t1="http://docs.oasis-open.org/ws-sx/ws-trust/200512"
+ name="NewWebServiceService" targetNamespace="http://policy/" xmlns:tns="http://policy/" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsp1="http://www.w3.org/ns/ws-policy" xmlns:fi="http://java.sun.com/xml/ns/wsit/2006/09/policy/fastinfoset/service" xmlns:tcp="http://java.sun.com/xml/ns/wsit/2006/09/policy/soaptcp/service" xmlns:wsaw="http://www.w3.org/2005/08/addressing" xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy" xmlns:t="http://schemas.xmlsoap.org/ws/2005/02/trust" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:sp1="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702" xmlns:t1="http://docs.oasis-open.org/ws-sx/ws-trust/200512"
  >
     <message name="sample_operation"/>
     <message name="sample_operationResponse"/>
@@ -56,30 +56,22 @@ made subject to such option by the copyright holder.
         </operation>
     </portType>
     <binding name="NewWebServicePortBinding" type="tns:NewWebService">
-        <wsp:PolicyReference URI="#NewWebServicePortBindingPolicy"/>
+        <wsp1:PolicyReference URI="#NewWebServicePortBindingPolicy"/>
         <operation name="sample_operation">
             <input>
-                <wsp:PolicyReference URI="#NewWebServicePortBinding_sample_operation_Input_Policy"/>
+                <wsp1:PolicyReference URI="#NewWebServicePortBinding_sample_operation_Input_Policy"/>
             </input>
             <output>
-                <wsp:PolicyReference URI="#NewWebServicePortBinding_sample_operation_Output_Policy"/>
+                <wsp1:PolicyReference URI="#NewWebServicePortBinding_sample_operation_Output_Policy"/>
             </output>
         </operation>
     </binding>
     <service name="NewWebServiceService">
         <port name="NewWebServicePort" binding="tns:NewWebServicePortBinding"/>
     </service>
-    <wsp:Policy wsu:Id="NewWebServicePortBindingPolicy">
-        <wsp:ExactlyOne>
-            <wsp:All>
-                <wsaw:UsingAddressing xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" wsp:Optional="false"/>
-                <sp:Trust10>
-                    <wsp:Policy>
-                        <sp:MustSupportIssuedTokens/>
-                            <sp:RequireClientEntropy/>
-                            <sp:RequireServerEntropy/>
-                    </wsp:Policy>
-                </sp:Trust10>
+    <wsp1:Policy wsu:Id="NewWebServicePortBindingPolicy">
+        <wsp1:ExactlyOne>
+            <wsp1:All>
                 <wsam:Addressing wsp1:Optional="false"/>
                 <sp1:Wss11>
                     <wsp1:Policy>
@@ -136,12 +128,12 @@ made subject to such option by the copyright holder.
                         </sp1:IssuedToken>
                     </wsp1:Policy>
                 </sp1:EndorsingSupportingTokens>
-            </wsp:All>
-        </wsp:ExactlyOne>
-    </wsp:Policy>
-    <wsp:Policy wsu:Id="NewWebServicePortBinding_sample_operation_Input_Policy">
-        <wsp:ExactlyOne>
-            <wsp:All>
+            </wsp1:All>
+        </wsp1:ExactlyOne>
+    </wsp1:Policy>
+    <wsp1:Policy wsu:Id="NewWebServicePortBinding_sample_operation_Input_Policy">
+        <wsp1:ExactlyOne>
+            <wsp1:All>
                 <sp1:EncryptedParts>
                     <sp1:Body/>
                 </sp1:EncryptedParts>
@@ -159,12 +151,12 @@ made subject to such option by the copyright holder.
                     <sp1:Header Name="Sequence" Namespace="http://docs.oasis-open.org/ws-rx/wsrmp/200702"/>
                     <sp1:Header Name="CreateSequence" Namespace="http://docs.oasis-open.org/ws-rx/wsrmp/200702"/>
                 </sp1:SignedParts>
-            </wsp:All>
-        </wsp:ExactlyOne>
-    </wsp:Policy>
-    <wsp:Policy wsu:Id="NewWebServicePortBinding_sample_operation_Output_Policy">
-        <wsp:ExactlyOne>
-            <wsp:All>
+            </wsp1:All>
+        </wsp1:ExactlyOne>
+    </wsp1:Policy>
+    <wsp1:Policy wsu:Id="NewWebServicePortBinding_sample_operation_Output_Policy">
+        <wsp1:ExactlyOne>
+            <wsp1:All>
                 <sp1:EncryptedParts>
                     <sp1:Body/>
                 </sp1:EncryptedParts>
@@ -182,7 +174,7 @@ made subject to such option by the copyright holder.
                     <sp1:Header Name="Sequence" Namespace="http://docs.oasis-open.org/ws-rx/wsrmp/200702"/>
                     <sp1:Header Name="CreateSequence" Namespace="http://docs.oasis-open.org/ws-rx/wsrmp/200702"/>
                 </sp1:SignedParts>
-            </wsp:All>
-        </wsp:ExactlyOne>
-    </wsp:Policy>
+            </wsp1:All>
+        </wsp1:ExactlyOne>
+    </wsp1:Policy>
 </definitions>

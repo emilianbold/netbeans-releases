@@ -29,7 +29,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.2.2</specification-version>
+                        <specification-version>0.2.3</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -42,46 +42,51 @@
                 <subpackages>org.joni</subpackages>
                 <subpackages>org.objectweb.asm</subpackages>
                 <subpackages>org.joda</subpackages>
+                <subpackages>org.dynalang</subpackages>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/asm-3.0.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.1.3/build_lib/asm-3.0.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.1.4/build_lib/asm-3.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/asm-analysis-3.0.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.1.3/build_lib/asm-analysis-3.0.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.1.4/build_lib/asm-analysis-3.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/asm-commons-3.0.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.1.3/build_lib/asm-commons-3.0.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.1.4/build_lib/asm-commons-3.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/asm-tree-3.0.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.1.3/build_lib/asm-tree-3.0.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.1.4/build_lib/asm-tree-3.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/asm-util-3.0.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.1.3/build_lib/asm-util-3.0.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.1.4/build_lib/asm-util-3.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/asm-analysis-3.0.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.1.3/build_lib/asm-analysis-3.0.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.1.4/build_lib/asm-analysis-3.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jline-0.9.93.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.1.3/build_lib/jline-0.9.93.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.1.4/build_lib/jline-0.9.93.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/joni.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.1.3/build_lib/joni.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.1.4/build_lib/joni.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jna-posix.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.1.3/build_lib/jna-posix.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.1.4/build_lib/jna-posix.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/joda-time-1.5.1.jar</runtime-relative-path>
-                <binary-origin>patched_source/jruby-1.1.3/build_lib/joda-time-1.5.1.jar</binary-origin>
+                <binary-origin>patched_source/jruby-1.1.4/build_lib/joda-time-1.5.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/dynalang-0.3.jar</runtime-relative-path>
+                <binary-origin>patched_source/jruby-1.1.4/build_lib/dynalang-0.3.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

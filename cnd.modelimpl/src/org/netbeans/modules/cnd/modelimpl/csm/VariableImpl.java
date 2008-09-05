@@ -272,7 +272,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         registerInProject();
     }
     
-    public CsmScope getScope() {
+    public synchronized CsmScope getScope() {
         return _getScope();
     }
     
@@ -290,7 +290,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         unregisterInProject();
     }
     
-    private void onDispose() {
+    private synchronized void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
             // restore container from it's UID
             this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);

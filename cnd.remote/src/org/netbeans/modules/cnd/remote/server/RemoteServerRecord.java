@@ -152,9 +152,7 @@ public class RemoteServerRecord implements ServerRecord {
                 reason = rss.getReason();
             } else {
                 state = STATE_ONLINE;
-//                CompilerSetManager.getDefault(name); // Trigger creation of the CSM if it doesn't already exist...
                 RequestProcessor.getDefault().post(new Runnable() {
-
                     public void run() {
                         RemotePathMap.getMapper(name).init();
                     }

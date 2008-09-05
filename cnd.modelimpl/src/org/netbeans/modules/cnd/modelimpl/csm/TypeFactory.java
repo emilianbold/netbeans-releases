@@ -56,6 +56,11 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * @author Vladimir Kvashin
  */
 public class TypeFactory {
+
+    public static CsmType getVarArgType() {
+        // for now we use null
+        return null;
+    }
     
     private TypeFactory() {}
     

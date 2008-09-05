@@ -41,9 +41,11 @@ package org.netbeans.modules.php.project.ui.logicalview;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
@@ -72,7 +74,7 @@ public class SrcNode extends FilterNode {
     static final Image PACKAGE_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
     static final Image WEB_ROOT_BADGE = ImageUtilities.loadImage(
-            "org/netbeans/modules/php/project/ui/resources/webRootBadge.png"); // NOI18N
+            "org/netbeans/modules/php/project/ui/resources/webRootBadge.gif"); // NOI18N
 
     /**
      * creates source root node based on specified DataFolder.
@@ -210,8 +212,8 @@ public class SrcNode extends FilterNode {
         @Override
         public Image getIcon(int type) {
             FileObject node = getOriginal().getLookup().lookup(FileObject.class);
-            if (project.getWebRootDirectory().equals(node)
-                    && !project.getSourcesDirectory().equals(node)) {
+            if (ProjectPropertiesSupport.getWebRootDirectory(project).equals(node)
+                    && !ProjectPropertiesSupport.getSourcesDirectory(project).equals(node)) {
                 return ImageUtilities.mergeImages(super.getIcon(type), WEB_ROOT_BADGE, 7, 7);
             }
             return super.getIcon(type);
@@ -220,8 +222,8 @@ public class SrcNode extends FilterNode {
         @Override
         public Image getOpenedIcon(int type) {
             FileObject node = getOriginal().getLookup().lookup(FileObject.class);
-            if (project.getWebRootDirectory().equals(node)
-                    && !project.getSourcesDirectory().equals(node)) {
+            if (ProjectPropertiesSupport.getWebRootDirectory(project).equals(node)
+                    && !ProjectPropertiesSupport.getSourcesDirectory(project).equals(node)) {
                 return ImageUtilities.mergeImages(super.getOpenedIcon(type), WEB_ROOT_BADGE, 7, 7);
             }
             return super.getOpenedIcon(type);
@@ -247,6 +249,17 @@ public class SrcNode extends FilterNode {
                 } else {
                     //else put at the tail
                     actions.add(toAdd[i]);
+                }
+            }
+            //#143782 find usages on php file has no sense
+            for (Iterator<Action> it = actions.iterator(); it.hasNext();) {
+                Action action = it.next();
+                //hard code string WhereUsedAction chosen not need to depend on refactoring
+                //just for this minority issue
+                if (action != null &&
+                        action.getClass().getName().indexOf("WhereUsedAction") != -1) {//NOI18N
+                    it.remove();
+                    break;
                 }
             }
             return actions.toArray(new Action[actions.size()]);

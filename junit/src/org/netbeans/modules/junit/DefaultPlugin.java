@@ -105,18 +105,12 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
-import static javax.lang.model.util.ElementFilter.methodsIn;
-import static javax.lang.model.util.ElementFilter.typesIn;
 import static org.netbeans.api.java.classpath.ClassPath.SOURCE;
 import static org.netbeans.api.java.classpath.ClassPath.COMPILE;
-import static org.netbeans.api.java.classpath.ClassPath.BOOT;
 import static org.netbeans.api.java.project.JavaProjectConstants.SOURCES_TYPE_JAVA;
-import static org.netbeans.modules.junit.JUnitSettings.JUNIT_GENERATOR_ASK_USER;
 import static org.openide.ErrorManager.ERROR;
 import static org.openide.ErrorManager.WARNING;
 import static org.openide.NotifyDescriptor.CANCEL_OPTION;
-import static org.openide.NotifyDescriptor.OK_CANCEL_OPTION;
-import static org.openide.NotifyDescriptor.QUESTION_MESSAGE;
 import static org.openide.NotifyDescriptor.WARNING_MESSAGE;
 
 /**
