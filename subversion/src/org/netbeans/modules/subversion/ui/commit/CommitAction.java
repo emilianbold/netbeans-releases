@@ -574,8 +574,18 @@ public class CommitAction extends ContextAction {
             performAdds(client, support, addCandidates);
             if(support.isCanceled()) {
                 return;
-            }                    
+            }
             
+            // ensure all ignored properties are set.
+            // This is more a hack than a clean solution but still seems to be
+            // more reasonable than changing Subverion.isIgnored due to:
+            // 1.) we didn't need it until now
+            // 2.) the hilarious potential of Subverion.isIgnored and SQ to cause trouble ...
+            setIgnoredProperties(client, support, addCandidates);
+            if(support.isCanceled()) {
+                return;
+            }
+
             // TODO perform removes. especialy package removes where
             // metadata must be replied from SvnMetadata (hold by FileSyatemHandler)
 
@@ -750,7 +760,38 @@ public class CommitAction extends ContextAction {
             }
         }
     }
-    
+
+    /**
+     * In case a newly added file contains a ignored file, this mothod ensures the ignored property is also set.
+     * Couldn't be done earlier as the file might have been unversioned (no svn add was invoked yet) until this moment.
+     *
+     * @param client
+     * @param support
+     * @param addCandidates
+     */
+    private static void setIgnoredProperties(SvnClient client, SvnProgressSupport support, List<SvnFileNode> addCandidates) {
+        for (SvnFileNode fileNode : addCandidates) {
+            File file = fileNode.getFile();
+            if(file.isDirectory()) {
+                File[] children = file.listFiles();
+                if(children != null || children.length > 0) {
+                    for (File child : children) {
+                        final FileStatusCache cache = Subversion.getInstance().getStatusCache();
+                        FileInformation info = cache.getStatus(child);
+                        if(info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+                            File parent = child.getParentFile();
+                            if ((cache.getStatus(parent).getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
+                                // ensure parents added status is set
+                                cache.refresh(parent, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
+                            }
+                            cache.refresh(child, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Returns all files which have to be commited recursively (deleted and copied folders)
      */ 
