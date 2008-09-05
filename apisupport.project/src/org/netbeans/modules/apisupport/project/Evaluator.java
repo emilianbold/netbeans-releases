@@ -168,7 +168,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     public Map<String,String> getProperties() {
         return delegatingEvaluator(true).getProperties();
     }
-    
+
     private boolean isModuleListDependentProperty(String p) {
         return p.equals("module.classpath") || // NOI18N
                 p.equals("cp") || p.endsWith(".cp") || p.endsWith(".cp.extra") || // NOI18N
@@ -263,6 +263,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
     public void setRunInAtomicAction(boolean runInAtomicAction) {
         assert ProjectManager.mutex().isWriteAccess();
         this.runInAtomicAction = runInAtomicAction;
+    }
+    
+    /** See issue #69440 for more details. */
+    boolean isRunInAtomicAction() {
+        return runInAtomicAction;
     }
     
     public void removeListeners() {
