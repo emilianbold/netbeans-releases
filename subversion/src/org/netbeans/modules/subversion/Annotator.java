@@ -70,6 +70,7 @@ import java.text.MessageFormat;
 import java.io.File;
 import java.awt.*;
 import java.lang.reflect.Field;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
@@ -672,8 +673,12 @@ public class Annotator {
         for (Iterator i = map.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) map.get(file);
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                modifiedFiles.put(file, info);
+            if(info != null) {
+                if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                    modifiedFiles.put(file, info);
+                }
+            } else {
+                Subversion.LOG.log(Level.WARNING, "null FileInformation returned for {0}", new Object[] { file });
             }
         }
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {

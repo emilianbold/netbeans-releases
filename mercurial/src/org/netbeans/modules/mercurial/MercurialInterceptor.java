@@ -88,6 +88,9 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     public void doDelete(File file) throws IOException {
+        // XXX runnig hg rm for each particular file when removing a whole firectory might no be neccessery:
+        //     just delete it via file.delete and call, group the files in afterDelete and schedule a delete
+        //     fo the parent or for a bunch of files at once. 
         Mercurial.LOG.fine("doDelete " + file);
         if (file == null) return;
         Mercurial hg = Mercurial.getInstance();
