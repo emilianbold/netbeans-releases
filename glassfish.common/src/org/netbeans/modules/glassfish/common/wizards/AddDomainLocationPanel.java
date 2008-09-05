@@ -52,12 +52,18 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.glassfish.common.CommonServerSupport;
+import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.util.NbBundle;
 
 public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeListener {
 
-    private final static String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;
+    private final String PROP_ERROR_MESSAGE = WizardDescriptor.PROP_ERROR_MESSAGE;
+    private final String PROP_WARNING_MESSAGE = WizardDescriptor.PROP_WARNING_MESSAGE;
+    private final String PROP_INFO_MESSAGE = WizardDescriptor.PROP_INFO_MESSAGE;
+
     private ServerWizardIterator wizardIterator;
     private AddDomainLocationVisualPanel component;
     private WizardDescriptor wizard;
@@ -84,12 +90,13 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             try {
                 AddDomainLocationVisualPanel panel = (AddDomainLocationVisualPanel) getComponent();
                 String domainField = panel.getDomainField().trim();
-                File domainDirCandidate = new File(gfRoot, "domains" + File.separator + domainField); // NOI18N
+                File domainDirCandidate = new File(gfRoot,
+                        GlassfishInstance.DEFAULT_DOMAINS_FOLDER + File.separator + domainField); // NOI18N
                 if (domainField.length() < 1) {
                     if (!domainDirCandidate.canWrite()) {
                         // the user needs to enter the name of a directory for 
                         // a personal domain
-                        wizard.putProperty(PROP_ERROR_MESSAGE, 
+                        wizard.putProperty(PROP_INFO_MESSAGE,
                             NbBundle.getMessage(this.getClass(), "MSG_EnterDomainDirectory")); // NOI18N
                     } else {
                         // the user probably deleted a valid name from the field.
@@ -100,18 +107,26 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
                 }
                 int dex = domainField.indexOf(File.separator);
                 if (AddServerLocationPanel.isRegisterableV3Domain(domainDirCandidate)) {
+                    AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
+                    String uri = CommonServerSupport.formatUri(gfRoot,
+                            GlassfishInstance.DEFAULT_HOST_NAME, wizardIterator.getHttpPort());
+                    if(GlassfishInstanceProvider.getDefault().hasServer(uri)) {
+                        wizard.putProperty(PROP_ERROR_MESSAGE,
+                                NbBundle.getMessage(this.getClass(), "ERR_DomainAlreadyRegistered", domainField)); // NOI18N
+                        return false;
+                    }
+
                     // the entry resolves to a domain name that we can register
                     wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
-                    wizard.putProperty(PROP_ERROR_MESSAGE, 
-                            NbBundle.getMessage(this.getClass(), "MSG_RegisterExistingEmbedded",domainField)); // NOI18N
-                    AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
+                    wizard.putProperty(PROP_INFO_MESSAGE,
+                            NbBundle.getMessage(this.getClass(), "MSG_RegisterExistingEmbedded", domainField)); // NOI18N
                     return true;
                 }
                 File domainsDir = domainDirCandidate.getParentFile();
                 if (domainsDir.canWrite() && dex < 0 && !ServerUtilities.isTP2(gfRoot)) {
                     wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
-                    wizard.putProperty(PROP_ERROR_MESSAGE, 
-                            NbBundle.getMessage(this.getClass(), "MSG_CreateEmbedded",domainField));  // NOI18N
+                    wizard.putProperty(PROP_INFO_MESSAGE,
+                            NbBundle.getMessage(this.getClass(), "MSG_CreateEmbedded", domainField));  // NOI18N
                     return true;
                 }
                 domainDirCandidate = new File(domainField);
@@ -120,19 +135,19 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
                     // the entry resolves to a domain name that we can register
                     //String domainLoc = domainDirCandidate.getAbsolutePath();
                     wizardIterator.setDomainLocation(domainLoc);
-                    wizard.putProperty(PROP_ERROR_MESSAGE, 
-                            NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting",domainField)); // NOI18N
+                    wizard.putProperty(PROP_INFO_MESSAGE,
+                            NbBundle.getMessage(this.getClass(), "MSG_RegisterExisting", domainField)); // NOI18N
                     AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
                     return true;
                 }
                 if (AddServerLocationPanel.canCreate(domainDirCandidate) && !ServerUtilities.isTP2(gfRoot)) {
                     wizardIterator.setDomainLocation(domainLoc);
-                    wizard.putProperty(PROP_ERROR_MESSAGE, 
-                            NbBundle.getMessage(this.getClass(), "MSG_CreateDomain",domainField)); // NOI18N
+                    wizard.putProperty(PROP_INFO_MESSAGE,
+                            NbBundle.getMessage(this.getClass(), "MSG_CreateDomain", domainField)); // NOI18N
                     return true;
                 }
                 wizard.putProperty(PROP_ERROR_MESSAGE, 
-                            NbBundle.getMessage(this.getClass(), "ERR_CannotCreateDomain",domainField));  // NOI18N
+                            NbBundle.getMessage(this.getClass(), "ERR_CannotCreateDomain", domainField));  // NOI18N
                 return false;
 
             } finally {

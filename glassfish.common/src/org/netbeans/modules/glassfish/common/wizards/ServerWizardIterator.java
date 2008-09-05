@@ -124,8 +124,8 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
     
     public Set instantiate() throws IOException {
         Set<ServerInstance> result = new HashSet<ServerInstance>();
-        File dFile = new File(domainsDir+File.separator+domainName);
-        if (!dFile.exists() && AddServerLocationPanel.canCreate(dFile)) {
+        File domainDir = new File(domainsDir, domainName);
+        if (!domainDir.exists() && AddServerLocationPanel.canCreate(domainDir)) {
             // Need to create a domain right here!
             Map<String, String> ip = new HashMap<String, String>();
             ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
@@ -134,7 +134,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
                     (String) wizard.getProperty("ServInstWizard_displayName")); // NOI18N
             ip.put(GlassfishModule.DOMAINS_FOLDER_ATTR, domainsDir);
             ip.put(GlassfishModule.DOMAIN_NAME_ATTR, domainName);
-            CreateDomain cd = new CreateDomain("anonymous","", new File(glassfishRoot), ip);
+            CreateDomain cd = new CreateDomain("anonymous", "", new File(glassfishRoot), ip);
             cd.start();
             result.add(GlassfishInstanceProvider.getDefault().getInstance(domainsDir));
         } else {
@@ -144,7 +144,7 @@ public class ServerWizardIterator implements WizardDescriptor.InstantiatingItera
             GlassfishInstanceProvider.getDefault().addServerInstance(instance);
             result.add(instance.getCommonInstance());
         }
-        NbPreferences.forModule(ServerWizardIterator.class).put(INSTALL_ROOT_PREF_KEY,installRoot); 
+        NbPreferences.forModule(ServerWizardIterator.class).put(INSTALL_ROOT_PREF_KEY, installRoot);
         return result;
     }
     
