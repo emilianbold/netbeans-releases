@@ -53,6 +53,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
@@ -61,6 +62,7 @@ import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -158,6 +160,11 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                 File glassfishDir = getGlassfishRoot(installDir);
                 File domainDir = getDefaultDomain(glassfishDir);
                 if(!installDir.exists()) {
+                    if(!isLegalFolderName(installDir)) {
+                        wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
+                                AddServerLocationPanel.class, "ERR_InstallDirInvalid", locationStr));
+                        return false;
+                    } else
                     if(canCreate(installDir)) {
                         if(downloadState == AddServerLocationVisualPanel.DownloadState.AVAILABLE) {
                             panel.updateMessageText(NbBundle.getMessage(
@@ -176,7 +183,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                     }
                 } else if(!isValidV3Install(installDir, glassfishDir)) {
                     wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                            AddServerLocationPanel.class, "ERR_InstallDirInvalid", locationStr));
+                            AddServerLocationPanel.class, "ERR_InstallationInvalid", locationStr));
                     return false;
                 } else if(!isRegisterableV3Domain(domainDir)) {
                     wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
@@ -214,6 +221,13 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
             }
         }
         return true;
+    }
+
+    private Pattern ILLEGAL_CHARS = Pattern.compile("\\*|\\?|>|<|\\\"" +
+            (Utilities.isWindows() ? "" : "|\\\\"));
+
+    private boolean isLegalFolderName(File installDir) {
+        return !ILLEGAL_CHARS.matcher(installDir.getName()).find();
     }
     
     static boolean canCreate(File dir) {
