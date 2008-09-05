@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client;
 
 import java.awt.Dialog;
 import javax.swing.JButton;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.DialogDescriptor;
@@ -207,6 +208,9 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
             // XXX we don't need this and it also should be assured that the adapter isn't precofigured with auth data as long it's not the commandline ...
             //adapter.setUsername(username);
             //adapter.setPassword(password);
+            if(rc.getSavePassword()) {
+                SvnModuleConfig.getDefault().insertRecentUrl(rc);
+            }
         }                
     }
 
