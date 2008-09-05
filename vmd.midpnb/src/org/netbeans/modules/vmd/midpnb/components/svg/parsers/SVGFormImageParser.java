@@ -41,8 +41,8 @@ package org.netbeans.modules.vmd.midpnb.components.svg.parsers;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
 import org.netbeans.modules.vmd.api.model.Debug;
@@ -257,11 +257,13 @@ public class SVGFormImageParser extends SVGComponentImageParser {
 
         private int getIndex(Float position) {
             int index = -1;
-            Float highestPosition = new Float(-1);
-            for (SVGFormComponent c : foundElements) {
-                if (position > c.getPositon() && highestPosition < c.getPositon()) {
-                    highestPosition = c.getPositon();
-                    index = foundElements.indexOf(c);
+            if (position != null) {
+                Float highestPosition = new Float(-1);
+                for (SVGFormComponent c : foundElements) {
+                    if (position > c.getPositon() && highestPosition < c.getPositon()) {
+                        highestPosition = c.getPositon();
+                        index = foundElements.indexOf(c);
+                    }
                 }
             }
             return index;
@@ -272,9 +274,35 @@ public class SVGFormImageParser extends SVGComponentImageParser {
         String transform = atts.getValue("transform"); //NOI18N
         Float position = null;
         if (transform != null) {
-            int begining = transform.indexOf(","); //NOI18N
-            int end = transform.indexOf(")"); //NOI18N
+            if (transform.startsWith("translate")){
+                position = getPositionFromTranslate(transform);
+            } else if (transform.startsWith("matrix")){
+                position = getPositionFromMatrix(transform);
+            }
+        }
+        return position;
+    }
+    
+    private static Float getPositionFromTranslate(String transform) {
+        Float position = null;
+        int begining = transform.indexOf(","); //NOI18N
+        int end = transform.indexOf(")"); //NOI18N
+        try{
             position = new Float(transform.substring(begining + 1, end));
+        } catch (NumberFormatException nfe) {
+            Logger.getLogger(SVGFormImageParser.class.getName()).info(nfe.getMessage());
+        }
+        return position;
+    }
+    
+    private static Float getPositionFromMatrix(String transform) {
+        Float position = null;
+        int begining = transform.lastIndexOf(","); //NOI18N
+        int end = transform.indexOf(")"); //NOI18N
+        try{
+            position = new Float(transform.substring(begining + 1, end));
+        } catch (NumberFormatException nfe) {
+            Logger.getLogger(SVGFormImageParser.class.getName()).info(nfe.getMessage());
         }
         return position;
     }
