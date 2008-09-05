@@ -954,11 +954,11 @@ public class ConfigurationMakefileWriter {
                 bw.write("echo \'" + elem.getName() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
                 String value = elem.getValue();
                 int i = 0;
-                int j = value.indexOf("\\n");
+                int j = value.indexOf("\\n"); // NOI18N 
                 while (j >= 0) {
                     bw.write("echo \'" + value.substring(i, j) + "\' >> ${SPEC_FILE}\n"); // NOI18N 
                     i = j+2;
-                    j = value.indexOf("\\n", i);
+                    j = value.indexOf("\\n", i); // NOI18N 
                 }
                 if (i < value.length()) {
                     bw.write("echo \'" + value.substring(i) + "\' >> ${SPEC_FILE}\n"); // NOI18N 
