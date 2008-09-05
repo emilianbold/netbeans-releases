@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.db.core;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.prefs.Preferences;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -56,6 +58,7 @@ public class SQLOptions  {
     private static final String PROP_MAX_ROWS = "maxRows";
     private static final int DEFAULT_MAX_ROWS = 200000;
 
+    public static final String PROP_KEEP_OLD_TABS = "keepOldResultTabs"; // NOI18N
 
     public static SQLOptions getDefault() {
         return INSTANCE;
@@ -83,6 +86,13 @@ public class SQLOptions  {
     
     public void setMaxRows(int rows) {
         getPreferences().putInt(PROP_MAX_ROWS, rows);
+    }
+    public boolean isKeepOldResultTabs() {
+        return getPreferences().getBoolean(PROP_KEEP_OLD_TABS, false);
+    }
+
+    public void setKeepOldResultTabs(boolean keepOldTabs) {
+        getPreferences().putBoolean(PROP_KEEP_OLD_TABS, keepOldTabs);
     }
 
 }
