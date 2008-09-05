@@ -952,7 +952,17 @@ public class ConfigurationMakefileWriter {
         for (InfoElement elem : infoList) {
             if (elem.getName().startsWith("%")) { // NOI18N
                 bw.write("echo \'" + elem.getName() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
-                bw.write("echo \'" + elem.getValue() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
+                String value = elem.getValue();
+                int i = 0;
+                int j = value.indexOf("\\n");
+                while (j >= 0) {
+                    bw.write("echo \'" + value.substring(i, j) + "\' >> ${SPEC_FILE}\n"); // NOI18N 
+                    i = j+2;
+                    j = value.indexOf("\\n", i);
+                }
+                if (i < value.length()) {
+                    bw.write("echo \'" + value.substring(i) + "\' >> ${SPEC_FILE}\n"); // NOI18N 
+                }
                 bw.write("echo " + " >> ${SPEC_FILE}\n"); // NOI18N 
             }
             else {
