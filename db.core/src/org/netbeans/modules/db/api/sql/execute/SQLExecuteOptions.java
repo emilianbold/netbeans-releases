@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,29 +31,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.spi.sql.editor;
+package org.netbeans.modules.db.api.sql.execute;
 
-import org.netbeans.api.db.explorer.DatabaseConnection;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.db.core.SQLOptions;
 
 /**
- * This interface provides an SQL editor. It is used every time the Database
- * Explorer needs to open an SQL editor, such as from the Execute Command or
- * View Data actions. The implementation should be placed in the default lookup.
+ * Configurable options for SQL execution
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public interface SQLEditorProvider {
+public class SQLExecuteOptions {
+    private static final SQLExecuteOptions DEFAULT = new SQLExecuteOptions();
 
-    /**
-     * Opens a new SQL editor for the specified connection and containing the
-     * specified SQL statments and possibly executes them.
-     *
-     * @param dbconn the databaseconnection set as active in the SQL editor. The
-     *        statements are also executed against this connection.
-     * @param sql the SQL statements to be put in the editor
-     * @param execute whether to execute the SQL statements.
-     */
-    public void openSQLEditor(DatabaseConnection dbconn, String sql, boolean execute);
+    public static final String PROP_KEEP_OLD_TABS = SQLOptions.PROP_KEEP_OLD_TABS;
+
+    public static SQLExecuteOptions getDefault() {
+        return DEFAULT;
+    }
+
+    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+
+    public void setKeepOldResultTabs(boolean keepOldTabs) {
+        boolean oldval = SQLOptions.getDefault().isKeepOldResultTabs();
+
+        if ( oldval != keepOldTabs ) {
+            SQLOptions.getDefault().setKeepOldResultTabs(keepOldTabs);
+            pcs.firePropertyChange(PROP_KEEP_OLD_TABS, oldval, keepOldTabs);
+        }
+    }
+
+    public boolean isKeepOldResultTabs() {
+        return SQLOptions.getDefault().isKeepOldResultTabs();
+    }
+
 }

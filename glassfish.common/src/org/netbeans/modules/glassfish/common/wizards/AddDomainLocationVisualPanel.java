@@ -54,6 +54,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,10 +76,10 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
     void initModels(String gfRoot) {
         // Put the choices into the combo box...
         DefaultComboBoxModel model = new DefaultComboBoxModel();
-        File domainsDir = new File(gfRoot+File.separator+"domains"); // NOI18N
+        File domainsDir = new File(gfRoot, GlassfishInstance.DEFAULT_DOMAINS_FOLDER); // NOI18N
         File candidates[] = domainsDir.listFiles(new FileFilter() {
-            public boolean accept(File arg0) {
-                File logsDir = new File(arg0, "logs");
+            public boolean accept(File dir) {
+                File logsDir = new File(dir, "logs");
                 return logsDir.canWrite();
             }
             
