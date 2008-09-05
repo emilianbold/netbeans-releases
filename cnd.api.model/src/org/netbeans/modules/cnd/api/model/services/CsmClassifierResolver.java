@@ -40,40 +40,59 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexander Simon
  */
-public abstract class CsmTypedefResolver {
-    private static CsmTypedefResolver DEFAULT = new Default();
+public abstract class CsmClassifierResolver {
+    private static CsmClassifierResolver DEFAULT = new Default();
 
     public abstract CsmClassifier getOriginalClassifier(CsmClassifier orig);
+
+    /**
+     * trying to find classifier with full qualified name used in file
+     * @param qualifiedName full qualified name of classifier
+     * @param csmFile file where classifier is used by name
+     * @param checkLibs true if need to check libraries
+     * @return best (prefer visible) classifier
+     */
+    public CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, CsmFile csmFile, boolean checkLibs) {
+        if (csmFile != null) {
+            CsmProject project = csmFile.getProject();
+            if (project != null) {
+                return project.findClassifier(qualifiedName);
+            }
+        }
+        return null;
+    }
     
-    protected CsmTypedefResolver() {
+    protected CsmClassifierResolver() {
     }
     
     /**
-     * Static method to obtain the CsmTypedefResolver implementation.
+     * Static method to obtain the CsmClassifierResolver implementation.
      * @return the selector
      */
-    public static synchronized CsmTypedefResolver getDefault() {
+    public static synchronized CsmClassifierResolver getDefault() {
         return DEFAULT;
     }
 
     /**
      * Implementation of the default resolver
      */  
-    private static final class Default extends CsmTypedefResolver {
-        private final Lookup.Result<CsmTypedefResolver> res;
+    private static final class Default extends CsmClassifierResolver {
+        private final Lookup.Result<CsmClassifierResolver> res;
 
         Default() {
-            res = Lookup.getDefault().lookupResult(CsmTypedefResolver.class);
+            res = Lookup.getDefault().lookupResult(CsmClassifierResolver.class);
         }
 
-        private CsmTypedefResolver getService(){
-            for (CsmTypedefResolver service : res.allInstances()) {
+        private CsmClassifierResolver getService(){
+            for (CsmClassifierResolver service : res.allInstances()) {
                 return service;
             }
             return null;
@@ -81,11 +100,20 @@ public abstract class CsmTypedefResolver {
         
         @Override
         public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
-            CsmTypedefResolver service = getService();
+            CsmClassifierResolver service = getService();
             if (service != null) {
                 return service.getOriginalClassifier(orig);
             }
-            return null;
+            return orig;
+        }
+
+        @Override
+        public CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, CsmFile csmFile, boolean checkLibs) {
+            CsmClassifierResolver service = getService();
+            if (service != null) {
+                return service.findClassifierUsedInFile(qualifiedName, csmFile, checkLibs);
+            }
+            return super.findClassifierUsedInFile(qualifiedName, csmFile, checkLibs);
         }
     }
 }
