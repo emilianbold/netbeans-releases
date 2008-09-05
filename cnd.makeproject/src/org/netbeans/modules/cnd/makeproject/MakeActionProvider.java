@@ -723,6 +723,7 @@ public class MakeActionProvider implements ActionProvider {
                 } else if (conf.isApplicationConfiguration()) {
                     exe = conf.getLinkerConfiguration().getOutputValue();
                 }
+                exe = conf.expandMacros(exe);
                 // Always absolute
                 if (exe.length() > 0)
                     exe = IpeUtils.toAbsolutePath(conf.getBaseDir(), exe);
