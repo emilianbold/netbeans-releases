@@ -498,6 +498,7 @@ public class ColumnModels {
 
     private static class LanguagePropertyEditor extends PropertyEditorSupport {
         
+        @Override
         public void setValue(Object value) {
             if (value != null && !(value instanceof Session)) {
                 ErrorManager.getDefault().notify(
@@ -506,19 +507,32 @@ public class ColumnModels {
             super.setValue(value);
         }
 
+        @Override
         public String[] getTags () {
-            if (getValue () == null) return new String [0];
-            String[] s = ((Session) getValue ()).getSupportedLanguages ();
-            return s;
+            Session s = (Session) getValue ();
+            if (s == null) {
+                return new String [0];
+            } else {
+                return s.getSupportedLanguages ();
+            }
         }
         
+        @Override
         public String getAsText () {
-            String s = ((Session) getValue ()).getCurrentLanguage ();
-            return s;
+            Session s = (Session) getValue ();
+            if (s == null) {
+                return "null";
+            } else {
+                return s.getCurrentLanguage();
+            }
         }
         
+        @Override
         public void setAsText (String text) {
-            ((Session) getValue ()).setCurrentLanguage (text);
+            Session s = (Session) getValue ();
+            if (s != null) {
+                s.setCurrentLanguage (text);
+            }
         }
     }
 }
