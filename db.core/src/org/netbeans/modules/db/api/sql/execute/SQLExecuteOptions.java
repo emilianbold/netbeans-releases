@@ -1,7 +1,7 @@
-    /*
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.editor.ui.actions;
+package org.netbeans.modules.db.api.sql.execute;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.api.sql.execute.SQLExecution;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.db.core.SQLOptions;
 
 /**
+ * Configurable options for SQL execution
  *
- * @author Andrei Badea
+ * @author David Van Couvering
  */
-public class RunSQLAction extends SQLExecutionBaseAction {
+public class SQLExecuteOptions {
+    private static final SQLExecuteOptions DEFAULT = new SQLExecuteOptions();
 
-    private static final Logger LOGGER = Logger.getLogger(RunSQLAction.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
+    public static final String PROP_KEEP_OLD_TABS = SQLOptions.PROP_KEEP_OLD_TABS;
 
-    private static final String ICON_PATH = "org/netbeans/modules/db/sql/editor/resources/runsql.png"; // NOI18N
-
-    protected String getIconBase() {
-        return ICON_PATH;
+    public static SQLExecuteOptions getDefault() {
+        return DEFAULT;
     }
 
-    protected String getDisplayName(SQLExecution sqlExecution) {
-        return NbBundle.getMessage(RunSQLAction.class, "LBL_RunSqlAction");
+    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
     }
 
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(RunSQLAction.class);
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
     }
 
-    protected void actionPerformed(SQLExecution sqlExecution) {
-        if (LOG) {
-            LOGGER.log(Level.FINE, "actionPerformed for " + sqlExecution); // NOI18N
-        }
-        DatabaseConnection dbconn = sqlExecution.getDatabaseConnection();
-        if (dbconn != null) {
-            sqlExecution.execute();
-        } else {
-            notifyNoDatabaseConnection();
+    public void setKeepOldResultTabs(boolean keepOldTabs) {
+        boolean oldval = SQLOptions.getDefault().isKeepOldResultTabs();
+
+        if ( oldval != keepOldTabs ) {
+            SQLOptions.getDefault().setKeepOldResultTabs(keepOldTabs);
+            pcs.firePropertyChange(PROP_KEEP_OLD_TABS, oldval, keepOldTabs);
         }
     }
+
+    public boolean isKeepOldResultTabs() {
+        return SQLOptions.getDefault().isKeepOldResultTabs();
+    }
+
 }
