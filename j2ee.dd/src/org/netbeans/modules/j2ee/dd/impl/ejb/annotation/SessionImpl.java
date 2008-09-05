@@ -181,6 +181,10 @@ public class SessionImpl extends PersistentObject implements Session {
         businessLocal = new String[] {};
         businessRemote = new String[] {};
         
+        if (typeElement == null) {
+            return;
+        }
+
         List<TypeElement> interfaces = new ArrayList<TypeElement>(); // all business interface candidates, EJB 3.0 Spec, Chapter 10.2
         for (TypeMirror typeMirror : typeElement.getInterfaces()) {
             if (TypeKind.DECLARED == typeMirror.getKind()) {
