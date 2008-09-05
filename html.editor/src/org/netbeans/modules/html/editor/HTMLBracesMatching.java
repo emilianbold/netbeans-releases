@@ -191,7 +191,7 @@ public class HTMLBracesMatching implements BracesMatcher, BracesMatcherFactory {
                             AstNode parent = origin.parent();
                             if(parent.type() == AstNode.NodeType.UNMATCHED_TAG) {
                                 Element element = result.dtd().getElement(origin.name().toUpperCase());
-                                if(element != null && element.hasOptionalEnd()) {
+                                if(element != null && (element.hasOptionalEnd() || element.isEmpty())) {
                                     ret[0] = new int[]{context.getSearchOffset(), context.getSearchOffset()};
                                 } else {
                                     ret[0] = null;
