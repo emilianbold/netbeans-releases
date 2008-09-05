@@ -109,10 +109,10 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
 //        performTest("src/testSysDup2.cc", 6, 10, "sys_include/sys2dup.h", 9, 1); // ElementDup
     }
     
-//    public void testTypedefClassFwd() throws Exception {
-//        // IZ#146289: REGRESSTION: inaccuracy tests show significant regressions
-//        performTest("src/testTdClassFwdResolve.cc", 5, 25, "src/outer.h", 3, 5); // outerFunction
-//    }
+    public void testTypedefClassFwd() throws Exception {
+        // IZ#146289: REGRESSTION: inaccuracy tests show significant regressions
+        performTest("src/testTdClassFwdResolve.cc", 5, 25, "src/outer.h", 3, 5); // outerFunction
+    }
 
     public void testLibraryClass() throws Exception {
         performTest("src/main.cc", 7, 6, "sys_include2/include2.h", 9, 1);

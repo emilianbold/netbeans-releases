@@ -179,41 +179,46 @@ public class Resolver3 implements Resolver {
         if (isRecursionOnResolving(offset)) {
             return null;
         }
-        if (CsmKindUtilities.isClassForwardDeclaration(orig)){
-            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
-            CsmClass definition;
-            if (fd instanceof ClassForwardDeclarationImpl) {
-                definition = ((ClassForwardDeclarationImpl)fd).getCsmClass(this);
-            } else {
-                definition = fd.getCsmClass();
-            }
-            if (definition != null){
-                return definition;
-            }
-        }
-        CsmClassifier out = orig;
         Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
-        set.add(orig);
-        while (CsmKindUtilities.isTypedef(out)) {
-            CsmType t = ((CsmTypedef)out).getType();
-            if (t instanceof Resolver.SafeClassifierProvider) {
-                orig = ((Resolver.SafeClassifierProvider)t).getClassifier(this);
-            } else {
-                orig = t.getClassifier();
-            }
-            if (orig == null) {
-                break;
-            }
-            if (set.contains(orig)) {
-                // try to recover from this error
-                CsmClassifier cls = findOtherClassifier(out);
-                out = cls == null ? out : cls;
-                break;
-            }
+        while (true) {
             set.add(orig);
-            out = orig;
+            if (CsmKindUtilities.isClassForwardDeclaration(orig)){
+                CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
+                CsmClass definition;
+                if (fd instanceof ClassForwardDeclarationImpl) {
+                    definition = ((ClassForwardDeclarationImpl)fd).getCsmClass(this);
+                } else {
+                    definition = fd.getCsmClass();
+                }
+                if (definition != null){
+                    orig = definition;
+                }
+            } else if (CsmKindUtilities.isTypedef(orig)) {
+                CsmType t = ((CsmTypedef)orig).getType();
+                CsmClassifier resovedClassifier = null;
+                if (t instanceof Resolver.SafeClassifierProvider) {
+                    resovedClassifier = ((Resolver.SafeClassifierProvider)t).getClassifier(this);
+                } else {
+                    resovedClassifier = t.getClassifier();
+                }
+                if (resovedClassifier == null) {
+                    // have to stop with current 'orig' value
+                    break;
+                }
+                if (set.contains(resovedClassifier)) {
+                    // try to recover from this error
+                    resovedClassifier = findOtherClassifier(orig);
+                    if (resovedClassifier == null) {
+                        // have to stop with current 'orig' value
+                        break;
+                    }
+                }
+                orig = resovedClassifier;
+            } else {
+                break;
+            }
         }
-        return out;
+        return orig;
         
     }
 
