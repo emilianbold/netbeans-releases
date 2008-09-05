@@ -201,7 +201,6 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
             panel.proxySettingsButton.addActionListener(this);
             panel.savePasswordCheckBox.addActionListener(this);
 
-            panel.savePasswordCheckBox.setSelected(SvnModuleConfig.getDefault().getSavePassword());
             addSelectOnFocusFields(panel.userPasswordField);
             panel.browseButton.addActionListener(this);
 

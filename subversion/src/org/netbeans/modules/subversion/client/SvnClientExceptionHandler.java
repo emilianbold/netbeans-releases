@@ -577,7 +577,8 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("authentication error from server: username not found") > - 1 || // NOI18N
                msg.indexOf("authorization failed") > - 1 ||                                 // NOI18N
                msg.indexOf("authentication error from server: password incorrect") > -1 ||  // NOI18N
-               msg.indexOf("can't get password") > - 1;                                     // NOI18N
+               msg.indexOf("can't get password") > - 1 ||                                   // NOI18N
+               msg.indexOf("can't get username or password") > - 1;                         // NOI18N
     }
 
     private static boolean isNoCertificate(String msg) {
