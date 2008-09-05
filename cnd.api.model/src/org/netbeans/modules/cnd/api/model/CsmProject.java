@@ -90,9 +90,9 @@ public interface CsmProject extends CsmIdentifiable<CsmProject>, CsmNamedElement
     Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName);
 
     /**
-     * Finds file by its absolute path
+     * Finds file by object that can be absolute path or native file item
      */
-    CsmFile findFile(CharSequence absolutePath);
+    CsmFile findFile(Object absolutePathOrNativeFileItem);
 
     /**
      * Gets the collection of source project files.

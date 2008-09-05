@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -435,8 +436,9 @@ public class CsmContextUtilities {
     
     private static boolean isInContext(CsmContext context, CsmObject obj) {
         // XXX: in fact better to start from end
-        for (Iterator it = context.iterator(); it.hasNext();) {
-            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.next();
+        //for (Iterator it = context.iterator(); it.hasNext();) {
+        for (ListIterator it = context.reverseIterator(); it.hasPrevious();) {
+            CsmContext.CsmContextEntry elem = (CsmContext.CsmContextEntry) it.previous();
             if (obj.equals(elem.getScope())) {
                 return true;
             }
