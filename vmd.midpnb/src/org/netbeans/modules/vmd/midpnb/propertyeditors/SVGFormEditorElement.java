@@ -988,6 +988,9 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            int selectedRow = jTable1.rowAtPoint(e.getPoint());
+            jTable1.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
+            showPopup(e);
         }
 
         private void showPopup(MouseEvent e) {
