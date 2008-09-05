@@ -108,12 +108,6 @@ public final class ParserQueue {
             return file;
         }
 
-        //@Deprecated
-        public APTPreprocHandler.State getPreprocState() {
-            return getPreprocStates().iterator().next(); // never empty!
-        }
-
-        //@Deprecated
         public Collection<APTPreprocHandler.State> getPreprocStates() {
             Object state = ppState;
             if (state instanceof APTPreprocHandler.State || state == null) {
