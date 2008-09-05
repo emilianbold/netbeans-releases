@@ -47,7 +47,6 @@ import org.netbeans.modules.vmd.midp.components.general.ClassCode;
 import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
 import javax.swing.*;
 import java.util.*;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorMessageAwareness;
 
 /**
@@ -135,13 +134,21 @@ public abstract class PropertyEditorResourceElement extends JPanel {
         return propertyValue != null && propertyValue.getKind() == PropertyValue.Kind.USERCODE;
     }
     
-    /** This method should help to get references to the DesignDocument. User should
-     * take care of passing DesignDocument references to this class by overiding and
+    public void listSelectionHappened() {  
+    }
+    
+    public void getCustomEdiotrNotification() {  
+    }
+    
+    
+    
+    /** This method should help to get references to the DesignComponent. User should
+     * take care of passing DesignComponent references to this class by overiding and
      * invoking this method where appropriate.
      * 
-     * @param document - DesignDocument combined with this resource element.
+     * @param component - DesignComponent combined with this resource element.
      */
-    public void setDesignDocument(DesignDocument document) {
+    public void setDesignComponent(DesignComponent component) {
     }
     
 

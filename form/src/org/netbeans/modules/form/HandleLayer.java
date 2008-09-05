@@ -100,7 +100,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
     private ComponentDrag draggedComponent;
     private JPanel dragPanel;
-
+    
     private Point lastMousePosition;
     private int lastXPosDiff;
     private int lastYPosDiff;
@@ -109,6 +109,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     private Point prevLeftMousePoint;
     private boolean draggingEnded; // prevents dragging from starting inconveniently
     private int resizeType;
+
+    private boolean draggingSuspended;
 
     private SelectionDragger selectionDragger;
     private Image resizeHandle;
@@ -156,6 +158,18 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         
         dropListener = new NewComponentDropListener();
         dropTarget = new DropTarget(this, dropListener);
+    }
+
+    public boolean isSuspended() {
+        return draggingSuspended;
+    }
+
+    public void suspend() {
+        draggingSuspended = true;
+    }
+
+    public void resume() {
+        draggingSuspended = false;
     }
     
     //expose the drop listener so the MenuEditLayer can access it
@@ -214,11 +228,13 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         }
 
         if (draggedComponent != null) {
-            try {
-                FormLAF.setUseDesignerDefaults(getFormModel());
-                draggedComponent.paintFeedback(g2);
-            } finally {
-                FormLAF.setUseDesignerDefaults(null);
+            if (!isSuspended()) {
+                try {
+                    FormLAF.setUseDesignerDefaults(getFormModel());
+                    draggedComponent.paintFeedback(g2);
+                } finally {
+                    FormLAF.setUseDesignerDefaults(null);
+                }
             }
         }
         else { // just paint the selection of selected components
@@ -3286,7 +3302,5 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 formDesigner.requestActive();
             }
         }
-
     }
-    
 }

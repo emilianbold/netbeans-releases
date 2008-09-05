@@ -43,12 +43,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import java.util.logging.Logger;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
+import org.netbeans.modules.web.client.tools.api.JSLocation;
+import org.netbeans.modules.web.client.tools.common.dbgp.Breakpoint.BreakpointSetCommand;
 import org.netbeans.modules.web.client.tools.common.dbgp.DbgpUtils;
 import org.netbeans.modules.web.client.tools.common.dbgp.DebuggerProxy;
 import org.netbeans.modules.web.client.tools.common.dbgp.DebuggerServer;
@@ -79,6 +84,9 @@ import org.openide.util.Exceptions;
  */
 public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
 
+    private DebuggerServer server;
+    private boolean startCanceled = false;
+    
     protected String ID;
     protected DebuggerProxy proxy;
     protected SuspensionPointHandler suspensionPointHandler;
@@ -89,14 +97,15 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
     }
     
     @Override
-    protected void startDebuggingImpl() {
-        DebuggerServer server = new DebuggerServer(getID());
+    protected boolean startDebuggingImpl() {
+        server = new DebuggerServer(getID());
         int port = -1;
         try {
             port = server.createSocket();
         } catch (IOException ioe) {
             Log.getLogger().log(Level.SEVERE, "Unable to create server socket", ioe);
-            return;
+            server = null;
+            return false;
         }
 
         launchImpl(port);
@@ -105,13 +114,31 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
             //Wait for debugger engine to connect back
             proxy = server.getDebuggerProxy();
         } catch (IOException ioe) {
-            Log.getLogger().log(Level.SEVERE, "Unable to get the debugger proxy", ioe); //NOI18N
-            return;
+            synchronized (server) {
+                if (!startCanceled) {
+                    Log.getLogger().log(Level.SEVERE, "Unable to get the debugger proxy", ioe); //NOI18N
+                }
+                server = null;
+            }
+            return false;
         }
+        
+        server = null;
         proxy.startDebugging();
 
         //Start the suspension point handler thread
         startSuspensionThread();
+        
+        return true;
+    }
+    
+    protected void cancelStartDebuggingImpl() {
+        if (server != null) {
+            synchronized (server) {
+                server.cancelGetDebuggerProxy();
+                startCanceled = true;
+            }
+        }
     }
     
     protected void startSuspensionThread() {
@@ -195,9 +222,32 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
     public void runToCursor(JSURILocation location) {
         proxy.runToCursor(DbgpUtils.getDbgpBreakpointCommand(proxy, location, true));
     }    
-
-    public String setBreakpoint(JSBreakpoint breakpoint) {
-        return proxy.setBreakpoint(DbgpUtils.getDbgpBreakpointCommand(proxy, breakpoint));
+    
+    /*
+     * Translates file URI
+     */
+    protected String translateURI(String uri) {
+        return uri.replaceFirst("\\Afile:/+", "file:///"); // NOI18N
+    }
+    
+    public List<String> setBreakpoint(JSBreakpoint breakpoint) {
+        BreakpointSetCommand setCommand = DbgpUtils.getDbgpBreakpointCommand(proxy, breakpoint);
+        JSLocation location = breakpoint.getLocation();
+        Set<URI> uris = location.getEquivalentURIs();
+        List<String> ids = new ArrayList<String>();
+        
+        uris = (uris == null) ? new LinkedHashSet<URI>() : new LinkedHashSet<URI>(uris);
+        uris.add(location.getURI());
+        for (URI uri : uris) {
+            String uriString = uri.toASCIIString();
+            setCommand.setFileURI(translateURI(uriString));
+            String nextId = proxy.setBreakpoint(setCommand);
+            if (nextId != null) {
+                ids.add(nextId);
+            }
+        }
+        
+        return ids.size() > 0 ? ids : null;
     }
 
     public boolean removeBreakpoint(String id) {

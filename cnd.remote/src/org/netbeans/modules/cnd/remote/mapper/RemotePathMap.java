@@ -111,6 +111,7 @@ public class RemotePathMap implements PathMap {
                     // 2. Automated mappings gathering entry point
                     HostMappingsAnalyzer ham = new HostMappingsAnalyzer(hkey);
                     map.putAll(ham.getMappings());
+                    // TODO: what about consequent runs. User may share something, we need to check it
                 }
             } else {
                 // 3. Deserialization

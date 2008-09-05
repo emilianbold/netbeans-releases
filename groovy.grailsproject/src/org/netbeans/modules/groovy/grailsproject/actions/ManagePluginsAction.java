@@ -62,13 +62,14 @@ public class ManagePluginsAction extends AbstractAction {
         super(NbBundle.getMessage(ManagePluginsAction.class, "CTL_ManagePluginsAction"));
         this.project = (GrailsProject) project;
     }
-    
+
+    @Override
     public boolean isEnabled() {
         return true;
     }
 
     public void actionPerformed(ActionEvent arg0) {
-       GrailsPluginsPanel panel = new GrailsPluginsPanel(project);
+        GrailsPluginsPanel panel = new GrailsPluginsPanel(project);
         javax.swing.JButton close =
             new javax.swing.JButton(NbBundle.getMessage(ManagePluginsAction.class, "CTL_Close"));
         close.getAccessibleContext()
@@ -84,8 +85,12 @@ public class ManagePluginsAction extends AbstractAction {
             dlg = DialogDisplayer.getDefault().createDialog(descriptor);
             dlg.setVisible(true);
         } finally {
-            if (dlg != null) {
-                dlg.dispose();
+            try {
+                if (dlg != null) {
+                    dlg.dispose();
+                }
+            } finally {
+                panel.dispose();
             }
         }
     }

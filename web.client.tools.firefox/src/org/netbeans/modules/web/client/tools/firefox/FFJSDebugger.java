@@ -74,9 +74,10 @@ public class FFJSDebugger extends JSAbstractExternalDebugger {
     }
     
     @Override
-    protected void startDebuggingImpl() {
-        super.startDebuggingImpl();
+    protected boolean startDebuggingImpl() {
+        boolean result = super.startDebuggingImpl();
         startHttpMonitorThread();
+        return result;
     }    
 
     public String getID() {

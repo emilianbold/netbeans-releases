@@ -117,7 +117,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     }
 
     protected ProjectBase getStartProject() {
-	return this.file.getProjectImpl();
+	return this.file.getProjectImpl(false);
     }
     
     protected void setMode(int mode) {

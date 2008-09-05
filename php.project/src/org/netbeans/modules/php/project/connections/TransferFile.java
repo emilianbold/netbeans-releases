@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.connections;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.net.ftp.FTPFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -67,8 +68,13 @@ public final class TransferFile {
     private final long size; // in bytes
     private final boolean directory;
     private final boolean file;
+    private long timestamp; // in seconds, default -1
 
     private TransferFile(String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file) {
+        this(name, relativePath, parentRelativePath, size, directory, file, -1);
+    }
+
+    private TransferFile(String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file, long timestamp) {
         assert size >= 0L : "Size cannot be smaller than 0";
         if (directory && size != 0L) {
             throw new IllegalArgumentException("Size of a directory has to be 0 bytes");
@@ -80,6 +86,7 @@ public final class TransferFile {
         this.directory = directory;
         this.file = file;
         this.size = size;
+        this.timestamp = timestamp;
     }
 
     /**
@@ -100,7 +107,7 @@ public final class TransferFile {
         boolean f = file.isFile();
         long size = directory ? 0L : file.length();
 
-        return new TransferFile(name, relativePath, parentRelativePath, size, directory, f);
+        return new TransferFile(name, relativePath, parentRelativePath, size, directory, f, TimeUnit.SECONDS.convert(file.lastModified(), TimeUnit.MILLISECONDS));
     }
 
     /**
@@ -254,6 +261,21 @@ public final class TransferFile {
 
     public boolean isFile() {
         return file;
+    }
+
+    /**
+     * @return timestamp <b>in seconds</b> of the file last modification or <code>-1</code> if not known.
+     * @see #touch()
+     */
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    /**
+     * Set the file modification time to the current time.
+     */
+    public void touch() {
+        timestamp = TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override

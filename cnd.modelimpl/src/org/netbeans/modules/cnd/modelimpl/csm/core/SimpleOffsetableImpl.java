@@ -85,7 +85,7 @@ public class SimpleOffsetableImpl implements CsmOffsetable {
             return endPos;
         }    
 
-        public String getText() {
+        public CharSequence getText() {
             return null;
         }
     

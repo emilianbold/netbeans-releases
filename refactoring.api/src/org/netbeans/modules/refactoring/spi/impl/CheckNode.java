@@ -181,7 +181,6 @@ public class CheckNode extends DefaultMutableTreeNode {
                     }
                 }
             }
-            return null;
         }
         return tooltip;
     }

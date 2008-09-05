@@ -54,6 +54,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -70,6 +71,7 @@ import org.netbeans.modules.websvc.saas.codegen.util.UniqueVariableNameFinder;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.openide.filesystems.FileObject;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
 /**
@@ -93,6 +95,8 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
     public static final String CONVERTER_FOLDER = "converter";      //NOI18N
     public static final String RESOURCE_SUFFIX = "Resource";      //NOI18N
     public static final String VAR_NAMES_RESULT_DECL = REST_RESPONSE + " " + Util.VAR_NAMES_RESULT;
+    public static final String INDENT = "        ";
+    public static final String INDENT_2 = "             ";
     
     private FileObject targetFile; // resource file target of the drop
     private FileObject destDir;
@@ -315,15 +319,26 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
         return true;
     }
     
-    protected void reformat(Document doc, int start, int end) 
+    protected void reformat(Document doc, final int start, final int end) 
             throws BadLocationException {
-        Reformat reformat = Reformat.get(doc);
+        final Reformat reformat = Reformat.get(doc);
+        final BadLocationException[] ble = new BadLocationException[1];
         reformat.lock();
         try {
-            reformat.reformat(start, end);
+            NbDocument.runAtomic((StyledDocument)doc, new Runnable() {
+                public void run() {
+                    try {
+                        reformat.reformat(start, end);
+                    } catch (BadLocationException e) {
+                        ble[0] = e;
+                    }
+                }
+            });
         } finally {
             reformat.unlock();
         }
+        if (ble[0] != null)
+            throw ble[0];
     }
   
     protected String[] getGetParamNames(List<ParameterInfo> queryParams) {

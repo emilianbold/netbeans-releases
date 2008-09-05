@@ -206,6 +206,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         taskDescriptor.addAdditionalEnv(env);
         taskDescriptor.addOutputRecognizer(recognizer);
         taskDescriptor.setReadMaxWaitTime(DEFAULT_WAIT_TIME);
+        taskDescriptor.setRerun(false);
     }
 
 }

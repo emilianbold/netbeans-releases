@@ -1,0 +1,47 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.patterns;
+
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.Path;
+import javax.ws.rs.GET;
+import javax.ws.rs.Produces;
+
+/**
+ * REST Web Service
+ *
+ * @author lukas
+ */
+
+@Path("/Items")
+public class ItemsResource_1 {
+    @Context
+    private UriInfo context;
+
+    /** Creates a new instance of ItemsResource_1 */
+    public ItemsResource_1() {
+    }
+
+    /**
+     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.ItemsResource_1
+     * @return an instance of java.lang.String
+     */
+    @GET
+    @Produces("application/xml")
+    public String getXml() {
+        //TODO return proper representation object
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Sub-resource locator method for  {name}
+     */
+    @Path("{name}")
+    public ItemResource_1 getItemResource_1() {
+        return new ItemResource_1();
+    }
+}

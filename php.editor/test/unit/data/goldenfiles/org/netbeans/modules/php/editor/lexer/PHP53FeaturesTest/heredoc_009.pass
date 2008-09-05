@@ -35,5 +35,5 @@ token #33 PHP_CURLY_CLOSE }
 token #34 PHP_CONSTANT_ENCAPSED_STRING "
 token #35 PHP_SEMICOLON ;
 token #36 WHITESPACE \n\n
-token #37 PHP_CLOSETAG ?>\n
-token #38 T_INLINE_HTML --EXPECTF--\nNotice: Undefined variable: ENDOFHEREDOC in %s on line %d\nENDOFHEREDOC    ;\n    ENDOFHEREDOC;\nENDOFHEREDOC    \n    ENDOFHEREDOC\n;\n\nNotice: Undefined variable: ENDOFHEREDOC in %s on line %d\nENDOFHEREDOC    ;\n    ENDOFHEREDOC;\nENDOFHEREDOC    \n    ENDOFHEREDOC\n;\n
+token #37 PHP_CLOSETAG ?>
+token #38 T_INLINE_HTML \n--EXPECTF--\nNotice: Undefined variable: ENDOFHEREDOC in %s on line %d\nENDOFHEREDOC    ;\n    ENDOFHEREDOC;\nENDOFHEREDOC    \n    ENDOFHEREDOC\n;\n\nNotice: Undefined variable: ENDOFHEREDOC in %s on line %d\nENDOFHEREDOC    ;\n    ENDOFHEREDOC;\nENDOFHEREDOC    \n    ENDOFHEREDOC\n;\n

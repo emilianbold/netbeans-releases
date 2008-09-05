@@ -94,7 +94,15 @@ public class ResolveConflictsExecutor {
         
         try {
             FileObject fo = FileUtil.toFileObject(file);
-            handleMergeFor(file, fo, fo.lock(), merge);
+            boolean mergeResolverOpened = false;
+            FileLock lock = fo.lock();
+            try {
+                handleMergeFor(file, fo, lock, merge);
+            } finally {
+                if(!mergeResolverOpened && lock != null) {
+                    lock.releaseLock();
+                }
+            }
         } catch (FileAlreadyLockedException e) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -111,8 +119,11 @@ public class ResolveConflictsExecutor {
             org.openide.ErrorManager.getDefault().notify(ioex);
         }
     }
-    
-    private void handleMergeFor(final File file, FileObject fo, FileLock lock,
+
+    /**
+     * Returns true is merge resolver was openened, otherwise false
+     */
+    private boolean handleMergeFor(final File file, FileObject fo, FileLock lock,
                                 final MergeVisualizer merge) throws IOException {
         String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N
         String ext = "."+fo.getExt(); // NOI18N
@@ -122,12 +133,12 @@ public class ResolveConflictsExecutor {
         f1.deleteOnExit();
         f2.deleteOnExit();
         f3.deleteOnExit();
-        
+
         final Difference[] diffs = copyParts(true, file, f1, true);
         if (diffs.length == 0) {
             DialogDisplayer.getDefault ().notify (new org.openide.NotifyDescriptor.Message(
-                org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "NoConflictsInFile", file)));
-            return ;
+                            org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "NoConflictsInFile", file)));
+                return false;
         }
         copyParts(false, file, f2, false);
         //GraphicalMergeVisualizer merge = new GraphicalMergeVisualizer();
@@ -145,7 +156,7 @@ public class ResolveConflictsExecutor {
         } else {
             rightFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleRevision", rightFileRevision);
         }
-        
+
         final StreamSource s1;
         final StreamSource s2;
         Charset encoding = FileEncodingQuery.getEncoding(fo);
@@ -170,6 +181,7 @@ public class ResolveConflictsExecutor {
                 }
             }
         });
+        return true;
     }
 
     /**

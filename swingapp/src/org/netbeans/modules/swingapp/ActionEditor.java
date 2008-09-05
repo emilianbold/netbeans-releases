@@ -201,6 +201,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         }
         panel.updatePanel(actionMap, action, scopeMap, getComponentName(), srcFile);
         panel.setMode(ActionPropertyEditorPanel.Mode.Form);
+        panel.attachEnv(env);
         return panel;
     }
     
@@ -404,8 +405,10 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         }
         return elem;
     }
-    
+
+    private PropertyEnv env;
     public void attachEnv(PropertyEnv env) {
+        this.env = env;
         env.removeVetoableChangeListener(this);
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addVetoableChangeListener(this);

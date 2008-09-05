@@ -81,7 +81,7 @@ final class ComponentssupportOptionsPanelController extends OptionsPanelControll
     }
 
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return new HelpCtx(ComponentssupportOptionsPanelController.class);
     }
 
     public JComponent getComponent(Lookup masterLookup) {

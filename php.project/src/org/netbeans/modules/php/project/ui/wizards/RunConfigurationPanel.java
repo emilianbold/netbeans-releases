@@ -161,6 +161,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             };
             PhpOptions phpOptions = PhpOptions.getInstance();
             phpOptions.addPropertyChangeListener(WeakListeners.propertyChange(phpInterpreterListener, phpOptions));
+
+            addListeners();
         }
         return runConfigurationPanelVisual;
     }
@@ -173,9 +175,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         getComponent();
         descriptor = settings;
 
-        // we don't want to get events now
-        removeListeners();
-
         //  must be done every time because user can go back, select another sources and return back
         switch (wizardType) {
             case EXISTING:
@@ -187,10 +186,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         runAsLocalWeb.setCopyFiles(getCopyFiles());
 
         runAsRemoteWeb.setUploadDirectory(getUploadDirectory());
-
-        // register back to receive events
-        addListeners();
-        stateChanged(null);
     }
 
     public void storeSettings(WizardDescriptor settings) {
@@ -335,12 +330,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         runAsLocalWeb.addRunAsLocalWebListener(this);
         runAsRemoteWeb.addRunAsRemoteWebListener(this);
         runAsScript.addRunAsScriptListener(this);
-    }
-
-    private void removeListeners() {
-        runAsLocalWeb.removeRunAsLocalWebListener(this);
-        runAsRemoteWeb.removeRunAsRemoteWebListener(this);
-        runAsScript.removeRunAsScriptListener(this);
     }
 
     private PhpProjectProperties.RunAsType getRunAsType() {

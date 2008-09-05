@@ -105,6 +105,24 @@ is the proper place.
 
     <changes>
 
+        <change id="antartifact-enhancement">
+            <api name="general"/>
+            <summary>Enhance AntArtifact support with ability to specify build.xml location and name</summary>
+            <version major="1" minor="25"/>
+            <date day="27" month="8" year="2008"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    <code>AntProjectHelper.createSimpleAntArtifact</code> enhanced
+                    with new parameter: property name holding project relative location 
+                    and name of Ant build script to use.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support.ant" name="AntProjectHelper"/>
+            <issue number="144273"/>
+        </change>
+
         <change id="schema-validation">
             <api name="general"/>
             <summary>Project XML metadata automatically validated against schemas</summary>

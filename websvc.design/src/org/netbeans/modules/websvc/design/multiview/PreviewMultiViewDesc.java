@@ -71,6 +71,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -170,11 +171,11 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
 //                public void fileAttributeChanged(FileAttributeEvent fe) {
 //                }
 //            });
-            if (wsdl == null) {
+            if ((wsdl == null)||(wsdl.getLookup().lookup(DataEditorSupport.class) == null)) {
                 return new PreviewMultiViewElement();
             } else {
                 DataEditorSupport des = wsdl.getLookup().lookup(DataEditorSupport.class);
-                System.out.println("DataEditorSupport:" + des);
+                //System.out.println("DataEditorSupport:" + des);
                 return new PreviewMultiViewElement(des);
 
             }
@@ -190,11 +191,11 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
         // Tempdir path - for generating of WSDL
         String tempdir = System.getProperty("java.io.tmpdir");
         // Web service name
-        String serviceName = service.getName();
+        final String serviceName = service.getName();
         // FileObject of WSDL file
         FileObject wsdlFile = null;
 
-        java.util.Properties prop = new java.util.Properties();
+        final java.util.Properties prop = new java.util.Properties();
         prop.setProperty("build.generated.dir", tempdir);
         Project project = FileOwnerQuery.getOwner(primaryFile);
         //System.out.println("Project = " + project);
@@ -208,17 +209,27 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
         try {
             targetSource.runUserActionTask(fmt, true);
             if (fmt.found) {
-                FileObject jaxwsImplFo = project.getProjectDirectory().getFileObject("build.xml");
-                // For generation of WSDL code, use wsgen target from jaxws-build.xml
-                try {
-                    ExecutorTask wsimportTask =
-                            ActionUtils.runTarget(jaxwsImplFo,
-                            new String[]{"wsgen-" + serviceName}, prop); //NOI18N
+                final FileObject jaxwsImplFo = project.getProjectDirectory().getFileObject("build.xml");
 
-                    wsimportTask.waitFinished();
-                } catch (IllegalArgumentException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
+                // For generation of WSDL code, use wsgen target from jaxws-build.xml
+
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    public void run() {
+                        try {
+                            ExecutorTask wsimportTask =
+                                    ActionUtils.runTarget(jaxwsImplFo,
+                                    new String[]{"wsgen-" + serviceName}, prop); //NOI18N
+
+                            wsimportTask.waitFinished();
+                        } catch (IllegalArgumentException ex) {
+                            ErrorManager.getDefault().notify(ex);
+                        } catch (java.io.IOException ex) {
+                             ErrorManager.getDefault().notify(ex);
+                        }
+                    }
+                });
+
                 // Refresh of filesystem after WSDL file generation
                 File temp = new File(tempdir);
                 FileUtil.refreshFor(temp);
@@ -230,14 +241,14 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
 //                if (t != null) {
 //                    if (J2eeModule.WAR.equals(t.getJ2eeModule().getModuleType())) {
 //                        //For Web applications, add Service to service name, when generating WSDL
-                        
+
 //                    }
 //                }
                 // Complete full path to WSDL file
                 String tempTestDestpath = tempdir + constPart + serviceName + suffix + ".wsdl";
                 // File object for generated WSDL file
                 File wsdl = new File(tempTestDestpath);
-                if(wsdl==null){
+                if (wsdl == null) {
                     wsdl = new File(tempdir + constPart + serviceName + ".wsdl");
                 }
                 wsdlFile = FileUtil.toFileObject(FileUtil.normalizeFile(wsdl));
@@ -245,7 +256,7 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
             if (wsdlFile != null) {
                 try {
                     dataObj = DataObject.find(wsdlFile);
-                    //EditorCookie edck = dataObj.getLookup().lookup(EditorCookie.class);
+                //EditorCookie edck = dataObj.getLookup().lookup(EditorCookie.class);
 
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);

@@ -40,6 +40,8 @@
  */
 package org.openide.filesystems;
 
+import org.openide.util.Parameters;
+
 /**
  * This class is intended as superclass for individual resolvers.
  * All registered subclasses of MIMEResolver are looked up and asked one by one
@@ -57,6 +59,37 @@ package org.openide.filesystems;
  * @author  rmatous
  */
 public abstract class MIMEResolver {
+
+    private String[] resolvableMIMETypes = null;
+
+    /** Creates a new MIMEResolver.
+     * @param mimeTypes an array of MIME types which can be resolved by this resolver.
+     * It should contain all MIME types which {@link #findMIMEType} can return.
+     * If something is missing, this resolver can be ignored, when searching for that
+     * missing MIME type (see {@link FileUtil#getMIMEType(FileObject, String...)}).
+     * @since 7.13
+     */
+    public MIMEResolver(String... mimeTypes) {
+        Parameters.notNull("mimeTypes", mimeTypes);  //NOI18N
+        if(mimeTypes.length == 0) {
+            throw new IllegalArgumentException("The mimeTypes parameter cannot be empty array.");  //NOI18N
+        }
+        for (String mimeType : mimeTypes) {
+            if(mimeType == null || mimeType.length() == 0) {
+                throw new IllegalArgumentException("The item in mimeTypes parameter cannot be null nor empty String.");  //NOI18N
+            }
+        }
+        resolvableMIMETypes = mimeTypes;
+    }
+
+    /** Creates a new MIMEResolver. 
+     * @deprecated Use {@link MIMEResolver(String...)} instead. Declaring MIME
+     * types which can only be resolved by this resolver helps to speed up IDE.
+     */
+    @Deprecated
+    public MIMEResolver() {
+    }
+
     /**
      * Resolves FileObject and returns recognized MIME type
      * @param fo is FileObject which should be resolved (This FileObject is not
@@ -64,4 +97,11 @@ public abstract class MIMEResolver {
      * @return  recognized MIME type or null if not recognized
      */
     public abstract String findMIMEType(FileObject fo);
+    
+    /** Returns an array of MIME types which can be resolved by this resolver.
+     * @return a non-empty array of MIME types
+     */
+    String[] getMIMETypes() {
+        return resolvableMIMETypes;
+    }
 }

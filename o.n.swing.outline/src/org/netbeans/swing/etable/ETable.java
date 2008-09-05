@@ -634,7 +634,12 @@ public class ETable extends JTable {
      */
     @Override
     public Object getValueAt(int row, int column) {
-        int modelRow = convertRowIndexToModel(row);
+        int modelRow = row;
+        //#144502: in 1.6 JTable adds method convertRowIndexToModel which is called in
+        //its getValueAt, otherwise we have translate the index
+        if( System.getProperty("java.version").startsWith("1.5") ) { //NOI18N //NOI18N
+            modelRow = convertRowIndexToModel(row);
+        }
         return super.getValueAt(modelRow, column);
     }
 

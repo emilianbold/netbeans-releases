@@ -48,6 +48,7 @@ HRESULT ScriptDebugger::FinalConstruct() {
     m_pBreakpointMgr = new BreakpointManager(this);
     m_dwThreadID = GetCurrentThreadId();
     m_dwRemoteDebugAppCookie = 0;
+    m_dwRemoteDebugAppThreadCookie = 0;
     state = STATE_STOPPED;
     statesMap.insert(pair<State, tstring>(STATE_STARTING, STATE_STARTING_STR));
     statesMap.insert(pair<State, tstring>(STATE_STOPPING, STATE_STOPPING_STR));
@@ -74,6 +75,9 @@ void ScriptDebugger::FinalRelease() {
     if(m_dwRemoteDebugAppCookie) {
         Utils::revokeInterfaceFromGlobal(m_dwRemoteDebugAppCookie);
     }
+    if(m_dwRemoteDebugAppThreadCookie) {
+        Utils::revokeInterfaceFromGlobal(m_dwRemoteDebugAppThreadCookie);
+    }
 }
 
 void ScriptDebugger::cleanup() {
@@ -82,6 +86,11 @@ void ScriptDebugger::cleanup() {
     //}
     unregisterForDebugAppNodeEvents();
     m_pBreakpointMgr->removeAllBreakpoints();
+    map<tstring, DWORD>::iterator iter = debugDocumentsMap.begin();
+    while(iter != debugDocumentsMap.end()) {
+        Utils::revokeInterfaceFromGlobal(iter->second);
+        ++iter;
+    }
     debugDocumentsMap.clear();
 }
 
@@ -126,6 +135,9 @@ STDMETHODIMP ScriptDebugger::onHandleBreakPoint(IRemoteDebugApplicationThread __
     //    Utils::registerInterfaceInGlobal(spRemoteDebugApp, IID_IRemoteDebugApplication, 
     //                                        &m_dwRemoteDebugAppCookie);
     //}
+    if(m_dwRemoteDebugAppThreadCookie) {
+        Utils::revokeInterfaceFromGlobal(m_dwRemoteDebugAppThreadCookie);
+    }
     Utils::registerInterfaceInGlobal(pDebugAppThread, IID_IRemoteDebugApplicationThread, 
                                         &m_dwRemoteDebugAppThreadCookie);
     StackFrame frame;
@@ -383,13 +395,15 @@ IDebugExpression *ScriptDebugger::getDebugExpression(tstring expression, int sta
         CComPtr<IDebugExpression> spDebugExpr;
         LPCOLESTR pOleStr = T2BSTR(expression.c_str());
         HRESULT hr = spDebugExprCtxt->ParseLanguageText(pOleStr, 10, L"", DEBUG_TEXT_RETURNVALUE, &spDebugExpr);
-        CComPtr<IDebugExpressionCallBack> spDebugExprCallBack;
-        this->QueryInterface(IID_IDebugExpressionCallBack, (void **)&spDebugExprCallBack);
-        hr = spDebugExpr->Start(spDebugExprCallBack);
+        if(hr == S_OK) {
+            CComPtr<IDebugExpressionCallBack> spDebugExprCallBack;
+            this->QueryInterface(IID_IDebugExpressionCallBack, (void **)&spDebugExprCallBack);
+            hr = spDebugExpr->Start(spDebugExprCallBack);
 
-        //Wait for the event which is signalled when the evaluation is complete
-        AtlWaitWithMessageLoop(m_hDebugExprCallBackEvent);
-        return spDebugExpr.Detach();
+            //Wait for the event which is signalled when the evaluation is complete
+            AtlWaitWithMessageLoop(m_hDebugExprCallBackEvent);
+            return spDebugExpr.Detach();
+        }
     }
     return NULL;
 }
@@ -639,8 +653,13 @@ STDMETHODIMP ScriptDebugger::onRemoveChild(IDebugApplicationNode __RPC_FAR *prdd
         CComBSTR name;
         hr = spDebugDocument->GetName(DOCUMENTNAMETYPE_URL, &name);
         if(name != NULL) {
-            Utils::log(4, _T("Removing document: %s\n"), (TCHAR *)name);
-            debugDocumentsMap.erase((TCHAR *)(name));
+            TCHAR *docName = (TCHAR *)name;
+            Utils::log(4, _T("Removing document: %s\n"), docName);
+            map<tstring, DWORD>::iterator iter = debugDocumentsMap.find(docName);
+            if(iter != debugDocumentsMap.end()) {
+                Utils::revokeInterfaceFromGlobal(iter->second);
+                debugDocumentsMap.erase(iter);
+            }
         }
     }
     return S_OK;
@@ -773,7 +792,7 @@ BOOL ScriptDebugger::isCurrentprocessThread(DWORD dwThreadID) {
 }
 
 void ScriptDebugger::setDebugApplication(IRemoteDebugApplication *pRemoteDebugApplication) {
-    pRemoteDebugApplication->AddRef();
+    //pRemoteDebugApplication->AddRef();
     if(m_dwRemoteDebugAppCookie == 0) {
         Utils::registerInterfaceInGlobal(pRemoteDebugApplication, IID_IRemoteDebugApplication, 
                                             &m_dwRemoteDebugAppCookie);
@@ -784,36 +803,48 @@ ScriptDebugger *ScriptDebugger::createScriptDebugger() {
 	HRESULT hr = E_FAIL;
 	CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
     CComPtr<IMachineDebugManager> spMachineDebugManager;
-	hr = ::CoCreateInstance(CLSID_MachineDebugManager, NULL, CLSCTX_ALL, 
-        IID_IMachineDebugManager, (void **)&spMachineDebugManager);
+	hr = spMachineDebugManager.CoCreateInstance(CLSID_MachineDebugManager, NULL, CLSCTX_ALL); 
     CComPtr<IEnumRemoteDebugApplications> spEnumDebugApps;
     ULONG count = 0;
 	hr = spMachineDebugManager->EnumApplications(&spEnumDebugApps);
-    if(hr == S_OK) {	
+    if(hr == S_OK) {
         do {
-            spRemoteDebugApp.Detach();
+            CComPtr<IRemoteDebugApplication> spCurrentRemoteDebugApp;
             //Enumerate debuggable applications and select the one corresponding
             //to the current process
-	        hr = spEnumDebugApps->Next(1, &spRemoteDebugApp, &count);
+   	        hr = spEnumDebugApps->Next(1, &spCurrentRemoteDebugApp, &count);
 	        if(hr == S_OK && count > 0) {
-                CComPtr<IEnumRemoteDebugApplicationThreads> spThreads;
-                hr = spRemoteDebugApp->EnumThreads(&spThreads);
-				if(spThreads != NULL) {
-					IRemoteDebugApplicationThread *pRemoteDebugAppThreads[1];
-					ULONG threadCount;
-					hr = spThreads->Next(1, pRemoteDebugAppThreads, &threadCount);
-					DWORD dwThreadID;
-					if(hr == S_OK && threadCount > 0) {
-						hr = pRemoteDebugAppThreads[0]->GetSystemThreadId(&dwThreadID);
-						if(hr == S_OK && isCurrentprocessThread(dwThreadID)) {
-							break;
-						}
-					}else if(hr == S_FALSE) {
-						break;
-					}
-				}
-	        }
+                CComBSTR name;
+                spCurrentRemoteDebugApp->GetName(&name);
+                Utils::log(1, _T("Debuggable application - %s\n"), (TCHAR *)name);
+                if(name != NULL) {
+                    spRemoteDebugApp = spCurrentRemoteDebugApp;
+                    CComPtr<IEnumRemoteDebugApplicationThreads> spThreads;
+                    hr = spRemoteDebugApp->EnumThreads(&spThreads);
+				    if(spThreads != NULL) {
+					    CComPtr<IRemoteDebugApplicationThread> spRemoteDebugAppThreads;
+					    ULONG threadCount;
+					    hr = spThreads->Next(1, &spRemoteDebugAppThreads, &threadCount);
+					    if(hr == S_OK && threadCount > 0) {
+                            DWORD dwThreadID;
+						    hr = spRemoteDebugAppThreads->GetSystemThreadId(&dwThreadID);
+                            Utils::log(1, _T("Debuggable application thread - %d\n"), dwThreadID);
+						    if(hr == S_OK && isCurrentprocessThread(dwThreadID)) {
+							    break;
+						    }
+					    }else if(hr == S_FALSE) {
+ 						    break;
+					    }
+                    }else {
+                        Utils::log(1, _T("Threads enumeration completed, error code - %x\n"), hr);
+                    }
+                }
+            }else {
+                Utils::log(1, _T("Debuggable applications enumeration completed, error code - %x\n"), hr);
+            }
         }while(count > 0);
+    } else {
+        Utils::log(1, _T("Did not find debuggable application, error code - %x\n"), hr);
     }
 
     if(spRemoteDebugApp != NULL) {
@@ -821,12 +852,9 @@ ScriptDebugger *ScriptDebugger::createScriptDebugger() {
         CComObject<ScriptDebugger> *pScriptDebugger;
         hr = CComObject<ScriptDebugger>::CreateInstance(&pScriptDebugger);
         if(SUCCEEDED(hr)){
-            pScriptDebugger->AddRef();
             pScriptDebugger->setDebugApplication(spRemoteDebugApp);
             return pScriptDebugger;
         }
-    }else {
-        Utils::log(1, _T("Did not find debuggable application, error code - %x\n"), hr);
     }
     return NULL;
 }
@@ -859,10 +887,10 @@ HRESULT ScriptDebugger::endSession() {
             if(state != STATE_RUNNING) {
                 run();
             }
-		    spRemoteDebugApp->DisconnectDebugger();
-            Utils::log(4, _T("Disconnected from debugger\n"));
+		    hr = spRemoteDebugApp->DisconnectDebugger();
 	    }
     }
+    Utils::log(4, _T("Disconnected from debugger, error code-%x\n"), hr);
     return hr;
 }
 

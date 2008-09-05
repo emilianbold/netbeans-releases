@@ -42,6 +42,7 @@
 package org.netbeans.core.startup;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -55,8 +56,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -369,11 +372,16 @@ final class NbEvents extends Events {
                 }
             });
 
-//            JScrollPane pane = new javax.swing.JScrollPane(tp);
-//            tp.setPreferredSize(new Dimension(pane.getPreferredSize().width + 50, tp.getFont().getSize() * 15));
             tp.setText (text);
             
-            final JOptionPane op = new JOptionPane (tp, type, JOptionPane.YES_NO_OPTION, null);
+            JComponent sp;
+            if (tp.getPreferredSize ().width > 600 || tp.getPreferredSize ().height > 400) {
+                tp.setPreferredSize (new Dimension (600, 400));
+                sp = new JScrollPane (tp);
+            } else {
+                sp = tp;
+            }
+            final JOptionPane op = new JOptionPane (sp, type, JOptionPane.YES_NO_OPTION, null);
 
             JButton continueButton = new JButton (NbBundle.getMessage(Notifier.class, "MSG_continue")); // NOI18N
             continueButton.setDisplayedMnemonicIndex (0);
@@ -393,6 +401,7 @@ final class NbEvents extends Events {
             op.setOptions (options);
             op.setInitialValue (options [1]);
             JDialog d = op.createDialog (c, msg);
+            d.setResizable (true);
             d.setVisible (true);
             
             Object res = op.getValue ();
@@ -412,7 +421,7 @@ final class NbEvents extends Events {
     private static void showUrl (URI uri, Component c) throws Exception {
         SpecificationVersion javaSpec = new SpecificationVersion (System.getProperty("java.specification.version")); // NOI18N
         if (javaSpec.compareTo (new SpecificationVersion ("1.6")) >= 0) {
-            Class desktopC = Class.forName ("java.awt.Desktop");
+            Class<?> desktopC = Class.forName ("java.awt.Desktop");
             Method getDesktopM = desktopC.getMethod ("getDesktop");
             Object desktopInstanceO = getDesktopM.invoke (null);
             Method browseM = desktopC.getMethod ("browse", URI.class);

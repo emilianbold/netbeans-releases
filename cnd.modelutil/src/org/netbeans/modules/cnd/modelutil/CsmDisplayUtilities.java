@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelutil;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.util.Iterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyleConstants;
@@ -148,12 +149,12 @@ public class CsmDisplayUtilities {
         return buf.toString();
     }
 
-    public static String getTooltipText(CsmObject item) {
+    public static CharSequence getTooltipText(CsmObject item) {
         CharSequence tooltipText = null;
         if (CsmKindUtilities.isMethod(item)) {
-            String functionDisplayName = htmlize(((CsmMethod) item).getSignature());
+            CharSequence functionDisplayName = getFunctionText((CsmFunction)item);
             CsmClass methodDeclaringClass = ((CsmMember) item).getContainingClass();
-            String displayClassName = methodDeclaringClass.getName().toString();
+            CharSequence displayClassName = methodDeclaringClass.getQualifiedName();
             String key = "DSC_MethodTooltip";  // NOI18N
             if (CsmKindUtilities.isConstructor(item)) {
                 key = "DSC_ConstructorTooltip";  // NOI18N
@@ -162,9 +163,8 @@ public class CsmDisplayUtilities {
             }
             tooltipText = getString(key, functionDisplayName, displayClassName);
         } else if (CsmKindUtilities.isFunction(item)) {
-            String functionFQN = htmlize(((CsmFunction) item).getSignature());
-            functionFQN = CsmDisplayUtilities.htmlize(functionFQN);
-            tooltipText = getString("DSC_FunctionTooltip", functionFQN); // NOI18N
+            CharSequence functionDisplayName = getFunctionText((CsmFunction)item);
+            tooltipText = getString("DSC_FunctionTooltip", functionDisplayName); // NOI18N
         } else if (CsmKindUtilities.isClass(item)) {
             CsmDeclaration.Kind classKind = ((CsmDeclaration) item).getKind();
             String key;
@@ -175,30 +175,30 @@ public class CsmDisplayUtilities {
             } else {
                 key = "DSC_ClassTooltip"; // NOI18N
             }
-            tooltipText = getString(key, ((CsmClassifier) item).getQualifiedName().toString());
+            tooltipText = getString(key, ((CsmClassifier) item).getQualifiedName());
         } else if (CsmKindUtilities.isTypedef(item)) {
-            String tdName = ((CsmTypedef) item).getQualifiedName().toString();
+            CharSequence tdName = ((CsmTypedef) item).getQualifiedName();
             tooltipText = getString("DSC_TypedefTooltip", tdName, htmlize(((CsmTypedef) item).getText())); // NOI18N
         } else if (CsmKindUtilities.isEnum(item)) {
-            tooltipText = getString("DSC_EnumTooltip", ((CsmEnum) item).getQualifiedName().toString()); // NOI18N
+            tooltipText = getString("DSC_EnumTooltip", ((CsmEnum) item).getQualifiedName()); // NOI18N
         } else if (CsmKindUtilities.isEnumerator(item)) {
             CsmEnumerator enmtr = ((CsmEnumerator) item);
-            tooltipText = getString("DSC_EnumeratorTooltip", enmtr.getName().toString(), enmtr.getEnumeration().getName().toString()); // NOI18N
+            tooltipText = getString("DSC_EnumeratorTooltip", enmtr.getName(), enmtr.getEnumeration().getQualifiedName()); // NOI18N
         } else if (CsmKindUtilities.isField(item)) {
-            String fieldName = ((CsmField) item).getName().toString();
-            String displayClassName = ((CsmField) item).getContainingClass().getName().toString();
+            CharSequence fieldName = ((CsmField) item).getName();
+            CharSequence displayClassName = ((CsmField) item).getContainingClass().getQualifiedName();
             tooltipText = getString("DSC_FieldTooltip", fieldName, displayClassName, htmlize(((CsmField) item).getText())); // NOI18N
         } else if (CsmKindUtilities.isParamVariable(item)) {
-            String varName = ((CsmParameter) item).getName().toString();
+            CharSequence varName = ((CsmParameter) item).getName();
             tooltipText = getString("DSC_ParameterTooltip", varName, htmlize(((CsmParameter) item).getText())); // NOI18N
         } else if (CsmKindUtilities.isVariable(item)) {
-            String varName = ((CsmVariable) item).getName().toString();
+            CharSequence varName = ((CsmVariable) item).getName();
             tooltipText = getString("DSC_VariableTooltip", varName, htmlize(((CsmVariable) item).getText())); // NOI18N
         } else if (CsmKindUtilities.isFile(item)) {
-            String fileName = ((CsmFile) item).getName().toString();
+            CharSequence fileName = ((CsmFile) item).getName();
             tooltipText = getString("DSC_FileTooltip", fileName); // NOI18N
         } else if (CsmKindUtilities.isNamespace(item)) {
-            String nsName = ((CsmNamespace) item).getQualifiedName().toString();
+            CharSequence nsName = ((CsmNamespace) item).getQualifiedName();
             tooltipText = getString("DSC_NamespaceTooltip", nsName); // NOI18N
         } else if (CsmKindUtilities.isMacro(item)) {
             CsmMacro macro = (CsmMacro)item;
@@ -209,16 +209,50 @@ public class CsmDisplayUtilities {
             if (target == null) {
                 tooltipText = getString("DSC_IncludeErrorTooltip", htmlize(incl.getText()));  // NOI18N
             } else {
-                tooltipText = getString("DSC_IncludeTooltip", target.getAbsolutePath(), target.getProject().getName());  // NOI18N
+                if (target.getProject().isArtificial()) {
+                    tooltipText = getString("DSC_IncludeLibraryTooltip", target.getAbsolutePath());// NOI18N
+                } else {
+                    tooltipText = getString("DSC_IncludeTooltip", target.getAbsolutePath(), target.getProject().getName());  // NOI18N
+                }
             }
         } else if (CsmKindUtilities.isQualified(item)) {
-            tooltipText = ((CsmQualifiedNamedElement) item).getQualifiedName().toString();
+            tooltipText = ((CsmQualifiedNamedElement) item).getQualifiedName();
         } else if (CsmKindUtilities.isNamedElement(item)) {
             tooltipText = ((CsmNamedElement)item).getName();
         } else {
             tooltipText = "unhandled object " + item;  // NOI18N
         }
-        return tooltipText != null ? tooltipText.toString() : null;
+        return tooltipText;
+    }
+
+    private static CharSequence getFunctionText(CsmFunction fun) {
+        StringBuilder txt = new StringBuilder();
+        if (CsmKindUtilities.isMethod(fun) && ((CsmMethod)fun).isVirtual()) {
+            txt.append("virtual "); // NOI18N
+        }
+        txt.append(fun.getReturnType().getText()).append(' '); // NOI18N
+        // NOI18N
+        txt.append(fun.getName());
+        txt.append('(');
+        Iterator<CsmParameter> params = fun.getParameters().iterator();
+        while(params.hasNext()) {
+            CsmParameter param = params.next();
+            txt.append(param.getText());
+            if (params.hasNext()) {
+                txt.append(", "); // NOI18N
+            }
+        }
+        txt.append(')');
+        if (CsmKindUtilities.isMethod(fun)) {
+            CsmMethod mtd = (CsmMethod)fun;
+            if (mtd.isConst()) {
+                txt.append(" const"); // NOI18N
+            }
+            if (mtd.isAbstract()) {
+                txt.append(" = 0"); // NOI18N
+            }
+        }
+        return htmlize(txt.toString());
     }
     
     private static String getString(String key, CharSequence value) {
