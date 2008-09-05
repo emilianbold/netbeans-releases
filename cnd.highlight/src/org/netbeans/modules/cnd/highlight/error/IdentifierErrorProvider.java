@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,6 +69,9 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
     @Override
     protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         long start = System.currentTimeMillis();
+        if (SemanticHighlighter.isVeryBigDocument(request.getDocument())) {
+            return;
+        }
         if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() have started for file " + request.getFile().getAbsolutePath());
         CsmFileReferences.getDefault().accept(
                 request.getFile(), new ReferenceVisitor(request, response),

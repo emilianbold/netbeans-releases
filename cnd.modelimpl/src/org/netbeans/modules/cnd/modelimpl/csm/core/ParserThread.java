@@ -96,16 +96,17 @@ public class ParserThread implements Runnable {
                         Collection<APTPreprocHandler> preprocHandlers = new ArrayList<APTPreprocHandler>(states.size());
                         for (APTPreprocHandler.State state : states) {
                             if( ! file.getProjectImpl(true).isDisposing() ) { // just in case check
-                                //APTPreprocHandler preprocHandler = null;
-                                //if (state != null) { // TODO: check, is it at all possible for state to be null???
-                                    // init from entry
-                                    APTPreprocHandler preprocHandler = file.getProjectImpl(true).createEmptyPreprocHandler(file.getBuffer().getFile());
-                                    if( TraceFlags.TRACE_PARSER_QUEUE ) {
-                                        System.err.println("before ensureParse on " + file.getAbsolutePath() + 
-                                                ParserQueue.tracePreprocState(state)); 
-                                    }
-                                    preprocHandler.setState(state);
-                                //}
+                                if (state == FileImpl.DUMMY_STATE) {
+                                    assert states.size() == 1 : "Dummy state sould never be mixed with normal states"; //NOI18N
+                                    preprocHandlers = FileImpl.DUMMY_HANDLERS;
+                                    break;
+                                }
+                                APTPreprocHandler preprocHandler = file.getProjectImpl(true).createEmptyPreprocHandler(file.getBuffer().getFile());
+                                if( TraceFlags.TRACE_PARSER_QUEUE ) {
+                                    System.err.println("before ensureParse on " + file.getAbsolutePath() +
+                                            ParserQueue.tracePreprocState(state));
+                                }
+                                preprocHandler.setState(state);
                                 preprocHandlers.add(preprocHandler);
                             }
                         }

@@ -354,8 +354,7 @@ void DbgpConnection::processCommand(char *cmdString, DbgpConnection *pDbgpConnec
     if(!UTF8toUnicode(cmdString, &str)) {
         return;
     }
-
-    //Utils::log(4, _T("Command: %s\n"), cmdString);
+    Utils::log(4, _T("Processing command - %s\n"), str);
     tstring cmdStr = str;
     size_t firstSpacePos = cmdStr.find(_T(" "));
     tstring command = cmdStr.substr(0, firstSpacePos);

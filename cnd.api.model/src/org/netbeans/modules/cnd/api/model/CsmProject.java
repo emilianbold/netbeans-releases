@@ -73,6 +73,11 @@ public interface CsmProject extends CsmIdentifiable<CsmProject>, CsmNamedElement
      * Finds compound classifier (clas or enum) by its qualified name
      */
     CsmClassifier findClassifier(CharSequence qualifiedName);
+
+    /**
+     * Finds all compound classifier (clas, struct, union, enum, typedef, classforward) by its qualified name
+     */
+    Collection<CsmClassifier> findClassifiers(CharSequence qualifiedName);
     
     /**
      * Finds declaration by its nuique name

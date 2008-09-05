@@ -198,11 +198,8 @@ public class ProjectDataSourceNodeChildren extends Children.Keys implements Node
                 public Object getValue() throws IllegalAccessException, InvocationTargetException {                    
                     ProjectDataSourceManager projectDataSourceManager = new ProjectDataSourceManager(nbProject);
                     RequestedJdbcResource jdbcResource = null;
-                    try {
-                        jdbcResource = projectDataSourceManager.getDataSourceWithName(dispName);
-                    } catch (NamingException ne) {
-                        Exceptions.printStackTrace(ne);
-                    }
+                    jdbcResource = projectDataSourceManager.getDataSourceWithName(dispName);
+                    
                     if (jdbcResource != null) {
                         return jdbcResource.getUrl();
                     } else {

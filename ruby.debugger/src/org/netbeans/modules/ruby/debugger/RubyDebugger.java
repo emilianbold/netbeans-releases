@@ -71,9 +71,6 @@ import org.rubyforge.debugcommons.RubyDebuggerProxy;
  */
 public final class RubyDebugger implements RubyDebuggerImplementation {
     
-    /** For unit tests. */
-    static boolean FORCE_CLASSIC;
-    
     private static final String PATH_TO_CLASSIC_DEBUG_DIR;
     
     private ExecutionDescriptor descriptor;
@@ -187,7 +184,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 15); // NOI18N
         Util.finer("Using timeout: " + timeout + 's'); // NOI18N
         String interpreter = platform.getInterpreter();
-        if (!platform.hasFastDebuggerInstalled() || FORCE_CLASSIC) {
+        if (!platform.hasFastDebuggerInstalled()) {
             Util.LOGGER.fine("Running classic(slow) debugger...");
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);

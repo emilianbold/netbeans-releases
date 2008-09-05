@@ -712,7 +712,7 @@ public class ConfigurationMakefileWriter {
             writePackagingScriptBodySVR4(bw, conf);
         }
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-            ; // FIXUP
+            writePackagingScriptBodyTarRPM(bw, conf);
         }
         else {
             assert false;
@@ -897,6 +897,92 @@ public class ConfigurationMakefileWriter {
         bw.write("rm -rf " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "/" + packageName + "\n"); // NOI18N
         bw.write("mv $TMPDIR/" + packageName  + " " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Cleanup\n"); // NOI18N
+        bw.write("cd \"$TOP\"\n"); // NOI18N
+        bw.write("rm -rf $TMPDIR\n"); // NOI18N
+    }
+    
+    private void writePackagingScriptBodyTarRPM(BufferedWriter bw, MakeConfiguration conf) throws IOException {
+        PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
+        List<FileElement> fileList = (List<FileElement>)packagingConfiguration.getFiles().getValue();
+        String output = packagingConfiguration.getOutputValue();
+        
+        bw.write("# Copy files and create directories and links\n"); // NOI18N
+        for (FileElement elem : fileList) {
+            bw.write("cd \"$TOP\"\n"); // NOI18N
+            if (elem.getType() == FileElement.FileType.FILE) {
+                String toDir = IpeUtils.getDirName(elem.getTo());
+                if (toDir != null && toDir.length() >= 0) {
+                    bw.write("makeDirectory " + "$TMPDIR/" + toDir + "\n"); // NOI18N
+                }
+                bw.write("copyFileToTmpDir " + elem.getFrom() + " $TMPDIR/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+            }
+            else if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                bw.write("makeDirectory " + " $TMPDIR/" + elem.getTo() + " 0" + elem.getPermission() + "\n"); // NOI18N
+            }
+            else if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                String toDir = IpeUtils.getDirName(elem.getTo());
+                String toName = IpeUtils.getBaseName(elem.getTo());
+                if (toDir != null && toDir.length() >= 0) {
+                    bw.write("makeDirectory " + "$TMPDIR/" + toDir + "\n"); // NOI18N
+                }
+                bw.write("cd " + "$TMPDIR/" + toDir + "\n"); // NOI18N
+                bw.write("ln -s " + elem.getFrom() + " " + toName + "\n"); // NOI18N
+            }
+            else if (elem.getType() == FileElement.FileType.UNKNOWN) {
+                // skip ???
+            }
+            else {
+                assert false;
+            }
+            bw.write("\n"); // NOI18N
+        }
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Create spec file\n"); // NOI18N
+        bw.write("cd \"$TOP\"\n"); // NOI18N
+        bw.write("SPEC_FILE=${TMPDIR}/../${OUTPUT_BASENAME}.spec\n"); // NOI18N
+        bw.write("rm -f ${SPEC_FILE}\n"); // NOI18N
+        bw.write("\n"); // NOI18N        
+        bw.write("cd \"$TOP\"\n"); // NOI18N
+        bw.write("echo " + "BuildRoot: ${TOP}/${TMPDIR} >> ${SPEC_FILE}\n"); // NOI18N
+        List<InfoElement> infoList = packagingConfiguration.getRpmHeader().getValue();
+        for (InfoElement elem : infoList) {
+            if (elem.getName().startsWith("%")) { // NOI18N
+                bw.write("echo \'" + elem.getName() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
+                bw.write("echo \'" + elem.getValue() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
+                bw.write("echo " + " >> ${SPEC_FILE}\n"); // NOI18N 
+            }
+            else {
+                bw.write("echo " + elem.getName() + ": " + packagingConfiguration.expandMacros(elem.getValue()) + " >> ${SPEC_FILE}\n"); // NOI18N
+            }
+        }
+        
+        bw.write("echo \'%files\' >> ${SPEC_FILE}\n"); // NOI18N 
+        for (FileElement elem : fileList) {
+            if (elem.getType() == FileElement.FileType.FILE || elem.getType() == FileElement.FileType.SOFTLINK) {
+                bw.write("echo " + "/" + elem.getTo() + " >> ${SPEC_FILE}\n"); // NOI18N
+            }
+        }
+        
+        bw.write("echo \'%dir\' >> ${SPEC_FILE}\n"); // NOI18N 
+        for (FileElement elem : fileList) {
+            if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                bw.write("echo " + "/" + elem.getTo() + " >> ${SPEC_FILE}\n"); // NOI18N
+            }
+        }
+        
+        bw.write("\n"); // NOI18N
+        bw.write("# Create RPM Package\n"); // NOI18N
+        bw.write("cd \"$TOP\"\n"); // NOI18N
+        bw.write("LOG_FILE=${TMPDIR}/../${OUTPUT_BASENAME}.log\n"); // NOI18N
+        bw.write("rpmbuild -bb ${SPEC_FILE} > ${LOG_FILE}\n"); // NOI18N
+        bw.write("checkReturnCode\n"); // NOI18N
+        bw.write("cat ${LOG_FILE}\n"); // NOI18N
+        bw.write("RPM_FILE=`cat $LOG_FILE | grep Wrote | awk -F: '{ print $2 }'`\n"); // NOI18N
+        bw.write("mv ${RPM_FILE} " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Cleanup\n"); // NOI18N

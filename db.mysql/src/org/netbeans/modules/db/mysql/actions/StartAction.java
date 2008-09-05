@@ -87,7 +87,7 @@ public class StartAction extends CookieAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
-                String path = server.getStartPath();
+        String path = server.getStartPath();
         String message = Utils.getMessage("MSG_NoStartPath");
         PropertiesDialog dialog = new PropertiesDialog(server);
 
@@ -102,7 +102,7 @@ public class StartAction extends CookieAction {
                 return;
             }
             
-            path = server.getAdminPath();
+            path = server.getStartPath();
         }
 
         try { 

@@ -154,6 +154,7 @@ public class PackagingConfiguration {
         rpmHeaderList.add(new InfoElement("Release", "1", true, true)); // NOI18N
         rpmHeaderList.add(new InfoElement("Group", "Applications/System", true, true)); // NOI18N
         rpmHeaderList.add(new InfoElement("License", "BSD-type", true, true)); // NOI18N
+        rpmHeaderList.add(new InfoElement("%description", "Description...", true, true)); // NOI18N
     }
     
     public boolean isModified() {
@@ -373,7 +374,14 @@ public class PackagingConfiguration {
         if (getTopDir().getModified()) {
             return getTopDir().getValue();
         } else {
-            String val = IpeUtils.getBaseName(getOutputValue());
+            String val;
+            
+            if (getType().getValue() == TYPE_RPM_PACKAGE) {
+                val = "/usr"; // NOI18N
+            }
+            else {
+                val = IpeUtils.getBaseName(getOutputValue());
+            }
             
             int i = val.lastIndexOf("."); // NOI18N
             if (i > 0) {
@@ -427,7 +435,7 @@ public class PackagingConfiguration {
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             tool = "pkgmk"; // NOI18N // FIXUP 
         } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-            tool = "nbmbuild"; // NOI18N
+            tool = "rpmbuild"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             tool = "tar"; // NOI18N
         } else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {

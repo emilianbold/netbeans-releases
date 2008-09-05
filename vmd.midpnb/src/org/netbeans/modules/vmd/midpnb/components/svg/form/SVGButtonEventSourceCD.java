@@ -189,6 +189,14 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
         }
 
         @Override
+        protected void setRenameName(String name) {
+            DesignComponent button = getComponent().readProperty(SVGButtonEventSourceCD.PROP_SVGBUTTON).getComponent();
+            button.writeProperty(ClassCD.PROP_INSTANCE_NAME, MidpTypes.createStringValue(name));
+        }
+
+
+
+        @Override
         protected DesignEventFilter getEventFilter() {
             return new DesignEventFilter().setGlobal(true);
         }
