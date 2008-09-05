@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.debug.DebugUtils;
@@ -72,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Storage for files and states. Class was extracted from ProjectBase.
@@ -83,7 +85,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     private final Object lock = new Object();
     private Map<CharSequence, MyFile> myFiles = new ConcurrentHashMap<CharSequence, MyFile>();
     private Map<CharSequence, Object/*String or String[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*String or String[]*/>();
-    
+   
     /** Creates a new instance of FileContainer */
     public FileContainer(ProjectBase project) {
 	super(new FileContainerKey(project.getUniqueName().toString()));
@@ -159,7 +161,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
      */
     public void putPreprocState(File file, APTPreprocHandler.State state) {
         MyFile f = getMyFile(file, true);
-        f.setState(state);
+        f.setState(state, null);
     }
 
     public void invalidatePreprocState(File file) {
@@ -499,7 +501,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
         @Override
         public String toString() {
-            return "(" + pcState.toString() + "\n" + state.toString() + ')'; //NOI18N
+            return "(" + pcState + "\n" + state + ')'; //NOI18N
         }
     }
             
@@ -508,7 +510,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         /** Gets the states collection */
         Collection<StatePair> getStates();
         
-        void setStates(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
+        void setState(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState);
         void setStates(Collection<StatePair> pairs);
         void setStates(Collection<StatePair> pairs, StatePair yetOneMore);
 
@@ -641,19 +643,22 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
          * This should only be called if we are sure this is the only correct state:
          * e.g., when creating new file, when invalidating state of a *source* (not a header) file, etc
          */
-        private final synchronized void setState(APTPreprocHandler.State state) {
+        public final synchronized void setState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
             State oldState = null;
             if ((data instanceof Collection)) {
-                Collection<APTPreprocHandler.State> states = (Collection<APTPreprocHandler.State>) data;
+                Collection<StatePair> states = (Collection<StatePair>) data;
                 if (states.size() > 1) {
-                    assert false : "Attempt to set state while there are multiple states: " + canonical; //NOI18N
+                    if (CndUtils.isDebugMode()) {
+                        String message = "Attempt to set state while there are multiple states: " + canonical; // NOI18N
+                        Utils.LOG.log(Level.SEVERE, message, new Exception());
+                    }
                     return;
                 }
                 if (states.size() > 0) {
-                    oldState = states.iterator().next();
+                    oldState = states.iterator().next().state;
                 }
-            } else if(data instanceof State) {
-                oldState = (State) data;
+            } else if(data instanceof StatePair) {
+                oldState = ((StatePair) data).state;
             }
             
             incrementModCount();
@@ -665,9 +670,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                     if (state.isCompileContext()) {
                         data = state;
                     } else {
-                        if (TRACE_PP_STATE_OUT) {
-                            System.err.println("Do not reset correct state to incorrect " + canonical);
+                        if (CndUtils.isDebugMode()) {
+                            String message = "Replacing correct state to incorrect " + canonical; // NOI18N
+                            Utils.LOG.log(Level.SEVERE, message, new Exception());
                         }
+                        return;
                     }
                 } else {
                     data = state;
@@ -678,7 +685,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 System.err.println(state);
             }
             
-            data = new StatePair(state, null);
+            data = new StatePair(state, pcState);
         }
         
         /**
@@ -712,17 +719,15 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         }
         
-        public synchronized void setStates(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState) {
-            incrementModCount();
-            data = new StatePair(ppState, pcState);
-        }
-
         public synchronized void setStates(Collection<StatePair> pairs) {
             incrementModCount();
             if (pairs.size() == 1) {
                 data = pairs.iterator().next();
             } else {
                 data = new ArrayList<StatePair>(pairs);
+            }
+            if (CndUtils.isDebugMode()) {
+                checkConsistency();
             }
         }
 
@@ -736,8 +741,50 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 newData.add(yetOneMore);
                 data = newData;
             }
+            if (CndUtils.isDebugMode()) {
+                checkConsistency();
+            }
         }
 
+        private void checkConsistency() {
+            Collection<StatePair> pairs = getStates();
+            if (!pairs.isEmpty()) {
+                boolean alarm = false;
+
+                State firstState = null;
+                boolean first = true;
+                for (StatePair pair : getStates()) {
+                    if (first) {
+                        first = false;
+                        firstState = pair.state;
+                    } else {
+                        if ((firstState == null) != (pair.state == null)) {
+                            alarm = true;
+                            break;
+                        }
+                        if (firstState != null) {
+                            if ((firstState.isValid() != pair.state.isValid()) ||
+                                (firstState.isCompileContext() != pair.state.isCompileContext())) {
+                                alarm = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (alarm) {
+                    StringBuilder sb = new StringBuilder("Mixed preprocessor states: " + canonical); // NOI18N
+                    for (StatePair pair : getStates()) {
+                        if (pair.state == null) {
+                            sb.append(String.format(" (null, %s)", pair.pcState));
+                        } else {
+                            sb.append(String.format(" (valid: %b, context: %b, %s) ",
+                                    pair.state.isValid(), pair.state.isCompileContext(), pair.pcState));
+                        }
+                    }
+                    Utils.LOG.log(Level.SEVERE, sb.toString(), new Exception());                
+                }
+            }
+        }
         
         private synchronized void incrementModCount() {
             modCount = (modCount == Integer.MAX_VALUE) ? 0 : modCount+1;
