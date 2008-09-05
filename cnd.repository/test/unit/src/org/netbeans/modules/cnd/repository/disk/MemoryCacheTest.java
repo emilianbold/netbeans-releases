@@ -167,6 +167,10 @@ public class MemoryCacheTest extends NbTestCase {
             return i;
         }
 
+        public int getUnitId() {
+            return 1;
+        }
+
         @Override
         public boolean equals(Object obj) {
             return ((MyKey)obj).i == i;
@@ -199,6 +203,7 @@ public class MemoryCacheTest extends NbTestCase {
         public int getSecondaryAt(int level) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
     }
     
 }

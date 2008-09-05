@@ -374,7 +374,14 @@ public class PackagingConfiguration {
         if (getTopDir().getModified()) {
             return getTopDir().getValue();
         } else {
-            String val = IpeUtils.getBaseName(getOutputValue());
+            String val;
+            
+            if (getType().getValue() == TYPE_RPM_PACKAGE) {
+                val = "/usr"; // NOI18N
+            }
+            else {
+                val = IpeUtils.getBaseName(getOutputValue());
+            }
             
             int i = val.lastIndexOf("."); // NOI18N
             if (i > 0) {

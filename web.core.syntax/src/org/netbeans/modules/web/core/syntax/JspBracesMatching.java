@@ -105,19 +105,24 @@ public class JspBracesMatching implements BracesMatcher, BracesMatcherFactory {
     }
     
     //BracesMatcherFactory implementation
-    public BracesMatcher createMatcher(MatcherContext context) {
-        TokenHierarchy<Document> hierarchy = TokenHierarchy.get(context.getDocument());
-        List<TokenSequence<?>> ets = hierarchy.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
-        for(TokenSequence ts : ets) {
-            Language language = ts.language();
-            if(language == JspTokenId.language()) {
-                return new JspBracesMatching(context, ts.languagePath());
+    public BracesMatcher createMatcher(final MatcherContext context) {
+        final JspBracesMatching[] ret = { null };
+        context.getDocument().render(new Runnable() {
+            public void run() {
+                TokenHierarchy<Document> hierarchy = TokenHierarchy.get(context.getDocument());
+                List<TokenSequence<?>> ets = hierarchy.embeddedTokenSequences(context.getSearchOffset(), context.isSearchingBackward());
+                for (TokenSequence ts : ets) {
+                    Language language = ts.language();
+                    if (language == JspTokenId.language()) {
+                        ret[0] = new JspBracesMatching(context, ts.languagePath());
+                    }
+                }
+                // We might be trying to search at the end or beginning of a document. In which
+                // case there is nothing to find and/or search through, so don't create a matcher.
+                //        throw new IllegalStateException("No text/x-jsp language found on the MatcherContext's search offset! This should never happen!");
             }
-        }
-        return null;
-// We might be trying to search at the end or beginning of a document. In which
-// case there is nothing to find and/or search through, so don't create a matcher.
-//        throw new IllegalStateException("No text/x-jsp language found on the MatcherContext's search offset! This should never happen!");
+        });
+        return ret[0];
     }
     
 }

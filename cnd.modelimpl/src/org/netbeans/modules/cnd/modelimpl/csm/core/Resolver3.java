@@ -43,9 +43,8 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
-import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
@@ -144,23 +143,7 @@ public class Resolver3 implements Resolver {
     
     private CsmClassifier findClassifier(CharSequence qualifiedName) {
         // try to find visible classifier
-        AtomicBoolean visible = new AtomicBoolean(false);
-        CsmClassifier result = findVisibleDeclaration(project, qualifiedName, visible);
-        if (visible.get()) {
-            assert result != null : "how can be visible true without result?";
-            return result;
-        }
-        // continue in libs
-        for (Iterator iter = project.getLibraries().iterator(); iter.hasNext();) {
-            CsmProject lib = (CsmProject) iter.next();
-            CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, visible);
-            if (visible.get()) {
-                return (CsmClassifier) visibleDecl;
-            }
-            if (result == null) {
-                result = visibleDecl;
-            }
-        }
+        CsmClassifier result = CsmClassifierResolver.getDefault().findClassifierUsedInFile(qualifiedName, file, true);
         return result;
     }
     
@@ -179,41 +162,46 @@ public class Resolver3 implements Resolver {
         if (isRecursionOnResolving(offset)) {
             return null;
         }
-        if (CsmKindUtilities.isClassForwardDeclaration(orig)){
-            CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
-            CsmClass definition;
-            if (fd instanceof ClassForwardDeclarationImpl) {
-                definition = ((ClassForwardDeclarationImpl)fd).getCsmClass(this);
-            } else {
-                definition = fd.getCsmClass();
-            }
-            if (definition != null){
-                return definition;
-            }
-        }
-        CsmClassifier out = orig;
         Set<CsmClassifier> set = new HashSet<CsmClassifier>(100);
-        set.add(orig);
-        while (CsmKindUtilities.isTypedef(out)) {
-            CsmType t = ((CsmTypedef)out).getType();
-            if (t instanceof Resolver.SafeClassifierProvider) {
-                orig = ((Resolver.SafeClassifierProvider)t).getClassifier(this);
-            } else {
-                orig = t.getClassifier();
-            }
-            if (orig == null) {
-                break;
-            }
-            if (set.contains(orig)) {
-                // try to recover from this error
-                CsmClassifier cls = findOtherClassifier(out);
-                out = cls == null ? out : cls;
-                break;
-            }
+        while (true) {
             set.add(orig);
-            out = orig;
+            if (CsmKindUtilities.isClassForwardDeclaration(orig)){
+                CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
+                CsmClass definition;
+                if (fd instanceof ClassForwardDeclarationImpl) {
+                    definition = ((ClassForwardDeclarationImpl)fd).getCsmClass(this);
+                } else {
+                    definition = fd.getCsmClass();
+                }
+                if (definition != null){
+                    orig = definition;
+                }
+            } else if (CsmKindUtilities.isTypedef(orig)) {
+                CsmType t = ((CsmTypedef)orig).getType();
+                CsmClassifier resovedClassifier = null;
+                if (t instanceof Resolver.SafeClassifierProvider) {
+                    resovedClassifier = ((Resolver.SafeClassifierProvider)t).getClassifier(this);
+                } else {
+                    resovedClassifier = t.getClassifier();
+                }
+                if (resovedClassifier == null) {
+                    // have to stop with current 'orig' value
+                    break;
+                }
+                if (set.contains(resovedClassifier)) {
+                    // try to recover from this error
+                    resovedClassifier = findOtherClassifier(orig);
+                    if (resovedClassifier == null) {
+                        // have to stop with current 'orig' value
+                        break;
+                    }
+                }
+                orig = resovedClassifier;
+            } else {
+                break;
+            }
         }
-        return out;
+        return orig;
         
     }
 
@@ -294,21 +282,6 @@ public class Resolver3 implements Resolver {
             }
         }
         return false;
-    }
-
-    private CsmClassifier findVisibleDeclaration(CsmProject project, CharSequence uniqueName, AtomicBoolean visible) {
-        Collection<CsmClassifier> decls = project.findClassifiers(uniqueName);
-        CsmClassifier first = null;
-        for (CsmClassifier decl : decls) {
-            if (first == null) {
-                first = decl;
-            }
-            if (CsmIncludeResolver.getDefault().isObjectVisible(file, decl)) {
-                visible.set(true);
-                return (CsmClassifier) decl;
-            }
-        }
-        return first;
     }
     
     private void traceRecursion(){

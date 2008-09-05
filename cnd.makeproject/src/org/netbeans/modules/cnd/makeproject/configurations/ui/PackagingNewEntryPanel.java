@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 import org.openide.util.NbBundle;
 
@@ -50,35 +51,50 @@ import org.openide.util.NbBundle;
  * @author  thp
  */
 public class PackagingNewEntryPanel extends javax.swing.JPanel {
+    private PackagingConfiguration packagingConfiguration;
 
     /** Creates new form PackagingNewEntryPanel */
-    public PackagingNewEntryPanel() {
+    public PackagingNewEntryPanel(PackagingConfiguration packagingConfiguration) {
         initComponents();
-        entryComboBox.addItem("BASEDIR"); // NOI18N
-        entryComboBox.addItem("CLASSES"); // NOI18N
-        entryComboBox.addItem("DESC"); // NOI18N
-        entryComboBox.addItem("EMAIL"); // NOI18N
-        entryComboBox.addItem("HOTLINE"); // NOI18N
-        entryComboBox.addItem("INTONLY"); // NOI18N
-        entryComboBox.addItem("ISTATES"); // NOI18N
-        entryComboBox.addItem("MAXINST"); // NOI18N
-        entryComboBox.addItem("ORDER"); // NOI18N
-        entryComboBox.addItem("PSTAMP"); // NOI18N
-        entryComboBox.addItem("RSTATES"); // NOI18N
-        entryComboBox.addItem("SUNW_ISA"); // NOI18N
-        entryComboBox.addItem("SUNW_LOC"); // NOI18N
-        entryComboBox.addItem("SUNW_PKG_DIR"); // NOI18N
-        entryComboBox.addItem("SUNW_PKG_ALLZONES"); // NOI18N
-        entryComboBox.addItem("SUNW_PKG_HOLLOW"); // NOI18N
-        entryComboBox.addItem("SUNW_PKG_THISZONE"); // NOI18N
-        entryComboBox.addItem("SUNW_PKGLIST"); // NOI18N
-        entryComboBox.addItem("SUNW_PKGTYPE"); // NOI18N
-        entryComboBox.addItem("SUNW_PKGVERS"); // NOI18N
-        entryComboBox.addItem("SUNW_PRODNAME"); // NOI18N
-        entryComboBox.addItem("SUNW_PRODVERS"); // NOI18N
-        entryComboBox.addItem("ULIMIT"); // NOI18N
-        entryComboBox.addItem("VENDOR"); // NOI18N
-        entryComboBox.addItem("VSTOCK"); // NOI18N
+        
+        this.packagingConfiguration = packagingConfiguration;
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            entryComboBox.addItem("BASEDIR"); // NOI18N
+            entryComboBox.addItem("CLASSES"); // NOI18N
+            entryComboBox.addItem("DESC"); // NOI18N
+            entryComboBox.addItem("EMAIL"); // NOI18N
+            entryComboBox.addItem("HOTLINE"); // NOI18N
+            entryComboBox.addItem("INTONLY"); // NOI18N
+            entryComboBox.addItem("ISTATES"); // NOI18N
+            entryComboBox.addItem("MAXINST"); // NOI18N
+            entryComboBox.addItem("ORDER"); // NOI18N
+            entryComboBox.addItem("PSTAMP"); // NOI18N
+            entryComboBox.addItem("RSTATES"); // NOI18N
+            entryComboBox.addItem("SUNW_ISA"); // NOI18N
+            entryComboBox.addItem("SUNW_LOC"); // NOI18N
+            entryComboBox.addItem("SUNW_PKG_DIR"); // NOI18N
+            entryComboBox.addItem("SUNW_PKG_ALLZONES"); // NOI18N
+            entryComboBox.addItem("SUNW_PKG_HOLLOW"); // NOI18N
+            entryComboBox.addItem("SUNW_PKG_THISZONE"); // NOI18N
+            entryComboBox.addItem("SUNW_PKGLIST"); // NOI18N
+            entryComboBox.addItem("SUNW_PKGTYPE"); // NOI18N
+            entryComboBox.addItem("SUNW_PKGVERS"); // NOI18N
+            entryComboBox.addItem("SUNW_PRODNAME"); // NOI18N
+            entryComboBox.addItem("SUNW_PRODVERS"); // NOI18N
+            entryComboBox.addItem("ULIMIT"); // NOI18N
+            entryComboBox.addItem("VENDOR"); // NOI18N
+            entryComboBox.addItem("VSTOCK"); // NOI18N
+        }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+            entryComboBox.addItem("Patch"); // NOI18N
+            entryComboBox.addItem("%changelog"); // NOI18N
+            entryComboBox.addItem("%pre"); // NOI18N
+            entryComboBox.addItem("%post"); // NOI18N
+            entryComboBox.addItem("%preun"); // NOI18N
+            entryComboBox.addItem("%postun"); // NOI18N
+        }
+        else
+            assert false;
     }
 
     /** This method is called from within the constructor to

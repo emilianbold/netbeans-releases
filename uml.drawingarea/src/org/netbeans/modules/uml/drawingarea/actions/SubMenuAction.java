@@ -50,6 +50,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.event.ChangeListener;
 import org.openide.awt.Actions;
+import org.openide.awt.JInlineMenu;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -98,49 +99,31 @@ public class SubMenuAction extends AbstractAction
 
     public JMenuItem getPopupPresenter()
     {
-//        JMenuItem item =  new Actions.SubMenu(this, model, true);
-//        Actions.connect(item, (Action)this, true);
-//        
-//        return item;
-        
-//        JMenuItem retVal = null;
-//        Action targetAction = this;
-//        if(subActions.size() ==  1)
-//        {
-//            targetAction = subActions.get(0);
-//            if(targetAction instanceof Presenter.Popup)
-//            {
-//                Presenter.Popup presenter = (Presenter.Popup)targetAction;
-//                retVal = presenter.getPopupPresenter();
-//            }
-//            else
-//            {
-//                retVal = new JMenuItem(targetAction);
-//            }
-//        }
-//        else
-//        {
-//            SubMenuModel model = new SubMenuModel();
-//            retVal = new Actions.SubMenu(this, model, true);
-//        }
-//        
-//        Actions.connect(retVal, targetAction, true);
-//        return retVal;
         
         Action[] actions = new Action[subActions.size()];
         subActions.toArray(actions);
         JPopupMenu popup = Utilities.actionsToPopup(actions, context);
         
-        JMenu retVal = null;
+        
+        JMenuItem retVal = null;
         if(popup.getComponentCount() > 0)
         {
-            retVal = new JMenu((String)getValue(NAME));
+            JMenu  menu = new JMenu((String)getValue(NAME));
             for(Component item : popup.getComponents())
             {
-                retVal.add(item);
+                menu.add(item);
             }
+
+            retVal = menu;
         }
-        
+        else
+        {
+            // If the menu item is not valid we want to not display the menu item
+            // If we return null a warning will be written to the log file by
+            // org.openide.util.Utilities.  However if we return an empty
+            // JInlineMenu the menu will not appear.
+            retVal = new JInlineMenu();
+        }
         return retVal;
     }
     
