@@ -114,6 +114,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     private Map<String, String> pathMap;
     private JPopupMenu menu;
     private WeakReference<DesignComponent> svgFormReferences;
+    private boolean needUpdate;
 
     public SVGFormEditorElement() {
         paths = new HashMap<String, FileObject>();
@@ -182,7 +183,6 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         final DesignDocument document = documentReferences.get();
         project = ProjectUtils.getProject(document);
 
-
         if (wrapper == null) {
             // UI stuff
             setText(null);
@@ -236,7 +236,6 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                 retValue[0] = component.getDocument().getDescriptorRegistry().isInHierarchy(SVGFormCD.TYPEID, component.getType());
             }
         });
-
         return retValue[0];
     }
 
@@ -258,16 +257,18 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                     parseIt[0] = Boolean.TRUE;
                 }
                 DesignComponent oldComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
-                if (oldComponent == childComponent && svgImageFileObject[0] != null) {
+                if (!needUpdate && oldComponent == childComponent && svgImageFileObject[0] != null) {
                     parseIt[0] = Boolean.FALSE;
                 }
             }
         });
-
+        
         if (parseIt[0] != null && parseIt[0]) {
             parseSVGImageItems(svgImageFileObject[0], parentComponent);
+            
         }
         orderSVGComponentsArray(parentComponent);
+        needUpdate = false;
     }
 
     private void orderSVGComponentsArray(final DesignComponent svgForm) {
@@ -834,6 +835,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
             fireElementChanged(componentID, SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
             updatePreview();
             updateSVGComponentsList();
+            needUpdate = true;
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
