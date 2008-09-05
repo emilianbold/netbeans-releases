@@ -141,7 +141,7 @@ public class FlickrResponseSchemaTest extends NbTestCase {
                 ts.addTest(new FlickrResponseSchemaTest("validate", f)); //NOI18N
             }
         }
-        ts.addTest(new FlickrResponseSchemaTest("testCompileSchema"));
+        ts.addTest(new FlickrResponseSchemaTest("testCompileSchema")); //NOI18N
         return ts;
     }
 }
