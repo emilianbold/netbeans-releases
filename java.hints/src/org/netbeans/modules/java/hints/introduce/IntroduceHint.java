@@ -538,7 +538,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         List<TreePathHandle> exits = new LinkedList<TreePathHandle>();
 
         for (TreePath tp : scanner.selectionExits) {
-            exits.add(TreePathHandle.create(tp, info));
+            if(isInsideSameClass(tp, method))
+                exits.add(TreePathHandle.create(tp, info));
         }
 
         TypeMirror returnType;
@@ -577,6 +578,35 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         return new IntroduceMethodFix(info.getJavaSource(), h, paramTypes, paramNames, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnName, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1]);
     }
+
+    private static boolean isInsideSameClass(TreePath one, TreePath two) {
+        ClassTree oneClass = null;
+        ClassTree twoClass = null;
+
+        while (one.getLeaf().getKind() != Kind.COMPILATION_UNIT && one.getLeaf().getKind() != null) {
+            Tree t = one.getLeaf();
+            if (t.getKind() == Kind.CLASS) {
+                oneClass = (ClassTree) t;
+                break;
+            }
+            one = one.getParentPath();
+        }
+
+        while (two.getLeaf().getKind() != Kind.COMPILATION_UNIT && two.getLeaf().getKind() != null) {
+            Tree t = two.getLeaf();
+            if (t.getKind() == Kind.CLASS) {
+                twoClass = (ClassTree) t;
+                break;
+            }
+            two = two.getParentPath();
+        }
+
+        if (oneClass != null && oneClass.equals(twoClass))
+            return true;
+        
+        return false;
+    }
+
 
     static boolean checkConstantExpression(CompilationInfo info, TreePath path) {
         Tree expr = path.getLeaf();

@@ -644,6 +644,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
             performTest("ClassB.h", 12, 15, "ClassB.h", 22, 5); //void method(char*, double);
             performTest("ClassB.h", 24, 15, "ClassB.h", 24, 5); //void method(char*, char*);
         }
+
+        public void testIZ145037() throws Exception {
+            // IZ#145037: "operator string" defintion incorrectly resolved
+            performTest("IZ145037_conversion_operators.cc", 20, 22, "IZ145037_conversion_operators.cc", 10, 9);
+            performTest("IZ145037_conversion_operators.cc", 38, 22, "IZ145037_conversion_operators.cc", 28, 9);
+        }
     }
 
 }

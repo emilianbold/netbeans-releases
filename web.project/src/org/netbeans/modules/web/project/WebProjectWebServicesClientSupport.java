@@ -446,7 +446,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         
         { // Block that adjusts wscompile.client.classpath as necessary.
-            HashSet wscJars = new HashSet();
+            HashSet<String> wscJars = new HashSet<String>();
             boolean newWscJars = false;
             String wscClientClasspath = projectProperties.getProperty(WSCOMPILE_CLASSPATH);
             if(wscClientClasspath != null) {
@@ -466,7 +466,7 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
             if(newWscJars) {
                 StringBuffer newClasspathBuf = new StringBuffer(256);
                 for(Iterator iter = wscJars.iterator(); iter.hasNext(); ) {
-                    newClasspathBuf.append(iter.next().toString());
+                    newClasspathBuf.append(iter.next());
                     if(iter.hasNext()) {
                         newClasspathBuf.append(':');
                     }
@@ -668,8 +668,8 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
     
     private static final List importantClientFeatures = Arrays.asList(WSCOMPILE_KEY_CLIENT_FEATURES);
     
-    public List getServiceClients() {
-        List serviceNames = new ArrayList();
+    public List<WsCompileClientEditorSupport.ServiceSettings> getServiceClients() {
+        List<WsCompileClientEditorSupport.ServiceSettings> serviceNames = new ArrayList<WsCompileClientEditorSupport.ServiceSettings>();
         
         Element data = helper.getPrimaryConfigurationData(true);
         NodeList nodes = data.getElementsByTagName(WEB_SERVICE_CLIENTS);

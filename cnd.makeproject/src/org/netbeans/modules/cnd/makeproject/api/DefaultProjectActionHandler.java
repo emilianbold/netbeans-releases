@@ -49,6 +49,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -145,6 +147,7 @@ public class DefaultProjectActionHandler implements ActionListener {
         private NativeExecutor projectExecutor = null;
         private StopAction sa = null;
         private RerunAction ra = null;
+        List<BuildAction> additional;
         private ProgressHandle progressHandle = null;
         private final Object lock = new Object();
         
@@ -197,12 +200,17 @@ public class DefaultProjectActionHandler implements ActionListener {
         private InputOutput getIOTab(String name, boolean reuse) {
             sa = new StopAction(this);
             ra = new RerunAction(this);
+            List<Action> list = new ArrayList<Action>();
+            list.add(sa);
+            list.add(ra);
+            additional = BuildActionsProvider.getDefault().getActions(name, paes);
+            list.addAll(additional);
             InputOutput tab;
             if (reuse) {
                 tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
                 tab.closeInputOutput(); // Close it...
             }
-            tab = IOProvider.getDefault().getIO(name, new Action[] {ra, sa}); // Create a new ...
+            tab = IOProvider.getDefault().getIO(name, list.toArray(new Action[list.size()])); // Create a new ...
             try {
                 tab.getOut().reset();
             } catch (IOException ioe) {
@@ -474,10 +482,20 @@ public class DefaultProjectActionHandler implements ActionListener {
         }
         
         public void executionStarted() {
-            // Nothing
+            if (additional != null) {
+                for(BuildAction action : additional){
+                    action.setStep(currentAction);
+                    action.executionStarted();
+                }
+            }
         }
         
         public void executionFinished(int rc) {
+            if (additional != null) {
+                for(Action action : additional){
+                    ((ExecutionListener)action).executionFinished(rc);
+                }
+            }
             if (paes[currentAction].getID() == ProjectActionEvent.BUILD || paes[currentAction].getID() == ProjectActionEvent.CLEAN) {
                 // Refresh all files
                 try {

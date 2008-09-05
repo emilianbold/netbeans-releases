@@ -67,13 +67,22 @@ public class DiagnosticExceptoins {
     public static void setHook(Hook aHook) {
 	hook = aHook;
     }
+
+    private static boolean assertions = false;
+    static {
+        try {
+            assert assertions = true;
+        } catch (AssertionError e) {
+            // nothing to do
+        }
+    }
     
     /**
      * This method is called from within catch(...) in code model threads.
      * See Hook.exception description for more details
      */
     public static void register(Throwable thr) {
-        if( TraceFlags.TIMING ) {
+        if( assertions ) {
             thr.printStackTrace();
         } else {
 //            if (thr.getMessage()!=null) {

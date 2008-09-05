@@ -464,14 +464,22 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         File file = FileUtil.toFile(fo);
         if (file == null) {
             // abstract FO - zip/jar...
-            relativePath = "/" + fo.getPath(); // NOI18N
+            if (!fo.getPath().startsWith("/")) { // NOI18N
+                relativePath = "/" + fo.getPath(); // NOI18N
+            } else {
+                relativePath = fo.getPath();
+            }
         } else {
             String fullPath = file.getAbsolutePath();
             if (fullPath.contains(sourcePath)) {
                 // file is inside sources
                 fullPath = fo.getPath();
                 int i = fullPath.indexOf(sourcePath) + sourcePath.length() + 1;
-                relativePath = "/" + fullPath.substring(i); //NOI18N
+                if (!fullPath.substring(i).startsWith("/")) { //NOI18N
+                    relativePath = "/" + fullPath.substring(i); //NOI18N
+                } else {
+                    relativePath = fullPath.substring(i); 
+                }
             } else if (needCopy) {
                 // somewhere outside sources - need to copy (export image)
                 File possible = new File(sourcePath + File.separator + fo.getNameExt());
