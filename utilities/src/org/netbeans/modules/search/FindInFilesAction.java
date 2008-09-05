@@ -145,6 +145,11 @@ public class FindInFilesAction extends CallableSystemAction
         return new LookupSensitive(this, lookup);
     }
 
+    /**
+     * @param  searchSelection  if {@code true}, radio-button "Node Selection"
+     *                          will be preferred (pre-selected) in the Find
+     *                          in Files dialogue
+     */
     public Action createContextAwareInstance(Lookup lookup,
                                              boolean searchSelection) {
         if (shouldLog(LOG)) {
