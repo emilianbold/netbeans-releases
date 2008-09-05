@@ -997,7 +997,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         FileContainer.Entry entry = getFileContainer().getEntry(file);
         synchronized (entry.getLock()) {
             entry.invalidateStates();
-            entry.setStates(state, null);
+            entry.setState(state, null);
         }
         return state;
     }
@@ -1057,19 +1057,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             //
 
             Collection<FileContainer.StatePair> statesToKeep = new ArrayList<FileContainer.StatePair>();
-            int comparisonResult;
+            ComparisonResult comparisonResult;
             AtomicBoolean newStateFound = new AtomicBoolean();
 
             // We need to make this pre check
             // at least for the case of recursion
             synchronized (entry.getLock()) {
                 comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
-                if (comparisonResult == BETTER) {
+                if (comparisonResult == ComparisonResult.BETTER) {
                     // some of the old states are worse than the new one; we'll deinitely parse
                     if (TraceFlags.SMART_HEADERS_PARSE) {
                         entry.setStates(statesToKeep, new FileContainer.StatePair(newState, null));
                     } else {
-                        entry.setStates(newState, null);
+                        entry.setState(newState, null);
                     }
                 }
                 entryModCount = entry.getModCount();
@@ -1080,7 +1080,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             APTParseFileWalker walker = new APTParseFileWalker(base, aptLight, csmFile, preprocHandler, pcState);
             walker.visit();
 
-            if (comparisonResult == WORSE) {
+            if (comparisonResult == ComparisonResult.WORSE) {
+                return csmFile;
+            } else if (comparisonResult == ComparisonResult.SAME && newStateFound.get() && csmFile.isParsed()) {
+                // it's better than rely on pcStates check -
+                // somebody could place state, but not yet calculate pcState
                 return csmFile;
             }
 
@@ -1092,7 +1096,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 // if the entry has been changed since previous check, check again
                 if (entry.getModCount() != entryModCount) {
                     comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
-                    if (comparisonResult == WORSE) {
+                    if (comparisonResult == ComparisonResult.WORSE) {
                         return csmFile;
                     }
                     if (!newStateFound.get()) {
@@ -1103,52 +1107,43 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 // from that point we are NOT interested in what is in the entry:
                 // it's locked; "good" states are are in statesToKeep, "bad" states don't matter
 
-                // it's better than rely on pcStates check -
-                // somebody could place state, but not yet calculate pcState
-                if (comparisonResult == SAME && newStateFound.get() && csmFile.isParsed()) {
-                    return csmFile;
-                }
+                assert comparisonResult != ComparisonResult.WORSE;
                 
-                assert comparisonResult != WORSE;
-                
-                boolean parse;
                 boolean clean;
 
                 Collection<APTPreprocHandler.State> statesToParse = new ArrayList<APTPreprocHandler.State>();
                 statesToParse.add(newState);
                 
-                if (comparisonResult == BETTER) {
-                    parse = clean = true;
+                if (comparisonResult == ComparisonResult.BETTER) {
+                    clean = true;
                 } else {  // comparisonResult == SAME
                     if (TraceFlags.SMART_HEADERS_PARSE) {
-                        comparisonResult = fillStatesToKeep(newState, pcState, new ArrayList(statesToKeep), statesToKeep);
+                        comparisonResult = fillStatesToKeep(pcState, new ArrayList(statesToKeep), statesToKeep);
                         switch (comparisonResult) {
                             case BETTER:
-                                parse = clean = true;
+                                clean = true;
                                 break;
                             case SAME:
-                                parse = true;
                                 clean = false;
                                 break;
                             case WORSE:
-                                parse = clean = false;
-                                break;
+                                return csmFile;
                             default: 
                                 assert false : "unexpected comparison result: " + comparisonResult; //NOI18N
-                                parse = clean = false;
-                                break;
+                                return csmFile;
                         }
                     } else {
                         if( isBetterThanAll(pcState, statesToKeep)) {
-                            parse = clean = true;
+                            statesToKeep.clear();
+                            clean = true;
                         } else {
-                            parse = clean = false;
+                            return csmFile;
                         }
                     }
                 }
                 // TODO: think over, what if we aready changed entry,
                 // but now deny parsing, because base, but not this project, is disposing?!
-                if (parse && !isDisposing() && !base.isDisposing()) {
+                if (!isDisposing() && !base.isDisposing()) {
                     if (clean) {
                         if (TraceFlags.SMART_HEADERS_PARSE) {
                             for (FileContainer.StatePair pair : statesToKeep) {
@@ -1197,6 +1192,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
     
+    enum ComparisonResult {
+        BETTER,
+        SAME,
+        WORSE
+    }
     private static final int BETTER = 1;
     private static final int SAME = 0;
     private static final int WORSE = -1;
@@ -1227,24 +1227,25 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      *
      * NB: if exit is true, the return value is unpredictable and shouldn't be used.
      */
-    private int fillStatesToKeep(
+    private ComparisonResult fillStatesToKeep(
             APTPreprocHandler.State newState, 
             Collection<FileContainer.StatePair> oldStates,
             Collection<FileContainer.StatePair> statesToKeep,
             AtomicBoolean newStateFound) {
         
         if (newState == null || !newState.isValid()) {
-            return WORSE;
+            return ComparisonResult.WORSE;
         }
         
         statesToKeep.clear();
         newStateFound.set(false);
-        int result = SAME;
+        ComparisonResult result = ComparisonResult.SAME;
 
         for (FileContainer.StatePair pair : oldStates) {
             // newState might already be contained in oldStates
             // it should NOT be added to result
             if (newState.equals(pair.state)) {
+                assert ! newStateFound.get();
                 newStateFound.set(true);
             } else {
                 boolean keep = false;
@@ -1252,7 +1253,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     if (pair.state.isCompileContext()) {
                         keep = true;
                         if (!newState.isCompileContext()) {
-                            return WORSE;
+                            return ComparisonResult.WORSE;
                         }
                     } else {
                         keep = !newState.isCompileContext();
@@ -1261,7 +1262,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 if (keep) {
                     statesToKeep.add(pair);
                 } else {
-                    result = BETTER;
+                    result = ComparisonResult.BETTER;
                 }
             }
         }
@@ -1276,14 +1277,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (TraceFlags.NO_HEADERS_REPARSE) {
             return false;
         }
-        boolean newIsTheBest = true;
         for (FileContainer.StatePair pair : oldStates) {
             if (!pcState.isBetter(pair.pcState)) {
-                newIsTheBest = false;
+                return false;
             }
         }
-        return newIsTheBest;
+        return true;
     }
+
 
     /**
      * If it returns EXIT, statesToKeep content is unpredictable!
@@ -1294,13 +1295,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @param statesToKeep
      * @return
      */
-    private int fillStatesToKeep(
-            APTPreprocHandler.State newState,
+    private ComparisonResult fillStatesToKeep(
             FilePreprocessorConditionState pcState,
             Collection<FileContainer.StatePair> oldStates,
             Collection<FileContainer.StatePair> statesToKeep) {
         
-        boolean isSubset = true; // true if this state is a subset of each old state 
         boolean isSuperset = true; // true if this state is a superset of each old state
 
         Collection<FilePreprocessorConditionState> possibleSuperSet = new ArrayList<FilePreprocessorConditionState>();
@@ -1315,11 +1314,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         
         for (FileContainer.StatePair old : oldStates) {
             if( pcState.isSubset(old.pcState)) {
-                return WORSE;
+                return ComparisonResult.WORSE;
             }
             if (old.pcState == null) {
                 isSuperset = false;
-                // not yet filled - keep it
+                // not yet filled - somebody is filling it right now => we don't know what it will be => keep it
                 statesToKeep.add(old);
             } else {
                 possibleSuperSet.add(old.pcState);
@@ -1329,14 +1328,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         }
-        if (pcState.isSubset(possibleSuperSet)) {
-            return WORSE;
-        }        
         if (isSuperset) {
             statesToKeep.clear();
-            return BETTER;
+            return ComparisonResult.BETTER;
         } else {
-            return SAME;
+            if (pcState.isSubset(possibleSuperSet)) {
+                return ComparisonResult.WORSE;
+            } else {
+                return ComparisonResult.SAME;
+            }
         }
     }
     
