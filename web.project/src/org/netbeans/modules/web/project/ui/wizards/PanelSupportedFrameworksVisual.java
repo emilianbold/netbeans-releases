@@ -44,7 +44,6 @@ package org.netbeans.modules.web.project.ui.wizards;
 import java.awt.Component;
 import java.awt.Container;
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -86,7 +85,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     public static final int UNUSED_FRAMEWORKS = 2;
     
     private List ignoredFrameworks;
-    private Map extenders = new IdentityHashMap();
+    private Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
     private FrameworksTableModel model;
     private PanelSupportedFrameworks panel;
     private ExtenderController controller;
@@ -320,7 +319,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     }
 
     public List getSelectedExtenders() {
-        List selectedExtenders = new LinkedList();
+        List<WebModuleExtender> selectedExtenders = new LinkedList<WebModuleExtender>();
         FrameworksTableModel model = (FrameworksTableModel) jTableFrameworks.getModel();
         for (int i = 0; i < model.getRowCount(); i++) {
             FrameworkModelItem item = model.getItem(i);

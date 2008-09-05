@@ -289,7 +289,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
         String newName = refactoring.getNewName();
         String oldName = treePathHandle.getSimpleName();
         if (oldName == null) {
-            return new Problem(true, "Cannot determine name");
+            return new Problem(true, "Cannot determine target name. Please file a bug with detailed information on how to reproduce (preferably including the current source file and the cursor position)");
         }
         
         if (oldName.equals(newName)) {

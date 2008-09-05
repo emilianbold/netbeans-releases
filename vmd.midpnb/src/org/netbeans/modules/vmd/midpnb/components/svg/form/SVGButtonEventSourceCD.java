@@ -50,13 +50,15 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.vmd.api.codegen.CodeGlobalLevelPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderPath;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorUIManagerSupport;
+import org.netbeans.modules.vmd.api.inspector.common.DesignComponentInspectorFolder;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEvent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
-import org.netbeans.modules.vmd.api.model.DynamicPresenter;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.PresenterEvent;
 import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
@@ -73,12 +75,17 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassSupport;
+import org.netbeans.modules.vmd.midp.components.handlers.EventHandlerSupport;
 import org.netbeans.modules.vmd.midp.components.sources.EventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormCD.SVGButtonEventSourceOrder;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -89,6 +96,9 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#SVGButtonEventEventSource"); // NOI18
     public static final String PROP_SVGBUTTON = "svgButton"; //NOI18N
     
+    private static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/button_16.png"; // NOI18N                                                
+    private static final Image ICON_SVG_BUTTON = Utilities.loadImage(ICON_PATH);
+
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(EventSourceCD.TYPEID, TYPEID, true, false);
     }
@@ -99,15 +109,15 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
-            new PropertyDescriptor(PROP_SVGBUTTON, SVGButtonCD.TYPEID, PropertyValue.createNull(), false, false, Versionable.FOREVER));
+                new PropertyDescriptor(PROP_SVGBUTTON, SVGButtonCD.TYPEID, PropertyValue.createNull(), false, false, Versionable.FOREVER));
     }
 
     @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, ActionsPresenter.class);
         DocumentSupport.removePresentersOfClass(presenters, InspectorFolderPresenter.class);
-        MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, false, false, true);
-        
+        MidpActionsSupport.addCommonActionsPresenters(presenters, false, true, true, false, true);
+
         super.gatherPresenters(presenters);
     }
 
@@ -115,7 +125,6 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
         return Arrays.asList(
                 // info
                 InfoPresenter.create(new SVGButtonEventSourceResolver()),
-                // inspector
                 //code
                 new ImportCodePresenterSupport("org.netbeans.microedition.svg.SVGActionListener"), //NOI18N
                 new ImportCodePresenterSupport("org.netbeans.microedition.svg.SVGComponent"), //NOI18N
@@ -125,35 +134,51 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
                 // delete
                 DeleteDependencyPresenter.createDependentOnParentComponentPresenter(),
                 //inspector
-                new InspectorSelectionPresneter()
+                new SVGButtonInspectorFolderComponentPresneter()
                 );
-                
-                
+
+
     }
 
     private class SVGButtonEventSourceResolver implements InfoPresenter.Resolver {
 
         public DesignEventFilter getEventFilter(DesignComponent component) {
-            return null;
+            return new DesignEventFilter().addComponentFilter(component, false);
         }
 
         public String getDisplayName(DesignComponent component, NameType nameType) {
-            return getButtonName(component);
+            switch (nameType) {
+                case PRIMARY:
+                    DesignComponent displayable = component.readProperty (PROP_SVGBUTTON).getComponent ();
+                    if (displayable == null)
+                        return NbBundle.getMessage(EventHandlerSupport.class, "DISP_Handler_Clear_Display"); // NOI18N
+
+                    String displayableName = ClassSupport.resolveDisplayName (displayable);
+                    return NbBundle.getMessage(EventHandlerSupport.class, "DISP_Handler_Go_to_displayable", displayableName); // NOI18N
+                case SECONDARY:
+                    return NbBundle.getMessage(EventHandlerSupport.class, "TYPE_Action"); // NOI18N
+                case TERTIARY:
+                    return null;
+                default:
+                    throw Debug.illegalState ();
+            }
         }
 
         public boolean isEditable(DesignComponent component) {
-            return false;
+            return true;
         }
 
         public String getEditableName(DesignComponent component) {
-            return null;
+            return getButtonName(component);
         }
 
         public void setEditableName(DesignComponent component, String enteredName) {
+            DesignComponent button = component.readProperty(SVGButtonEventSourceCD.PROP_SVGBUTTON).getComponent();
+            button.writeProperty(ClassCD.PROP_INSTANCE_NAME, MidpTypes.createStringValue(enteredName));
         }
 
         public Image getIcon(DesignComponent component, IconType iconType) {
-            return null;
+            return ICON_SVG_BUTTON;
         }
     }
 
@@ -173,7 +198,7 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
 
         @Override
         protected boolean canRename() {
-            return false;
+            return true;
         }
 
         @Override
@@ -182,10 +207,17 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
         }
 
         @Override
-        protected DesignEventFilter getEventFilter() {
-            return super.getEventFilter().addParentFilter(getComponent(), 1, false);
+        protected void setRenameName(String name) {
+            DesignComponent button = getComponent().readProperty(SVGButtonEventSourceCD.PROP_SVGBUTTON).getComponent();
+            button.writeProperty(ClassCD.PROP_INSTANCE_NAME, MidpTypes.createStringValue(name));
         }
-        
+
+
+
+        @Override
+        protected DesignEventFilter getEventFilter() {
+            return new DesignEventFilter().setGlobal(true);
+        }
     };
 
     private static String getButtonName(DesignComponent component) {
@@ -231,8 +263,31 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
             }
         }
     }
-    
-    private class InspectorSelectionPresneter extends DynamicPresenter {
+
+    private class SVGButtonInspectorFolder extends DesignComponentInspectorFolder {
+
+        public SVGButtonInspectorFolder(boolean canRename, DesignComponent component) {
+            super(canRename, component);
+        }
+
+        @Override
+        public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {
+            if (path.getLastElement().getTypeID() == MidpInspectorSVGButtonSupport.TYPEID_CATEGORY_SVG_BUTTONS) {
+                if (path.getLastElement().getComponentID().equals(component.getParentComponent().getComponentID())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    private class SVGButtonInspectorFolderComponentPresneter extends InspectorFolderPresenter {
+
+       
+        @Override
+        public InspectorFolder getFolder() {
+           return new SVGButtonInspectorFolder(true, getComponent());
+        }
 
         @Override
         protected void notifyAttached(DesignComponent component) {
@@ -241,26 +296,27 @@ public class SVGButtonEventSourceCD extends ComponentDescriptor {
 
         @Override
         protected void notifyDetached(DesignComponent component) {
-           
+            
         }
 
         @Override
         protected DesignEventFilter getEventFilter() {
-            return new DesignEventFilter().setSelection(true);
+            return null;
         }
 
         @Override
         protected void designChanged(DesignEvent event) {
-            if (getComponent().getDocument().getSelectedComponents().contains(getComponent())) {
-                String nameToSelect = InfoPresenter.getDisplayName(getComponent().getParentComponent());
-                InspectorUIManagerSupport.selectNodesInInspector(getComponent().getDocument(), nameToSelect);
-            }
+            
         }
 
         @Override
         protected void presenterChanged(PresenterEvent event) {
+            
         }
+
+       
+        
+        
         
     }
-  
 }

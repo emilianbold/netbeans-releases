@@ -393,11 +393,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
         }
         if ("boolean".equals(type) || "java.lang.Boolean".equals(type)) {
             //NOI18N
-            try {
-                boolean val = Boolean.parseBoolean((String) defaultVal);
-                return String.valueOf(val) + ";";
-            } catch(Exception ex) {}
-            return "false;"; //NOI18N
+            return defaultVal.toString() + ";";
         }
         if ("float".equals(type) || "double".equals(type) ||
                  "java.lang.Float".equals(type) || "java.lang.Double".equals(type)) {
@@ -437,10 +433,6 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
     }
     
     public static final String SET_HEADER_PARAMS_CALL = SET_HEADER_PARAMS + "(port); \n";
-    
-    public static final String INDENT_2 = "             ";
-    
-    public static final String INDENT = "        ";
 
     protected String getJavaInvocationBody(WSOperation operation, 
             boolean insertServiceDef, String serviceJavaName, String portJavaName, 

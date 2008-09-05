@@ -150,7 +150,7 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
         wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
         
         String instLoc = getAIVPP().getInstallLocation();
-        if (instLoc.startsWith("\\\\")) {
+        if (instLoc.startsWith("\\\\")) {  //NOI18N
             setErrorMsg("Msg_NoAuthorityComponent");  //NOI18N
             return false;
         }
@@ -169,11 +169,11 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
             } else {
                 // not valid install directory
                 String errMsg = NbBundle.getMessage(AddDomainPlatformPanel.class,
-                        "Msg_InValidInstall");
+                        "Msg_InValidInstall");  //NOI18N
                 if(! serverVersion.equals("")) { //NOI18N
                     String serverType = platformValidator.getServerTypeName(serverVersion);
                     errMsg = NbBundle.getMessage(AddDomainPlatformPanel.class,
-                        "Msg_InValidInstallForServerType", serverType);
+                        "Msg_InValidInstallForServerType", serverType);  //NOI18N
                 }
                 wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errMsg); 
             }
@@ -218,7 +218,7 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                 //File platformDir = (File) wiz.getProperty(AddDomainWizardIterator.PLATFORM_LOCATION);
                 Util.fillDescriptorFromDomainXml(wiz, dirCandidate);
                 // fill in the admin name and password from the asadminprefs file
-                String username = "admin";
+                String username = "admin";  //NOI18N
                 String password = null;
                 File f = new File(System.getProperty("user.home")+"/.asadminprefs"); //NOI18N
                 if (f.exists()){
@@ -257,16 +257,16 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
             }
         } else if (selectedType == AddDomainWizardIterator.REMOTE) {
             wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
-            wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,"");
-            wiz.putProperty(AddDomainWizardIterator.DOMAIN,"");
+            wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION, "");  //NOI18N
+            wiz.putProperty(AddDomainWizardIterator.DOMAIN, "");  //NOI18N
         } else if (selectedType == AddDomainWizardIterator.LOCAL) {
             wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
-            wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,"");
-            wiz.putProperty(AddDomainWizardIterator.DOMAIN,"");
+            wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,"");  //NOI18N
+            wiz.putProperty(AddDomainWizardIterator.DOMAIN, "");  //NOI18N
         } else if (selectedType == AddDomainWizardIterator.PERSONAL) {
             wiz.putProperty(AddDomainWizardIterator.TYPE, selectedType);
-            wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION,"");
-            wiz.putProperty(AddDomainWizardIterator.DOMAIN,"");
+            wiz.putProperty(AddDomainWizardIterator.INSTALL_LOCATION, "");  //NOI18N
+            wiz.putProperty(AddDomainWizardIterator.DOMAIN, "");  //NOI18N
             Profile p =  getAIVPP().getProfile();
             wiz.putProperty(AddDomainWizardIterator.PROFILE,p);
             if (p == Profile.ENTERPRISE) {
@@ -355,7 +355,7 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
     }
     
     private PlatformValidator platformValidator;
-    private String serverVersion = "";
+    private String serverVersion = "";  //NOI18N
     
     public void setPlatformValidator(PlatformValidator pv) {
         platformValidator = pv;

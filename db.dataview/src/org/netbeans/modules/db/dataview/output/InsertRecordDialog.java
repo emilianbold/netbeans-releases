@@ -331,8 +331,10 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
         Connection conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
         Map<Integer, String> typeInfo = Collections.emptyMap();
         try {
-            DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
-            typeInfo = dbMeta.buildDBSpecificDatatypeMap();
+            if(conn != null) {
+                DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
+                typeInfo = dbMeta.buildDBSpecificDatatypeMap();
+            }
         } catch (SQLException ex) {
             // ignore
         }

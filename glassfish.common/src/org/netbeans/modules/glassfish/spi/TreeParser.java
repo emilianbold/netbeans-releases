@@ -342,7 +342,7 @@ public final class TreeParser extends DefaultHandler {
         @Override
         public String toString() {
             boolean comma = false;
-            StringBuffer buf = new StringBuffer(500);
+            StringBuilder buf = new StringBuilder(500);
             buf.append("{ ");
             if(element != null && element.length() > 0) {
                 buf.append(element);

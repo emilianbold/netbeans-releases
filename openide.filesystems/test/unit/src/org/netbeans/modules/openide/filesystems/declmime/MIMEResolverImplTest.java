@@ -184,6 +184,8 @@ public class MIMEResolverImplTest extends NbTestCase {
         assertEquals("build1.xml recognized as Ant script", "text/x-ant+xml", resolve(root.getFileObject("build1", "xml")));
         assertEquals("bogus.xml not recognized as anything", null, resolve(root.getFileObject("bogus", "xml")));
         assertEquals("build2.xml recognized as Ant script", "text/x-ant+xml", resolve(root.getFileObject("build2", "xml")));
+        // see #126496
+        assertEquals("NPE at XMLEntityScanner.skipChar not ignored.", null, resolve(root.getFileObject("126496-skipCharNPE", "xml")));
     }
     
     public void testIllegalXMLEncoding() {

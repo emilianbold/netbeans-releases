@@ -199,6 +199,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
             case SOURCE:
                 cp = cache.get(ClassPathCache.SOURCE);
                 if (cp == null) {
+                    // XXX sources cannot be changed
                     cp = ClassPathFactory.createClassPath(
                             ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory,
                             evaluator, new String[] {PhpProjectProperties.SRC_DIR}));

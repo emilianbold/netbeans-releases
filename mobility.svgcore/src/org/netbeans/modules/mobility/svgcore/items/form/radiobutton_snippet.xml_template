@@ -1,4 +1,4 @@
-<g transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
+<g id="%%FRAME_COMPONENT_ID%%" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
         <rect x="0" y="0" rx="5" ry="5" width="200" height="60" fill="none" stroke="#85a6cf" stroke-width="2"/>
         <g id="%%COMPONENT_ID_1%%" transform="translate(7,5)">
 	    <!-- Metadata information. Please don't edit. -->

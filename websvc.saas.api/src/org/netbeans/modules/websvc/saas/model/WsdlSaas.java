@@ -216,22 +216,6 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         return FileUtil.toFileObject(new File(getWsdlData().getWsdlFile()));
     }
 
-    /**
-     * Either return methods, if filtering methods exists, or return ports.
-     * 
-     * @return list of either all filtered methods or all ports.
-     */
-    public List<Object> getPortsOrMethods() {
-        List<Object> result = new ArrayList<Object>();
-        List<SaasMethod> methods = getMethods();
-        if (methods != null && methods.size() > 0) {
-            result.addAll(methods);
-        } else {
-            result.addAll(getPorts());
-        }
-        return result;
-    }
-
     public List<WsdlSaasPort> getPorts() {
         if (ports == null) {
             ports = new ArrayList<WsdlSaasPort>();
@@ -239,7 +223,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
                 ports.add(new WsdlSaasPort(this, p));
             }
         }
-        return ports;
+        return new ArrayList<WsdlSaasPort>(ports);
     }
 
     @Override

@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 2008 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+  <!-- Lines marked as erroneous: -->
+  <folder name="Editors">
+    <folder name="AnnotationTypes">
+      <file name="org-mevenide-netbeans-project-error.xml" url="error-annotation.xml"/>
+      <folder name="StatusForAnnotationType">
+          <file name="org-mevenide-netbeans-project-error">
+              <attr name="status" stringvalue="error" />
+              <attr name="browseable" boolvalue="true" />
+              <!--attr name="color" stringvalue="0xFF8080" /-->
+          </file>
+      </folder>
+    </folder>
+  </folder>  
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="Maven.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.maven.options.MavenAdvancedOption"/>
+            </file>
+        </folder>
+   </folder>
+  
+    <folder name="Maven2Templates">
+        <file name="profiles.xml" url="profiles.xml">
+            <attr name="template" boolvalue="true"/>
+        </file>
+        <file name="settings.xml" url="settings.xml">
+            <attr name="template" boolvalue="true"/>
+        </file>
+    </folder>
+  
+    <folder name="Templates">
+            
+        <folder name="Project">
+            <folder name="Maven2">
+                <attr name="position" intvalue="513"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
+                <file name="Archetypes">
+                    <attr name="position" intvalue="100"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.createIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/MavenDescription.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/Maven2Icon.gif"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="Existing">
+                    <attr name="position" intvalue="200"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.ExistingWizardIterator.createIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/ExistingDescription.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/Maven2Icon.gif"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>
+        <folder name="Licenses">
+            <file name="license-apache20.txt" url="licenses/apache20-license.txt">
+                <attr name="template" boolvalue="true"/>
+                <!--attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.licenses.Bundle"/-->
+                <attr name="mavenLicenseURL" stringvalue="http://www.apache.org/licenses/LICENSE-2.0.txt"/>
+            </file>
+        </folder>
+        
+    </folder>
+    
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-maven">
+            <folder name="Nodes">
+                <file name="org-netbeans-modules-maven-nodes-SourcesNodeFactory.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="org-netbeans-modules-maven-nodes-OtherRootNodeFactory.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="org-netbeans-modules-maven-nodes-GenSourcesNodeFactory.instance">
+                    <attr name="position" intvalue="300"/>
+                </file>
+                <file name="org-netbeans-modules-maven-nodes-ModulesNodeFactory.instance">
+                    <attr name="position" intvalue="400"/>
+                </file>
+                <file name="org-netbeans-modules-maven-nodes-DependenciesNodeFactory.instance">
+                    <attr name="position" intvalue="500"/>
+                </file>
+                <file name="org-netbeans-modules-maven-nodes-SiteDocsNodeFactory.instance">
+                    <attr name="position" intvalue="600"/>
+                </file>
+                <file name="org-netbeans-modules-maven-nodes-ProjectFilesNodeFactory.instance">
+                    <attr name="position" intvalue="700"/>
+                </file>
+            </folder>    
+            <folder name="Lookup">
+                <file name="org-netbeans-modules-maven-runjar-J2seLookupProvider.instance"/>
+            </folder>    
+            <folder name="Customizer">
+                <file name="org-netbeans-modules-maven-customizer-BasicPanelProvider.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="org-netbeans-modules-maven-customizer-SourcesPanelProvider.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="org-netbeans-modules-maven-configurations-ConfigurationsPanelProvider.instance">
+                    <attr name="position" intvalue="212"/>
+                </file>
+                <file name="org-netbeans-modules-maven-customizer-RunJarPanelProvider.instance">
+                    <attr name="position" intvalue="300"/>
+                </file>
+                <file name="org-netbeans-modules-maven-customizer-ActionMappingsPanelProvider.instance">
+                    <attr name="position" intvalue="400"/>
+                </file>
+            </folder>
+            <folder name="DependenciesActions">
+            </folder>
+            <folder name="DependencyActions">
+            </folder>
+            <folder name="ProjectActions">
+            </folder>
+            <file name="nbactions.xml" url="nbactions.xml"/>
+        </folder>
+    </folder>
+ 
+</filesystem>

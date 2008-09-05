@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.editor.api;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.openide.util.NbBundle;
 
@@ -128,6 +128,11 @@ public final class CodeStyle {
     public int getFormatStatementContinuationIndent() {
         return getOption(EditorOptions.statementContinuationIndent,
                          EditorOptions.statementContinuationIndentDefault);
+    }
+
+    public int getConstructorInitializerListContinuationIndent() {
+        return getOption(EditorOptions.constructorListContinuationIndent,
+                         EditorOptions.constructorListContinuationIndentDefault);
     }
 
     public PreprocessorIndent indentPreprocessorDirectives(){

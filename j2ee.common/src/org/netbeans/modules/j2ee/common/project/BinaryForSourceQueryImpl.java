@@ -139,7 +139,7 @@ public class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementat
         }
         
         public URL[] getRoots() {
-            List<URL> urls = new ArrayList();
+            List<URL> urls = new ArrayList<URL>();
             for (String propName : propNames) {
                 String val = eval.getProperty(propName);
                 if (val != null) {                

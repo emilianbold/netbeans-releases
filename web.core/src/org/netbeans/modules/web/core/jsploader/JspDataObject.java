@@ -69,6 +69,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
+import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -111,7 +112,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     public JspDataObject(FileObject pf, final UniFileLoader l) throws DataObjectExistsException {
         super(pf, l);
-        CookieSet cookies = getCookieSet();
+        getCookieSet().add(BaseJspEditorSupport.class, new CookieSet.Factory() {
+            public <T extends Cookie> T createCookie(Class<T> klass) {
+                return klass.cast(getJspEditorSupport());
+            }
+        });
+        
         initialize();
     }
     
@@ -124,14 +130,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     // [PENDING] Handle this more nicely.
     public org.openide.nodes.CookieSet getCookieSet0() {
         return super.getCookieSet();
-    }
-    
-    @Override
-    public Node.Cookie getCookie(Class type) {
-        if (type.isAssignableFrom(BaseJspEditorSupport.class)) {
-            return getJspEditorSupport();
-        }
-        return super.getCookie(type);
     }
     
     @Override
@@ -426,7 +424,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     }
     
     private void createLookup() {
-        Lookup noEncodingLookup = super.getLookup();
+        Lookup noEncodingLookup = getCookieSet().getLookup();
 
         org.netbeans.spi.queries.FileEncodingQueryImplementation feq = new org.netbeans.spi.queries.FileEncodingQueryImplementation() {
 

@@ -108,6 +108,7 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthenticatio
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.Time;
 import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
+import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -379,22 +380,22 @@ public class Util {
     public static Class getPrimitiveType(String typeName) {
         if (primitiveTypes == null) {
             primitiveTypes = new HashMap<String, Class>();
-            primitiveTypes.put("int", Integer.class);
-            primitiveTypes.put("int[]", Integer[].class);
-            primitiveTypes.put("boolean", Boolean.class);
-            primitiveTypes.put("boolean[]", Boolean[].class);
-            primitiveTypes.put("byte", Byte.class);
-            primitiveTypes.put("byte[]", Byte[].class);
-            primitiveTypes.put("char", Character.class);
-            primitiveTypes.put("char[]", Character[].class);
-            primitiveTypes.put("double", Double.class);
-            primitiveTypes.put("double[]", Double[].class);
-            primitiveTypes.put("float", Float.class);
-            primitiveTypes.put("float[]", Float[].class);
-            primitiveTypes.put("long", Long.class);
-            primitiveTypes.put("long[]", Long[].class);
-            primitiveTypes.put("short", Short.class);
-            primitiveTypes.put("short[]", Short[].class);
+            primitiveTypes.put("int", Integer.TYPE);
+            primitiveTypes.put("int[]", int[].class);
+            primitiveTypes.put("boolean", Boolean.TYPE);
+            primitiveTypes.put("boolean[]", boolean[].class);
+            primitiveTypes.put("byte", Byte.TYPE);
+            primitiveTypes.put("byte[]", byte[].class);
+            primitiveTypes.put("char", Character.TYPE);
+            primitiveTypes.put("char[]", char[].class);
+            primitiveTypes.put("double", Double.TYPE);
+            primitiveTypes.put("double[]", double[].class);
+            primitiveTypes.put("float", Float.TYPE);
+            primitiveTypes.put("float[]", float[].class);
+            primitiveTypes.put("long", Long.TYPE);
+            primitiveTypes.put("long[]", long[].class);
+            primitiveTypes.put("short", Short.TYPE);
+            primitiveTypes.put("short[]", short[].class);
         }
         return primitiveTypes.get(typeName);
     }
@@ -1381,6 +1382,11 @@ public class Util {
     public static List<ParameterInfo> getRestClientMethodParameters(RestClientSaasBean bean) {
         List<ParameterInfo> params = bean.filterParametersByAuth(bean.filterParameters(
                 new ParamFilter[]{ParamFilter.FIXED}));
+        getRestClientPutPostParameters(bean, params);
+        return params;
+    }
+    
+    public static List<ParameterInfo> getRestClientPutPostParameters(RestClientSaasBean bean, List<ParameterInfo> params) {
         HttpMethodType httpMethod = bean.getHttpMethod();
 
         if (httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
@@ -1399,12 +1405,33 @@ public class Util {
                         contentType = String.class;
                     }
                 }
-                if (!bean.findInputRepresentations(bean.getMethod()).isEmpty()) {
-                    params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
-                }
+            }
+            if (hasInputRepresentations(bean) && !isPutPostFormParams(bean)) {
+                params.add(new ParameterInfo(Constants.PUT_POST_CONTENT, contentType));
             }
         }
         return params;
+    }
+
+    public static boolean isPutPostFormParams(RestClientSaasBean bean) {
+        HttpMethodType httpMethod = bean.getHttpMethod();
+        if(httpMethod == HttpMethodType.PUT || httpMethod == HttpMethodType.POST) {
+            List<RepresentationType> reps = bean.findInputRepresentations(bean.getMethod());
+            for(RepresentationType rep: reps) {
+                if (rep.getParam() != null && rep.getParam().size() > 0)
+                    return true;
+            }
+        }
+        return false;
+    }
+    
+    public static boolean hasInputRepresentations(RestClientSaasBean bean) {
+       List<RepresentationType> reps = bean.findInputRepresentations(bean.getMethod());
+       
+       if (reps == null || reps.size() == 0) 
+           return false;
+       
+       return true;
     }
 
     public static Document getDocument(FileObject f) throws IOException {

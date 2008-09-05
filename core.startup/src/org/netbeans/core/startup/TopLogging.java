@@ -162,11 +162,7 @@ public final class TopLogging {
         }
         logger.addHandler(new LookupDel());
 
-        /* TBD:
-        for (Handler h : Lookup.getDefault().lookupAll(Handler.class)) {
-            logger.addHandler(h);
-        }
-         */
+        StartLog.register();
     }
 
     /**
