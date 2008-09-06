@@ -45,6 +45,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -61,6 +62,7 @@ import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.xml.sax.Attributes;
@@ -156,38 +158,37 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                 // that throws an exception with a precise reason for validation failure.
                 // e.g. domain dir not found, domain.xml corrupt, no ports defined, etc.
                 //
-                File installDir = new File(locationStr);
+                File installDir = new File(locationStr).getAbsoluteFile();
                 File glassfishDir = getGlassfishRoot(installDir);
                 File domainDir = getDefaultDomain(glassfishDir);
                 if(!installDir.exists()) {
-                    if(!isLegalFolderName(installDir)) {
+                    if(!isLegalFolder(installDir)) {
                         wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
                                 AddServerLocationPanel.class, "ERR_InstallDirInvalid", locationStr));
                         return false;
-                    } else
-                    if(canCreate(installDir)) {
+                    } else if(canCreate(installDir)) {
                         if(downloadState == AddServerLocationVisualPanel.DownloadState.AVAILABLE) {
                             panel.updateMessageText(NbBundle.getMessage(
-                                    AddServerLocationPanel.class, "LBL_InstallDirWillBeUsed", locationStr));
+                                    AddServerLocationPanel.class, "LBL_InstallDirWillBeUsed", getSanitizedPath(installDir)));
                             wizard.putProperty(PROP_ERROR_MESSAGE, panel.getStatusText());
                             return false;
                         } else {
                             wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                                    AddServerLocationPanel.class, "ERR_InstallDirDoesNotExist", locationStr));
+                                    AddServerLocationPanel.class, "ERR_InstallDirDoesNotExist", getSanitizedPath(installDir)));
                             return false;
                         }
                     } else {
                         wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                                AddServerLocationPanel.class, "ERR_CannotCreate", locationStr));
+                                AddServerLocationPanel.class, "ERR_CannotCreate", getSanitizedPath(installDir)));
                         return false;
                     }
                 } else if(!isValidV3Install(installDir, glassfishDir)) {
                     wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                            AddServerLocationPanel.class, "ERR_InstallationInvalid", locationStr));
+                            AddServerLocationPanel.class, "ERR_InstallationInvalid", getSanitizedPath(installDir)));
                     return false;
                 } else if(!isRegisterableV3Domain(domainDir)) {
                     wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
-                            AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", locationStr));
+                            AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", getSanitizedPath(installDir)));
                 } else {
                     readServerConfiguration(domainDir, wizardIterator);
                     String uri = CommonServerSupport.formatUri(glassfishDir.getAbsolutePath(),
@@ -195,7 +196,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                     if(GlassfishInstanceProvider.getDefault().hasServer(uri)) {
                         wizard.putProperty(PROP_INFO_MESSAGE, NbBundle.getMessage(
                             AddServerLocationPanel.class, "MSG_DefaultDomainExists",
-                            locationStr, GlassfishInstance.DEFAULT_DOMAIN_NAME));
+                            getSanitizedPath(installDir), GlassfishInstance.DEFAULT_DOMAIN_NAME));
                         wizardIterator.setHttpPort(-1); // FIXME this is a hack - disables finish button
                     } else {
                         String statusText = panel.getStatusText();
@@ -223,13 +224,28 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         return true;
     }
 
-    private Pattern ILLEGAL_CHARS = Pattern.compile("\\*|\\?|>|<|\\\"" +
-            (Utilities.isWindows() ? "" : "|\\\\"));
-
-    private boolean isLegalFolderName(File installDir) {
-        return !ILLEGAL_CHARS.matcher(installDir.getName()).find();
+    private static String getSanitizedPath(File dir) {
+        return FileUtil.normalizeFile(dir).getPath();
     }
-    
+
+    // These characters ( ? * : | < > " ) are illegal on Windows (NTFS).
+    // The first four are detected by getCanonicalFile(), but the last 3 are not
+    // so check for them specifically.
+    private static Pattern ILLEGAL_WINDOWS_CHARS = Pattern.compile("<|>|\\\"");
+
+    private static boolean isLegalFolder(File installDir) {
+        return getCanonicalFile(installDir) != null &&
+                (!Utilities.isWindows() || ILLEGAL_WINDOWS_CHARS.matcher(installDir.getPath()).find() == false);
+    }
+
+    private static File getCanonicalFile(File file) {
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException ex) {
+            return null;
+        }
+    }
+
     static boolean canCreate(File dir) {
         if (dir.exists()) {
             return false;
