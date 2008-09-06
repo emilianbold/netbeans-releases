@@ -966,8 +966,7 @@ public class ConfigurationMakefileWriter {
         bw.write("    echo \\\"%_topdir ${NBTOPDIR}\\\" added to ${RPMMACROS}\n"); // NOI18N
         bw.write("    echo \"**********************************************************************************************************\"\n"); // NOI18N
         bw.write("    echo %_topdir ${NBTOPDIR} >> ${RPMMACROS}\n"); // NOI18N
-        bw.write("    mkdir -p ${NBTOPDIR}\n"); // NOI18N
-        bw.write("    touch ${NBTOPDIR}/RPMS\n"); // NOI18N
+        bw.write("    mkdir -p ${NBTOPDIR}/RPMS\n"); // NOI18N
         bw.write("fi  \n"); // NOI18N
         bw.write("\n"); // NOI18N
         
