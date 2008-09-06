@@ -540,10 +540,6 @@ public class ConfigurationMakefileWriter {
             bw.write("\tcd " + IpeUtils.escapeOddCharacters(cwd) + " && " + command + "\n"); // NOI18N
         }
         
-        if (conf.getPackagingConfiguration().getFiles().getValue().size() > 0) {
-            bw.write("\t${RM} -r " + conf.getPackagingConfiguration().getOutputValue() + "\n"); // NOI18N
-        }
-        
         writeSubProjectCleanTargets(conf, bw);
     }
     
