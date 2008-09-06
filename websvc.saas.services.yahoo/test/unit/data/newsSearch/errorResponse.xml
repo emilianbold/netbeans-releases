@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Error xmlns="urn:yahoo:api">
+    <Code>2</Code>
+    <Message> <![CDATA[Missing id parameter.]]>
+    </Message>
+</Error>
+<!-- ws03.search.re2.yahoo.com compressed/chunked Fri Sep  5 13:49:51 PDT 2008 -->
