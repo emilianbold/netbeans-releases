@@ -292,6 +292,12 @@ public class CompletionResolverImpl implements CompletionResolver {
                     }
                     resImpl.fileLocalEnumerators.add((CsmEnumerator) elem);
                     if (isEnough(strPrefix, match)) return true;
+                } if (needVars && CsmKindUtilities.isFunction(elem)) {
+                    if (resImpl.fileLocalFunctions == null) {
+                        resImpl.fileLocalFunctions = new ArrayList<CsmFunction>();
+                    }
+                    resImpl.fileLocalFunctions.add((CsmFunction) elem);
+                    if (isEnough(strPrefix, match)) return true;
                 }
             }
         }
@@ -381,7 +387,10 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (isEnough(strPrefix, match, resImpl.fileLocalMacros)) return true;
         }
         if (needFileLocalFunctions(context, offset)) {
-            resImpl.fileLocalFunctions = getFileLocalFunctions(context, strPrefix, match);
+            if (resImpl.fileLocalFunctions == null) {
+                resImpl.fileLocalFunctions = new ArrayList<CsmFunction>();
+            }
+            resImpl.fileLocalFunctions.addAll(getFileLocalFunctions(context, strPrefix, match));
             if (isEnough(strPrefix, match, resImpl.fileLocalFunctions)) return true;
         }
         // file local variables

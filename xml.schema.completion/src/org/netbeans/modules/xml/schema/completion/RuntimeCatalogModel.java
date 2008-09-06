@@ -85,7 +85,7 @@ public class RuntimeCatalogModel implements CatalogModel{
         InputStream inputStream = null;
         try {
             EntityResolver resolver = UserCatalog.getDefault().getEntityResolver();
-            InputSource src = resolver.resolveEntity(locationURI.toString(), locationURI.toString());
+            InputSource src = resolver.resolveEntity(null, locationURI.toString());
             if(src != null) {
                 inputStream = new URL(src.getSystemId()).openStream();
             } else {

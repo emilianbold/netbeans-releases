@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.websvc.saas.services.flickr.resources;
 
+import com.sun.tools.xjc.XJC2Task;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -66,6 +67,7 @@ import org.xml.sax.SAXException;
 public class FlickrResponseSchemaTest extends NbTestCase {
 
     private static final Logger LOG = Logger.getLogger(FlickrResponseSchemaTest.class.getName());
+    private static String resourceName = "/org/netbeans/modules/websvc/saas/services/flickr/resources/FlickrResponse.xsd"; //NOI18N
     private static Schema schema;
     private File file;
 
@@ -75,7 +77,6 @@ public class FlickrResponseSchemaTest extends NbTestCase {
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
         // load a WXS schema, represented by a Schema instance
-        String resourceName = "/org/netbeans/modules/websvc/saas/services/flickr/resources/FlickrResponse.xsd"; //NOI18N
         Source schemaFile = new StreamSource(FlickrResponseSchemaTest.class.getResourceAsStream(resourceName));
         try {
             schema = factory.newSchema(schemaFile);
@@ -123,6 +124,13 @@ public class FlickrResponseSchemaTest extends NbTestCase {
         }
     }
 
+    public void testCompileSchema() throws IOException {
+        XJC2Task xjc = new XJC2Task();
+        xjc.setDestdir(getWorkDir());
+        xjc.setSchema(FlickrResponseSchemaTest.class.getResource(resourceName).toExternalForm());
+        xjc.execute();
+    }
+
     private static TestSuite createTestSuite(NbTestCase t) {
         TestSuite ts = new NbTestSuite();
         File dataDir = t.getDataDir();
@@ -133,6 +141,7 @@ public class FlickrResponseSchemaTest extends NbTestCase {
                 ts.addTest(new FlickrResponseSchemaTest("validate", f)); //NOI18N
             }
         }
+        ts.addTest(new FlickrResponseSchemaTest("testCompileSchema")); //NOI18N
         return ts;
     }
 }

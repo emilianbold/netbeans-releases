@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.websvc.saas.services.zvents.resources;
 
+import com.sun.tools.xjc.XJC2Task;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -66,6 +67,7 @@ import org.xml.sax.SAXException;
 public class ZventsResponseSchemaTest extends NbTestCase {
 
     private static final Logger LOG = Logger.getLogger(ZventsResponseSchemaTest.class.getName());
+    private static String resourceName = "/org/netbeans/modules/websvc/saas/services/zvents/resources/ZventsResponse.xsd"; //NOI18N
     private static Schema schema;
     private File file;
 
@@ -75,7 +77,6 @@ public class ZventsResponseSchemaTest extends NbTestCase {
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
         // load a WXS schema, represented by a Schema instance
-        String resourceName = "/org/netbeans/modules/websvc/saas/services/zvents/resources/ZventsResponse.xsd"; //NOI18N
         Source schemaFile = new StreamSource(ZventsResponseSchemaTest.class.getResourceAsStream(resourceName));
         try {
             schema = factory.newSchema(schemaFile);
@@ -123,6 +124,13 @@ public class ZventsResponseSchemaTest extends NbTestCase {
         }
     }
 
+    public void testCompileSchema() throws IOException {
+        XJC2Task xjc = new XJC2Task();
+        xjc.setDestdir(getWorkDir());
+        xjc.setSchema(ZventsResponseSchemaTest.class.getResource(resourceName).toExternalForm());
+        xjc.execute();
+    }
+
     private static TestSuite createTestSuite(NbTestCase t) {
         TestSuite ts = new NbTestSuite();
         File dataDir = t.getDataDir();
@@ -133,6 +141,7 @@ public class ZventsResponseSchemaTest extends NbTestCase {
                 ts.addTest(new ZventsResponseSchemaTest("validate", f)); //NOI18N
             }
         }
+        ts.addTest(new ZventsResponseSchemaTest("testCompileSchema")); //NOI18N
         return ts;
     }
 }

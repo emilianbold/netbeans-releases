@@ -54,15 +54,11 @@ import java.util.Set;
 import java.beans.PropertyChangeEvent;
 
 import com.sun.jdi.Bootstrap;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -79,7 +75,6 @@ import org.netbeans.api.debugger.jpda.DebuggerStartException;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -94,7 +89,6 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
-import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -104,9 +98,6 @@ import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
 
@@ -366,30 +357,14 @@ public class JPDAStart extends Task implements Runnable {
                 properties.put ("sourcepath", sourcePath); // NOI18N
                 properties.put ("name", getName ()); // NOI18N
                 properties.put ("jdksources", jdkSourcePath); // NOI18N
+                properties.put ("listeningCP", listeningCP); // NOI18N
+                
                 final ListeningConnector flc = lc;
                 final WeakReference<Session> startedSessionRef[] = new WeakReference[] { new WeakReference<Session>(null) };
-
+                
                 Map<URL, ArtifactsUpdated> listeners = new HashMap<URL, ArtifactsUpdated>();
                 List<Breakpoint> artificialBreakpoints = new LinkedList<Breakpoint>();
                 if (listeningCP != null) {
-                    for (String cp : listeningCP.split(File.pathSeparator)) {
-                        getProject().log("cp=" + cp, Project.MSG_DEBUG);
-                        File f = new File(cp);
-                        f = FileUtil.normalizeFile(f);
-                        URL entry = FileUtil.urlForArchiveOrDir(f);
-
-                        if (entry != null) {
-                            for (FileObject src : SourceForBinaryQuery.findSourceRoots(entry).getRoots()) {
-                                getProject().log("url=" + src.getURL().toString(), Project.MSG_DEBUG);
-                                URL url = src.getURL();
-                                ArtifactsUpdatedImpl l = new ArtifactsUpdatedImpl(startedSessionRef, url);
-
-                                BuildArtifactMapper.addArtifactsUpdatedListener(url, l);
-                                listeners.put(url, l);
-                            }
-                        }
-                    }
-
                     ExceptionBreakpoint b = createCompilationErrorBreakpoint();
                     DebuggerManager.getDebuggerManager ().addBreakpoint (b);
                     artificialBreakpoints.add(b);
@@ -684,8 +659,8 @@ public class JPDAStart extends Task implements Runnable {
         }
         
         @Override
-        public void propertyChange (PropertyChangeEvent e) {
-            if (e.getPropertyName () == JPDADebugger.PROP_STATE) {
+        public void propertyChange (final PropertyChangeEvent e) {
+            if (JPDADebugger.PROP_STATE.equals(e.getPropertyName ())) {
                 int state = ((Integer) e.getNewValue ()).intValue ();
                 if (state == JPDADebugger.STATE_STOPPED) {
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -693,6 +668,7 @@ public class JPDAStart extends Task implements Runnable {
                             if (first != null) {
                                 DebuggerManager.getDebuggerManager().removeBreakpoint(first);
                                 first = null;
+                                ((JPDADebugger) e.getSource()).removePropertyChangeListener(Listener.this);
                             }
                         }
                     });
@@ -766,125 +742,4 @@ public class JPDAStart extends Task implements Runnable {
         }
     }
 
-    private static class ArtifactsUpdatedImpl implements ArtifactsUpdated {
-
-        private final WeakReference<Session> startedSessionRef[];
-        private final RequestProcessor hotFixRP = new RequestProcessor("Java Debugger HotFix", 1);
-        private final URL url;
-
-        public ArtifactsUpdatedImpl(WeakReference<Session> startedSessionRef[], URL url) {
-            this.startedSessionRef = startedSessionRef;
-            this.url = url;
-        }
-
-        public void artifactsUpdated(Iterable<File> artifacts) {
-            String error = null;
-            Session s;
-            synchronized (startedSessionRef) {
-                s = startedSessionRef[0].get();
-            }
-            if (s == null) {
-                return ; // Session not yet started, or gone.
-            }
-            final JPDADebugger debugger = s.lookupFirst(null, JPDADebugger.class);
-            if (debugger == null) {
-                error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_NoJPDADebugger");
-            } else if (!debugger.canFixClasses()) {
-                error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_CanNotFix");
-            } else if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
-                error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_NoDebug");
-            }
-
-            if (error == null) {
-                final Map map = new HashMap();
-
-                for (File f : artifacts) {
-                    FileObject fo = FileUtil.toFileObject(f);
-                    if (fo != null) {
-                        String className = fileToClassName(fo);
-                        InputStream is = null;
-                        try {
-                            is = fo.getInputStream();
-                            long fileSize = fo.getSize();
-                            byte[] bytecode = new byte[(int) fileSize];
-                            is.read(bytecode);
-                            // remove ".class" from and use dots for for separator
-                            map.put(
-                                    className,
-                                    bytecode);
-                            System.out.println(" " + className);
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } finally {
-                            if (is != null) {
-                                try {
-                                    is.close();
-                                } catch (IOException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (map.size() == 0) {
-                    System.out.println(" No class to reload");
-                    return;
-                }
-
-                hotFixRP.post(new Runnable() {
-                    public void run() {
-                        String error = null;
-                        try {
-                            debugger.fixClasses(map);
-                        } catch (UnsupportedOperationException uoex) {
-                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixUnsupported");
-                            error = MessageFormat.format(error, uoex.getLocalizedMessage());
-                        } catch (NoClassDefFoundError ncdfex) {
-                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixMismatch");
-                            error = MessageFormat.format(error, ncdfex.getLocalizedMessage());
-                        } catch (VerifyError ver) {
-                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixVerifierProblems");
-                            error = MessageFormat.format(error, ver.getLocalizedMessage());
-                        } catch (UnsupportedClassVersionError ucver) {
-                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixUnsupportedVersion");
-                            error = MessageFormat.format(error, ucver.getLocalizedMessage());
-                        } catch (ClassFormatError cfer) {
-                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixNotValid");
-                            error = MessageFormat.format(error, cfer.getLocalizedMessage());
-                        } catch (ClassCircularityError ccer) {
-                            error = NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixCircularity");
-                            error = MessageFormat.format(error, ccer.getLocalizedMessage());
-                        } catch (VMDisconnectedException vmdisc) {
-                            BuildArtifactMapper.removeArtifactsUpdatedListener(url, ArtifactsUpdatedImpl.this);
-                        }
-                        if (error != null) {
-                            notifyError(error);
-                        } else {
-                            StatusDisplayer.getDefault().setStatusText(
-                                    NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_FixSuccess"));
-                        }
-                    }
-                });
-            } else {
-                BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
-            }
-            
-            if (error != null) {
-                notifyError(error);
-            }
-        }
-
-        private void notifyError(String error) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(error, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notifyLater(nd);
-            StatusDisplayer.getDefault().setStatusText(error);
-        }
-    }
-
-    private static String fileToClassName (FileObject fo) {
-        ClassPath cp = ClassPath.getClassPath (fo, ClassPath.EXECUTE);
-//        FileObject root = cp.findOwnerRoot (fo);
-        return cp.getResourceName (fo, '.', false);
-    }
 }

@@ -1045,6 +1045,7 @@
 
     // 7. run until
     function runUntil(url, lineno) {
+        lineno = parseInt(lineno);
         var src;
 
         if (currentFirebugContext) {

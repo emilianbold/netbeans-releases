@@ -188,7 +188,7 @@ public class EntityClassInfo {
                 fieldInfo.addAnnotation(annotation.toString());
             }
              
-            if (!fieldInfo.isPersistent()) continue;
+            if (!fieldInfo.isPersistent() || !fieldInfo.hasPersistenceAnnotation()) continue;
                 
             fieldInfos.add(fieldInfo);
             String name = method.getSimpleName().toString();

@@ -229,8 +229,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             EntityResourceModelBuilder builder = new EntityResourceModelBuilder(project, entities);
             EntityResourceBeanModel model = builder.build(entities);
 
-            PersistenceHelper.unsetExcludeEnlistedClasses(project);
-            PersistenceUnit pu = PersistenceHelper.getPersistenceUnit(project);
+            PersistenceUnit pu = new PersistenceHelper(project).getPersistenceUnit();
 
             RestUtils.ensureRestDevelopmentReady(project);
             FileObject targetFolder = Templates.getTargetFolder(wizard);

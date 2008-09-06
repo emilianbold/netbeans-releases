@@ -43,9 +43,8 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
-import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
@@ -144,23 +143,7 @@ public class Resolver3 implements Resolver {
     
     private CsmClassifier findClassifier(CharSequence qualifiedName) {
         // try to find visible classifier
-        AtomicBoolean visible = new AtomicBoolean(false);
-        CsmClassifier result = findVisibleDeclaration(project, qualifiedName, visible);
-        if (visible.get()) {
-            assert result != null : "how can be visible true without result?";
-            return result;
-        }
-        // continue in libs
-        for (Iterator iter = project.getLibraries().iterator(); iter.hasNext();) {
-            CsmProject lib = (CsmProject) iter.next();
-            CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, visible);
-            if (visible.get()) {
-                return (CsmClassifier) visibleDecl;
-            }
-            if (result == null) {
-                result = visibleDecl;
-            }
-        }
+        CsmClassifier result = CsmClassifierResolver.getDefault().findClassifierUsedInFile(qualifiedName, file, true);
         return result;
     }
     
@@ -299,21 +282,6 @@ public class Resolver3 implements Resolver {
             }
         }
         return false;
-    }
-
-    private CsmClassifier findVisibleDeclaration(CsmProject project, CharSequence uniqueName, AtomicBoolean visible) {
-        Collection<CsmClassifier> decls = project.findClassifiers(uniqueName);
-        CsmClassifier first = null;
-        for (CsmClassifier decl : decls) {
-            if (first == null) {
-                first = decl;
-            }
-            if (CsmIncludeResolver.getDefault().isObjectVisible(file, decl)) {
-                visible.set(true);
-                return (CsmClassifier) decl;
-            }
-        }
-        return first;
     }
     
     private void traceRecursion(){
