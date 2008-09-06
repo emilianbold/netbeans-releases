@@ -77,6 +77,7 @@ import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
 import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.diff.PatchAction;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.openide.util.ImageUtilities;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -207,6 +208,10 @@ public class Annotator {
      * also return the original name String
      */
     public String annotateNameHtml(String name, FileInformation info, File file) {
+        if(!SvnClientFactory.isClientAvailable()) {
+            Subversion.LOG.fine(" skipping annotateNameHtml due to missing client");
+            return name;
+        }
         name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
@@ -422,6 +427,10 @@ public class Annotator {
     }
 
     public String annotateNameHtml(String name, VCSContext context, int includeStatus) {
+        if(!SvnClientFactory.isClientAvailable()) {
+            Subversion.LOG.fine(" skipping annotateNameHtml due to missing client");
+            return name;
+        }
         FileInformation mostImportantInfo = null;
         File mostImportantFile = null;
         boolean folderAnnotation = false;
@@ -581,6 +590,10 @@ public class Annotator {
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
 
     public Image annotateIcon(Image icon, VCSContext context, int includeStatus) {
+        if(!SvnClientFactory.isClientAvailable()) {
+            Subversion.LOG.fine(" skipping annotateIcon due to missing client");
+            return null;
+        }
         boolean folderAnnotation = false;
         for (File file : context.getRootFiles()) {
             if (file.isDirectory()) {

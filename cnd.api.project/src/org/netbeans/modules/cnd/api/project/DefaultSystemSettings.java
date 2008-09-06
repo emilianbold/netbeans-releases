@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,61 +31,66 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.model.services;
+package org.netbeans.modules.cnd.api.project;
 
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import java.util.Collections;
+import java.util.List;
 import org.openide.util.Lookup;
 
 /**
- *
- * @author Alexander Simon
+ * This service provides defualt include path and macros.
+ * @author Leonid Mesnik
  */
-public abstract class CsmTypedefResolver {
-    private static CsmTypedefResolver DEFAULT = new Default();
-
-    public abstract CsmClassifier getOriginalClassifier(CsmClassifier orig);
-    
-    protected CsmTypedefResolver() {
-    }
-    
-    /**
-     * Static method to obtain the CsmTypedefResolver implementation.
-     * @return the selector
+public abstract class DefaultSystemSettings {
+    /** A dummy provider that never returns any results.
      */
-    public static synchronized CsmTypedefResolver getDefault() {
-        return DEFAULT;
-    }
-
+    private static final DefaultSystemSettings EMPTY = new Empty();
+    
+    /** default instance */
+    private static DefaultSystemSettings defaultProvider;
+    
+    
     /**
-     * Implementation of the default resolver
-     */  
-    private static final class Default extends CsmTypedefResolver {
-        private final Lookup.Result<CsmTypedefResolver> res;
+     * Static method to obtain the provider.
+     * @return the provider
+     */
+    public static synchronized DefaultSystemSettings getDefault() {
+        if (defaultProvider != null) {
+            return defaultProvider;
+        }
+        defaultProvider = Lookup.getDefault().lookup(DefaultSystemSettings.class);
+        return defaultProvider == null ? EMPTY : defaultProvider;
+    }
+    
+    /**
+     * Obtain a list of default system includes for given language.
+     * Return empty list if language is neither C nor C++ or no default compilers were found.
+     * @return Unmodifiable list of strings or empty list.
+     */
+    public abstract List<String> getSystemIncludes(NativeFileItem.Language language);
+    
+    /**
+     * Obtain a list of default system macros for given language. 
+     * Return empty list if language is neither C nor C++ or no default compilers were found.
+     * @return Unmodifiable list of strings or empty list.
+     */
+    public abstract List<String> getSystemMacros(NativeFileItem.Language language);
 
-        Default() {
-            res = Lookup.getDefault().lookupResult(CsmTypedefResolver.class);
-        }
+    private static final class Empty extends DefaultSystemSettings {
 
-        private CsmTypedefResolver getService(){
-            for (CsmTypedefResolver service : res.allInstances()) {
-                return service;
-            }
-            return null;
+        public List<String> getSystemIncludes(NativeFileItem.Language language) {
+            return Collections.emptyList();
         }
-        
-        @Override
-        public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
-            CsmTypedefResolver service = getService();
-            if (service != null) {
-                return service.getOriginalClassifier(orig);
-            }
-            return null;
+      
+        public List<String> getSystemMacros(NativeFileItem.Language language) {
+            return Collections.emptyList();
         }
+      
     }
 }

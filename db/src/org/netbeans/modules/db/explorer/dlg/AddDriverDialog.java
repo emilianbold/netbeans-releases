@@ -391,7 +391,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void findButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findButtonActionPerformed
-        findDriverClass();
+        findDriverClassByInspection();
     }//GEN-LAST:event_findButtonActionPerformed
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
@@ -463,6 +463,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
             clazz = jarloader.loadClass(className);
         } catch ( Throwable t ) {
             LOGGER.log(Level.FINE, null, t);
+            
             LOGGER.log(Level.INFO, 
                  "Got an exception trying to load class " +
                  className + " during search for JDBC drivers in " +
@@ -490,8 +491,42 @@ public class AddDriverDialog extends javax.swing.JPanel {
     public String getDriverClass() {
         return (String) drvClassComboBox.getSelectedItem();
     }
-    
+
     private void findDriverClass() {
+        JarFile jf;
+        String[] drivers = (String[]) DriverListUtil.getDrivers().toArray(new String[DriverListUtil.getDrivers().size()]);
+        
+        drvClassComboBox.removeAllItems();
+        for (int i = 0; i < drvs.size(); i++) {
+            try {
+                URL url = (URL)drvs.get(i);
+
+                if ("nbinst".equals(url.getProtocol())) { // NOI18N
+                    // try to get a file: URL for the nbinst: URL
+                    FileObject fo = URLMapper.findFileObject(url);
+                    if (fo != null) {
+                        URL localURL = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                        if (localURL != null) {
+                            url = localURL;
+                        }
+                    }
+                }
+
+                File file = new File(new URI(url.toExternalForm()));
+                jf = new JarFile(file);
+                for (int j = 0; j < drivers.length; j++)
+                    if (jf.getEntry(drivers[j].replace('.', '/') + ".class") != null) //NOI18N
+                        addDriverClass(drivers[j]);
+                jf.close();
+            } catch (IOException exc) {
+                //PENDING
+            } catch (URISyntaxException e) {
+                //PENDING
+            }
+        }
+    }
+    
+    private void findDriverClassByInspection() {
         drvClassComboBox.removeAllItems();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {

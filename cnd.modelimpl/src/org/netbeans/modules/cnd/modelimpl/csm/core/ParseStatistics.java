@@ -167,8 +167,11 @@ public class ParseStatistics {
     }
 
     private void printResults(CsmUID<CsmProject> projectUID, PrintWriter out) {
-        out.printf("\nPARSING STATISTICS FOR %s\n", UIDUtilities.getProjectName(projectUID)); //NOI18N
         List<Map.Entry<CsmUID<CsmFile>, Entry>> entries = new ArrayList<Map.Entry<CsmUID<CsmFile>, Entry>>(getProjectMap(projectUID).entrySet());
+        if (entries.isEmpty()) {
+            return;
+        }
+        out.printf("\nPARSING STATISTICS FOR %s\n", UIDUtilities.getProjectName(projectUID)); //NOI18N
         Collections.sort(entries, new Comparator<Map.Entry<CsmUID<CsmFile>, Entry>>() {
             public int compare(Map.Entry<CsmUID<CsmFile>, Entry> e1, Map.Entry<CsmUID<CsmFile>, Entry> e2) {
                 return e1.getValue().cnt - e2.getValue().cnt;

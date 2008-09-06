@@ -952,7 +952,17 @@ public class ConfigurationMakefileWriter {
         for (InfoElement elem : infoList) {
             if (elem.getName().startsWith("%")) { // NOI18N
                 bw.write("echo \'" + elem.getName() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
-                bw.write("echo \'" + elem.getValue() + "\' >> ${SPEC_FILE}\n"); // NOI18N 
+                String value = elem.getValue();
+                int i = 0;
+                int j = value.indexOf("\\n"); // NOI18N 
+                while (j >= 0) {
+                    bw.write("echo \'" + value.substring(i, j) + "\' >> ${SPEC_FILE}\n"); // NOI18N 
+                    i = j+2;
+                    j = value.indexOf("\\n", i); // NOI18N 
+                }
+                if (i < value.length()) {
+                    bw.write("echo \'" + value.substring(i) + "\' >> ${SPEC_FILE}\n"); // NOI18N 
+                }
                 bw.write("echo " + " >> ${SPEC_FILE}\n"); // NOI18N 
             }
             else {
@@ -981,8 +991,11 @@ public class ConfigurationMakefileWriter {
         bw.write("rpmbuild -bb ${SPEC_FILE} > ${LOG_FILE}\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
         bw.write("cat ${LOG_FILE}\n"); // NOI18N
-        bw.write("RPM_FILE=`cat $LOG_FILE | grep Wrote | awk -F: '{ print $2 }'`\n"); // NOI18N
-        bw.write("mv ${RPM_FILE} " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
+        bw.write("RPM_PATH=`cat $LOG_FILE | grep .rpm | tail -1 |awk -F: '{ print $2 }'`\n"); // NOI18N
+        bw.write("RPM_NAME=`basename ${RPM_PATH}`\n"); // NOI18N
+        bw.write("mv ${RPM_PATH} " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+        bw.write("checkReturnCode\n"); // NOI18N
+        bw.write("echo RPM Package: " + packagingConfiguration.getOutputValue() + "/" + "${RPM_NAME}" + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Cleanup\n"); // NOI18N

@@ -129,7 +129,9 @@ public final class ConnectionWidgetLayout implements Layout {
             if (currentlyResolving == null)
                 continue;
             Point point;
-            if (placement.isPercentage) {
+            if (empty) {
+                point = new Point();
+            } else if (placement.isPercentage) {
                 float percentage = placement.placementInPercentage;
                 if (percentage <= 0.0)
                     point = connectionWidget.getFirstControlPoint ();
