@@ -92,14 +92,25 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
         assertEquals("Unexpected parse count for " + fileName, expectedParseCount, actualParseCount);
     }
     
-    private void performTrivialTest(String fileToParse, String headerToCheck, int expectedParseCount, boolean reparse) 
+    private void performTrivialTest(String fileToParse, String headerToCheck, int expectedParseCount, boolean reparse)
+        throws Exception {
+        performTrivialTest(new String[] { fileToParse }, fileToParse, headerToCheck, expectedParseCount, reparse);
+    }
+
+    private void performTrivialTest(String[] filesToParse, String goldensNameBase, 
+            String headerToCheck, int expectedParseCount, boolean reparse) 
             throws Exception {
-        performTest(fileToParse);
+        performTest(filesToParse, goldensNameBase);
         assertParseCount(headerToCheck, expectedParseCount);
         if (reparse) {
             ParseStatistics.getInstance().clear();
-            FileImpl fileImpl = findFile(fileToParse);
-            DeepReparsingUtils.reparseOnEdit(fileImpl, getProject(), true);
+            ProjectBase project = getProject();
+            //for (FileImpl fileImpl : project.getAllFileImpls()) {
+            for (int i = 0; i < filesToParse.length; i++) {
+                FileImpl fileImpl = findFile(filesToParse[i]);
+                fileImpl.markReparseNeeded(false);
+                DeepReparsingUtils.reparseOnEdit(fileImpl, project, true);
+            }
             getProject().waitParse();
             assertParseCount(headerToCheck, expectedParseCount);
         }
@@ -151,6 +162,30 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
 
     public void testSimpleReparse_1f() throws Exception {
         performTrivialTest("smart_headers_simple_1f.cc", "smart_headers_simple_1.h", 1, true);
+    }
+
+    public void testSimple_1_multy() throws Exception {
+        performTrivialTest(new String[] {
+                "smart_headers_simple_1a.cc",
+                "smart_headers_simple_1b.cc",
+                //"smart_headers_simple_1c.cc",
+                "smart_headers_simple_1d.cc",
+                "smart_headers_simple_1e.cc",
+                "smart_headers_simple_1f.cc"
+            }, 
+            "smart_headers_simple_1_multy", "smart_headers_simple_1.h", 4, false);
+    }
+
+    public void testSimpleReparse_1_multy() throws Exception {
+        performTrivialTest(new String[] {
+                "smart_headers_simple_1a.cc",
+                "smart_headers_simple_1b.cc",
+                //"smart_headers_simple_1c.cc",
+                "smart_headers_simple_1d.cc",
+                "smart_headers_simple_1e.cc",
+                "smart_headers_simple_1f.cc"
+            }, 
+            "smart_headers_simple_1_multy", "smart_headers_simple_1.h", 4, true);
     }
 
     /////////////////////////////////////////////////////////////////////

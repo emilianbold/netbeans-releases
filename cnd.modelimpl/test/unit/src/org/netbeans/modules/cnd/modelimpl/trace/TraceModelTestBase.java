@@ -187,6 +187,16 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         performTest(new String[]{flags, testFile.getAbsolutePath()}, goldenDataFileName, goldenErrFileName, params);
     }
 
+    protected void performTest(String[] source, String goldenNameBase, Object... params) throws Exception {
+        String[] absFiles = new String[source.length];
+        for (int i = 0; i < source.length; i++) {
+            absFiles[i] = getDataFile(source[i]).getAbsolutePath();            
+        }
+        String goldenDataFileName = goldenNameBase + ".dat";
+        String goldenErrFileName = goldenNameBase + ".err";
+        performTest(absFiles, goldenDataFileName, goldenErrFileName, params);
+    }
+
     protected void performTest(String source, String goldenDataFileName, String goldenErrFileName, Object... params) throws Exception {
         File testFile = getDataFile(source);
         performTest(new String[]{testFile.getAbsolutePath()}, goldenDataFileName, goldenErrFileName, params);
