@@ -295,7 +295,6 @@
    <mapID target="objects.object-types" url="files/files_unknown.html" /> 
      
    <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
-   <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="configure/diff_textual.html" />
 <!--possibly remap the following target to configure_options.html :-->
 
    <!-- Diff: options window help ids -->
