@@ -676,7 +676,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
             @Override
             public void execute() throws Exception {
                 try {
-                    runProcess(getStartPath(), getStartArgs(), true, Utils.getMessage("LBL_StartOutputTab"));
+                    runProcess(getStartPath(), getStartArgs(), true, Utils.getMessage("LBL_MySQLOutputTab"));
                 } finally {
                     refreshDatabaseList();
                 }
@@ -692,7 +692,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
         new DatabaseCommand() {
             @Override
             public void execute() throws Exception {
-                runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_AdminOutputTab"));
+                runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_MySQLOutputTab"));
 
                 try {
                     connProcessor.validateConnection();
@@ -731,7 +731,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
         } else if ( Utils.isValidExecutable(adminCommand, false)) {
             runProcess(adminCommand, getAdminArgs(),
                     true, Utils.getMessage(
-                        "LBL_AdminOutputTab"));
+                        "LBL_MySQLOutputTab"));
         } else {
             throw new DatabaseException(NbBundle.getMessage(
                     DatabaseServer.class,
