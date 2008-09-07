@@ -51,6 +51,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ146392() throws Exception {
+        // IZ#146392: regression: some declaration statements are not rendered any more
+        performTest("iz146392.cc", 4, 25, "iz146392.cc", 4, 22);
+        performTest("iz146392.cc", 6, 15, "iz146392.cc", 4, 22);
+    }
+
     public void testIZ139600() throws Exception {
         performTest("main.c", 35, 15, "main.c", 35, 5); // funPtr in int (*funPtr)();
     }
