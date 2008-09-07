@@ -689,31 +689,51 @@ public class MySQLDatabaseServer implements DatabaseServer {
             throw new DatabaseException(Utils.getMessage("MSG_InvalidStopCommand"));
         }
 
+        final DatabaseServer server = this;
+
         new DatabaseCommand() {
             @Override
             public void execute() throws Exception {
-                runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_MySQLOutputTab"));
+                ProgressHandle handle = ProgressHandleFactory.createHandle(Utils.getMessage("LBL_StoppingMySQLServer"));
+                handle.start();
+                handle.switchToIndeterminate();
 
-                // See if the connection is still active.  Try 5 times with a 
-                // 1 second wait and then assume something went wrong if it's 
-                // still active after that.
-                int tries = 0;
-                while (tries <= 4) {
-                    tries++;
+                try {
+                    runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_MySQLOutputTab"));
 
-                    try {
-                        connProcessor.validateConnection();
-                    } catch (DatabaseException dbe) {
-                        LOGGER.log(Level.FINE, null, dbe);
-                        disconnect();
-                        refreshDatabaseList();
-                        return;
+                    // See if the connection is still active.  Try 5 times with a
+                    // 1 second wait and then assume something went wrong if it's
+                    // still active after that.
+                    int tries = 0;
+                    while (tries <= 4) {
+                        tries++;
+
+                        try {
+                            connProcessor.validateConnection();
+                        } catch (DatabaseException dbe) {
+                            LOGGER.log(Level.FINE, null, dbe);
+                            disconnect();
+                            refreshDatabaseList();
+                            return;
+                        }
+
+                        Thread.sleep(1000);
                     }
+                    boolean editProps = Utils.displayYesNoDialog(NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_ServerStillRunning"));
 
-                    Thread.sleep(1000);
+                    if (editProps) {
+                        Mutex.EVENT.postReadRequest(new Runnable() {
 
+                            public void run() {
+                                PropertiesDialog dlg = new PropertiesDialog(server);
+                                dlg.displayDialog(PropertiesDialog.Tab.ADMIN);
+                            }
+
+                        });
+                    }
+                } finally {
+                    handle.finish();
                 }
-                    Utils.displayErrorMessage(NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_ServerStillRunning"));
                 
             }
         }.postCommand();
