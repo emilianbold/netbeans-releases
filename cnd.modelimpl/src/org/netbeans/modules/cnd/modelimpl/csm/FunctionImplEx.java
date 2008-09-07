@@ -182,7 +182,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 for (CsmMember member : cls.getMembers()) {
                     if (member.isStatic() && member.getName().equals(getName())) {
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
-                        ((FileImpl) getContainingFile()).getProjectImpl().registerDeclaration(var);
+                        ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(var);
                         ((FileImpl) getContainingFile()).addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return;
@@ -193,7 +193,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 for (CsmDeclaration decl : ns.getDeclarations()) {
                     if (CsmKindUtilities.isExternVariable(decl) && decl.getName().equals(getName())) {
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
-                        ((FileImpl) getContainingFile()).getProjectImpl().registerDeclaration(var);
+                        ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(var);
                         ((FileImpl) getContainingFile()).addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return;
@@ -215,7 +215,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         } else {
             CharSequence newQname = QualifiedNameCache.getManager().getString(findQualifiedName());
             if (!newQname.equals(qualifiedName)) {
-                ProjectBase aProject = ((FileImpl) getContainingFile()).getProjectImpl();
+                ProjectBase aProject = ((FileImpl) getContainingFile()).getProjectImpl(true);
                 aProject.unregisterDeclaration(this);
                 this.cleanUID();
                 qualifiedName = newQname;

@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.SoftReference;
 import java.util.*;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;

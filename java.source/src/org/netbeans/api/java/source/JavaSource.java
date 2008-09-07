@@ -1050,15 +1050,20 @@ public final class JavaSource {
             }
         }
         synchronized (INTERNAL_LOCK) {
-            toRemove.add (task);
+            boolean found = false;
             Collection<Request> rqs = finishedRequests.get(this);
             if (rqs != null) {
                 for (Iterator<Request> it = rqs.iterator(); it.hasNext(); ) {
                     Request rq = it.next();
                     if (rq.task == task) {
                         it.remove();
+                        found = true;
+                        break;
                     }
                 }
+            }
+            if (!found) {
+                toRemove.add (task);
             }
         }
     }
@@ -2037,7 +2042,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         if (js.files.size() == 1) {
             fo = js.files.iterator().next();
         }
-        if (fo != null) {
+        if (!js.isClassFile() && fo != null) {
             final ClassPath scp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
             if (scp != js.classpathInfo.getClassPath(PathKind.SOURCE)) {
                 //Revalidate

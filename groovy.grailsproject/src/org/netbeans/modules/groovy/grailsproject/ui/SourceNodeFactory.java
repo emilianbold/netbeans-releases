@@ -47,17 +47,16 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
-import org.netbeans.modules.groovy.grailsproject.GrailsSources;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 
@@ -99,7 +98,7 @@ public class SourceNodeFactory implements NodeFactory {
 
             for (SourceGroup sourceGroup : sourceGroups) {
                 if (sourceGroup.getRootFolder() != null) {
-                    result.add(new SourceGroupKey(sourceGroup));
+                    result.add(new SourceGroupKey(sourceGroup, projectDir));
                 }
             }
             
@@ -147,10 +146,12 @@ public class SourceNodeFactory implements NodeFactory {
 
         public final SourceGroup group;
         public final FileObject fileObject;
+        public final FileObject projectDir;
 
-        SourceGroupKey(SourceGroup group) {
+        SourceGroupKey(SourceGroup group, FileObject projectDir) {
             this.group = group;
             this.fileObject = group.getRootFolder();
+            this.projectDir = projectDir;
         }
 
         public int hashCode() {
@@ -159,8 +160,9 @@ public class SourceNodeFactory implements NodeFactory {
 
 
         public int compareTo(SourceGroupKey o) {
-            return group.getDisplayName().compareTo(o.group.getDisplayName());
-
+            String relativePath1 = FileUtil.getRelativePath(projectDir, fileObject);
+            String relativePath2 = FileUtil.getRelativePath(projectDir, o.fileObject);
+            return relativePath1.compareTo(relativePath2);
         }
 
         public boolean equals(Object obj) {

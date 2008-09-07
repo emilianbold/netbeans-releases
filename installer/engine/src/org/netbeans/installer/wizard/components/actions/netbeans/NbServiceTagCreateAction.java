@@ -336,6 +336,19 @@ public class NbServiceTagCreateAction extends WizardAction {
         } catch (IOException e) {
             LogManager.log(e);
         }
+        if (System.getProperty("java.version").startsWith("1.5")) {
+            //Issue #142607 Wrong installer behaviour after uninstalling bundled jdk
+            File jdkHome = new File(System.getProperty("java.home")).getParentFile();
+            LogManager.log("... jdkhome = " + jdkHome);
+            LogManager.log("... removing ST files that do were not created by JDK installer");
+            new File(jdkHome, "jre/lib/servicetag/registration.xml").delete();
+            new File(jdkHome, "jre/lib/servicetag").delete();
+            for (File f : jdkHome.listFiles()) {
+                if (f.getName().matches("register(_[a-zA-Z]+)*\\.html")) {
+                    f.delete();
+                }
+            }
+        }
         LogManager.log("... JDK ST created");
     }
 

@@ -2508,6 +2508,17 @@ public class CasualDiff {
  
         if (oldT == newT)
             return elementBounds[0];
+
+        if (newT == null) {
+            tokenSequence.move(elementBounds[1]);
+            if (!tokenSequence.moveNext()) {
+                return elementBounds[1];
+            }
+            while (tokenSequence.token().id() == JavaTokenId.WHITESPACE && tokenSequence.moveNext())
+                ;
+            return tokenSequence.offset();
+        }
+
         diffPrecedingComments(oldT, newT);
         int retVal = -1;
 

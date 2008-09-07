@@ -78,7 +78,6 @@ import org.openide.util.actions.SystemAction;
 public final class JSFPopupAction extends SystemAction implements Presenter.Popup {
     
     private ArrayList actions = null;
-    static private String END_LINE = System.getProperty("line.separator");  //NOI18N
     protected final static int MANAGED_BEAN_TYPE = 1;
     protected final static int NAVIGATION_RULE_TYPE = 2;
     
@@ -143,7 +142,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     if (dialogPanel.getManagedBeanDescription() != null &&
                             dialogPanel.getManagedBeanDescription().trim().length() > 0){
                         Description description = facesConfig.getModel().getFactory().createDescription();
-                        description.setValue(END_LINE + dialogPanel.getManagedBeanDescription() + END_LINE);
+                        description.setValue(dialogPanel.getManagedBeanDescription());
                         bean.addDescription(description);
                     }
                     facesConfig.getModel().startTransaction();
@@ -182,7 +181,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     String descriptionText = dialogPanel.getDescription();
                     if (descriptionText != null && descriptionText.trim().length() > 0){
                         Description description = facesConfig.getModel().getFactory().createDescription();
-                        description.setValue(END_LINE + descriptionText + END_LINE);
+                        description.setValue(descriptionText);
                         rule.addDescription(description);
                     }
                     if (dialogPanel.getFromView() != null && dialogPanel.getFromView().trim().length() > 0){
@@ -244,7 +243,7 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
                     nCase.setToViewId(dialogPanel.getToView());
                     if(dialogPanel.getDescription() != null && !dialogPanel.getDescription().equals("")) {   //NOI18N
                         Description description = nCase.getModel().getFactory().createDescription();
-                        description.setValue(END_LINE + dialogPanel.getDescription() + END_LINE);
+                        description.setValue(dialogPanel.getDescription());
                         nCase.addDescription(description);
                     }
                     facesConfig.getModel().startTransaction();

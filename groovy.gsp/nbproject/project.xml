@@ -107,7 +107,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
+                        <release-version>2</release-version>
                         <specification-version>1.0.1</specification-version>
                     </run-dependency>
                 </dependency>
@@ -351,11 +351,7 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.spellchecker.bindings.ruby</friend>
-                <package>org.netbeans.modules.groovy.gsp.editor.completion</package>
-                <package>org.netbeans.modules.groovy.gsp.lexer.api</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

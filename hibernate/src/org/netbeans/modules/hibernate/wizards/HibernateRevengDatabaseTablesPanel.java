@@ -390,7 +390,7 @@ public class HibernateRevengDatabaseTablesPanel extends javax.swing.JPanel {
 
         tableClosureCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(tableClosureCheckBox, org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_IncludeRelatedTables")); // NOI18N
-        tableClosureCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "HibernateRevengDatabaseTablesPanel_IncludeRelatedTables")); // NOI18N
+        tableClosureCheckBox.setToolTipText(org.openide.util.NbBundle.getMessage(HibernateRevengDatabaseTablesPanel.class, "TXT_HibernateRevengDatabaseTablesPanel_IncludeRelatedTables")); // NOI18N
         tableClosureCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         tableClosureCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         tableClosureCheckBox.addItemListener(new java.awt.event.ItemListener() {

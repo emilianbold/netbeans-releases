@@ -50,6 +50,7 @@ public class SVGComponentsSupport {
         public static final String ID_PREFIX_COMBOBOX = "combobox"; //NOI28N
         public static final String ID_PREFIX_LABEL = "label"; //NOI18N
         public static final String ID_PREFIX_LIST = "list"; //NOI18N
+        public static final String ID_PREFIX_RADIOBUTTON_FRAME = "radiobuttonframe"; //NOI18N
         public static final String ID_PREFIX_RADIOBUTTON    = "radiobutton"; //NOI18N
         public static final String ID_PREFIX_SLIDER = "slider"; //NOI18N
         public static final String ID_PREFIX_SPINNER  = "spinner"; //NOI18N

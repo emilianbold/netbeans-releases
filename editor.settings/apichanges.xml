@@ -104,6 +104,19 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Adding.javadoc.popup.next.to.cc">
+            <summary>Adding SimpleValueNames.JAVADOC_POPUP_NEXT_TO_CC</summary>
+            <version major="1" minor="22"/>
+            <date day="28" month="8" year="2008"/>
+            <author login="msauer"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no"/>
+            <description>
+            <p>
+                Adding new constant <code>SimpleValueNames.JAVADOC_POPUP_NEXT_TO_CC</code>.
+            </p>
+            </description>
+        </change>
+
         <change id="Adding.thick.line.caret">
             <summary>Adding SimpleValueNames.THICK_CARET_WIDTH</summary>
             <version major="1" minor="21"/>

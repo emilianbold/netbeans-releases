@@ -94,7 +94,8 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
     public void addAliases(List<String> aliases, String prefix, final boolean quote, final int substitutionOffset) {
         filterStrings(aliases, null, prefix, new Handler<String>() {
             public void handle(String alias) {
-                items.add(SQLCompletionItem.alias(alias, doQuote(alias, quote), itemOffset + substitutionOffset));
+                // Issue 145173: do not quote aliases.
+                items.add(SQLCompletionItem.alias(alias, alias, itemOffset + substitutionOffset));
             }
         });
     }

@@ -137,9 +137,14 @@ public class TestKey implements Key, SelfPersistent {
 	return unit;
     }
 
+    public int getUnitId() {
+        return 0;
+    }
+
     public void write(DataOutput output) throws IOException {
         output.writeUTF(key);
         output.writeUTF(unit);
         output.writeBoolean(behavior == Behavior.LargeAndMutable);
     }
+
 }

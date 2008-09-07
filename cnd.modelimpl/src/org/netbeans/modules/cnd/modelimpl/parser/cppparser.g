@@ -905,8 +905,11 @@ external_declaration {String s; K_and_R = false; boolean definition;}
                 //enum typedef )))	
                 (LITERAL_typedef enum_specifier)=> typedef_enum
                 {  #external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration); }
-	|
-  
+/*    |
+        // IZ#145071: forward declarations marked as error
+        (LITERAL_typedef (LITERAL_struct |	LITERAL_union |	LITERAL_class)) => typedef_class_fwd
+		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
+*/	|
 		// Enum definition (don't want to backtrack over this in other alts)
 		(LITERAL_enum (ID)? (LCURLY))=>
 		{if (statementTrace>=1) 
@@ -1763,6 +1766,20 @@ class_head
 	)? LCURLY
 	;
 
+protected
+typedef_class_fwd
+{ String id = "", td = ""; }
+    :
+    LITERAL_typedef
+	(
+		LITERAL_struct
+	|	LITERAL_union
+	|	LITERAL_class
+	)
+    id = qualified_id
+    td = qualified_id
+    SEMICOLON
+;
 
 base_clause
 	:	COLON base_specifier (COMMA base_specifier)*
@@ -1932,7 +1949,10 @@ direct_declarator
 		(parameter_list)?
 		RPAREN //{declaratorEndParameterList(false);}
 	|	
-		LPAREN declarator RPAREN declarator_suffixes
+		LPAREN declarator RPAREN 
+        (options {greedy=true;} :variable_attribute_specification)?
+        declarator_suffixes
+        (options {greedy=true;} :variable_attribute_specification)?
 
 /* **            
              // Issue #87792  Parser reports error on declarations with name in parenthesis.
@@ -2525,15 +2545,27 @@ statement_list
 statement
 	:
 	(	
-
-//              Issue 83496   C++ parser does not allow class definition inside function
-//              Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
-                
-                ( (LITERAL_enum (ID)? LCURLY) | class_head ) => 
-                {if (statementTrace>=1) 
-			printf("statement_1[%d]: declaration\n", LT(1).getLine());
+                // Issue 83496   C++ parser does not allow class definition inside function
+                ((  storage_class_specifier
+		|   cv_qualifier 
+		|   LITERAL_typedef
+		)* class_head) =>
+		{if (statementTrace>=1) 
+			printf("statement_1[%d]: Class definition\n",
+				LT(1).getLine());
 		}
-                member_declaration                 
+		declaration
+		{ #statement = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #statement); }
+	|  
+                // Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
+		// Enum definition (don't want to backtrack over this in other alts)
+		(LITERAL_enum (ID)? LCURLY)=>
+		{if (statementTrace>=1) 
+			printf("statement_2[%d]: Enum definition\n",
+				LT(1).getLine());
+		}
+		enum_specifier (member_declarator_list)? SEMICOLON!	//{end_of_stmt();}
+		{ #statement = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #statement); }
 	|
 		( LITERAL_typedef ) =>
 		// TODO: external_declaration is too generic here. Refactor this!
@@ -2670,6 +2702,7 @@ condition_expression
 protected 
 condition_declaration {int ts = tsInvalid;}
 	:
+        cv_qualifier_seq (LITERAL_typename)?
 	ts=type_specifier[dsInvalid] declarator ASSIGNEQUAL assignment_expression
 	;
 

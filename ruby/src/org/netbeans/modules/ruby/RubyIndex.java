@@ -1741,7 +1741,7 @@ public final class RubyIndex {
     }
     
     // For testing only
-    static void setClusterUrl(String url) {
+    public static void setClusterUrl(String url) {
         clusterUrl = url;
     }
 

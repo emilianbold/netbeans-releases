@@ -61,6 +61,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.ICreationFactory;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
+import org.netbeans.modules.uml.drawingarea.support.ModelElementBridge;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -197,6 +198,31 @@ public class Util
         return retVal;
     }
     
+    /**
+     * First checks if the widget is in the viewable area.  If the widget is
+     * not in the viewable area, then center the widget.
+     * 
+     * @param widget The widget to make vieable.
+     */
+    public static void makeSureWidgetIsVisible(Widget widget)
+    {
+        Scene contextScene = widget.getScene();
+        Rectangle visibleRect = contextScene.getView().getVisibleRect();
+        Rectangle sceneRect = widget.convertLocalToScene(widget.getBounds());
+        Rectangle viewWidgetRect = contextScene.convertSceneToView(sceneRect);
+
+        if(visibleRect.contains(viewWidgetRect) == false)
+        {
+            Util.centerWidget(widget);
+        }
+    }
+    
+    /**
+     * Tries to move the scene viewable area so that the the widget is in the 
+     * center of the view.  
+     * 
+     * @param widget The widget to be centered.
+     */
     public static void centerWidget(Widget widget)
     {
         Scene scene = widget.getScene();
@@ -217,7 +243,7 @@ public class Util
                 Object obj = objectScene.findObject(widget);
                 HashSet<Object> set = new HashSet<Object>();
                 set.add(obj);
-                objectScene.setSelectedObjects(set);
+                objectScene.userSelectionSuggested(set, false);
             }
         }
     }
@@ -346,4 +372,8 @@ public class Util
         }
         return ret;
     }    
+    
+     public static Point center (Rectangle rectangle) {
+        return new Point (rectangle.x + rectangle.width / 2, rectangle.y + rectangle.height / 2);
+    }
 }

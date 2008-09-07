@@ -46,6 +46,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
@@ -98,12 +99,14 @@ public class CreatePHPSampleProject  extends org.netbeans.modules.performance.ut
         // TODO Remove this workaround once issue 145104 is fixed
         new File(directory).mkdirs();
 
-        wizard_location.txtProjectLocation().clearText();
+        wizard_location.txtProjectLocation().setText("");
+        waitNoEvent(1000);
         wizard_location.txtProjectLocation().typeText(directory);
         
         project_name = project_type + "_" + System.currentTimeMillis();
         log("================= Project name="+project_name+"}");
-        wizard_location.txtProjectName().clearText();
+        wizard_location.txtProjectName().setText("");
+        waitNoEvent(1000);
         wizard_location.txtProjectName().typeText(project_name);
     }
 

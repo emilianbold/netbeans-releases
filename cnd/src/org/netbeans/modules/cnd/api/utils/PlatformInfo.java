@@ -228,6 +228,14 @@ public final class PlatformInfo {
         return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC || platform == PlatformTypes.PLATFORM_LINUX || platform == PlatformTypes.PLATFORM_MACOSX;
     }
 
+    public boolean isLinux() {
+        return platform == PlatformTypes.PLATFORM_LINUX;
+    }
+
+    public boolean isMac() {
+        return platform == PlatformTypes.PLATFORM_MACOSX;
+    }
+
     public boolean isSolaris() {
         return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC;
     }

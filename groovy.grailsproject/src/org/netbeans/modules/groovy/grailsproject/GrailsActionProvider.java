@@ -60,6 +60,7 @@ import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsRuntime;
 import org.netbeans.modules.groovy.grailsproject.actions.ConfigSupport;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
+import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
 import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
@@ -89,7 +90,7 @@ public class GrailsActionProvider implements ActionProvider {
 
     private static final ExecutionDescriptor GRAILS_DESCRIPTOR = new ExecutionDescriptor()
             .controllable(true).frontWindow(true).inputVisible(true)
-                .showProgress(true).optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N;
+                .showProgress(true).optionsPath(GroovySettings.GROOVY_OPTIONS_CATEGORY);
 
     private static final ExecutionDescriptor RUN_DESCRIPTOR = GRAILS_DESCRIPTOR.showSuspended(true);
 

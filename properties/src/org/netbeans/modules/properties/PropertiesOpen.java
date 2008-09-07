@@ -182,14 +182,28 @@ public class PropertiesOpen extends CloneableOpenSupport
 
         return (answer == optionSave || answer == optionDiscard);
     }
-    
+
     private void stopEditing() {
+        saveEditorValues(true);
+    }
+    
+    /**
+     * Saves values of cells being edited and optionally stops the cell editing.
+     *
+     * @param  saveValueOnly  if {@code true}, just the cell values will be
+     *                        saved to the model but the editor remains active
+     */
+    private void saveEditorValues(boolean stopEditing) {
         Enumeration en = allEditors.getComponents();
         while (en.hasMoreElements()) {
             Object o = en.nextElement();
             if (o instanceof PropertiesCloneableTopComponent) {
                 BundleEditPanel bep = (BundleEditPanel)((PropertiesCloneableTopComponent)o).getComponent(0);
-                bep.stopEditing();
+                if (stopEditing) {
+                    bep.stopEditing();
+                } else {
+                    bep.saveEditorValue(false);
+                }
             }
         }
     }
@@ -501,9 +515,21 @@ public class PropertiesOpen extends CloneableOpenSupport
 
         /** Implements {@code SaveCookie} interface. */
         public void save() throws IOException {
-            stopEditing();
+            /*
+             * At first, save the value of the cell being edited,
+             * without making any UI changes.
+             */
+            saveEditorValues(false);
+
             // do saving job
             saveDocument();
+
+            /* Update the UI: */
+            Mutex.EVENT.writeAccess(new Runnable() {
+                public void run() {
+                    stopEditing();
+                }
+            });
         }
 
         /** Save the document in this thread.

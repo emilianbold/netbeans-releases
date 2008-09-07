@@ -5,4 +5,12 @@
 <project name="ruby.rhtml" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project ruby.rhtml</description>
     <import file="../nbbuild/templates/projectized.xml"/>
+
+    <target name="jar" depends="init,compile,jar-prep" unless="is.jar.uptodate">
+        <taskdef name="gsfjar" classname="org.netbeans.modules.gsf.GsfJar" classpath="${nb_all}/gsf.api/anttask/gsfanttask.jar:${nb_all}/nbbuild/nbantext.jar"/>
+        <gsfjar jarfile="${cluster}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}" stamp="${cluster}/.lastModified">
+            <fileset dir="${build.classes.dir}"/>
+        </gsfjar>
+    </target>
+
 </project>

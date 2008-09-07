@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 
 /**
  *
@@ -165,6 +166,16 @@ public class CsmDeclarationResolver {
         } else if (CsmKindUtilities.isEnum(outDecl)) {
             CsmEnum en = (CsmEnum)outDecl;
             it = en.getEnumerators().iterator();
+        } else if (CsmKindUtilities.isTypedef(outDecl)) {
+            CsmTypedef td = (CsmTypedef) outDecl;
+            if (td.isTypeUnnamed() || td.getName().length() == 0) {
+                outDecl = td.getType().getClassifier();
+                if (CsmOffsetUtilities.isInObject(outDecl, offset)) {
+                    // add declaration scope to context
+                    CsmContextUtilities.updateContext(outDecl, offset, context);
+                    return findInnerDeclaration(outDecl, offset, context);
+                }
+            }
         }
         return findInnerDeclaration(it, context, offset);
     }     

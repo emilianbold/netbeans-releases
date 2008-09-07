@@ -353,7 +353,8 @@ public class RetoucheUtils {
     }
 
     public static boolean isClasspathRoot(FileObject fo) {
-        return fo.equals(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo));
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        return cp != null ? fo.equals(cp.findOwnerRoot(fo)) : false;
     }
     
     public static boolean isRefactorable(FileObject file) {
