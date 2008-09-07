@@ -50,6 +50,22 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testTemplateParamsInNestedClasses() throws Exception {
+        // IZ#144881: template parameter is not resolved in nested class
+
+        performTest("templateParameters.h", 104, 9, "templateParameters.h", 100, 10);// _Tp
+        performTest("templateParameters.h", 105, 9, "templateParameters.h", 100, 10);// _Tp
+        performTest("templateParameters.h", 106, 9, "templateParameters.h", 100, 10);// _Tp
+
+        performTest("templateParameters.h", 103, 25, "templateParameters.h", 100, 24);// _Alloc
+        performTest("templateParameters.h", 109, 15, "templateParameters.h", 100, 24);// _Alloc
+    }
+
+    public void checkPtrOperator() throws Exception {
+        // noIZ:fixed ptr operator handling
+        performTest("checkPtrOperator.cc", 16, 15, "checkPtrOperator.cc", 11, 9);
+    }
+    
     public void testIZ146030_5() throws Exception {
         // IZ#146030: set of problems for declarations in Loki
         // usecase 5)

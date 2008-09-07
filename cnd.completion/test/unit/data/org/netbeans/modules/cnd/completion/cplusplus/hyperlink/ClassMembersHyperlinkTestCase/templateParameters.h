@@ -96,3 +96,18 @@ template <class A> class B {
     A::sometype member;
 };
 
+// IZ#144881: template parameter is not resolved in nested class
+template<typename _Tp, typename _Alloc>
+struct _Vector_base {
+    struct _Vector_impl
+            : public _Alloc {
+        _Tp* _M_start;
+        _Tp* _M_finish;
+        _Tp* _M_end_of_storage;
+
+        _Vector_impl(_Alloc const& __a)
+        : _Alloc(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0) {
+        }
+    };
+};
+
