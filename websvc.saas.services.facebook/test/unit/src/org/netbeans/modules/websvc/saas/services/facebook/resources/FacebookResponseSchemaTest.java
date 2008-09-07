@@ -84,6 +84,7 @@ public class FacebookResponseSchemaTest extends NbTestCase {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
+
     private FacebookResponseSchemaTest(String name) {
         super(name);
     }
@@ -145,7 +146,9 @@ public class FacebookResponseSchemaTest extends NbTestCase {
             if (f.isFile()) {
                 ts.addTest(new FacebookResponseSchemaTest("validate", f)); //NOI18N
             } else {
-                for (File f1: f.listFiles()) {
+                File[] testCases1 = f.listFiles();
+                Arrays.sort(testCases1);
+                for (File f1 : testCases1) {
                     if (f1.isFile()) {
                         ts.addTest(new FacebookResponseSchemaTest("validate", f1)); //NOI18N
                     }
@@ -155,4 +158,5 @@ public class FacebookResponseSchemaTest extends NbTestCase {
         ts.addTest(new FacebookResponseSchemaTest("testCompileSchema")); //NOI18N
         return ts;
     }
+
 }
