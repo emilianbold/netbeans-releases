@@ -694,15 +694,27 @@ public class MySQLDatabaseServer implements DatabaseServer {
             public void execute() throws Exception {
                 runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_MySQLOutputTab"));
 
-                try {
-                    connProcessor.validateConnection();
-                    Utils.displayErrorMessage(NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_ServerStillRunning"));
-                } catch (DatabaseException dbe) {
-                    LOGGER.log(Level.FINE, null, dbe);
+                // See if the connection is still active.  Try 5 times with a 
+                // 1 second wait and then assume something went wrong if it's 
+                // still active after that.
+                int tries = 0;
+                while (tries <= 4) {
+                    tries++;
+
+                    try {
+                        connProcessor.validateConnection();
+                    } catch (DatabaseException dbe) {
+                        LOGGER.log(Level.FINE, null, dbe);
+                        disconnect();
+                        refreshDatabaseList();
+                        return;
+                    }
+
+                    Thread.sleep(1000);
+
                 }
+                    Utils.displayErrorMessage(NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_ServerStillRunning"));
                 
-                disconnect();
-                refreshDatabaseList();
             }
         }.postCommand();
     }
