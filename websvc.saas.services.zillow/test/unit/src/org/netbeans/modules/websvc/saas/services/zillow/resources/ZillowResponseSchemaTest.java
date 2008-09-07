@@ -39,8 +39,23 @@
 package org.netbeans.modules.websvc.saas.services.zillow.resources;
 
 import com.sun.tools.xjc.XJC2Task;
+import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import org.netbeans.junit.NbTestCase;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -48,8 +63,36 @@ import org.netbeans.junit.NbTestCase;
  */
 public class ZillowResponseSchemaTest extends NbTestCase {
 
+    private static final Logger LOG = Logger.getLogger(ZillowResponseSchemaTest.class.getName());
+    private static String typesResourceName = "/org/netbeans/modules/websvc/saas/services/zillow/resources/ZillowTypes.xsd"; //NOI18N
+    private static String resourceName = "/org/netbeans/modules/websvc/saas/services/zillow/resources/SearchResults.xsd"; //NOI18N
+    private static Schema schema;
+
+
+    static {
+        // create a SchemaFactory capable of understanding WXS schemas
+        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+
+        // load a WXS schema, represented by a Schema instance
+        Source typesSchemaFile = new StreamSource(ZillowResponseSchemaTest.class.getResourceAsStream(typesResourceName));
+        Source schemaFile = new StreamSource(ZillowResponseSchemaTest.class.getResourceAsStream(resourceName));
+        try {
+            schema = factory.newSchema(new Source[] {typesSchemaFile, schemaFile});
+        } catch (SAXException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
+
     public ZillowResponseSchemaTest(String name) {
         super(name);
+    }
+
+    public void testValidateSearchResults() {
+        validate(new File(getDataDir(), "getSearchResults.xml")); //NOI18N
+    }
+
+    public void testValidateDeepSearchResults() {
+        validate(new File(getDataDir(), "getDeepSearchResults.xml")); //NOI18N
     }
 
     public void testCompileChartSchema() throws IOException {
@@ -83,6 +126,32 @@ public class ZillowResponseSchemaTest extends NbTestCase {
 //    public void testCompileUpdatedPropertyDetailsSchema() throws IOException {
 //        runJAXB("/org/netbeans/modules/websvc/saas/services/zillow/resources/UpdatedPropertyDetails.xsd"); //NOI18N
 //    }
+
+    private void validate(File file) {
+        assertNotNull("null schema", schema); //NOI18N
+        LOG.fine("Validating: " + file.getName()); //NOI18N
+        try {
+            // parse an XML document into a DOM tree
+            DocumentBuilder parser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document document = parser.parse(file);
+
+            Validator validator = schema.newValidator();
+            try {
+                // validate the DOM tree
+                validator.validate(new DOMSource(document));
+            } catch (SAXException ex) {
+                fail("validation of " + file.getName() + " failed: " + ex.getLocalizedMessage()); //NOI18N
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+            }
+        } catch (SAXException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        } catch (ParserConfigurationException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }
 
     private void runJAXB(String resourceName) throws IOException {
         XJC2Task xjc = new XJC2Task();
