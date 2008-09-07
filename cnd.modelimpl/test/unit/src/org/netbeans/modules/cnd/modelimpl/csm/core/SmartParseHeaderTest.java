@@ -71,7 +71,7 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
         ParseStatistics.getInstance().clear();
     }
 
-    private FileImpl findFile(String name) {
+    private FileImpl findFile(String name) throws Exception{
         ProjectBase project = this.getProject();
         if (project != null) {
             String toCompare = File.separator + name;
@@ -81,44 +81,76 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
                 }
             }
         }
+        assertTrue("CsmFile not found for " + name, false);
         return null;
     }
 
     private void assertParseCount(String fileName, int expectedParseCount) throws Exception {
         FileImpl fileImpl = findFile(fileName);
-        assertNotNull("file " + fileName + " not found", fileImpl);
+        //assertNotNull("file " + fileName + " not found", fileImpl);
         int actualParseCount = ParseStatistics.getInstance().getParseCount(fileImpl);
         assertEquals("Unexpected parse count for " + fileName, expectedParseCount, actualParseCount);
     }
+    
+    private void performTrivialTest(String fileToParse, String headerToCheck, int expectedParseCount, boolean reparse) 
+            throws Exception {
+        performTest(fileToParse);
+        assertParseCount(headerToCheck, expectedParseCount);
+        if (reparse) {
+            ParseStatistics.getInstance().clear();
+            FileImpl fileImpl = findFile(fileToParse);
+            DeepReparsingUtils.reparseOnEdit(fileImpl, getProject(), true);
+            getProject().waitParse();
+            assertParseCount(headerToCheck, expectedParseCount);
+        }
+    }
 
     public void testSimple_1a() throws Exception {
-        performTest("smart_headers_simple_1a.cc");
-        assertParseCount("smart_headers_simple_1.h", 3);
+        performTrivialTest("smart_headers_simple_1a.cc", "smart_headers_simple_1.h", 3, false);
     }
 
     public void testSimple_1b() throws Exception {
-        performTest("smart_headers_simple_1b.cc");
-        assertParseCount("smart_headers_simple_1.h", 1);
+        performTrivialTest("smart_headers_simple_1b.cc", "smart_headers_simple_1.h", 1, false);
     }
 
     public void testSimple_1c() throws Exception {
-        performTest("smart_headers_simple_1c.cc");
-        assertParseCount("smart_headers_simple_1.h", 1);
+        performTrivialTest("smart_headers_simple_1c.cc", "smart_headers_simple_1.h", 1, false);
     }
 
     public void testSimple_1d() throws Exception {
-        performTest("smart_headers_simple_1d.cc");
-        assertParseCount("smart_headers_simple_1.h", 1);
+        performTrivialTest("smart_headers_simple_1d.cc", "smart_headers_simple_1.h", 1, false);
     }
 
     public void testSimple_1e() throws Exception {
-        performTest("smart_headers_simple_1e.cc");
-        assertParseCount("smart_headers_simple_1.h", 3);
+        performTrivialTest("smart_headers_simple_1e.cc", "smart_headers_simple_1.h", 3, false);
     }
 
     public void testSimple_1f() throws Exception {
-        performTest("smart_headers_simple_1f.cc");
-        assertParseCount("smart_headers_simple_1.h", 1);
+        performTrivialTest("smart_headers_simple_1f.cc", "smart_headers_simple_1.h", 1, false);
+    }
+
+    public void testSimpleReparse_1a() throws Exception {
+        performTrivialTest("smart_headers_simple_1a.cc", "smart_headers_simple_1.h", 3, true);
+    }
+    
+    public void testSimpleReparse_1b() throws Exception {
+        performTrivialTest("smart_headers_simple_1b.cc", "smart_headers_simple_1.h", 1, true);
+    }
+
+    public void testSimpleReparse_1c() throws Exception {
+        performTrivialTest("smart_headers_simple_1c.cc", "smart_headers_simple_1.h", 1, true);
+    }
+
+    public void testSimpleReparse_1d() throws Exception {
+        performTrivialTest("smart_headers_simple_1d.cc", "smart_headers_simple_1.h", 1, true);
+    }
+
+    public void testSimpleReparse_1e() throws Exception {
+        performTrivialTest("smart_headers_simple_1e.cc", "smart_headers_simple_1.h", 3, true);
+    }
+
+    public void testSimpleReparse_1f() throws Exception {
+        performTrivialTest("smart_headers_simple_1f.cc", "smart_headers_simple_1.h", 1, true);
     }
 
     /////////////////////////////////////////////////////////////////////
