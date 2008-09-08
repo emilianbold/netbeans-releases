@@ -68,17 +68,18 @@
                     <representation mediaType="text/xml" element="f:integer"/>
                 </response>
             </method>
-            <method id="admin_getDailyMetrics" name="GET">
+            <method id="admin_getMetrics" name="GET">
                 <request>
                     <param name="api_key" required="true" style="query" type="xsd:string"/>
                     <param name="sig" required="true" style="query" type="xsd:string"/>
                     <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
                     <param name="start_date" required="true" style="query" type="xsd:string"/>
                     <param name="end_date" required="true" style="query" type="xsd:string"/>
+                    <param name="period" required="true" style="query" type="xsd:string" default="86400"/>
                     <param name="metrics" required="true" style="query" type="xsd:string"/>
                     <param name="format" required="false" style="query" type="xsd:string"/>
                     <param name="callback" required="false" style="query" type="xsd:string"/>
-                    <param fixed="facebook.admin.getDailyMetrics" name="method" required="true" style="query" type="xsd:string"/>
+                    <param fixed="facebook.admin.getMetrics" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
                     <representation mediaType="text/xml" element="f:admin_getDailyMetrics_response"/>
