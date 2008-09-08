@@ -2533,7 +2533,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             CachingArchiveProvider.getDefault().clearArchive(root);                       
             File cacheFolder = Index.getClassFolder(root);
             FileObjects.deleteRecursively(cacheFolder);
-            final BinaryAnalyser ba = ClassIndexManager.getDefault().createUsagesQuery(root, false).getBinaryAnalyser(); 
+            ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(root, false);
+            if (uq == null) {
+                return ; //IDE is exiting, indeces are already closed.
+            }
+            final BinaryAnalyser ba = uq.getBinaryAnalyser();
             if (ba != null) {   //ba == null => IDE is exiting, indexing will be done on IDE restart
                 //todo: may also need interruption.
                 try {
