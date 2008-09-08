@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.support;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
 
@@ -51,12 +52,27 @@ import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
  * 
  * @author gordonp
  */
-public class RemoteInteractiveCommandProvider implements InteractiveCommandProvider {
+public class RemoteInteractiveCommandProvider extends InteractiveCommandProvider {
     
     private RemoteInteractiveCommandSupport support;
+    private String hkey;
 
+    @Override
     public boolean run(String hkey, String cmd, Map<String, String> env) {
         support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
+        return !support.isFailedOrCancelled();
+    }
+
+    @Override
+    public boolean run(List<String> commandAndArgs, String workingDirectory, Map<String, String> env) {
+        assert hkey != null;
+        StringBuilder plainCommand = new StringBuilder();
+        
+        for (String arg : commandAndArgs) {
+            plainCommand.append(arg);
+            plainCommand.append(' ');
+        }
+        support = new RemoteInteractiveCommandSupport(hkey, plainCommand.toString(), env);
         return !support.isFailedOrCancelled();
     }
 
@@ -65,15 +81,35 @@ public class RemoteInteractiveCommandProvider implements InteractiveCommandProvi
         return !support.isFailedOrCancelled();
     }
 
+    @Override
     public InputStream getInputStream() throws IOException {
-        return support.getInputStream();
+        return support == null ? null : support.getInputStream();
     }
 
+    @Override
     public OutputStream getOutputStream() throws IOException {
-        return support.getOutputStream();
+        return support == null ? null : support.getOutputStream();
     }
     
+    @Override
     public void disconnect() {
-        support.disconnect();
+        if (support != null) {
+            support.disconnect();
+        }
+    }
+
+    @Override
+    public int waitFor() {
+        return support == null ? -1 : support.waitFor();
+    }
+
+    @Override
+    public int getExitStatus() {
+        return support == null ? -1 : support.getExitStatus();
+    }
+
+    @Override
+    protected void init(String hkey) {
+        this.hkey = hkey;
     }
 }

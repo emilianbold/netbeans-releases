@@ -97,7 +97,9 @@ made subject to such option by the copyright holder.
         </jar>
         
         <jar jarfile="${jaxb.base}/${jaxb.jar}"
-             basedir="${jaxb.base}/build"/>
+             basedir="${jaxb.base}/build">
+            <metainf dir="${jaxb.base}/.." includes="*.xsd"/>
+        </jar>
         
         <delete failonerror="false" dir="${jaxb.base}/build"/>
         <delete failonerror="false" dir="${jaxb.base}/src"/>

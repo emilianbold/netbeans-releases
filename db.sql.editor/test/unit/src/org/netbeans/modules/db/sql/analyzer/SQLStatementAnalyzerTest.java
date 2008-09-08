@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import junit.framework.TestCase;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -94,6 +95,14 @@ public class SQLStatementAnalyzerTest extends TestCase {
         SQLStatement statement = doAnalyze("select * from foo f inner join bar on f.");
         assertEquals(Collections.singleton(new QualIdent("bar")), statement.getFromClause().getUnaliasedTableNames());
         assertEquals(Collections.singletonMap("f", new QualIdent("foo")), statement.getFromClause().getAliasedTableNames());
+    }
+
+    public void testEndOfFromClauseIssue145143() throws Exception {
+        Set<QualIdent> expected = Collections.singleton(new QualIdent("foo"));
+        assertEquals(expected, doAnalyze("select * from foo where max(bar, baz) < 0").getFromClause().getUnaliasedTableNames());
+        assertEquals(expected, doAnalyze("select * from foo having max(bar, baz) < 0").getFromClause().getUnaliasedTableNames());
+        assertEquals(expected, doAnalyze("select * from foo order by bar, baz").getFromClause().getUnaliasedTableNames());
+        assertEquals(expected, doAnalyze("select * from foo group by bar, baz").getFromClause().getUnaliasedTableNames());
     }
 
     public void testFromClause() throws Exception {

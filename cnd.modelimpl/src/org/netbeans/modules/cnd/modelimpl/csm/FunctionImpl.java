@@ -187,15 +187,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
 
     private void _setScope(CsmScope scope) throws AstRendererException {
-        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-        boolean assertionCondition = (this.scopeUID != null || scope == null);
-        if (!assertionCondition) {
-            throw new AstRendererException((FileImpl)getContainingFile(), getStartOffset(),
-                    "Cannot find function scope."); // NOI18N
-            //assert (this.scopeUID != null || scope == null);
-        }
-        this.scopeRef = null;
-
+        // for functions declared in bodies scope is CsmCompoundStatement - it is not Identifiable
+        if ((scope instanceof CsmIdentifiable)) {
+            this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+            assert (scopeUID != null || scope == null);
+        } else {
+            this.scopeRef = scope;
+        }        
     }
 
     /**
@@ -642,7 +640,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         _disposeParameters();
     }
     
-    private void onDispose() {
+    private synchronized void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
             // restore container from it's UID
             this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
@@ -674,7 +672,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return hasFlags(FLAGS_CONST);
     }
     
-    private CsmScope _getScope() {
+    private synchronized CsmScope _getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);

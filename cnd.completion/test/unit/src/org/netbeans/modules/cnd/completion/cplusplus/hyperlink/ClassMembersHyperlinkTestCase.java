@@ -50,6 +50,100 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testTemplateParamsInNestedClasses() throws Exception {
+        // IZ#144881: template parameter is not resolved in nested class
+
+        performTest("templateParameters.h", 104, 9, "templateParameters.h", 100, 10);// _Tp
+        performTest("templateParameters.h", 105, 9, "templateParameters.h", 100, 10);// _Tp
+        performTest("templateParameters.h", 106, 9, "templateParameters.h", 100, 10);// _Tp
+
+        performTest("templateParameters.h", 103, 25, "templateParameters.h", 100, 24);// _Alloc
+        performTest("templateParameters.h", 109, 15, "templateParameters.h", 100, 24);// _Alloc
+    }
+
+    public void checkPtrOperator() throws Exception {
+        // noIZ:fixed ptr operator handling
+        performTest("checkPtrOperator.cc", 16, 15, "checkPtrOperator.cc", 11, 9);
+    }
+    
+    public void testIZ146030_5() throws Exception {
+        // IZ#146030: set of problems for declarations in Loki
+        // usecase 5)
+        performTest("useenumerators.cc", 55, 20, "useenumerators.cc", 52, 9);
+        performTest("useenumerators.cc", 56, 20, "useenumerators.cc", 52, 9);
+    }
+    
+    public void testIZ138902() throws Exception {
+        // IZ#138902: No completion and hyperl ink  to enumerator in structure init
+        performTest("useenumerators.cc", 48, 35, "useenumerators.cc", 43, 19);
+    }
+    
+    public void testIZ145828() throws Exception {
+        // IZ#145828: & breaks completion in some expressions
+        performTest("main.cc", 91, 25, "main.cc", 83, 5);
+        performTest("main.cc", 92, 16, "main.cc", 84, 5);
+        performTest("main.cc", 93, 24, "main.cc", 85, 5);
+    }
+    
+    public void testIZ144880() throws Exception {
+        // IZ#144880: enumerators in template arguments are not resolved
+        performTest("useenumerators.cc", 33, 12, "useenumerators.cc", 32, 12);
+        performTest("useenumerators.cc", 38, 12, "useenumerators.cc", 37, 12);
+    }
+    public void testIZ145617() throws Exception {
+        // IZ#145617: IDE highlights code with 'sizeof' in array as wrong
+        performTest("main.cc", 79, 70, "main.cc", 59, 5);
+    }
+    
+    public void testIZ145230() throws Exception {
+        // IZ#145230:Various C++ expressions don't resolve
+        // usage of enumerators
+        performTest("useenumerators.cc", 4, 20, "useenumerators.cc", 1, 8);
+        performTest("useenumerators.cc", 16, 40, "useenumerators.cc", 11, 5);
+        performTest("useenumerators.cc", 19, 35, "useenumerators.cc", 11, 5);
+    }
+
+    public void testIZ145822() throws Exception {
+        // IZ#145230:unresolved members of typedefed class
+        performTest("useenumerators.cc", 26, 20, "useenumerators.cc", 26, 5);
+        performTest("useenumerators.cc", 40, 10, "useenumerators.cc", 26, 5);
+    }
+
+    public void testIZ144731() throws Exception {
+        // IZ#144731: function(a->m_obj ? a->m_obj : a->m_obj);
+        performTest("iz145077.cc", 132, 30, "iz145077.cc", 118, 5);
+    }
+
+    public void testClassUsageAfterDereferrencedObjects() throws Exception {
+        // IZ#145230:Various C++ expressions don't resolve
+        performTest("ClassNameAfterDeref.cc", 22, 18, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 23, 18, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 24, 10, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 25, 10, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 32, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 34, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 35, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 38, 16, "ClassNameAfterDeref.cc", 2, 5);
+        performTest("ClassNameAfterDeref.cc", 39, 16, "ClassNameAfterDeref.cc", 2, 5);
+    }
+
+    public void testClassMembersUsageAfterDereferrencedClass() throws Exception {
+        // IZ#145230:Various C++ expressions don't resolve
+        performTest("ClassNameAfterDeref.cc", 22, 25, "ClassNameAfterDeref.cc", 8, 9);
+        performTest("ClassNameAfterDeref.cc", 23, 25, "ClassNameAfterDeref.cc", 9, 9);
+        performTest("ClassNameAfterDeref.cc", 24, 16, "ClassNameAfterDeref.cc", 5, 9);
+        performTest("ClassNameAfterDeref.cc", 25, 16, "ClassNameAfterDeref.cc", 8, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 27, 20);
+        performTest("ClassNameAfterDeref.cc", 32, 22, "ClassNameAfterDeref.cc", 5, 9);
+        performTest("ClassNameAfterDeref.cc", 33, 15, "ClassNameAfterDeref.cc", 16, 9);
+        performTest("ClassNameAfterDeref.cc", 34, 22, "ClassNameAfterDeref.cc", 6, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 35, 24);
+        performTest("ClassNameAfterDeref.cc", 36, 15, "ClassNameAfterDeref.cc", 6, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 37, 17);
+        performTest("ClassNameAfterDeref.cc", 38, 25, "ClassNameAfterDeref.cc", 5, 9);
+        performNullTargetTest("ClassNameAfterDeref.cc", 39, 25);
+    }
+
     public void testClassFwdTemplateParameters() throws Exception {
         // template parameters of class member forward template class declaration
         performTest("templateParameters.h", 36, 23, "templateParameters.h", 36, 13);
@@ -565,6 +659,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
             performTest("ClassB.h", 20, 15, "ClassB.h", 20, 5); //void method(const char*);
             performTest("ClassB.h", 12, 15, "ClassB.h", 22, 5); //void method(char*, double);
             performTest("ClassB.h", 24, 15, "ClassB.h", 24, 5); //void method(char*, char*);
+        }
+
+        public void testIZ145037() throws Exception {
+            // IZ#145037: "operator string" defintion incorrectly resolved
+            performTest("IZ145037_conversion_operators.cc", 20, 22, "IZ145037_conversion_operators.cc", 10, 9);
+            performTest("IZ145037_conversion_operators.cc", 38, 22, "IZ145037_conversion_operators.cc", 28, 9);
         }
     }
 

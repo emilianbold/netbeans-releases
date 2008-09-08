@@ -55,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.DefaultComboBoxModel;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -75,7 +74,6 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditor
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
-import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGMenuImageParser;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGImageComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -356,19 +354,27 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     private String convertFile(FileObject fo, String relPath, boolean needCopy) {
         String relativePath;
         FileObject sourceFolder = getSourceFolder();
-        String sourcePath = sourceFolder.getPath();
+        String sourcePath = FileUtil.toFile(sourceFolder).getAbsolutePath();
 
         File file = FileUtil.toFile(fo);
         if (file == null) {
             // abstract FO - zip/jar...
-            relativePath = "/" + fo.getPath(); // NOI18N
+            if (!fo.getPath().startsWith("/", 0)) {
+                relativePath = "/" + fo.getPath(); // NOI18N
+            } else {
+                relativePath = fo.getPath();
+            }
         } else {
             String fullPath = file.getAbsolutePath();
             if (fullPath.contains(sourcePath)) {
                 // file is inside sources
                 fullPath = fo.getPath();
-                int i = fullPath.indexOf(sourcePath) + sourcePath.length();
-                relativePath = fullPath.substring(i);
+                int i = fullPath.indexOf(sourcePath) + sourcePath.length() + 1;
+                if (!fullPath.substring(i).startsWith("/")) { //NOI18N
+                    relativePath = "/" + fullPath.substring(i); //NOI18N
+                } else {
+                    relativePath = fullPath.substring(i); 
+                }
             } else if (needCopy) {
                 // somewhere outside sources - need to copy (export image)
                 File possible = new File(sourcePath + File.separator + fo.getNameExt());

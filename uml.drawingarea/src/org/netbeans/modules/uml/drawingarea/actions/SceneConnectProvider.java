@@ -273,9 +273,15 @@ public class SceneConnectProvider implements ExConnectProvider
             }
             scene.validate();
         }
+
+        if(conn.size() > 0)
+        {
+            scene.setFocusedObject(conn.get(0));
+        }
         
         HashSet < IPresentationElement > selected = new HashSet < IPresentationElement>(conn);
-        scene.setSelectedObjects(selected);
+
+        scene.userSelectionSuggested(selected, false);
     }
 
     public boolean hasTargetWidgetCreator()

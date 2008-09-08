@@ -41,7 +41,7 @@ package org.netbeans.modules.uml.diagrams.actions;
 import java.awt.Point;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.diagrams.nodes.CompartmentWidget;
-import org.netbeans.modules.uml.diagrams.nodes.CompositeWidget;
+import org.netbeans.modules.uml.diagrams.nodes.CompositeNodeWidget;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 
 /**
@@ -53,9 +53,9 @@ import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
  */
 public class CompositeWidgetSelectProvider extends DiagramEngine.DesignSelectProvider
 {
-    private CompositeWidget compositeWidget;
+    private CompositeNodeWidget compositeWidget;
     
-    public CompositeWidgetSelectProvider(CompositeWidget w)
+    public CompositeWidgetSelectProvider(CompositeNodeWidget w)
     {
         compositeWidget = w;
     }

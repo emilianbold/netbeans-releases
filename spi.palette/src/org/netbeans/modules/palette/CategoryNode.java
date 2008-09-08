@@ -42,6 +42,7 @@
 package org.netbeans.modules.palette;
 import java.awt.datatransfer.Transferable;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
@@ -101,6 +102,7 @@ class CategoryNode extends FilterNode {
     
     // -------
 
+    @Override
     public String getDisplayName() {
 
         String retValue = null;
@@ -130,6 +132,7 @@ class CategoryNode extends FilterNode {
         return retValue;
     }
 
+    @Override
     public void setDisplayName( String displayName ) {
         try {
             DataFolder folder = (DataFolder)getCookie( DataFolder.class );
@@ -145,27 +148,32 @@ class CategoryNode extends FilterNode {
         super.setDisplayName( displayName );
     }
 
+    @Override
     public String getShortDescription() {
         return getDisplayName();
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         if (actions == null) {
             Node n = getParentNode();
-            actions = new Action[] {
-                new Utils.PasteItemAction( this ),
-                null,
-                new Utils.NewCategoryAction( n ),
-                null,
-                new Utils.DeleteCategoryAction(this),
-                new Utils.RenameCategoryAction(this),
-                null,
-                new Utils.SortItemsAction(this),
-                null,
-                new Utils.SortCategoriesAction( n ),
-                null,
-                new Utils.RefreshPaletteAction()
-            };
+            List<Action> actionList = new ArrayList<Action>(12);
+            actionList.add( new Utils.PasteItemAction( this ) );
+            actionList.add( null );
+            Action a = new Utils.NewCategoryAction( n );
+            if( a.isEnabled() ) {
+                actionList.add( a );
+                actionList.add( null );
+            }
+            actionList.add( new Utils.DeleteCategoryAction(this) );
+            actionList.add( new Utils.RenameCategoryAction(this) );
+            actionList.add( null );
+            actionList.add( new Utils.SortItemsAction(this) );
+            actionList.add( null );
+            actionList.add( new Utils.SortCategoriesAction( n ) );
+            actionList.add( null );
+            actionList.add( new Utils.RefreshPaletteAction() );
+            actions = actionList.toArray( new Action[actionList.size()] );
         }
         PaletteActions customActions = (PaletteActions)getParentNode().getLookup().lookup( PaletteActions.class );
         if( null != customActions ) {
@@ -174,14 +182,17 @@ class CategoryNode extends FilterNode {
         return actions;
     }
 
+    @Override
     public Node.PropertySet[] getPropertySets() {
         return NO_PROPERTIES;
     }
 
+    @Override
     public boolean canDestroy() {
         return !Utils.isReadonly( getOriginal() );
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return Utils.getHelpCtx( this, super.getHelpCtx() );
     }
@@ -197,10 +208,12 @@ class CategoryNode extends FilterNode {
             this.filter = (PaletteFilter)lkp.lookup( PaletteFilter.class );
         }
 
+        @Override
         protected Node copyNode(Node node) {
             return new ItemNode( node );
         }
         
+        @Override
         protected Node[] createNodes(Node key) {
             if( null == filter || filter.isValidItem( key.getLookup() ) ) {
                 return new Node[] { copyNode(key) };
@@ -325,6 +338,7 @@ class CategoryNode extends FilterNode {
         return freeName;
     }
 
+    @Override
     public PasteType getDropType(Transferable t, int action, int index) {
         if( t.isDataFlavorSupported( PaletteController.ITEM_DATA_FLAVOR ) )
             return super.getDropType(t, action, index);

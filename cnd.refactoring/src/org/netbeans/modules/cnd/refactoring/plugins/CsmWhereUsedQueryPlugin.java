@@ -50,8 +50,8 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -149,13 +149,8 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             return super.preCheck();
         }
         CsmObject referencedObject = (CsmObject) uid.getObject();
-        if (referencedObject == null) {
+        if (!CsmBaseUtilities.isValid(referencedObject)) {
             return invalidContext;
-        }
-        if (CsmKindUtilities.isValidable(referencedObject)) {
-            if (!((CsmValidable)referencedObject).isValid()) {
-                return invalidContext;
-            }
         }
         return super.preCheck();
     }

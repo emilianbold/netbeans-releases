@@ -180,12 +180,17 @@ public final class Utilities {
      */
     public static final int OS_WINVISTA = OS_FREEBSD << 1;
 
+    /** Operating system is one of the Unix variants but we don't know which
+     * one it is.
+     */
+    private static final int OS_UNIX_OTHER = OS_WINVISTA << 1;
+
     /** A mask for Windows platforms. */
     public static final int OS_WINDOWS_MASK = OS_WINNT | OS_WIN95 | OS_WIN98 | OS_WIN2000 | OS_WINVISTA | OS_WIN_OTHER;
 
     /** A mask for Unix platforms. */
     public static final int OS_UNIX_MASK = OS_SOLARIS | OS_LINUX | OS_HP | OS_AIX | OS_IRIX | OS_SUNOS | OS_TRU64 |
-        OS_MAC | OS_FREEBSD;
+        OS_MAC | OS_FREEBSD | OS_UNIX_OTHER;
 
     /** A height of the windows's taskbar */
     public static final int TYPICAL_WINDOWS_TASKBAR_HEIGHT = 27;
@@ -339,6 +344,8 @@ public final class Utilities {
                 operatingSystem = OS_MAC;
             } else if (osName.toLowerCase(Locale.US).startsWith("freebsd")) { // NOI18N 
                 operatingSystem = OS_FREEBSD;
+            } else if (File.pathSeparatorChar == ':') { // NOI18N
+                operatingSystem = OS_UNIX_OTHER;
             } else {
                 operatingSystem = OS_OTHER;
             }

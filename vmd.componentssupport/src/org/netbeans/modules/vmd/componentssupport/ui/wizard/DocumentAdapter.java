@@ -44,6 +44,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 abstract class DocumentAdapter implements DocumentListener {
-    public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
-    public void changedUpdate(DocumentEvent e) { insertUpdate(null); }
+    public void removeUpdate(DocumentEvent e) { insertUpdate(e); }
+    public void changedUpdate(DocumentEvent e) { insertUpdate(e); }
 }

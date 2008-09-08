@@ -223,7 +223,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     }
 
     public void performAction() {
-        assert false;
+        java.awt.Toolkit.getDefaultToolkit().beep();
     }
 
     @Override

@@ -70,7 +70,7 @@ public class WindowsStandalone50Installation implements Installation {
     }
 
     public String[] getStopCommand() {
-        return new String[] { basePath + "/bin/mysql.exe", "-u root stop"}; // NOI18N
+        return new String[] { basePath + "/bin/mysqladmin.exe", "-u root shutdown"}; // NOI18N
     }
     
     public boolean isInstalled() {

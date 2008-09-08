@@ -116,7 +116,7 @@ public class UseCaseWidget extends UMLNodeWidget
             usecase = (IUseCase) presentation.getFirstSubject();
             currentView = createSimpleUseCaseView(usecase);
             setCurrentView(currentView);
-            setFont(getCurrentView().getFont());
+//            setFont(getCurrentView().getFont());
         }
         super.initializeNode(presentation);
     }
@@ -244,6 +244,7 @@ public class UseCaseWidget extends UMLNodeWidget
             //extension points        
             updateDetails();
         }
+        updateSizeWithOptions();
     }
 
     private void updateDetails()
@@ -263,7 +264,7 @@ public class UseCaseWidget extends UMLNodeWidget
             }
             for (IExtensionPoint extPt : usecase.getExtensionPoints())
             {
-                addExtensionPoint(extPt);
+                addExtensionPoint(extPt);     
             }
         }
     }
@@ -317,6 +318,15 @@ public class UseCaseWidget extends UMLNodeWidget
             }
         }
         super.load(nodeReader);
+    }
+    
+    
+    public void duplicate(boolean setBounds, Widget target)
+    {
+        assert target instanceof UseCaseWidget;
+        
+        super.duplicate(setBounds, target);
+        ((UseCaseWidget)target).showDetail(isDetailVisible());
     }
     
     public class ExtensionPointSeparator extends SeparatorWidget

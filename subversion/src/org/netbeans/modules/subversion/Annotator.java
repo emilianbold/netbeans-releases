@@ -70,12 +70,14 @@ import java.text.MessageFormat;
 import java.io.File;
 import java.awt.*;
 import java.lang.reflect.Field;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
 import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.diff.PatchAction;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.openide.util.ImageUtilities;
 import org.tigris.subversion.svnclientadapter.*;
 
@@ -206,6 +208,10 @@ public class Annotator {
      * also return the original name String
      */
     public String annotateNameHtml(String name, FileInformation info, File file) {
+        if(!SvnClientFactory.isClientAvailable()) {
+            Subversion.LOG.fine(" skipping annotateNameHtml due to missing client");
+            return name;
+        }
         name = htmlEncode(name);
         int status = info.getStatus();
         String textAnnotation;
@@ -421,6 +427,10 @@ public class Annotator {
     }
 
     public String annotateNameHtml(String name, VCSContext context, int includeStatus) {
+        if(!SvnClientFactory.isClientAvailable()) {
+            Subversion.LOG.fine(" skipping annotateNameHtml due to missing client");
+            return name;
+        }
         FileInformation mostImportantInfo = null;
         File mostImportantFile = null;
         boolean folderAnnotation = false;
@@ -580,6 +590,10 @@ public class Annotator {
             FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY;
 
     public Image annotateIcon(Image icon, VCSContext context, int includeStatus) {
+        if(!SvnClientFactory.isClientAvailable()) {
+            Subversion.LOG.fine(" skipping annotateIcon due to missing client");
+            return null;
+        }
         boolean folderAnnotation = false;
         for (File file : context.getRootFiles()) {
             if (file.isDirectory()) {
@@ -672,8 +686,12 @@ public class Annotator {
         for (Iterator i = map.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) map.get(file);
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                modifiedFiles.put(file, info);
+            if(info != null) {
+                if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                    modifiedFiles.put(file, info);
+                }
+            } else {
+                Subversion.LOG.log(Level.WARNING, "null FileInformation returned for {0}", new Object[] { file });
             }
         }
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {

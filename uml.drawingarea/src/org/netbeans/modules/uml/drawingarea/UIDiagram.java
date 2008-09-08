@@ -515,8 +515,8 @@ public class UIDiagram extends Diagram {
         
         Set selected=new HashSet(bDeselectAllOthers ? new HashSet() : scene.getSelectedObjects());
         selected.add(pPresentationElement);
-        scene.setSelectedObjects(selected);
-        scene.revalidate();
+        scene.userSelectionSuggested(selected, false);
+        scene.validate();
         
         if(manager != null)
         {

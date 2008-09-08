@@ -60,6 +60,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationProxy;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationValidator;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
+import org.netbeans.modules.uml.drawingarea.actions.MoveNodeKeyAction;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -74,7 +75,6 @@ import org.netbeans.modules.uml.drawingarea.actions.IterateSelectAction;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
 import org.netbeans.modules.uml.drawingarea.actions.MoveControlPointAction;
-import org.netbeans.modules.uml.drawingarea.actions.MoveNodeKeyAction;
 import org.netbeans.modules.uml.drawingarea.actions.NavigateLinkAction;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
 import org.netbeans.modules.uml.drawingarea.palette.context.SwingPaletteManager;
@@ -99,7 +99,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
     
     private final static PopupMenuProvider CONTEXT_MENU_PROVIDER = new DiagramPopupMenuProvider();
     public final static WidgetAction POPUP_ACTION = ActionFactory.createPopupMenuAction(CONTEXT_MENU_PROVIDER);
-    public final static MoveNodeKeyAction MOVE_NODE_KEY_ACTION = new MoveNodeKeyAction();
+    //public final static MoveNodeKeyAction MOVE_NODE_KEY_ACTION = new MoveNodeKeyAction();
     
     private RelationshipDiscovery relDiscovery = null;
     
@@ -247,7 +247,7 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT);      
                 
         selectTool.addAction(DiagramEngine.lockSelectionAction);
-        selectTool.addAction(MOVE_NODE_KEY_ACTION);
+        selectTool.addAction(new MoveNodeKeyAction(moveStrategy, moveProvider));
         selectTool.addAction(selectAction);
         selectTool.addAction(POPUP_ACTION);
         selectTool.addAction(mouseHoverAction);
@@ -267,7 +267,10 @@ public class DefaultDiagramEngine extends  DiagramEngine {
     }
 
     public void setActions(ConnectionWidget widget,IPresentationElement edge) {
-        WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT);      
+        WidgetAction.Chain selectTool = widget.createActions(DesignerTools.SELECT); 
+        
+        selectTool.addAction(new MoveNodeKeyAction(DEFAULT_MOVE_STRATEGY, DEFAULT_MOVE_PROVIDER));
+        selectTool.addAction(DiagramEngine.lockSelectionAction);
         selectTool.addAction (ActionFactory.createAddRemoveControlPointAction ());
         selectTool.addAction(sceneSelectAction);
         

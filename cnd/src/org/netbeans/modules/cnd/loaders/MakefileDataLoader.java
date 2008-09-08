@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.filesystems.FileObject;

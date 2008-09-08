@@ -54,7 +54,6 @@ import org.openide.filesystems.FileUtil;
 import java.util.*;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
@@ -184,7 +183,7 @@ public class FileStatusCache {
         for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();                                   
             FileInformation info = (FileInformation) allFiles.get(file);
-            if ((info.getStatus() & includeStatus) == 0) continue;
+            if ((info != null && (info.getStatus() & includeStatus) == 0)) continue;
             File [] roots = context.getRootFiles();
             for (int j = 0; j < roots.length; j++) {
                 File root = roots[j];
@@ -507,7 +506,7 @@ public class FileStatusCache {
 
         long r2 = -2;
         if (e2 != null) {
-            SVNRevision r = e1.getRevision();
+            SVNRevision r = e2.getRevision();
             r2 = r != null ? e2.getRevision().getNumber() : r2;
         }
         

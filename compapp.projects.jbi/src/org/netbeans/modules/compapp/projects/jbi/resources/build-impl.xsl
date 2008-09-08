@@ -184,7 +184,7 @@ made subject to such option by the copyright holder.
                     <pathelement location="${{netbeans.home}}/modules/org-openide-nodes.jar"/>
                     <pathelement location="${{netbeans.home}}/modules/org-openide-dialogs.jar"/>
                     <pathelement location="${{netbeans.home}}/core/org-openide-filesystems.jar"/>
-                    <pathelement location="${{ide.module.install.dir}}/modules/ext/xerces-2.8.0.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/ext/xerces-2.8.0.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/ext/xml-commons-dom-ranges-1.0.b2.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-xml-retriever.jar"/>
                     <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-xml-schema-model.jar"/>
@@ -198,9 +198,9 @@ made subject to such option by the copyright holder.
                     <pathelement location="${{ide.module.install.dir}}/org-netbeans-modules-classfile.jar"/>   
                     <pathelement location="${{ide.module.install.dir}}/org-apache-xml-resolver.jar"/>
                     <pathelement location="${{xml.module.install.dir}}/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-                    <pathelement location="${{java.module.install.dir}}/ext/jaxws21/api/jaxb-api.jar"/>
-                    <pathelement location="${{java.module.install.dir}}/ext/jaxws21/jaxb-impl.jar"/>
-                    <pathelement location="${{java.module.install.dir}}/ext/jaxws21/activation.jar"/>   
+                    <pathelement location="${{ide.module.install.dir}}/ext/jaxb/api/jaxb-api.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/ext/jaxb/jaxb-impl.jar"/>
+                    <pathelement location="${{ide.module.install.dir}}/ext/jaxb/activation.jar"/>   
                     <pathelement location="${{enterprise.module.install.dir}}/org-netbeans-modules-j2eeserver.jar"/> 
                     <pathelement location="${{enterprise.module.install.dir}}/ext/jsr88javax.jar"/> 
                 </path>
@@ -619,6 +619,7 @@ made subject to such option by the copyright holder.
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-text.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-xdm.jar"/>
                     <pathelement path="${{ide.module.install.dir}}/org-netbeans-modules-xml-xam.jar"/>
+                    <pathelement path="${{ide.module.install.dir}}/ext/jaxb/activation.jar"/>   
                     <pathelement path="${{netbeans.home}}/lib/org-openide-modules.jar"/>
                     <pathelement path="${{netbeans.home}}/lib/org-openide-util.jar"/>
                     <pathelement path="${{netbeans.home}}/modules/org-openide-options.jar"/>

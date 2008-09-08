@@ -371,8 +371,11 @@ public final class ReferencesSupport {
     public static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token, CsmReferenceKind kind) {
         assert token != null;
         assert file != null : "null file for document " + doc + " on offset " + offset + " " + token;
-        ReferenceImpl ref = new ReferenceImpl(file, doc, offset, token, kind);
-        return ref;
+        if (token.id() == CppTokenId.THIS) {
+            return new ThisReferenceImpl(file, doc, offset, token, kind);
+        } else {
+            return new ReferenceImpl(file, doc, offset, token, kind);
+        }
     }
 
     private static boolean isSupportedToken(Token<CppTokenId> token) {
@@ -416,7 +419,7 @@ public final class ReferencesSupport {
         return null;
     }
 
-    private static Token getRefTokenIfPossible(CsmReference ref) {
+    /*package*/static Token getRefTokenIfPossible(CsmReference ref) {
         if (ref instanceof ReferenceImpl) {
             return ((ReferenceImpl)ref).getToken();
         } else {

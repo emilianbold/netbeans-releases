@@ -195,7 +195,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     
     protected String getTooltipText(Document doc, Token token, int offset) {
         CsmObject item = findTargetObject(doc, token, offset, false);
-        String msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
-        return msg;
+        CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
+        return msg == null ? null : msg.toString();
     }    
 }

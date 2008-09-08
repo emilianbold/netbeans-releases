@@ -73,6 +73,11 @@ public interface CsmProject extends CsmIdentifiable<CsmProject>, CsmNamedElement
      * Finds compound classifier (clas or enum) by its qualified name
      */
     CsmClassifier findClassifier(CharSequence qualifiedName);
+
+    /**
+     * Finds all compound classifier (clas, struct, union, enum, typedef, classforward) by its qualified name
+     */
+    Collection<CsmClassifier> findClassifiers(CharSequence qualifiedName);
     
     /**
      * Finds declaration by its nuique name
@@ -85,9 +90,9 @@ public interface CsmProject extends CsmIdentifiable<CsmProject>, CsmNamedElement
     Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName);
 
     /**
-     * Finds file by its absolute path
+     * Finds file by object that can be absolute path or native file item
      */
-    CsmFile findFile(CharSequence absolutePath);
+    CsmFile findFile(Object absolutePathOrNativeFileItem);
 
     /**
      * Gets the collection of source project files.
