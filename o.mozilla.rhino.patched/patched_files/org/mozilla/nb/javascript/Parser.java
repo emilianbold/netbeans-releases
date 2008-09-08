@@ -68,6 +68,8 @@ public class Parser
 {
     // <netbeans>
     // Keep in sync with JsModel.GENERATED_IDENTIFIER
+    // but NOTE -- there should be NO SPACES AROUND the identifier here - the
+    // parser strips the spaces during parsing.
     private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
     // </netbeans>
 
@@ -666,6 +668,17 @@ return null;
                     name = "";
                     memberExprNode = memberExprTail(false, memberExprHead);
                 }
+                // <netbeans>
+                // Detect and prevent scenarios like issue 133469
+                int peekedToken = peekToken();
+                if (peekedToken != Token.LP && GENERATED_IDENTIFIER.equals(name)) {
+                    if (matchToken(Token.NAME)) {
+                        name = ts.getString();
+                        funcNameNode = Node.newString(Token.FUNCNAME, name);
+                        setSourceOffsets(funcNameNode, getStartOffset());
+                    }
+                }
+                // </netbeans>
                 mustMatchToken(Token.LP, "msg.no.paren.parms");
             }
         } else if (matchToken(Token.LP)) {

@@ -161,4 +161,10 @@ public class JsParserTest extends JsTestBase {
         // http://www.netbeans.org/issues/show_bug.cgi?id=133173
         checkParseTree("testfiles/broken14.js", "__UNK^NOWN__", Token.NAME);
     }
+
+    public void testPartial15() throws Exception {
+        // Variation of
+        // http://www.netbeans.org/issues/show_bug.cgi?id=133173
+        checkParseTree("testfiles/broken15.js", "__UNK^NOWN__", Token.FUNCTION);
+    }
 }
