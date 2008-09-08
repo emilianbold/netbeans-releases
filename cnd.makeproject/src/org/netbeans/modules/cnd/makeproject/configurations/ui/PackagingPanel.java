@@ -145,14 +145,6 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
         
         packagingConfiguration.getFiles().setValue(new ArrayList(packagingFilesPanel.getListData()));
-        
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            InfoElement pkgElem = packagingConfiguration.findInfoElement("PKG"); // NOI18N
-            packagingConfiguration.getOutput().setValue(IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "/" + pkgElem.getValue()); // NOI18N
-        }
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-            // FIXUP
-        }
 	return packagingConfiguration;
         
     }

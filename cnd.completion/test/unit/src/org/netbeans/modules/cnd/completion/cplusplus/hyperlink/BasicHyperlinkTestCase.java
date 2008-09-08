@@ -479,6 +479,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ136731_local_extern_function.cc", 3, 40, "IZ136731_local_extern_function.cc", 3, 32);
     }
 
+    public void testIZ146464() throws Exception {
+        // IZ#146464 : IDE can't find 'wchar_t' identifier in C projects
+        performTest("IZ146464.c", 1, 16, "IZ146464.c", 1, 1); // NOI18N
+        performTest("IZ146464.c", 2, 5, "IZ146464.c", 1, 1); // NOI18N
+        performTest("IZ146464.c", 2, 23, "IZ146464.c", 1, 1); // NOI18N
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

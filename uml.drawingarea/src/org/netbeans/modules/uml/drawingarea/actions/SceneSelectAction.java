@@ -62,8 +62,6 @@ public class SceneSelectAction extends WidgetAction.Adapter
     @Override
     public State mouseClicked(Widget widget, WidgetMouseEvent event)
     {
-        System.err.println(" ClassWidgetAction : mouseClicked ! ");
-        
         Set selectedObjects = new HashSet();
         
 //        if (widget instanceof Scene)

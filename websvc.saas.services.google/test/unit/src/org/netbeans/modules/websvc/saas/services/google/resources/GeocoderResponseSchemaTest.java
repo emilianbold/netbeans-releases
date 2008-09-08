@@ -38,110 +38,25 @@
  */
 package org.netbeans.modules.websvc.saas.services.google.resources;
 
-import com.sun.tools.xjc.XJC2Task;
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
 import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import org.netbeans.modules.websvc.saas.kit.SchemaTest;
 
 /**
  *
  * @author lukas
  */
-public class GeocoderResponseSchemaTest extends NbTestCase {
+public class GeocoderResponseSchemaTest extends SchemaTest {
 
-    private static final Logger LOG = Logger.getLogger(GeocoderResponseSchemaTest.class.getName());
-    private static String resourceName = "/org/netbeans/modules/websvc/saas/services/google/resources/Geocoder.xsd"; //NOI18N
-    private static Schema schema;
-    private File file;
-
-
-    static {
-        // create a SchemaFactory capable of understanding WXS schemas
-        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
-        // load a WXS schema, represented by a Schema instance
-        Source schemaFile = new StreamSource(GeocoderResponseSchemaTest.class.getResourceAsStream(resourceName));
-        try {
-            schema = factory.newSchema(schemaFile);
-        } catch (SAXException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
+    public GeocoderResponseSchemaTest() {
+        super();
     }
 
-    private GeocoderResponseSchemaTest(String name) {
-        super(name);
-    }
-
-    private GeocoderResponseSchemaTest(String name, File f) {
-        super(name);
-        this.file = f;
+    @Override
+    protected String[] getSchemas() {
+        return new String[] {"org/netbeans/modules/websvc/saas/services/google/resources/Geocoder.xsd"}; //NOI18N
     }
 
     public static TestSuite suite() {
-        return createTestSuite(new GeocoderResponseSchemaTest("empty")); //NOI18N
-    }
-
-    public void validate() {
-        assertNotNull("null schema", schema); //NOI18N
-        LOG.fine("Validating: " + file.getName()); //NOI18N
-        try {
-            // parse an XML document into a DOM tree
-            DocumentBuilder parser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = parser.parse(file);
-
-            Validator validator = schema.newValidator();
-            try {
-                // validate the DOM tree
-                validator.validate(new DOMSource(document));
-            } catch (SAXException ex) {
-                fail("validation of " + file.getName() + " failed: " + ex.getLocalizedMessage()); //NOI18N
-            } catch (IOException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-        } catch (SAXException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } catch (ParserConfigurationException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public void testCompileSchema() throws IOException {
-        XJC2Task xjc = new XJC2Task();
-        xjc.setDestdir(getWorkDir());
-        xjc.setSchema(GeocoderResponseSchemaTest.class.getResource(resourceName).toExternalForm());
-        xjc.execute();
-    }
-
-    private static TestSuite createTestSuite(NbTestCase t) {
-        TestSuite ts = new NbTestSuite();
-        File dataDir = t.getDataDir();
-        File[] testCases = dataDir.listFiles();
-        Arrays.sort(testCases);
-        for (File f : testCases) {
-            if (f.isFile()) {
-                ts.addTest(new GeocoderResponseSchemaTest("validate", f)); //NOI18N
-            }
-        }
-        ts.addTest(new GeocoderResponseSchemaTest("testCompileSchema")); //NOI18N
-        return ts;
+        return createTestSuite(new GeocoderResponseSchemaTest()); //NOI18N
     }
 }

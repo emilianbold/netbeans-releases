@@ -902,9 +902,10 @@ public class ConfigurationMakefileWriter {
         bw.write("checkReturnCode\n"); // NOI18N
 //        bw.write("pkgtrans -s ${TMPDIR} tmp.pkg " + packageName + "\n"); // NOI18N
 //        bw.write("checkReturnCode\n"); // NOI18N
-        bw.write("rm -rf " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "/" + packageName + "\n"); // NOI18N
-        bw.write("mv ${TMPDIR}/" + packageName  + " " + IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
+        bw.write("rm -rf " + packagingConfiguration.getOutputValue() + "/" + packageName + "\n"); // NOI18N
+        bw.write("mv ${TMPDIR}/" + packageName  + " " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
         bw.write("checkReturnCode\n"); // NOI18N
+        bw.write("echo Solaris SVR4: " + packagingConfiguration.getOutputValue() + "/" + packageName + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Cleanup\n"); // NOI18N
@@ -966,8 +967,8 @@ public class ConfigurationMakefileWriter {
         bw.write("    echo \\\"%_topdir ${NBTOPDIR}\\\" added to ${RPMMACROS}\n"); // NOI18N
         bw.write("    echo \"**********************************************************************************************************\"\n"); // NOI18N
         bw.write("    echo %_topdir ${NBTOPDIR} >> ${RPMMACROS}\n"); // NOI18N
-        bw.write("    mkdir -p ${NBTOPDIR}/RPMS\n"); // NOI18N
         bw.write("fi  \n"); // NOI18N
+        bw.write("mkdir -p ${NBTOPDIR}/RPMS\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Create spec file\n"); // NOI18N

@@ -175,6 +175,8 @@ public class Resolver3 implements Resolver {
                 }
                 if (definition != null){
                     orig = definition;
+                } else {
+                    break;
                 }
             } else if (CsmKindUtilities.isTypedef(orig)) {
                 CsmType t = ((CsmTypedef)orig).getType();
@@ -725,12 +727,16 @@ public class Resolver3 implements Resolver {
     
     private CsmObject resolveInBaseClasses(CsmClass cls, CharSequence name) {
         resolveInBaseClass = true;
-        CsmObject res = _resolveInBaseClasses(cls, name, new HashSet<CsmClass>());
+        CsmObject res = _resolveInBaseClasses(cls, name, new HashSet<CsmClass>(), 0);
         resolveInBaseClass = false;
         return res;
     }
     
-    private CsmObject _resolveInBaseClasses(CsmClass cls, CharSequence name, Set<CsmClass> antiLoop) {
+    private CsmObject _resolveInBaseClasses(CsmClass cls, CharSequence name, Set<CsmClass> antiLoop, int depth) {
+        if (depth == 50) {
+            // temporary work around for IZ#146522
+            return null;
+        }
         if( cls != null && cls.isValid()) {
             for( CsmInheritance inh : cls.getBaseClasses() ) {
                 CsmClass base = getInheritanceClass(inh);
@@ -740,7 +746,7 @@ public class Resolver3 implements Resolver {
                     if( result != null ) {
                         return result;
                     }
-                    result = _resolveInBaseClasses(base, name, antiLoop);
+                    result = _resolveInBaseClasses(base, name, antiLoop, depth+1);
                     if( result != null ) {
                         return result;
                     }
