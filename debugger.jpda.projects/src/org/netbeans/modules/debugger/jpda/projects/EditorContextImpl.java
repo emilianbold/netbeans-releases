@@ -69,6 +69,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -986,8 +987,17 @@ public class EditorContextImpl extends EditorContext {
                                 "\nFree memory = "+Runtime.getRuntime().freeMemory());
                         return;
                     }
-                    Scope scope = ci.getTreeUtilities().scopeFor(offset);
-                    TypeElement te = scope.getEnclosingClass();
+                    TreePath p = ci.getTreeUtilities().pathFor(offset);
+                    while  (p != null && p.getLeaf().getKind() != Kind.CLASS) {
+                        p = p.getParentPath();
+                    }
+                    TypeElement te;
+                    if (p != null) {
+                        te = (TypeElement) ci.getTrees().getElement(p);
+                    } else {
+                        Scope scope = ci.getTreeUtilities().scopeFor(offset);
+                        te = scope.getEnclosingClass();
+                    }
                     if (te != null) {
                         result[0] = ElementUtilities.getBinaryName(te);
                     } else {
