@@ -12,4 +12,4 @@
 [x] Show Diff Sidebar          D
 [ ] Show Versioning Labels     V
 ============================
-    Full Screen                F
+[ ] Full Screen                F
