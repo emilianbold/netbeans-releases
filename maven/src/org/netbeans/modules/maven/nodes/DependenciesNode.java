@@ -158,8 +158,11 @@ public class DependenciesNode extends AbstractNode {
             prefs.addPreferenceChangeListener(this);
         }
         
-        public void setShowNonCP(boolean showNonCP) {
-            this.showNonCP = showNonCP;
+        public void showNonCP() {
+            showNonCP = true;
+            regenerateKeys();
+            refresh();
+            refreshKey(NULL);
         }
         
         protected Node[] createNodes(DependencyWrapper wr) {
@@ -466,14 +469,43 @@ public class DependenciesNode extends AbstractNode {
     }
     
     private static class NonCPNode extends AbstractNode {
+        private DependenciesChildren parent;
+        
         NonCPNode(int count, DependenciesChildren parent) {
             super(Children.LEAF);
+            this.parent = parent;
             if (count == 1) {
                 setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_NonCPCount1"));
             } else {
                 setDisplayName(NbBundle.getMessage(DependenciesNode.class, "LBL_NonCPCount2", count));
             }
         }
+
+        @Override
+        public Action getPreferredAction() {
+            return new ExpandAction(parent);
+        }
+
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {
+                new ExpandAction(parent)
+            };
+        }
+    }
+
+    private static class ExpandAction extends AbstractAction {
+        private DependenciesChildren parent;
+
+        public ExpandAction(DependenciesChildren parent) {
+            this.parent = parent;
+            putValue(Action.NAME, NbBundle.getMessage(DependenciesNode.class, "LBL_Expand"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            parent.showNonCP();
+        }
+
     }
     
     private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; // NOI18N
