@@ -490,6 +490,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 an.updateInError(toRefresh);
                             }
                         }
+                        JavaTaskProvider.refresh(fo);
                     }
                 }
             }
