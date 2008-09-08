@@ -232,7 +232,6 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         {
             int dx = location.x - original.x;
             int dy = location.y - original.y;
-            System.out.printf("dx = %d, dy = %d\n", dx, dy);
             if(dx!=0 || dy!=0)
             {
                 if(movingWidgets == null)

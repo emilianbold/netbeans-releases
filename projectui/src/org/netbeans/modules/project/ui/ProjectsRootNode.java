@@ -443,12 +443,12 @@ public class ProjectsRootNode extends AbstractNode {
         protected final void setProjectFiles() {
             Project prj = getLookup().lookup(Project.class);
 
-            if (prj != null) {
+            if (prj != null && /* #145682 */ !(prj instanceof LazyProject)) {
                 setProjectFiles(prj);
             }
         }
 
-        protected final void setProjectFiles(Project project) {
+        private final void setProjectFiles(Project project) {
             Sources sources = ProjectUtils.getSources(project);  // returns singleton
             if (sourcesListener == null) {
                 sourcesListener = WeakListeners.change(this, sources);
@@ -682,6 +682,7 @@ public class ProjectsRootNode extends AbstractNode {
                     }
                     OpenProjectList.LOGGER.log(Level.FINER, "done {0}", this);
                     }
+                    setProjectFiles();
                 } else {
                     OpenProjectList.LOGGER.log(Level.FINE, "wrong directories. current: " + fo + " new " + newProj.getProjectDirectory());
                 }

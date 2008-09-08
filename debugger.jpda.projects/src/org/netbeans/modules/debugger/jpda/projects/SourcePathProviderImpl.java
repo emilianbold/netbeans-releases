@@ -222,6 +222,8 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     (new FileObject [allSourceRoots.size()])
             );
             projectSourceRoots = getSourceRoots(originalSourcePath);
+
+            srcRootsToListenForArtifactsUpdates = new HashSet(allSourceRoots);
             
             JavaPlatform[] platforms = JavaPlatformManager.getDefault ().
                 getInstalledPlatforms ();

@@ -98,7 +98,7 @@ public class AstRenderer {
                 }
                 case CPPTokenTypes.CSM_ENUM_DECLARATION:
                 {
-                    CsmEnum csmEnum = EnumImpl.create(token, currentNamespace, file);
+                    CsmEnum csmEnum = EnumImpl.create(token, currentNamespace, file, !isRenderingLocalContext());
                     container.addDeclaration(csmEnum);
                     renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                     break;
@@ -705,7 +705,7 @@ public class AstRenderer {
                             case CPPTokenTypes.LITERAL_enum:
                                 if (AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null) {
                                     if (container instanceof CsmScope) {
-                                        ei = EnumImpl.create(curr, (CsmScope) container, file);
+                                        ei = EnumImpl.create(curr, (CsmScope) container, file, !isRenderingLocalContext());
                                         if (container instanceof MutableDeclarationsContainer) {
                                             ((MutableDeclarationsContainer) container).addDeclaration(ei);
                                         }
