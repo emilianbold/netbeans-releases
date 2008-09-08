@@ -39,58 +39,67 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.db.core;
+package org.netbeans.modules.db.sql.editor.ui.actions;
 
-import java.util.prefs.Preferences;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.db.api.sql.execute.SQLExecuteOptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.BooleanStateAction;
 
 /**
+ * This action lets you toggle between creating a new tab for each execution
+ * or reusing the same tab each time.
  *
- * @author Andrei Badea
+ * @author David Van Couvering, Andrei Badea
  */
-public class SQLOptions  {
-    private static SQLOptions INSTANCE = new SQLOptions();
-    private static final String PROP_FETCH_STEP = "fetchStep"; // NOI18N
-    private static final int DEFAULT_FETCH_STEP = 200;
-    private static final String PROP_MAX_ROWS = "maxRows";
-    private static final int DEFAULT_MAX_ROWS = 200000;
+public class ToggleKeepOldResultTabsAction extends BooleanStateAction implements PropertyChangeListener {
 
-    public static final String PROP_KEEP_OLD_RESULT_TABS = "keepOldResultTabs"; // NOI18N
+    private static final String ICON_PATH = "org/netbeans/modules/db/sql/editor/resources/keepoldresulttabs.png"; // NOI18N
 
-    public static SQLOptions getDefault() {
-        return INSTANCE;
-    }
-    
-    public String displayName() {
-        return NbBundle.getMessage(SQLOptions.class, "LBL_SQLOptions");
-    }
-    
-    private static Preferences getPreferences() {
-        return NbPreferences.forModule(SQLOptions.class);
-    }
-        
-    public int getFetchStep() {
-        return getPreferences().getInt(PROP_FETCH_STEP, DEFAULT_FETCH_STEP);
-    }
-    
-    public void setFetchStep(int value) {
-        getPreferences().putInt(PROP_FETCH_STEP, value);
-    }   
-    
-    public int getMaxRows() {
-        return getPreferences().getInt(PROP_MAX_ROWS, DEFAULT_MAX_ROWS);
-    }
-    
-    public void setMaxRows(int rows) {
-        getPreferences().putInt(PROP_MAX_ROWS, rows);
-    }
-    public boolean isKeepOldResultTabs() {
-        return getPreferences().getBoolean(PROP_KEEP_OLD_RESULT_TABS, false);
+    private boolean initialized;
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(ToggleKeepOldResultTabsAction.class, "LBL_ToggleKeepOldResultTabsAction"); // NOI18N
     }
 
-    public void setKeepOldResultTabs(boolean keepOldTabs) {
-        getPreferences().putBoolean(PROP_KEEP_OLD_RESULT_TABS, keepOldTabs);
+    @Override
+    protected String iconResource() {
+        return ICON_PATH;
     }
 
+    @Override
+    public boolean getBooleanState() {
+        synchronized (this) {
+            if (!initialized) {
+                SQLExecuteOptions options = SQLExecuteOptions.getDefault();
+                options.addPropertyChangeListener(WeakListeners.propertyChange(this, options));
+                keepOldResultTabsChanged();
+                initialized = true;
+            }
+        }
+        return super.getBooleanState();
+    }
+
+    @Override
+    public void setBooleanState(boolean value) {
+        SQLExecuteOptions.getDefault().setKeepOldResultTabs(value);
+        super.setBooleanState(value);
+    }
+
+    private void keepOldResultTabsChanged() {
+        setBooleanState(SQLExecuteOptions.getDefault().isKeepOldResultTabs());
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(ToggleKeepOldResultTabsAction.class);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        keepOldResultTabsChanged();
+    }
 }
