@@ -71,6 +71,14 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/interfaces.php", "$arg->^", false);
     }
     
+    public void testVarScope1() throws Exception {
+        checkCompletion("testfiles/completion/lib/var_scope.php", "echo $^", false);
+    }
+    
+    public void testVarScope2() throws Exception {
+        checkCompletion("testfiles/completion/lib/var_scope.php", "print $^", false);
+    }
+    
     public void testCCOnMethods1() throws Exception {
         checkCompletion("testfiles/completion/lib/test_cc_on_methods.php", "$tst1->newInstance()->^", false);
     }
