@@ -198,7 +198,7 @@ public class SchemaTest extends NbTestCase {
             }
 
         }
-        assertNotNull("null schema", s);
+        assertNotNull("null schema", s); //NOI18N
         return s;
     }
 }
