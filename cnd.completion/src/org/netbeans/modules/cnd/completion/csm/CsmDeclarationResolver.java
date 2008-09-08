@@ -117,7 +117,7 @@ public class CsmDeclarationResolver {
         // add file scope to context
         CsmContextUtilities.updateContext(file, offset, context);
         // check file declarations
-        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset, offset+1);
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset);
         Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(file, filter);
         CsmObject lastObject = findInnerDeclaration(it, context, offset);
         // check includes if needed
