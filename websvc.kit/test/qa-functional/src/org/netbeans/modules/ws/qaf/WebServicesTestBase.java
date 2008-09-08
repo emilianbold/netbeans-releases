@@ -121,12 +121,14 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                     //Java
                     return Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
                 case WEB:
-                    //Web
+                    //Java Web
                     return Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "Templates/Project/Web");
                 case EJB:
+                     //Java EE
+                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle", "Templates/Project/J2EE");
                 case APPCLIENT:
-                    //Enterprise
-                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle", "Templates/Project/J2EE");
+                    //Java EE
+                    return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle", "Templates/Project/J2EE");
                 case SAMPLE:
                     //Samples
                     return Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Templates/Project/Samples");

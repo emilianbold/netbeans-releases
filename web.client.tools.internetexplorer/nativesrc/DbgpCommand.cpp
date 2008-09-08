@@ -219,15 +219,10 @@ DbgpResponse *BreakpointSetCommand::process(DbgpConnection *pDbgpConnection, map
     int lineNo = _ttoi(argsMap.find('n')->second.c_str());
     Breakpoint *pBreakpoint = pMgr->createBreakpoint(fileURI, lineNo);
     BreakpointUpdateCommand::setUpdatableValues(pBreakpoint, argsMap);
-    map<char, tstring>::iterator iter = argsMap.find('-');
-    if(iter != argsMap.end()) {
-        pBreakpoint->setExpression(iter->second);
-    }
-
     pMgr->setBreakpoint(pBreakpoint);
 
     //check for run to cursor request
-    iter = argsMap.find('r');
+    map<char, tstring>::iterator iter = argsMap.find('r');
     if(iter != argsMap.end() && (_ttoi(iter->second.c_str()) == 1)) {
         pBreakpoint->setTemporary(TRUE);
         pScriptDebugger->run();
@@ -292,6 +287,11 @@ void BreakpointUpdateCommand::setUpdatableValues(Breakpoint *pBreakpoint, map<ch
             hitFilter = MULTIPLE;
         }
         pBreakpoint->setHitFilter(hitFilter);
+    }
+
+    iter = argsMap.find('-');
+    if(iter != argsMap.end()) {
+        pBreakpoint->setExpression(iter->second);
     }
 }
 

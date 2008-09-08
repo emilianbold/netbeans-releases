@@ -172,15 +172,12 @@ public:
     void processBreakpoints(tstring fileURI);
     BOOL setBreakpoint(Breakpoint *pBreakpoint);
     BOOL removeBreakpoint(tstring id);
-    BOOL removeBreakpoint(Breakpoint *pBreakpoint);
     Breakpoint *getUpdatableBreakpoint(tstring id);
 
 private:
     map<tstring, list<Breakpoint *> *> fileToBreakpointsMap;
     map<tstring, Breakpoint *> idToBreakpointMap;
     unsigned int ID;
-    list<Breakpoint *> breakpointsToAdd;
-    list<Breakpoint *> breakpointsToRemove;
     ScriptDebugger *m_pScriptDebugger;
     void addToMaps(Breakpoint *pBreakpoint);
     void removeFromMaps(Breakpoint *pBreakpoint);

@@ -649,8 +649,11 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 Collection<StatePair> states = (Collection<StatePair>) data;
                 if (states.size() > 1) {
                     if (CndUtils.isDebugMode()) {
-                        String message = "Attempt to set state while there are multiple states: " + canonical; // NOI18N
-                        Utils.LOG.log(Level.SEVERE, message, new Exception());
+                        StringBuilder sb = new StringBuilder("Attempt to set state while there are multiple states: " + canonical); // NOI18N
+                        for (StatePair pair : states) {
+                            sb.append(String.format("\nvalid: %b context: %b %s", pair.state.isValid(), pair.state.isCompileContext(), pair.pcState)); //NOI18N
+                        }
+                        Utils.LOG.log(Level.SEVERE, sb.toString(), new Exception(sb.toString()));
                     }
                     return;
                 }

@@ -49,7 +49,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -439,43 +438,10 @@ public class DocumentationScrollPane extends JScrollPane {
                 final String desc = e.getDescription();
                 if (desc != null) {
                     CompletionDocumentation doc = currentDocumentation.resolveLink(desc);
-                    if (doc == null) {
-                        try {
-                            URL url = currentDocumentation.getURL();
-                            url =  url != null ? new URL(url, desc) : new URL(desc);
-                            doc = new DefaultDoc(url);
-                        } catch (MalformedURLException ex) {                            
-                        }
-                    }
                     if (doc != null)
                         setData(doc);
                 }                    
             }
-        }
-    }
-    
-    private class DefaultDoc implements CompletionDocumentation {
-        
-        private URL url = null;
-        
-        private DefaultDoc(URL url) {
-            this.url = url;
-        }
-    
-        public String getText() {
-            return null;
-        }
-        
-        public URL getURL() {
-            return url;
-        }
-        
-        public CompletionDocumentation resolveLink(String link) {
-            return null;
-        }
-        
-        public Action getGotoSourceAction() {
-            return null;
         }
     }
     
