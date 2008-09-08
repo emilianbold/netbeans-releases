@@ -95,7 +95,7 @@ public class DiagramInputkeyAction extends javax.swing.AbstractAction
         {
             onCancelAction();
         }
-        else if (DiagramKeyMapConstants.CTRL_ENTER_ACTION.equals(command))
+        else if (DiagramKeyMapConstants.ADD_TO_DIAGRAM.equals(command))
         {
             addToDiagram();
         }
