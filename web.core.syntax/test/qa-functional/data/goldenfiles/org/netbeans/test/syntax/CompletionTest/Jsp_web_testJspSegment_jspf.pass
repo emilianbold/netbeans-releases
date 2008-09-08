@@ -41,6 +41,9 @@ End cursor position = 895
 [<jsp:|, < jsp:text >, <jsp:text, 931]
 < jsp:attribute >
 < jsp:body >
+< jsp:declaration >
+< jsp:directive.include / >
+< jsp:directive.page / >
 < jsp:element >
 < jsp:expression >
 < jsp:fallback >
@@ -50,6 +53,7 @@ End cursor position = 895
 < jsp:param / >
 < jsp:params >
 < jsp:plugin >
+< jsp:scriptlet >
 < jsp:setProperty / >
 < jsp:text >
 < jsp:useBean >

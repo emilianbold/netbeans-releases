@@ -1,6 +1,11 @@
 [<jsp:|, < jsp:text >, <jsp:text, 143]
 < jsp:attribute >
 < jsp:body >
+< jsp:declaration >
+< jsp:directive.attribute / >
+< jsp:directive.include / >
+< jsp:directive.tag / >
+< jsp:directive.variable / >
 < jsp:doBody / >
 < jsp:element >
 < jsp:expression >
@@ -12,6 +17,7 @@
 < jsp:param / >
 < jsp:params >
 < jsp:plugin >
+< jsp:scriptlet >
 < jsp:setProperty / >
 < jsp:text >
 < jsp:useBean >
