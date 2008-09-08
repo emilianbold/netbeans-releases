@@ -41,7 +41,11 @@
 
 package org.netbeans.modules.web.client.tools.common.dbgp;
 
+import java.util.Map.Entry;
+import org.w3c.dom.CDATASection;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  * @author ads, jdeva
@@ -110,7 +114,25 @@ public class Source{
         }
 
         public byte[] getSourceCode() {
-            return Message.getDecodedBytes(getEncoding(), getNodeValue(getNode()));
+            return Message.getDecodedBytes(getEncoding(), getSourceText(getNode()));
+        }
+        
+        private static String getSourceText(Node node) {
+            NodeList list = node.getChildNodes();
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < list.getLength(); i++) {
+                Node child = list.item(i);
+                if (child instanceof Text) {
+                    builder.append(child.getNodeValue());
+                } else if (child instanceof CDATASection) {
+                    builder.append(child.getNodeValue());
+                }
+            }
+            
+            if (builder.length() > 0) {
+                builder.delete(0, 1);
+            }
+            return replaceHtmlEntities(builder.toString());
         }
     }
 }

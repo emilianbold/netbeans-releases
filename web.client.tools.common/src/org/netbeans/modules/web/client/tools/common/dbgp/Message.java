@@ -341,7 +341,7 @@ public abstract class Message {
         return null;
     }
 
-    private static String replaceHtmlEntities( String str ) {
+    protected static String replaceHtmlEntities( String str ) {
         if ( str.indexOf( "&" ) == -1 ) {
             return str;
         } else {
