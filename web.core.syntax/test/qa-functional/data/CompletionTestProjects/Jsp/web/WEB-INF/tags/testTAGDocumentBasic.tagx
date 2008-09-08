@@ -3,7 +3,7 @@
 <!-- completion for tags -->
 <%--CC
 <j|
-< jsp:directive.attribute />
+< jsp:directive.attribute / >
 <jsp:directive.attribute
 --%>
 
