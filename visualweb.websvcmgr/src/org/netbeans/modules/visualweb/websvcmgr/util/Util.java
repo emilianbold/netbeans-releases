@@ -68,7 +68,7 @@ import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderParameter;
 // BEGIN_NOI18N
 import org.netbeans.modules.visualweb.websvcmgr.consumer.DesignerWebServiceExtData;
 import org.netbeans.modules.visualweb.websvcmgr.consumer.DesignerWebServiceExtImpl;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
@@ -403,7 +403,7 @@ public class Util {
             }
             
             ClassLoader urlClassLoader = new URLClassLoader(urlList.toArray(new URL[urlList.size()]), Util.class.getClassLoader());
-            WsdlPort port = wsData.getWsdlService().getPortByName(portName);
+            WSPort port = wsData.getWsdlService().getPortByName(portName);
             
             DesignerWebServiceExtData data =
                     (DesignerWebServiceExtData)descriptor.getConsumerData().get(DesignerWebServiceExtImpl.CONSUMER_ID);

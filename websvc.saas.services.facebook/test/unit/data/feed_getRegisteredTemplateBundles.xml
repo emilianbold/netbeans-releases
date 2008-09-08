@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed_getRegisteredTemplateBundles_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd" list="true">
+    <template_bundle>
+        <one_line_story_templates list="true">
+            <one_line_story_template>{*actor*} is playing {*game*} with {*target*}.</one_line_story_template>
+        </one_line_story_templates>
+        <short_story_templates list="true">
+            <short_story_template>
+                <template_title>{*actor*} is playing {*game*} with {*target*}.</template_title>
+                <template_body>{*actor*} is playing {*game*} with {*target*}.</template_body>
+            </short_story_template>
+        </short_story_templates>
+        <full_story_template>
+            <template_title>{*actor*} is playing {*game*} with {*target*}</template_title>
+            <template_body>{*actor*} is playing {*game*} with {*target*}.</template_body>
+        </full_story_template>
+        <time_created>1213995448</time_created>
+        <template_bundle_id>17869702716</template_bundle_id>
+    </template_bundle>
+    <template_bundle>
+        <one_line_story_templates list="true">
+            <one_line_story_template>{*actor*} just challenged {*target*} to a game of {*game*}.</one_line_story_template>
+        </one_line_story_templates>
+        <short_story_templates list="true">
+            <short_story_template>
+                <template_title>{*actor*} just challenged {*target*} to a game of {*game*}.</template_title>
+                <template_body>{*actor*} just challenged {*target*} to a game of {*game*}.</template_body>
+            </short_story_template>
+        </short_story_templates>
+        <full_story_template>
+            <template_title>{*actor*} just challenged {*target*} to a game of {*game*}.</template_title>
+            <template_body>{*actor*} just challenged {*target*} to a game of {*game*}.</template_body>
+        </full_story_template>
+        <time_created>1212692444</time_created>
+        <template_bundle_id>16487752716</template_bundle_id>
+    </template_bundle>
+</feed_getRegisteredTemplateBundles_response>

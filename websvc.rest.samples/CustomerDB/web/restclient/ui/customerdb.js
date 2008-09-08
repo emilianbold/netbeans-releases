@@ -39,10 +39,17 @@
  * made subject to such option by the copyright holder.
  */
 
+var app;
 var customersObj;
 
+//function to get CustomerDB app
 function getCustomerDBApp() {
-    return new CustomerDB('http://localhost:8080/CustomerDB/resources');
+    if(app == undefined || app == null) {
+        app = new CustomerDB('http://localhost:8080/CustomerDB/resources');
+        //Uncomment below if using proxy for javascript cross-domain.
+        //app.setProxy("http://localhost:8080/CustomerDB/restproxy");
+    }
+    return app;
 }
 
 //function to show all customers

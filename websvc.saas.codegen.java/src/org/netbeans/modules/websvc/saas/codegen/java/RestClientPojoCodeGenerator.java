@@ -404,7 +404,7 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
                 String bodyText = "{ \n" + getServiceMethodBody() + "\n }";
 
 
-                String comment = "Retrieves representation of an instance of " + getBean().getQualifiedClassName() + "\n";// NOI18N
+                String comment = "\n";// NOI18N
 
                 for (String param : parameters) {
                     comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);// NOI18N

@@ -40,6 +40,7 @@
  *
  * Portions Copyrighted 2008 Craig MacKay.
  */
+
 package org.netbeans.modules.spring.webmvc;
 
 import java.io.File;
@@ -98,13 +99,15 @@ import org.openide.util.NbBundle;
  *
  * @author Craig MacKay et al.
  */
-public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {
 
+public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {
     private static final Logger LOGGER = Logger.getLogger(SpringWebModuleExtender.class.getName());
+
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
     private final boolean customizer;
+    
     private SpringConfigPanelVisual component;
     private String dispatcherName = "dispatcher"; // NOI18N
     private String dispatcherMapping = "*.htm"; // NOI18N
@@ -147,12 +150,12 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     }
 
     public boolean isValid() {
-        if (dispatcherName == null || dispatcherName.trim().length() == 0) {
+        if (dispatcherName == null || dispatcherName.trim().length() == 0){
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsEmpty")); // NOI18N
             return false;
         }
 
-        if (!SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(dispatcherName)) {
+        if (!SpringWebFrameworkUtils.isDispatcherServletConfigFilenameValid(dispatcherName)){
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherServletConfigFilenameIsNotValid"));
             return false;
         }
@@ -161,7 +164,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsEmpty")); // NOI18N
             return false;
         }
-        if (!SpringWebFrameworkUtils.isDispatcherMappingPatternValid(dispatcherMapping)) {
+        if (!SpringWebFrameworkUtils.isDispatcherMappingPatternValid(dispatcherMapping)){
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsNotValid")); // NOI18N
             return false;
         }
@@ -190,7 +193,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
 
     @Override
     public void update() {
-        // not used yet
+    // not used yet
     }
 
     @Override
@@ -214,6 +217,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener"; // NOI18N
         public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
         public static final String ENCODING = "UTF-8"; // NOI18N
+        
         private final Set<FileObject> filesToOpen = new LinkedHashSet<FileObject>();
         private final WebModule webModule;
 
@@ -259,7 +263,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             }
             if (springLibrary == null) {
                 springLibrary = SpringUtilities.findSpringLibrary();
-                if (springLibrary != null) {
+                if (springLibrary != null){
                     libraries.add(springLibrary);
                 } else {
                     LOGGER.log(Level.WARNING, null, new Error("No Spring Framework library found."));
@@ -310,7 +314,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                 final ConfigFileManager manager = scope.getConfigFileManager();
                 try {
                     manager.mutex().writeAccess(new ExceptionAction<Void>() {
-
                         public Void run() throws IOException {
                             List<File> files = manager.getConfigFiles();
                             files.addAll(newConfigFiles);
@@ -324,7 +327,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                         }
                     });
                 } catch (MutexException e) {
-                    throw (IOException) e.getException();
+                    throw (IOException)e.getException();
                 }
             } else {
                 LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile);
