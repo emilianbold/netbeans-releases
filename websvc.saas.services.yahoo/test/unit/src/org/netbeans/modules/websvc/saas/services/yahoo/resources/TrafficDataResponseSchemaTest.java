@@ -38,114 +38,45 @@
  */
 package org.netbeans.modules.websvc.saas.services.yahoo.resources;
 
-import com.sun.tools.xjc.XJC2Task;
 import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
+import java.util.ArrayList;
+import java.util.List;
 import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import org.netbeans.modules.websvc.saas.kit.SchemaTest;
 
 /**
  *
  * @author lukas
  */
-public class TrafficDataResponseSchemaTest extends NbTestCase {
+public class TrafficDataResponseSchemaTest extends SchemaTest {
 
-    private static final Logger LOG = Logger.getLogger(TrafficDataResponseSchemaTest.class.getName());
-    private static String resourceName = "/org/netbeans/modules/websvc/saas/services/yahoo/resources/TrafficDataResponse.xsd"; //NOI18N
-    private static Schema schema;
-    private File file;
-
-
-    static {
-        // create a SchemaFactory capable of understanding WXS schemas
-        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
-        // load a WXS schema, represented by a Schema instance
-        Source schemaFile = new StreamSource(TrafficDataResponseSchemaTest.class.getResourceAsStream(resourceName));
-        try {
-            schema = factory.newSchema(schemaFile);
-        } catch (SAXException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
+    private TrafficDataResponseSchemaTest() {
+        super();
     }
 
-    private TrafficDataResponseSchemaTest(String name) {
-        super(name);
+    @Override
+    protected String[] getSchemas() {
+        return new String[]{"org/netbeans/modules/websvc/saas/services/yahoo/resources/TrafficDataResponse.xsd"}; //NOI18N
     }
 
-    private TrafficDataResponseSchemaTest(String name, File f) {
-        super(name);
-        this.file = f;
-    }
-
-    public static TestSuite suite() {
-        return createTestSuite(new TrafficDataResponseSchemaTest("empty")); //NOI18N
-    }
-
-    public void validate() {
-        assertNotNull("null schema", schema); //NOI18N
-        LOG.fine("Validating: " + file.getName()); //NOI18N
-        try {
-            // parse an XML document into a DOM tree
-            DocumentBuilder parser = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = parser.parse(file);
-
-            Validator validator = schema.newValidator();
-            try {
-                // validate the DOM tree
-                validator.validate(new DOMSource(document));
-            } catch (SAXException ex) {
-                fail("validation of " + file.getName() + " failed: " + ex.getLocalizedMessage()); //NOI18N
-            } catch (IOException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-        } catch (SAXException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } catch (ParserConfigurationException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public void testCompileSchema() throws IOException {
-        XJC2Task xjc = new XJC2Task();
-        xjc.setDestdir(getWorkDir());
-        xjc.setSchema(TrafficDataResponseSchemaTest.class.getResource(resourceName).toExternalForm());
-        xjc.execute();
-    }
-
-    private static TestSuite createTestSuite(NbTestCase t) {
-        TestSuite ts = new NbTestSuite();
-        //XXX - validation is too strict, so until some way to relax it
-        //will be found validate only error response
+    @Override
+    protected List<File> getTestCases() {
+        List<File> tests = new ArrayList<File>();
+        //XXX - disabled due to very strict validation
         /*
-        File dataDir = new File(t.getDataDir(), "trafficData"); //NOI18N
+        File dataDir = new File(getDataDir(), "trafficData"); //NOI18N
         File[] testCases = dataDir.listFiles();
-        Arrays.sort(testCases);
         for (File f : testCases) {
             if (f.isFile()) {
-                ts.addTest(new TrafficDataResponseSchemaTest("validate", f)); //NOI18N
+                tests.add(f);
             }
         }
         */
-        ts.addTest(new TrafficDataResponseSchemaTest("testCompileSchema")); //NOI18N
-        return ts;
+        return tests;
     }
+
+    public static TestSuite suite() {
+        return createTestSuite(new TrafficDataResponseSchemaTest()); //NOI18N
+    }
+
 }
