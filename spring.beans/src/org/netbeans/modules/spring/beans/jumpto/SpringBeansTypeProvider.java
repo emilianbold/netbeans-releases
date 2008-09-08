@@ -97,9 +97,6 @@ public class SpringBeansTypeProvider implements TypeProvider {
             return;
         }
 
-        if (isCancelled) {
-            return; 
-        }
         if (lastRefreshText == null || lastRefreshSearchType == null || !searchText.startsWith(lastRefreshText) || lastRefreshSearchType != searchType || cache == null) {
             // refresh cache
             cacheRefresh = true;
@@ -192,7 +189,7 @@ public class SpringBeansTypeProvider implements TypeProvider {
             }
         }
 
-        if (!isCancelled) {
+        if (cache != null) {
             ArrayList<AbstractBeanTypeDescriptor> beans = new ArrayList<AbstractBeanTypeDescriptor>(cache.size());
             for (AbstractBeanTypeDescriptor beanTypeDescriptor : cache) {
                 if (cacheRefresh || matcher.match(beanTypeDescriptor.getSimpleName())) {
