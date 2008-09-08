@@ -43,39 +43,39 @@ package org.netbeans.performance.languages;
 
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.languages.actions.CreatePHPProject;
-import org.netbeans.performance.languages.actions.CreateRubyProject;
-import org.netbeans.performance.languages.actions.CreateScriptingPackFiles;
-import org.netbeans.performance.languages.actions.EditorMenuPopup;
-import org.netbeans.performance.languages.actions.OpenRubyProject;
-import org.netbeans.performance.languages.actions.PageUpPageDownScriptingEditor;
-import org.netbeans.performance.languages.actions.SaveModifiedScriptingFiles;
-import org.netbeans.performance.languages.actions.ScriptingExpandFolder;
-import org.netbeans.performance.languages.actions.TypingInScriptingEditor;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.languages.actions.*;
+
 
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author mkhramov@netbeans.org, mrkam@netbeans.org
  */
 public class ScriptingMeasureActionsTest {
     public static NbTestSuite suite() {
+        PerformanceTestCase.prepareForMeasurements();
+
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
         System.setProperty("suitename", "org.netbeans.performance.languages.ScriptingMeasureActionsTest");
 
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
-//        .addTest(CreatePHPProject.class)
-        .addTest(CreateScriptingPackFiles.class)
-        .addTest(ScriptingExpandFolder.class)           
-        .addTest(EditorMenuPopup.class)  
-        .addTest(TypingInScriptingEditor.class)   
-        .addTest(OpenRubyProject.class)
-          // Saving modified document
-        .addTest(SaveModifiedScriptingFiles.class)
-       
-        // Page Up and Down in scripting editor
-        .addTest(PageUpPageDownScriptingEditor.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
+                .addTest(CreatePHPSampleProject.class)
+                
+                .addTest(CreateScriptingPackFiles.class)
+                .addTest(ScriptingExpandFolder.class)
+                .addTest(EditorMenuPopup.class)
+                .addTest(TypingInScriptingEditor.class)
+
+                // Saving modified document
+                .addTest(SaveModifiedScriptingFiles.class)
+
+                // Page Up and Down in scripting editor
+                .addTest(PageUpPageDownScriptingEditor.class)
+
+                // Can cause RubyProject to be closed in case of failure
+                .addTest(OpenRubyProject.class)
+                .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;        
     }

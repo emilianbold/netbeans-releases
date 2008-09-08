@@ -347,6 +347,10 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         m_svgDataObject = dObj;
         initialize();
     }
+    
+    Action[] getImageContextActions(){
+        return new Action[]{ zoomToFitAction , scaleToggleButton.getAction()};
+    }
 
     private SceneManager getSceneManager() {
         return m_svgDataObject.getSceneManager();
@@ -910,6 +914,9 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 
     protected synchronized void updateImage() {
         assert SwingUtilities.isEventDispatchThread() : "Not in AWT event dispach thread"; //NOI18N
+        
+        disableImageContext();
+        
         getSceneManager().saveSelection();
 
         if (parsingTask != null) {
@@ -920,6 +927,12 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             parsingTask.start();
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+    
+    void enableImageContext(){
+        for ( Action action : getImageContextActions() ){
+            action.setEnabled( true );
         }
     }
 
@@ -986,7 +999,13 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         //updateSelection(actualSelection);
         repaintAll();
     }
-
+    
+    private void disableImageContext(){
+        for ( Action action : getImageContextActions() ){
+            action.setEnabled( false );
+        }
+    }
+    
     private void doDrag(DropTargetDragEvent dtde) {
         if ( getDroppedDataObject( dtde) != null) {
             dtde.acceptDrag( DnDConstants.ACTION_COPY_OR_MOVE);

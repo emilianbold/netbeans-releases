@@ -222,77 +222,33 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         ninfo.setDatabase(dbconn.getDatabase());
         ninfo.setSchema(dbconn.getSchema());
         ninfo.setName(dbconn.getName());
-        ninfo.setDatabaseConnection(dbconn);
-        if (dbconn.getConnection() != null) {
+        ninfo.setDatabaseConnection(dbconn); 
+        if (DatabaseConnection.test(dbconn.getConnection(), dbconn.getName())) {
             ninfo.connect(dbconn);
         }
+
         return ninfo;
     }
         
-    public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {
-        synchronized (ConnectionList.getDefault()) {
-
-            if (ConnectionList.getDefault().contains(dbconn)) {
-                return;
-            }
-            
-            ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
-            addChild(ninfo);
-
-            ConnectionList.getDefault().add(dbconn);
-        }
-        notifyChange();
-    }
-    
-    public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
-        if ( dbconn == null ) {
-            throw new NullPointerException();
-        }
-        
-        Vector<DatabaseNodeInfo> children = getChildren();
-        DatabaseNodeInfo toRemove = null;
-        
-        for ( DatabaseNodeInfo child : children ) {
-            if ( child instanceof ConnectionNodeInfo ) {
-                ConnectionNodeInfo ninfo = (ConnectionNodeInfo)child;
-                if ( ninfo.getDatabaseConnection().equals(dbconn)) {
-                    toRemove = ninfo;
-                }
-                
-                dbconn.disconnect();
-            }
-        }
-        
-        if ( toRemove != null ) {
-            removeChild(toRemove, false);
-        }
-        
-        ConnectionList.getDefault().remove(dbconn);
-        
-        notifyChange();
-    }
-    
-    public void addConnection(DBConnection cinfo) throws DatabaseException {
-        DatabaseConnection dbconn = (DatabaseConnection)cinfo;
+    public void addConnection(DBConnection con) throws DatabaseException {
+        DatabaseConnection dbconn = (DatabaseConnection)con;
         getChildren(); // force restore
 
         if (ConnectionList.getDefault().contains(dbconn)) {
             throw new DatabaseException(bundle().getString("EXC_ConnectionAlreadyExists"));
         }
         
-        ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
-        addChild(ninfo);
-
         ConnectionList.getDefault().add(dbconn);
-        
-        if (((DatabaseConnection) dbconn).getConnection() == null)
-            ninfo.connect();
-        else
-            ninfo.connect(dbconn);
-        
-        notifyChange();
     }
-
+        
+    public void removeConnection(DatabaseConnection dbconn) throws DatabaseException {
+        if ( dbconn == null ) {
+            throw new NullPointerException();
+        }
+        
+        ConnectionList.getDefault().remove(dbconn);
+    }
+    
     public void stateChanged(ChangeEvent evt) {
         // One of the node loader's underlying nodes have changed, so let's
         // do a refresh of our nodes

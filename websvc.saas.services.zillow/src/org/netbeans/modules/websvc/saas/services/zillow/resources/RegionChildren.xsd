@@ -55,7 +55,7 @@
                 <xsd:element name="request">
                     <xsd:complexType>
                         <xsd:sequence>
-                            <xsd:element name="rid" type="xsd:string" minOccurs="0"/>
+                            <xsd:element name="regionid" type="xsd:string" minOccurs="0"/>
                             <xsd:element name="country" type="xsd:string" minOccurs="0"/>
                             <xsd:element name="state" type="xsd:string" minOccurs="0"/>
                             <xsd:element name="county" type="xsd:string" minOccurs="0"/>

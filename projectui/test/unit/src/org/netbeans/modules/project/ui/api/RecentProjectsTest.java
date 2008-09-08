@@ -52,6 +52,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.openide.filesystems.FileObject;
@@ -62,6 +63,7 @@ import org.openide.util.lookup.Lookups;
  * Tests for RecentProjects class
  * @author Milan Kubec
  */
+@RandomlyFails // NB-Core-Build #1315
 public class RecentProjectsTest extends NbTestCase {
 
     private Project[] testProjects = new Project[15];

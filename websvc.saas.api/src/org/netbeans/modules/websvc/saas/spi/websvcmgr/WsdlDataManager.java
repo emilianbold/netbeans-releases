@@ -87,4 +87,16 @@ public interface WsdlDataManager {
      * Refresh WSDL artifacts from given data.
      */
     void refresh(WsdlData data);
+
+    /**
+     * Sets the priority for this implementation in the Lookup
+     * @param precedence The lower value will have precedence over a higher one.
+     */
+    void setPrecedence(int precedence);
+
+    /**
+     * Gets the priority for this implementation in the Lookup
+     * @return  The precedence integer. The lower value will have precedence over a higher one.
+     */
+    int getPrecedence();
 }

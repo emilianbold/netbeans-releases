@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<marketplace_getSubCategories_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd" list="true">
+    <marketplace_subcategory>BOOKS</marketplace_subcategory>
+    <marketplace_subcategory>FURNITURE</marketplace_subcategory>
+    <marketplace_subcategory>TICKETS</marketplace_subcategory>
+    <marketplace_subcategory>ELECTRONICS</marketplace_subcategory>
+    <marketplace_subcategory>AUTOS</marketplace_subcategory>
+    <marketplace_subcategory>GENERAL</marketplace_subcategory>
+</marketplace_getSubCategories_response>

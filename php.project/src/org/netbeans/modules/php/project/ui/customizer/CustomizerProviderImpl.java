@@ -50,6 +50,7 @@ import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -82,8 +83,8 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setVisible(true);
             return;
         }
-        IncludePathSupport includePathSupport = new IncludePathSupport(project.getEvaluator(), project.getRefHelper(),
-                project.getHelper());
+        IncludePathSupport includePathSupport = new IncludePathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
+                project.getRefHelper(), project.getHelper());
         PhpProjectProperties uiProperties = new PhpProjectProperties(project, includePathSupport);
         Lookup context = Lookups.fixed(project, uiProperties);
 

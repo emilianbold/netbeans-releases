@@ -48,6 +48,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Javac;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -65,13 +66,12 @@ public class JavacTask extends Javac {
         
         if (ensureBuilt != null) {
             for (String path : PropertyUtils.tokenizePath(ensureBuilt)) {
-                File f = new File(path);
-                if (!f.isAbsolute()) {
-                    f = new File(p.getBaseDir(), path);
-                }
-                
+                File f = PropertyUtils.resolveFile(p.getBaseDir().getAbsoluteFile(), path);
+
                 try {
-                    BuildArtifactMapperImpl.ensureBuilt(f.toURI().toURL(), false);
+                    if (!BuildArtifactMapperImpl.ensureBuilt(f.toURI().toURL(), false)) {
+                        throw new UserCancel();
+                    }
                 } catch (IOException ex) {
                     throw new BuildException(ex);
                 }

@@ -53,8 +53,10 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -99,6 +101,7 @@ import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.ErrorManager;
@@ -108,6 +111,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
@@ -131,12 +135,19 @@ import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding.Style;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeader;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase.Use;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.util.Utilities;
@@ -299,7 +310,7 @@ public class JaxWsUtils {
         List services = jaxWsSupport.getServices();
         if (serviceID != null) {
             for (Object serv : services) {
-                if (serviceID.equals(((Service)serv).getName())) {
+                if (serviceID.equals(((Service) serv).getName())) {
 
                     final EditCookie editCookie = dobj.getCookie(EditCookie.class);
                     if (editCookie != null) {
@@ -386,8 +397,8 @@ public class JaxWsUtils {
                             make.QualIdent(WSAn),
                             attrs);
                     modifiedClass = genUtils.addAnnotation(modifiedClass, WSAnnotation);
-                    
-                    if (WsdlPort.SOAP_VERSION_12.equals(port.getSOAPVersion())) {                       
+
+                    if (WsdlPort.SOAP_VERSION_12.equals(port.getSOAPVersion())) {
                         TypeElement BindingAn = workingCopy.getElements().getTypeElement("javax.xml.ws.BindingType"); //NOI18N
 
                         List<ExpressionTree> bindingAttrs = new ArrayList<ExpressionTree>();
@@ -521,10 +532,10 @@ public class JaxWsUtils {
             if (serverInstance != null) {
                 try {
                     J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstance).getJ2eePlatform();
-                    WSStack wsStack = WSStack.findWSStack(j2eePlatform.getLookup(), JaxWs.class);
+                    WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
                     if (wsStack != null) {
-                        jsr109Supported =  wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
-                        
+                        jsr109Supported = wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
+
                     }
                 } catch (InstanceRemovedException ex) {
                     Logger.getLogger(JaxWsUtils.class.getName()).log(Level.INFO, "Failed to find J2eePlatform", ex);
@@ -735,12 +746,7 @@ public class JaxWsUtils {
      */
     public static void setWebServiceAttrValue(FileObject implClassFo, final String attrName, final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy 
-
-                  
-                
-                   
-                  > () {
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -835,13 +841,7 @@ public class JaxWsUtils {
     public static boolean isSoap12(FileObject implClassFo) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final String[] version = new String[1];
-        CancellableTask<CompilationController> task = new CancellableTask<CompilationController 
-
-                  
-                
-                   
-                  >   () 
-                   {
+        CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
 
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
@@ -880,8 +880,8 @@ public class JaxWsUtils {
 
     public static void setSOAP12Binding(final FileObject implClassFo, final boolean isSOAP12) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy > () { 
-                 
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
@@ -975,12 +975,7 @@ public class JaxWsUtils {
             final String attrName,
             final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy 
-
-                  
-                
-                   
-                  > () {
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1069,12 +1064,7 @@ public class JaxWsUtils {
             final String attrName,
             final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
-        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy 
-
-                  
-                
-                   
-                  > () {
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -1328,5 +1318,41 @@ public class JaxWsUtils {
         }
         return false;
     }
-    
+
+    public static boolean isRPCEncoded(URL wsdlURL) {
+        try {
+            FileObject wsdlFO = FileUtil.toFileObject(new File(wsdlURL.toURI()));
+            ;
+            WSDLModel wsdlModel = WSDLModelFactory.getDefault().
+                    getModel(org.netbeans.modules.xml.retriever.catalog.Utilities.createModelSource(wsdlFO, true));
+            Definitions definitions = wsdlModel.getDefinitions();
+            Collection<Binding> bindings = definitions.getBindings();
+            for (Binding binding : bindings) {
+                List<SOAPBinding> soapBindings = binding.getExtensibilityElements(SOAPBinding.class);
+                for (SOAPBinding soapBinding : soapBindings) {
+                    if (soapBinding.getStyle() == Style.RPC) {
+                        Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
+                        for (BindingOperation bindingOperation : bindingOperations) {
+                            BindingInput bindingInput = bindingOperation.getBindingInput();
+                            if (bindingInput != null) {
+                                List<SOAPBody> soapBodies = bindingInput.getExtensibilityElements(SOAPBody.class);
+                                if (soapBodies != null && soapBodies.size() > 0) {
+                                    SOAPBody soapBody = soapBodies.get(0);
+                                    if (soapBody.getUse() == Use.ENCODED) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CatalogModelException ex) {
+            Logger.global.log(Level.INFO, "", ex);
+        }
+
+        return false;
+    }
 }

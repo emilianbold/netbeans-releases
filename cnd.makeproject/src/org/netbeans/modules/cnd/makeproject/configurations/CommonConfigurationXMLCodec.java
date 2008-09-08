@@ -73,6 +73,8 @@ import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 
 /**
  * Change History:
+ * V49 - 09.02.08 - NB 6.5
+ *   RPM package
  * V48 - 08.08.22 - NB 6.5
  *   PACK_TOPDIR_ELEMENT
  * V47 - 08.01.08 - NB 6.5
@@ -136,7 +138,7 @@ public abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 48;
+    public final static int CURRENT_VERSION = 49;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -639,7 +641,7 @@ public abstract class CommonConfigurationXMLCodec
 	xes.elementClose(PACK_FILES_LIST_ELEMENT);
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
-            List<InfoElement> infoList = packagingConfiguration.getHeader().getValue();
+            List<InfoElement> infoList = packagingConfiguration.getSvr4Header().getValue();
             for (InfoElement elem : infoList) {
                 xes.element(PACK_INFO_LIST_ELEMENT,
                         new AttrValuePair[] {
@@ -649,6 +651,22 @@ public abstract class CommonConfigurationXMLCodec
                 });
             }
             xes.elementClose(PACK_INFOS_LIST_ELEMENT);
+        }
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+            xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
+            List<InfoElement> infoList = packagingConfiguration.getRpmHeader().getValue();
+            for (InfoElement elem : infoList) {
+                xes.element(PACK_INFO_LIST_ELEMENT,
+                        new AttrValuePair[] {
+                            new AttrValuePair(NAME_ATTR, "" + elem.getName()), // NOI18N
+                            new AttrValuePair(VALUE_ATTR, "" + elem.getValue()), // NOI18N
+                            new AttrValuePair(MANDATORY_ATTR, "" + elem.isMandatory()), // NOI18N
+                });
+            }
+            xes.elementClose(PACK_INFOS_LIST_ELEMENT);
+        }
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
+            // FIXUP
         }
 	xes.elementClose(PACK_ELEMENT);
     }

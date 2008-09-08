@@ -117,7 +117,13 @@ public class CsmOffsetUtilities {
     // list is ordered by offsettable elements
     public static <T extends CsmObject> T findObject(Collection<T> list, CsmContext context, int offset) {
         assert (list != null) : "expect not null list";
-        for (Iterator<T> it = list.iterator(); it.hasNext();) {
+        return findObject(list.iterator(), context, offset);
+    }
+
+    // list is ordered by offsettable elements
+    public static <T extends CsmObject> T findObject(Iterator<T> it, CsmContext context, int offset) {
+        assert (it != null) : "expect not null list";
+        while (it.hasNext()) {
             T obj = it.next();
             assert (obj != null) : "can't be null declaration";
             if (CsmOffsetUtilities.isInObject((CsmObject)obj, offset)) {

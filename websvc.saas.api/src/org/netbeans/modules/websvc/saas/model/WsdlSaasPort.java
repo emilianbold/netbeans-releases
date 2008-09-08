@@ -43,13 +43,12 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 
 /**
  *
  * @author nam
  */
-public class WsdlSaasPort {
+public class WsdlSaasPort implements Comparable<WsdlSaasPort> {
     private WsdlSaas parentSaas;
     private WSPort port;
     private List<WsdlSaasMethod> methods;
@@ -81,4 +80,7 @@ public class WsdlSaasPort {
         return methods;
     }
     
+    public int compareTo(WsdlSaasPort saasPort) {
+        return getWsdlPort().getName().compareTo(saasPort.getWsdlPort().getName());
+    }
 }

@@ -134,13 +134,11 @@ public class CloseProjectProperty extends PerformanceTestCase {
     
     @Override
     public void close(){
-        new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport
     }
 
     @Override
     protected void shutdown() {
          ProjectSupport.closeProject(testProjectName);
-//    new CloseAllDocumentsAction().performAPI(); //avoid issue 68671 - editors are not closed after closing project by ProjectSupport      
     }
     
 //    public static void main(java.lang.String[] args) {

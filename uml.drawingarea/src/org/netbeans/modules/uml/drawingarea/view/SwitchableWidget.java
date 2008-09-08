@@ -454,4 +454,15 @@ public abstract class SwitchableWidget extends UMLNodeWidget
         scene.validate();
         if(resizetocontent)Util.resizeNodeToContents(this);
     }
+    
+    @Override
+    public void duplicate(boolean setBounds, Widget target)
+    {
+        super.duplicate(setBounds, target);        
+        if (target instanceof SwitchableWidget)
+        {
+            ((SwitchableWidget)target).switchTo(viewName,(IPresentationElement) scene.findObject(target));
+        }
+    }
+        
 }

@@ -51,7 +51,7 @@ import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Settings;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;

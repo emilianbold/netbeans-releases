@@ -52,33 +52,38 @@ public class FileModel2Test extends TraceModelTestBase {
 
     @Override
     protected void setUp() throws Exception {
-    System.setProperty("parser.report.errors", "true");
+        System.setProperty("parser.report.errors", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();
     }
-    
+
     @Override
     protected void postSetUp() {
         // init flags needed for file model tests
         getTraceModel().setDumpModel(true);
         getTraceModel().setDumpPPState(true);
     }
-    
+
+    public void testIZ145280() throws Exception {
+        // IZ#145280: IDE highlights code with '__attribute__((unused))' as wrong
+        performTest("iz145280.cc");
+    }
+
     public void testIZ143977_0() throws Exception {
         // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
         performTest("iz143977_0.cc");
     }
-    
+
     public void testIZ143977_1() throws Exception {
         // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
         performTest("iz143977_1.cc");
     }
-    
+
     public void testIZ143977_2() throws Exception {
         // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
         performTest("iz143977_2.cc");
     }
-    
+
     public void testIZ143977_3() throws Exception {
         // IZ#143977: Impl::Parm1 in Factory.h in Loki is unresolved
         performTest("iz143977_3.cc");
@@ -88,4 +93,20 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#103462: Errors in template typedef processing:   'first' and 'second' are missed in Code Completion listbox
         performTest("iz103462_first_and_second_1.cc");
     }
+
+    public void testHeaderWithCKeywords() throws Exception {
+        // IZ#144403: restrict keywords are flagged as ERRORs in C header files
+        performTest("testHeaderWithCKeywords.c");
+    }
+
+    public void testNamesakes() throws Exception {
+        // IZ#145553 Class in the same namespace should have priority over a global one
+        performTest("iz_145553_namesakes.cc");
+    }
+
+    public void testIZ146560() throws Exception {
+        // IZ#146560 Internal C++ compiler does not accept 'struct' after 'new'
+        performTest("iz146560.cc");
+    }
+
 }

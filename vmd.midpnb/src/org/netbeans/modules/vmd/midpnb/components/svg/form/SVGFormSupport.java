@@ -90,6 +90,21 @@ public final class SVGFormSupport {
         }
     }
 
+    public static final Collection<DesignComponent> getSVGFormComponents(final DesignComponent svgForm) {
+        DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
+        if (!registry.isInHierarchy(SVGFormCD.TYPEID, svgForm.getType())) {
+            throw new IllegalArgumentException("Design Component is not SVGFormCD type" + svgForm.getType()); //NOI18N
+        }
+        Collection<DesignComponent> svgComponents = new HashSet<DesignComponent>();
+
+        for (DesignComponent svgComponent : svgForm.getComponents()) {
+            if (registry.isInHierarchy(SVGComponentCD.TYPEID, svgComponent.getType())) {
+                svgComponents.add(svgComponent);
+            }
+        }
+        return svgComponents;
+    }
+
     private static void deleteEventSource(DesignComponent svgButton) {
         DesignComponent parentComponent = svgButton.getParentComponent();
         Collection<DesignComponent> components = new HashSet<DesignComponent>(parentComponent.getComponents());

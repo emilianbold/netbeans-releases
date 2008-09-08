@@ -60,6 +60,7 @@ include JSPPalette/.*
 include Keymaps/.*
 exclude MVD/.*
 include org-netbeans-api-project-libraries/Libraries/.*\.xml
+include Services/Browsers/.*
 include Services/DiffProviders/.*
 include Services/formsettings.settings
 include Services/IndentEngine/.*
@@ -71,6 +72,8 @@ include Services/Platforms/org-netbeans-api-java-Platform/.*\.xml
 include Shortcuts/.*
 include Templates/Classes/.*
 include Templates/J2MEProjectConfigurations/.*\.cfg
+include Toolbars/.*
+exclude Toolbars/Progress/.*
 include WebServices/service-groups.xml
 include WebServices/.*/.*-saas.xml
 exclude Windows2Local/Components/DesignInspector.settings

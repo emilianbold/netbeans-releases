@@ -46,6 +46,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -59,6 +60,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
+import javax.swing.text.Keymap;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
@@ -70,7 +72,7 @@ import org.openide.util.Utilities;
 
 
 public final class ThreadsHistoryAction extends AbstractAction {
-    
+
     /** Creates a new instance of ThreadsHistoryAction */
     public ThreadsHistoryAction() {
         putValue(NAME, NbBundle.getMessage(ThreadsHistoryAction.class, "CTL_ThreadsHistoryAction"));
@@ -80,6 +82,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
         List<JPDAThread> threads = getThreads();
         int threadsCount = threads.size();
         if (threadsCount < 1) {
+            Toolkit.getDefaultToolkit().beep();
             return;
         }
         
@@ -120,7 +123,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
         }
     }
     
-    private SwitcherTableItem[] createSwitcherItems(List<JPDAThread> threads) {
+    public static SwitcherTableItem[] createSwitcherItems(List<JPDAThread> threads) {
         ThreadsListener threadsListener = ThreadsListener.getDefault();
         JPDADebugger debugger = threadsListener.getDebugger();
         JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
@@ -177,7 +180,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
         return items;
     }
     
-    private class ActivatableElement implements SwitcherTableItem.Activatable {
+    private static class ActivatableElement implements SwitcherTableItem.Activatable {
         
         JPDAThread thread;
         
@@ -189,8 +192,11 @@ public final class ThreadsHistoryAction extends AbstractAction {
         }
     }
     
-    private List<JPDAThread> getThreads() {
+    public static List<JPDAThread> getThreads() {
         ThreadsListener threadsListener = ThreadsListener.getDefault();
+        if (threadsListener == null) {
+            return Collections.emptyList();
+        }
         List<JPDAThread> history = threadsListener.getCurrentThreadsHistory();
         List<JPDAThread> allThreads = threadsListener.getThreads();
         Set<JPDAThread> hitsSet = new HashSet<JPDAThread>();
@@ -222,7 +228,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
         return result;
     }
     
-    private class ThreadStatusIcon implements Icon {
+    private static class ThreadStatusIcon implements Icon {
         
         private Image image;
         private ImageIcon iconBase;

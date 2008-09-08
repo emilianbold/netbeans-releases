@@ -43,33 +43,6 @@ package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.event.LocatableEvent;
-import java.awt.Color;
-import java.awt.Dialog;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JTextArea;
-import javax.swing.UIManager;
-
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.netbeans.api.debugger.jpda.JPDAStep;
-import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.StepRequest;
@@ -81,30 +54,42 @@ import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.event.BreakpointEvent;
-import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.JPDAStep;
+import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
-//import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
+
 import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.actions.StepIntoActionProvider;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 
 public class JPDAStepImpl extends JPDAStep implements Executor {
     
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.step"); // NOI18N
+
+    private static final String INIT = "<init>"; // NOI18N
 
     /** The source tree with location info of this step */
     //private ASTL stepASTL;
@@ -114,6 +99,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
     private Set<BreakpointRequest> operationBreakpoints;
     private StepRequest boundaryStepRequest;
     //private SingleThreadedStepWatch stepWatch;
+    private Set<EventRequest> requestsToCancel = new HashSet<EventRequest>();
     
     private Session session;
     
@@ -164,7 +150,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     size,
                     getDepth()
                 );
-                stepRequest.addCountFilter(1);
+                //stepRequest.addCountFilter(1); - works bad with exclusion filters!
                 String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
                 for (int i = 0; i < exclusionPatterns.length; i++) {
                     stepRequest.addClassExclusionFilter(exclusionPatterns [i]);
@@ -176,6 +162,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 try {
                     stepRequest.enable ();
                     trImpl.setInStep(true, stepRequest);
+                    requestsToCancel.add(stepRequest);
                 } catch (IllegalThreadStateException itsex) {
                     // the thread named in the request has died.
                     debuggerImpl.getOperator().unregister(stepRequest);
@@ -259,7 +246,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         if (lastOperation != null) {
              // Set the method exit breakpoint to get the return value
             String methodName = lastOperation.getMethodName();
-            if (methodName != null && MethodBreakpointImpl.canGetMethodReturnValues(vm)) {
+            // We can not get return values from constructors. Do not submit method exit breakpoint.
+            if (methodName != null && !INIT.equals(methodName) &&
+                MethodBreakpointImpl.canGetMethodReturnValues(vm)) {
+
                 // TODO: Would be nice to know which ObjectReference we're executing the method on
                 MethodBreakpoint mb = MethodBreakpoint.create(lastOperation.getMethodClassType(), methodName);
                 mb.setClassFilters(createClassFilters(vm, lastOperation.getMethodClassType(), methodName));
@@ -316,6 +306,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 brReq.putProperty("thread", trRef); // NOI18N
                 brReq.enable();
                 tr.setInStep(true, brReq);
+                requestsToCancel.add(brReq);
             }
         } else if (lineStepExec) {
             return false;
@@ -336,6 +327,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         boundaryStepRequest.setSuspendPolicy(debugger.getSuspend());
         try {
             boundaryStepRequest.enable ();
+            requestsToCancel.add(boundaryStepRequest);
         } catch (IllegalThreadStateException itsex) {
             // the thread named in the request has died.
             ((JPDADebuggerImpl) debugger).getOperator().unregister(boundaryStepRequest);
@@ -366,6 +358,9 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 lastMethodExitBreakpointListener.destroy();
                 lastMethodExitBreakpointListener = null;
                 lastOperation.setReturnValue(returnValue);
+            } else if (lastOperation != null && INIT.equals(lastOperation.getMethodName())) {
+                // Set Void as a return value of constructor:
+                lastOperation.setReturnValue(new ReturnVariableImpl((JPDADebuggerImpl) debugger, /*vm.mirrorOfVoid() - JDK 6 and newer only!!!*/null, "", INIT));
             }
             if (lastOperation != null) {
                 tr.addLastOperation(lastOperation);
@@ -536,6 +531,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                     stepRequest.setSuspendPolicy (debugger.getSuspend ());
                     try {
                         stepRequest.enable ();
+                        requestsToCancel.add(stepRequest);
                     } catch (IllegalThreadStateException itsex) {
                         // the thread named in the request has died.
                         debuggerImpl.getOperator ().unregister (stepRequest);
@@ -587,11 +583,24 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             stepRequest.setSuspendPolicy (debugger.getSuspend ());
             try {
                 stepRequest.enable ();
+                requestsToCancel.add(stepRequest);
             } catch (IllegalThreadStateException itsex) {
                 // the thread named in the request has died.
                 debuggerImpl.getOperator ().unregister (stepRequest);
             }
             return true; // resume
+        }
+    }
+
+    /** Cancel this step - remove all submitted event requests. */
+    public void cancel() {
+        JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl) debugger;
+        VirtualMachine vm = debuggerImpl.getVirtualMachine();
+        if (vm == null) return ;
+        EventRequestManager erm = vm.eventRequestManager();
+        for (EventRequest er : requestsToCancel) {
+            erm.deleteEventRequest(er);
+            debuggerImpl.getOperator ().unregister (er);
         }
     }
     

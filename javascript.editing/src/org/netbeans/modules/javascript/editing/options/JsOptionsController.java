@@ -97,7 +97,7 @@ public class JsOptionsController extends OptionsPanelController {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        return null;
     }
 
     @Override

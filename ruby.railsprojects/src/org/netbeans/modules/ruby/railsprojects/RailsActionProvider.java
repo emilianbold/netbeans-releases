@@ -55,11 +55,9 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
@@ -77,6 +75,7 @@ import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
@@ -135,9 +134,6 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     
     // Commands available from Ruby project
     private static final String[] supportedActions = {
-        COMMAND_BUILD, 
-        COMMAND_CLEAN, 
-        COMMAND_REBUILD,
         COMMAND_AUTOTEST,
         COMMAND_RDOC,
         COMMAND_RAILS_CONSOLE,
@@ -468,42 +464,6 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
 
             runServer(path, debugCommand || debugSingleCommand);
             return;
-        } else if (COMMAND_BUILD.equals(command)) {
-            if (!RubyPlatform.hasValidRake(project, true)) {
-                return;
-            }
-            
-            // Save all files first
-            LifecycleManager.getDefault().saveAll();
-
-            // TODO - use RakeSupport
-
-            RailsFileLocator fileLocator = new RailsFileLocator(context, project);
-            String displayName = NbBundle.getMessage(RailsActionProvider.class, "Rake");
-
-            ProjectInformation info = ProjectUtils.getInformation(project);
-            if (info != null) {
-                displayName = info.getDisplayName();
-            }
-            
-            File pwd = FileUtil.toFile(project.getProjectDirectory());
-
-            String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
-  
-            new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, RubyPlatform.gemManagerFor(project).getRake()).
-                    fileLocator(fileLocator).
-                    classPath(classPath).
-                    addStandardRecognizers().
-                    appendJdkToPath(RubyPlatform.platformFor(project).isJRuby()).
-                    addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
-                    project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
-                    ).
-                    run();
-            return;
-//        } else if (COMMAND_CLEAN.equals(command)) {
-//            executeTask(new File(RubyInstallation.getInstance().getRake()),
-//                        "Rake", "clean", context, null, null); // TODO - internationalize
-//            return;
         }
         
         if (COMMAND_RDOC.equals(command)) {
@@ -666,17 +626,13 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     public ExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
-        String options = project.evaluator().getProperty(RailsProjectProperties.RUBY_OPTIONS);
-
-        if (options != null && options.trim().length() == 0) {
-            options = null;
-        }
+        String rubyOptions = SharedRubyProjectProperties.getRubyOptions(project);
 
         String includePath = RubyProjectUtil.getLoadPath(project);
-        if (options != null) {
-            options = includePath + " " + options; // NOI18N
+        if (rubyOptions != null) {
+            rubyOptions = includePath + " " + rubyOptions; // NOI18N
         } else {
-            options = includePath;
+            rubyOptions = includePath;
         }
 
         FileObject[] srcPath = project.getSourceRoots().getRoots();
@@ -716,7 +672,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();
-        desc.initialArgs(options);
+        desc.initialArgs(rubyOptions);
         desc.classPath(classPath);
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RailsFileLocator(context, project));

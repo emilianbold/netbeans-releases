@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.vmd.midpnb.components.svg.form;
 
+import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderPath;
 import org.netbeans.modules.vmd.midpnb.components.svg.*;
 import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
@@ -56,6 +58,10 @@ import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.flow.FlowPinOrderPresenter;
 import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
+import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
+import org.netbeans.modules.vmd.api.inspector.common.DesignComponentInspectorFolder;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
@@ -72,6 +78,7 @@ import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
+import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
@@ -95,21 +102,18 @@ public class SVGFormCD extends ComponentDescriptor {
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.svg.SVGForm"); // NOI18N
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_form_16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/svg_form_32.png"; // NOI18N
-    
     public static final String PROP_SVG_IMAGE = "svgImage"; //NOI18N
     public static final String PROP_START_ANIM_IMMEDIATELY = "startAnimationImmediately"; //NOI18N
     public static final String PROP_TIME_INCREMENT = "animationTimeIncrement"; //NOI18N
     public static final String PROP_RESET_ANIMATION_WHEN_STOPPED = "resetAnimationWhenStopped"; //NOI18N
-
     public static final String PROP_OLD_START_ANIM_IMMEDIATELY = "startAnimationImmideately"; //NOI18N
     public static final String PROP_COMPONENTS = "components"; //NOI18N
-    
     private static final Comparator NAME_COMPERATOR = new EventComperator();
+    
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
-    
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(CanvasCD.TYPEID, TYPEID, true, true);
@@ -118,13 +122,13 @@ public class SVGFormCD extends ComponentDescriptor {
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP_2;
     }
-    
-    
+
     @Override
     public void postInitialize(DesignComponent component) {
         component.writeProperty(PROP_START_ANIM_IMMEDIATELY, MidpTypes.createBooleanValue(true));
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), SVGPlayerCD.MIDP_NB_SVG_LIBRARY);
+        MidpProjectSupport.addLibraryToProject(component.getDocument(), SVGPlayerCD.MIDP_NB_SVG_LIBRARY);
     }
+
     @Override
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
@@ -132,9 +136,9 @@ public class SVGFormCD extends ComponentDescriptor {
                 new PropertyDescriptor(PROP_START_ANIM_IMMEDIATELY, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), false, true, Versionable.FOREVER),
                 new PropertyDescriptor(PROP_TIME_INCREMENT, MidpTypes.TYPEID_FLOAT, MidpTypes.createFloatValue(0.1f), false, true, Versionable.FOREVER),
                 new PropertyDescriptor(PROP_RESET_ANIMATION_WHEN_STOPPED, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), false, true, Versionable.FOREVER),
-                new PropertyDescriptor(PROP_COMPONENTS, SVGComponentCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(SVGComponentCD.TYPEID), true, true, MidpVersionable.MIDP)
-                );
+                new PropertyDescriptor(PROP_COMPONENTS, SVGComponentCD.TYPEID.getArrayType(), PropertyValue.createEmptyArray(SVGComponentCD.TYPEID), true, true, MidpVersionable.MIDP));
     }
+
     @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
@@ -142,32 +146,25 @@ public class SVGFormCD extends ComponentDescriptor {
     }
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
-        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_SVGImage"), //NOI18N
-                    PropertyEditorResource.createInstance(new SVGFormEditorElement(),
-                        NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), //NOI18N
-                        NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE"), //NOI18N
-                        NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_UCLABEL")), PROP_SVG_IMAGE) //NOI18N
+        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT).addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES).addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_SVGImage"), //NOI18N
+                PropertyEditorResource.createInstance(new SVGFormEditorElement(),
+                NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), //NOI18N
+                NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE"), //NOI18N
+                NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_UCLABEL")), PROP_SVG_IMAGE) //NOI18N
                 .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_StartAnimationImmediately"), // NOI18N
-                    PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_StartAnimationImmediately")), PROP_START_ANIM_IMMEDIATELY) // NOI18N
+                PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_StartAnimationImmediately")), PROP_START_ANIM_IMMEDIATELY) // NOI18N
                 .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_AnimationTimeIncrement"), // NOI18N
-                    PropertyEditorNumber.createFloatInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_AnimationTimeIncrement")), PROP_TIME_INCREMENT) // NOI18N
+                PropertyEditorNumber.createFloatInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_AnimationTimeIncrement")), PROP_TIME_INCREMENT) // NOI18N
                 .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_ResetAnimationWhenStopped"), // NOI18N
-                    PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_ResetAnimationWhenStopped")), PROP_RESET_ANIMATION_WHEN_STOPPED); // NOI18N
+                PropertyEditorBooleanUC.createInstance(NbBundle.getMessage(SVGPlayerCD.class, "LBL_SVGPlayer_ResetAnimationWhenStopped")), PROP_RESET_ANIMATION_WHEN_STOPPED); // NOI18N
     }
 
     private Presenter createSetterPresenter() {
-        return new CodeSetterPresenter ()
-                .addParameters(MidpCustomCodePresenterSupport.createDisplayParameter())
-                .addParameters(MidpParameter.create(PROP_SVG_IMAGE, PROP_START_ANIM_IMMEDIATELY, PROP_TIME_INCREMENT, PROP_RESET_ANIMATION_WHEN_STOPPED))
-                .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP_2).addParameters(PROP_SVG_IMAGE, MidpCustomCodePresenterSupport.PARAM_DISPLAY))
-                .addSetters(MidpSetter.createSetter("setTimeIncrement", MidpVersionable.MIDP_2).addParameters(PROP_TIME_INCREMENT)) // NOI18N
+        return new CodeSetterPresenter().addParameters(MidpCustomCodePresenterSupport.createDisplayParameter()).addParameters(MidpParameter.create(PROP_SVG_IMAGE, PROP_START_ANIM_IMMEDIATELY, PROP_TIME_INCREMENT, PROP_RESET_ANIMATION_WHEN_STOPPED)).addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP_2).addParameters(PROP_SVG_IMAGE, MidpCustomCodePresenterSupport.PARAM_DISPLAY)).addSetters(MidpSetter.createSetter("setTimeIncrement", MidpVersionable.MIDP_2).addParameters(PROP_TIME_INCREMENT)) // NOI18N
                 .addSetters(MidpSetter.createSetter("setStartAnimationImmediately", MidpVersionable.MIDP_2).addParameters(PROP_START_ANIM_IMMEDIATELY)) //NOI18N
                 .addSetters(MidpSetter.createSetter("setResetAnimationWhenStopped", MidpVersionable.MIDP_2).addParameters(PROP_RESET_ANIMATION_WHEN_STOPPED)); //NOI18N
     }
-    
-    
+
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
                 // properties
@@ -179,6 +176,7 @@ public class SVGFormCD extends ComponentDescriptor {
                 // code
                 MidpCodePresenterSupport.createAddImportPresenter(),
                 new SwitchDisplayableParameterPresenter() {
+
                     public String generateSwitchDisplayableParameterCode() {
                         return CodeReferencePresenter.generateAccessCode(getComponent()) + ".getSvgCanvas ()"; // NOI18N
                     }
@@ -186,33 +184,36 @@ public class SVGFormCD extends ComponentDescriptor {
                 createSetterPresenter(),
                 new SVGFormPresenterCodeClassInitHeaderFooterPresenter(),
                 // screen
-                new SVGPlayerDisplayPresenter (false),
+                new SVGPlayerDisplayPresenter(false),
                 //actions
                 ActionsPresenter.create(20, SystemAction.get(EditSVGFileAction.class)),
                 //other
                 new SVGFormFileChangePresneter(),
                 //flow
-                new SVGButtonEventSourceOrder(),   
+                new SVGButtonEventSourceOrder(),
                 //delete
                 new DeleteDependencyPresenter() {
-                    @Override
-                    protected boolean requiresToLive(Collection<DesignComponent> componentsToDelete) {
-                        return false;
-                    }
 
-                    @Override
-                    protected void componentsDeleting(Collection<DesignComponent> componentsToDelete) {
-                        DesignComponent svgImage = getComponent().readProperty(PROP_SVG_IMAGE).getComponent();
-                        if (svgImage == null || !componentsToDelete.contains(svgImage)) {
-                            return;
-                        }   
-                        SVGFormSupport.removeAllSVGFormComponents(getComponent());
-                        getComponent().resetToDefault(PROP_SVG_IMAGE);
-                    }
-                } 
-             );
+            @Override
+            protected boolean requiresToLive(Collection<DesignComponent> componentsToDelete) {
+                return false;
+            }
+
+            @Override
+            protected void componentsDeleting(Collection<DesignComponent> componentsToDelete) {
+                DesignComponent svgImage = getComponent().readProperty(PROP_SVG_IMAGE).getComponent();
+                if (svgImage == null || !componentsToDelete.contains(svgImage)) {
+                    return;
+                }
+                SVGFormSupport.removeAllSVGFormComponents(getComponent());
+                getComponent().resetToDefault(PROP_SVG_IMAGE);
+            }
+        },
+                //inspector
+                MidpInspectorSVGButtonSupport.createCategory()
+                );
     }
-    
+
     private class SVGFormPresenterCodeClassInitHeaderFooterPresenter extends CodeClassInitHeaderFooterPresenter {
 
         @Override
@@ -222,28 +223,28 @@ public class SVGFormCD extends ComponentDescriptor {
 
         @Override
         public void generateClassInitializationFooter(MultiGuardedSection section) {
-            Collection<DesignComponent> components = getComponent().getComponents();
-            for (DesignComponent component : components) {
-                if (component.getType() == SVGButtonCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGCheckBoxCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGComboBoxCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGLabelCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGListCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGSpinnerCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGListCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGRadioButtonCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGTextFieldCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
-                } else if (component.getType() == SVGSliderCD.TYPEID) {
-                    generateSVGFormAddComponentCode(section, getComponent(), component);
+            Collection<PropertyValue> components = getComponent().readProperty(PROP_COMPONENTS).getArray();
+            for (PropertyValue value : components) {
+                if (value.getType() == SVGButtonCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGCheckBoxCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGComboBoxCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGLabelCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGListCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGSpinnerCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGListCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGRadioButtonCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGTextFieldCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
+                } else if (value.getType() == SVGSliderCD.TYPEID) {
+                    generateSVGFormAddComponentCode(section, getComponent(), value.getComponent());
                 }
             }
         }
@@ -254,12 +255,11 @@ public class SVGFormCD extends ComponentDescriptor {
         section.getWriter().write(".add(" + CodeReferencePresenter.generateAccessCode(componentToAdd) + ");\n"); //NOI18N
 
     }
-    
-    class SVGButtonEventSourceOrder extends FlowPinOrderPresenter {
-        
+
+    final class SVGButtonEventSourceOrder extends FlowPinOrderPresenter {
+
         static final String CATEGORY_ID = "SVGButton"; //NOI18N
-        
-        
+
         @Override
         public String getCategoryID() {
             return CATEGORY_ID;
@@ -267,25 +267,24 @@ public class SVGFormCD extends ComponentDescriptor {
 
         @Override
         public String getCategoryDisplayName() {
-            return NbBundle.getMessage (SVGFormCD.class, "DISP_FlowCategory_SVGButtons"); // NOI18N; 
+            return NbBundle.getMessage(SVGFormCD.class, "DISP_FlowCategory_SVGButtons"); // NOI18N; 
         }
 
         @Override
         public List<FlowPinDescriptor> sortCategory(final ArrayList<FlowPinDescriptor> descriptors) {
-            
+
             getComponent().getDocument().getTransactionManager().readAccess(new Runnable() {
 
                 public void run() {
                     Collections.sort(descriptors, NAME_COMPERATOR);
                 }
             });
-            
+
             return descriptors;
         }
-        
     }
-    
-    private static  class EventComperator implements Comparator<FlowPinDescriptor> {
+
+    private static class EventComperator implements Comparator<FlowPinDescriptor> {
 
         public int compare(FlowPinDescriptor d1, FlowPinDescriptor d2) {
             String name1 = InfoPresenter.getDisplayName(d1.getRepresentedComponent());
@@ -294,11 +293,10 @@ public class SVGFormCD extends ComponentDescriptor {
                 name1 = ""; //NOI18N
             }
             if (name2 == null) {
-                name2 =""; //NOI18N
+                name2 = ""; //NOI18N
             }
             return name1.compareTo(name2);
         }
-   
-     }
-    
+    }
+
 }

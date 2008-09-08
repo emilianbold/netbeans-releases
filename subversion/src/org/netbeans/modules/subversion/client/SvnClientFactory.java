@@ -119,11 +119,7 @@ public class SvnClientFactory {
      * Resets the SvnClientFactory instance
      */
     public synchronized static void reset() {
-        if(instance == null) {
-            init(); // calls setup
-        } else {
-            instance.setup();
-        }
+        instance = null;
     }
 
     public static boolean isCLI() {
@@ -214,6 +210,11 @@ public class SvnClientFactory {
     public static void checkClientAvailable() throws SVNClientException {
         init();
         if(exception != null) throw exception;
+    }
+
+    public static boolean isClientAvailable() {
+        init();
+        return exception == null;
     }
 
     public static boolean wasJavahlCrash() {

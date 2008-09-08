@@ -116,7 +116,6 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.LazyFixList;
-import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -265,7 +264,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
                 if (cancel.get()) {
                     return true;
                 }
-                
+
                 //XXX: finish
                 final int startPos = (int) info.getTrees().getSourcePositions().getStartPosition(cu, tree.getLeaf());
                 final int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(cu, tree.getLeaf());
@@ -281,7 +280,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
                 allUnusedImports.add(handle);
                 if (RemoveUnusedImportFix.isEnabled()) {
                     errors.add(ErrorDescriptionFactory.createErrorDescription(
-                            Severity.VERIFIER,
+                            RemoveUnusedImportFix.getSeverity(),
                             NbBundle.getMessage(SemanticHighlighter.class, "LBL_UnusedImport"),
                             new FixAllImportsFixList(removeImport, removeAllUnusedImports, allUnusedImports),
                             doc,
@@ -402,6 +401,7 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             this.spec = spec;
         }
         
+        @Override
         public String toString() {
             return "Use: " + type;
         }

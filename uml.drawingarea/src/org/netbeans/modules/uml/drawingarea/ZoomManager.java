@@ -664,6 +664,7 @@ public class ZoomManager implements Scene.SceneListener
             String desc = NbBundle.getMessage(FitWidthAction.class, "LBL_FitWidthAction");
             putValue(Action.NAME, desc); // for accessibility
             putValue(Action.SHORT_DESCRIPTION, desc);
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl shift L"));
         }
 
         public void actionPerformed(ActionEvent e)
@@ -711,6 +712,7 @@ public class ZoomManager implements Scene.SceneListener
             String desc = NbBundle.getMessage(ZoomDefaultAction.class, "LBL_ZoomDefaultAction");
             putValue(Action.NAME, desc); // for accessibility
             putValue(Action.SHORT_DESCRIPTION, desc);
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl shift D"));
         }
 
         public void actionPerformed(ActionEvent e)

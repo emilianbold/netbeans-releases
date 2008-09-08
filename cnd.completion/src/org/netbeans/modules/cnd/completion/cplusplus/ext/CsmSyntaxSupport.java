@@ -244,6 +244,18 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     *   the finder is asked to find the class just by the given name
     */
     public CsmClassifier getClassFromName(String className, boolean searchByName) {
+        return getClassFromName(this.getFinder(), className, searchByName);
+    }
+
+    /** Get the class from name. The import sections are consulted to find
+    * the proper package for the name. If the search in import sections fails
+    * the method can ask the finder to search just by the given name.
+    * @param className name to resolve. It can be either the full name
+    *   or just the name without the package.
+    * @param searchByName if true and the resolving through the import sections fails
+    *   the finder is asked to find the class just by the given name
+    */
+    public CsmClassifier getClassFromName(CsmFinder finder, String className, boolean searchByName) {
         // XXX handle primitive type
         CsmClassifier ret = null;
 //        CsmClass ret = JavaCompletion.getPrimitiveClass(className);
@@ -252,7 +264,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 //            ret = getIncludeProc().getClassifier(className);
 //        }
         if (ret == null && searchByName) {
-            List clsList = getFinder().findClasses(null, className, true, false);
+            List clsList = finder.findClasses(null, className, true, false);
             if (clsList != null && clsList.size() > 0) {
                 if (!clsList.isEmpty()) { // more matching classes
                     ret = (CsmClassifier)clsList.get(0); // get the first one
@@ -743,7 +755,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     public boolean needShowCompletionOnText(JTextComponent target, String typedText) throws BadLocationException {
         boolean showCompletion = false;
-        char typedChar = typedText.charAt(0);
+        char typedChar = typedText.charAt(typedText.length() - 1);
         if (typedChar == ' ' || typedChar == '>' || typedChar == ':' || typedChar == '.' || typedChar == '*') {
 
             int dotPos = target.getCaret().getDot();

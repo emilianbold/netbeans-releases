@@ -57,12 +57,13 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 
 /**
  * Implements CsmClass
  * @author Vladimir Kvashin
  */
-public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate {
+public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmMember<CsmClass>, CsmTemplate, SelectImpl.FilterableMembers {
 
     private final CsmDeclaration.Kind kind;
 
@@ -143,14 +144,14 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         if( typedefs != null && typedefs.length > 0 ) {
                             for (int i = 0; i < typedefs.length; i++) {
                                 // It could be important to register in project before add as member...
-                                ((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
+                                ((FileImpl)getContainingFile()).getProjectImpl(true).registerDeclaration(typedefs[i]);
                                 addMember((MemberTypedef) typedefs[i]);
                             }
                         }
                         renderVariableInClassifier(token, innerClass, null, null);
                         break;
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
-                        EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile());
+                        EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext());
                         innerEnum.setVisibility(curentVisibility);
                         addMember(innerEnum);
                         renderVariableInClassifier(token, innerEnum, null, null);
@@ -200,7 +201,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             if( typedefs != null && typedefs.length > 0 ) {
                                 for (int i = 0; i < typedefs.length; i++) {
                                     // It could be important to register in project before add as member...
-                                    ((FileImpl)getContainingFile()).getProjectImpl().registerDeclaration(typedefs[i]);
+                                    ((FileImpl)getContainingFile()).getProjectImpl(true).registerDeclaration(typedefs[i]);
                                     addMember((MemberTypedef) typedefs[i]);
                                 }
                                 break;
