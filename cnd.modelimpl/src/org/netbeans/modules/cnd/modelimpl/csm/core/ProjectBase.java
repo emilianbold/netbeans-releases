@@ -1436,6 +1436,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private CsmFile findFileByItem(NativeFileItem nativeFile) {
+        if (!acceptNativeItem(nativeFile)) {
+            return null;
+        }
         File file = nativeFile.getFile().getAbsoluteFile();
         APTPreprocHandler preprocHandler = null;
         if (getFileContainer().getPreprocState(file) == null){
