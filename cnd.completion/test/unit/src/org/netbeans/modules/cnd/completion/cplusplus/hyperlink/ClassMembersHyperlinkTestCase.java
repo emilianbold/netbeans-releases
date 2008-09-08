@@ -65,6 +65,15 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // noIZ:fixed ptr operator handling
         performTest("checkPtrOperator.cc", 16, 15, "checkPtrOperator.cc", 11, 9);
     }
+
+    public void testIZ146030_3() throws Exception {
+        // IZ#146030: set of problems for declarations in Loki
+        // usecase 3)
+        performTest("accessMember.cc", 9, 37, "accessMember.cc", 4, 5);
+        performTest("accessMember.cc", 10, 45, "accessMember.cc", 4, 5);
+        performTest("accessMember.cc", 14, 32, "accessMember.cc", 5, 5);
+        performTest("accessMember.cc", 15, 33, "accessMember.cc", 5, 5);
+    }
     
     public void testIZ146030_5() throws Exception {
         // IZ#146030: set of problems for declarations in Loki

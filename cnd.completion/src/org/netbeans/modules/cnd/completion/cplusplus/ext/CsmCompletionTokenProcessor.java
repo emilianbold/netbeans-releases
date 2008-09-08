@@ -191,6 +191,28 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
         return CndLexerUtilities.isSeparatorOrOperator(tokenID);
     }
 
+    private boolean isEqOperator(CppTokenId tokenID) {
+        switch (tokenID) {
+            case EQ:
+            case EQEQ:
+            case GTEQ:
+            case GTGTEQ:
+            case AMPEQ:
+            case LTEQ:
+            case LTLTEQ:
+            case PLUSEQ:
+            case NOTEQ:
+            case MINUSEQ:
+            case STAREQ:
+            case SLASHEQ:
+            case BAREQ:
+            case CARETEQ:
+            case PERCENTEQ:
+                return true;
+        }
+        return false;
+    }
+
     /** Push exp to top of stack */
     private void pushExp(CsmCompletionExpression exp) {
         expStack.add(exp);
@@ -918,6 +940,14 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                                 exp.addParameter(top);
                                 pushExp(exp);
                                 pointer = true;
+                                break;
+                            case OPERATOR:
+                                if (top.getTokenCount() == 1 && isEqOperator(top.getTokenID(0))) {
+                                    // member pointer operator
+                                    CsmCompletionExpression memPtrExp = createTokenExp(MEMBER_POINTER_OPEN);
+                                    pushExp(memPtrExp); // add operator as new exp
+                                    pointer = true;
+                                }
                                 break;
                         }
                         if (pointer) {
@@ -2147,9 +2177,13 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             reScan = false;
                         }
                         break;
+                    case MEMBER_POINTER_OPEN:
+                        popExp();
+                        top2.addParameter(top);
+                        reScan = false; // by default do not nest more - can be changed if necessary
+                        break;
                     }
                     break;
-                    
                 case ARRAY_OPEN:
                 case PARENTHESIS_OPEN:
                     pushExp(CsmCompletionExpression.createEmptyVariable(
