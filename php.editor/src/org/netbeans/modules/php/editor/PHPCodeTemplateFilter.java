@@ -62,13 +62,15 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
     public PHPCodeTemplateFilter(JTextComponent component, int offset) {
         this.caretOffset = offset;
         FileObject fo = NbUtilities.findFileObject(component);
-        SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+        if (fo != null) {  // fo can be null, see issue #144856
+            SourceModel model = SourceModelFactory.getInstance().getModel(fo);
 
-        if (!model.isScanInProgress()){
-            try {
-                model.runUserActionTask(this, false);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (!model.isScanInProgress()){
+                try {
+                    model.runUserActionTask(this, false);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
     }

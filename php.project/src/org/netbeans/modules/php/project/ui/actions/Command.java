@@ -54,6 +54,7 @@ import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -63,7 +64,6 @@ import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -104,8 +104,8 @@ public abstract class Command {
     }
 
     //Helper|Utility methods for subclasses
-    protected final void showURLForContext(Lookup context) throws MalformedURLException {
-        HtmlBrowser.URLDisplayer.getDefault().showURL(urlForContext(context));
+    protected final void showURL(final URL url) throws MalformedURLException {
+        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
     }
 
     protected final void showURLForProjectFile() throws MalformedURLException {
@@ -113,10 +113,21 @@ public abstract class Command {
     }
 
     protected final void showURLForDebugProjectFile() throws MalformedURLException {
-        showURLForDebugContext(null);
+        showURLForDebug(getURLForDebug(null));
     }
 
-    protected final void showURLForDebugContext(Lookup context) throws MalformedURLException {
+    protected final URL getURLForDebug(Lookup context) throws MalformedURLException {
+        DebugInfo debugInfo = getDebugInfo();
+        URL debugUrl;
+        if (context != null) {
+            debugUrl = debugInfo.debugServer ? urlForDebugContext(context) : urlForContext(context);
+        } else {
+            debugUrl = debugInfo.debugServer ? urlForDebugProjectFile() : urlForProjectFile();
+        }
+        return debugUrl;
+    }
+
+    private DebugInfo getDebugInfo() {
         boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
         boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
 
@@ -124,17 +135,13 @@ public abstract class Command {
             debugServer = true;
             debugClient = false;
         }
-
         assert debugServer || debugClient;
+        return new DebugInfo(debugClient, debugServer);
+    }
 
-        URL debugUrl;
-        if (context != null) {
-            debugUrl = (debugServer) ? urlForDebugContext(context) : urlForContext(context);
-        } else {
-            debugUrl = (debugServer) ? urlForDebugProjectFile() : urlForProjectFile();
-        }
-
-        if (debugClient) {
+    protected final void showURLForDebug(URL debugUrl) throws MalformedURLException {
+        assert debugUrl != null;
+        if (getDebugInfo().debugClient) {
             try {
                 launchJavaScriptDebugger(debugUrl);
             } catch (URISyntaxException ex) {
@@ -182,12 +189,8 @@ public abstract class Command {
 
     }
 
-    protected final String getProperty(String propertyName) {
-        return getPropertyEvaluator().getProperty(propertyName);
-    }
-
     protected final URL getBaseURL() throws MalformedURLException {
-        String baseURLPath = getProperty(PhpProjectProperties.URL);
+        String baseURLPath = ProjectPropertiesSupport.getUrl(project);
         if (baseURLPath == null) {
             throw new MalformedURLException();
         }
@@ -223,36 +226,34 @@ public abstract class Command {
             relativePath = ""; //NOI18N
         }
         URL retval = new URL(getBaseURL(), relativePath);
-        String arguments = getProperty(PhpProjectProperties.ARGS);
+        String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
 
     protected final URL urlForContext(Lookup context) throws MalformedURLException {
-        String relativePath = relativePathForConext(context);
+        String relativePath = relativePathForContext(context);
         if (relativePath == null) {
             throw new MalformedURLException();
         }
         URL retval = new URL(getBaseURL(), relativePath);
-        String arguments = getProperty(PhpProjectProperties.ARGS);
+        String arguments = ProjectPropertiesSupport.getArguments(project);
         return (arguments != null) ? appendQuery(retval, arguments) : retval;
     }
 
     //or null
-    protected final String relativePathForConext(Lookup context) {
-        return getCommandUtils().getRelativeWebRootPath(fileForContext(context),
-                getProperty(PhpProjectProperties.WEB_ROOT));
+    protected final String relativePathForContext(Lookup context) {
+        return getCommandUtils().getRelativeWebRootPath(fileForContext(context));
     }
 
     //or null
     protected final String relativePathForProject() {
-        return getCommandUtils().getRelativeWebRootPath(fileForProject(),
-                getProperty(PhpProjectProperties.WEB_ROOT));
+        return getCommandUtils().getRelativeWebRootPath(fileForProject());
     }
 
     //or null
     protected final FileObject fileForProject() {
         FileObject retval = null;
-        String nameOfIndexFile = getProperty(PhpProjectProperties.INDEX_FILE);
+        String nameOfIndexFile = ProjectPropertiesSupport.getIndexFile(project);
         FileObject[] srcRoots = Utils.getSourceObjects(getProject());
         for (FileObject fileObject : srcRoots) {
             retval = fileObject.getFileObject(nameOfIndexFile);
@@ -263,32 +264,41 @@ public abstract class Command {
         return retval;
     }
 
+    /** eventually show the customizer */
     protected boolean isScriptSelected() {
-        String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
-        return PhpProjectProperties.RunAsType.SCRIPT.name().equals(runAs);
+        return isScriptSelected(true);
     }
 
+    protected boolean isScriptSelected(boolean showCustomizer) {
+        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project, showCustomizer);
+        return PhpProjectProperties.RunAsType.SCRIPT.equals(runAs);
+    }
+
+    /** eventually show the customizer */
     protected boolean isRemoteConfigSelected() {
-        String runAs = getPropertyEvaluator().getProperty(PhpProjectProperties.RUN_AS);
-        return PhpProjectProperties.RunAsType.REMOTE.name().equals(runAs);
+        return isRemoteConfigSelected(true);
+    }
+
+    protected boolean isRemoteConfigSelected(boolean showCustomizer) {
+        PhpProjectProperties.RunAsType runAs = ProjectPropertiesSupport.getRunAs(project, showCustomizer);
+        return PhpProjectProperties.RunAsType.REMOTE.equals(runAs);
     }
 
     protected String getRemoteConfigurationName() {
-        return getPropertyEvaluator().getProperty(PhpProjectProperties.REMOTE_CONNECTION);
+        return ProjectPropertiesSupport.getRemoteConnection(project);
     }
 
     protected String getRemoteDirectory() {
-        return getPropertyEvaluator().getProperty(PhpProjectProperties.REMOTE_DIRECTORY);
+        return ProjectPropertiesSupport.getRemoteDirectory(project);
     }
 
     //or null
     protected final FileObject fileForContext(Lookup context) {
         CommandUtils utils = getCommandUtils();
-        FileObject[] files = utils.phpFilesForContext(context, isScriptSelected(),
-                getProperty(PhpProjectProperties.WEB_ROOT));
+        boolean scriptSelected = isScriptSelected(false);
+        FileObject[] files = utils.phpFilesForContext(context, scriptSelected);
         if (files == null || files.length == 0) {
-            files = utils.phpFilesForSelectedNodes(isScriptSelected(),
-                    getProperty(PhpProjectProperties.WEB_ROOT));
+            files = utils.phpFilesForSelectedNodes(scriptSelected);
         }
         return (files != null && files.length > 0) ? files[0] : null;
     }
@@ -365,7 +375,42 @@ public abstract class Command {
         String convert(String text);
     }
 
-    private PropertyEvaluator getPropertyEvaluator() {
-        return getProject().getEvaluator();
+    protected void eventuallyUploadFiles() {
+        eventuallyUploadFiles((FileObject[]) null);
+    }
+
+    protected void eventuallyUploadFiles(FileObject... preselectedFiles) {
+        if (!isRemoteConfigSelected(false)) {
+            return;
+        }
+        UploadCommand uploadCommand = (UploadCommand) getOtherCommand(UploadCommand.ID);
+        if (!uploadCommand.isActionEnabled(null)) {
+            return;
+        }
+
+        PhpProjectProperties.UploadFiles uploadFiles = ProjectPropertiesSupport.getRemoteUpload(getProject());
+        assert uploadFiles != null;
+
+        if (PhpProjectProperties.UploadFiles.ON_RUN.equals(uploadFiles)) {
+            uploadCommand.uploadFiles(new FileObject[] {ProjectPropertiesSupport.getSourcesDirectory(getProject())}, preselectedFiles);
+        }
+    }
+
+    protected boolean isIndexFileSet() {
+        return ProjectPropertiesSupport.getIndexFile(getProject()) != null;
+    }
+
+    protected boolean isUrlSet() {
+        return ProjectPropertiesSupport.getUrl(getProject()) != null;
+    }
+
+    private static class DebugInfo {
+        final boolean debugClient;
+        final boolean debugServer;
+
+        public DebugInfo(boolean debugClient, boolean debugServer) {
+            this.debugClient = debugClient;
+            this.debugServer = debugServer;
+        }
     }
 }

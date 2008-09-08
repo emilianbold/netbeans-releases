@@ -57,9 +57,7 @@ import javax.swing.text.NumberFormatter;
 import org.jdesktop.layout.GroupLayout;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
@@ -86,6 +84,8 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.X509Token;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.xml.multiview.ui.NodeSectionPanel;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
@@ -766,26 +766,19 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
 }//GEN-LAST:event_formAncestorAdded
 
     private boolean isJsr109Supported(){
-        J2eePlatform j2eePlatform = getJ2eePlatform();
-        if(j2eePlatform != null){
-            return j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109);
+        J2eePlatform j2eePlatform = Util.getJ2eePlatform(project);
+        if (j2eePlatform != null){
+            Collection<WSStack> wsStacks = (Collection<WSStack>)
+                    j2eePlatform.getLookup().lookupAll(WSStack.class);
+            for (WSStack stack : wsStacks) {
+                if (stack.isFeatureSupported(JaxWs.Feature.JSR109)) {
+                    return true;
+                }
+            }
         }
         return false;
     }
     
-    private J2eePlatform getJ2eePlatform(){
-        if (project != null) {
-            J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-            if(provider != null){
-                String serverInstanceID = provider.getServerInstanceID();
-                if(serverInstanceID != null && serverInstanceID.length() > 0) {
-                    return Deployment.getDefault().getJ2eePlatform(serverInstanceID);
-                }
-            }
-        }
-        return null;
-    }    
-
     private void samlBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_samlBrowseButtonActionPerformed
         if (project != null) {
             ClassDialog classDialog = new ClassDialog(project, "javax.security.auth.callback.CallbackHandler"); //NOI18N

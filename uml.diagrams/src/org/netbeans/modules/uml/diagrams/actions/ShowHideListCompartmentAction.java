@@ -301,6 +301,11 @@ public class ShowHideListCompartmentAction extends SceneNodeAction
                     showHideCompartment(UMLNodeWidget.LITERALS_COMPARTMENT);
                     break;
             }
+            //mark the diagram dirty
+            if (scene != null)
+            {
+                scene.getEngine().getTopComponent().setDiagramDirty(true);
+            }
         }
     }
 

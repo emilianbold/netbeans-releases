@@ -91,7 +91,7 @@ public interface IRubyWarnings {
         
         VOID_VALUE_EXPRESSION("VOID_VALUE_EXPRESSION");
         
-        private String id;
+        private final String id;
         
         ID(String id) {
             this.id = id;

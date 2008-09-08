@@ -18,6 +18,7 @@ Run to Cursor               u
 =========================
 Apply Code Changes          g
 =========================
+Set Current Thread...       r
 Stack                   >   S
 =========================
 Toggle Line Breakpoint      T

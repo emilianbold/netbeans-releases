@@ -43,6 +43,9 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ImageIcon;
@@ -74,9 +77,13 @@ import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
+import org.netbeans.installer.wizard.Wizard;
+import org.netbeans.installer.wizard.components.WizardComponent;
+import org.netbeans.installer.wizard.components.actions.SearchForJavaAction;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelUi;
+import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
@@ -93,6 +100,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     
     private boolean registriesFiltered;
     private static BundleType type;
+    private List <Product> lastChosenProducts;
+    private String lastWarningMessage;
+
     public NbWelcomePanel() {
         setProperty(TITLE_PROPERTY,
                 DEFAULT_TITLE);
@@ -179,6 +189,11 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NO_ENOUGH_SPACE_TO_EXTRACT);
         setProperty(ERROR_EVERYTHING_IS_INSTALLED_PROPERTY,
                 DEFAULT_ERROR_EVERYTHING_IS_INSTALLED);
+        
+        setProperty(WARNING_NO_COMPATIBLE_JDK_FOUND,
+                DEFAULT_WARNING_NO_COMPATIBLE_JDK_FOUND);
+        setProperty(WARNING_NO_COMPATIBLE_JAVA_FOUND,
+                DEFAULT_WARNING_NO_COMPATIBLE_JAVA_FOUND);
         
         // initialize the registries used on the panel - see the initialize() and
         // canExecute() method
@@ -317,6 +332,51 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         return bundledRegistry.getNodes().size() > 1;
     }
     
+    // package access
+    String getWarningMessage() {
+        List<Product> list = Registry.getInstance().getProductsToInstall();
+        if (lastChosenProducts != null) {            
+            if (list.containsAll(lastChosenProducts) && 
+                    list.size() == lastChosenProducts.size()) {
+                return lastWarningMessage;
+            }
+        }
+        lastChosenProducts = list;
+        lastWarningMessage = null;
+
+        for (Product product : lastChosenProducts) {
+            for (WizardComponent c : product.getWizardComponents()) {
+                if (c.getClass().getName().equals(SearchForJavaAction.class.getName())) {
+                    for (WizardComponent wc : product.getWizardComponents()) {
+                        try {
+                            Method m = wc.getClass().getMethod("getJdkLocationPanel");
+                            Wizard wizard = new Wizard(null, product.getWizardComponents(), -1, product, product.getClassLoader());
+                            wc.setWizard(wizard);
+                            wc.getWizard().getContext().put(product);
+                            wc.initialize();
+                            JdkLocationPanel jdkLocationPanel = (JdkLocationPanel) m.invoke(wc);
+                            if (jdkLocationPanel.getSelectedLocation().equals(new File(StringUtils.EMPTY_STRING))) {
+                                final String jreAllowed = jdkLocationPanel.getProperty(
+                                        JdkLocationPanel.JRE_ALLOWED_PROPERTY);
+                                lastWarningMessage = StringUtils.format(
+                                        getProperty("false".equals(jreAllowed) ? 
+                                            WARNING_NO_COMPATIBLE_JDK_FOUND : 
+                                            WARNING_NO_COMPATIBLE_JAVA_FOUND));
+
+                                LogManager.log(lastWarningMessage);
+                                return lastWarningMessage;
+                            }
+                        } catch (NoSuchMethodException e) {
+                        } catch (IllegalAccessException e) {
+                        } catch (IllegalArgumentException e) {
+                        } catch (InvocationTargetException e) {
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     public static class NbWelcomePanelUi extends ErrorMessagePanelUi {
@@ -506,7 +566,12 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         StringUtils.formatSize(installationSize)));
             }
         }
-        
+
+        @Override
+        protected String getWarningMessage() { 
+            String message = super.getWarningMessage();
+            return (message!=null) ? message: panel.getWarningMessage();
+        }
         
         @Override
         protected String validateInput() {
@@ -1099,6 +1164,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "error.not.enough.space.to.extract"; // NOI18N
     public static final String ERROR_EVERYTHING_IS_INSTALLED_PROPERTY =
             "error.everything.is.installed"; // NOI18N
+    public static final String WARNING_NO_COMPATIBLE_JDK_FOUND =
+            "warning.no.compatible.jdk.found"; //NOI18N
+    public static final String WARNING_NO_COMPATIBLE_JAVA_FOUND =
+            "warning.no.compatible.java.found";//NOI18N
     
     public static final String DEFAULT_ERROR_NO_CHANGES =
             ResourceUtils.getString(NbWelcomePanel.class,
@@ -1127,6 +1196,12 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_EVERYTHING_IS_INSTALLED =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.error.everything.is.installed"); // NOI18N
+    public static final String DEFAULT_WARNING_NO_COMPATIBLE_JDK_FOUND =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.warning.no.compatible.jdk.found"); // NOI18N
+    public static final String DEFAULT_WARNING_NO_COMPATIBLE_JAVA_FOUND =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.warning.no.compatible.java.found"); // NOI18N
     
     public static final long REQUIRED_SPACE_ADDITION =
             10L * 1024L * 1024L; // 10MB

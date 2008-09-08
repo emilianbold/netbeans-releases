@@ -24,14 +24,10 @@
         
         <p>You open the editor by expanding the project's Source Packages node in the Projects window 
         and double-clicking the <tt>hibernate.cfg.xml</tt> file located under the <tt>&lt;default package&gt;</tt> node. </p>
-        <ul class="note"><li>
-            In a web application you can also open the editor by expanding the project's Configuration Files node in the Projects window 
-            and double-clicking <tt>hibernate.cfg.xml</tt>.</li>
-        </ul>
         
         <p>Many of the properties in the configuration file are supplied and modified by other wizards in the IDE.
-        For example, if you create a Hibernate configuration file using the wizard, 
-        the datasource connection properties you supply in the wizard are automatically added to <tt>hibernate.cfg.xml</tt>.</p>
+        For example, if you create Hibernate mapping files using the Hibernate Mapping File wizard, 
+        <tt>hibernate.cfg.xml</tt> is automatically updated with information about the mapping files.</p>
 
         <p>The <tt>hibernate.cfg.xml</tt> visual editor contains the following sections for editing the configuration settings:</p>
         
@@ -51,15 +47,6 @@
         
         <p>You can also edit any of the properties in the XML editor and use code completion
         to set the properties and values.</p>
-        
-        <ul class="note">
-            <li>The value of the <tt>current_session_context_class</tt> property must be set to <tt>thread</tt>
-            if you want to enable Hibernate's automatic session context management.
-            You can set the property by expanding the Miscellaneous Properties node under the Configuration Properties node
-            and clicking Add or by editing the file in the XML editor.</li>
-        </ul>
-         
-        
         
         <dl>
         <dt><a name="seealso">See Also</a></dt>

@@ -315,7 +315,7 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(fileNameLabel, gridBagConstraints);
 
-        fileNameTextField.setFont(new java.awt.Font("Monospaced", 0, 12));
+        fileNameTextField.setFont(new java.awt.Font("Monospaced", 0, getFontSize()));
         fileNameTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fileNameTextFieldActionPerformed(evt);
@@ -347,15 +347,15 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
 
         resultScrollPane.setBorder(null);
 
-        resultList.setFont(new java.awt.Font("Monospaced", 0, 12));
-        resultList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                resultListValueChanged(evt);
-            }
-        });
+        resultList.setFont(new java.awt.Font("Monospaced", 0, getFontSize()));
         resultList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 resultListMouseReleased(evt);
+            }
+        });
+        resultList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                resultListValueChanged(evt);
             }
         });
         resultScrollPane.setViewportView(resultList);
@@ -373,7 +373,6 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
 
         org.openide.awt.Mnemonics.setLocalizedText(caseSensitiveCheckBox, org.openide.util.NbBundle.getMessage(FileSearchPanel.class, "LBL_CaseSensitive")); // NOI18N
         caseSensitiveCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        caseSensitiveCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(caseSensitiveCheckBox, gridBagConstraints);
@@ -381,7 +380,6 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
 
         org.openide.awt.Mnemonics.setLocalizedText(hiddenFilesCheckBox, org.openide.util.NbBundle.getMessage(FileSearchPanel.class, "LBL_HiddenFiles")); // NOI18N
         hiddenFilesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        hiddenFilesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
@@ -390,7 +388,6 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
 
         org.openide.awt.Mnemonics.setLocalizedText(mainProjectCheckBox, org.openide.util.NbBundle.getMessage(FileSearchPanel.class, "LBL_PreferMainProject")); // NOI18N
         mainProjectCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        mainProjectCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -522,6 +519,11 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
             FileSearchOptions.setPreferMainProject(isPreferedProject());            
         }
     }
+    
+    private int getFontSize () {
+        return this.resultList.getFont().getSize();
+    }        
+    
    
     public boolean accept(Object obj) {
         if ( obj instanceof FileDescription ) {

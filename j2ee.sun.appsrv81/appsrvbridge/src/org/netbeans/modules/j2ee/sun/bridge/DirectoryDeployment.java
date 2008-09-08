@@ -362,6 +362,9 @@ public class DirectoryDeployment extends IncrementalDeployment {
             // to register the module, so replace additional special
             // characters , =  used in property parsing with -
             moduleID = moduleID.replace(',', '_').replace('=', '_');
+
+            // parens are illegal in the object name, too. IZ 143389
+            moduleID = moduleID.replace('(', '_').replace(')', '_');
         }
         return moduleID;
     }

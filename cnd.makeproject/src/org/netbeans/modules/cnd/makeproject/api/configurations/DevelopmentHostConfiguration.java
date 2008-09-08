@@ -42,7 +42,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -60,6 +59,7 @@ public class DevelopmentHostConfiguration {
     private boolean dirty = false;
     private PropertyChangeSupport pcs;
     private static ServerList serverList = null;
+    private boolean online;
 
     public DevelopmentHostConfiguration(String host) {
         names = getServerNames();
@@ -71,6 +71,7 @@ public class DevelopmentHostConfiguration {
             }
         }
         def = value;
+        online = false;
         pcs = new PropertyChangeSupport(this);
     }
 
@@ -84,9 +85,16 @@ public class DevelopmentHostConfiguration {
             CompilerSetManager csm = CompilerSetManager.getDefault(out);
             if (csm.isUninitialized()) {
                 out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
+                online = false;
+            } else {
+                online = true;
             }
         }
         return out;
+    }
+
+    public boolean isOnline() {
+        return online;
     }
 
     public int getValue() {
@@ -101,8 +109,9 @@ public class DevelopmentHostConfiguration {
         for (int i = 0; i < names.length; i++) {
             if (v.equals(names[i])) {
                 value = i;
+                online = v.equals(CompilerSetManager.LOCALHOST) || !CompilerSetManager.getDefault(v).isUninitialized();
                 if (firePC) {
-                    pcs.firePropertyChange(PROP_DEV_HOST, null, v);
+                    pcs.firePropertyChange(PROP_DEV_HOST, null, this);
                 }
                 return;
             }
@@ -162,6 +171,7 @@ public class DevelopmentHostConfiguration {
         DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration(getName());
         // FIXUP: left setValue call to leave old logic
         clone.setValue(getName());
+        clone.online = online;
         return clone;
     }
 

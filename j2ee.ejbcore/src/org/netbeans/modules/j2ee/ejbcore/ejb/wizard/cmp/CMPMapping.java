@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp;
 
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel;
+import org.netbeans.modules.j2ee.persistence.entitygenerator.CMPMappingModel.ColumnData;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -73,7 +74,12 @@ public class CMPMapping implements OriginalCMPMapping {
     }
     
     public String[] getRelationshipColumn(String cmrFieldName) {
-        return (String[]) model.getCmrFieldMapping().get(cmrFieldName);
+        ColumnData[] columns =  (ColumnData[]) model.getCmrFieldMapping().get(cmrFieldName);
+        String[] names = new String[columns.length];
+        for(int i = 0; i < columns.length; i ++) {
+            names[i] = columns[i].getColumnName();
+        }
+        return names;
     }
     
     public FileObject getSchema() {

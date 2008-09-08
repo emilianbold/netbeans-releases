@@ -74,8 +74,8 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
     private final ProjectCustomizer.Category category;
     private WebProject project;
     private WebProjectProperties uiProperties;
-    private List newExtenders = new LinkedList();
-    private List usedFrameworks = new LinkedList();
+    private List<WebModuleExtender> newExtenders = new LinkedList<WebModuleExtender>();
+    private List<WebFrameworkProvider> usedFrameworks = new LinkedList<WebFrameworkProvider>();
     private Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
     private ExtenderController controller = ExtenderController.create();
     
@@ -90,8 +90,8 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
     }
     
     private void initFrameworksList(WebModule webModule) {
-        String j2eeVersion = (String)uiProperties.get(WebProjectProperties.J2EE_PLATFORM);
-        String serverInstanceID = (String)uiProperties.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
+        String j2eeVersion = uiProperties.getProject().evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM);
+        String serverInstanceID = uiProperties.getProject().evaluator().getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
         Properties properties = controller.getProperties();
         properties.setProperty("j2eeLevel", j2eeVersion); // NOI18N
         properties.setProperty("serverInstanceID", serverInstanceID); // NOI18N

@@ -16,9 +16,9 @@
     <property name="appversion" value="Development Version"/>
     
     <!-- Tomcat properties   -->    
-    <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-6.0.16"/>
-    <property name="tomcat.version" value="6.0.16"/>
-    <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-6.0.16.zip"/> 
+    <property name="tomcat.version" value="6.0.18"/>
+    <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
+    <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
     <!-- GlassFish properties   -->   
     <property name="glassfish.install.dir" value="${install.dir}/glassfish-v2ur2"/>
@@ -33,7 +33,7 @@
     <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
 
     <loadresource property="glassfish.v3.build.number">
-          <url url="${glassfish.v3.location.prefix}/trunk-latest/bundles/"/>
+          <url url="${glassfish.v3.location.prefix}/prelude/b20/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>

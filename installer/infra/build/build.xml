@@ -342,6 +342,10 @@
             prefix="sjsas"/>
 	-->
 
+	<set property="tomcat.version"      value="6.0.18"/>
+	<set property="tomcat.full.version" value="${tomcat.version}.0.0"/>
+
+
 	<set property="glassfish.milestone.number" value="04"/>
 	<set property="glassfish.milestone.number.real" value="04"/>
 	<set property="glassfish.build.type" value="fcs"/>
@@ -361,7 +365,7 @@
 	</if>
 
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/10.0/promoted/trunk-latest/bundles/"
+            src="${glassfish.builds.host}/java/re/glassfish/10.0/promoted/prelude/b20/bundles"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
@@ -483,6 +487,9 @@ glassfish-mod.milestone.number=${glassfish-mod.milestone.number}
 glassfish-mod.milestone.number.real=${glassfish-mod.milestone.number.real}
 glassfish-mod.build.type=${glassfish-mod.build.type}
 glassfish-mod.build.number=${glassfish-mod.build.number}
+
+tomcat.full.version=${tomcat.full.version}
+tomcat.version=${tomcat.version}
 
 sjsas.milestone.number=${sjsas.milestone.number}
 sjsas.milestone.number.real=${sjsas.milestone.number.real}
@@ -613,7 +620,7 @@ jarsigner.storepass=${jarsigner.storepass}
                 
                 <!-- tomcat -->
 		<include name="**/tomcat*"/>
-                <exclude name="**/tomcat*6.0.16.0.0*"/>
+                <exclude name="**/tomcat*${tomcat.full.version}*"/>
 
 		<!-- wtk -->
                 <exclude name="**/wtk*"/>
@@ -1146,7 +1153,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javaee"     version="${nb.full.version}"/>
             <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat"        version="6.0.16.0.0"/>
+            <component uid="tomcat"        version="${tomcat.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="java"/>
             </create-bundle>
 	</if>
@@ -1164,7 +1171,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javaee"     version="${nb.full.version}"/>
             <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat"        version="6.0.16.0.0"/>
+            <component uid="tomcat"        version="${tomcat.full.version}"/>
 	    <bundleProperty name="${welcome.type}" value="java"/>
             </create-bundle>
 	</if>
@@ -1261,7 +1268,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="nb-php"         version="${nb.full.version}"/>
                        <component uid="glassfish"      version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
                        <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-                       <component uid="tomcat"         version="6.0.16.0.0"/>
+                       <component uid="tomcat"         version="${tomcat.full.version}"/>
                    <component uid="openesb"        version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
                    </create-bundle>
             </if>
@@ -1281,7 +1288,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="nb-php"         version="${nb.full.version}"/>
                        <component uid="glassfish"      version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
                        <component uid="glassfish-mod"  version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-                       <component uid="tomcat"         version="6.0.16.0.0"/>
+                       <component uid="tomcat"         version="${tomcat.full.version}"/>
                        <component uid="openesb"        version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
                    </create-bundle>
             </if>
@@ -1303,7 +1310,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-php"        version="${nb.full.version}"/>
             <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
-            <component uid="tomcat"        version="6.0.16.0.0"/>
+            <component uid="tomcat"        version="${tomcat.full.version}"/>
             <component uid="openesb"       version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>
         </create-bundle>
         </if>

@@ -90,7 +90,7 @@ public class ViewListNodeInfo extends DatabaseNodeInfo {
     * @param name Name of existing view
     */
     public void addView(String name) throws DatabaseException {
-        refreshChildren();
+        notifyChange();
     }
     
     @Override

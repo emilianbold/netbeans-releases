@@ -250,11 +250,11 @@ public class DriverListUtil {
         
         add(getMessage("DRIVERNAME_MySQL"),
                 "com.mysql.jdbc.Driver", 
-                "jdbc:mysql://[<HOST>[:<PORT>]]/[<DB>][?<ADDITIONAL>]", true); // NOI18N
+                "jdbc:mysql://[<HOST>[:<PORT>]]/<DB>[?<ADDITIONAL>]", true); // NOI18N
         
         add("MySQL (MM.MySQL driver)",
         "org.gjt.mm.mysql.Driver",
-        "jdbc:mysql://<HOST>[:<PORT>][/<DB>]");
+        "jdbc:mysql://<HOST>[:<PORT>]/<DB>");
         
         add(getMessage("DRIVERNAME_OracleThin"), 
                 getMessage("TYPE_SID"), "oracle.jdbc.OracleDriver", 

@@ -104,6 +104,10 @@ public class RubyFormatterTest extends RubyTestBase {
         for (FileObject fo : files) {
             count++;
 
+            if (fo.getNameExt().equals("mvm_subvm.rb")) {
+                // This file is okay and shouldn't end in column 0
+                continue;
+            }
             
 if (fo.getName().equals("delegating_attributes.rb")) {
     System.err.println("SKIPPING known bad file " + fo.getNameExt());

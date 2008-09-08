@@ -186,8 +186,10 @@ public class CsmCompletionExpression {
     /** Preproc directive */
     public static final int PREPROC_DIRECTIVE_OPEN = 39;
 
+    public static final int TERNARY_OPERATOR = 40;
+
     /** Last used id of the expression ids. */
-    private static final int LAST_ID = PREPROC_DIRECTIVE_OPEN;
+    private static final int LAST_ID = TERNARY_OPERATOR;
 
     private static final int cppTokenIDsLength
         = EnumSet.allOf(CppTokenId.class).size();
@@ -586,6 +588,8 @@ public class CsmCompletionExpression {
             return "PREPROC_DIRECTIVE"; // NOI18N
         case PREPROC_DIRECTIVE_OPEN:
             return "PREPROC_DIRECTIVE_OPEN"; // NOI18N
+        case TERNARY_OPERATOR:
+            return "TERNARY_OPERATOR"; // NOI18N
         default:
             return "Unknown expID " + expID; // NOI18N
         }

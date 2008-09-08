@@ -243,7 +243,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         public void configurationXmlChanged(AntProjectEvent ev) {
             // XXX this is a little strange but happens during project move. Bad ordering.
             // Probably bug in moving implementation (our or in general Project API).
-            if (project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH) != null) {
+            if (! project.isRunInAtomicAction() && project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH) != null) {
                 refreshKeys(true);
             }
         }

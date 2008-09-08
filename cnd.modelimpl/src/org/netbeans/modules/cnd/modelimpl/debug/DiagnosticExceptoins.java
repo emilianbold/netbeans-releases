@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.modelimpl.debug;
 
+import org.netbeans.modules.cnd.utils.CndUtils;
+
 /**
  * Allows to get control as soon as an exception occurs
  * in one of the code model threads
@@ -73,14 +75,8 @@ public class DiagnosticExceptoins {
      * See Hook.exception description for more details
      */
     public static void register(Throwable thr) {
-        if( TraceFlags.TIMING ) {
+        if( CndUtils.isDebugMode() ) {
             thr.printStackTrace();
-        } else {
-            if (thr.getMessage()!=null) {
-                System.err.println(thr.getMessage());
-            } else {
-                System.err.println(thr);
-            }
         }
 	Hook aHook = hook;
 	if( aHook != null ) {

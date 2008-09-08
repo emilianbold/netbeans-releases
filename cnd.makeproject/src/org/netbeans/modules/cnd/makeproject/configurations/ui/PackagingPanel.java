@@ -82,8 +82,12 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         env.addPropertyChangeListener(this);
         
         // Add tabs
-        packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getHeader().getValue(), packagingConfiguration));
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getSvr4Header().getValue(), packagingConfiguration));
+            packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+            packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getRpmHeader().getValue(), packagingConfiguration));
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
@@ -109,6 +113,12 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             tabbedPane.setEnabledAt(1,true);
             tabbedPane.setSelectedIndex(0);
         }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+            // Add tabs
+            tabbedPane.setEnabledAt(0,true);
+            tabbedPane.setEnabledAt(1,true);
+            tabbedPane.setSelectedIndex(0);
+        }
         else {
             assert false;
         }
@@ -127,17 +137,21 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     private Object getPropertyValue() throws IllegalStateException {
-        Vector v;
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            packagingConfiguration.getSvr4Header().setValue(new ArrayList(packagingInfoPanel.getListData()));
+        }
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+            packagingConfiguration.getRpmHeader().setValue(new ArrayList(packagingInfoPanel.getListData()));
+        }
         
-        v = packagingInfoPanel.getListData();
-        packagingConfiguration.getHeader().setValue(new ArrayList(v));
-        
-        v = packagingFilesPanel.getListData();
-        packagingConfiguration.getFiles().setValue(new ArrayList(v));
+        packagingConfiguration.getFiles().setValue(new ArrayList(packagingFilesPanel.getListData()));
         
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             InfoElement pkgElem = packagingConfiguration.findInfoElement("PKG"); // NOI18N
             packagingConfiguration.getOutput().setValue(IpeUtils.getDirName(packagingConfiguration.getOutputValue()) + "/" + pkgElem.getValue()); // NOI18N
+        }
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
+            // FIXUP
         }
 	return packagingConfiguration;
         

@@ -241,7 +241,7 @@ public abstract class AbstractLabelManager implements LabelManager
                 HashSet sel=new HashSet();
                 sel.add(lPres);
                 scene.setFocusedObject(lPres);
-                scene.setSelectedObjects(sel);
+                scene.userSelectionSuggested(sel, false);
             }
         }
     }

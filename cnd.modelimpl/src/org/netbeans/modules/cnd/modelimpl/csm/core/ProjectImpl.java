@@ -99,9 +99,10 @@ public final class ProjectImpl extends ProjectBase {
 	return (ProjectImpl) instance;
     }
 
-    protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state) {
+    @Override
+    protected void scheduleIncludedFileParsing(FileImpl csmFile, Collection<APTPreprocHandler.State> states, boolean replaceStates) {
         // add project's file to the head
-        ParserQueue.instance().add(csmFile, state, ParserQueue.Position.HEAD);
+        ParserQueue.instance().add(csmFile, states, ParserQueue.Position.HEAD, replaceStates);
     }
 
     public @Override void onFileEditStart(final FileBuffer buf, NativeFileItem nativeFile) {

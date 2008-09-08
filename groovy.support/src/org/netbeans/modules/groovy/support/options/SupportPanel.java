@@ -48,6 +48,7 @@ import java.net.URL;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
+import org.netbeans.modules.groovy.support.spi.GroovyOptionsSubpanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -62,10 +63,15 @@ import org.openide.util.NbBundle;
 final class SupportPanel extends javax.swing.JPanel {
 
     private final SupportOptionsPanelController controller;
+    private final GroovyOptionsSubpanel subpanel;
 
-    SupportPanel(SupportOptionsPanelController controller) {
+    SupportPanel(SupportOptionsPanelController controller, GroovyOptionsSubpanel subpanel) {
         this.controller = controller;
+        this.subpanel = subpanel;
         initComponents();
+        if (subpanel != null) {
+            subpanelWrapper.add(subpanel.getComponent());
+        }
         // TODO listen to changes in form fields and call controller.changed()
     }
 
@@ -77,18 +83,13 @@ final class SupportPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        homeLabel = new javax.swing.JLabel();
-        groovyHomeTextField = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         linkLabel = new javax.swing.JLabel();
-        chooseHomeButton = new javax.swing.JButton();
         docLabel = new javax.swing.JLabel();
         groovyDocTextField = new javax.swing.JTextField();
         chooseDocButton = new javax.swing.JButton();
-
-        org.openide.awt.Mnemonics.setLocalizedText(homeLabel, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.homeLabel.text")); // NOI18N
-
-        groovyHomeTextField.setText(org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.groovyHomeTextField.text")); // NOI18N
+        subpanelWrapper = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.jLabel2.text")); // NOI18N
 
@@ -105,13 +106,6 @@ final class SupportPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(chooseHomeButton, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.chooseHomeButton.text")); // NOI18N
-        chooseHomeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                chooseHomeButtonActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(docLabel, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.docLabel.text")); // NOI18N
 
         groovyDocTextField.setText(org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.groovyDocTextField.text")); // NOI18N
@@ -123,47 +117,47 @@ final class SupportPanel extends javax.swing.JPanel {
             }
         });
 
+        subpanelWrapper.setLayout(new java.awt.BorderLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SupportPanel.class, "SupportPanel.jLabel1.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(homeLabel)
-                    .add(docLabel))
+                .add(jLabel2)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(linkLabel))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, groovyDocTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
-                            .add(groovyHomeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(chooseDocButton)
-                            .add(chooseHomeButton))))
+                .add(linkLabel)
                 .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(jLabel1)
+                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(groovyDocTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(chooseDocButton))
+            .add(layout.createSequentialGroup()
+                .add(docLabel)
+                .addContainerGap())
+            .add(subpanelWrapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(homeLabel)
-                    .add(chooseHomeButton)
-                    .add(groovyHomeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(docLabel)
-                    .add(groovyDocTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(chooseDocButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(linkLabel))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel1)
+                .add(18, 18, 18)
+                .add(docLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(chooseDocButton)
+                    .add(groovyDocTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(subpanelWrapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -182,25 +176,6 @@ final class SupportPanel extends javax.swing.JPanel {
     private void linkLabelMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_linkLabelMouseExited
         setCursor(Cursor.getDefaultCursor());
     }//GEN-LAST:event_linkLabelMouseExited
-
-    private void chooseHomeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseHomeButtonActionPerformed
-        JFileChooser chooser = new JFileChooser(groovyHomeTextField.getText());
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int r = chooser.showDialog(
-            SwingUtilities.getWindowAncestor (this), NbBundle.getMessage(SupportPanel.class, "LBL_Select_Directory"));
-        if (r == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile ();
-            if (!new File (new File (file, "bin"), "groovy").isFile ()) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(SupportPanel.class, "LBL_Not_groovy_home"),
-                    NotifyDescriptor.Message.WARNING_MESSAGE
-                ));
-                return;
-            }
-            groovyHomeTextField.setText(file.getAbsolutePath());
-
-        }
-}//GEN-LAST:event_chooseHomeButtonActionPerformed
 
 private void chooseDocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDocButtonActionPerformed
         JFileChooser chooser = new JFileChooser(groovyDocTextField.getText());
@@ -223,31 +198,33 @@ private void chooseDocButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     void load() {
         GroovySettings groovyOption = new GroovySettings();
-        groovyHomeTextField.setText(groovyOption.getGroovyHome());
         groovyDocTextField.setText(groovyOption.getGroovyDoc());
+        if (subpanel != null) {
+            subpanel.load();
+        }
     }
 
     void store() {
         GroovySettings groovyOption = new GroovySettings();
-        groovyOption.setGroovyHome(groovyHomeTextField.getText().trim());
         groovyOption.setGroovyDoc(groovyDocTextField.getText().trim());
+        if (subpanel != null) {
+            subpanel.store();
+        }
     }
 
     boolean valid() {
-        String groovyHome = groovyHomeTextField.getText().trim();
         String groovyDoc = groovyDocTextField.getText().trim();
-        return (!"".equals(groovyHome) && !"".equals(groovyDoc)); // NOI18N
+        return (!"".equals(groovyDoc) && (subpanel != null ? subpanel.valid() : true)); // NOI18N
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooseDocButton;
-    private javax.swing.JButton chooseHomeButton;
     private javax.swing.JLabel docLabel;
     private javax.swing.JTextField groovyDocTextField;
-    private javax.swing.JTextField groovyHomeTextField;
-    private javax.swing.JLabel homeLabel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel linkLabel;
+    private javax.swing.JPanel subpanelWrapper;
     // End of variables declaration//GEN-END:variables
 
 }
