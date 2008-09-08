@@ -609,6 +609,7 @@ public final class FoldHierarchyTransactionImpl {
                             sb.append("     New fold: "); //NOI18N
                             sb.append(fold.toString());
                             sb.append("; FoldManager: ").append(getManager(fold)); //NOI18N
+                            sb.append("\n"); //NOI18N
 
                             LOG.warning(sb.toString());
                         }
