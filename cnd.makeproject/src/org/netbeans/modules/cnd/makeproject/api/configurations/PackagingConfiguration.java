@@ -374,13 +374,22 @@ public class PackagingConfiguration {
         if (getTopDir().getModified()) {
             return getTopDir().getValue();
         } else {
-            String val;
+            String val = null;
             
             if (getType().getValue() == TYPE_RPM_PACKAGE) {
                 val = "/usr"; // NOI18N
             }
-            else {
+            else if (getType().getValue() == TYPE_SVR4_PACKAGE) {
+                val = findInfoValueName("PKG"); // NOI18N
+            }
+            else if (getType().getValue() == TYPE_TAR) {
                 val = IpeUtils.getBaseName(getOutputValue());
+            }
+            else if (getType().getValue() == TYPE_ZIP) {
+                val = IpeUtils.getBaseName(getOutputValue());
+            }
+            else {
+                assert false;
             }
             
             int i = val.lastIndexOf("."); // NOI18N
@@ -408,7 +417,7 @@ public class PackagingConfiguration {
         String outputName = getOutputName();
         
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            outputPath += "/" + outputName; // NOI18
+            // nothing
         } else if (getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
             // nothing
         } else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
@@ -485,11 +494,6 @@ public class PackagingConfiguration {
                 return;
             }
             super.setValue(v);
-            if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-                String pkgName = IpeUtils.getBaseName((String)v);
-                InfoElement pkgElem = findInfoElement("PKG"); // NOI18N
-                pkgElem.setValue(pkgName);
-            }
         }
     }
 
