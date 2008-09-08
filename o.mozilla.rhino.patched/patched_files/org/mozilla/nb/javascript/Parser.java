@@ -68,7 +68,7 @@ public class Parser
 {
     // <netbeans>
     // Keep in sync with JsModel.GENERATED_IDENTIFIER
-    private static final String GENERATED_IDENTIFIER = " __UNKNOWN__ "; // NOI18N
+    private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
     // </netbeans>
 
     // TokenInformation flags : currentFlaggedToken stores them together
