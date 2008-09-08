@@ -125,7 +125,8 @@ class EditorBookmarksModule extends ModuleInstall {
     private void finish () {
         // Stop listening on projects closing
         BookmarksPersistence.destroy ();
-        bookmarksInitializer.destroy ();
+        if (bookmarksInitializer != null)
+            bookmarksInitializer.destroy();
     }
     
     

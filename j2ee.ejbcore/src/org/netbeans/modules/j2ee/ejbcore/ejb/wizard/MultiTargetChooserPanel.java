@@ -168,6 +168,10 @@ public final class MultiTargetChooserPanel implements WizardDescriptor.Panel, Ch
 
         boolean returnValue=true;
         FileObject rootFolder = gui.getRootFolder();
+        if (rootFolder == null) {
+            setErrorMessage( "ERR_JavaTargetChooser_InvalidRootFolder" );
+            return false;
+        }
         SpecificationVersion specVersion = null;
         if (type != TYPE_PACKAGE) {
             String sl = SourceLevelQuery.getSourceLevel(rootFolder);

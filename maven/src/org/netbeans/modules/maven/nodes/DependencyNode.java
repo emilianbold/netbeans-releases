@@ -144,7 +144,7 @@ public class DependencyNode extends AbstractNode {
         Artifact art = look.lookup(Artifact.class);
         if (art.getFile() != null) {//#135463
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
-            if (fo != null) {
+            if (fo != null && FileUtil.isArchiveFile(fo)) {
                 return new JarContentFilterChildren(PackageView.createPackageView(new ArtifactSourceGroup(art)));
             }
         }
@@ -201,16 +201,20 @@ public class DependencyNode extends AbstractNode {
         } else if (longLiving && isDependencyProjectOpen()) {
             setIconBaseWithExtension("org/netbeans/modules/maven/Maven2Icon.gif"); //NOI18N
         } else if (isTransitive()) {
-            setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveDependencyIcon.png"); //NOI18N
-        } else if (isJarDependency()) { //NOI18N
+            if (isAddedToCP()) {
+                setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveDependencyIcon.png"); //NOI18N
+            } else {
+                setIconBaseWithExtension("org/netbeans/modules/maven/TransitiveArtifactIcon.png"); //NOI18N
+            }
+        } else if (isAddedToCP()) { //NOI18N
             setIconBaseWithExtension("org/netbeans/modules/maven/DependencyIcon.png"); //NOI18N
         } else {
-            setIconBaseWithExtension("org/netbeans/modules/maven/DependencyIcon.png"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/maven/ArtifactIcon.png"); //NOI18N
         }
     }
 
-    private boolean isJarDependency() {
-        return "jar".equalsIgnoreCase(art.getType()); //NOI18N
+    private boolean isAddedToCP() {
+        return art.getArtifactHandler().isAddedToClasspath();
     }
 
     boolean isDependencyProjectOpen() {
@@ -259,6 +263,9 @@ public class DependencyNode extends AbstractNode {
             if (nb.isFakedSystemDependency()) {
                 return nb.getNonFakedFile().getName();
             }
+            if (nb.isFakedPomDependency()) {
+                return nb.getNonFakedFile().getName();
+            }
         }
         return art.getFile().getName();
     }
@@ -266,19 +273,21 @@ public class DependencyNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         Collection<Action> acts = new ArrayList<Action>();
-        InstallLocalArtifactAction act = new InstallLocalArtifactAction();
-        acts.add(act);
-        if (!isLocal()) {
-            act.setEnabled(true);
+        if (isAddedToCP()) {
+            InstallLocalArtifactAction act = new InstallLocalArtifactAction();
+            acts.add(act);
+            if (!isLocal()) {
+                act.setEnabled(true);
+            }
         }
 
 //        acts.add(new EditAction());
 //        acts.add(RemoveDepAction.get(RemoveDepAction.class));
 //        acts.add(new DownloadJavadocAndSourcesAction());
-        if (!hasJavadocInRepository()) {
+        if (isAddedToCP() && !hasJavadocInRepository()) {
             acts.add(new InstallLocalJavadocAction());
         }
-        if (!hasSourceInRepository()) {
+        if (isAddedToCP() && !hasSourceInRepository()) {
             acts.add(new InstallLocalSourcesAction());
         }
         if (isTransitive()) {

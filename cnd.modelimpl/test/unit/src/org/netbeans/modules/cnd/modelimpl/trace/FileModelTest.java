@@ -62,7 +62,7 @@ public class FileModelTest extends TraceModelTestBase {
 
     @Override
     protected void setUp() throws Exception {
-    System.setProperty("parser.report.errors", "true");
+        System.setProperty("parser.report.errors", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();
     }
@@ -474,6 +474,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("IZ144009.cc"); // NOI18N
     }   
 
+    // #145963 can't resolve template class implementations
+    public void testLocalVariables() throws Exception {
+        performTest("local_variables.cc"); // NOI18N
+    }   
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

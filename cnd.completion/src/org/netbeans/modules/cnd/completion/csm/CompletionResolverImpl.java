@@ -292,6 +292,12 @@ public class CompletionResolverImpl implements CompletionResolver {
                     }
                     resImpl.fileLocalEnumerators.add((CsmEnumerator) elem);
                     if (isEnough(strPrefix, match)) return true;
+                } if (needVars && CsmKindUtilities.isFunction(elem)) {
+                    if (resImpl.fileLocalFunctions == null) {
+                        resImpl.fileLocalFunctions = new ArrayList<CsmFunction>();
+                    }
+                    resImpl.fileLocalFunctions.add((CsmFunction) elem);
+                    if (isEnough(strPrefix, match)) return true;
                 }
             }
         }
@@ -381,7 +387,10 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (isEnough(strPrefix, match, resImpl.fileLocalMacros)) return true;
         }
         if (needFileLocalFunctions(context, offset)) {
-            resImpl.fileLocalFunctions = getFileLocalFunctions(context, strPrefix, match);
+            if (resImpl.fileLocalFunctions == null) {
+                resImpl.fileLocalFunctions = new ArrayList<CsmFunction>();
+            }
+            resImpl.fileLocalFunctions.addAll(getFileLocalFunctions(context, strPrefix, match));
             if (isEnough(strPrefix, match, resImpl.fileLocalFunctions)) return true;
         }
         // file local variables
@@ -596,12 +605,13 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (CsmKindUtilities.isTemplate(fun)) {
             analyzeTemplates.add((CsmTemplate)fun);
         }
-        CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
-        clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false, false);
-        if (CsmKindUtilities.isTemplate(clazz)) {
+        CsmClass funClass = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
+        CsmClass contextClass = CsmContextUtilities.getClass(context, false, false);
+        CsmClass clazz = funClass != null ? funClass : contextClass;
+        if (clazz != null) {
             // We add template parameters to function parameters on function init,
             // so we dont need to add them to completion list again.
-            if (!CsmKindUtilities.isTemplate(fun) || clazz.equals(CsmContextUtilities.getClass(context, false, false))) {
+            if (CsmKindUtilities.isTemplate(clazz) && !analyzeTemplates.contains(clazz)) {
                 analyzeTemplates.add((CsmTemplate)clazz);
             }
             CsmScope scope = clazz.getScope();

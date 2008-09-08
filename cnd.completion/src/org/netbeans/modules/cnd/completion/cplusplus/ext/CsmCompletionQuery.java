@@ -1443,9 +1443,22 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 if (item.getParameterCount() > 0) {
                     lastType = resolveType(item.getParameter(0));
                     staticOnly = false;
-                    CsmClassifier cls = lastType == null ? null : CsmCompletionQuery.getClassifier(lastType, CsmFunction.OperatorKind.POINTER);
-                    if (cls != null) {
-                        lastType = CsmCompletion.getType(cls, 0);
+                    CsmFunction.OperatorKind opKind = null;
+                    if (item.getTokenCount() == 1) {
+                        switch (item.getTokenID(0)) {
+                            case AMP:
+                                opKind = CsmFunction.OperatorKind.ADDRESS;
+                                break;
+                            case STAR:
+                                opKind = CsmFunction.OperatorKind.POINTER;
+                                break;
+                        }
+                    }
+                    if (opKind != null) {
+                        CsmClassifier cls = lastType == null ? null : CsmCompletionQuery.getClassifier(lastType, opKind);
+                        if (cls != null) {
+                            lastType = CsmCompletion.getType(cls, 0);
+                        }
                     }
                     // TODO: need to convert lastType into reference based on item token '&' or '*'
                     // and nested pointer expressions

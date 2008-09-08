@@ -41,7 +41,13 @@
 
 package org.netbeans.modules.db.mysql.impl;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.net.Socket;
 import java.net.URL;
+import java.net.UnknownHostException;
 import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import org.netbeans.modules.db.mysql.util.Utils;
 import java.sql.Connection;
@@ -111,7 +117,9 @@ public class MySQLDatabaseServer implements DatabaseServer {
 
     final LinkedBlockingQueue<Runnable> commandQueue = new LinkedBlockingQueue<Runnable>();
     final ConnectionProcessor connProcessor = new ConnectionProcessor(commandQueue);
-    final CopyOnWriteArrayList<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+    final CopyOnWriteArrayList<ChangeListener> changeListeners = new CopyOnWriteArrayList<ChangeListener>();
+
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     // Cache this in cases where it is not being saved to disk
     // Synchronized on the instance (this)
@@ -300,7 +308,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
     private void notifyChange() {
         ChangeEvent evt = new ChangeEvent(this);
 
-        for ( ChangeListener listener : listeners ) {
+        for ( ChangeListener listener : changeListeners ) {
             listener.stateChanged(evt);
         }
     }
@@ -668,19 +676,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
             @Override
             public void execute() throws Exception {
                 try {
-                    runProcess(getStartPath(), getStartArgs(), true, Utils.getMessage("LBL_StartOutputTab"));
-
-                    try {
-                        Thread.sleep(3000);
-                    } catch ( InterruptedException e ) {
-                        return;
-                    }
-
-                    try {
-                        reconnect();
-                    } catch ( DatabaseException e ) {
-                        LOGGER.log(Level.INFO, null, e);
-                    }
+                    runProcess(getStartPath(), getStartArgs(), true, Utils.getMessage("LBL_MySQLOutputTab"));
                 } finally {
                     refreshDatabaseList();
                 }
@@ -693,20 +689,52 @@ public class MySQLDatabaseServer implements DatabaseServer {
             throw new DatabaseException(Utils.getMessage("MSG_InvalidStopCommand"));
         }
 
+        final DatabaseServer server = this;
+
         new DatabaseCommand() {
             @Override
             public void execute() throws Exception {
-                runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_AdminOutputTab"));
+                ProgressHandle handle = ProgressHandleFactory.createHandle(Utils.getMessage("LBL_StoppingMySQLServer"));
+                handle.start();
+                handle.switchToIndeterminate();
 
                 try {
-                    connProcessor.validateConnection();
-                    Utils.displayErrorMessage(NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_ServerStillRunning"));
-                } catch (DatabaseException dbe) {
-                    LOGGER.log(Level.FINE, null, dbe);
+                    runProcess(getStopPath(), getStopArgs(),true, Utils.getMessage("LBL_MySQLOutputTab"));
+
+                    // See if the connection is still active.  Try 5 times with a
+                    // 1 second wait and then assume something went wrong if it's
+                    // still active after that.
+                    int tries = 0;
+                    while (tries <= 4) {
+                        tries++;
+
+                        try {
+                            connProcessor.validateConnection();
+                        } catch (DatabaseException dbe) {
+                            LOGGER.log(Level.FINE, null, dbe);
+                            disconnect();
+                            refreshDatabaseList();
+                            return;
+                        }
+
+                        Thread.sleep(1000);
+                    }
+                    boolean editProps = Utils.displayYesNoDialog(NbBundle.getMessage(MySQLDatabaseServer.class, "MSG_ServerStillRunning"));
+
+                    if (editProps) {
+                        Mutex.EVENT.postReadRequest(new Runnable() {
+
+                            public void run() {
+                                PropertiesDialog dlg = new PropertiesDialog(server);
+                                dlg.displayDialog(PropertiesDialog.Tab.ADMIN);
+                            }
+
+                        });
+                    }
+                } finally {
+                    handle.finish();
                 }
                 
-                disconnect();
-                refreshDatabaseList();
             }
         }.postCommand();
     }
@@ -735,7 +763,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
         } else if ( Utils.isValidExecutable(adminCommand, false)) {
             runProcess(adminCommand, getAdminArgs(),
                     true, Utils.getMessage(
-                        "LBL_AdminOutputTab"));
+                        "LBL_MySQLOutputTab"));
         } else {
             throw new DatabaseException(NbBundle.getMessage(
                     DatabaseServer.class,
@@ -776,11 +804,60 @@ public class MySQLDatabaseServer implements DatabaseServer {
     }
 
     public void addChangeListener(ChangeListener listener) {
-        listeners.add(listener);
+        changeListeners.add(listener);
     }
 
     public void removeChangeListener(ChangeListener listener) {
-        listeners.remove(listener);
+        changeListeners.remove(listener);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        MySQLOptions.getDefault().addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        MySQLOptions.getDefault().removePropertyChangeListener(listener);
+    }
+
+    public boolean propertyChangeNeedsReconnect(PropertyChangeEvent evt) {
+        String property = evt.getPropertyName();
+        if (property.equals(MySQLOptions.PROP_ADMINUSER) ||
+            property.equals(MySQLOptions.PROP_ADMINPWD)   ||
+            property.equals(MySQLOptions.PROP_HOST)       ||
+            property.equals(MySQLOptions.PROP_PORT)) {
+                return true;
+        }
+
+        return false;
+    }
+
+    public boolean isRunning() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            throw new IllegalStateException("You cannot call this method from the AWT event thread");
+        }
+        
+        if (isConnected()) {
+            try {
+                validateConnection();
+                return true;
+            } catch (DatabaseException dbe) {
+                // was connected, but not a valid connection. So let's see if
+                // the server is up
+            }
+        }
+
+        // Open a socket to the database port and see if it responds.  If it
+        // does, let's assume we're running.  There's a possibility that another
+        // service is running on that port, but that's an uncommon scenario...
+        try {
+            new Socket(getHost(), Integer.parseInt(getPort()));
+        } catch (UnknownHostException ex) {
+            return false;
+        } catch (IOException ex) {
+            return false;
+        }
+
+        return true;
     }
 
     private abstract class DatabaseCommand<T> implements Runnable {

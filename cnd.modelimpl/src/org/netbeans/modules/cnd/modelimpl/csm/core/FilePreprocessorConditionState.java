@@ -210,11 +210,11 @@ public class FilePreprocessorConditionState
                 // on each iteration we assume
                 // that all on the left of the current position
                 // this is a subset of other
-                if (this.offsets[thisPos] == otherOffsets[thisPos]) {
+                if (this.offsets[thisPos] == otherOffsets[otherPos]) {
                     thisPos++;
                     otherPos++;
                     continue;
-                } else if (this.offsets[thisPos] < otherOffsets[thisPos]) {
+                } else if (this.offsets[thisPos] < otherOffsets[otherPos]) {
                     return false;
                 } else { // this.offsets[thisPos] > other.offsets[thisPos]
                     while (++otherPos < otherSize) {

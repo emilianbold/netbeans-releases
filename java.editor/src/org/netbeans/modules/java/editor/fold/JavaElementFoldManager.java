@@ -269,7 +269,8 @@ public class JavaElementFoldManager extends JavaFoldManager {
                     List<FoldInfo>      removed = new ArrayList<FoldInfo>(currentFolds.keySet());
                     
                     for (FoldInfo i : infos) {
-                        if (removed.remove(i)) {
+                        if (currentFolds.containsKey(i)) {
+                            removed.remove(i);
                             continue ;
                         }
                         

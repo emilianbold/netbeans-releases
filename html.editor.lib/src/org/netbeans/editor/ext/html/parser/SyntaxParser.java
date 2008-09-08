@@ -536,10 +536,12 @@ public final class SyntaxParser {
                        switch(id) {
                             case DECLARATION:
                                 if(token.text().toString().equals("PUBLIC")) {
+                                    doctype_public_id = new String();
                                     state = S_DOCTYPE_PUBLIC_ID;
                                     break;
                                 } else if(token.text().toString().equals("SYSTEM")) {
                                     state = S_DOCTYPE_FILE;
+                                    doctype_file = new String();
                                     break;
                                 }
                                 //not of the expected
@@ -564,13 +566,27 @@ public final class SyntaxParser {
                         
                     case S_DOCTYPE_PUBLIC_ID:
                         switch(id) {
+                            case WS:
                             case DECLARATION:
-                                doctype_public_id = token.text().toString();
-                                state = S_DOCTYPE_FILE;
+                                String tokenText = token.text().toString();
+                                if(tokenText.startsWith("\"")) {
+                                    //first token
+                                    tokenText = tokenText.substring(1); //cut off the quotation mark
+                                }
+                                if(tokenText.endsWith("\"")) {
+                                    //last token
+                                    tokenText = tokenText.substring(0, tokenText.length() - 1); //cut off the quotation mark
+                                    doctype_public_id += tokenText; //short and rare strings, no perf problem
+                                    doctype_public_id = doctype_public_id.trim();
+                                    state = S_DOCTYPE_FILE;
+                                    break;
+                                }
+                                doctype_public_id += tokenText; //short and rare strings, no perf problem
+                                
                                 break;
                             case SGML_COMMENT:
                             case EOL:
-                            case WS:
+                            
                                 break;  
                               default:
                                 backup(1);
