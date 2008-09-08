@@ -118,7 +118,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         handle.start(4);
         handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         
-        Set resultSet = new HashSet();
+        Set<FileObject> resultSet = new HashSet<FileObject>();
 
         File dirF = (File) wiz.getProperty(ProjectLocationWizardPanel.PROJECT_DIR);
         if (dirF != null) {
@@ -180,7 +180,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
             for(int i = 0; i < selectedExtenders.size(); i++) {
                 Object o = ((WebModuleExtender) selectedExtenders.get(i)).extend(apiWebModule);
                 if (o != null && o instanceof Set)
-                    resultSet.addAll((Set)o);
+                    resultSet.addAll((Set<FileObject>)o);
             }
         }
 

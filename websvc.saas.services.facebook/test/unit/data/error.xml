@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<error_response xmlns="http://api.facebook.com/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.facebook.com/1.0/ http://api.facebook.com/1.0/facebook.xsd">
+    <error_code>5</error_code>
+    <error_msg>Unauthorized source IP address (ip was: 10.1.2.3)</error_msg>
+    <request_args list="true">
+        <arg>
+            <key>method</key>
+            <value>facebook.friends.get</value>
+        </arg>
+        <arg>
+            <key>session_key</key>
+            <value>373443c857fcda2e410e349c-i7nF4PqX4IW4.</value>
+        </arg>
+        <arg>
+            <key>api_key</key>
+            <value>0289b21f46b2ee642d5c42145df5489f</value>
+        </arg>
+        <arg>
+            <key>call_id</key>
+            <value>1170813376.3544</value>
+        </arg>
+        <arg>
+            <key>v</key>
+            <value>1.0</value>
+        </arg>
+        <arg>
+            <key>sig</key>
+            <value>570dcc2b764578af350ea1e1622349a0</value>
+        </arg>
+    </request_args>
+</error_response>

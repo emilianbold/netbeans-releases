@@ -74,8 +74,8 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
     private final ProjectCustomizer.Category category;
     private WebProject project;
     private WebProjectProperties uiProperties;
-    private List newExtenders = new LinkedList();
-    private List usedFrameworks = new LinkedList();
+    private List<WebModuleExtender> newExtenders = new LinkedList<WebModuleExtender>();
+    private List<WebFrameworkProvider> usedFrameworks = new LinkedList<WebFrameworkProvider>();
     private Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
     private ExtenderController controller = ExtenderController.create();
     

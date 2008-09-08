@@ -104,7 +104,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private boolean modified = false;
     private Folder externalFileItems = null;
     private Folder rootFolder = null;
-    private HashMap projectItems = null;
+    private HashMap<String,Item> projectItems = null;
     private List<String> sourceRoots = null;
     private Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
     private NativeProject nativeProject = null;
@@ -116,7 +116,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         super();
         this.baseDir = baseDir;
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
-        projectItems = new HashMap();
+        projectItems = new HashMap<String,Item>();
         sourceRoots = new ArrayList<String>();
         setModified(true);
         ToolsPanel.addCompilerSetModifiedListener(this);
@@ -252,11 +252,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         this.baseDir = baseDir;
     }
 
-    public HashMap getProjectItemsMap() {
+    public HashMap<String,Item> getProjectItemsMap() {
         return projectItems;
     }
 
-    public void setProjectItemsMap(HashMap projectItems) {
+    public void setProjectItemsMap(HashMap<String,Item> projectItems) {
         this.projectItems = projectItems;
     }
 
@@ -312,15 +312,15 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     // Project Files
     public Item[] getProjectItems() {
-        Collection collection = projectItems.values();
-        return (Item[]) collection.toArray(new Item[collection.size()]);
+        Collection<Item> collection = projectItems.values();
+        return collection.toArray(new Item[collection.size()]);
     }
 
     public Item findItemByFile(File file) {
-        Collection coll = projectItems.values();
-        Iterator it = coll.iterator();
+        Collection<Item> coll = projectItems.values();
+        Iterator<Item> it = coll.iterator();
         while (it.hasNext()) {
-            Item item = (Item) it.next();
+            Item item = it.next();
             File itemFile = item.getCanonicalFile();
             if (itemFile == file || itemFile.getPath().equals(file.getPath())) {
                 return item;
@@ -332,7 +332,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public Item findProjectItemByPath(String path) {
         // Try first as-is
         path = FilePathAdaptor.normalize(path);
-        Item item = (Item) projectItems.get(path);
+        Item item = projectItems.get(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
@@ -342,7 +342,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 newPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
             }
             newPath = FilePathAdaptor.normalize(newPath);
-            item = (Item) projectItems.get(newPath);
+            item = projectItems.get(newPath);
         }
         return item;
     }
@@ -358,7 +358,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             } else {
                 newPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
             }
-            item = (Item) projectItems.get(FilePathAdaptor.normalize(newPath));
+            item = projectItems.get(FilePathAdaptor.normalize(newPath));
         }
         return item;
     }

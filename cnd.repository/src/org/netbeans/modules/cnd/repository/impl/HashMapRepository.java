@@ -140,7 +140,7 @@ public class HashMapRepository implements Repository {
         }
     }
 
-    public synchronized void openUnit(String unitName) {
+    public void openUnit(int unitId, String unitName) {
     }
     
     public synchronized void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
@@ -173,5 +173,5 @@ public class HashMapRepository implements Repository {
 
     public void startup(int persistMechanismVersion) {
     }
-    
+
 }

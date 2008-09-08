@@ -30,6 +30,10 @@ import org.openide.filesystems.MIMEResolver;
  */
 public class CndSniffyMIMEResolver extends MIMEResolver {
 
+    public CndSniffyMIMEResolver() {
+        super(MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.SHELL_MIME_TYPE);
+    }
+
     /**
      * Resolves FileObject and returns recognized MIME type
      * @param fo is FileObject which should be resolved

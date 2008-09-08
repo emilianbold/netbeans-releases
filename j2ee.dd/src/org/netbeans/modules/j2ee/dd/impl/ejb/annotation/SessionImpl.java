@@ -181,6 +181,10 @@ public class SessionImpl extends PersistentObject implements Session {
         businessLocal = new String[] {};
         businessRemote = new String[] {};
         
+        if (typeElement == null) {
+            return;
+        }
+
         List<TypeElement> interfaces = new ArrayList<TypeElement>(); // all business interface candidates, EJB 3.0 Spec, Chapter 10.2
         for (TypeMirror typeMirror : typeElement.getInterfaces()) {
             if (TypeKind.DECLARED == typeMirror.getKind()) {
@@ -220,7 +224,7 @@ public class SessionImpl extends PersistentObject implements Session {
                 annotatedRemoteInterfaces.size() == 0)
             {
                 businessLocal = new String[] { interfaces.get(0).getQualifiedName().toString() };
-            } else if (beanLocalAnnotation == null && beanRemoteAnnotation != null &&
+            } else if (beanLocalAnnotation == null && /*beanRemoteAnnotation != null &&*/
                 annotatedLocalInterfaces.size() == 0 /*&& annotatedRemoteInterfaces.size() == 0*/)
             {
                 businessRemote = new String[] { interfaces.get(0).getQualifiedName().toString() };

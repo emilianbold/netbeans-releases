@@ -1926,7 +1926,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
             
             if (f != null) {
-                icon = fileChooser.getFileSystemView().getSystemIcon(f);
+                try {
+                    icon = fileChooser.getFileSystemView().getSystemIcon(f);
+                } catch (NullPointerException exc) {
+                    // workaround for JDK bug 6357445, in IZ: 145832, please remove when fixed
+                    LOG.log(Level.FINE, "JDK bug 6357445 encountered, NPE caught", exc); // NOI18N
+                }
             }
             
             if (icon == null) {

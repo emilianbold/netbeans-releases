@@ -52,7 +52,7 @@ import org.openide.util.Lookup;
  */
 public class RunSingleCommand extends RunCommand {
     public static final String ID = ActionProvider.COMMAND_RUN_SINGLE;
-    public static final String DISPLAY_NAME=RunCommand.DISPLAY_NAME;    
+    public static final String DISPLAY_NAME = RunCommand.DISPLAY_NAME;
     private final RunLocalCommand localCommand;
     
     /**
@@ -66,8 +66,12 @@ public class RunSingleCommand extends RunCommand {
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
         if (isScriptSelected()) {
+            // we don't need to check anything here, because if the customizer show, then scriptSelected == false
             localCommand.invokeAction(context);
         } else {
+            if (!isUrlSet()) {
+                return;
+            }
             try {
                 // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
                 final URL url = urlForContext(context);

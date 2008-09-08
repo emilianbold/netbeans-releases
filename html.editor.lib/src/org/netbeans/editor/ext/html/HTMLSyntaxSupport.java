@@ -403,6 +403,11 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             
             int beginning = ts.offset();
             
+            if(beginning > offset) {
+                //the offset is not in html content, the next token begins after the offset
+                return null;
+            }
+            
             if( item.id() == HTMLTokenId.CHARACTER ) {
                 do {
                     item = ts.token();
@@ -417,7 +422,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             
             if( item.id() == HTMLTokenId.WS || item.id() == HTMLTokenId.ARGUMENT ||     // these are possible only in Tags
                     item.id() == HTMLTokenId.OPERATOR || item.id() == HTMLTokenId.VALUE ) { // so find boundary
-                while(ts.movePrevious() && !isTag(item = ts.token()));
+                //find beginning of the tag
+                while(ts.movePrevious() && !isTagSymbol(item = ts.token())) {
+                    //just skip tokens
+                };
                 return getNextElement(  item.offset(hi) );       // TAGC
             }
             
@@ -703,6 +711,10 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         return null;
     }
     
+    public static boolean isTagSymbol(Token t) {
+        return (( t.id() == HTMLTokenId.TAG_OPEN_SYMBOL) ||
+                ( t.id() == HTMLTokenId.TAG_CLOSE_SYMBOL));
+    }
     
     public static boolean isTag(Token t) {
         return (( t.id() == HTMLTokenId.TAG_OPEN ) ||
@@ -794,13 +806,19 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                     stack.push(tagName); //non-html tag, store it with the original case
                 }
             } else if(elem.getType() == SyntaxElement.TYPE_TAG) { //now </ and > are returned as SyntaxElement.TAG so I need to filter them  NOI18N
-                if(((SyntaxElement.Tag)elem).isEmpty() ) continue; // ignore empty Tags - they are like start and imediate end
+                if(((SyntaxElement.Tag)elem).isEmpty() ) {
+                    continue; // ignore empty Tags - they are like start and imediate end
+                }
                 
                 String tagName = ((SyntaxElement.Named)elem).getName();
                 DTD.Element tag = dtd.getElement( tagName.toUpperCase() );
                 
                 if(tag != null) {
                     tagName = tag.getName();
+                    
+                    if(tag.isEmpty()) {
+                        continue;
+                    }
                 }
                 
                 if( stack.empty() ) {           // empty stack - we are on the same tree deepnes - can close this tag
@@ -935,11 +953,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
         first.moveStart(); 
         first.moveNext(); //should return true
         
-        List<TokenSequence> embedded = th.embeddedTokenSequences(first.offset(), true);
-        if(embedded.isEmpty()) {
-            //try forward bias if we didn't find anything backward
-            embedded = th.embeddedTokenSequences(first.offset(), false);
-        }
+        List<TokenSequence> embedded = th.embeddedTokenSequences(first.offset(), false);
         TokenSequence sequence = null;
         for (TokenSequence ts : embedded) {
             if (ts.language() == HTMLTokenId.language()) {

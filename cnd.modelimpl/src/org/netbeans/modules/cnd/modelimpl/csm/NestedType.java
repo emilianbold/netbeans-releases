@@ -141,6 +141,11 @@ public class NestedType extends TypeImpl {
     }
 
     @Override
+    public boolean isInstantiation() {
+        return (parentType != null && parentType.isInstantiation()) || super.isInstantiation();
+    }
+
+    @Override
     public boolean isTemplateBased() {
         return isTemplateBased(new HashSet<CsmType>());
     }

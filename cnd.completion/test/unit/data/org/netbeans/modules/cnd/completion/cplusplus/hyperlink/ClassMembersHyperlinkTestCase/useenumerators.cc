@@ -26,7 +26,7 @@ typedef struct ClassOfUnnamedTypedef {
     const char *field;
 };
 
-template <int> class AEnum {};
+template <int> class AEnum { typedef int Type; };
 
 class BVV {
     enum { VV = 1 };
@@ -46,3 +46,12 @@ static struct event_name  {
     char *name;
     event_T event;
 } event_names[] = { {"BufAdd", EVENT_BUFADD} };
+
+class TypeTraits {
+    enum {
+        isFloat = 1
+    };
+
+    typedef AEnum<isFloat> ParameterType;
+    typedef AEnum<isFloat>::Type Type;
+};

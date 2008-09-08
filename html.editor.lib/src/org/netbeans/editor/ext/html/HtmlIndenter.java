@@ -218,8 +218,18 @@ public class HtmlIndenter {
 
         }
 
-        assert token.id() == HTMLTokenId.TAG_CLOSE : "unexpected state, we are on token " + token.id() + "; " + token.text().toString();
+        if(token.id() == HTMLTokenId.TAG_CLOSE) {
+            return token.text().toString();
+        } else {
+            //we didn't manage to find the close tag, strange since the
+            //code is triggered only if a closing '>' symbol is added 
+            //to a close tag.
+            
+            LOGGER.info("Cannot find the TAG_CLOSE token of the just typed end tag.\nStarting position is " + offset + ". Here is the searched token sequence:\n" + sequence.toString()); //NOI18N
+            return null;
+            
+        }
 
-        return token.text().toString();
+            
     }
 }

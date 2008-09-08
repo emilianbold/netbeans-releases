@@ -72,6 +72,10 @@ public class PhpMimeResolver extends MIMEResolver {
     //html signs
     private static final Set<String> resolvedExt = new HashSet<String>();
 
+    public PhpMimeResolver() {
+        super(MIME_TYPE);
+    }
+
     @Override
     public String findMIMEType(FileObject fo) {
         String ext = fo.getExt();

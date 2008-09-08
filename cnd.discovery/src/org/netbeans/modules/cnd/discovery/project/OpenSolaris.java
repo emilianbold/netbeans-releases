@@ -486,6 +486,14 @@ public class OpenSolaris extends KnownProject {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        public String getBuildLog() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void setBuildLog(String logFile) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
         public String getLevel() {
             return ConsolidationStrategyPanel.FILE_LEVEL;
         }

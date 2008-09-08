@@ -142,8 +142,9 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         mediator.addConnectionProgressListener(progressListener);
 
         userField.setText(connection.getUser());
+        
         passwordField.setText(connection.getPassword());
-
+        
         String driver = connection.getDriver();
         String driverName = connection.getDriverName();
         if (driver != null && driverName != null) {

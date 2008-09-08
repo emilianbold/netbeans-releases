@@ -296,6 +296,10 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                         for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups("java"/*JavaProjectConstants.SOURCES_TYPE_JAVA*/)) {
                             FileObject sgRoot = sg.getRootFolder();
 
+                            if (sgRoot==null) {
+                                Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.WARNING, "SourceGroup[" + sg.getDisplayName() + "].getRootFolder() returned null");
+                                continue;
+                            }
                             if ((FileUtil.isParentOf(f, sgRoot) || f == sgRoot) && TaskCache.getDefault().isInError(sgRoot, true)) {
                                 recError = true;
                                 nonRecError = false;

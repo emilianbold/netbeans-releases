@@ -92,6 +92,7 @@ import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -153,6 +154,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setOpaque( false );
         } 
+        
+        HelpCtx.setHelpIDString(this, "ResolveBuildTools"); // NOI18N
     }
 
     public ToolsPanel(ToolsPanelModel model) {

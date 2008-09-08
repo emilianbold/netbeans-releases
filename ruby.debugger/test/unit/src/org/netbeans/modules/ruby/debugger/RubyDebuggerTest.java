@@ -111,26 +111,24 @@ public final class RubyDebuggerTest extends TestBase {
     }
     
     public void testStepOut() throws Exception {
-        while (switchToNextEngine()) {
-            String[] testContent = {
-                "def a",
-                "  puts 'a'",
-                "  puts 'aa'",
-                "  puts 'aaa'",
-                "  puts 'aaaa'",
-                "end",
-                "a",
-                "puts 'end'"
-            };
-            File testF = createScript(testContent);
-            FileObject testFO = FileUtil.toFileObject(testF);
-            addBreakpoint(testFO, 2);
-            Process p = startDebugging(testF);
-            doAction(ActionsManager.ACTION_STEP_OVER); // 2 -> 3
-            doAction(ActionsManager.ACTION_STEP_OUT); // 3 -> 8
-            doAction(ActionsManager.ACTION_STEP_OVER); // 8 -> finish
-            waitFor(p);
-        }
+        String[] testContent = {
+            "def a",
+            "  puts 'a'",
+            "  puts 'aa'",
+            "  puts 'aaa'",
+            "  puts 'aaaa'",
+            "end",
+            "a",
+            "puts 'end'"
+        };
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        addBreakpoint(testFO, 2);
+        Process p = startDebugging(testF);
+        doAction(ActionsManager.ACTION_STEP_OVER); // 2 -> 3
+        doAction(ActionsManager.ACTION_STEP_OUT); // 3 -> 8
+        doAction(ActionsManager.ACTION_STEP_OVER); // 8 -> finish
+        waitFor(p);
     }
     
     public void testSimpleLoop() throws Exception {
@@ -250,37 +248,32 @@ public final class RubyDebuggerTest extends TestBase {
     }
 
     public void testFinish2() throws Exception {
-        // issue #109659
-        if (tryToSwitchToRDebugIDE()) {
-            String[] testContent = {
-                "Thread.start() { puts 'hello from new thread' }",
-                "puts 'main thread'"
-            };
-            File testF = createScript(testContent);
-            FileObject testFO = FileUtil.toFileObject(testF);
-            addBreakpoint(testFO, 1);
-            Process p = startDebugging(testF);
-            doAction(ActionsManager.ACTION_STEP_OVER);
-            doAction(ActionsManager.ACTION_KILL);
-            waitFor(p);
-        }
+        String[] testContent = {
+            "Thread.start() { puts 'hello from new thread' }",
+            "puts 'main thread'"
+        };
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        addBreakpoint(testFO, 1);
+        Process p = startDebugging(testF);
+        doAction(ActionsManager.ACTION_STEP_OVER);
+        doAction(ActionsManager.ACTION_KILL);
+        waitFor(p);
     }
 
     public void testFinishWhenSpawnedThreadIsSuspended() throws Exception {
-        if (tryToSwitchToRDebugIDE()) {
-            String[] testContent = {
-                "Thread.start do",
-                "    puts '1'",
-                "end"
-            };
-            File testF = createScript(testContent);
-            FileObject testFO = FileUtil.toFileObject(testF);
-            addBreakpoint(testFO, 2);
-            Process p = startDebugging(testF);
-            Thread.sleep(3000); // TODO: rather wait for appropriate event
-            doAction(ActionsManager.ACTION_KILL);
-            waitFor(p);
-        }
+        String[] testContent = {
+            "Thread.start do",
+            "    puts '1'",
+            "end"
+        };
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        addBreakpoint(testFO, 2);
+        Process p = startDebugging(testF);
+        Thread.sleep(3000); // TODO: rather wait for appropriate event
+        doAction(ActionsManager.ACTION_KILL);
+        waitFor(p);
     }
     
     public void testActionsFlood() throws Exception {
@@ -310,24 +303,22 @@ public final class RubyDebuggerTest extends TestBase {
     }
 
     public void testDoNotStepIntoTheEval() throws Exception { // issue #106115
-        while (switchToNextEngine()) {
-            String[] testContent = {
-                "module A",
-                "  module_eval(\"def A.a; sleep 0.01\\n sleep 0.01; end\")",
-                "end",
-                "A.a",
-                "sleep 0.01",
-                "sleep 0.01"
-            };
-            File testF = createScript(testContent);
-            FileObject testFO = FileUtil.toFileObject(testF);
-            addBreakpoint(testFO, 4);
-            Process p = startDebugging(testF);
-            doAction(ActionsManager.ACTION_STEP_INTO);
-            doAction(ActionsManager.ACTION_STEP_INTO);
-            doAction(ActionsManager.ACTION_STEP_INTO);
-            waitFor(p);
-        }
+        String[] testContent = {
+            "module A",
+            "  module_eval(\"def A.a; sleep 0.01\\n sleep 0.01; end\")",
+            "end",
+            "A.a",
+            "sleep 0.01",
+            "sleep 0.01"
+        };
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        addBreakpoint(testFO, 4);
+        Process p = startDebugging(testF);
+        doAction(ActionsManager.ACTION_STEP_INTO);
+        doAction(ActionsManager.ACTION_STEP_INTO);
+        doAction(ActionsManager.ACTION_STEP_INTO);
+        waitFor(p);
     }
     
 //    public void testDoNotStepIntoNonResolvedPath() throws Exception { // issue #106115
@@ -362,7 +353,6 @@ public final class RubyDebuggerTest extends TestBase {
             jruby.getInfo().setGemPath("");
             assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
 
-            forceClassicDebugger(false);
             try {
                 assertTrue("fail when no fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
             } catch (AssertionFailedError afe) {
@@ -376,27 +366,6 @@ public final class RubyDebuggerTest extends TestBase {
         }
     }
     
-    public void testJRubyFastDebugging() throws Exception {
-        forceClassicDebugger(false);
-        String[] testContent = {
-            "puts 'aaa'",
-            "puts 'bbb'",
-            "puts 'ccc'",
-            "puts 'ddd'",
-            "puts 'eee'",
-        };
-        File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 2);
-        addBreakpoint(testFO, 4);
-        System.out.println("jruby: " + RubyPlatformManager.getDefaultPlatform());
-        Process p = startDebugging(testF, RubyPlatformManager.getDefaultPlatform());
-        doContinue(); // 2 -> 4
-        doAction(ActionsManager.ACTION_STEP_OVER); // 4 -> 5
-        doContinue(); // finish
-        waitFor(p);
-    }
-
     public void testRubiniusDebugging() throws IOException {
         RubyPlatform rubinius = RubyPlatformManager.addPlatform(setUpRubinius());
         ExecutionDescriptor descriptor = new ExecutionDescriptor(rubinius);

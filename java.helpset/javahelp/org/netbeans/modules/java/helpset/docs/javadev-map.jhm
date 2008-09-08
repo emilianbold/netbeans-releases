@@ -54,7 +54,9 @@
 <mapID target="debug.remote" url="debug/debug_remote.html" /> 
 <mapID target="debug.expression" url="debug/debug_expression.html" /> 
 <mapID target="debug_expressionstep" url="debug/debug_expressionstep.html" />
-<mapID target="debug.window" url="debug/CSH/debug_window.html" /> 
+<mapID target="debug.window" url="debug/CSH/debug_window.html" />
+<!-- Debugging window id -->
+<mapID target="DebuggingView" url="debug/debug_debuggingwindow.html" /> 
 <!-- Topic for Debugger Instances view - need help id -->
 <!-- <mapID target="" url="debug/CSH/instances_view.html" /> --> 
 
@@ -507,6 +509,8 @@
     <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" url="hibernate/csh/hibernate_fromdbwiz_codegen.html" />
     <mapID target="org.netbeans.modules.hibernate.wizards.HibernateMappingWizardDescriptor" url="hibernate/hibernate_mapping.html" />
     <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengNameLocationWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardDescriptor" url="hibernate/hibernate_cfg.html" />
+
 
 
 

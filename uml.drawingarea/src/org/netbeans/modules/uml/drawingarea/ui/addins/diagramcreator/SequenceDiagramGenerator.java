@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.visual.widget.ConnectionWidget;
@@ -70,6 +71,7 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.structure.IComment;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
@@ -352,7 +354,7 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
                                 }
                                 else
                                 {
-                                    System.out.println("***WARNING: attempt to add a lifeline cause addition of "+addedW);
+                                    UMLLogger.logMessage("attempt to add a lifeline cause addition of "+addedW,Level.WARNING);
                                 }
                                 scene.validate();
                                 horizontalOffset=addedW.getPreferredLocation().x+addedW.getPreferredBounds().x+addedW.getPreferredBounds().width;
@@ -558,7 +560,7 @@ public class SequenceDiagramGenerator implements ISequenceDiagramGenerator
                         if(sendLL==null || receiveLL==null)
                         {
                             verticalOffset += 15;
-                            System.out.println("***WARNING: source or target lifeline is missed, can't create message");
+                            UMLLogger.logMessage("source or target lifeline is missed, can't create message",Level.WARNING);
                             continue;
                         }
                         //

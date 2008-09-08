@@ -119,12 +119,28 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/function_return_type.php", "$result_from_static_method->^", false);
     }
     
+    public void testTypesInPHPDOC1() throws Exception {
+        checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @var TypesinPHPDo^", false);
+    }
+    
+    public void testTypesInPHPDOC2() throws Exception {
+        checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @return TypesinPHPD^", false);
+    }
+    
+    public void testTypesInPHPDOC3() throws Exception {
+        checkCompletion("testfiles/completion/lib/types_in_phpdoc.php", "* @return TypesinPHPDoc des^", false);
+    }
+    
     public void testPhpContext2() throws Exception {
         checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
 
     public void testHTML() throws Exception {
         checkCompletion("testfiles/completion/lib/nowdoc02.php", "<title>^</title>", false);
+    }
+    
+    public void test146176() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue146176.php", "echo oddlyNamedMetho^", false);
     }
     
     public void test145692() throws Exception {

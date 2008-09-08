@@ -84,7 +84,16 @@ public class ${name} {
         conn.setRequestMethod("GET");
         return connect(headers, null);
     }
-    
+
+    public RestResponse head() throws IOException {
+        return get(null);
+    }
+
+    public RestResponse head(String[][] headers) throws IOException {
+        conn.setRequestMethod("HEAD");
+        return connect(headers, null);
+    }
+
     public RestResponse put(String[][] headers) throws IOException {
         return put(headers, (InputStream) null);
     }
