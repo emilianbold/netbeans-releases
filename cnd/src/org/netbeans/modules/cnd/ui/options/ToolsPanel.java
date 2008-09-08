@@ -140,7 +140,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         instance = this;
         currentCompilerSet = null;
         serverUpdateCache = null;
-        serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        serverList = Lookup.getDefault().lookup(ServerList.class);
         if (serverList != null) {
             hkey = serverList.getDefaultRecord().getName();
             btEditDevHost.setEnabled(true);
@@ -338,7 +338,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
 
     private void saveCompileSetManagers(List<String> liveServers) {
-        Collection<CompilerSetManager> allCSMs = new ArrayList();
+        Collection<CompilerSetManager> allCSMs = new ArrayList<CompilerSetManager>();
         for (String copiedServer : copiedManagers.keySet()) {
             if (liveServers == null || liveServers.contains(copiedServer)) {
                 allCSMs.add(copiedManagers.get(copiedServer));
@@ -827,7 +827,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         return new VersionCommand(tool, path).getVersion();
     }
 
-    static Set<ChangeListener> listenerChanged = new HashSet();
+    static Set<ChangeListener> listenerChanged = new HashSet<ChangeListener>();
 
     public static void addCompilerSetChangeListener(ChangeListener l) {
         listenerChanged.add(l);
@@ -844,7 +844,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
     }
 
-    static Set<ChangeListener> listenerModified = new HashSet();
+    static Set<ChangeListener> listenerModified = new HashSet<ChangeListener>();
 
     public static void addCompilerSetModifiedListener(ChangeListener l) {
         listenerModified.add(l);
@@ -861,7 +861,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
     }
 
-    static Set<IsChangedListener> listenerIsChanged = new HashSet();
+    static Set<IsChangedListener> listenerIsChanged = new HashSet<IsChangedListener>();
 
     public static void addIsChangedListener(IsChangedListener l) {
         listenerIsChanged.add(l);
