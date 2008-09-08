@@ -94,6 +94,7 @@ import org.openide.filesystems.Repository;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.windows.WindowManager;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Node;
 import org.xml.sax.Attributes;
@@ -439,7 +440,11 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
     public void addNotify() {
         super.addNotify();
         getMaxDecsriptionLength();
-        startReloading();
+        WindowManager.getDefault().invokeWhenUIReady( new Runnable() {
+            public void run() {
+                startReloading();
+            }
+        });
     }
 
     private boolean firstReload = true;
