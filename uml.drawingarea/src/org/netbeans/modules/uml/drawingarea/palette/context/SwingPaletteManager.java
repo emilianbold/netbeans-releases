@@ -147,16 +147,11 @@ public class SwingPaletteManager implements ContextPaletteManager
         if((selectedObjects.size() == 1) || 
            ((selectedObjects.size() > 1) && (forceShow == true)))
         {
-            Widget selectedWidget = getScene().findWidget(selectedObjects.get(0));
+            Widget selectedWidget = getFirstNode(scene, selectedObjects);
             
-//            Util.makeSureWidgetIsVisible(selectedWidget);
             cancelledWidget=selectedWidget;
             
-            if(selectedWidget instanceof UMLEdgeWidget)
-            {
-                //do nothing
-            }
-            else if(selectedWidget != null)
+            if(selectedWidget != null)
             {
                 showPaletteFor(selectedWidget);
 
@@ -429,6 +424,22 @@ public class SwingPaletteManager implements ContextPaletteManager
     public void setScene(ObjectScene scene)
     {
         this.scene = scene;
+    }
+
+    private Widget getFirstNode(DesignerScene scene, List selectedObjects)
+    {
+        Widget retVal = null;
+        
+        for(Object curObject : selectedObjects)
+        {
+            if(scene.isNode(curObject) == true)
+            {
+                retVal = scene.findWidget(curObject);
+                break;
+            }
+        }
+                
+        return retVal;
     }
 
     public class FollowCursorAction extends WidgetAction.Adapter
