@@ -455,7 +455,6 @@ public class SvnClientExceptionHandler {
     
     private void showDialog(DialogDescriptor dialogDescriptor) {
         dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
         dialogDescriptor.setValid(false);     
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
