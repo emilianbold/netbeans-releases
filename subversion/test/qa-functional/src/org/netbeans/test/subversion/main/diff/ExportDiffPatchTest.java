@@ -85,7 +85,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
             VersioningOperator vo = VersioningOperator.invoke();
             OutputOperator.invoke();
             TestKit.showStatusLabels();
-            CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+            CheckoutWizardOperator.invoke();
             RepositoryStepOperator rso = new RepositoryStepOperator();
             
             //create repository...
@@ -135,12 +135,13 @@ public class ExportDiffPatchTest extends JellyTestCase {
             assertEquals("Wrong number of records in Versioning view!!!", 1, vo.tabFiles().getRowCount());
             
             node = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
-            comOperator = new Operator.DefaultStringComparator(true, true);
-            oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
-            Operator.setDefaultStringComparator(comOperator);
+            //comOperator = new Operator.DefaultStringComparator(true, true);
+            //oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
+            //Operator.setDefaultStringComparator(comOperator);
+            Thread.sleep(1000);
             node.performMenuActionNoBlock("Versioning|Export Diff Patch...");
-            Operator.setDefaultStringComparator(oldOperator);
-
+            //Operator.setDefaultStringComparator(oldOperator);
+            Thread.sleep(1000);
             nbdialog = new NbDialogOperator("Export Diff");
             JButtonOperator btn = new JButtonOperator(nbdialog, "Export");
             JTextFieldOperator tf = new JTextFieldOperator(nbdialog, 0);
