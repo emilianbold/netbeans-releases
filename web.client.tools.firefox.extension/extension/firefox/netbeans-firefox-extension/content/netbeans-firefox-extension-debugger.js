@@ -1274,7 +1274,7 @@
             // transmit them in UTF-8 - the default XML encoding.
             // We may need to convert the source text to UTF-8
             // here using nsIScriptableUnicodeConverter service.
-            data = data.join("\n");
+            data = "N" + data.join("\n");
 
             var sourceResponse =
               <response command="source" encoding="none"

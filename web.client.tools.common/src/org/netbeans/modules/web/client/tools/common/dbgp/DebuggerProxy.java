@@ -226,9 +226,9 @@ public class DebuggerProxy {
         return response != null ? response.getBreakpoints() : null;
     }
 
-    public byte[] getSource(String uri) {
+    public byte[] getSource(String uri, boolean stripBeginCharacter) {
         SourceResponse response = (SourceResponse) sendCommand(getCommandFactory().sourceCommand(uri));
-        return (response != null && response.isSusccess()) ? response.getSourceCode() : null;
+        return (response != null && response.isSusccess()) ? response.getSourceCode(stripBeginCharacter) : null;
     }
 
     public Message getSuspensionPoint() {
