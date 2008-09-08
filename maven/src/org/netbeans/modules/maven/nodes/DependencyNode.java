@@ -263,6 +263,9 @@ public class DependencyNode extends AbstractNode {
             if (nb.isFakedSystemDependency()) {
                 return nb.getNonFakedFile().getName();
             }
+            if (nb.isFakedPomDependency()) {
+                return nb.getNonFakedFile().getName();
+            }
         }
         return art.getFile().getName();
     }
