@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
+import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -75,7 +76,7 @@ class DataViewTablePanel extends JPanel {
     private final SQLStatementGenerator stmtGenerator;
     private boolean isEditable = true;
     private boolean isDirty = false;
-    private int MAX_COLUMN_WIDTH = 40;
+    private int MAX_COLUMN_WIDTH = 25;
     private TableModel model;
     private final List<Integer> columnWidthList;
     private static Logger mLogger = Logger.getLogger(DataViewTablePanel.class.getName());
@@ -235,13 +236,13 @@ class DataViewTablePanel extends JPanel {
 
         @Override
         public boolean isCellEditable(int row, int column) {
-            if (!isEditable) {
-                return false;
-            }
-
             // column specific
             DBColumn col = tblMeta.getColumn(column);
-            if (col.isGenerated()) {
+            if (DataViewUtils.isString(col.getJdbcType())) {
+                return true;
+            } else if (col.isGenerated()) {
+                return false;
+            } else if (!isEditable) {
                 return false;
             }
             return col.isEditable();

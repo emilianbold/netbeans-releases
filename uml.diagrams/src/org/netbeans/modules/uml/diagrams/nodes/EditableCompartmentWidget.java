@@ -285,15 +285,10 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
                 Set<Object> selectedObjs = (Set<Object>) dScene.getSelectedObjects();
                 if (selectedObjs != null && selectedObjs.size() == 1)
                 {
-                    dScene.setSelectedObjects(selectedObjs);
+                    dScene.userSelectionSuggested(selectedObjs, false);
                 }
             }
-//            ContextPaletteManager manager = scene.getLookup().lookup(ContextPaletteManager.class);
-//            
-//            if(manager != null)
-//            {
-//                manager.selectionChanged(null);
-//            }
+            
             m_NameCollisionListener.setEnabled(false);
         }
 

@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.Saas.State;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
@@ -67,7 +70,16 @@ public class WadlSaasNodeChildren extends SaasNodeChildren<Object> {
     protected void updateKeys() {
         State state = getSaas().getState();
         if (state == Saas.State.READY) {
-            setKeys(getSaas().getResourcesOrMethods());
+            ArrayList<Object> keys = new ArrayList<Object>();
+            List<WadlSaasResource> resources = getSaas().getResources();
+            Collections.sort(resources);
+            keys.addAll(resources);
+            
+            List<SaasMethod> methods = getSaas().getMethods();
+            Collections.sort(methods);
+            keys.addAll(methods);
+            
+            setKeys(keys);
         } else if (state == Saas.State.INITIALIZING) {
             setKeys(WAIT_HOLDER);
         } else {

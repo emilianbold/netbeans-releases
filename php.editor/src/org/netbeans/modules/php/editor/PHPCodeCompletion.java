@@ -82,25 +82,19 @@ import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
-import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
@@ -154,14 +148,22 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR},
         new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_STRING},
         new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_VARIABLE},
-        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_TOKEN}
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_TOKEN},
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE},
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
+        new PHPTokenId[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
         );
 
     private static final List<PHPTokenId[]> STATIC_CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM},
         new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_STRING},
         new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_VARIABLE},
-        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_TOKEN}
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_TOKEN},
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE},
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
+        new PHPTokenId[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
         );
 
     private static final PHPTokenId[] COMMENT_TOKENS = new PHPTokenId[]{
@@ -470,89 +472,104 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             startTime = System.currentTimeMillis();
         }
 
-        CompilationInfo info = completionContext.getInfo();
-        int caretOffset = completionContext.getCaretOffset();
-        String prefix = completionContext.getPrefix();
-        this.caseSensitive = completionContext.isCaseSensitive();
-        this.nameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
-
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        BaseDocument doc = (BaseDocument) completionContext.getInfo().getDocument();
 
-        PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, caretOffset);
+        // TODO: separate the code that uses informatiom from lexer
+        // and avoid running the index/ast analysis under read lock
+        // in order to improve responsiveness
+        doc.readLock();
 
-        if (result.getProgram() == null){
-            return CodeCompletionResult.NONE;
-        }
+        try{
+            CompilationInfo info = completionContext.getInfo();
+            int caretOffset = completionContext.getCaretOffset();
+            String prefix = completionContext.getPrefix();
+            this.caseSensitive = completionContext.isCaseSensitive();
+            this.nameKind = caseSensitive ? NameKind.PREFIX : NameKind.CASE_INSENSITIVE_PREFIX;
 
-        CompletionContext context = findCompletionContext(info, caretOffset);
-        LOGGER.fine("CC context: " + context);
+            PHPParseResult result = (PHPParseResult) info.getEmbeddedResult(PHPLanguage.PHP_MIME_TYPE, caretOffset);
 
-        if (context == CompletionContext.NONE){
-            return CodeCompletionResult.NONE;
-        }
+            if (result.getProgram() == null){
+                return CodeCompletionResult.NONE;
+            }
 
-        PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
-        request.anchor = caretOffset - prefix.length();
-        request.result = result;
-        request.info = info;
-        request.prefix = prefix;
-        request.index = PHPIndex.get(request.info.getIndex(PHPLanguage.PHP_MIME_TYPE));
+            CompletionContext context = findCompletionContext(info, caretOffset);
+            LOGGER.fine("CC context: " + context);
 
-        try {
-            request.currentlyEditedFileURL = result.getFile().getFileObject().getURL().toString();
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+            if (context == CompletionContext.NONE){
+                return CodeCompletionResult.NONE;
+            }
+
+            PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
+            request.anchor = caretOffset - prefix.length();
+            request.result = result;
+            request.info = info;
+            request.prefix = prefix;
+            request.index = PHPIndex.get(request.info.getIndex(PHPLanguage.PHP_MIME_TYPE));
+
+            try {
+                request.currentlyEditedFileURL = result.getFile().getFileObject().getURL().toString();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
 
 
-        switch(context){
-            case EXPRESSION:
-                autoCompleteExpression(proposals, request);
-                break;
-            case HTML:
-                proposals.add(new PHPCompletionItem.KeywordItem("<?php", request)); //NOI18N
-                proposals.add(new PHPCompletionItem.KeywordItem("<?=", request)); //NOI18N
-                break;
-            case CLASS_NAME:
-                autoCompleteClassNames(proposals, request);
-                break;
-            case INTERFACE_NAME:
-                autoCompleteInterfaceNames(proposals, request);
-                break;
-            case TYPE_NAME:
-                autoCompleteClassNames(proposals, request);
-                autoCompleteInterfaceNames(proposals, request);
-                break;
-            case STRING:
-                // LOCAL VARIABLES
-                proposals.addAll(getVariableProposals(request.result.getProgram().getStatements(), request));
-                break;
-            case CLASS_MEMBER:
-                autoCompleteClassMembers(proposals, request, false);
-                break;
-            case STATIC_CLASS_MEMBER:
-                autoCompleteClassMembers(proposals, request, true);
-                break;
-            case PHPDOC:
-                PHPDOCCodeCompletion.complete(proposals, request);
-                break;
-            case CLASS_CONTEXT_KEYWORDS:
-                autoCompleteKeywords(proposals, request, CLASS_CONTEXT_KEYWORD_PROPOSAL);
-                break;
-            /*case ACCESS_MODIFIER:
-                autoCompleteKeywords(proposals, request, AFTER_ACCESS_MODIFIER_KEYWORD_PROPOSAL);
-                break;
-             */
-            case METHOD_NAME:
-                autoCompleteMethodName(proposals, request);
-                break;
-            case INHERITANCE:
-                autoCompleteKeywords(proposals, request, INHERITANCE_KEYWORDS);
-                break;
-            case SERVER_ENTRY_CONSTANTS:
-                //TODO: probably better PHPCompletionItem instance should be used
-                autoCompleteMagicItems(proposals, request, PredefinedSymbols.SERVER_ENTRY_CONSTANTS);
-                break;
+            switch(context){
+                case EXPRESSION:
+                    autoCompleteExpression(proposals, request);
+                    break;
+                case HTML:
+                    proposals.add(new PHPCompletionItem.KeywordItem("<?php", request)); //NOI18N
+                    proposals.add(new PHPCompletionItem.KeywordItem("<?=", request)); //NOI18N
+                    break;
+                case CLASS_NAME:
+                    autoCompleteClassNames(proposals, request);
+                    break;
+                case INTERFACE_NAME:
+                    autoCompleteInterfaceNames(proposals, request);
+                    break;
+                case TYPE_NAME:
+                    autoCompleteClassNames(proposals, request);
+                    autoCompleteInterfaceNames(proposals, request);
+                    break;
+                case STRING:
+                    // LOCAL VARIABLES
+                    proposals.addAll(getVariableProposals(request.result.getProgram(), request));
+                    break;
+                case CLASS_MEMBER:
+                    autoCompleteClassMembers(proposals, request, false);
+                    break;
+                case STATIC_CLASS_MEMBER:
+                    autoCompleteClassMembers(proposals, request, true);
+                    break;
+                case PHPDOC:
+                    if (PHPDOCCodeCompletion.isTypeCtx(request)){
+                        autoCompleteClassNames(proposals, request);
+                        autoCompleteInterfaceNames(proposals, request);
+                    } else {
+                        PHPDOCCodeCompletion.complete(proposals, request);
+                    }
+                    break;
+                case CLASS_CONTEXT_KEYWORDS:
+                    autoCompleteKeywords(proposals, request, CLASS_CONTEXT_KEYWORD_PROPOSAL);
+                    break;
+                /*case ACCESS_MODIFIER:
+                    autoCompleteKeywords(proposals, request, AFTER_ACCESS_MODIFIER_KEYWORD_PROPOSAL);
+                    break;
+                 */
+                case METHOD_NAME:
+                    autoCompleteMethodName(proposals, request);
+                    break;
+                case INHERITANCE:
+                    autoCompleteKeywords(proposals, request, INHERITANCE_KEYWORDS);
+                    break;
+                case SERVER_ENTRY_CONSTANTS:
+                    //TODO: probably better PHPCompletionItem instance should be used
+                    autoCompleteMagicItems(proposals, request, PredefinedSymbols.SERVER_ENTRY_CONSTANTS);
+                    break;
+            }
+        } finally {
+            doc.readUnlock();
         }
 
         if (LOGGER.isLoggable(Level.FINE)){
@@ -608,8 +625,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
    
     private String findLHSExpressionType(TokenSequence<PHPTokenId> tokenSequence,
             PHPCompletionItem.CompletionRequest request){
-        int startPos = tokenSequence.offset();
+        
         // find the beginning of the left hand side expression
+        
+        while (tokenSequence.token().id() == PHPTokenId.WHITESPACE) {
+            if (!tokenSequence.movePrevious()){
+                return null;
+            }
+        }
+        
+        int startPos = tokenSequence.offset();
         
         while (!CTX_DELIMITERS.contains(tokenSequence.token().id())
                 && findLHSExpressionType_skipArgs(tokenSequence)
@@ -693,7 +718,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     
                 } else {
                     Collection<IndexedConstant> vars = getVariables(request.result, request.index,
-                            request.result.getProgram().getStatements(),
+                            request.result.getProgram(),
                             varName, request.anchor, request.currentlyEditedFileURL);
 
                     if (vars != null) {
@@ -764,9 +789,21 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 type = func.getReturnType();
             }
+        } else {
+            String fieldName = tokenSequence.token().text().toString();
+
+            for (IndexedConstant field : request.index.getAllProperties(request.result, preceedingType,
+                    fieldName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {
+
+                type = field.getTypeName();
+            }
         }
 
-        tokenSequence.moveNext();
+        do {
+            if (!tokenSequence.moveNext()){
+                return null;
+            }
+        } while (tokenSequence.token().id() == PHPTokenId.WHITESPACE);
         
         if (type == null || tokenSequence.offset() == startPos)
         {
@@ -872,7 +909,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     typeName = varName;
                 } else {
                     Collection<IndexedConstant> vars = getVariables(request.result, request.index,
-                            request.result.getProgram().getStatements(),
+                            request.result.getProgram(),
                             varName, request.anchor, request.currentlyEditedFileURL);
 
                     if (vars != null) {
@@ -890,7 +927,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             tokenSequence.move(request.anchor);
 
-            if (typeName == null && tokenSequence.movePrevious()){
+            if (tokenSequence.movePrevious()){
+                // typeName is unconditionally overriden on purpose!
                 typeName = findLHSExpressionType(tokenSequence, request);
             }
 
@@ -970,7 +1008,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
         PHPIndex index = request.index;
         if (request.prefix.length() == 0) {
-            Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram().getStatements(), request.prefix, request.anchor, request.currentlyEditedFileURL);
+            Collection<IndexedConstant> localVars = getLocalVariables(request.result.getProgram(), request.prefix, request.anchor, request.currentlyEditedFileURL);
             Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
 
             for (IndexedConstant var : localVars){
@@ -1027,7 +1065,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             autoCompleteClassNames(proposals, request);
 
             // LOCAL VARIABLES
-            proposals.addAll(getVariableProposals(request.result.getProgram().getStatements(), request));
+            proposals.addAll(getVariableProposals(request.result.getProgram(), request));
         }
 
         // Special keywords applicable only inside a class
@@ -1041,12 +1079,12 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
     }
 
-    private Collection<CompletionProposal> getVariableProposals(Collection<Statement> statementList,
+    private Collection<CompletionProposal> getVariableProposals(Program program,
             PHPCompletionItem.CompletionRequest request){
 
         Collection<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         Collection<IndexedConstant> allVars = getVariables(request.result, request.index,
-                statementList, request.prefix, request.anchor, request.currentlyEditedFileURL);
+                program, request.prefix, request.anchor, request.currentlyEditedFileURL);
 
         for (IndexedConstant localVar : allVars){
             CompletionProposal proposal = new PHPCompletionItem.VariableItem(localVar, request);
@@ -1063,9 +1101,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         return proposals;
     }
 
-    public Collection<IndexedConstant> getVariables(PHPParseResult context,  PHPIndex index, Collection<Statement> statementList,
+    public Collection<IndexedConstant> getVariables(PHPParseResult context,  PHPIndex index, Program program,
             String namePrefix, int position, String localFileURL){
-        Collection<IndexedConstant> localVars = getLocalVariables(statementList, namePrefix, position, localFileURL);
+        Collection<IndexedConstant> localVars = getLocalVariables(program, namePrefix, position, localFileURL);
         Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
 
         for (IndexedConstant var : localVars){
@@ -1134,146 +1172,104 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         }
     }
 
-    private Collection<IndexedConstant> getLocalVariables(Collection<Statement> statementList, String namePrefix, int position, String localFileURL){
-        Map<String, IndexedConstant> localVars = new HashMap<String, IndexedConstant>();
+    private class VarFinder extends DefaultVisitor {
+        private Map<String, IndexedConstant> localVars = null;
+        private String namePrefix;
+        private String localFileURL;
 
-        for (Statement statement : statementList){
-            if (statement.getStartOffset() > position){
-                break; // no need to analyze statements after caret offset
-            }
-
-            if (statement instanceof ExpressionStatement){
-                Expression expr = ((ExpressionStatement)statement).getExpression();
-                getLocalVariables_indexVariableInAssignment(expr, localVars, namePrefix, localFileURL);
-
-            } else if (statement instanceof GlobalStatement) {
-                GlobalStatement globalStatement = (GlobalStatement) statement;
-
-                for (Variable var : globalStatement.getVariables()){
-                    getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
-                }
-            } else if (statement instanceof StaticStatement) {
-                StaticStatement staticStatement = (StaticStatement) statement;
-
-                for (Variable var : staticStatement.getVariables()){
-                    getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
-                }
-            }
-            else if (!offsetWithinStatement(position, statement)){
-                continue;
-            }
-
-            if (statement instanceof Block) {
-                Block block = (Block) statement;
-
-                getLocalVariables_MergeResults(localVars,
-                        getLocalVariables(block.getStatements(), namePrefix, position, localFileURL));
-
-            } else if (statement instanceof IfStatement){
-                IfStatement ifStmt = (IfStatement)statement;
-                getLocalVariables_indexVariableInAssignment(ifStmt.getCondition(), localVars, namePrefix, localFileURL);
-
-                if (offsetWithinStatement(position, ifStmt.getTrueStatement())) {
-                    getLocalVariables_MergeResults(localVars,
-                            getLocalVariables(Collections.singleton(ifStmt.getTrueStatement()), namePrefix, position, localFileURL));
-
-                } else if (ifStmt.getFalseStatement() != null // false statement ('else') is optional
-                        && offsetWithinStatement(position, ifStmt.getFalseStatement())) {
-
-                    getLocalVariables_MergeResults(localVars,
-                            getLocalVariables(Collections.singleton(ifStmt.getFalseStatement()), namePrefix, position, localFileURL));
-                }
-            } else if (statement instanceof WhileStatement) {
-                WhileStatement whileStatement = (WhileStatement) statement;
-                getLocalVariables_indexVariableInAssignment(whileStatement.getCondition(), localVars, namePrefix, localFileURL);
-
-                getLocalVariables_MergeResults(localVars,
-                        getLocalVariables(Collections.singleton(whileStatement.getBody()), namePrefix, position, localFileURL));
-            }  else if (statement instanceof DoStatement) {
-                DoStatement doStatement = (DoStatement) statement;
-
-                getLocalVariables_MergeResults(localVars,
-                        getLocalVariables(Collections.singleton(doStatement.getBody()), namePrefix, position, localFileURL));
-            } else if (statement instanceof ForStatement) {
-                ForStatement forStatement = (ForStatement) statement;
-
-                for (Expression expr : forStatement.getInitializers()){
-                    getLocalVariables_indexVariableInAssignment(expr, localVars, namePrefix, localFileURL);
-                }
-
-                getLocalVariables_MergeResults(localVars,
-                        getLocalVariables(Collections.singleton(forStatement.getBody()), namePrefix, position, localFileURL));
-            } else if (statement instanceof ForEachStatement) {
-                ForEachStatement forEachStatement = (ForEachStatement) statement;
-
-                if (forEachStatement.getKey() instanceof Variable) {
-                    Variable var = (Variable) forEachStatement.getKey();
-                    getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
-                }
-
-                if (forEachStatement.getValue() instanceof Variable) {
-                    Variable var = (Variable) forEachStatement.getValue();
-                    getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
-                }
-
-                getLocalVariables_indexVariableInAssignment(forEachStatement.getValue(), localVars, namePrefix, localFileURL);
-
-                getLocalVariables_MergeResults(localVars,
-                        getLocalVariables(Collections.singleton(forEachStatement.getStatement()), namePrefix, position, localFileURL));
-            } else if (statement instanceof FunctionDeclaration) {
-                localVars.clear();
-                FunctionDeclaration functionDeclaration = (FunctionDeclaration) statement;
-
-                for (FormalParameter param : functionDeclaration.getFormalParameters()) {
-                    Expression parameterName = param.getParameterName();
-                    if (parameterName instanceof Reference) {
-                        Reference ref = (Reference) parameterName;
-                        parameterName = ref.getExpression();
-                    }
-                    if (parameterName instanceof Variable) {
-                        String varName = CodeUtils.extractVariableName((Variable) parameterName);
-                        String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
-
-                        if (isPrefix(varName, namePrefix)) {
-                            IndexedConstant ic = new IndexedConstant(varName, null,
-                                    null, localFileURL, -1, 0, type);
-
-                            localVars.put(varName, ic);
-                        }
-                    }
-                }
-
-                getLocalVariables_MergeResults(localVars,
-                            getLocalVariables(Collections.singleton((Statement)functionDeclaration.getBody()), namePrefix, position, localFileURL));
-
-            } if (statement instanceof MethodDeclaration) {
-                MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
-
-                getLocalVariables_MergeResults(localVars,
-                    getLocalVariables(Collections.singleton((Statement)methodDeclaration.getFunction()), namePrefix, position, localFileURL));
-
-            } else if (statement instanceof ClassDeclaration) {
-                ClassDeclaration classDeclaration = (ClassDeclaration) statement;
-
-                getLocalVariables_MergeResults(localVars,
-                    getLocalVariables(Collections.singleton((Statement)classDeclaration.getBody()), namePrefix, position, localFileURL));
-            }
-
+        VarFinder(Map<String, IndexedConstant> localVars, String namePrefix, String localFileURL) {
+            this.localVars = localVars;
+            this.localFileURL = localFileURL;
+            this.namePrefix = namePrefix;
+        }
+        
+        @Override
+        public void visit(Assignment node) {
+            getLocalVariables_indexVariableInAssignment(node, localVars, namePrefix, localFileURL);
+            super.visit(node);
         }
 
+        @Override
+        public void visit(GlobalStatement node) {
+            for (Variable var : node.getVariables()) {
+                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+            }
+            super.visit(node);
+        }
 
+        @Override
+        public void visit(StaticStatement node) {
+            for (Variable var : node.getVariables()) {
+                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+            }
+            super.visit(node);
+        }
 
+        @Override
+        public void visit(ForEachStatement forEachStatement) {
+
+            if (forEachStatement.getKey() instanceof Variable) {
+                Variable var = (Variable) forEachStatement.getKey();
+                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+            }
+
+            if (forEachStatement.getValue() instanceof Variable) {
+                Variable var = (Variable) forEachStatement.getValue();
+                getLocalVariables_indexVariable(var, localVars, namePrefix, localFileURL, null);
+            }
+            super.visit(forEachStatement);
+        }
+        
+        @Override
+        public void visit(FunctionDeclaration node) {
+            // do not enter!
+        }
+    }
+
+    private Collection<IndexedConstant> getLocalVariables(Program program, String namePrefix, int position, String localFileURL){
+        Map<String, IndexedConstant> localVars = new HashMap<String, IndexedConstant>();;
+        ASTNode varScopeNode = program;
+        
+        ASTNode hierarchy[] = Utils.getNodeHierarchyAtOffset(program, position);
+
+        for (ASTNode node : hierarchy){
+            if (node instanceof FunctionDeclaration){
+                varScopeNode = node;
+                break;
+            }
+        }
+
+        if (varScopeNode instanceof FunctionDeclaration) {
+            FunctionDeclaration functionDeclaration = (FunctionDeclaration) varScopeNode;
+            // add parameters to the result
+
+            for (FormalParameter param : functionDeclaration.getFormalParameters()) {
+                Expression parameterName = param.getParameterName();
+
+                if (parameterName instanceof Reference) {
+                    Reference ref = (Reference) parameterName;
+                    parameterName = ref.getExpression();
+                }
+
+                if (parameterName instanceof Variable) {
+                    String varName = CodeUtils.extractVariableName((Variable) parameterName);
+                    String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
+
+                    if (isPrefix(varName, namePrefix)) {
+                        IndexedConstant ic = new IndexedConstant(varName, null,
+                                null, localFileURL, -1, 0, type);
+
+                        localVars.put(varName, ic);
+                    }
+                }
+            }
+
+            varScopeNode = functionDeclaration.getBody();
+        }
+
+        VarFinder varFinder = new VarFinder(localVars, namePrefix, localFileURL);
+        varScopeNode.accept(varFinder);
         return localVars.values();
-    }
-
-    private void getLocalVariables_MergeResults(Map<String, IndexedConstant> existingMap, Collection<IndexedConstant> newValues){
-        for (IndexedConstant var : newValues){
-            existingMap.put(var.getName(), var);
-        }
-    }
-
-    private static boolean offsetWithinStatement(int offset, Statement statement){
-        return statement.getEndOffset() >= offset && statement.getStartOffset() <= offset;
     }
 
     public String document(CompilationInfo info, ElementHandle element) {

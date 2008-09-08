@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -521,7 +522,8 @@ public final class GemManager {
      *         not be read, never <tt>null</tt>.
      */
     public List<Gem> getInstalledGems(List<? super String> errors) {
-        errors.addAll(reloadLocalIfNeeded());
+        Collection<? super String> c = errors;
+        c.addAll(reloadLocalIfNeeded());
         return getLocalGems();
     }
 
@@ -534,7 +536,8 @@ public final class GemManager {
      *         be read, never <tt>null</tt>.
      */
     public List<Gem> getRemoteGems(List<? super String> errors) {
-        errors.addAll(reloadRemoteIfNeeded());
+        Collection<? super String> c = errors;
+        c.addAll(reloadRemoteIfNeeded());
         return getRemoteGems();
     }
 
@@ -602,9 +605,10 @@ public final class GemManager {
         if (!checkGemProblem()) {
             return;
         }
-        errors.addAll(reloadLocalIfNeeded());
+        Collection<? super String> c = errors;
+        c.addAll(reloadLocalIfNeeded());
         if (errors.isEmpty()) { // fail quickly, do not try remote update
-            errors.addAll(reloadRemoteIfNeeded());
+            c.addAll(reloadRemoteIfNeeded());
         }
     }
 
@@ -621,7 +625,8 @@ public final class GemManager {
                     local = GemListParser.parseLocal(gemRunner.getOutput());
                     Collections.sort(local);
                 } else {
-                    errors.addAll(gemRunner.getOutput());
+                    Collection<? super String> c = errors;
+                    c.addAll(gemRunner.getOutput());
                 }
             }
         } finally {

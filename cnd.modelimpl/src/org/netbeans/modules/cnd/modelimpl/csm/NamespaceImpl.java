@@ -93,6 +93,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 //    private Collection/*<CsmNamespaceDefinition>*/ definitions = new ArrayList/*<CsmNamespaceDefinition>*/();
     private Map<CharSequence,CsmUID<CsmNamespaceDefinition>> nsDefinitions = new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>(CharSequenceKey.Comparator);
     private ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
     
     private final boolean global;
     
@@ -157,13 +158,18 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }    
     
     private void onDispose() {
-        if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
-            // restore container from it's UID
-            this.projectRef = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
-            assert this.projectRef != null || this.projectUID == null : "no object for UID " + this.projectUID;
-            // restore container from it's UID
-            this.parentRef = UIDCsmConverter.UIDtoNamespace(this.parentUID);
-            assert this.parentRef != null || this.parentUID == null : "no object for UID " + this.parentUID;
+        projectLock.writeLock().lock();
+        try {
+            if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
+                // restore container from it's UID
+                this.projectRef = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
+                assert this.projectRef != null || this.projectUID == null : "no object for UID " + this.projectUID;
+                // restore container from it's UID
+                this.parentRef = UIDCsmConverter.UIDtoNamespace(this.parentUID);
+                assert this.parentRef != null || this.parentUID == null : "no object for UID " + this.parentUID;
+            }
+        } finally {
+            projectLock.writeLock().unlock();
         }
     }
     
@@ -518,7 +524,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             if (parent != null) {
                 parent.removeNestedNamespace(this);
             }
-            _getProject().unregisterNamesace(this);
+            projectRef = _getProject();
+            projectRef.unregisterNamesace(this);
             dispose();            
         }
     }
@@ -558,12 +565,17 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     private ProjectBase _getProject() {
-        ProjectBase prj = this.projectRef;
-        if (prj == null) {
-            prj = (ProjectBase)UIDCsmConverter.UIDtoProject(this.projectUID);
-            assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+        projectLock.readLock().lock();
+        try {
+            ProjectBase prj = this.projectRef;
+            if (prj == null) {
+                prj = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
+                assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+            }
+            return prj;
+        } finally {
+            projectLock.readLock().unlock();
         }
-        return prj;
     }
     
     private CsmNamespace _getParentNamespace() {

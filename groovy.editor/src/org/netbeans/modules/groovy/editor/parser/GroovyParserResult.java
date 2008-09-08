@@ -65,7 +65,7 @@ public class GroovyParserResult extends ParserResult {
     private GroovyParser.Sanitize sanitized;
     private ErrorCollector errorCollector;  // keep track of pending errors (if any)
 
-    public GroovyParserResult(GroovyParser parser, ParserFile parserFile, AstRootElement rootElement, 
+    GroovyParserResult(GroovyParser parser, ParserFile parserFile, AstRootElement rootElement, 
             AstTreeNode ast, ErrorCollector errorCollector) {
         super(parser, parserFile, GroovyTokenId.GROOVY_MIME_TYPE);
         this.rootElement = rootElement;
@@ -109,7 +109,7 @@ public class GroovyParserResult extends ParserResult {
         this.sanitizedContents = sanitizedContents;
     }
 
-    public GroovyParser.Sanitize getSanitized() {
+    GroovyParser.Sanitize getSanitized() {
         return sanitized;
     }    
 

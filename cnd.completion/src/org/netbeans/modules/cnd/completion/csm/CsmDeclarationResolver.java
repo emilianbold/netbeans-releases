@@ -56,6 +56,12 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 
 /**
  *
@@ -111,11 +117,19 @@ public class CsmDeclarationResolver {
         // add file scope to context
         CsmContextUtilities.updateContext(file, offset, context);
         // check file declarations
-        CsmObject lastObject = findInnerDeclaration(file.getDeclarations().iterator(), context, offset);
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset);
+        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(file, filter);
+        CsmObject lastObject = findInnerDeclaration(it, context, offset);
         // check includes if needed
-        lastObject = lastObject != null ? lastObject : CsmOffsetUtilities.findObject(file.getIncludes(), context, offset);
+        if (lastObject == null) {
+            Iterator<CsmInclude> it1 = CsmSelect.getDefault().getIncludes(file, filter);
+            lastObject = CsmOffsetUtilities.findObject(it1, context, offset);
+        }
         // check macros if needed
-        lastObject = lastObject != null ? lastObject : CsmOffsetUtilities.findObject(file.getMacros(), context, offset);
+        if (lastObject == null) {
+            Iterator<CsmMacro> it1 = CsmSelect.getDefault().getMacros(file, filter);
+            lastObject = CsmOffsetUtilities.findObject(it1, context, offset);
+        }
         return lastObject;
     }
     
@@ -165,6 +179,16 @@ public class CsmDeclarationResolver {
         } else if (CsmKindUtilities.isEnum(outDecl)) {
             CsmEnum en = (CsmEnum)outDecl;
             it = en.getEnumerators().iterator();
+        } else if (CsmKindUtilities.isTypedef(outDecl)) {
+            CsmTypedef td = (CsmTypedef) outDecl;
+            if (td.isTypeUnnamed() || td.getName().length() == 0) {
+                outDecl = td.getType().getClassifier();
+                if (CsmOffsetUtilities.isInObject(outDecl, offset)) {
+                    // add declaration scope to context
+                    CsmContextUtilities.updateContext(outDecl, offset, context);
+                    return findInnerDeclaration(outDecl, offset, context);
+                }
+            }
         }
         return findInnerDeclaration(it, context, offset);
     }     

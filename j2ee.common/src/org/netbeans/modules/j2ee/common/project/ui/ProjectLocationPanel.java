@@ -514,8 +514,13 @@ private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//G
                 }
             }
             
-            String projectFolder = projectLocationTextField.getText(); 
-            createdFolderTextField.setText(projectFolder + File.separatorChar + projectName);
+            String projectFolder = projectLocationTextField.getText();
+            String projFolderPath = FileUtil.normalizeFile(new File(projectFolder)).getAbsolutePath();
+            if (projFolderPath.endsWith(File.separator)) {
+                createdFolderTextField.setText(projFolderPath + projectName);
+            } else {
+                createdFolderTextField.setText(projFolderPath + File.separator + projectName);
+            }
         }
         wizard.fireChangeEvent();
     }

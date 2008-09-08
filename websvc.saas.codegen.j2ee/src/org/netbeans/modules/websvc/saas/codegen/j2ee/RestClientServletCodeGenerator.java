@@ -151,7 +151,9 @@ public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator 
     protected List<ParameterInfo> getServiceMethodParameters() {
         if (getBean().getAuthenticationType() == SaasAuthenticationType.SESSION_KEY ||
                 getBean().getAuthenticationType() == SaasAuthenticationType.HTTP_BASIC) {
-            return Util.getServiceMethodParametersForWeb(getBean());
+            List<ParameterInfo> params = Util.getServiceMethodParametersForWeb(getBean());
+            Util.getRestClientPutPostParameters(getBean(), params);
+            return params;
         } else {
             return super.getServiceMethodParameters();
         }

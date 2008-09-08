@@ -230,6 +230,10 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
   
     public CsmScope getScope() {
+        return _getScope();
+    }
+
+    private synchronized CsmScope _getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
@@ -249,7 +253,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         isValid = false;
     }
         
-    private void onDispose() {
+    private synchronized void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
             // restore container from it's UID if not directly initialized
             this.scopeRef = this.scopeRef != null ? this.scopeRef : UIDCsmConverter.UIDtoScope(this.scopeUID);

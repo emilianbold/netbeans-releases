@@ -247,7 +247,10 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     }
     
     public Mark getMainMarkForBlock(int startLine, int endLine) {
-        Mark m1 = getMainMarkForBlockImpl(startLine, endLine, getMarkMap());
+        Mark m1;
+        synchronized(this) {
+            m1 = getMainMarkForBlockImpl(startLine, endLine, getMarkMap());
+        }
         Mark m2 = getMainMarkForBlockAnnotations(startLine, endLine);
         
         if (m1 == null)

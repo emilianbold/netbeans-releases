@@ -48,11 +48,10 @@ import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.modules.cnd.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
-import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -80,6 +79,9 @@ public class EditorOptions {
      */
     public static final String statementContinuationIndent = "statementContinuationIndent"; // NOI18N 
     public static final int statementContinuationIndentDefault = 8;
+
+    public static final String constructorListContinuationIndent = "constructorListContinuationIndent"; // NOI18N 
+    public static final int constructorListContinuationIndentDefault = 0;
 
     public static final String indentSize = "indentSize"; // NOI18N 
     public static final int indentSizeDefault = 4;
@@ -322,6 +324,7 @@ public class EditorOptions {
         defaults.put(expandTabToSpaces, expandTabToSpacesDefault);
         defaults.put(tabSize, tabSizeDefault);
         defaults.put(statementContinuationIndent,statementContinuationIndentDefault);
+        defaults.put(constructorListContinuationIndent,constructorListContinuationIndentDefault);
         defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
         defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
         defaults.put(indentNamespace, indentNamespaceDefault);

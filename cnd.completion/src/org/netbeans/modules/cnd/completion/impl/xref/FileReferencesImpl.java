@@ -124,7 +124,20 @@ public class FileReferencesImpl extends CsmFileReferences  {
         List<CsmReferenceContext> refs = getIdentifierReferences(csmFile, doc, start,end, kinds);
 
         for (CsmReferenceContext context : refs) {
-            visitor.visit(context);
+            // skip 'this' if possible
+            if (!isThis(context.getReference())) {
+                visitor.visit(context);
+            }
+        }
+    }
+
+    @Override
+    protected boolean isThis(CsmReference ref) {
+        Token refToken = ReferencesSupport.getRefTokenIfPossible(ref);
+        if (refToken != null) {
+            return refToken.id() == CppTokenId.THIS;
+        } else {
+            return super.isThis(ref);
         }
     }
 
@@ -187,6 +200,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
                     break;
                 case IDENTIFIER:
                 case PREPROCESSOR_IDENTIFIER:
+                case THIS:
                 {
                     skip = !needAfterDereferenceUsages && derefToken != null;
                     if (!skip && !deadBlocks.isEmpty()) {

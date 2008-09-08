@@ -40,14 +40,7 @@
                     $this->url = str_replace($key, $value, $this->url);
                 }
             }
-            if($params != null) {
-                $this->url = $this->url."?";
-                foreach ($params as $key => $value) {
-                    $this->url = $this->url.$key."=".urlencode($value)."&";
-                }
-                $len = strlen($this->url);
-                $this->url = substr($this->url, 0, $len-1);
-            }
+            $this->url = $this->encodeUrl($this->url, $params);
             $this->date = gmdate("D, d M Y H:i:s T");
             $this->req =& new HTTP_Request($this->url);
         }
@@ -80,20 +73,27 @@
         }
 
         public function put($data) {
-            $this->req->setMethod("PUT");
-            $this->req->setBody($data);
+            if ($data != null) {
+                if(is_array($data)) {
+                    $this->req->setMethod("PUT");
+                    $this->req->addHeader("Content-Type", "application/x-www-form-urlencoded");
+                    $this->req->setBody($this->encodeParams($data));
+                } else {
+                    $this->req->setBody($data);
+                }
+            }
             return $this->connect();
         }
 
         public function post($data) {
-            if(is_array($data)) {
-                $this->req->setMethod("POST");
-                $this->req->addHeader("Content-Type", "application/x-www-form-urlencoded");
-                foreach ($data as $key => $value) {
-                    $this->req->addPostData($key, $value);
+            if ($data != null) {
+                if(is_array($data)) {
+                    $this->req->setMethod("POST");
+                    $this->req->addHeader("Content-Type", "application/x-www-form-urlencoded");
+                    $this->req->setBody($this->encodeParams($data));
+                } else {
+                    $this->req->setBody($data);
                 }
-            } else {
-                $this->req->setBody($data);
             }
             return $this->connect();
         }
@@ -120,6 +120,26 @@
             return $response;
         }
 
+        private function encodeUrl($url, $params) {
+            $encodedParams = $this->encodeParams($params);
+            if (strlen($encodedParams) > 0) {
+                $encodedParams = "?".$encodedParams;
+            }
+
+            return $url.$encodedParams;
+        }
+
+        private function encodeParams($params) {
+            $p = "";
+            if($params != null) {
+                foreach ($params as $key => $value) {
+                    $p = $p.$key."=".urlencode($value)."&";
+                }
+                $p = substr($p, 0, strlen($p)-1);
+            }
+
+            return $p;
+        }
         public static function currentTimeMillis() {
             list($usec, $sec) = explode(" ", microtime());
             return round(((float)$usec + (float)$sec) * 1000);

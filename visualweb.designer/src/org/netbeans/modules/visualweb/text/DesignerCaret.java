@@ -72,6 +72,7 @@ import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomRange;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
+import org.netbeans.modules.visualweb.css2.PageBox;
 import org.netbeans.modules.visualweb.designer.WebForm;
 import org.netbeans.modules.visualweb.text.actions.SelectLineAction;
 import org.netbeans.modules.visualweb.text.actions.SelectWordAction;
@@ -95,7 +96,7 @@ import org.w3c.dom.Node;
  * @author  Timothy Prinzing
  * @author  Tor Norbye
  */
-/*public*/ class DesignerCaret extends Rectangle implements FocusListener, MouseListener,
+public class DesignerCaret extends Rectangle implements FocusListener, MouseListener,
     MouseMotionListener {
     private static transient Action selectWord = null;
     private static transient Action selectLine = null;
@@ -893,7 +894,12 @@ import org.w3c.dom.Node;
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalArgumentException("The node is expected not rendered" + dot.getNode())); // NOI18N
         }
-        
+
+        // XXX 142785 Possible NPE
+        PageBox pageBox = component.getWebForm().getPane().getPageBox();
+        if (pageBox == null) {
+            return;
+        }
         // XXX Very suspicious assertion.
 //        assert component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument() == component.getDocument().getWebForm().getJspDom();
 //        if (component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument() != component.getDocument().getWebForm().getHtmlDom()) {
@@ -901,10 +907,10 @@ import org.w3c.dom.Node;
 //                    new IllegalStateException("Owner document is expected to be html dom=" + component.getDocument().getWebForm().getHtmlDom() // NOI18N
 //                    + ", but it is dom=" + component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument())); // NOI18N
 //        }
-        if (component.getWebForm().getPane().getPageBox().getElement().getOwnerDocument() != component.getWebForm().getHtmlDom()) {
+        if (pageBox.getElement().getOwnerDocument() != component.getWebForm().getHtmlDom()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalStateException("Owner document is expected to be html dom=" + component.getWebForm().getHtmlDom() // NOI18N
-                    + ", but it is dom=" + component.getWebForm().getPane().getPageBox().getElement().getOwnerDocument())); // NOI18N
+                    + ", but it is dom=" + pageBox.getElement().getOwnerDocument())); // NOI18N
         }
 
         changeCaretPosition(dot);
@@ -946,6 +952,11 @@ import org.w3c.dom.Node;
                     new IllegalStateException("It is not in inline editing, and node is rendered node=" + dot.getNode())); // NOI18N
         }
         
+        // XXX 142785 Possible NPE
+        PageBox pageBox = component.getWebForm().getPane().getPageBox();
+        if (pageBox == null) {
+            return;
+        }
         // XXX Very suspicious assertion.
 //        assert component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument() == component.getDocument().getWebForm().getJspDom();
 //        if (component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument() != component.getDocument().getWebForm().getHtmlDom()) {
@@ -953,10 +964,10 @@ import org.w3c.dom.Node;
 //                    new IllegalStateException("Owner document is expected to be html dom=" + component.getDocument().getWebForm().getHtmlDom() // NOI18N
 //                    + ", but it is dom=" + component.getDocument().getWebForm().getPane().getPageBox().getElement().getOwnerDocument())); // NOI18N
 //        }
-        if (component.getWebForm().getPane().getPageBox().getElement().getOwnerDocument() != component.getWebForm().getHtmlDom()) {
+        if (pageBox.getElement().getOwnerDocument() != component.getWebForm().getHtmlDom()) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new IllegalStateException("Owner document is expected to be html dom=" + component.getWebForm().getHtmlDom() // NOI18N
-                    + ", but it is dom=" + component.getWebForm().getPane().getPageBox().getElement().getOwnerDocument())); // NOI18N
+                    + ", but it is dom=" + pageBox.getElement().getOwnerDocument())); // NOI18N
         }
 
         Node node = dot.getNode();

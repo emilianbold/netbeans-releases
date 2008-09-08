@@ -80,21 +80,23 @@ public class DiagramModelElementNode extends UMLModelElementNode
 
         lookupContent = lookup;
         addPrintCookie();
-        lookupContent.add(new DocumentationCookie() {
+        if (lookupContent != null)
+        {
+            lookupContent.add(new DocumentationCookie() {
 
-            public String getDocumentation()
-            {
-                return pe == null? "" : pe.getDocumentation();
-            }
+                public String getDocumentation()
+                {
+                    return pe == null? "" : pe.getDocumentation();
+                }
 
-            public void setDocumentation(String val)
-            {
-                if (pe != null)
-                    pe.setDocumentation(val);
-            }
-        });
-
-        if (dObj.isModified() == true)
+                public void setDocumentation(String val)
+                {
+                    if (pe != null)
+                        pe.setDocumentation(val);
+                }
+            });
+        }
+        if ((dObj != null) && (dObj.isModified() == true))
         {
             addSaveCookie();
         } 

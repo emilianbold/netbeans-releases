@@ -93,13 +93,13 @@ public class UriToPath extends Task {
             
             String path = uri.getSchemeSpecificPart();
             while (path.startsWith("/")) { // NOI18N
-                path = path.substring(1).replace(":", "_");
+                path = path.substring(1);
             }
             
             if (uri.getScheme().equals("file")) {
-                path = "local/" + path.replace(":", "_");
+                path = "local/" + path;
             }
-            
+            path = path.replace(":", "_").replace("*", "_");
             getProject().setProperty(property, path);
         } catch (URISyntaxException e) {
             throw new BuildException("Cannot parse URI.",e); // NOI18N
