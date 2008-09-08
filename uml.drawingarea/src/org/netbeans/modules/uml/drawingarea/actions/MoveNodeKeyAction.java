@@ -62,6 +62,7 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
     private Point dragSceneLocation = null;
     private Point originalSceneLocation = null;
     private Point initialWidgetLocation = null;
+    private boolean multiplePressed = false;
 
     public MoveNodeKeyAction(MoveStrategy strategy, MoveProvider provider)
     {
@@ -78,7 +79,9 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
     {
         if (isLocked())
         {
-            return State.createLocked(widget, this);
+            multiplePressed = true;
+            boolean state = move(event);
+            return state ? State.createLocked(widget, this) : State.REJECTED;
         }
         
         boolean controlKeyPressed = event.isControlDown();
@@ -115,9 +118,23 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
 
     public State keyReleased (Widget widget, WidgetKeyEvent event)
     {
+        State retVal = State.REJECTED;
+        if(multiplePressed == false)
+        {
+            if(move(event) == true)
+            {
+                retVal = State.CONSUMED;
+            }
+        }
+
+        return retVal;
+    }
+
+    private boolean move(WidgetKeyEvent event)
+    {
         boolean state = false;
-        
-        if(movingWidget != null)
+
+        if (movingWidget != null)
         {
             Point newWidgetLocation = getNewLocation(movingWidget, event);
 
@@ -129,11 +146,11 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
             {
                 state = move(movingWidget, newWidgetLocation);
             }
-
+            
             if (state)
             {
                 provider.movementFinished(movingWidget);
-                
+
                 movingWidget = null;
                 dragSceneLocation = null;
                 originalSceneLocation = null;
@@ -141,9 +158,9 @@ public class MoveNodeKeyAction extends WidgetAction.LockedAdapter
             }
         }
 
-        return state ? State.CONSUMED : State.REJECTED;
+        return state;
     }
-
+    
     private Point getNewLocation (Widget widget, WidgetKeyEvent event)
     {
         Point location = getWidgetLocation(widget);

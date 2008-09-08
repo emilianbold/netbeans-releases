@@ -338,16 +338,17 @@
                     currentFirebugContext = context;
                     releaseFirebugContext = false;
                     netBeansDebugger.onInit(netBeansDebugger);
+                    
+                    if (features.suspendOnFirstLine) {
+                        features.suspendOnFirstLine = false;
+                        suspend("firstline");
+                    }
                 }
             },
 
             // #5 Show Current Context - we didn't need this.'
             showContext: function(browser, context) {
 
-                if (features.suspendOnFirstLine) {
-                    features.suspendOnFirstLine = false;
-                    suspend("firstline");
-                }
             },
 
             // #6 Watch Window ( attachToWindow )

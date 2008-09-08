@@ -40,20 +40,14 @@
  */
 package org.netbeans.modules.uml.diagrams.nodes;
 
-import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.api.visual.border.BorderFactory;
-import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.diagrams.DefaultWidgetContext;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -62,21 +56,12 @@ import org.openide.util.lookup.InstanceContent;
 public class EnumerationLiteralWidget extends FeatureWidget implements PropertyChangeListener
 {
 
-    private InstanceContent lookupContent = new InstanceContent();
-    private Lookup lookup = new AbstractLookup(lookupContent);
-
     public EnumerationLiteralWidget(Scene scene)
     {
         super(scene);
 
-        lookupContent.add(new DefaultWidgetContext("EnumerationLiteral"));
+        addToLookup(new DefaultWidgetContext("EnumerationLiteral"));
         setAlignment(Alignment.CENTER);
-    }
-
-    @Override
-    public Lookup getLookup()
-    {
-        return lookup;
     }
 
     ///////////////////////////////////////////////////////////////
