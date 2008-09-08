@@ -194,7 +194,7 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
     }
 
 
-    private String url2path( URL u ) {
+    protected final String url2path( URL u ) {
         StringBuilder pathSB = new StringBuilder(u.getHost());
         if (u.getPort() != -1) {
             pathSB.append(u.getPort());
@@ -342,14 +342,10 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
                 });
             } catch( Exception e ) {
                 if( isContentCached()) {
-                    try {
-                        isCached = false;
-                        NbPreferences.forModule( RSSFeed.class ).remove( url2path( new URL(url))) ;
-                        reload();
-                        return;
-                    } catch( MalformedURLException mE ) {
-                        //ignore
-                    }
+                    isCached = false;
+                    clearCache();
+                    reload();
+                    return;
                 }
                 SwingUtilities.invokeLater( new Runnable() {
                     public void run() {
@@ -358,6 +354,14 @@ public class RSSFeed extends BackgroundPanel implements Constants, PropertyChang
                 });
                 ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
             }
+        }
+    }
+
+    protected void clearCache() {
+        try {
+            NbPreferences.forModule( RSSFeed.class ).remove( url2path( new URL(url))) ;
+        } catch( MalformedURLException mE ) {
+            //ignore
         }
     }
     
