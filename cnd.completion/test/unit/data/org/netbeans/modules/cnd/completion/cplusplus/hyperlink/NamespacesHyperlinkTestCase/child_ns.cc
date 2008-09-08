@@ -9,3 +9,13 @@ namespace IZ145148 {
         z.zz = 1; // "zz" is unresolved
     }
 }
+
+namespace IZ145148_2 {
+    namespace Y {
+        struct Z { int z; };
+        int foo() {
+            Y::Z zz;
+            zz.z; // "z" is not resolved
+        }
+    }
+}

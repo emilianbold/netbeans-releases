@@ -205,6 +205,8 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         
         setActiveTool(DesignerTools.SELECT);
         setKeyEventProcessingType (EventProcessingType.FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS);
+        
+        setAccessibleContext(new UMLWidgetAccessibleContext(this));
     }
     
     
@@ -747,4 +749,6 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
         
         super.userSelectionSuggested(selection, invertSelection);
     }
+
+
 }

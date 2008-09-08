@@ -39,6 +39,7 @@
 package org.netbeans.modules.php.editor.parser.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -50,6 +51,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -120,6 +122,14 @@ public class Utils {
 
     }
     
+    public static ASTNode[] getNodeHierarchyAtOffset(ASTNode node, int offset) {
+        if (node.getStartOffset() > offset || node.getEndOffset() < offset) {
+            return null;
+        }
+
+        return (new NodeHierarchyFinder()).find(node, offset);
+    }
+    
     /**
      * Return an ASTNode of given type at the given offset. It doesn't count comments. 
      * 
@@ -151,6 +161,28 @@ public class Utils {
             if (node != null) {
                 if (node.getStartOffset() <= offset && offset <= node.getEndOffset()) {
                     this.node = node;
+                    node.accept(this);
+                }
+            }
+        }
+    }
+    
+    private static class NodeHierarchyFinder extends DefaultTreePathVisitor {
+
+        private ASTNode[] hierarchy;
+        protected int offset = 0;
+
+        public ASTNode[] find(ASTNode beginNode, int astOffset) {
+            offset = astOffset;
+            scan(beginNode);
+            return hierarchy;
+        }
+
+        @Override
+        public void scan(ASTNode node) {
+            if (node != null) {
+                if (node.getStartOffset() <= offset && offset <= node.getEndOffset()) {
+                    hierarchy = getPath().toArray(new ASTNode[getPath().size()]);
                     node.accept(this);
                 }
             }

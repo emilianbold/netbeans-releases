@@ -41,6 +41,7 @@ package org.netbeans.modules.uml.drawingarea.widgets;
 
 /**
  * Marker interface to show/hide ResizeToContents action
+ * Any widget that implements this interface will NOT have ResizeToContents popup-menu entry
  * @author jyothi
  */
 public interface ResizeToContentMarker {

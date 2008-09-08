@@ -38,11 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.saas.codegen.model;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -57,8 +57,16 @@ import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingInput;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding.Style;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBody;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase.Use;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,6 +76,7 @@ import org.openide.filesystems.FileUtil;
  * @author nam
  */
 public class SoapClientOperationInfo {
+
     private WsdlSaasMethod method;
     private String categoryName;
     private String serviceName;
@@ -105,11 +114,11 @@ public class SoapClientOperationInfo {
     public WsdlSaasMethod getMethod() {
         return method;
     }
-    
+
     public String getCategoryName() {
         return categoryName;
     }
-    
+
     public String getServiceName() {
         return serviceName;
     }
@@ -136,8 +145,8 @@ public class SoapClientOperationInfo {
 
     public static WSOperation findOperationByName(WSPort port, String name) {
         for (Object o : port.getOperations()) {
-            if (name.equals(((WSOperation)o).getName())) {
-                return ((WSOperation)o);
+            if (name.equals(((WSOperation) o).getName())) {
+                return ((WSOperation) o);
             }
         }
         return null;
@@ -162,7 +171,7 @@ public class SoapClientOperationInfo {
     public List<WSParameter> getOutputParameters() {
         ArrayList<WSParameter> params = new ArrayList<WSParameter>();
         for (Object p : getOperation().getParameters()) {
-            if (((WSParameter)p).isHolder()) {
+            if (((WSParameter) p).isHolder()) {
                 params.add((WSParameter) p);
             }
         }
@@ -188,7 +197,7 @@ public class SoapClientOperationInfo {
         String outputType = getOperation().getReturnTypeName();
         if (Constants.VOID.equals(outputType)) {
             for (Object p : getOperation().getParameters()) {
-                if (((WSParameter)p).isHolder()) {
+                if (((WSParameter) p).isHolder()) {
                     outputType = getParamType((WSParameter) p);
                     break;
                 }
@@ -201,8 +210,8 @@ public class SoapClientOperationInfo {
     public String[] getInputParameterNames() {
         ArrayList<String> names = new ArrayList<String>();
         for (Object p : getOperation().getParameters()) {
-            if (!((WSParameter)p).isHolder()) {
-                names.add(((WSParameter)p).getName());
+            if (!((WSParameter) p).isHolder()) {
+                names.add(((WSParameter) p).getName());
             }
         }
 
@@ -214,7 +223,7 @@ public class SoapClientOperationInfo {
         ArrayList<Class> types = new ArrayList<Class>();
 
         for (Object p : getOperation().getParameters()) {
-            if (!((WSParameter)p).isHolder()) {
+            if (!((WSParameter) p).isHolder()) {
                 int repeatCount = 0;
                 Class type = null;
 
@@ -223,7 +232,7 @@ public class SoapClientOperationInfo {
                 synchronized (this) {
                     try {
                         while (repeatCount < 60) {
-                            type = getType(project, ((WSParameter)p).getTypeName());
+                            type = getType(project, ((WSParameter) p).getTypeName());
 
                             if (type != null) {
                                 break;
@@ -249,28 +258,32 @@ public class SoapClientOperationInfo {
 
         return types.toArray(new Class[types.size()]);
     }
-    
+
     public Class getType(Project project, String typeName) {
         return Util.getType(project, typeName);
     }
-    
+
     public boolean needsSoapHandler() {
         return getSoapHeaderParameters().size() > 0;
     }
-    
+
     public List<ParameterInfo> getSoapHeaderParameters() {
         return headerParams;
     }
 
     public WSDLModel getXamWsdlModel() {
         try {
-            FileObject wsdlFO = FileUtil.toFileObject(new File(webServiceData.getWsdlFile()));;
+            FileObject wsdlFO = FileUtil.toFileObject(new File(webServiceData.getWsdlFile()));
+            ;
             return WSDLModelFactory.getDefault().getModel(Utilities.createModelSource(wsdlFO, true));
-        } catch(CatalogModelException ex) {
+        } catch (CatalogModelException ex) {
             Logger.global.log(Level.INFO, "", ex);
         }
         return null;
     }
-    
-    
+
+    public boolean isRPCEncoded() {
+        WSDLModel wsdlModel = getXamWsdlModel();
+        return Util.isRPCEncoded(wsdlModel);
+    }
 }

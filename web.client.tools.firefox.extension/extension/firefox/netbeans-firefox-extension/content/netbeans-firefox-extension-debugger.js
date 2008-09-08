@@ -1045,6 +1045,7 @@
 
     // 7. run until
     function runUntil(url, lineno) {
+        lineno = parseInt(lineno);
         var src;
 
         if (currentFirebugContext) {
@@ -1582,8 +1583,9 @@
         const delayShutdownIfDebugging = function() {
             disable();
             NetBeans.Debugger.shutdown();
-            // #144937 - why did we close the window on shutdown anyway?
-            //window.close();
+            // XXX not closing the browser window causes strange problems so subsequent
+            // debug sessions do not work correctly - should be fixed some other way if possible
+            window.close();
         };
 
         if (debugging) {

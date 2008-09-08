@@ -99,26 +99,12 @@ public class RestSamplesTest extends RestTestBase {
     }
 
     /**
-     * Test Customer Database Client Sample
-     *
-     * @throws java.io.IOException
-     */
-    public void testCustomerDBClientSample() throws IOException {
-        String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro/CustomerDBClientSampleProject");
-        createProject(sampleName, getProjectType(), null);
-        deployProject(getProjectName());
-        undeployProject(getProjectName());
-        undeployProject("CustomerDBSample"); //NOI18N
-    }
-
-    /**
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
         return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(RestSamplesTest.class),
                 "testHelloWorldSample",
-                "testCustomerDBSample",
-                "testCustomerDBClientSample"
+                "testCustomerDBSample"
                 ).enableModules(".*").clusters(".*"));
     }
 }

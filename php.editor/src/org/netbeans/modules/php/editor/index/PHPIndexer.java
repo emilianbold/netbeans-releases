@@ -83,6 +83,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -213,7 +214,7 @@ public class PHPIndexer implements Indexer {
         // php runtime files. Go to the php.project/tools, modify and run
         // preindex.sh script. Also change the number of license in
         // php.project/external/preindexed-php-license.txt
-        return "0.5.2"; // NOI18N
+        return "0.5.3"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -276,7 +277,7 @@ public class PHPIndexer implements Indexer {
             }
         }
         
-        private class IndexerVisitor extends DefaultVisitor{
+        private class IndexerVisitor extends DefaultTreePathVisitor{
             private List<IndexDocument> documents;
             private IndexDocument defaultDocument;
 
@@ -296,6 +297,10 @@ public class PHPIndexer implements Indexer {
 
             @Override
             public void visit(FunctionDeclaration node) {
+                if (getPath().get(0) instanceof MethodDeclaration){
+                    return;
+                }
+
                 indexFunction((FunctionDeclaration)node, defaultDocument);
                 super.visit(node);
             }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.gsf;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -74,6 +75,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -145,7 +148,13 @@ public class GsfJar extends JarWithModuleAttributes {
             BufferedInputStream bis = new BufferedInputStream(is);
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(false);
+            factory.setExpandEntityReferences(false);
             DocumentBuilder docBuilder = factory.newDocumentBuilder();
+            docBuilder.setEntityResolver(new EntityResolver() {
+                public org.xml.sax.InputSource resolveEntity(String pubid, String sysid) {
+                    return new org.xml.sax.InputSource(new ByteArrayInputStream(new byte[0]));
+                }
+            });
 
             Document doc = docBuilder.parse(bis);
 
@@ -508,7 +517,7 @@ public class GsfJar extends JarWithModuleAttributes {
         // Hyperlinks
         Element hyperlinkFolder = mkdirs(doc, "Editors/" + mimeType + "/HyperlinkProviders"); // NOI18N
         Element file = createFile(doc, hyperlinkFolder, "GsfHyperlinkProvider.instance"); // NOI18N
-        setFileAttribute(doc, file, "instanceCreate", STRINGVALUE, "org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider"); // NOI18N
+        setFileAttribute(doc, file, "instanceClass", STRINGVALUE, "org.netbeans.modules.gsfret.editor.hyperlink.GsfHyperlinkProvider"); // NOI18N
         setFileAttribute(doc, file, "instanceOf", STRINGVALUE, "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"); // NOI18N
 
         // Code Completion

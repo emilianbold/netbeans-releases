@@ -50,6 +50,22 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testTemplateParamsInNestedClasses() throws Exception {
+        // IZ#144881: template parameter is not resolved in nested class
+
+        performTest("templateParameters.h", 104, 9, "templateParameters.h", 100, 10);// _Tp
+        performTest("templateParameters.h", 105, 9, "templateParameters.h", 100, 10);// _Tp
+        performTest("templateParameters.h", 106, 9, "templateParameters.h", 100, 10);// _Tp
+
+        performTest("templateParameters.h", 103, 25, "templateParameters.h", 100, 24);// _Alloc
+        performTest("templateParameters.h", 109, 15, "templateParameters.h", 100, 24);// _Alloc
+    }
+
+    public void checkPtrOperator() throws Exception {
+        // noIZ:fixed ptr operator handling
+        performTest("checkPtrOperator.cc", 16, 15, "checkPtrOperator.cc", 11, 9);
+    }
+    
     public void testIZ146030_5() throws Exception {
         // IZ#146030: set of problems for declarations in Loki
         // usecase 5)
@@ -643,6 +659,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
             performTest("ClassB.h", 20, 15, "ClassB.h", 20, 5); //void method(const char*);
             performTest("ClassB.h", 12, 15, "ClassB.h", 22, 5); //void method(char*, double);
             performTest("ClassB.h", 24, 15, "ClassB.h", 24, 5); //void method(char*, char*);
+        }
+
+        public void testIZ145037() throws Exception {
+            // IZ#145037: "operator string" defintion incorrectly resolved
+            performTest("IZ145037_conversion_operators.cc", 20, 22, "IZ145037_conversion_operators.cc", 10, 9);
+            performTest("IZ145037_conversion_operators.cc", 38, 22, "IZ145037_conversion_operators.cc", 28, 9);
         }
     }
 

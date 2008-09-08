@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.util.logging.Level;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.client.javascript.debugger.filesystem.URLFileObject;
@@ -81,9 +82,10 @@ public final class NbJSBreakpointManager {
             try {
                 URL url = fileObject.getURL();
                 breakpoint = new NbJSURIBreakpoint(url.toString(), line.getLineNumber() + 1);
+                ((NbJSURIBreakpoint)breakpoint).setOwnerLine(line);
             } catch (FileStateInvalidException e) {
-                // TODO Auto-generated catch block
-                Exceptions.printStackTrace(e);
+                Log.getLogger().log(Level.INFO, "Exception creating URI breakpoint", e);
+                return null;
             }
         } else {
             breakpoint = new NbJSFileObjectBreakpoint(line);

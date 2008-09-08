@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ws.qaf.rest;
 
 import java.io.File;
@@ -45,6 +44,7 @@ import javax.swing.JButton;
 import javax.swing.ListModel;
 import junit.framework.Test;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -57,6 +57,7 @@ import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 
@@ -67,8 +68,32 @@ import org.openide.nodes.Node;
  */
 public class CStubsTest extends RestTestBase {
 
+    private static boolean haveProjects = false;
+
     public CStubsTest(String name) {
         super(name);
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        if (!haveProjects) {
+            File f = new File(getProjectsRootDir(), "FromEntities"); //NOI18N
+            assertTrue("dependent project not found", f.exists() && f.isDirectory());
+            Project p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
+            assertNotNull(p);
+            if (!OpenProjectList.getDefault().isOpen(p)) {
+                openProjects(f.getAbsolutePath());
+            }
+            f = new File(getProjectsRootDir(), "FromPatterns"); //NOI18N
+            assertTrue("dependent project not found", f.exists() && f.isDirectory());
+            p = ProjectManager.getDefault().findProject(FileUtil.toFileObject(f));
+            assertNotNull(p);
+            if (!OpenProjectList.getDefault().isOpen(p)) {
+                openProjects(f.getAbsolutePath());
+            }
+            haveProjects = true;
+        }
     }
 
     @Override
@@ -96,17 +121,17 @@ public class CStubsTest extends RestTestBase {
         JButtonOperator jbo = new JButtonOperator(wo, browseLabel);
         jbo.push();
         String browseFoldersLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_BrowseFolders");
-        NbDialogOperator  ndo = new NbDialogOperator(browseFoldersLabel);
+        NbDialogOperator ndo = new NbDialogOperator(browseFoldersLabel);
         JTreeOperator jto = new JTreeOperator(ndo);
         new org.netbeans.jellytools.nodes.Node(jto, jto.findPath("Source Packages")).select(); //NOI18N
         ndo.ok();
-        assertEquals("browse selection not propagated", "", new JTextFieldOperator(wo, 0).getText().trim()); //NOI18N
+        assertEquals("browse selection not propagated", "", new JTextFieldOperator(wo, 2).getText().trim()); //NOI18N
         jbo.push();
         ndo = new NbDialogOperator(browseFoldersLabel);
         jto = new JTreeOperator(ndo);
         new org.netbeans.jellytools.nodes.Node(jto, "Web Pages|WEB-INF").select(); //NOI18N
         ndo.ok();
-        assertEquals("browse selection not propagated", "WEB-INF", new JTextFieldOperator(wo, 0).getText().trim()); //NOI18N
+        assertEquals("browse selection not propagated", "WEB-INF", new JTextFieldOperator(wo, 2).getText().trim()); //NOI18N
         //add project
         addProject(wo, path);
         JListOperator jlo = new JListOperator(wo, 1);
@@ -157,11 +182,11 @@ public class CStubsTest extends RestTestBase {
         JButtonOperator jbo = new JButtonOperator(wo, browseLabel);
         jbo.push();
         new NbDialogOperator(browseFoldersLabel).cancel();
-        assertEquals("browse selection propagated", "resources", new JTextFieldOperator(wo, 0).getText().trim()); //NOI18N
+        assertEquals("browse selection propagated", "rest", new JTextFieldOperator(wo, 2).getText().trim()); //NOI18N
         //click on the use wadl button
         JRadioButtonOperator jrbo = new JRadioButtonOperator(wo, 1);
         jrbo.clickMouse();
-        JTextFieldOperator jtfo = new JTextFieldOperator(wo, 1);
+        JTextFieldOperator jtfo = new JTextFieldOperator(wo, 0);
         jtfo.clearText();
         jtfo.typeText(new File(getRestDataDir(), "testApplication.wadl").getCanonicalFile().getAbsolutePath()); //NOI18N
         if (useJMaki()) {
@@ -218,7 +243,7 @@ public class CStubsTest extends RestTestBase {
 
     private Project getProject(String name) {
         ProjectRootNode n = ProjectsTabOperator.invoke().getProjectRootNode(name);
-        return ((Node)n.getOpenideNode()).getLookup().lookup(Project.class);
+        return ((Node) n.getOpenideNode()).getLookup().lookup(Project.class);
     }
 
     /**
@@ -226,10 +251,10 @@ public class CStubsTest extends RestTestBase {
      */
     public static Test suite() {
         return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(CStubsTest.class),
-                "testWizard",
-                "testCreateSimpleStubs",
-                "testFromWADL",
-                "testCloseProject"
-                ).enableModules(".*").clusters(".*"));
+                "testWizard", //NOI18N
+                "testCreateSimpleStubs", //NOI18N
+                "testFromWADL", //NOI18N
+                "testCloseProject" //NOI18N
+                ).enableModules(".*").clusters(".*")); //NOI18N
     }
 }

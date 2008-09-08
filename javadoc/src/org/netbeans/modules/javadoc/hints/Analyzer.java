@@ -251,6 +251,9 @@ final class Analyzer {
                 if (rt != null && rt.getKind() == Kind.ERRONEOUS) {
                     return true;
                 }
+                if (ERROR_IDENT.contentEquals(mt.getName())) {
+                    return true;
+                }
                 for (VariableTree vt : mt.getParameters()) {
                     if (ERROR_IDENT.contentEquals(vt.getName())) {
                         return true;

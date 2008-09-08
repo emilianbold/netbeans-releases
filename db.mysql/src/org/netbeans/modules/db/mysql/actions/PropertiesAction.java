@@ -44,6 +44,7 @@ import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.CookieAction;
 
 /**
@@ -75,9 +76,13 @@ public class PropertiesAction extends CookieAction {
     @Override
     protected void performAction(Node[] activatedNodes) {
         Node node = activatedNodes[0];
-        DatabaseServer server = node.getCookie(DatabaseServer.class);
+        final DatabaseServer server = node.getCookie(DatabaseServer.class);
         
         PropertiesDialog dlg = new PropertiesDialog(server);
+
+        ReconnectPropertyChangeListener pcl = new ReconnectPropertyChangeListener(server);
+        server.addPropertyChangeListener(WeakListeners.propertyChange(pcl, server));
+        
         dlg.displayDialog();
     }
 

@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
-import org.netbeans.modules.cnd.api.model.services.CsmTypedefResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 
 /**
  *
@@ -333,7 +333,7 @@ public class CsmBaseUtilities {
     }      
     
     public static CsmClassifier getOriginalClassifier(CsmClassifier orig) {
-        return CsmTypedefResolver.getDefault().getOriginalClassifier(orig);
+        return CsmClassifierResolver.getDefault().getOriginalClassifier(orig);
     }
 
 }
