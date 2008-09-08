@@ -223,7 +223,7 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
     {
         assert copy instanceof UMLEdgeWidget;
         
-        ((UMLEdgeWidget)copy).initialize(((UMLEdgeWidget)copy).getObject());
+        //((UMLEdgeWidget)copy).initialize(((UMLEdgeWidget)copy).getObject());
         ((ConnectionWidget) copy).setControlPointsCursor(this.getControlPointsCursor());
         ConnectionWidget dup = (ConnectionWidget) copy;
 

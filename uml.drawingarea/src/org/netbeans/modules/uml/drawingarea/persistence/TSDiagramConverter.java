@@ -708,10 +708,7 @@ public class TSDiagramConverter
             }
             else
             {
-                if(connWidget instanceof UMLEdgeWidget)
-                {
-                   ((UMLEdgeWidget)connWidget).initialize(peToUse);
-                }
+
             }
         return connWidget;
     }
